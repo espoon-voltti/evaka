@@ -63,10 +63,9 @@ export const Reservations = React.memo(function Reservations({
   )
 
   const groupedChildren = useMemo(
-    () => groupChildren(allChildren, data.children, data.date),
-    [data.children, allChildren, data.date]
+    () => groupChildren(allChildren, data.children, data.date, data.isHoliday),
+    [data.children, allChildren, data.date, data.isHoliday]
   )
-
 
   return data.children.length === 0 && data.isHoliday && !isReservable ? (
     <Holiday />
@@ -133,7 +132,8 @@ const GroupedElementText = styled.div`
 const groupChildren = (
   allChildren: ReservationChild[],
   reservedChildren: ChildDailyData[],
-  date: LocalDate
+  date: LocalDate,
+  isHoliday: boolean
 ) =>
   Object.entries(
     groupBy(
@@ -145,6 +145,9 @@ const groupChildren = (
         )
         .filter((childInfo) =>
           childInfo.maxOperationalDays.includes(date.getIsoDayOfWeek())
+        )
+        .filter(
+          (childInfo) => !isHoliday || childInfo.maxOperationalDays.length == 7
         )
         .map<DailyChildGroupElement>((childInfo) => {
           const child = reservedChildren.find(

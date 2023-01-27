@@ -166,7 +166,7 @@ export const daycareFixture: Daycare = {
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
   operationDays: [1, 2, 3, 4, 5],
-  roundTheClock: false,
+  roundTheClock: true,
   location: {
     lat: 60.20377343765089,
     lon: 24.655715743526994

@@ -58,7 +58,7 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
             return [rangeDate.formatIso(), emptyTimeRange]
           }
 
-          if (existingTimes.isHoliday) {
+          if (existingTimes.isHoliday && !childrenInShiftCare) {
             return [rangeDate.formatIso(), 'holiday']
           }
 
