@@ -16,18 +16,11 @@ data class EmailContent(
 )
 
 interface IEmailMessageProvider {
-
-    val subjectForPendingDecisionEmail: String
     val subjectForClubApplicationReceivedEmail: String
     val subjectForDaycareApplicationReceivedEmail: String
     val subjectForPreschoolApplicationReceivedEmail: String
 
-    fun getPendingDecisionEmailSubject(): String {
-        return subjectForPendingDecisionEmail
-    }
-
-    fun getPendingDecisionEmailHtml(): String
-    fun getPendingDecisionEmailText(): String
+    fun pendingDecisionNotification(language: Language): EmailContent
 
     fun getClubApplicationReceivedEmailSubject(): String {
         return subjectForClubApplicationReceivedEmail

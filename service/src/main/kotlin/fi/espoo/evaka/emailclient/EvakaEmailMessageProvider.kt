@@ -20,8 +20,6 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             else -> env.frontendBaseUrlFi
         }
 
-    override val subjectForPendingDecisionEmail: String =
-        "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education"
     override val subjectForClubApplicationReceivedEmail: String =
         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
     override val subjectForDaycareApplicationReceivedEmail: String =
@@ -29,8 +27,37 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
     override val subjectForPreschoolApplicationReceivedEmail: String =
         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
 
-    override fun getPendingDecisionEmailHtml(): String {
-        return """
+    override fun pendingDecisionNotification(language: Language): EmailContent =
+        EmailContent(
+            subject =
+                "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
+            text =
+                """
+            Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
+
+            Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen https://espoonvarhaiskasvatus.fi, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.
+
+            Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000
+
+            -----
+
+            Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
+
+            Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen https://esbosmabarnspedagogik.fi eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
+
+            Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
+
+            -----
+
+            You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
+
+            The person who submitted the application can accept or reject an unanswered decision by logging in to espoonvarhaiskasvatus.fi or by sending the completed form on the last page of the decision to the address specified on the page.
+
+            You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
+        """
+                    .trimIndent(),
+            html =
+                """
             <p>
             Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
             </p>
@@ -65,36 +92,8 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
             </p>
         """
-            .trimIndent()
-    }
-
-    override fun getPendingDecisionEmailText(): String {
-        return """
-            Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
-
-            Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen https://espoonvarhaiskasvatus.fi, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.
-
-            Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000
-
-            -----
-
-            Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
-
-            Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen https://esbosmabarnspedagogik.fi eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
-
-            Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
-
-            -----
-
-            You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
-
-            The person who submitted the application can accept or reject an unanswered decision by logging in to espoonvarhaiskasvatus.fi or by sending the completed form on the last page of the decision to the address specified on the page.
-
-            You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
-        """
-            .trimIndent()
-    }
-
+                    .trimIndent()
+        )
     override fun getClubApplicationReceivedEmailHtml(): String {
         return """
             <p>Hyvä(t) huoltaja(t),</p>
