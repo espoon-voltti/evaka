@@ -29,9 +29,7 @@ class EmailClient(
         traceId: String,
         toAddress: String,
         fromAddress: String,
-        subject: String,
-        htmlBody: String,
-        textBody: String
+        content: EmailContent
     ) {
         logger.info { "Sending email (traceId: $traceId)" }
 
@@ -47,13 +45,13 @@ class EmailClient(
                                         .html(
                                             Content.builder()
                                                 .charset(charset)
-                                                .data(htmlBody)
+                                                .data(content.html)
                                                 .build()
                                         )
                                         .text(
                                             Content.builder()
                                                 .charset(charset)
-                                                .data(textBody)
+                                                .data(content.text)
                                                 .build()
                                         )
                                         .build()
@@ -64,8 +62,8 @@ class EmailClient(
                                         .data(
                                             when (subjectPostfix) {
                                                 null,
-                                                "" -> subject
-                                                else -> "$subject [$subjectPostfix]"
+                                                "" -> content.subject
+                                                else -> "${content.subject} [$subjectPostfix]"
                                             }
                                         )
                                         .build()

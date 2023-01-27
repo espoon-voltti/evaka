@@ -7,16 +7,7 @@ package fi.espoo.evaka.emailclient
 private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
 interface IEmailClient {
-    fun sendEmail(
-        traceId: String,
-        toAddress: String,
-        fromAddress: String,
-        subject: String,
-        htmlBody: String,
-        textBody: String
-    )
-    fun sendEmail(traceId: String, toAddress: String, fromAddress: String, content: EmailContent) =
-        sendEmail(traceId, toAddress, fromAddress, content.subject, content.html, content.text)
+    fun sendEmail(traceId: String, toAddress: String, fromAddress: String, content: EmailContent)
 
     fun validateToAddress(traceId: String, toAddress: String): Boolean {
         if (toAddress.matches(EMAIL_PATTERN)) {

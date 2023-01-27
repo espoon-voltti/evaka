@@ -31,13 +31,20 @@ class MockEmailClient : IEmailClient {
         traceId: String,
         toAddress: String,
         fromAddress: String,
-        subject: String,
-        htmlBody: String,
-        textBody: String
+        content: EmailContent
     ) {
         if (validateToAddress(traceId, toAddress)) {
             logger.info { "Mock sending email (personId: $traceId toAddress: $toAddress)" }
-            addEmail(MockEmail(traceId, toAddress, fromAddress, subject, htmlBody, textBody))
+            addEmail(
+                MockEmail(
+                    traceId,
+                    toAddress,
+                    fromAddress,
+                    content.subject,
+                    content.html,
+                    content.text
+                )
+            )
         }
     }
 }
