@@ -4,7 +4,36 @@
 
 package fi.espoo.evaka.shared.template
 
+import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.invoicing.service.DocumentLang
+
 class EvakaTemplateProvider : ITemplateProvider {
+    override fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String {
+        return when (lang) {
+            DocumentLang.SV ->
+                when (type) {
+                    DecisionType.CLUB -> "Kerhopäätös" // All clubs are in Finnish
+                    DecisionType.DAYCARE,
+                    DecisionType.DAYCARE_PART_TIME -> "Beslut_om_småbarnspedagogisk_verksamhet"
+                    DecisionType.PRESCHOOL -> "Beslut_om_förskoleplats"
+                    DecisionType.PRESCHOOL_DAYCARE -> "Anslutande_småbarnspedagogik"
+                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös (sv)"
+                    DecisionType.PREPARATORY_EDUCATION ->
+                        "Valmistava_päätös" // Svebi does not offer preparatory education
+                }
+            else ->
+                when (type) {
+                    DecisionType.CLUB -> "Kerhopäätös"
+                    DecisionType.DAYCARE,
+                    DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
+                    DecisionType.PRESCHOOL -> "Esiopetuspäätös"
+                    DecisionType.PRESCHOOL_DAYCARE -> "Liittyvä_varhaiskasvatuspäätös"
+                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös"
+                    DecisionType.PREPARATORY_EDUCATION -> "Valmistava_päätös"
+                }
+        }
+    }
+
     override fun getFeeDecisionPath(): String = "fee-decision/decision"
     override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
     override fun getClubDecisionPath(): String = "club/decision"

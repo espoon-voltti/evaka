@@ -327,34 +327,8 @@ class DecisionService(
     ): String {
         val child = tx.getPersonById(decision.childId)
         val childName = "${child?.firstName}_${child?.lastName}"
-        val prefix = getLocalizedFilename(decision.type, lang)
+        val prefix = templateProvider.getLocalizedFilename(decision.type, lang)
         return "${prefix}_$childName.pdf".replace(" ", "_")
-    }
-
-    private fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String {
-        return when (lang) {
-            DocumentLang.SV ->
-                when (type) {
-                    DecisionType.CLUB -> "Kerhopäätös" // All clubs are in Finnish
-                    DecisionType.DAYCARE,
-                    DecisionType.DAYCARE_PART_TIME -> "Beslut_om_småbarnspedagogisk_verksamhet"
-                    DecisionType.PRESCHOOL -> "Beslut_om_förskoleplats"
-                    DecisionType.PRESCHOOL_DAYCARE -> "Anslutande_småbarnspedagogik"
-                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös (sv)"
-                    DecisionType.PREPARATORY_EDUCATION ->
-                        "Valmistava_päätös" // Svebi does not offer preparatory education
-                }
-            else ->
-                when (type) {
-                    DecisionType.CLUB -> "Kerhopäätös"
-                    DecisionType.DAYCARE,
-                    DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
-                    DecisionType.PRESCHOOL -> "Esiopetuspäätös"
-                    DecisionType.PRESCHOOL_DAYCARE -> "Liittyvä_varhaiskasvatuspäätös"
-                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös"
-                    DecisionType.PREPARATORY_EDUCATION -> "Valmistava_päätös"
-                }
-        }
     }
 }
 
