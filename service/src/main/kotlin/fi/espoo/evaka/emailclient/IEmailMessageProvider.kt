@@ -71,4 +71,6 @@ interface IEmailMessageProvider {
     ): EmailContent
 
     fun vasuNotification(language: Language, childId: ChildId): EmailContent
+
+    fun pedagogicalDocumentNotification(language: Language): EmailContent
 }
