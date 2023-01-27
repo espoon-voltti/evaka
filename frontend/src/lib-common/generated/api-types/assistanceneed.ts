@@ -13,6 +13,13 @@ import { Action } from '../action'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest
+*/
+export interface AnnulAssistanceNeedDecisionRequest {
+  reason: string
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.AssistanceBasisOption
 */
 export interface AssistanceBasisOption {
@@ -46,6 +53,7 @@ export interface AssistanceNeed {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecision
 */
 export interface AssistanceNeedDecision {
+  annulmentReason: string
   assistanceLevels: AssistanceLevel[]
   careMotivation: string | null
   child: AssistanceNeedDecisionChild | null
@@ -109,6 +117,7 @@ export interface AssistanceNeedDecisionChild {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionCitizenListItem
 */
 export interface AssistanceNeedDecisionCitizenListItem {
+  annulmentReason: string
   assistanceLevels: AssistanceLevel[]
   childId: UUID
   decisionMade: LocalDate
@@ -227,6 +236,7 @@ export type AssistanceNeedDecisionStatus =
   | 'NEEDS_WORK'
   | 'ACCEPTED'
   | 'REJECTED'
+  | 'ANNULLED'
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.AssistanceNeedRequest

@@ -11,7 +11,6 @@ import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -29,6 +28,7 @@ import {
 import { getAssistanceNeedDecisionsReport } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow } from './common'
 
@@ -76,17 +76,15 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
 
   const decisionRows = useMemo(
     () =>
-      report
-        .map((rs) =>
-          orderBy(
-            rs.filter(
-              (row) => !careAreaFilter || row.careAreaName === careAreaFilter
-            ),
-            [sortColumn],
-            [sortDirection === 'ASC' ? 'asc' : 'desc']
-          )
+      report.map((rs) =>
+        orderBy(
+          rs.filter(
+            (row) => !careAreaFilter || row.careAreaName === careAreaFilter
+          ),
+          [sortColumn],
+          [sortDirection === 'ASC' ? 'asc' : 'desc']
         )
-        .getOrElse([]),
+      ),
     [report, careAreaFilter, sortColumn, sortDirection]
   )
 
@@ -132,9 +130,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
           </Wrapper>
         </FilterRow>
 
-        {report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {report.isSuccess && (
+        {renderResult(decisionRows, (rows) => (
           <Table>
             <Thead>
               <Tr>
@@ -173,7 +169,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
               </Tr>
             </Thead>
             <BorderedTbody>
-              {decisionRows.map((row) => (
+              {rows.map((row) => (
                 <RelativeTr
                   key={row.id}
                   onClick={() =>
@@ -207,7 +203,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
               ))}
             </BorderedTbody>
           </Table>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

@@ -15,7 +15,11 @@ import { tabletMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-export const StaticChip = styled.div<{ color: string; fitContent?: boolean }>`
+export const StaticChip = styled.div<{
+  color: string
+  textColor?: string
+  fitContent?: boolean
+}>`
   display: inline-block;
   font-family: 'Open Sans', sans-serif;
   font-weight: ${fontWeights.semibold};
@@ -26,6 +30,7 @@ export const StaticChip = styled.div<{ color: string; fitContent?: boolean }>`
   border-radius: 1000px;
   background-color: ${(p) => p.color};
   color: ${(p) =>
+    p.textColor ??
     readableColor(
       p.color,
       p.theme.colors.grayscale.g0,

@@ -97,7 +97,8 @@ export const sv = {
         DRAFT: 'Utkast',
         NEEDS_WORK: 'Bör korrigeras',
         ACCEPTED: 'Godkänt',
-        REJECTED: 'Avvisat'
+        REJECTED: 'Avvisat',
+        ANNULLED: 'Annullerat'
       },
       confidential: 'Konfidentiellt',
       lawReference: 'Lagen om småbarnspedagogik 40 §',

@@ -125,6 +125,7 @@ export type AssistanceNeed =
   | 'UPDATE'
 
 export type AssistanceNeedDecision =
+  | 'ANNUL'
   | 'DECIDE'
   | 'DELETE'
   | 'MARK_AS_OPENED'

@@ -249,6 +249,33 @@ describe('Citizen assistance decisions', () => {
     )
   })
 
+  test('Annulled decision', async () => {
+    const decision = await Fixture.preFilledAssistanceNeedDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .with({
+        selectedUnit: { id: fixtures.daycareFixture.id },
+        status: 'ANNULLED',
+        annulmentReason: 'Well because',
+        assistanceLevels: ['ENHANCED_ASSISTANCE'],
+        validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
+        decisionMade: LocalDate.of(2021, 1, 17)
+      })
+      .save()
+    await header.selectTab('decisions')
+
+    await citizenDecisionsPage.assertAssistanceDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision.data.id ?? '',
+      {
+        assistanceLevel: 'Tehostettu tuki',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: '10.02.2022 -',
+        decisionMade: '17.01.2021',
+        status: 'Mitätöity'
+      }
+    )
+  })
+
   test('Drafts or decisions that need work are not shown', async () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)

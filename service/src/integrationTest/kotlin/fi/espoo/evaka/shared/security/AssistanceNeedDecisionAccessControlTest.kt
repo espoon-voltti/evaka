@@ -91,7 +91,8 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         otherRepresentativeDetails = null,
                         assistanceLevels = emptySet(),
                         motivationForDecision = null,
-                        unreadGuardianIds = null
+                        unreadGuardianIds = null,
+                        annulmentReason = "",
                     )
                 )
             }

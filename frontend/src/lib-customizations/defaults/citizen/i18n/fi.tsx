@@ -1410,6 +1410,7 @@ export default {
       openDecision: 'Näytä päätös',
       decision: {
         pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
+        annulmentReason: 'Päätöksen mitätöinnin perustelu',
         neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
         pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
         structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',
@@ -1469,7 +1470,8 @@ export default {
           DRAFT: 'Luonnos',
           NEEDS_WORK: 'Korjattava',
           ACCEPTED: 'Hyväksytty',
-          REJECTED: 'Hylätty'
+          REJECTED: 'Hylätty',
+          ANNULLED: 'Mitätöity'
         },
         confidential: 'Salassa pidettävä',
         lawReference: 'Varhaiskasvatuslaki 40 §',

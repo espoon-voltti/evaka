@@ -237,11 +237,10 @@ export class VardaErrorsReport {
 export class AssistanceNeedDecisionsReport {
   constructor(private page: Page) {}
 
-  async row(nth: number) {
-    const row = this.page
-      .findAllByDataQa('assistance-need-decision-row')
-      .nth(nth)
+  rows = this.page.findAllByDataQa('assistance-need-decision-row')
 
+  async row(nth: number) {
+    const row = this.rows.nth(nth)
     return {
       sentForDecision: await row.findByDataQa('sent-for-decision').text,
       childName: await row.findByDataQa('child-name').text,
@@ -264,7 +263,8 @@ export class AssistanceNeedDecisionsReportDecision {
 
   decisionMaker = this.page.findByDataQa('labelled-value-decision-maker')
   decisionStatus = new StaticChip(this.page.findByDataQa('decision-status'))
-  readonly returnForEditBtn = this.page.findByDataQa('return-for-edit')
+  annulmentReason = this.page.findByDataQa('labelled-value-annulment-reason')
+  returnForEditBtn = this.page.findByDataQa('return-for-edit')
 
   get returnForEditModal() {
     return {
@@ -272,11 +272,13 @@ export class AssistanceNeedDecisionsReportDecision {
     }
   }
 
-  readonly approveBtn = this.page.findByDataQa('approve-button')
-  readonly rejectBtn = this.page.findByDataQa('reject-button')
-  readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
+  approveBtn = this.page.findByDataQa('approve-button')
+  rejectBtn = this.page.findByDataQa('reject-button')
+  annulBtn = this.page.findByDataQa('annul-button')
+  annulReasonInput = new TextInput(this.page.findByDataQa('annul-reason-input'))
+  modalOkBtn = this.page.findByDataQa('modal-okBtn')
 
-  readonly mismatchModalLink = this.page.findByDataQa('mismatch-modal-link')
+  mismatchModalLink = this.page.findByDataQa('mismatch-modal-link')
 
   get mismatchModal() {
     return {

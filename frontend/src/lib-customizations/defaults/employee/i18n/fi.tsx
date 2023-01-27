@@ -725,6 +725,7 @@ export const fi = {
     },
     assistanceNeedDecision: {
       pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
+      annulmentReason: 'Päätöksen mitätöinnin perustelu',
       sectionTitle: 'Päätökset tuesta varhaiskasvatuksessa',
       description:
         'Hyväksytyt ja hylätyt päätökset tuesta näkyvät huoltajalle eVakassa.',
@@ -832,7 +833,8 @@ export const fi = {
         DRAFT: 'Luonnos',
         NEEDS_WORK: 'Korjattava',
         ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty'
+        REJECTED: 'Hylätty',
+        ANNULLED: 'Mitätöity'
       },
       confidential: 'Salassa pidettävä',
       lawReference: 'Varhaiskasvatuslaki 40 §',
@@ -2908,6 +2910,17 @@ export const fi = {
         okBtn: 'Hyväksy päätös',
         text: 'Haluatko varmasti hyväksyä päätöksen? Hyväksytty päätös lähetetään kuntalaisen nähtäväksi eVakaan.'
       },
+      approveFailedModal: {
+        title: 'Päätöksen hyväksyminen epäonnistui',
+        okBtn: 'Sulje',
+        text: 'Päätöksen hyväksyminen epäonnistui, koska toinen hyväksytty päätös on tehty alkaen samasta tai myöhemmästä päivästä. Mitätöi toinen päätös ensin.'
+      },
+      annulModal: {
+        title: 'Mitätöidäänkö päätös?',
+        okBtn: 'Mitätöi päätös',
+        text: 'Haluatko varmasti mitätöidä päätöksen? Päätöksen voimassaolo lakkaa välittömästi. Tieto mitätöinnistä ja sen perustelu lähetetään kuntalaisen nähtäväksi eVakaan.',
+        inputPlaceholder: 'Kuvaile miksi päätös on mitätöity'
+      },
       mismatchDecisionMakerWarning: {
         text: 'Et ole tämän päätöksen päättäjä, joten et voi tehdä päätöstä.',
         link: 'Vaihda itsesi päättäjäksi.'
@@ -2920,7 +2933,8 @@ export const fi = {
       },
       rejectDecision: 'Hylkää päätös',
       returnDecisionForEditing: 'Palauta korjattavaksi',
-      approveDecision: 'Hyväksy päätös'
+      approveDecision: 'Hyväksy päätös',
+      annulDecision: 'Mitätöi päätös'
     },
     attendanceReservation: {
       title: 'Päiväkohtaiset lapsen tulo- ja lähtöajat',

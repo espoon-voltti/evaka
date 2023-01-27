@@ -65,6 +65,7 @@ enum class Audit(
     ChildAssistanceNeedDelete,
     ChildAssistanceNeedRead,
     ChildAssistanceNeedUpdate,
+    ChildAssistanceNeedDecisionAnnul,
     ChildAssistanceNeedDecisionCreate,
     ChildAssistanceNeedDecisionDelete,
     ChildAssistanceNeedDecisionDownloadCitizen,
