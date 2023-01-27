@@ -107,8 +107,7 @@ class MessageNotificationEmailService(
         clock: EvakaClock,
         msg: AsyncJob.SendMessageNotificationEmail
     ) {
-        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language, urgent) =
-            msg
+        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language) = msg
 
         db.transaction { tx ->
             // The message has been undone and the recipient should no longer get an email
@@ -117,11 +116,13 @@ class MessageNotificationEmailService(
                 return@transaction
             }
 
+            val thread = tx.getMessageThreadStub(threadId)
+
             emailClient.sendEmail(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
                 fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.messageNotification(language, threadId, urgent)
+                content = emailMessageProvider.messageNotification(language, thread)
             )
             tx.markNotificationAsSent(messageRecipientId, clock.now())
         }

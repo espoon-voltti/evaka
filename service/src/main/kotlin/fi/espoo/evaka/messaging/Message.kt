@@ -43,6 +43,14 @@ data class MessageThread(
     @Json val messages: List<Message>
 )
 
+data class MessageThreadStub(
+    val id: MessageThreadId,
+    val type: MessageType,
+    val title: String,
+    val urgent: Boolean,
+    val isCopy: Boolean
+)
+
 data class SentMessage(
     val contentId: MessageContentId,
     val content: String,

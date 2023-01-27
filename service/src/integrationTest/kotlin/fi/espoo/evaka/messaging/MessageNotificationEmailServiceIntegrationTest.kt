@@ -134,7 +134,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
-            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka",
+            "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
             getEmailFor(testPersonFi).subject
         )
         assertEquals(
@@ -187,7 +187,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
-            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka",
+            "Uusi tiedote eVakassa / Nytt allmänt meddelande i eVaka / New bulletin in eVaka",
             getEmailFor(testPersonFi).subject
         )
         assertEquals(

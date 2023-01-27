@@ -6,8 +6,9 @@ package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.messaging.MessageThreadStub
+import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -627,52 +628,61 @@ There are missing attendance reservations for the week starting $start. Please m
                     .trimIndent()
         )
 
-    override fun messageNotification(
-        language: Language,
-        threadId: MessageThreadId?,
-        urgent: Boolean
-    ): EmailContent {
-        val messageUrl =
-            "${baseUrl(language)}/messages${if (threadId == null) "" else "/$threadId"}"
+    override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent {
+        val messageUrl = "${baseUrl(language)}/messages/${thread.id}"
+        val (typeFi, typeSv, typeEn) =
+            when (thread.type) {
+                MessageType.MESSAGE ->
+                    if (thread.urgent)
+                        Triple(
+                            "kiireellinen viesti",
+                            "brådskande personligt meddelande",
+                            "urgent message"
+                        )
+                    else Triple("viesti", "personligt meddelande", "message")
+                MessageType.BULLETIN ->
+                    if (thread.urgent)
+                        Triple(
+                            "kiireellinen tiedote",
+                            "brådskande allmänt meddelande",
+                            "urgent bulletin"
+                        )
+                    else Triple("tiedote", "allmänt meddelande", "bulletin")
+            }
         return EmailContent(
-            subject =
-                if (urgent) {
-                    "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka"
-                } else {
-                    "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka"
-                },
+            subject = "Uusi $typeFi eVakassa / Nytt $typeSv i eVaka / New $typeEn in eVaka",
             text =
                 """
-                Sinulle on saapunut uusi ${if (urgent) "kiireellinen " else ""}tiedote/viesti eVakaan. Lue viesti ${if (urgent) "mahdollisimman pian " else ""}täältä: $messageUrl
+                Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: $messageUrl
                 
                 Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
                 
                 -----
        
-                Du har fått ett nytt ${if (urgent) "brådskande " else ""}allmänt/personligt meddelande i eVaka. Läs meddelandet ${if (urgent) "så snart som möjligt " else ""}här: $messageUrl
+                Du har fått ett nytt $typeSv i eVaka. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: $messageUrl
                 
                 Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
                 
                 -----
                 
-                You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: $messageUrl
+                You have received a new $typeEn in eVaka. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: $messageUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
         """
                     .trimIndent(),
             html =
                 """
-                <p>Sinulle on saapunut uusi ${if (urgent) "kiireellinen " else ""}tiedote/viesti eVakaan. Lue viesti ${if (urgent) "mahdollisimman pian " else ""}täältä: <a href="$messageUrl">$messageUrl</a></p>
+                <p>Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: <a href="$messageUrl">$messageUrl</a></p>
                 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
             
                 <hr>
                 
-                <p>Du har fått ett nytt ${if (urgent) "brådskande " else ""}allmänt/personligt meddelande i eVaka. Läs meddelandet ${if (urgent) "så snart som möjligt " else ""}här: <a href="$messageUrl">$messageUrl</a></p>
+                <p>Du har fått ett nytt $typeSv i eVaka. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: <a href="$messageUrl">$messageUrl</a></p>
                 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
                 
                 <hr>
                 
-                <p>You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: <a href="$messageUrl">$messageUrl</a></p>
+                <p>You have received a new $typeEn in eVaka. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: <a href="$messageUrl">$messageUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
         """
                     .trimIndent()
