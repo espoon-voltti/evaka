@@ -113,11 +113,7 @@ class MessageNotificationEmailService(
         db.transaction { tx ->
             // The message has been undone and the recipient should no longer get an email
             // notification
-            if (
-                messageId != null &&
-                    recipientId != null &&
-                    !tx.unreadMessageForRecipientExists(messageId, recipientId)
-            ) {
+            if (!tx.unreadMessageForRecipientExists(messageId, recipientId)) {
                 return@transaction
             }
 
