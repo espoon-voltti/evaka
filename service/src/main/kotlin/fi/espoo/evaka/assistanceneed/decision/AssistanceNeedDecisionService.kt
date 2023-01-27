@@ -91,26 +91,24 @@ class AssistanceNeedDecisionService(
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
-        val fromAddress =
-            emailEnv.applicationReceivedSender(
-                when (decision.language) {
-                    AssistanceNeedDecisionLanguage.SV -> Language.sv
-                    else -> Language.fi
-                }
-            )
+        val language =
+            when (decision.language) {
+                AssistanceNeedDecisionLanguage.SV -> Language.sv
+                else -> Language.fi
+            }
+        val fromAddress = emailEnv.applicationReceivedSender(language)
+        val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
         tx.getChildGuardians(decision.child.id)
             .map { Pair(it, tx.getPersonById(it)?.email) }
             .toMap()
-            .forEach { (guardianId, email) ->
-                if (email != null) {
+            .forEach { (guardianId, toAddress) ->
+                if (toAddress != null) {
                     emailClient.sendEmail(
                         "$decisionId - $guardianId",
-                        email,
+                        toAddress,
                         fromAddress,
-                        emailMessageProvider.getDecisionEmailSubject(),
-                        emailMessageProvider.getDecisionEmailHtml(decision.child.id, decision.id),
-                        emailMessageProvider.getDecisionEmailText(decision.child.id, decision.id)
+                        content
                     )
                 }
             }

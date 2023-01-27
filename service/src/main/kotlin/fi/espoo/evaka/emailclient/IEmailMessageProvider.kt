@@ -5,7 +5,6 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -22,7 +21,6 @@ interface IEmailMessageProvider {
     val subjectForClubApplicationReceivedEmail: String
     val subjectForDaycareApplicationReceivedEmail: String
     val subjectForPreschoolApplicationReceivedEmail: String
-    val subjectForDecisionEmail: String
 
     fun getPendingDecisionEmailSubject(): String {
         return subjectForPendingDecisionEmail
@@ -52,12 +50,7 @@ interface IEmailMessageProvider {
     fun getPreschoolApplicationReceivedEmailHtml(withinApplicationPeriod: Boolean): String
     fun getPreschoolApplicationReceivedEmailText(withinApplicationPeriod: Boolean): String
 
-    fun getDecisionEmailSubject(): String {
-        return subjectForDecisionEmail
-    }
-
-    fun getDecisionEmailHtml(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
-    fun getDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
+    fun assistanceNeedDecisionNotification(language: Language): EmailContent
 
     fun missingReservationsNotification(
         language: Language,

@@ -6,7 +6,6 @@ package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -29,8 +28,6 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
     override val subjectForPreschoolApplicationReceivedEmail: String =
         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-    override val subjectForDecisionEmail: String =
-        "Päätös eVakassa / Beslut i eVaka / Decision on eVaka"
 
     override fun getPendingDecisionEmailHtml(): String {
         return """
@@ -550,54 +547,6 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         }
     }
 
-    override fun getDecisionEmailHtml(
-        childId: ChildId,
-        decisionId: AssistanceNeedDecisionId
-    ): String =
-        """
-        <p>Hyvä(t) huoltaja(t),</p>
-        <p>Lapsellenne on tehty päätös.</p>
-        <p>Päätös on nähtävissä eVakassa osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi/">https://www.espoonvarhaiskasvatus.fi/</a>.</p>
-        <hr>
-        <p>Bästa vårdnadshavare,</p>
-        <p>Beslut har fattats angående ditt barn.</p>
-        <p>Beslutet finns att se i eVaka på <a href="https://www.esbosmabarnspedagogik.fi/">https://www.esbosmabarnspedagogik.fi/</a>.</p>
-        <hr>
-        <p>Dear guardian(s),</p>
-        <p>A decision has been made regarding your child.</p>
-        <p>The decision can be viewed on eVaka at <a href="https://www.espoonvarhaiskasvatus.fi/">https://www.espoonvarhaiskasvatus.fi/</a>.</p>
-    """
-            .trimIndent()
-
-    override fun getDecisionEmailText(
-        childId: ChildId,
-        decisionId: AssistanceNeedDecisionId
-    ): String =
-        """
-        Hyvä(t) huoltaja(t),
-        
-        Lapsellenne on tehty päätös.
-        
-        Päätös on nähtävissä eVakassa osoitteessa https://www.espoonvarhaiskasvatus.fi/.
-        
-        -----
-        
-        Bästa vårdnadshavare,
-        
-        Beslut har fattats angående ditt barn.
-        
-        Beslutet finns att se i eVaka på https://www.esbosmabarnspedagogik.fi/.
-        
-        -----
-        
-        Dear guardian(s),
-        
-        A decision has been made regarding your child.
-        
-        The decision can be viewed on eVaka at https://www.espoonvarhaiskasvatus.fi/.
-    """
-            .trimIndent()
-
     override fun missingReservationsNotification(
         language: Language,
         checkedRange: FiniteDateRange
@@ -633,6 +582,51 @@ There are missing attendance reservations for the week starting $start. Please m
                     .trimIndent()
         )
     }
+
+    override fun assistanceNeedDecisionNotification(language: Language): EmailContent =
+        EmailContent(
+            subject = "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
+            text =
+                """
+        Hyvä(t) huoltaja(t),
+        
+        Lapsellenne on tehty päätös.
+        
+        Päätös on nähtävissä eVakassa osoitteessa https://www.espoonvarhaiskasvatus.fi/.
+        
+        -----
+        
+        Bästa vårdnadshavare,
+        
+        Beslut har fattats angående ditt barn.
+        
+        Beslutet finns att se i eVaka på https://www.esbosmabarnspedagogik.fi/.
+        
+        -----
+        
+        Dear guardian(s),
+        
+        A decision has been made regarding your child.
+        
+        The decision can be viewed on eVaka at https://www.espoonvarhaiskasvatus.fi/.
+    """
+                    .trimIndent(),
+            html =
+                """
+        <p>Hyvä(t) huoltaja(t),</p>
+        <p>Lapsellenne on tehty päätös.</p>
+        <p>Päätös on nähtävissä eVakassa osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi/">https://www.espoonvarhaiskasvatus.fi/</a>.</p>
+        <hr>
+        <p>Bästa vårdnadshavare,</p>
+        <p>Beslut har fattats angående ditt barn.</p>
+        <p>Beslutet finns att se i eVaka på <a href="https://www.esbosmabarnspedagogik.fi/">https://www.esbosmabarnspedagogik.fi/</a>.</p>
+        <hr>
+        <p>Dear guardian(s),</p>
+        <p>A decision has been made regarding your child.</p>
+        <p>The decision can be viewed on eVaka at <a href="https://www.espoonvarhaiskasvatus.fi/">https://www.espoonvarhaiskasvatus.fi/</a>.</p>
+    """
+                    .trimIndent()
+        )
 
     override fun messageNotification(
         language: Language,
