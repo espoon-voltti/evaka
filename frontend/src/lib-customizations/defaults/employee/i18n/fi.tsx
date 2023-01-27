@@ -2413,7 +2413,7 @@ export const fi = {
       ANNULLED: 'Mitätöity maksupäätös'
     },
     distinctiveDetails: {
-      UNCONFIRMED_HOURS: 'Palveluntarve vahvistamatta',
+      UNCONFIRMED_HOURS: 'Puuttuva palveluntarve',
       EXTERNAL_CHILD: 'Ulkopaikkakuntalainen',
       RETROACTIVE: 'Takautuva päätös',
       NO_STARTING_PLACEMENTS: 'Piilota uudet aloittavat lapset',
