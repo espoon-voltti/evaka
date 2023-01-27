@@ -71,6 +71,7 @@ import ReportEndedPlacements from './components/reports/EndedPlacements'
 import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
 import ReportInvoices from './components/reports/Invoices'
+import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
 import ReportOccupancies from './components/reports/Occupancies'
@@ -539,6 +540,14 @@ export default function App() {
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <AssistanceNeedDecisionsReport />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/manual-duplication"
+                    element={
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <ManualDuplicationReport />
                       </EmployeeRoute>
                     }
                   />

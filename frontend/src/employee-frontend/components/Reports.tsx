@@ -313,6 +313,15 @@ export default React.memo(function Reports() {
                       .getOrElse(null)}
                   </Report>
                 )}
+              {reports.has('MANUAL_DUPLICATION') && (
+                <Report
+                  path="/reports/manual-duplication"
+                  color={colors.status.warning}
+                  icon={faChild}
+                  i18n={i18n.reports.manualDuplication}
+                  data-qa="report-placement-count"
+                />
+              )}
               {reports.has('PLACEMENT_COUNT') && (
                 <Report
                   path="/reports/placement-count"

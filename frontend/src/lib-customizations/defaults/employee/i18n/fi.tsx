@@ -3222,6 +3222,20 @@ export const fi = {
         CORRECTION: 'Korjaus'
       }
     },
+    manualDuplication: {
+      title: 'Manuaalisen toisinnuksen kandidaatit',
+      description:
+        'Raportti listaa esiopetusta täydentävän varhaiskasvatuksen tapaukset, jotka mahdollisesti vaativat lapsen manuaalista toisinnusta',
+      childName: 'Lapsen nimi',
+      dateOfBirth: 'Syntymäaika',
+      supplementaryDaycare: 'Täydentävän yksikkö',
+      supplementarySno: 'Täydentävän palv.tarve',
+      supplementaryStartDate: 'Täydentävän alkupäivä',
+      supplementaryEndDate: 'Täydentävän loppupäivä',
+      preschoolDaycare: 'Esiopetuksen yksikkö',
+      preschooldStartDate: 'Esiopetuksen alkupäivä',
+      preschoolEndDate: 'Esiopetuksen loppupäivä'
+    },
     placementCount: {
       title: 'Sijoitusten määrä',
       description:
