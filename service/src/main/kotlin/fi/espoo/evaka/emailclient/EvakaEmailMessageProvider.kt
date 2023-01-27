@@ -79,7 +79,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
             </p>
             <p>
-            The person who submitted the application can accept or reject an unanswered decision by logging in to <a href="espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> or by sending the completed form on the last page of the decision to the address specified on the page.
+            The person who submitted the application can accept or reject an unanswered decision by logging in to <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> or by sending the completed form on the last page of the decision to the address specified on the page.
             </p>
             <p>
             You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
@@ -113,13 +113,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
             <p>Hyvä(t) huoltaja(t),</p>
 
-            <p>Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+            <p>Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
 
             <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
 
             <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
 
-            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
+            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
 
             <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
         """
