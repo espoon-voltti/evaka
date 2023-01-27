@@ -20,13 +20,6 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             else -> env.frontendBaseUrlFi
         }
 
-    override val subjectForClubApplicationReceivedEmail: String =
-        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-    override val subjectForDaycareApplicationReceivedEmail: String =
-        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-    override val subjectForPreschoolApplicationReceivedEmail: String =
-        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-
     override fun pendingDecisionNotification(language: Language): EmailContent =
         EmailContent(
             subject =
@@ -94,25 +87,15 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         """
                     .trimIndent()
         )
-    override fun getClubApplicationReceivedEmailHtml(): String {
-        return """
-            <p>Hyvä(t) huoltaja(t),</p>
 
-            <p>Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+    private val applicationReceivedSubject =
+        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
 
-            <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
-
-            <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
-
-            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
-
-            <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
-        """
-            .trimIndent()
-    }
-
-    override fun getClubApplicationReceivedEmailText(): String {
-        return """
+    override fun clubApplicationReceived(language: Language): EmailContent =
+        EmailContent(
+            subject = applicationReceivedSubject,
+            text =
+                """
             Hyvä(t) huoltaja(t),
 
             Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
@@ -125,11 +108,110 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
             Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden.
         """
-            .trimIndent()
-    }
+                    .trimIndent(),
+            html =
+                """
+            <p>Hyvä(t) huoltaja(t),</p>
 
-    override fun getDaycareApplicationReceivedEmailHtml(): String {
-        return """
+            <p>Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+
+            <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
+
+            <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
+
+            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
+
+            <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
+        """
+                    .trimIndent()
+        )
+
+    override fun daycareApplicationReceived(language: Language): EmailContent =
+        EmailContent(
+            subject = applicationReceivedSubject,
+            text =
+                """
+            Hyvä(t) huoltaja(t),
+
+            Lapsenne varhaiskasvatushakemus on vastaanotettu.
+
+            Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
+
+            Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.
+
+            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
+
+            Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.
+
+            Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.
+
+            Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.
+
+            Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki
+
+            Hakiessanne lapsellenne siirtoa toiseen kunnalliseen varhaiskasvatusyksikköön, hakemuksella ei ole hakuaikaa. Hakemus on voimassa vuoden hakemuksen saapumispäivämäärästä. Mikäli lapsen nykyinen paikka irtisanotaan, myös siirtohakemus poistuu.
+
+            Palvelusetelin hakeminen: https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228
+
+            Hakeminen yksityisiin varhaiskasvatusyksiköihin: https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit
+
+            -----
+
+            Bästa vårdnadshavare,
+
+            Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
+
+            Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
+
+            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.
+
+            Du kan se och godkänna/förkasta beslutet på www.esbosmabarnspedagogik.fi.
+
+            När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
+
+            Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
+
+            När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som ansökan om skiftvård först när de ovannämnda intygen har lämnats in.
+
+            När du ansöker om byte till en annan kommunal enhet för småbarnspedagogik har ansökan ingen ansökningstid. Ansökan gäller ett år från den dag då ansökan inkom. Om du säger upp barnets nuvarande plats, faller också ansökan om byte bort.
+
+            Ansökan om servicesedel: https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228
+
+            Ansökan till privata enheter för småbarnspedagogik: https://www.esbo.fi/tjanster/privat-smabarnspedagogik
+
+            Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Sevicehandledning inom småbarnspedagogik, PB 32, 02070 Esbo stad eller som e-postbilaga till dagis@esbo.fi (observera att förbindelsen inte är krypterad).
+
+            Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehandledning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehandledning dagis@esbo.fi
+
+            -----
+
+            Dear guardian(s),
+
+            We have received your child’s application for early childhood education.
+
+            The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at www.espoonvarhaiskasvatus.fi until its processing starts.
+
+            You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.
+
+            You can see the decision and accept/reject it at https://www.espoonvarhaiskasvatus.fi.
+
+            When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.
+
+            If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place. In this case, the minimum application period is two (2) weeks and it begins from the date on which the required document was received.
+
+            When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.
+
+            You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to vaka.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
+
+            When applying for a transfer to a different municipal early childhood education unit, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.
+
+            How to apply for a service voucher: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education#section-6228
+
+            Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
+        """
+                    .trimIndent(),
+            html =
+                """
             <p>
             Hyvä(t) huoltaja(t), <br>
             Lapsenne varhaiskasvatushakemus on vastaanotettu.
@@ -242,175 +324,18 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>.
             </p>
         """
-            .trimIndent()
-    }
+                    .trimIndent()
+        )
 
-    override fun getDaycareApplicationReceivedEmailText(): String {
-        return """
-            Hyvä(t) huoltaja(t),
-
-            Lapsenne varhaiskasvatushakemus on vastaanotettu.
-
-            Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
-
-            Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.
-
-            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
-
-            Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.
-
-            Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.
-
-            Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.
-
-            Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki
-
-            Hakiessanne lapsellenne siirtoa toiseen kunnalliseen varhaiskasvatusyksikköön, hakemuksella ei ole hakuaikaa. Hakemus on voimassa vuoden hakemuksen saapumispäivämäärästä. Mikäli lapsen nykyinen paikka irtisanotaan, myös siirtohakemus poistuu.
-
-            Palvelusetelin hakeminen: https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228
-
-            Hakeminen yksityisiin varhaiskasvatusyksiköihin: https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit
-
-            -----
-
-            Bästa vårdnadshavare,
-
-            Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
-
-            Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
-
-            Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.
-
-            Du kan se och godkänna/förkasta beslutet på www.esbosmabarnspedagogik.fi.
-
-            När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
-
-            Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
-
-            När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som ansökan om skiftvård först när de ovannämnda intygen har lämnats in.
-
-            När du ansöker om byte till en annan kommunal enhet för småbarnspedagogik har ansökan ingen ansökningstid. Ansökan gäller ett år från den dag då ansökan inkom. Om du säger upp barnets nuvarande plats, faller också ansökan om byte bort.
-
-            Ansökan om servicesedel: https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik#section-6228
-
-            Ansökan till privata enheter för småbarnspedagogik: https://www.esbo.fi/tjanster/privat-smabarnspedagogik
-
-            Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Sevicehandledning inom småbarnspedagogik, PB 32, 02070 Esbo stad eller som e-postbilaga till dagis@esbo.fi (observera att förbindelsen inte är krypterad).
-
-            Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehandledning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehandledning dagis@esbo.fi
-
-            -----
-
-            Dear guardian(s),
-
-            We have received your child’s application for early childhood education.
-
-            The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at www.espoonvarhaiskasvatus.fi until its processing starts.
-
-            You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.
-
-            You can see the decision and accept/reject it at https://www.espoonvarhaiskasvatus.fi.
-
-            When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.
-
-            If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place. In this case, the minimum application period is two (2) weeks and it begins from the date on which the required document was received.
-
-            When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.
-
-            You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo or as an email attachment to vaka.palveluohjaus@espoo.fi (please note that the connection is not encrypted).
-
-            When applying for a transfer to a different municipal early childhood education unit, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.
-
-            How to apply for a service voucher: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education#section-6228
-
-            Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
-        """
-            .trimIndent()
-    }
-
-    override fun getPreschoolApplicationReceivedEmailHtml(
+    override fun preschoolApplicationReceived(
+        language: Language,
         withinApplicationPeriod: Boolean
-    ): String {
-        return if (withinApplicationPeriod) {
-            """
-                <p>Hyvä(t) huoltaja(t),</p>
-                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
-                <p>Päätökset tehdään hakuaikana (tammikuu) saapuneisiin hakemuksiin maaliskuun aikana.</p>
-                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
-                <p>Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
-                <p>Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.</p>
-                <p>Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.</p>
-                <p>Palvelusetelin hakeminen: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228">Palveluseteli</a></p>
-                <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
-                <hr>
-                <p>Bästa vårdnadshavare,</p>
-                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.</p>
-                <p>Om de ansökningar som kommit in under ansökningstiden (januari) fattas beslut i mars.</p>
-                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.</p>
-                <p>När du ansöker till ett servicesedeldaghem, kontakta daghemmet direkt senast efter att du lämnat ansökan.</p>
-                <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
-                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
-                <p>Ansökan om servicesedel: <a href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
-                <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
-                <hr>
-                <p>Dear guardian(s),</p>
-                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at until its processing starts.</p>
-                <p>The city will make decisions on applications received during the application period (January) in March.</p>
-                <p>You can see the decision and accept/reject it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a></p>
-                <p>When applying to a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
-                <p>When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.</p>
-                <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
-                <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service voucher</a></p>
-                <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
-            """
-                .trimIndent()
-        } else {
-            """
-                <p>Hyvä(t) huoltaja(t),</p>
-                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
-                <p>Saatte tiedon lapsenne esiopetuspaikasta mahdollisimman pian, huomioiden hakemuksessa oleva aloitustoive ja alueen esiopetuspaikkatilanne.</p>
-                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
-                <p>Hakiessanne esiopetusta palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
-                <p>Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.</p>
-                <p>Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.</p>
-                <p>Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.</p>
-                <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen esiopetusyksikköön: Uusi esiopetuspäätös tehdään hakija- ja paikkatilanteen sen salliessa. Mikäli lapsen nykyinen esiopetuspaikka irtisanotaan, myös siirtohakemus poistuu.</p>
-                <p>Palvelusetelin hakeminen: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228">Palveluseteli</a></p>
-                <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
-                <hr>
-                <p>Bästa vårdnadshavare,</p>
-                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.</p>
-                <p>Du får information om ditt barns förskoleplats så snart som möjligt, med beaktande av önskemålet om startdatum och läget med förskoleplatser i området.</p>
-                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.</p>
-                <p>När du ansöker om förskoleundervisning i ett servicesedeldaghem, kontakta enheten direkt senast efter att du lämnat ansökan.</p>
-                <p>Om du valde att ansökan är brådskande, ska du till ansökan bifoga ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst två veckor och börjar den dag då intyget inkommer.</p>
-                <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
-                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
-                <p>När du ansöker om överföring till en annan enhet för förskoleundervisning med en ny ansökan, fattas ett nytt beslut om förskoleundervisning om sökande- och platsläget tillåter det. Om barnets nuvarande förskoleplats sägs upp, slopas också ansökan om överföring.</p>
-                <p>Ansökan om servicesedel: <a href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
-                <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
-                <hr>
-                <p>Dear guardian(s),</p>
-                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> until its processing starts.</p>
-                <p>You will be informed of your child’s pre-primary education unit as soon as possible, taking into account the preferred starting date indicated in your application and the availability of pre-primary education places in your area.</p>
-                <p>You can see the decision and accept/reject it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
-                <p>When applying for pre-primary education at a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
-                <p>If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place. In this case, the minimum application period is two (2) weeks and begins from the date on which the required document was received.</p>
-                <p>When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.</p>
-                <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
-                <p>When applying for a transfer to a different pre-primary education unit by submitting a new application; the new pre-primary education decision will be made when the situation with the applicants and the available places so permit. If your child’s current pre-primary education place is terminated, your transfer application will be deleted from the system.</p>
-                <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service Voucher</a></p>
-                <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
-            """
-                .trimIndent()
-        }
-    }
-
-    override fun getPreschoolApplicationReceivedEmailText(
-        withinApplicationPeriod: Boolean
-    ): String {
-        return if (withinApplicationPeriod) {
-            """
+    ): EmailContent =
+        if (withinApplicationPeriod) {
+            EmailContent(
+                subject = applicationReceivedSubject,
+                text =
+                    """
                 Hyvä(t) huoltaja(t),
 
                 Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes hakemus on otettu käsittelyyn.
@@ -469,9 +394,46 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
             """
-                .trimIndent()
-        } else {
+                        .trimIndent(),
+                html =
+                    """
+                <p>Hyvä(t) huoltaja(t),</p>
+                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
+                <p>Päätökset tehdään hakuaikana (tammikuu) saapuneisiin hakemuksiin maaliskuun aikana.</p>
+                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
+                <p>Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
+                <p>Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.</p>
+                <p>Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.</p>
+                <p>Palvelusetelin hakeminen: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228">Palveluseteli</a></p>
+                <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
+                <hr>
+                <p>Bästa vårdnadshavare,</p>
+                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.</p>
+                <p>Om de ansökningar som kommit in under ansökningstiden (januari) fattas beslut i mars.</p>
+                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.</p>
+                <p>När du ansöker till ett servicesedeldaghem, kontakta daghemmet direkt senast efter att du lämnat ansökan.</p>
+                <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
+                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
+                <p>Ansökan om servicesedel: <a href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
+                <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
+                <hr>
+                <p>Dear guardian(s),</p>
+                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at until its processing starts.</p>
+                <p>The city will make decisions on applications received during the application period (January) in March.</p>
+                <p>You can see the decision and accept/reject it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a></p>
+                <p>When applying to a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
+                <p>When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.</p>
+                <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
+                <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service voucher</a></p>
+                <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
             """
+                        .trimIndent()
+            )
+        } else {
+            EmailContent(
+                subject = applicationReceivedSubject,
+                text =
+                    """
                 Hyvä(t) huoltaja(t),
 
                 Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
@@ -542,9 +504,47 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
             """
-                .trimIndent()
+                        .trimIndent(),
+                html =
+                    """
+                <p>Hyvä(t) huoltaja(t),</p>
+                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+                <p>Saatte tiedon lapsenne esiopetuspaikasta mahdollisimman pian, huomioiden hakemuksessa oleva aloitustoive ja alueen esiopetuspaikkatilanne.</p>
+                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
+                <p>Hakiessanne esiopetusta palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
+                <p>Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.</p>
+                <p>Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.</p>
+                <p>Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.</p>
+                <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen esiopetusyksikköön: Uusi esiopetuspäätös tehdään hakija- ja paikkatilanteen sen salliessa. Mikäli lapsen nykyinen esiopetuspaikka irtisanotaan, myös siirtohakemus poistuu.</p>
+                <p>Palvelusetelin hakeminen: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli#section-6228">Palveluseteli</a></p>
+                <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
+                <hr>
+                <p>Bästa vårdnadshavare,</p>
+                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.</p>
+                <p>Du får information om ditt barns förskoleplats så snart som möjligt, med beaktande av önskemålet om startdatum och läget med förskoleplatser i området.</p>
+                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.</p>
+                <p>När du ansöker om förskoleundervisning i ett servicesedeldaghem, kontakta enheten direkt senast efter att du lämnat ansökan.</p>
+                <p>Om du valde att ansökan är brådskande, ska du till ansökan bifoga ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst två veckor och börjar den dag då intyget inkommer.</p>
+                <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
+                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
+                <p>När du ansöker om överföring till en annan enhet för förskoleundervisning med en ny ansökan, fattas ett nytt beslut om förskoleundervisning om sökande- och platsläget tillåter det. Om barnets nuvarande förskoleplats sägs upp, slopas också ansökan om överföring.</p>
+                <p>Ansökan om servicesedel: <a href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
+                <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
+                <hr>
+                <p>Dear guardian(s),</p>
+                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> until its processing starts.</p>
+                <p>You will be informed of your child’s pre-primary education unit as soon as possible, taking into account the preferred starting date indicated in your application and the availability of pre-primary education places in your area.</p>
+                <p>You can see the decision and accept/reject it at <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
+                <p>When applying for pre-primary education at a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
+                <p>If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place. In this case, the minimum application period is two (2) weeks and begins from the date on which the required document was received.</p>
+                <p>When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.</p>
+                <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
+                <p>When applying for a transfer to a different pre-primary education unit by submitting a new application; the new pre-primary education decision will be made when the situation with the applicants and the available places so permit. If your child’s current pre-primary education place is terminated, your transfer application will be deleted from the system.</p>
+                <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service Voucher</a></p>
+                <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
+            """
+            )
         }
-    }
 
     override fun missingReservationsNotification(
         language: Language,
