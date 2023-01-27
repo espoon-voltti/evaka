@@ -69,4 +69,6 @@ interface IEmailMessageProvider {
         threadId: MessageThreadId?,
         urgent: Boolean
     ): EmailContent
+
+    fun vasuNotification(language: Language, childId: ChildId): EmailContent
 }

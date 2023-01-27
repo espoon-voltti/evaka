@@ -15,6 +15,8 @@ interface IEmailClient {
         htmlBody: String,
         textBody: String
     )
+    fun sendEmail(traceId: String, toAddress: String, fromAddress: String, content: EmailContent) =
+        sendEmail(traceId, toAddress, fromAddress, content.subject, content.html, content.text)
 
     fun validateToAddress(traceId: String, toAddress: String): Boolean {
         if (toAddress.matches(EMAIL_PATTERN)) {

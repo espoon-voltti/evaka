@@ -15,6 +15,11 @@ import java.time.format.FormatStyle
 import java.util.Locale
 
 class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvider {
+    private fun baseUrl(language: Language) =
+        when (language) {
+            Language.sv -> env.frontendBaseUrlSv
+            else -> env.frontendBaseUrlFi
+        }
 
     override val subjectForPendingDecisionEmail: String =
         "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education"
@@ -634,12 +639,8 @@ There are missing attendance reservations for the week starting $start. Please m
         threadId: MessageThreadId?,
         urgent: Boolean
     ): EmailContent {
-        val baseUrl =
-            when (language) {
-                Language.sv -> env.frontendBaseUrlFi
-                else -> env.frontendBaseUrlSv
-            }
-        val messageUrl = "$baseUrl/messages${if (threadId == null) "" else "/$threadId"}"
+        val messageUrl =
+            "${baseUrl(language)}/messages${if (threadId == null) "" else "/$threadId"}"
         return EmailContent(
             subject =
                 if (urgent) {
@@ -679,6 +680,48 @@ There are missing attendance reservations for the week starting $start. Please m
                 <hr>
                 
                 <p>You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: <a href="$messageUrl">$messageUrl</a></p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
+        """
+                    .trimIndent()
+        )
+    }
+
+    override fun vasuNotification(language: Language, childId: ChildId): EmailContent {
+        val documentsUrl = "${baseUrl(language)}/children/$childId"
+        return EmailContent(
+            subject = "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka",
+            text =
+                """
+                Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: $documentsUrl
+                
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+                
+                -----
+       
+                Du har fått ett nytt dokument i eVaka. Läs dokumentet här: $documentsUrl
+                
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
+                
+                -----
+                
+                You have received a new eVaka document. Read the document here: $documentsUrl
+                
+                This is an automatic message from the eVaka system. Do not reply to this message.  
+        """
+                    .trimIndent(),
+            html =
+                """
+                <p>Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+            
+                <hr>
+                
+                <p>Du har fått ett nytt dokument i eVaka. Läs dokumentet här: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
+                
+                <hr>
+                
+                <p>You have received a new eVaka document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
         """
                     .trimIndent()

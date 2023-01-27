@@ -121,15 +121,11 @@ class MessageNotificationEmailService(
                 return@transaction
             }
 
-            val email = emailMessageProvider.messageNotification(language, threadId, urgent)
-
             emailClient.sendEmail(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
                 fromAddress = emailEnv.sender(language),
-                subject = email.subject,
-                htmlBody = email.html,
-                textBody = email.text
+                content = emailMessageProvider.messageNotification(language, threadId, urgent)
             )
             tx.markNotificationAsSent(messageRecipientId, clock.now())
         }

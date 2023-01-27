@@ -5,10 +5,9 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.EmailEnv
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
-import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -25,15 +24,12 @@ private val logger = KotlinLogging.logger {}
 class VasuNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
-    env: EvakaEnv,
+    private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendVasuNotificationEmail)
     }
-
-    val baseUrl: String = env.frontendBaseUrlFi
-    val baseUrlSv: String = env.frontendBaseUrlSv
 
     fun scheduleEmailNotification(tx: Database.Transaction, id: VasuDocumentId) {
         logger.info { "Scheduling sending of vasu/leops notification emails (id: $id)" }
@@ -99,63 +95,7 @@ WHERE
             traceId = msg.vasuDocumentId.toString(),
             toAddress = msg.recipientEmail,
             fromAddress = emailEnv.sender(msg.language),
-            subject = getSubject(),
-            htmlBody = getHtml(msg.childId, msg.language),
-            textBody = getText(msg.childId, msg.language)
+            content = emailMessageProvider.vasuNotification(msg.language, msg.childId)
         )
-    }
-
-    private fun getSubject(): String {
-        return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka"
-    }
-
-    private fun getDocumentsUrl(childId: ChildId, lang: Language): String {
-        val base =
-            when (lang) {
-                Language.sv -> baseUrlSv
-                else -> baseUrl
-            }
-        return "$base/children/$childId"
-    }
-
-    private fun getHtml(childId: ChildId, language: Language): String {
-        val documentsUrl = getDocumentsUrl(childId, language)
-        return """
-                <p>Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: <a href="$documentsUrl">$documentsUrl</a></p>
-                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
-            
-                <hr>
-                
-                <p>Du har fått ett nytt dokument i eVaka. Läs dokumentet här: <a href="$documentsUrl">$documentsUrl</a></p>
-                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
-                
-                <hr>
-                
-                <p>You have received a new eVaka document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
-                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
-        """
-            .trimIndent()
-    }
-
-    private fun getText(childId: ChildId, language: Language): String {
-        val documentsUrl = getDocumentsUrl(childId, language)
-        return """
-                Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: $documentsUrl
-                
-                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
-                
-                -----
-       
-                Du har fått ett nytt dokument i eVaka. Läs dokumentet här: $documentsUrl
-                
-                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
-                
-                -----
-                
-                You have received a new eVaka document. Read the document here: $documentsUrl
-                
-                This is an automatic message from the eVaka system. Do not reply to this message.  
-        """
-            .trimIndent()
     }
 }
