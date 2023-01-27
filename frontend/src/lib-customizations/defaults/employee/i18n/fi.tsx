@@ -84,7 +84,8 @@ export const fi = {
       preparatory: 'Valmistava',
       'backup-care': 'Varasijoitus',
       temporary: 'Tilapäinen',
-      'school-shift-care': 'Koululaisten vuorohoito'
+      'school-shift-care': 'Koululaisten vuorohoito',
+      'connected-daycare': 'Liittyvä'
     },
     providerType: {
       MUNICIPAL: 'Kunnallinen',

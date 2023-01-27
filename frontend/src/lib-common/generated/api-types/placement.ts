@@ -307,6 +307,7 @@ export type TerminatablePlacementType =
 */
 export interface TerminatedPlacement {
   child: ChildBasics
+  connectedDaycareOnly: boolean
   currentDaycareGroupName: string | null
   endDate: LocalDate
   id: UUID

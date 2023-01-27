@@ -110,6 +110,7 @@ export const applicationBasisColors = {
 
 export const careTypeColors = {
   'backup-care': accents.a5orangeLight,
+  'connected-daycare': status.success,
   club: grayscale.g15,
   daycare: status.success,
   daycare5yo: accents.a1greenDark,
