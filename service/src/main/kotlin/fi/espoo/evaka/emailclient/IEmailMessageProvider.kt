@@ -7,6 +7,7 @@ package fi.espoo.evaka.emailclient
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 data class EmailContent(
@@ -61,5 +62,11 @@ interface IEmailMessageProvider {
     fun missingReservationsNotification(
         language: Language,
         checkedRange: FiniteDateRange
+    ): EmailContent
+
+    fun messageNotification(
+        language: Language,
+        threadId: MessageThreadId?,
+        urgent: Boolean
     ): EmailContent
 }
