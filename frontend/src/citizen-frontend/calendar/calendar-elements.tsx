@@ -48,11 +48,13 @@ interface GroupedDailyChildren {
 export const Reservations = React.memo(function Reservations({
   data,
   allChildren,
-  childImages
+  childImages,
+  isReservable
 }: {
   data: DailyReservationData
   allChildren: ReservationChild[]
   childImages: ChildImageData[]
+  isReservable: boolean
 }) {
   const i18n = useTranslation()
   const showAttendanceWarning = data.children.some(
@@ -65,7 +67,8 @@ export const Reservations = React.memo(function Reservations({
     [data.children, allChildren, data.date]
   )
 
-  return data.children.length === 0 && data.isHoliday ? (
+
+  return data.children.length === 0 && data.isHoliday && !isReservable ? (
     <Holiday />
   ) : (
     <div>

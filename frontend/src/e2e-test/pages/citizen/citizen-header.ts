@@ -7,10 +7,12 @@ import { Lang } from 'lib-customizations/citizen'
 import { waitUntilFalse } from '../../utils'
 import { Page } from '../../utils/page'
 
+export type EnvType = 'desktop' | 'mobile'
+
 export default class CitizenHeader {
   constructor(
     private readonly page: Page,
-    private readonly type: 'desktop' | 'mobile' = 'desktop'
+    private readonly type: EnvType = 'desktop'
   ) {}
 
   #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')

@@ -91,7 +91,7 @@ const CalendarPage = React.memo(function CalendarPage() {
           children.some(
             ({ maxOperationalDays, inShiftCareUnit }) =>
               maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
-              (inShiftCareUnit || !isHoliday)
+              (inShiftCareUnit || !isHoliday) // TODO
           )
         )
         .getOrElse(false),
