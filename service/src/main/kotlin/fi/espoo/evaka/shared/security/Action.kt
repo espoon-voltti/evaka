@@ -723,7 +723,7 @@ sealed interface Action {
         ),
         DELETE_ABSENCE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         DELETE_ABSENCE_RANGE(
             HasGlobalRole(ADMIN),
@@ -1093,7 +1093,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
         ),
-        DELETE_ABSENCES(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup()),
+        DELETE_ABSENCES(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
+        ),
         READ_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN, FINANCE_ADMIN),
             HasUnitRole(
