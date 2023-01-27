@@ -4,7 +4,12 @@
 
 package fi.espoo.evaka.shared.template
 
+import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.invoicing.service.DocumentLang
+
 interface ITemplateProvider {
+    fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String
+
     fun getFeeDecisionPath(): String
     fun getVoucherValueDecisionPath(): String
     fun getClubDecisionPath(): String
