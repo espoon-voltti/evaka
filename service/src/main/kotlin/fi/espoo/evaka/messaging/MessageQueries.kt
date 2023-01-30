@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.application.notes.deleteApplicationNotesLinkedToMessages
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
@@ -1348,6 +1349,7 @@ FROM message WHERE sender_id = :accountId AND id = :messageId
         )
     }
 
+    this.deleteApplicationNotesLinkedToMessages(listOf(messageToUndo.contentId).toSet())
     this.deleteMessages(listOf(messageToUndo))
     this.resetSenderThreadParticipants(messageToUndo.threadId, messageToUndo.senderId)
 }
@@ -1402,6 +1404,7 @@ WHERE c.id = :contentId
             .findOne()
             .orElseThrow { error("Multiple draft contents found") }
 
+    this.deleteApplicationNotesLinkedToMessages(messagesToUndo.map { it.contentId }.toSet())
     this.deleteMessages(messagesToUndo)
 
     val draftId = this.initDraft(accountId)

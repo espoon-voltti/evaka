@@ -186,6 +186,10 @@ export default class ApplicationReadView {
       .assertTextEquals(note)
   }
 
+  async assertNoNotes() {
+    await this.#notes.nth(0).waitUntilHidden()
+  }
+
   async reload() {
     return this.page.reload()
   }

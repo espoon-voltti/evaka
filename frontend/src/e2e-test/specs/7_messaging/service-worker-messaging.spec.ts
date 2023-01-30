@@ -153,5 +153,22 @@ describe('Service Worker Messaging', () => {
         await applReadView.clickMessageThreadLinkInNote(0)
       await messagesPageWithThread.assertMessageContent(0, content)
     })
+
+    it('should delete the application note if the message is cancelled', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      const content = 'This should be visible in the application note'
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+      await messagesPage.undoMessage()
+
+      await applReadView.reload()
+      await applReadView.assertNoNotes()
+    })
   })
 })
