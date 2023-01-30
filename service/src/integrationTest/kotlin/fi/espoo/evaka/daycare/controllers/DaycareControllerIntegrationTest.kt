@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
@@ -18,7 +16,6 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -29,7 +26,9 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -41,8 +40,12 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var daycareController: DaycareController
+
     private val childId = testChild_1.id
     private val daycareId = testDaycare.id
     private val supervisorId = EmployeeId(UUID.randomUUID())
@@ -109,7 +112,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insertTestDaycareGroupPlacement(placement.id, group.id)
         }
 
-        deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)
+        assertThrows<Conflict> { deleteDaycareGroup(daycareId, group.id) }
 
         db.read { assertNotNull(it.getDaycareGroup(group.id)) }
     }
@@ -131,7 +134,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         }
 
-        deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)
+        assertThrows<Conflict> { deleteDaycareGroup(daycareId, group.id) }
 
         db.read { assertNotNull(it.getDaycareGroup(group.id)) }
     }
@@ -145,20 +148,13 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insertMessageContent("Juhannus tulee pian", accountId)
         }
 
-        deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)
+        assertThrows<Conflict> { deleteDaycareGroup(daycareId, group.id) }
 
         db.read { assertNotNull(it.getDaycareGroup(group.id)) }
     }
 
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
-        val (_, res, body) =
-            http
-                .get("/daycares/$daycareId")
-                .asUser(staffMember)
-                .responseObject<DaycareController.DaycareResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return body.get()
+        return daycareController.getDaycare(dbInstance(), staffMember, RealEvakaClock(), daycareId)
     }
 
     private fun createDaycareGroup(
@@ -167,34 +163,26 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         startDate: LocalDate,
         initialCaretakers: Double
     ): DaycareGroup {
-        val (_, res, body) =
-            http
-                .post("/daycares/$daycareId/groups")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        DaycareController.CreateGroupRequest(
-                            name = name,
-                            startDate = startDate,
-                            initialCaretakers = initialCaretakers
-                        )
-                    )
-                )
-                .asUser(supervisor)
-                .responseObject<DaycareGroup>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return body.get()
+        return daycareController.createGroup(
+            dbInstance(),
+            supervisor,
+            RealEvakaClock(),
+            daycareId,
+            DaycareController.CreateGroupRequest(name, startDate, initialCaretakers)
+        )
     }
 
     private fun deleteDaycareGroup(
         daycareId: DaycareId,
         groupId: GroupId,
-        expectedStatus: Int = 200
     ) {
-        val (_, res) =
-            http.delete("/daycares/$daycareId/groups/$groupId").asUser(supervisor).response()
-
-        assertEquals(expectedStatus, res.statusCode)
+        daycareController.deleteGroup(
+            dbInstance(),
+            supervisor,
+            RealEvakaClock(),
+            daycareId,
+            groupId
+        )
     }
 
     private fun groupHasMessageAccount(groupId: GroupId): Boolean {
