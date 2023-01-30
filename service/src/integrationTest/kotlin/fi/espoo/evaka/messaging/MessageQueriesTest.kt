@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -373,7 +374,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         threadId = threadId,
                         sender = accounts.person2.id,
                         sentAt = now,
-                        recipientNames = tx.getAccountNames(setOf(accounts.employee1.id)),
+                        recipientNames =
+                            tx.getAccountNames(
+                                setOf(accounts.employee1.id),
+                                testFeatureConfig.serviceWorkerMessageAccountName
+                            ),
                         municipalAccountName = "Espoo",
                         serviceWorkerAccountName = "Espoon palveluohjaus"
                     )
@@ -732,7 +737,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     threadId = threadId,
                     sender = sender.id,
                     sentAt = now,
-                    recipientNames = tx.getAccountNames(recipientIds),
+                    recipientNames =
+                        tx.getAccountNames(
+                            recipientIds,
+                            testFeatureConfig.serviceWorkerMessageAccountName
+                        ),
                     municipalAccountName = "Espoo",
                     serviceWorkerAccountName = "Espoon palveluohjaus"
                 )

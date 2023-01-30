@@ -555,7 +555,11 @@ SELECT
         SELECT jsonb_agg(
             jsonb_build_object(
                 'id', mav.id,
-                'name', CASE WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName ELSE mav.name END,
+                'name', CASE
+                    WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName 
+                    WHEN mav.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName
+                    ELSE mav.name
+                END,
                 'type', mav.type
             )
         )
@@ -688,7 +692,11 @@ LIMIT :pageSize OFFSET :offset
         .mapToPaged(pageSize)
 }
 
-fun Database.Read.getSentMessage(senderId: MessageAccountId, messageId: MessageId): Message {
+fun Database.Read.getSentMessage(
+    senderId: MessageAccountId,
+    messageId: MessageId,
+    serviceWorkerAccountName: String
+): Message {
     val sql =
         """
 SELECT
@@ -702,7 +710,7 @@ SELECT
         WHERE mav.id = m.sender_id
     ) AS sender,
     (
-        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type))
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN :serviceWorkerAccountName ELSE mav.name END, 'type', mav.type))
         FROM message_recipients mr
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
@@ -719,6 +727,7 @@ WHERE m.id = :messageId AND m.sender_id = :senderId
     return this.createQuery(sql)
         .bind("messageId", messageId)
         .bind("senderId", senderId)
+        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<Message>()
         .first()
 }

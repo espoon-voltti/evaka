@@ -219,7 +219,8 @@ class MessageService(
         val message =
             db.transaction { tx ->
                 tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)
-                val recipientNames = tx.getAccountNames(recipientAccountIds)
+                val recipientNames =
+                    tx.getAccountNames(recipientAccountIds, serviceWorkerAccountName)
                 val contentId = tx.insertMessageContent(content, senderAccount)
                 val messageId =
                     tx.insertMessage(
@@ -239,7 +240,7 @@ class MessageService(
                     listOf(messageId),
                     now,
                 )
-                tx.getSentMessage(senderAccount, messageId)
+                tx.getSentMessage(senderAccount, messageId, serviceWorkerAccountName)
             }
         return ThreadReply(threadId, message)
     }

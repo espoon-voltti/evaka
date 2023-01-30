@@ -96,16 +96,23 @@ AND (
         .toSet()
 }
 
-fun Database.Read.getAccountNames(accountIds: Set<MessageAccountId>): List<String> {
+fun Database.Read.getAccountNames(
+    accountIds: Set<MessageAccountId>,
+    serviceWorkerAccountName: String
+): List<String> {
     val sql =
         """
-        SELECT name
-        FROM message_account_view
-        WHERE id = ANY(:ids)
+        SELECT CASE mav.type WHEN 'SERVICE_WORKER' THEN :serviceWorkerAccountName ELSE mav.name END as name
+        FROM message_account_view mav
+        WHERE mav.id = ANY(:ids)
     """
             .trimIndent()
 
-    return this.createQuery(sql).bind("ids", accountIds).mapTo<String>().list()
+    return this.createQuery(sql)
+        .bind("ids", accountIds)
+        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
+        .mapTo<String>()
+        .list()
 }
 
 fun Database.Transaction.createDaycareGroupMessageAccount(
