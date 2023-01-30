@@ -261,6 +261,7 @@ test('Foster parent can receive and reply to messages', async () => {
   messagesPage = new MessagesPage(unitSupervisorPage)
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+  await messagesPage.receivedMessage.click()
   await messagesPage.assertMessageContent(1, reply)
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()

@@ -54,7 +54,8 @@ import {
   getUnreadCounts,
   markThreadRead,
   replyToThread,
-  ReplyToThreadParams
+  ReplyToThreadParams,
+  getThread
 } from './api'
 import {
   AccountView,
@@ -108,6 +109,7 @@ export interface MessagesState {
   openMessageUndo: (m: CancelableMessage) => void
   prefilledRecipient: string | null
   prefilledTitle: string | null
+  relatedApplicationId: UUID | null
 }
 
 const defaultState: MessagesState = {
@@ -145,7 +147,8 @@ const defaultState: MessagesState = {
   messageCopiesAsThreads: Loading.of(),
   openMessageUndo: () => undefined,
   prefilledRecipient: null,
-  prefilledTitle: null
+  prefilledTitle: null,
+  relatedApplicationId: null
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -178,6 +181,7 @@ export const MessageContextProvider = React.memo(
     const threadId = searchParams.get('threadId')
     const prefilledTitle = searchParams.get('title')
     const prefilledRecipient = searchParams.get('recipient')
+    const relatedApplicationId = searchParams.get('applicationId')
 
     const setParams = useCallback(
       (params: {
@@ -197,12 +201,20 @@ export const MessageContextProvider = React.memo(
             ...(prefilledTitle ? { title: prefilledTitle } : undefined),
             ...(prefilledRecipient
               ? { recipient: prefilledRecipient }
+              : undefined),
+            ...(relatedApplicationId
+              ? { applicationId: relatedApplicationId }
               : undefined)
           },
           { replace: true }
         )
       },
-      [setSearchParams, prefilledTitle, prefilledRecipient]
+      [
+        setSearchParams,
+        prefilledTitle,
+        prefilledRecipient,
+        relatedApplicationId
+      ]
     )
 
     const [accounts] = useApiState(
@@ -380,6 +392,14 @@ export const MessageContextProvider = React.memo(
       setArchivedMessagesResult
     )
 
+    const [singleThread, setSingleThread] = useState<Result<MessageThread>>()
+
+    const loadThread = useRestApi(
+      (accountId: UUID, threadId: UUID | null) =>
+        getThread(accountId, threadId),
+      setSingleThread
+    )
+
     // load messages if account, view or page changes
     const loadMessages = useCallback(() => {
       if (!selectedAccount) {
@@ -396,6 +416,8 @@ export const MessageContextProvider = React.memo(
           return void loadMessageCopies(selectedAccount.account.id, page)
         case 'archive':
           return void loadArchivedMessages(selectedAccount.account.id, page)
+        case 'thread':
+          return void loadThread(selectedAccount.account.id, threadId)
       }
     }, [
       loadMessageDrafts,
@@ -403,6 +425,8 @@ export const MessageContextProvider = React.memo(
       loadSentMessages,
       loadMessageCopies,
       loadArchivedMessages,
+      loadThread,
+      threadId,
       page,
       selectedAccount
     ])
@@ -518,13 +542,15 @@ export const MessageContextProvider = React.memo(
           ...receivedMessages.getOrElse([]),
           ...sentMessagesAsThreads.getOrElse([]),
           ...messageCopiesAsThreads.getOrElse([]),
-          ...archivedMessages.getOrElse([])
-        ].find((t) => t.id === threadId),
+          ...archivedMessages.getOrElse([]),
+          singleThread?.getOrElse(undefined)
+        ].find((t) => t?.id === threadId),
       [
         receivedMessages,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
         archivedMessages,
+        singleThread,
         threadId
       ]
     )
@@ -621,36 +647,42 @@ export const MessageContextProvider = React.memo(
 
     const selectDefaultAccount = useCallback(() => {
       if (municipalAccount) {
-        selectAccount({
-          view: municipalMessageBoxes[0],
-          account: municipalAccount.account,
-          unitId: null
+        setParams({
+          messageBox: messageBox ?? municipalMessageBoxes[0],
+          accountId: municipalAccount.account.id,
+          unitId: null,
+          threadId: threadId
         })
       } else if (serviceWorkerAccount) {
-        selectAccount({
-          view: serviceWorkerMessageBoxes[0],
-          account: serviceWorkerAccount.account,
-          unitId: null
+        setParams({
+          messageBox: messageBox ?? serviceWorkerMessageBoxes[0],
+          accountId: serviceWorkerAccount.account.id,
+          unitId: null,
+          threadId: threadId
         })
       } else if (personalAccount) {
-        selectAccount({
-          view: personalMessageBoxes[0],
-          account: personalAccount.account,
-          unitId: null
+        setParams({
+          messageBox: personalMessageBoxes[0],
+          accountId: personalAccount.account.id,
+          unitId: null,
+          threadId: threadId
         })
       } else if (groupAccounts.length > 0) {
-        return selectAccount({
-          view: groupMessageBoxes[0],
-          account: groupAccounts[0].account,
-          unitId: groupAccounts[0].daycareGroup.unitId
+        setParams({
+          messageBox: groupMessageBoxes[0],
+          accountId: groupAccounts[0].account.id,
+          unitId: groupAccounts[0].daycareGroup.unitId,
+          threadId: threadId
         })
       }
     }, [
+      setParams,
       groupAccounts,
       municipalAccount,
       serviceWorkerAccount,
       personalAccount,
-      selectAccount
+      messageBox,
+      threadId
     ])
 
     const value = useMemo(
@@ -689,7 +721,8 @@ export const MessageContextProvider = React.memo(
         messageCopiesAsThreads,
         openMessageUndo,
         prefilledRecipient,
-        prefilledTitle
+        prefilledTitle,
+        relatedApplicationId
       }),
       [
         accounts,
@@ -723,7 +756,8 @@ export const MessageContextProvider = React.memo(
         messageCopiesAsThreads,
         openMessageUndo,
         prefilledRecipient,
-        prefilledTitle
+        prefilledTitle,
+        relatedApplicationId
       ]
     )
 

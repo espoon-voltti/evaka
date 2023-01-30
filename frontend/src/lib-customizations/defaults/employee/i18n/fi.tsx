@@ -541,6 +541,8 @@ export const fi = {
       lastEdited: 'Muokattu viimeksi',
       placeholder: 'Kirjoita muistiinpano',
       confirmDelete: 'Haluatko varmasti poistaa muistiinpanon',
+      sent: 'Lähetetty',
+      message: 'viesti',
       error: {
         save: 'Muistiinpanon tallentaminen epäonnnistui',
         remove: 'Muistiinpanon poistaminen epäonnnistui'
@@ -3482,7 +3484,8 @@ export const fi = {
         sent: 'Lähetetyt',
         drafts: 'Luonnokset',
         copies: 'Johtajan/kunnan tiedotteet',
-        archive: 'Arkisto'
+        archive: 'Arkisto',
+        thread: 'Viestiketju'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
@@ -3493,7 +3496,8 @@ export const fi = {
         sent: 'Lähetetyt viestit',
         drafts: 'Luonnokset',
         copies: 'Johtajan/kunnan tiedotteet',
-        archive: 'Arkisto'
+        archive: 'Arkisto',
+        thread: 'Viestiketju'
       }
     },
     types: {

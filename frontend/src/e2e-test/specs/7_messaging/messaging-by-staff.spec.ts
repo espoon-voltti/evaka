@@ -174,6 +174,7 @@ describe('Sending and receiving messages', () => {
         await staffPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(staffPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
 

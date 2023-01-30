@@ -5,12 +5,16 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -28,6 +32,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -88,6 +93,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             id = EmployeeId(UUID.randomUUID()),
             roles = setOf(UserRole.UNIT_SUPERVISOR)
         )
+    private val serviceWorker =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.SERVICE_WORKER)
+        )
     private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
     private val person2 = AuthenticatedUser.Citizen(id = testAdult_2.id, CitizenAuthLevel.STRONG)
     private val person3 = AuthenticatedUser.Citizen(id = testAdult_3.id, CitizenAuthLevel.STRONG)
@@ -107,6 +117,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var person3Account: MessageAccountId
     private lateinit var person4Account: MessageAccountId
     private lateinit var person5Account: MessageAccountId
+    private lateinit var serviceWorkerAccount: MessageAccountId
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
         tx.insertTestPerson(
@@ -220,6 +231,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)
             tx.insertDaycareAclRow(testDaycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
+
+            tx.insertTestEmployee(
+                DevEmployee(id = serviceWorker.id, firstName = "Service", lastName = "Worker")
+            )
+            serviceWorkerAccount =
+                tx.upsertEmployeeMessageAccount(serviceWorker.id, AccountType.SERVICE_WORKER)
         }
     }
 
@@ -844,6 +861,47 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `sending a message with a relatedApplicationId creates a note on the application with the contents and a link to the thread`() {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE
+                )
+            }
+
+        val messageContent = "Hakemuksesta puuttuu tietoja, täydennäthän ne"
+        // when a message thread related to an application is created
+        val messageContentId =
+            postNewThread(
+                title = "Hakemuksenne",
+                message = messageContent,
+                messageType = MessageType.MESSAGE,
+                sender = serviceWorkerAccount,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+                user = serviceWorker,
+                relatedApplicationId = applicationId
+            )
+
+        db.transaction { tx ->
+            // then a note is created on the application
+            val applicationNotes = tx.getApplicationNotes(applicationId)
+            assertEquals(1, applicationNotes.size)
+            val note = applicationNotes.first()
+            assertEquals(messageContent, note.content)
+
+            // and the threadId points to the correct thread
+            val messageThreadId =
+                tx.createQuery("""SELECT thread_id FROM message WHERE content_id = :contentId""")
+                    .bind("contentId", messageContentId)
+                    .mapTo<MessageThreadId>()
+                    .first()
+            assertEquals(messageThreadId, note.messageThreadId)
+        }
+    }
+
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Citizen,
@@ -885,26 +943,30 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         attachmentIds: Set<AttachmentId> = setOf(),
         draftId: MessageDraftId? = null,
         now: HelsinkiDateTime = sendTime,
-    ) {
-        messageController.createMessage(
-            dbInstance(),
-            user,
-            MockEvakaClock(now),
-            sender,
-            MessageController.PostMessageBody(
-                title = title,
-                content = message,
-                type = messageType,
-                recipients = recipients.toSet(),
-                recipientNames = recipientNames,
-                attachmentIds = attachmentIds,
-                draftId = draftId,
-                urgent = false
+        relatedApplicationId: ApplicationId? = null,
+    ): MessageContentId? {
+        val messageContentId =
+            messageController.createMessage(
+                dbInstance(),
+                user,
+                MockEvakaClock(now),
+                sender,
+                MessageController.PostMessageBody(
+                    title = title,
+                    content = message,
+                    type = messageType,
+                    recipients = recipients.toSet(),
+                    recipientNames = recipientNames,
+                    attachmentIds = attachmentIds,
+                    draftId = draftId,
+                    urgent = false,
+                    relatedApplicationId = relatedApplicationId
+                )
             )
-        )
         if (asyncJobRunningEnabled) {
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
         }
+        return messageContentId
     }
 
     private fun replyToMessage(

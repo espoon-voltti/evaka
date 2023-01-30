@@ -117,5 +117,58 @@ describe('Service Worker Messaging', () => {
         `Hakemus 08.11.2022: ${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
       )
     })
+
+    it('should create an application note with the message contents when sending a new message', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      const content = 'This should be visible in the application note'
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+
+      await applReadView.reload()
+      await applReadView.assertNote(0, `Lähetetty viesti\n\n${content}`)
+    })
+
+    it('should create an application note with a clickable link to the message thread', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      const content = 'This should be visible in the application note'
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+
+      await applReadView.reload()
+      await applReadView.assertNote(0, `Lähetetty viesti\n\n${content}`)
+
+      const messagesPageWithThread =
+        await applReadView.clickMessageThreadLinkInNote(0)
+      await messagesPageWithThread.assertMessageContent(0, content)
+    })
+
+    it('should delete the application note if the message is cancelled', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      const content = 'This should be visible in the application note'
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+      await messagesPage.undoMessage()
+
+      await applReadView.reload()
+      await applReadView.assertNoNotes()
+    })
   })
 })

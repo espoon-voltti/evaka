@@ -5,6 +5,8 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.notes.createApplicationNote
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
@@ -217,6 +219,28 @@ class MessageController(
             }
     }
 
+    @GetMapping("/{accountId}/thread/{threadId}")
+    fun getThread(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId
+    ): MessageThread {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    it.getMessageThread(
+                        accountId,
+                        threadId,
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName
+                    )
+                }
+            }
+            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(accountId, threadId)) }
+    }
+
     @GetMapping("/unread")
     fun getUnreadMessages(
         db: Database,
@@ -273,7 +297,8 @@ class MessageController(
         val recipients: Set<MessageRecipient>,
         val recipientNames: List<String>,
         val attachmentIds: Set<AttachmentId> = setOf(),
-        val draftId: MessageDraftId? = null
+        val draftId: MessageDraftId? = null,
+        val relatedApplicationId: ApplicationId? = null
     )
 
     @PostMapping("/{accountId}")
@@ -345,6 +370,14 @@ class MessageController(
                         )
                     if (body.draftId != null)
                         tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                    if (body.relatedApplicationId != null) {
+                        tx.createApplicationNote(
+                            applicationId = body.relatedApplicationId,
+                            content = body.content,
+                            createdBy = user.evakaUserId,
+                            messageContentId = messageContentId
+                        )
+                    }
                     messageContentId
                 }
             }
