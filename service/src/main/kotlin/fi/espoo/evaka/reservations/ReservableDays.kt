@@ -38,7 +38,6 @@ fun getReservableDays(
             firstOfJuly.plusYears(1).plusMonths(1).withDayOfMonth(31)
         }
 
-    // TODO
     val nonReservableHolidays = holidays.filter { it.reservationDeadline < today }.map { it.period }
     return FiniteDateRange(nextReservableMonday, lastReservableDay)
         .complement(nonReservableHolidays)

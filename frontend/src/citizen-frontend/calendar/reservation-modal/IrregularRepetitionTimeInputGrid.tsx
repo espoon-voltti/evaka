@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 
 import { useLang, useTranslation } from 'citizen-frontend/localization'
@@ -106,13 +106,17 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
     existingReservations,
     formData.selectedChildren,
     selectedRange,
-    updateForm
+    updateForm,
+    childrenInShiftCare
   ])
 
   return (
     <>
       {[...selectedRange.dates()].map((date, index) => (
-        <Fragment key={`shift-care-${date.formatIso()}`}>
+        <div
+          data-qa={`time-input-${date.formatIso()}`}
+          key={`shift-care-${date.formatIso()}`}
+        >
           {index !== 0 && date.getIsoDayOfWeek() === 1 ? <Separator /> : null}
           {index === 0 || date.getIsoDayOfWeek() === 1 ? (
             <Week>
@@ -145,7 +149,7 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
               showAbsences
             />
           )}
-        </Fragment>
+        </div>
       ))}
     </>
   )

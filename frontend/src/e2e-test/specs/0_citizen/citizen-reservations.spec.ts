@@ -493,6 +493,35 @@ describe('Citizen calendar child visibility', () => {
 
     const calendarPage = await openCalendarPage('desktop')
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
+
+    const reservation = {
+      startTime: '08:00',
+      endTime: '16:00',
+      childIds: [child.id]
+    }
+
+    const holidayDayModal = await calendarPage.openDayModal(firstReservationDay)
+    await holidayDayModal.childName.assertCount(1)
+    await holidayDayModal.closeModal.click()
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createIrregularReservation(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(1)),
+      [
+        {
+          date: firstReservationDay,
+          startTime: reservation.startTime,
+          endTime: reservation.endTime
+        },
+        {
+          date: firstReservationDay.addDays(1),
+          startTime: '10:00',
+          endTime: '14:00'
+        }
+      ]
+    )
+
+    await calendarPage.assertReservations(firstReservationDay, [reservation])
   })
 })
 
