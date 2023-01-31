@@ -39,19 +39,3 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.skyscreamer:jsonassert")
 }
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = Version.java
-        allWarningsAsErrors = true
-    }
-}
-
-tasks {
-    test {
-        useJUnitPlatform()
-        filter {
-            isFailOnNoMatchingTests = false
-        }
-    }
-}

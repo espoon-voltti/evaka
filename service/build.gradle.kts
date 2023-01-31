@@ -178,13 +178,22 @@ allprojects {
         sourceCompatibility = Version.java
         targetCompatibility = Version.java
     }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = Version.java
+        kotlinOptions.allWarningsAsErrors = true
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        filter {
+            isFailOnNoMatchingTests = false
+        }
+    }
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = Version.java
-        allWarningsAsErrors = name != "compileIntegrationTestKotlin"
-    }
+    kotlinOptions.allWarningsAsErrors = name != "compileIntegrationTestKotlin"
 }
 
 tasks.getByName<Jar>("jar") {
@@ -197,11 +206,7 @@ tasks.getByName<BootJar>("bootJar") {
 
 tasks {
     test {
-        useJUnitPlatform()
         systemProperty("spring.profiles.active", "test")
-        filter {
-            isFailOnNoMatchingTests = false
-        }
     }
 
     create("integrationTest", Test::class) {
@@ -212,9 +217,6 @@ tasks {
         classpath = sourceSets["integrationTest"].runtimeClasspath
         shouldRunAfter("test")
         outputs.upToDateWhen { false }
-        filter {
-            isFailOnNoMatchingTests = false
-        }
     }
 
     bootRun {

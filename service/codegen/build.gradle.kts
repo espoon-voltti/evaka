@@ -29,18 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = Version.java
-        allWarningsAsErrors = true
-    }
-}
-
 tasks {
-    test {
-        useJUnitPlatform()
-    }
-
     create("codegen", JavaExec::class) {
         shouldRunAfter("assemble")
         mainClass.set("evaka.codegen.GenerateKt")
