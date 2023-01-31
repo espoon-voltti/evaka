@@ -342,6 +342,9 @@ describe('Child mobile attendance list', () => {
     )
     await childPage.assertDepartureTimeInfoIsShown('Lähtöaika15:00')
     await childPage.selectMarkDepartedView()
+
+    await childAttendancePage.setTime('15:15')
+    await childAttendancePage.setTimeInfo.assertTextEquals('Saapui 15:15')
     await childAttendancePage.setTime('15:20')
     await childAttendancePage.selectMarkDepartedButton()
   })

@@ -62,11 +62,15 @@ function validateTime(
   }
 
   try {
+    const latestArrival = attendances.sort((l, r) =>
+      l.arrived > r.arrived ? -1 : 1
+    )[0]
+
     const parsedTime = LocalTime.parse(time, 'HH:mm')
     const parsedTimestamp =
       LocalDate.todayInSystemTz().toHelsinkiDateTime(parsedTime)
-    if (!parsedTimestamp.isAfter(attendances[0].arrived)) {
-      return `${i18n.attendances.arrived} ${attendances[0].arrived
+    if (!parsedTimestamp.isAfter(latestArrival.arrived)) {
+      return `${i18n.attendances.arrived} ${latestArrival.arrived
         .toLocalTime()
         .format()}`
     }
