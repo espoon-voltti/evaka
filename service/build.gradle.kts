@@ -82,7 +82,9 @@ dependencies {
         exclude("org.bouncycastle", "bcpkix-jdk15on")
         exclude("org.bouncycastle", "bcprov-jdk15on")
     }
-    implementation("org.springframework.ws:spring-ws-support")
+    implementation("org.springframework.ws:spring-ws-support") {
+        exclude("org.eclipse.angus", "angus-mail")
+    }
     implementation("org.springframework.boot:spring-boot-devtools")
 
     // Database-related dependencies
