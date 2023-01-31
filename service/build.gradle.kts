@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -46,13 +45,12 @@ configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRunt
 
 idea {
     module {
-        testSourceDirs =
-            testSourceDirs + sourceSets["integrationTest"].withConvention(KotlinSourceSet::class) { kotlin.srcDirs }
+        testSourceDirs = testSourceDirs + sourceSets["integrationTest"].kotlin.srcDirs
         testResourceDirs = testResourceDirs + sourceSets["integrationTest"].resources.srcDirs
     }
 }
 
-val ktlint by configurations.creating
+val ktlint: Configuration by configurations.creating
 
 dependencies {
     api(platform(project(":evaka-bom")))
