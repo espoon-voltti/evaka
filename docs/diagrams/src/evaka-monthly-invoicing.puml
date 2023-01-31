@@ -5,25 +5,23 @@
 @startuml evaka-monthly-invoicing
 title eVakan kuukausilaskutusprosessi
 :Asiakas hakee varhaiskasvatuspaikkaa;
-if(Asiakas hyväksyy korkeimman maksun?) then (kyllä)
-else (ei)
 :Asiakas täyttää tuloselvityksen;
 :Talouskoordinaattori (TK) lisää asiakkaalle tulotiedot;
-endif
 :Syntyy maksupäätösluonnos
 (palveluseteliyksikölle arvopäätösluonnos);
-:TK tarkastaa puuttuvat
-palveluntarpeet ja päämiehet-raportin;
-:TK ajaa oman alueensa maksuluonnokset
+:TK korjaa tietoja Puuttuvat palveluntarpeet ja päämiehet -raportin ja
+Varhaiskasvatuksessa aloittavat lapset -raportin avulla päiväkodin kanssa;
+:Muutos päivittää talouspäätösluonnoksen;
+:TK hyväksyy oman alueensa talouspäätösluonnokset
+arvopäätöksiksi ennen palveluseteliraportin lukitsemista ja 
 maksupäätöksiksi kuun viimeinen arkipäivä;
 split
-    :TK tarkastaa oman alueensa,
-    että kaikki maksupäätökset on lähetetty;
+    :TK tarkastaa, että kaikki hänen oman alueensa
+    maksupäätökset on lähetetty;
     :TK tarkistaa koko kaupungin tyhjät nollapäätökset
     (katkaisee laskutuksen) ja lähettää ne;
     :TK luo laskuluonnokset massana
     kaikille asiakkaille ennen laskujen lähettämistä;
-    :TK tekee manuaalisesti hyvitys- ja lisälaskurivit eVakaan;
     :TK siirtää oman alueensa laskut laskutusjärjestelmään;
     :TK tarkistaa oman alueensa laskujen täsmäytyksen;
     kill
