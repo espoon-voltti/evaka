@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -28,14 +29,17 @@ import { useTranslation } from '../../state/i18n'
 
 import { TableScrollable } from './common'
 
+type ReportColumnKey = keyof ManualDuplicationReportRow
+
 const StyledRow = styled(Tr)``
-const NoWrapTd = styled(Td)`
-  white-space: nowrap;
+const WrappableTd = styled(Td)`
+  white-space: normal;
+  min-width: 80px;
 `
 
 export default React.memo(function ManualDuplicationReport() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<ManualDuplicationReportRow[]>>(
+  const [rowsResult, setRows] = useState<Result<ManualDuplicationReportRow[]>>(
     Loading.of()
   )
   const loadData = () => {
@@ -47,31 +51,33 @@ export default React.memo(function ManualDuplicationReport() {
     loadData()
   }, [])
 
-  const [sortColumn, setSortColumn] = useState<
-    keyof ManualDuplicationReportRow
-  >('supplementaryDaycareName')
+  const [sortColumns, setSortColumns] = useState<ReportColumnKey[]>([
+    'supplementaryDaycareName',
+    'childLastName',
+    'childFirstName'
+  ])
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
 
   const sortBy = useCallback(
-    (column: keyof ManualDuplicationReportRow) => {
-      if (sortColumn === column) {
+    (columns: ReportColumnKey[]) => {
+      if (isEqual(sortColumns, columns)) {
         setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
       } else {
-        setSortColumn(column)
+        setSortColumns(columns)
         setSortDirection('ASC')
       }
     },
-    [sortColumn, sortDirection]
+    [sortColumns, sortDirection]
   )
 
   const reportRows = useMemo(
     () =>
-      rows
-        .map((rs) =>
-          orderBy(rs, [sortColumn], [sortDirection === 'ASC' ? 'asc' : 'desc'])
+      rowsResult
+        .map((rows) =>
+          orderBy(rows, sortColumns, [sortDirection === 'ASC' ? 'asc' : 'desc'])
         )
         .getOrElse([]),
-    [rows, sortColumn, sortDirection]
+    [rowsResult, sortColumns, sortDirection]
   )
 
   return (
@@ -79,9 +85,9 @@ export default React.memo(function ManualDuplicationReport() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.manualDuplication.title}</Title>
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {rowsResult.isLoading && <Loader />}
+        {rowsResult.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rowsResult.isSuccess && (
           <TableScrollable>
             <Thead>
               <Tr>
@@ -89,65 +95,83 @@ export default React.memo(function ManualDuplicationReport() {
                 <Th>{i18n.reports.manualDuplication.dateOfBirth}</Th>
                 <SortableTh
                   sorted={
-                    sortColumn === 'supplementaryDaycareName'
+                    isEqual(sortColumns, [
+                      'supplementaryDaycareName',
+                      'childLastName',
+                      'childFirstName'
+                    ])
                       ? sortDirection
                       : undefined
                   }
-                  onClick={() => sortBy('supplementaryDaycareName')}
+                  onClick={() =>
+                    sortBy([
+                      'supplementaryDaycareName',
+                      'childLastName',
+                      'childFirstName'
+                    ])
+                  }
                 >
                   {i18n.reports.manualDuplication.supplementaryDaycare}
                 </SortableTh>
                 <Th>{i18n.reports.manualDuplication.supplementarySno}</Th>
-                <Th>{i18n.reports.manualDuplication.supplementaryStartDate}</Th>
-                <Th>{i18n.reports.manualDuplication.supplementaryEndDate}</Th>
+                <Th>{i18n.reports.manualDuplication.supplementaryDuration}</Th>
+
                 <SortableTh
                   sorted={
-                    sortColumn === 'preschoolDaycareName'
+                    isEqual(sortColumns, [
+                      'preschoolDaycareName',
+                      'childLastName',
+                      'childFirstName'
+                    ])
                       ? sortDirection
                       : undefined
                   }
-                  onClick={() => sortBy('preschoolDaycareName')}
+                  onClick={() =>
+                    sortBy([
+                      'preschoolDaycareName',
+                      'childLastName',
+                      'childFirstName'
+                    ])
+                  }
                 >
                   {i18n.reports.manualDuplication.preschoolDaycare}
                 </SortableTh>
-                <Th>{i18n.reports.manualDuplication.preschooldStartDate}</Th>
-                <Th>{i18n.reports.manualDuplication.preschoolEndDate}</Th>
+                <Th>{i18n.reports.manualDuplication.preschooldDuration}</Th>
               </Tr>
             </Thead>
             <Tbody>
               {reportRows.map((row: ManualDuplicationReportRow) => (
                 <StyledRow key={row.childId}>
-                  <NoWrapTd>
+                  <WrappableTd>
                     <Link
                       target="_blank"
                       to={`/child-information/${row.childId}`}
                     >
                       {`${row.childLastName}, ${row.childFirstName}`}
                     </Link>
-                  </NoWrapTd>
-                  <NoWrapTd>{row.dateOfBirth.format()}</NoWrapTd>
-                  <NoWrapTd>
+                  </WrappableTd>
+                  <WrappableTd>{row.dateOfBirth.format()}</WrappableTd>
+                  <WrappableTd>
                     <Link
                       target="_blank"
                       to={`/units/${row.supplementaryDaycareId}`}
                     >
                       {row.supplementaryDaycareName}
                     </Link>
-                  </NoWrapTd>
+                  </WrappableTd>
 
-                  <NoWrapTd>{row.supplementarySnoName}</NoWrapTd>
-                  <NoWrapTd>{row.supplementaryStartDate.format()}</NoWrapTd>
-                  <NoWrapTd>{row.supplementaryEndDate.format()}</NoWrapTd>
-                  <NoWrapTd>
+                  <WrappableTd>{row.supplementarySnoName}</WrappableTd>
+                  <WrappableTd>{`${row.supplementaryStartDate.format()} - ${row.supplementaryEndDate.format()}`}</WrappableTd>
+
+                  <WrappableTd>
                     <Link
                       target="_blank"
                       to={`/units/${row.preschoolDaycareId}`}
                     >
                       {row.preschoolDaycareName}
                     </Link>
-                  </NoWrapTd>
-                  <NoWrapTd>{row.preschoolStartDate.format()}</NoWrapTd>
-                  <NoWrapTd>{row.preschoolEndDate.format()}</NoWrapTd>
+                  </WrappableTd>
+                  <WrappableTd>{`${row.preschoolStartDate.format()} - ${row.preschoolEndDate.format()}`}</WrappableTd>
                 </StyledRow>
               ))}
             </Tbody>

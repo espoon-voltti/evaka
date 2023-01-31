@@ -3223,18 +3223,16 @@ export const fi = {
       }
     },
     manualDuplication: {
-      title: 'Manuaalisen toisinnuksen kandidaatit',
+      title: 'Manuaalisen toisinnuksen raportti',
       description:
         'Raportti listaa esiopetusta täydentävän varhaiskasvatuksen tapaukset, jotka mahdollisesti vaativat lapsen manuaalista toisinnusta',
       childName: 'Lapsen nimi',
       dateOfBirth: 'Syntymäaika',
       supplementaryDaycare: 'Täydentävän yksikkö',
-      supplementarySno: 'Täydentävän palv.tarve',
-      supplementaryStartDate: 'Täydentävän alkupäivä',
-      supplementaryEndDate: 'Täydentävän loppupäivä',
+      supplementarySno: 'Täydentävän palveluntarve',
+      supplementaryDuration: 'Täydentävän kesto',
       preschoolDaycare: 'Esiopetuksen yksikkö',
-      preschooldStartDate: 'Esiopetuksen alkupäivä',
-      preschoolEndDate: 'Esiopetuksen loppupäivä'
+      preschooldDuration: 'Esiopetuksen kesto'
     },
     placementCount: {
       title: 'Sijoitusten määrä',
