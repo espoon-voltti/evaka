@@ -80,4 +80,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <packageUrl regex="true">^(?!pkg:maven//software.amazon.awssdk//utils).*$</packageUrl>
         <cpe>cpe:/a:utils_project:utils</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        No fix exists, not clear where and if we even use this library
+        ]]></notes>
+        <cve>CVE-2022-45688</cve>
+    </suppress>
 </suppressions>
+
+
