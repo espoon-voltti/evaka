@@ -9,16 +9,6 @@ plugins {
     id("org.jmailen.kotlinter")
 }
 
-repositories {
-    mavenCentral()
-    maven("https://build.shibboleth.net/maven/releases") {
-        content {
-            includeGroup("net.shibboleth.utilities")
-            includeGroup("org.opensaml")
-        }
-    }
-}
-
 dependencies {
     api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))

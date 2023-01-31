@@ -13,10 +13,6 @@ plugins {
     id("org.jmailen.kotlinter")
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))

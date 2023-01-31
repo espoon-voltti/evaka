@@ -31,16 +31,6 @@ plugins {
     idea
 }
 
-repositories {
-    mavenCentral()
-    maven("https://build.shibboleth.net/maven/releases") {
-        content {
-            includeGroup("net.shibboleth.utilities")
-            includeGroup("org.opensaml")
-        }
-    }
-}
-
 sourceSets {
     create("integrationTest") {
         compileClasspath += main.get().output + test.get().output

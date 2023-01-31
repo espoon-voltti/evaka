@@ -6,10 +6,6 @@ plugins {
     java
 }
 
-repositories {
-    mavenCentral()
-}
-
 val generatedSources = "$buildDir/generated/sources/java/main"
 val wsdl2java: Configuration by configurations.creating
 

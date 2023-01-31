@@ -15,16 +15,6 @@ object Version {
     const val openTracing = "0.33.0"
 }
 
-repositories {
-    mavenCentral()
-    maven("https://build.shibboleth.net/maven/releases") {
-        content {
-            includeGroup("net.shibboleth.utilities")
-            includeGroup("org.opensaml")
-        }
-    }
-}
-
 javaPlatform {
     allowDependencies()
 }
