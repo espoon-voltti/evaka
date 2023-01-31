@@ -49,13 +49,13 @@ const Wrapper = styled.button`
   background: none;
   border: none;
   display: block;
-  width: 100%;
+  width: calc(100% + ${dM.L} + ${dM.L});
   text-align: left;
   margin-bottom: ${dM.s};
   cursor: pointer;
 
-  padding: ${dM.xs} ${dM.s} ${dM.xs} ${dM.L};
-  margin: ${dM.xs} -${dM.s} -${dM.xs} -${dM.L};
+  padding: ${dM.xs} ${dM.L};
+  margin: 0 -${dM.L};
 
   &:hover {
     background-color: ${colors.main.m4};
@@ -69,6 +69,7 @@ const Wrapper = styled.button`
     display: block;
     position: absolute;
     margin-top: ${dM.xs};
+    margin-bottom: -${dM.xs};
   }
 
   :first-child {
