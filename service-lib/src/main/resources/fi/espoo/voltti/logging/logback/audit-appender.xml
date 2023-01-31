@@ -48,7 +48,7 @@ Audit appender logback configuration provided for import
                 }
             </customFields>
             <timeZone>UTC</timeZone>
-            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.sss'Z'</timestampPattern>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
         </encoder>
     </appender>
 </included>
