@@ -952,8 +952,8 @@ const sv: Translations = {
           'Berätta om barnets behov av stöd för utveckling och lärande',
         assistanceNeedInstructions: {
           DAYCARE:
-            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
-          CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
+            'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stödet genomförs i barnets vardag som en del av den övriga verksamheten inom småbarnspedagogiken. Om ditt barn behöver stöd, kontaktar specialläraren inom småbarnspedagogik dig, så att vi kan beakta barnets behov när vi beviljar platser inom småbarnspedagogik.',
+          CLUB: 'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stödet genomförs i barnets vardag som en del av den övriga verksamheten inom småbarnspedagogiken. Om ditt barn behöver stöd, kontaktar specialläraren inom småbarnspedagogik dig, så att vi kan beakta barnets behov när vi beviljar platser inom småbarnspedagogik.',
           PRESCHOOL:
             'Välj denna punkt i ansökan om barnet behöver stöd för växande och/eller sitt lärande under förskoleåret. Stödet genomförs i barnets vardag som en del av förskoleundervisningens och småbarnspedagogikens övriga verksamhet. Om ditt barn behöver stöd för växande och/eller lärande, kontaktar en speciallärare inom småbarnspedagogiken den sökande för att barnets behov kan beaktas när förskoleplatsen anvisas.'
         },

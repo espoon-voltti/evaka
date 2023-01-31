@@ -993,8 +993,8 @@ const en: Translations = {
           'Describe the need for support for the child.',
         assistanceNeedInstructions: {
           DAYCARE:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
-          CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
+            'Select this section on the application if your child needs support for their development, learning or wellbeing. Support is provided as part of early childhood education activities. If your child needs support, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
+          CLUB: 'Select this section on the application if your child needs support for their development, learning or wellbeing. Support is provided as part of early childhood education activities. If your child needs support, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           PRESCHOOL:
             'Check this item on the application if your child needs support for his or her development and/or learning during the pre-primary education year. The support will be implemented in the child’s daily life as part of the other activities of pre-primary and early childhood education. If your child has developmental and/or learning support needs, the early childhood special education teacher will contact you so that your child’s needs can be taken into account when allocating a place for pre-primary education.'
         },
