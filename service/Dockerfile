@@ -17,7 +17,7 @@ COPY ./service/sficlient/*.kts ./service/sficlient/
 
 WORKDIR /evaka/service
 
-RUN ./gradlew --no-daemon dependencies :service-lib:dependencies :evaka-bom:dependencies :vtjclient:dependencies :sficlient:dependencies
+RUN ./gradlew --no-daemon resolveDependencies
 
 COPY ./service/sficlient/ ./sficlient/
 COPY ./service/vtjclient/ ./vtjclient/
