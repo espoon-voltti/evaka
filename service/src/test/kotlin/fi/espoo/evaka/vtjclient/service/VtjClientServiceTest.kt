@@ -25,9 +25,9 @@ import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyReqBody
 import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyResBody
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
+import jakarta.xml.bind.JAXBElement
 import java.time.LocalDate
 import java.util.UUID
-import javax.xml.bind.JAXBElement
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail

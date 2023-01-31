@@ -11,6 +11,12 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://build.shibboleth.net/maven/releases") {
+        content {
+            includeGroup("net.shibboleth.utilities")
+            includeGroup("org.opensaml")
+        }
+    }
 }
 
 dependencies {
@@ -21,7 +27,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm")
 
     // Kotlin + core
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))

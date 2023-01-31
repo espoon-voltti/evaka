@@ -19,9 +19,9 @@ import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
 import io.opentracing.Tracer
+import jakarta.servlet.http.HttpServletRequest
 import java.time.ZonedDateTime
 import java.util.UUID
-import javax.servlet.http.HttpServletRequest
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter

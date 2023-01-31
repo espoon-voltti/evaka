@@ -10,7 +10,7 @@ import fi.espoo.evaka.vtjclient.mapper.toServiceHeader
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
-import javax.xml.bind.helpers.DefaultValidationEventHandler
+import jakarta.xml.bind.helpers.DefaultValidationEventHandler
 import mu.KotlinLogging
 import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression

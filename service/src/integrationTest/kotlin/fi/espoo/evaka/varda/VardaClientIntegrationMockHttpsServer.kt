@@ -14,7 +14,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 class VardaClientIntegrationMockHttpsServer(httpsPort: Int) : AutoCloseable {
     val app =
         Javalin.create { config ->
-                config.server {
+                config.jetty.server {
                     val server = Server()
                     val sslConnector = ServerConnector(server, getSslContextFactory())
                     sslConnector.port = httpsPort
@@ -38,7 +38,7 @@ class VardaClientIntegrationMockHttpsServer(httpsPort: Int) : AutoCloseable {
         }
     }
 
-    fun getSslContextFactory(): SslContextFactory {
+    fun getSslContextFactory(): SslContextFactory.Server {
         val sslContextFactory = SslContextFactory.Server()
         sslContextFactory.keyStorePath =
             this.javaClass.getResource("/test-certificate/localhost.keystore").toExternalForm()

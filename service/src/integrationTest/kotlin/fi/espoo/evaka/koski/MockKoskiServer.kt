@@ -12,9 +12,10 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.post
 import io.javalin.apibuilder.ApiBuilder.put
 import io.javalin.http.Context
+import io.javalin.http.HandlerType
+import jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST
+import jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND
 import java.util.concurrent.locks.ReentrantLock
-import javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST
-import javax.servlet.http.HttpServletResponse.SC_NOT_FOUND
 import kotlin.concurrent.withLock
 import kotlin.random.Random
 import mu.KotlinLogging
@@ -65,14 +66,14 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
         val oppija = jsonMapper.readValue(ctx.body(), Oppija::class.java)
 
         when (ctx.method()) {
-            "POST" ->
+            HandlerType.POST ->
                 if (oppija.opiskeluoikeudet.any { it.oid != null }) {
                     ctx.contentType("text/plain")
                         .status(SC_BAD_REQUEST)
                         .result("Trying to create a study right with OID")
                     return
                 }
-            "PUT" ->
+            HandlerType.PUT ->
                 if (
                     oppija.opiskeluoikeudet
                         .mapNotNull { it.oid }
@@ -92,6 +93,7 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
                         )
                     return
                 }
+            else -> error("Unsupported operation type ${ctx.method()}")
         }
 
         val response =

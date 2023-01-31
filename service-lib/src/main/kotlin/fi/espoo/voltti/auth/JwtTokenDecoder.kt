@@ -7,11 +7,11 @@ package fi.espoo.voltti.auth
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.auth0.jwt.interfaces.JWTVerifier
+import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpFilter
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
-import javax.servlet.FilterChain
-import javax.servlet.http.HttpFilter
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 // RFC6750 - The OAuth 2.0 Authorization Framework: Bearer Token Usage
 // Authorization Request Header Field

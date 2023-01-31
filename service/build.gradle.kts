@@ -33,6 +33,12 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://build.shibboleth.net/maven/releases") {
+        content {
+            includeGroup("net.shibboleth.utilities")
+            includeGroup("org.opensaml")
+        }
+    }
 }
 
 sourceSets {
@@ -67,7 +73,7 @@ dependencies {
     ktlint(platform(project(":evaka-bom")))
 
     // Kotlin + core
-    api(kotlin("stdlib-jdk8"))
+    api(kotlin("stdlib"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
     integrationTestImplementation(kotlin("test"))
@@ -84,7 +90,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
-    implementation("org.springframework.ws:spring-ws-security")
+    implementation("org.springframework.ws:spring-ws-security") {
+        exclude("org.bouncycastle", "bcpkix-jdk15on")
+        exclude("org.bouncycastle", "bcprov-jdk15on")
+    }
     implementation("org.springframework.ws:spring-ws-support")
     implementation("org.springframework.boot:spring-boot-devtools")
 
@@ -95,7 +104,9 @@ dependencies {
     implementation("redis.clients:jedis")
 
     // JDBI
-    implementation("org.jdbi:jdbi3-core")
+    implementation("org.jdbi:jdbi3-core") {
+        exclude("org.bouncycastle", "bcprov-jdk15on")
+    }
     implementation("org.jdbi:jdbi3-jackson2")
     implementation("org.jdbi:jdbi3-kotlin")
     implementation("org.jdbi:jdbi3-postgres")
@@ -108,7 +119,6 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
 
@@ -133,12 +143,12 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-jmx")
     implementation("io.opentracing:opentracing-api")
     implementation("io.opentracing:opentracing-util")
-    implementation("javax.annotation:javax.annotation-api")
+    implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("org.apache.commons:commons-pool2")
     implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
-    implementation("org.bouncycastle:bcprov-jdk15on")
-    implementation("org.bouncycastle:bcpkix-jdk15on")
+    implementation("org.bouncycastle:bcprov-jdk18on")
+    implementation("org.bouncycastle:bcpkix-jdk18on")
     implementation("org.apache.tika:tika-core")
     implementation("org.apache.commons:commons-imaging")
 
@@ -158,7 +168,10 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") {
+        exclude("org.bouncycastle", "bcpkix-jdk15on")
+        exclude("org.bouncycastle", "bcprov-jdk15on")
+    }
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
