@@ -30,13 +30,13 @@ dependencies {
 }
 
 tasks {
-    create("codegen", JavaExec::class) {
+    register("codegen", JavaExec::class) {
         shouldRunAfter("assemble")
         mainClass.set("evaka.codegen.GenerateKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }
-    create("codegenCheck", JavaExec::class) {
+    register("codegenCheck", JavaExec::class) {
         mainClass.set("evaka.codegen.CheckKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile

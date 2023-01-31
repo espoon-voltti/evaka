@@ -31,7 +31,7 @@ plugins {
 }
 
 sourceSets {
-    create("integrationTest") {
+    register("integrationTest") {
         compileClasspath += main.get().output + test.get().output
         runtimeClasspath += main.get().output + test.get().output
     }
@@ -50,7 +50,7 @@ idea {
     }
 }
 
-val ktlint: Configuration by configurations.creating
+val ktlint by configurations.registering
 
 dependencies {
     api(platform(project(":evaka-bom")))
@@ -58,7 +58,7 @@ dependencies {
     testImplementation(platform(project(":evaka-bom")))
     runtimeOnly(platform(project(":evaka-bom")))
     integrationTestImplementation(platform(project(":evaka-bom")))
-    ktlint(platform(project(":evaka-bom")))
+    ktlint { platform(project(":evaka-bom")) }
 
     // Kotlin + core
     api(kotlin("stdlib"))
@@ -164,7 +164,7 @@ dependencies {
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
 
-    ktlint("com.pinterest:ktlint:${Version.ktlint}")
+    ktlint { "com.pinterest:ktlint:${Version.ktlint}" }
 }
 
 allOpen {
@@ -207,7 +207,7 @@ tasks {
         systemProperty("spring.profiles.active", "test")
     }
 
-    create("integrationTest", Test::class) {
+    register("integrationTest", Test::class) {
         useJUnitPlatform()
         group = "verification"
         systemProperty("spring.profiles.active", "integration-test")
@@ -222,7 +222,7 @@ tasks {
         systemProperty("spring.profiles.active", "local")
     }
 
-    create("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
+    register("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
         mainClass.set("fi.espoo.evaka.MainKt")
         classpath = sourceSets["main"].runtimeClasspath
         systemProperty("spring.profiles.active", "local")
@@ -233,9 +233,9 @@ tasks {
         systemProperty("flyway.password", "evaka_it")
     }
 
-    create("ktlintApplyToIdea", JavaExec::class) {
+    register("ktlintApplyToIdea", JavaExec::class) {
         mainClass.set("com.pinterest.ktlint.Main")
-        classpath = ktlint
+        classpath = ktlint.get()
         args = listOf("applyToIDEAProject", "-y")
     }
 
