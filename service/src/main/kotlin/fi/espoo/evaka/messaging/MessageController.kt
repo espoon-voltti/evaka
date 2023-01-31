@@ -365,6 +365,7 @@ class MessageController(
                             messageRecipients = messageRecipients,
                             attachmentIds = body.attachmentIds,
                             staffCopyRecipients = staffCopyRecipients,
+                            applicationId = body.relatedApplicationId,
                             municipalAccountName = featureConfig.municipalMessageAccountName,
                             serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                         )
@@ -469,6 +470,7 @@ class MessageController(
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
                     content = body.content,
+                    user = user,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                 )

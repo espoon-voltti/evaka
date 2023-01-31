@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.notes.deleteApplicationNotesLinkedToMessages
 import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
@@ -313,6 +314,7 @@ fun Database.Transaction.insertThreadsWithMessages(
     contentId: MessageContentId,
     senderId: MessageAccountId,
     recipientNames: List<String>,
+    applicationId: ApplicationId?,
     municipalAccountName: String,
     serviceWorkerAccountName: String
 ): List<Pair<MessageThreadId, MessageId>> {
@@ -320,7 +322,7 @@ fun Database.Transaction.insertThreadsWithMessages(
         prepareBatch(
             """
 WITH new_thread AS (
-    INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id
+    INSERT INTO message_thread (message_type, title, urgent, is_copy, application_id) VALUES (:messageType, :title, :urgent, :isCopy, :applicationId) RETURNING id
 )
 INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, recipient_names)
 SELECT
@@ -350,6 +352,7 @@ RETURNING id, thread_id
             .bind("contentId", contentId)
             .bind("senderId", senderId)
             .bind("recipientNames", recipientNames)
+            .bind("applicationId", applicationId)
             .bind("municipalAccountName", municipalAccountName)
             .bind("serviceWorkerAccountName", serviceWorkerAccountName)
             .add()
@@ -929,7 +932,8 @@ data class ThreadWithParticipants(
     val type: MessageType,
     val isCopy: Boolean,
     val senders: Set<MessageAccountId>,
-    val recipients: Set<MessageAccountId>
+    val recipients: Set<MessageAccountId>,
+    val applicationId: ApplicationId?
 )
 
 fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
@@ -939,6 +943,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
             t.id AS threadId,
             t.message_type AS type,
             t.is_copy,
+            t.application_id,
             (SELECT array_agg(m2.sender_id)) as senders,
             (SELECT array_agg(rec.recipient_id)) as recipients
             FROM message m

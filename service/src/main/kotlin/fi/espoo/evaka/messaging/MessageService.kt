@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.application.notes.createApplicationNote
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -12,6 +14,7 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -85,6 +88,7 @@ class MessageService(
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
         staffCopyRecipients: Set<MessageAccountId>,
+        applicationId: ApplicationId?,
         municipalAccountName: String,
         serviceWorkerAccountName: String
     ): MessageContentId {
@@ -127,6 +131,7 @@ class MessageService(
                 contentId,
                 sender,
                 recipientNames,
+                applicationId,
                 municipalAccountName,
                 serviceWorkerAccountName
             )
@@ -170,6 +175,7 @@ class MessageService(
                     contentId,
                     sender,
                     recipientNames,
+                    applicationId,
                     municipalAccountName,
                     serviceWorkerAccountName
                 )
@@ -200,9 +206,10 @@ class MessageService(
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
         municipalAccountName: String,
-        serviceWorkerAccountName: String
+        serviceWorkerAccountName: String,
+        user: AuthenticatedUser
     ): ThreadReply {
-        val (threadId, type, isCopy, senders, recipients) =
+        val (threadId, type, isCopy, senders, recipients, applicationId) =
             db.read { it.getThreadByMessageId(replyToMessageId) }
                 ?: throw NotFound("Message not found")
 
@@ -240,6 +247,14 @@ class MessageService(
                     listOf(messageId),
                     now,
                 )
+                if (applicationId != null) {
+                    tx.createApplicationNote(
+                        applicationId = applicationId,
+                        content = content,
+                        createdBy = user.evakaUserId,
+                        messageContentId = contentId
+                    )
+                }
                 tx.getSentMessage(senderAccount, messageId, serviceWorkerAccountName)
             }
         return ThreadReply(threadId, message)

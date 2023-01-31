@@ -160,6 +160,7 @@ class MessageControllerCitizen(
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
                     content = body.content,
+                    user = user,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                 )

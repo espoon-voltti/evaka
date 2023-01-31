@@ -257,6 +257,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 messageRecipients = listOf(receiverAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
+                applicationId = null,
                 municipalAccountName = "Espoo",
                 serviceWorkerAccountName = "Espoon palveluohjaus"
             )
@@ -308,6 +309,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
+                applicationId = null,
                 municipalAccountName = "Espoo",
                 serviceWorkerAccountName = "Espoon palveluohjaus"
             )
@@ -377,6 +379,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
+                applicationId = null,
                 municipalAccountName = "Espoo",
                 serviceWorkerAccountName = "Espoon palveluohjaus"
             )

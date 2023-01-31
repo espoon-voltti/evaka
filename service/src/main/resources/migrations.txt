@@ -294,3 +294,4 @@ V294__add_service_worker_message_account_type.sql
 V295__service_worker_message_account.sql
 V296__assistance_need_decision_annulled.sql
 V297__application_note_message_content_id.sql
+V298__message_thread_application_id.sql
