@@ -51,7 +51,7 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschoolDaycare
-import fi.espoo.evaka.snPreschoolDaycareContractDays15
+import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -4677,11 +4677,86 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `invoice generation with 15 contract days and 7 surplus days in preschool daycare results in a monthly maximum invoice no greater than the daycare maximum`() {
+    fun `invoice generation with 13 contract days and 1 surplus day in preschool daycare results in a monthly maximum invoice no greater than the preschool daycare maximum (maxContractDaySurplusThreshold = 13)`() {
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        val serviceNeed = snPreschoolDaycareContractDays15
-        val baseFee = 28900
+
+        // 14 attendance days
+        // then 8 planned absences
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 22),
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29),
+                    LocalDate.of(2019, 1, 30),
+                    LocalDate.of(2019, 1, 31)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
+
+        initDataForAbsences(
+            listOf(period),
+            absenceDays = plannedAbsenceDays,
+            placementType = PlacementType.PRESCHOOL_DAYCARE,
+            serviceNeed = snPreschoolDaycareContractDays13
+        )
+
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(maxContractDaySurplusThreshold = 13),
+                    DefaultInvoiceGenerationLogic
+                )
+            )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            // The *preschool daycare maximum* (23120) is invoiced, not the *daycare maximum*.
+            assertEquals(
+                (snDefaultPreschoolDaycare.feeCoefficient * BigDecimal(28900)).toInt(),
+                invoice.totalPrice
+            )
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(17300, invoiceRow.unitPrice)
+                assertEquals(17300, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(5820, invoiceRow.unitPrice) // 23120 - 17300
+                assertEquals(5820, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice capping to monthly preschool maximum takes sibling discount into account (maxContractDaySurplusThreshold = 13)`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 14 attendance days
+        // then 8 planned absences
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 22),
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29),
+                    LocalDate.of(2019, 1, 30),
+                    LocalDate.of(2019, 1, 31)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
+
         val decision =
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -4694,53 +4769,42 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         dateOfBirth = testChild_1.dateOfBirth,
                         placementUnitId = testDaycare.id,
                         placementType = PlacementType.PRESCHOOL_DAYCARE,
-                        serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
-                        baseFee = baseFee,
-                        fee =
-                            roundToEuros(serviceNeed.feeCoefficient * BigDecimal(baseFee)).toInt(),
-                        feeAlterations = listOf()
+                        serviceNeed = snPreschoolDaycareContractDays13.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 8700, // 28900 * 0.6 * 0.5
                     )
                 )
             )
+        insertDecisionsAndPlacements(listOf(decision))
+        insertAbsences(testChild_1.id, plannedAbsenceDays)
 
-        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
-
-        val placementId = db.transaction(insertPlacement(testChild_1.id, period))
-        val groupId =
-            db.transaction {
-                it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
-            }
-        db.transaction { tx ->
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = period.start,
-                endDate = period.end!!
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(maxContractDaySurplusThreshold = 13),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        }
-
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(
-                (snDefaultPreschoolDaycare.feeCoefficient * BigDecimal(baseFee)).toInt(),
-                invoice.totalPrice
-            )
+            assertEquals(11600, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
-                assertEquals(21700, invoiceRow.unitPrice)
-                assertEquals(21700, invoiceRow.price)
+                assertEquals(8700, invoiceRow.unitPrice)
+                assertEquals(8700, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
-                assertEquals(1420, invoiceRow.unitPrice) // 23120 - 21700
-                assertEquals(1420, invoiceRow.price)
+                assertEquals(2900, invoiceRow.unitPrice) // 11600 - 8700
+                assertEquals(2900, invoiceRow.price)
             }
         }
     }
@@ -5607,7 +5671,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         periods: List<DateRange>,
         absenceDays: List<Pair<LocalDate, AbsenceType>>,
         child: DevPerson = testChild_1,
-        serviceNeed: ServiceNeedOption = snDaycareFullDay35
+        placementType: PlacementType = PlacementType.DAYCARE,
+        serviceNeed: ServiceNeedOption = snDaycareFullDay35,
     ) {
         periods.forEachIndexed { index, period ->
             val decision =
@@ -5621,7 +5686,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             childId = child.id,
                             dateOfBirth = child.dateOfBirth,
                             placementUnitId = testDaycare.id,
-                            placementType = PlacementType.DAYCARE,
+                            placementType = placementType,
                             serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee =
@@ -5660,7 +5725,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
         }
-        insertAbsences(child.id, absenceDays)
+        if (absenceDays.isNotEmpty()) {
+            insertAbsences(child.id, absenceDays)
+        }
     }
 
     private fun insertAbsences(childId: ChildId, absenceDays: List<Pair<LocalDate, AbsenceType>>) {
