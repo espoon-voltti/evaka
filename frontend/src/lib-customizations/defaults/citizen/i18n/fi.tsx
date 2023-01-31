@@ -953,7 +953,7 @@ export default {
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomenkielentaitoa tai jotka osaavat jo jonkin verran suomea. Lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Esiopetusikäisten perusopetukseen valmistavaa opetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. '
+          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen kielen taitoa tai jotka osaavat jo jonkin verran suomea. Lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Esiopetusikäisten perusopetukseen valmistavaa opetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. '
       },
       unitPreference: {
         title: 'Hakutoive',
