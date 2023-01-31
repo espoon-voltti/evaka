@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
 
