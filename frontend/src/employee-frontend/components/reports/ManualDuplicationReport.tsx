@@ -31,7 +31,6 @@ import { TableScrollable } from './common'
 
 type ReportColumnKey = keyof ManualDuplicationReportRow
 
-const StyledRow = styled(Tr)``
 const WrappableTd = styled(Td)`
   white-space: normal;
   min-width: 80px;
@@ -141,7 +140,7 @@ export default React.memo(function ManualDuplicationReport() {
             </Thead>
             <Tbody>
               {reportRows.map((row: ManualDuplicationReportRow) => (
-                <StyledRow key={row.childId}>
+                <Tr key={row.childId}>
                   <WrappableTd>
                     <Link
                       target="_blank"
@@ -172,7 +171,7 @@ export default React.memo(function ManualDuplicationReport() {
                     </Link>
                   </WrappableTd>
                   <WrappableTd>{`${row.preschoolStartDate.format()} - ${row.preschoolEndDate.format()}`}</WrappableTd>
-                </StyledRow>
+                </Tr>
               ))}
             </Tbody>
           </TableScrollable>
