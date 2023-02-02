@@ -26,5 +26,9 @@ end split
 end split
 :Syntyy uusi maksupäätösluonnos;
 :TK luo maksupäätöksen;
+split
 :TK korjaa laskutuksen käsin laskutusjärjestelmään;
+split again
+:TK tekee manuaalisesti hyvitys- ja lisälaskurivit eVakaan (jatkuva prosessi);
+end split
 @enduml
