@@ -160,6 +160,7 @@ class MessageControllerCitizen(
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
                     content = body.content,
+                    user = user,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                 )
@@ -200,7 +201,11 @@ class MessageControllerCitizen(
                                 isCopy = false
                             )
                         tx.upsertSenderThreadParticipants(senderId, listOf(threadId), now)
-                        val recipientNames = tx.getAccountNames(recipientIds)
+                        val recipientNames =
+                            tx.getAccountNames(
+                                recipientIds,
+                                featureConfig.serviceWorkerMessageAccountName
+                            )
                         val messageId =
                             tx.insertMessage(
                                 now = now,

@@ -241,7 +241,7 @@ export default React.memo(function ApplicationPage() {
                         onClick={() =>
                           window.open(
                             `${getEmployeeUrlPrefix()}/employee/messages/send?recipient=${
-                              applicationData.guardians[0].id
+                              applicationData.application.guardianId
                             }&title=${getMessageSubject(
                               i18n,
                               applicationData

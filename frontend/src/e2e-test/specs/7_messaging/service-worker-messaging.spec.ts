@@ -170,5 +170,37 @@ describe('Service Worker Messaging', () => {
       await applReadView.reload()
       await applReadView.assertNoNotes()
     })
+
+    it('should create an application note when the citizen answers a message', async () => {
+      await openStaffPage(mockedTime)
+      let applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      let applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      const title = 'Message about application that needs a reply'
+      const content = 'Hello citizen, please reply to this'
+      await messagesPage.inputTitle.fill(title)
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+
+      await openCitizenPage(mockedTime.addHours(1))
+      const header = new CitizenHeader(citizenPage)
+      await header.selectTab('messages')
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThread()
+      await citizenMessagesPage.assertThreadContent({ title, content })
+      const replyContent = 'This is my reply'
+      await citizenMessagesPage.replyToFirstThread(replyContent)
+
+      await openStaffPage(mockedTime.addHours(2))
+      applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      await applReadView.assertNote(1, `Lähetetty viesti\n\n${replyContent}`)
+    })
   })
 })

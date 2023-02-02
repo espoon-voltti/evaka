@@ -1,0 +1,1 @@
+ALTER TABLE message_thread ADD COLUMN application_id uuid CONSTRAINT fk$application_id REFERENCES application (id);

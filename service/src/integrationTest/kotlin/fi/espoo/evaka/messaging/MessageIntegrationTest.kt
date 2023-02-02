@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -32,6 +33,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertEvakaUser
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
@@ -60,6 +62,8 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -173,7 +177,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group2Account = insertGroup(groupId2)
 
             fun insertPerson(person: DevPerson): MessageAccountId {
-                tx.insertTestPerson(person)
+                val id = tx.insertTestPerson(person)
+                tx.insertEvakaUser(
+                    EvakaUser(
+                        id = EvakaUserId(id.raw),
+                        type = EvakaUserType.CITIZEN,
+                        name = "${person.lastName} ${person.firstName}"
+                    )
+                )
                 return tx.createPersonMessageAccount(person.id)
             }
             person1Account = insertPerson(testAdult_1)
@@ -900,6 +911,39 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     .first()
             assertEquals(messageThreadId, note.messageThreadId)
         }
+    }
+
+    @Test
+    fun `the citizen recipient can reply to a message regarding their application, sent by a service worker`() {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE
+                )
+            }
+
+        val messageContent = "Tähän viestiin pitäisi pystyä vastaamaan"
+        // when a message thread related to an application is created
+        postNewThread(
+            title = "Vastaa heti",
+            message = messageContent,
+            messageType = MessageType.MESSAGE,
+            sender = serviceWorkerAccount,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            user = serviceWorker,
+            relatedApplicationId = applicationId
+        )
+        val thread = getMessageThreads(person1)[0]
+        replyToMessage(
+            messageId = thread.messages.first().id,
+            content = "Vastaus",
+            recipientAccountIds = setOf(serviceWorkerAccount),
+            user = person1,
+            now = clock.now()
+        )
+        assertEquals(1, unreadMessagesCount(serviceWorkerAccount, serviceWorker))
     }
 
     private fun getUnreadReceivedMessages(
