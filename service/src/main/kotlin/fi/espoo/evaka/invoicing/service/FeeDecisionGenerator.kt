@@ -223,9 +223,9 @@ private fun generateFeeDecisions(
             val family = families.find { it.period.overlaps(period) } ?: return@mapNotNull null
 
             val price =
-                prices.find { it.validDuring.contains(period) }
+                prices.singleOrNull() { it.validDuring.contains(period) }
                     ?: error(
-                        "Missing price for period ${period.start} - ${period.end}, cannot generate fee decision"
+                        "Missing price or multiple prices for period ${period.start} - ${period.end}, cannot generate fee decision"
                     )
 
             val income =
