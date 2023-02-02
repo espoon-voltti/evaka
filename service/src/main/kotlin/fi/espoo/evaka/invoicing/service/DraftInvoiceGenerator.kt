@@ -172,28 +172,34 @@ class DraftInvoiceGenerator(
                         )
                 }
             }
-            val getDefaultMaxFee: (FeeDecisionChild, Int) -> Int = { part, discountedFee ->
+            val getDefaultMaxFee: (PlacementType, Int) -> Int = { placementType, discountedFee ->
                 val feeCoefficient =
                     allServiceNeedOptions
-                        .find { it.defaultOption && it.validPlacementType == part.placement.type }
+                        .find { it.defaultOption && it.validPlacementType == placementType }
                         ?.feeCoefficient
-                        ?: BigDecimal.ZERO
+                        ?: throw Exception(
+                            "No default service need option found for placement type $placementType"
+                        )
                 (feeCoefficient * BigDecimal(discountedFee)).toInt()
             }
 
-            if (featureConfig.useContractDaysAsDailyFeeDivisor) {
-                childDecisions.maxOf { (_, decisionPart) ->
-                    minOf(
-                        if (capMaxFeeAtDefault)
-                            getDefaultMaxFee(decisionPart, getDecisionPartMaxFee(decisionPart))
-                        else Int.MAX_VALUE,
-                        getDecisionPartMaxFee(decisionPart)
-                    )
+            val childDecisionMaxFees =
+                childDecisions.map { (dateRange, decisionPart) ->
+                    val decisionPartMaxFee = getDecisionPartMaxFee(decisionPart)
+                    dateRange to
+                        minOf(
+                            decisionPartMaxFee,
+                            if (capMaxFeeAtDefault) {
+                                getDefaultMaxFee(decisionPart.placement.type, decisionPartMaxFee)
+                            } else Int.MAX_VALUE
+                        )
                 }
+
+            if (featureConfig.useContractDaysAsDailyFeeDivisor) {
+                childDecisionMaxFees.maxOf { (_, maxFee) -> maxFee }
             } else {
-                childDecisions
-                    .map { (dateRange, decisionPart) ->
-                        val maxFee = getDecisionPartMaxFee(decisionPart)
+                childDecisionMaxFees
+                    .map { (dateRange, maxFee) ->
                         val daysInRange =
                             operationalDays.generalCase.filter { dateRange.includes(it) }.size
                         (BigDecimal(maxFee) * BigDecimal(daysInRange)).divide(

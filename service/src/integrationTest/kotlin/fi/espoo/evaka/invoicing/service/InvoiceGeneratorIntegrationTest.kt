@@ -4707,7 +4707,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
-                    featureConfig.copy(maxContractDaySurplusThreshold = 13),
+                    featureConfig.copy(
+                        maxContractDaySurplusThreshold = 13,
+                        useContractDaysAsDailyFeeDivisor = false
+                    ),
                     DefaultInvoiceGenerationLogic
                 )
             )
@@ -4783,7 +4786,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
-                    featureConfig.copy(maxContractDaySurplusThreshold = 13),
+                    featureConfig.copy(
+                        maxContractDaySurplusThreshold = 13,
+                        useContractDaysAsDailyFeeDivisor = false
+                    ),
                     DefaultInvoiceGenerationLogic
                 )
             )
