@@ -49,9 +49,15 @@ export default class CitizenCalendarPage {
   #openCalendarActionsModal = this.page.findByDataQa(
     'open-calendar-actions-modal'
   )
-  #dayCell = (date: LocalDate) =>
+  dayCell = (date: LocalDate) =>
     this.page.findByDataQa(`${this.type}-calendar-day-${date.formatIso()}`)
   reservationModal = this.page.findByDataQa('reservation-modal')
+
+  async openDayModal(date: LocalDate) {
+    await this.dayCell(date).click()
+    return new DayModal(this.page)
+  }
+
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="calendar-page"][data-isloading="false"]')
@@ -59,7 +65,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertEventCount(date: LocalDate, count: number) {
-    await this.#dayCell(date)
+    await this.dayCell(date)
       .findByDataQa('event-count')
       .assertTextEquals(count.toString())
   }
@@ -114,12 +120,12 @@ export default class CitizenCalendarPage {
   }
 
   async openDayView(date: LocalDate) {
-    await this.#dayCell(date).click()
+    await this.dayCell(date).click()
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
 
   async assertReservations(date: LocalDate, reservations: Reservation[]) {
-    const reservationRows = this.#dayCell(date)
+    const reservationRows = this.dayCell(date)
       .findByDataQa('reservations')
       .findAllByDataQa('reservation-group')
 
@@ -212,6 +218,16 @@ class ReservationsModal {
   )
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
 
+  irregularStartTimeInput = (date: LocalDate) =>
+    new TextInput(
+      this.page.find(`[data-qa="irregular-${date.formatIso()}-start-time-0"]`)
+    )
+
+  irregularEndTimeInput = (date: LocalDate) =>
+    new TextInput(
+      this.page.find(`[data-qa="irregular-${date.formatIso()}-end-time-0"]`)
+    )
+
   #childCheckbox = (childId: string) =>
     new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
 
@@ -233,7 +249,6 @@ class ReservationsModal {
     await this.#endDateInput.fill(dateRange.end.format())
     await this.#dailyStartTimeInput.fill(startTime)
     await this.#dailyEndTimeInput.fill(endTime)
-
     await this.#modalSendButton.click()
   }
 
@@ -276,6 +291,25 @@ class ReservationsModal {
         await this.#weeklyStartTimeInputs[index].fill(weeklyTime.startTime)
         await this.#weeklyEndTimeInputs[index].fill(weeklyTime.endTime)
       }
+    }, Promise.resolve())
+
+    await this.#modalSendButton.click()
+  }
+
+  async createIrregularReservation(
+    dateRange: FiniteDateRange,
+    irregularTimes: { date: LocalDate; startTime: string; endTime: string }[]
+  ) {
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#repetitionSelect.selectOption({ value: 'IRREGULAR' })
+
+    await irregularTimes.reduce(async (promise, weeklyTime) => {
+      await promise
+      await this.irregularStartTimeInput(weeklyTime.date).fill(
+        weeklyTime.startTime
+      )
+      await this.irregularEndTimeInput(weeklyTime.date).fill(weeklyTime.endTime)
     }, Promise.resolve())
 
     await this.#modalSendButton.click()
@@ -499,4 +533,10 @@ class HolidayModal extends Element {
 
 class NonReservableDaysWarningModal extends Element {
   okButton = this.findByDataQa('modal-okBtn')
+}
+
+class DayModal {
+  constructor(private readonly page: Page) {}
+  childName = this.page.findAllByDataQa('child-name')
+  closeModal = this.page.findByDataQa('day-view-close-button')
 }

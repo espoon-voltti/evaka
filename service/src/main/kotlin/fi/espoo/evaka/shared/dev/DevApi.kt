@@ -932,6 +932,22 @@ RETURNING id
         }
     }
 
+    data class DevHoliday(val date: LocalDate, val description: String)
+
+    @PostMapping("/holiday")
+    fun createHoliday(db: Database, @RequestBody holiday: DevHoliday) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.createUpdate(
+                        "INSERT INTO holiday(date, description) VALUES(:date, :description)"
+                    )
+                    .bind("date", holiday.date)
+                    .bind("description", holiday.description)
+                    .execute()
+            }
+        }
+    }
+
     @PostMapping("/holiday-period/questionnaire/{id}")
     fun createHolidayQuestionnaire(
         db: Database,

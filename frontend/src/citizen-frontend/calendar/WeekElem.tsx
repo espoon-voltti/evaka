@@ -206,6 +206,7 @@ const DayElem = React.memo(function DayElem({
           data={dailyReservations}
           allChildren={childData}
           childImages={childImages}
+          isReservable={isReservable}
         />
       </ReservationsContainer>
       {eventCount > 0 && (

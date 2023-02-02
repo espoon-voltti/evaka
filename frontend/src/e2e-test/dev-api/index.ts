@@ -68,6 +68,7 @@ import {
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
   DevFixedPeriodQuestionnaire,
+  DevHoliday,
   DevHolidayPeriod,
   DevIncome,
   DevPayment,
@@ -222,6 +223,14 @@ export async function insertHolidayQuestionnaire({
 }: DevFixedPeriodQuestionnaire): Promise<void> {
   try {
     await devClient.post(`/holiday-period/questionnaire/${id}`, rest)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertHoliday(holiday: DevHoliday): Promise<void> {
+  try {
+    await devClient.post(`/holiday`, holiday)
   } catch (e) {
     throw new DevApiError(e)
   }

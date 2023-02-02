@@ -94,6 +94,9 @@ function getChildrenWithReservations(
     .filter((child) =>
       child.maxOperationalDays.includes(date.getIsoDayOfWeek())
     )
+    .filter(
+      (child) => !dailyData.isHoliday || child.maxOperationalDays.length == 7
+    )
     .map((child) => {
       const childReservations = dailyData?.children.find(
         ({ childId }) => childId === child.id

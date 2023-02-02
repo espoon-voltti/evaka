@@ -48,6 +48,7 @@ import {
   DevChildConsent,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
+  DevHoliday,
   DevIncome,
   DevPayment,
   DevRealtimeStaffAttendance,
@@ -104,7 +105,8 @@ import {
   insertStaffAttendancePlan,
   insertCalendarEvent,
   insertCalendarEventAttendee,
-  insertStaffRealtimeAttendance
+  insertStaffRealtimeAttendance,
+  insertHoliday
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1584,6 +1586,13 @@ export class Fixture {
     })
   }
 
+  static holiday(): HolidayBuilder {
+    return new HolidayBuilder({
+      date: LocalDate.todayInHelsinkiTz(),
+      description: 'Holiday description'
+    })
+  }
+
   static guardian(child: PersonBuilder, guardian: PersonBuilder) {
     return new GuardianBuilder({
       childId: child.data.id,
@@ -2139,6 +2148,17 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
 
   copy() {
     return new HolidayQuestionnaireBuilder({ ...this.data })
+  }
+}
+
+export class HolidayBuilder extends FixtureBuilder<DevHoliday> {
+  async save() {
+    await insertHoliday(this.data)
+    return this
+  }
+
+  copy() {
+    return new HolidayBuilder({ ...this.data })
   }
 }
 

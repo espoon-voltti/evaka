@@ -643,3 +643,8 @@ export interface DevStaffAttendancePlan {
   endTime: HelsinkiDateTime
   description: string | null
 }
+
+export interface DevHoliday {
+  date: LocalDate
+  description: string
+}

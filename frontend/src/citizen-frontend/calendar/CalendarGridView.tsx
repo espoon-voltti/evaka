@@ -467,6 +467,7 @@ const Day = React.memo(function Day({
           data={day}
           allChildren={childData}
           childImages={childImages}
+          isReservable={dayIsReservable(day)}
         />
       </div>
       {dateType === 'past' && <HistoryOverlay />}

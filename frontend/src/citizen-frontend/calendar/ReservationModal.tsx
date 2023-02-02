@@ -140,7 +140,10 @@ export default React.memo(function ReservationModal({
   }, [formData.startDate, formData.endDate])
 
   const childrenInShiftCare = useMemo(
-    () => availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit),
+    () =>
+      availableChildren.some(
+        ({ maxOperationalDays }) => maxOperationalDays.length == 7
+      ),
     [availableChildren]
   )
 
