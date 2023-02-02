@@ -104,7 +104,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedGlobalActions.contains(Action.Global.READ_INVOICE_REPORT)
                     },
                     Report.MANUAL_DUPLICATION.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_MANUAL_DUPLICATION_REPORT)
+                        permittedGlobalActions.contains(
+                            Action.Global.READ_MANUAL_DUPLICATION_REPORT
+                        )
                     },
                     Report.MISSING_HEAD_OF_FAMILY.takeIf {
                         permittedActionsForSomeUnit.contains(
