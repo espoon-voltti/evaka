@@ -29,14 +29,16 @@ spring:
   application:
     name: "evaka-service"
   datasource:
-    continue-on-error: false
     driver-class-name: "org.postgresql.Driver"
-    sqlScriptEncoding: "UTF-8"
     type: "com.zaxxer.hikari.HikariDataSource"
   servlet:
     multipart:
       max-file-size: "10MB"
       max-request-size: "10MB"
+  sql:
+    init:
+      continue-on-error: false
+      encoding: "UTF-8"
 server:
   port: 8888
   tomcat:
