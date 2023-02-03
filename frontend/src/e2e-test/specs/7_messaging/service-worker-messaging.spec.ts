@@ -101,6 +101,24 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.assertThreadContent({ title, content })
     })
 
+    it('should NOT be possible for a citizen without placed children to send new messages', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      await messagesPage.inputContent.fill('message')
+      await messagesPage.sendMessageButton.click()
+
+      await openCitizenPage(mockedTime.addHours(1))
+      const header = new CitizenHeader(citizenPage)
+      await header.selectTab('messages')
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.newMessageButton.assertDisabled(true)
+    })
+
     it('should prefill the receiver and title fields when sending a new message', async () => {
       await openStaffPage(mockedTime)
       const applicationsPage = new ApplicationsPage(staffPage)

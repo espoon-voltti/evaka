@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security
 
 data class CitizenFeatures(
     val messages: Boolean,
+    val composeNewMessage: Boolean,
     val reservations: Boolean,
     val childDocumentation: Boolean
 )
