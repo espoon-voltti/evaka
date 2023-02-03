@@ -827,7 +827,14 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), 2),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.FAMILY_SIZE), 3)
+                Tuple(
+                    subPeriod2,
+                    setOf(
+                        VoucherValueDecisionDifference.FAMILY_SIZE,
+                        VoucherValueDecisionDifference.FEE_THRESHOLDS
+                    ),
+                    3
+                )
             )
     }
 
