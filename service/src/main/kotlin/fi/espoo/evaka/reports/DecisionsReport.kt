@@ -132,9 +132,20 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
                         applicationDecisionCount.getValue(it.applicationId) == 1
                 }
             val club = rows.filter { it.decisionType == DecisionType.CLUB }
-            val preference1 = rows.filter { it.unitId == it.preferredUnits.getOrNull(0) }
-            val preference2 = rows.filter { it.unitId == it.preferredUnits.getOrNull(1) }
-            val preference3 = rows.filter { it.unitId == it.preferredUnits.getOrNull(2) }
+
+            // Number of applications (not decisions) that have Nth preference for this unit
+            val preference1 =
+                rows
+                    .filter { it.unitId == it.preferredUnits.getOrNull(0) }
+                    .distinctBy { it.applicationId }
+            val preference2 =
+                rows
+                    .filter { it.unitId == it.preferredUnits.getOrNull(1) }
+                    .distinctBy { it.applicationId }
+            val preference3 =
+                rows
+                    .filter { it.unitId == it.preferredUnits.getOrNull(2) }
+                    .distinctBy { it.applicationId }
             val preferenceNone = rows.filter { !it.preferredUnits.contains(it.unitId) }
 
             DecisionsReportRow(
@@ -154,7 +165,7 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
                 preference2 = preference2.count(),
                 preference3 = preference3.count(),
                 preferenceNone = preferenceNone.count(),
-                total = rows.count()
+                total = applicationDecisionCount.size, // Number of applications
             )
         }
         .sortedWith(compareBy({ it.careAreaName }, { it.unitName }))
