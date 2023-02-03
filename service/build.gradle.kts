@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -31,12 +30,8 @@ plugins {
     idea
 }
 
-repositories {
-    mavenCentral()
-}
-
 sourceSets {
-    create("integrationTest") {
+    register("integrationTest") {
         compileClasspath += main.get().output + test.get().output
         runtimeClasspath += main.get().output + test.get().output
     }
@@ -50,13 +45,12 @@ configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRunt
 
 idea {
     module {
-        testSourceDirs =
-            testSourceDirs + sourceSets["integrationTest"].withConvention(KotlinSourceSet::class) { kotlin.srcDirs }
+        testSourceDirs = testSourceDirs + sourceSets["integrationTest"].kotlin.srcDirs
         testResourceDirs = testResourceDirs + sourceSets["integrationTest"].resources.srcDirs
     }
 }
 
-val ktlint by configurations.creating
+val ktlint by configurations.registering
 
 dependencies {
     api(platform(project(":evaka-bom")))
@@ -64,10 +58,10 @@ dependencies {
     testImplementation(platform(project(":evaka-bom")))
     runtimeOnly(platform(project(":evaka-bom")))
     integrationTestImplementation(platform(project(":evaka-bom")))
-    ktlint(platform(project(":evaka-bom")))
+    ktlint { platform(project(":evaka-bom")) }
 
     // Kotlin + core
-    api(kotlin("stdlib-jdk8"))
+    api(kotlin("stdlib"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
     integrationTestImplementation(kotlin("test"))
@@ -84,8 +78,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
-    implementation("org.springframework.ws:spring-ws-security")
-    implementation("org.springframework.ws:spring-ws-support")
+    implementation("org.springframework.ws:spring-ws-security") {
+        exclude("org.bouncycastle", "bcpkix-jdk15on")
+        exclude("org.bouncycastle", "bcprov-jdk15on")
+    }
+    implementation("org.springframework.ws:spring-ws-support") {
+        exclude("org.eclipse.angus", "angus-mail")
+    }
     implementation("org.springframework.boot:spring-boot-devtools")
 
     // Database-related dependencies
@@ -95,7 +94,9 @@ dependencies {
     implementation("redis.clients:jedis")
 
     // JDBI
-    implementation("org.jdbi:jdbi3-core")
+    implementation("org.jdbi:jdbi3-core") {
+        exclude("org.bouncycastle", "bcprov-jdk15on")
+    }
     implementation("org.jdbi:jdbi3-jackson2")
     implementation("org.jdbi:jdbi3-kotlin")
     implementation("org.jdbi:jdbi3-postgres")
@@ -108,7 +109,6 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
 
@@ -133,12 +133,12 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-jmx")
     implementation("io.opentracing:opentracing-api")
     implementation("io.opentracing:opentracing-util")
-    implementation("javax.annotation:javax.annotation-api")
+    implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("org.apache.commons:commons-pool2")
     implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
-    implementation("org.bouncycastle:bcprov-jdk15on")
-    implementation("org.bouncycastle:bcpkix-jdk15on")
+    implementation("org.bouncycastle:bcprov-jdk18on")
+    implementation("org.bouncycastle:bcpkix-jdk18on")
     implementation("org.apache.tika:tika-core")
     implementation("org.apache.commons:commons-imaging")
 
@@ -158,12 +158,15 @@ dependencies {
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security")
+    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") {
+        exclude("org.bouncycastle", "bcpkix-jdk15on")
+        exclude("org.bouncycastle", "bcprov-jdk15on")
+    }
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
 
-    ktlint("com.pinterest:ktlint:${Version.ktlint}")
+    ktlint { "com.pinterest:ktlint:${Version.ktlint}" }
 }
 
 allOpen {
@@ -175,13 +178,40 @@ allprojects {
         sourceCompatibility = Version.java
         targetCompatibility = Version.java
     }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = Version.java
+        kotlinOptions.allWarningsAsErrors = true
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        filter {
+            isFailOnNoMatchingTests = false
+        }
+    }
+
+    tasks.register("resolveDependencies") {
+        description = "Resolves all dependencies"
+        doLast {
+            configurations
+                .matching { it.isCanBeResolved }
+                .map {
+                    val files = it.resolve()
+                    it.name to files.size
+                }
+                .groupBy({ (_, count) -> count }) { (name, _) -> name }
+                .forEach { (count, names) ->
+                    println(
+                        "Resolved $count dependency files for configurations: ${names.joinToString(", ")}"
+                    )
+                }
+        }
+    }
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = Version.java
-        allWarningsAsErrors = name != "compileIntegrationTestKotlin"
-    }
+    kotlinOptions.allWarningsAsErrors = name != "compileIntegrationTestKotlin"
 }
 
 tasks.getByName<Jar>("jar") {
@@ -194,14 +224,10 @@ tasks.getByName<BootJar>("bootJar") {
 
 tasks {
     test {
-        useJUnitPlatform()
         systemProperty("spring.profiles.active", "test")
-        filter {
-            isFailOnNoMatchingTests = false
-        }
     }
 
-    create("integrationTest", Test::class) {
+    register("integrationTest", Test::class) {
         useJUnitPlatform()
         group = "verification"
         systemProperty("spring.profiles.active", "integration-test")
@@ -209,9 +235,6 @@ tasks {
         classpath = sourceSets["integrationTest"].runtimeClasspath
         shouldRunAfter("test")
         outputs.upToDateWhen { false }
-        filter {
-            isFailOnNoMatchingTests = false
-        }
     }
 
     bootRun {
@@ -219,7 +242,7 @@ tasks {
         systemProperty("spring.profiles.active", "local")
     }
 
-    create("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
+    register("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
         mainClass.set("fi.espoo.evaka.MainKt")
         classpath = sourceSets["main"].runtimeClasspath
         systemProperty("spring.profiles.active", "local")
@@ -230,9 +253,9 @@ tasks {
         systemProperty("flyway.password", "evaka_it")
     }
 
-    create("ktlintApplyToIdea", JavaExec::class) {
+    register("ktlintApplyToIdea", JavaExec::class) {
         mainClass.set("com.pinterest.ktlint.Main")
-        classpath = ktlint
+        classpath = ktlint.get()
         args = listOf("applyToIDEAProject", "-y")
     }
 

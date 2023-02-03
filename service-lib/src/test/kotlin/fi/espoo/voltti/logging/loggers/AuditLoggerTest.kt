@@ -46,7 +46,7 @@ class AuditLoggerTest {
         logger.audit(emptyMap()) { message }
 
         logger.getTestAppender().getEvents().forEach { event ->
-            assertEquals(AUDIT_MARKER, event.marker)
+            assertEquals(listOf(AUDIT_MARKER), event.markerList)
         }
     }
 

@@ -20,7 +20,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <timestamp>
                     <fieldName>@timestamp</fieldName>
                     <timeZone>UTC</timeZone>
-                    <pattern>yyyy-MM-dd'T'HH:mm:ss.sss'Z'</pattern>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
                 </timestamp>
                 <loggerName><fieldName>loggerName</fieldName></loggerName>
 

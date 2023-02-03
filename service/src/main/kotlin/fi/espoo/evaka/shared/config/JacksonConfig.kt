@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import org.springframework.context.annotation.Bean
@@ -18,7 +17,7 @@ import org.springframework.context.annotation.Configuration
 
 fun defaultJsonMapper(): JsonMapper =
     jacksonMapperBuilder()
-        .addModules(JavaTimeModule(), JaxbAnnotationModule(), Jdk8Module(), ParameterNamesModule())
+        .addModules(JavaTimeModule(), Jdk8Module(), ParameterNamesModule())
         .disable(
             MapperFeature.DEFAULT_VIEW_INCLUSION
         ) // Disabled by default in Spring Boot autoconfig

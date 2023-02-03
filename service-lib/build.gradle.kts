@@ -13,10 +13,6 @@ plugins {
     id("org.jmailen.kotlinter")
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
@@ -42,20 +38,4 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.skyscreamer:jsonassert")
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = Version.java
-        allWarningsAsErrors = true
-    }
-}
-
-tasks {
-    test {
-        useJUnitPlatform()
-        filter {
-            isFailOnNoMatchingTests = false
-        }
-    }
 }

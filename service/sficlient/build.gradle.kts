@@ -6,10 +6,6 @@ plugins {
     java
 }
 
-repositories {
-    mavenCentral()
-}
-
 val generatedSources = "$buildDir/generated/sources/java/main"
 val wsdl2java: Configuration by configurations.creating
 
@@ -21,13 +17,14 @@ sourceSets {
 
 dependencies {
     implementation(platform(project(":evaka-bom")))
-    implementation("javax.jws:javax.jws-api")
-    implementation("javax.xml.ws:jaxws-api")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    implementation("jakarta.jws:jakarta.jws-api")
+    implementation("jakarta.xml.ws:jakarta.xml.ws-api")
 
     wsdl2java(platform(project(":evaka-bom")))
     wsdl2java("org.slf4j:slf4j-simple")
-    wsdl2java("javax.jws:javax.jws-api")
-    wsdl2java("javax.xml.ws:jaxws-api")
+    wsdl2java("jakarta.jws:jakarta.jws-api")
+    wsdl2java("jakarta.xml.ws:jakarta.xml.ws-api")
     wsdl2java("org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws")
     wsdl2java("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb")
 }

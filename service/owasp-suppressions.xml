@@ -86,6 +86,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2022-45688</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Misidentification
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.(mail|activation)/jakarta\.(mail|activation)\-api@.*$</packageUrl>
+        <cpe>cpe:/a:eclipse:eclipse_ide</cpe>
+    </suppress>
 </suppressions>
-
-

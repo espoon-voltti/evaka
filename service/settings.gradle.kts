@@ -11,3 +11,16 @@ include("codegen")
 
 project(":service-lib").projectDir = file("../service-lib")
 project(":evaka-bom").projectDir = file("../evaka-bom")
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven("https://build.shibboleth.net/maven/releases") {
+            content {
+                includeGroup("net.shibboleth")
+                includeGroup("net.shibboleth.utilities")
+                includeGroup("org.opensaml")
+            }
+        }
+    }
+}

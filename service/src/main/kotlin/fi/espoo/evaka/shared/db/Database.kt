@@ -216,7 +216,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                     }
                     throw e
                 }
-            handle.release(savepointName)
+            handle.releaseSavepoint(savepointName)
             return result
         }
 

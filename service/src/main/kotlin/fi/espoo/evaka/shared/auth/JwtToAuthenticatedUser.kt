@@ -8,10 +8,10 @@ import fi.espoo.evaka.shared.Tracing
 import fi.espoo.voltti.auth.getDecodedJwt
 import fi.espoo.voltti.logging.MdcKey
 import io.opentracing.Tracer
-import javax.servlet.FilterChain
-import javax.servlet.http.HttpFilter
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpFilter
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 private const val ATTR_USER = "evaka.user"
 

@@ -11,7 +11,7 @@ import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.XRoadClientIdentifierType
 import fi.espoo.evaka.vtjclient.soap.XRoadObjectType
 import fi.espoo.evaka.vtjclient.soap.XRoadServiceIdentifierType
-import javax.xml.bind.JAXBElement
+import jakarta.xml.bind.JAXBElement
 
 fun VtjXroadClientEnv.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? =
     XRoadClientIdentifierType()

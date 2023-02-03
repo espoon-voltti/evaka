@@ -9,11 +9,8 @@ plugins {
     id("org.jmailen.kotlinter")
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
+    api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
 
@@ -21,7 +18,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm")
 
     // Kotlin + core
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
@@ -32,25 +29,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = Version.java
-        allWarningsAsErrors = true
-    }
-}
-
 tasks {
-    test {
-        useJUnitPlatform()
-    }
-
-    create("codegen", JavaExec::class) {
+    register("codegen", JavaExec::class) {
         shouldRunAfter("assemble")
         mainClass.set("evaka.codegen.GenerateKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }
-    create("codegenCheck", JavaExec::class) {
+    register("codegenCheck", JavaExec::class) {
         mainClass.set("evaka.codegen.CheckKt")
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile

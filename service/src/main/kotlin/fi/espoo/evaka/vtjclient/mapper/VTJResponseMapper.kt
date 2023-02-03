@@ -8,7 +8,7 @@ import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyResBody
 import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyResType
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma
-import javax.xml.bind.JAXBElement
+import jakarta.xml.bind.JAXBElement
 import org.springframework.stereotype.Service
 
 @Service
