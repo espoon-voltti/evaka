@@ -33,7 +33,9 @@ export async function saveIncomeStatementAttachment(
   onUploadProgress: (progressEvent: ProgressEvent) => void
 ): Promise<Result<UUID>> {
   return doSaveAttachment(
-    `/citizen/attachments/income-statements/${incomeStatementId ?? ''}`,
+    incomeStatementId
+      ? `/citizen/attachments/income-statements/${incomeStatementId}`
+      : '/citizen/attachments/income-statements',
     file,
     onUploadProgress
   )
