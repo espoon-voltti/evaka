@@ -178,6 +178,7 @@ export interface Contact {
 export interface DecisionsReportRow {
   careAreaName: string
   club: number
+  connectedDaycareOnly: number
   daycareOver3: number
   daycareUnder3: number
   preference1: number

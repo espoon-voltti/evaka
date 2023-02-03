@@ -2880,6 +2880,7 @@ export const fi = {
       daycareOver3: 'Vakapäätöksiä (yli 3v)',
       preschool: 'Esiopetuspäätöksiä',
       preschoolDaycare: 'Esiopetus+liittyväpäätöksiä',
+      connectedDaycareOnly: 'Myöhemmin haetun liittyvän päätöksiä',
       preparatory: 'Valmistavan päätöksiä',
       preparatoryDaycare: 'Valmistavan+liittyvän päätöksiä',
       club: 'Kerhopäätöksiä',
