@@ -202,5 +202,48 @@ describe('Service Worker Messaging', () => {
         .openApplication()
       await applReadView.assertNote(1, `Lähetetty viesti\n\n${replyContent}`)
     })
+
+    it('should open the reply to thread box and create an application note when the service worker sends a second message', async () => {
+      await openStaffPage(mockedTime)
+      let applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      let applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      let messagesPage = await applReadView.openMessagesPage()
+      const title = 'This is the first message'
+      const content = 'First!!1'
+      await messagesPage.inputTitle.fill(title)
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+
+      await openCitizenPage(mockedTime.addHours(1))
+      const header = new CitizenHeader(citizenPage)
+      await header.selectTab('messages')
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThread()
+      await citizenMessagesPage.assertThreadContent({ title, content })
+      await citizenMessagesPage.replyToFirstThread('This is a reply')
+
+      await openStaffPage(mockedTime.addHours(2))
+      applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      messagesPage = await applReadView.openMessagesPage()
+      await messagesPage.assertReplyContentIsEmpty()
+      const replyContent = 'Service worker reply'
+      await messagesPage.fillReplyContent(replyContent)
+      await messagesPage.sendReplyButton.click()
+
+      await openStaffPage(mockedTime.addHours(2))
+      applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      await applReadView.assertNote(2, `Lähetetty viesti\n\n${replyContent}`)
+    })
   })
 })

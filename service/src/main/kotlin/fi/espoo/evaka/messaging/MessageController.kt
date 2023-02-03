@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -239,6 +240,30 @@ class MessageController(
                 }
             }
             .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(accountId, threadId)) }
+    }
+
+    @GetMapping("/application/{applicationId}")
+    fun getThreadByApplicationId(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId
+    ): MessageThread {
+        return db.connect { dbc ->
+                val accountId =
+                    dbc.read { it.getServiceWorkerAccountId() }
+                        ?: throw NotFound("No account found")
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    it.getMessageThreadByApplicationId(
+                        accountId,
+                        applicationId,
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName
+                    )
+                }
+            }
+            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(applicationId, it.id)) }
     }
 
     @GetMapping("/unread")

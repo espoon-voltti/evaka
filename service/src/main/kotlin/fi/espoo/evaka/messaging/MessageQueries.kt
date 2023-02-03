@@ -708,7 +708,7 @@ SELECT
     COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
     mc.content,
     (
-        SELECT jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
+        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN :serviceWorkerAccountName ELSE mav.name END, 'type', mav.type)
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
     ) AS sender,
@@ -1008,6 +1008,57 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
         .data
         .firstOrNull()
         ?: throw NotFound("Thread $threadId not found")
+}
+
+fun Database.Read.getMessageThreadByApplicationId(
+    accountId: MessageAccountId,
+    applicationId: ApplicationId,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String
+): MessageThread {
+    val thread =
+        createQuery(
+                """
+SELECT
+    t.id,
+    t.title,
+    t.message_type AS type,
+    t.urgent,
+    t.is_copy,
+    coalesce((
+                 SELECT jsonb_agg(jsonb_build_object(
+                         'childId', mtc.child_id,
+                         'firstName', p.first_name,
+                         'lastName', p.last_name,
+                         'preferredName', p.preferred_name
+                     ))
+                 FROM message_thread_children mtc
+                          JOIN person p ON p.id = mtc.child_id
+                 WHERE mtc.thread_id = t.id
+             ), '[]'::jsonb) AS children
+FROM message_thread t
+WHERE t.application_id = :applicationId
+  AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
+GROUP BY t.id
+        """
+            )
+            .bind("accountId", accountId)
+            .bind("applicationId", applicationId)
+            .mapTo<ReceivedThread>()
+            .firstOrNull()
+            ?: throw NotFound("No thread found for $applicationId")
+
+    val messagesByThread =
+        getThreadMessages(
+            accountId,
+            listOf(thread.id),
+            municipalAccountName,
+            serviceWorkerAccountName
+        )
+    return combineThreadsAndMessages(accountId, Paged(listOf(thread), 1, 1), messagesByThread)
+        .data
+        .firstOrNull()
+        ?: throw NotFound("No thread found for $applicationId")
 }
 
 data class UnitMessageReceiversResult(

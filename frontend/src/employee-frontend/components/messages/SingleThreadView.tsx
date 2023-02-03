@@ -11,6 +11,7 @@ import React, {
   useRef,
   useState
 } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
@@ -172,7 +173,10 @@ export function SingleThreadView({
   const { i18n } = useTranslation()
   const { getReplyContent, sendReply, replyState, setReplyContent } =
     useContext(MessageContext)
-  const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
+  const [searchParams] = useSearchParams()
+  const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
+    !!searchParams.get('reply')
+  )
   const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState<number>(0)
   const stickyTitleRowRef = useRef<HTMLDivElement>(null)
 
@@ -255,7 +259,7 @@ export function SingleThreadView({
           </React.Fragment>
         ))}
         {canReply &&
-          view == 'received' &&
+          ['received', 'thread'].includes(view) &&
           (replyEditorVisible ? (
             <MessageContainer>
               <MessageReplyEditor

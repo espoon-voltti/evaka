@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
@@ -17,7 +17,7 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -44,6 +44,7 @@ import { ApplicationResponse } from '../types/application'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
 import { renderResult, UnwrapResult } from './async-rendering'
+import { getMessageThreadForApplication } from './messages/api'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -86,6 +87,11 @@ export default React.memo(function ApplicationPage() {
     Record<string, string>
   >({})
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
+
+  const [messageThread] = useApiState(
+    () => getMessageThreadForApplication(applicationId),
+    [applicationId]
+  )
 
   useEffect(() => {
     if (editing && editedApplication?.type) {
@@ -196,6 +202,22 @@ export default React.memo(function ApplicationPage() {
     }
   }, [setServiceNeedOptions, loadServiceNeedOptions, shouldLoadServiceNeedOptions, editedApplication?.type])
 
+  const getSendMessageUrl = useCallback(
+    (applicationData: ApplicationResponse) => {
+      if (messageThread.isSuccess && messageThread.value.messages.length > 0) {
+        return `${getEmployeeUrlPrefix()}/employee/messages/?applicationId=${
+          applicationData.application.id
+        }&messageBox=thread&threadId=${messageThread.value.id}&reply=true`
+      }
+      return `${getEmployeeUrlPrefix()}/employee/messages/send?recipient=${
+        applicationData.application.guardianId
+      }&title=${getMessageSubject(i18n, applicationData)}&applicationId=${
+        applicationData.application.id
+      }`
+    },
+    [i18n, messageThread]
+  )
+
   return (
     <>
       <Container>
@@ -240,12 +262,7 @@ export default React.memo(function ApplicationPage() {
                       <AddButton
                         onClick={() =>
                           window.open(
-                            `${getEmployeeUrlPrefix()}/employee/messages/send?recipient=${
-                              applicationData.application.guardianId
-                            }&title=${getMessageSubject(
-                              i18n,
-                              applicationData
-                            )}&applicationId=${applicationId}`,
+                            getSendMessageUrl(applicationData),
                             '_blank'
                           )
                         }
