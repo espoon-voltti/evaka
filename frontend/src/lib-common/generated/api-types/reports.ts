@@ -285,18 +285,18 @@ export interface ManualDuplicationReportRow {
   childFirstName: string
   childId: UUID
   childLastName: string
+  connectedDaycareId: UUID
+  connectedDaycareName: string
+  connectedDecisionType: DecisionType
+  connectedEndDate: LocalDate
+  connectedSnoName: string
+  connectedStartDate: LocalDate
   dateOfBirth: LocalDate
   preschoolDaycareId: UUID
   preschoolDaycareName: string
   preschoolDecisionType: DecisionType
   preschoolEndDate: LocalDate
   preschoolStartDate: LocalDate
-  supplementaryDaycareId: UUID
-  supplementaryDaycareName: string
-  supplementaryDecisionType: DecisionType
-  supplementaryEndDate: LocalDate
-  supplementarySnoName: string
-  supplementaryStartDate: LocalDate
 }
 
 /**

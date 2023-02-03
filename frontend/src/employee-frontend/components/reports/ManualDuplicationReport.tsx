@@ -4,14 +4,13 @@
 
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
-import Loader from 'lib-components/atoms/Loader'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -26,6 +25,7 @@ import {
 
 import { getManualDuplicationReport } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 
 import { TableScrollable } from './common'
 
@@ -38,20 +38,11 @@ const WrappableTd = styled(Td)`
 
 export default React.memo(function ManualDuplicationReport() {
   const { i18n } = useTranslation()
-  const [rowsResult, setRows] = useState<Result<ManualDuplicationReportRow[]>>(
-    Loading.of()
-  )
-  const loadData = () => {
-    setRows(Loading.of())
-    void getManualDuplicationReport().then(setRows)
-  }
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  const [reportResult] = useApiState(getManualDuplicationReport, [])
 
   const [sortColumns, setSortColumns] = useState<ReportColumnKey[]>([
-    'supplementaryDaycareName',
+    'connectedDaycareName',
     'childLastName',
     'childFirstName'
   ])
@@ -69,14 +60,12 @@ export default React.memo(function ManualDuplicationReport() {
     [sortColumns, sortDirection]
   )
 
-  const reportRows = useMemo(
+  const sortedReportResult = useMemo(
     () =>
-      rowsResult
-        .map((rows) =>
-          orderBy(rows, sortColumns, [sortDirection === 'ASC' ? 'asc' : 'desc'])
-        )
-        .getOrElse([]),
-    [rowsResult, sortColumns, sortDirection]
+      reportResult.map((rows) =>
+        orderBy(rows, sortColumns, [sortDirection === 'ASC' ? 'asc' : 'desc'])
+      ),
+    [reportResult, sortColumns, sortDirection]
   )
 
   return (
@@ -84,9 +73,7 @@ export default React.memo(function ManualDuplicationReport() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.manualDuplication.title}</Title>
-        {rowsResult.isLoading && <Loader />}
-        {rowsResult.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rowsResult.isSuccess && (
+        {renderResult(sortedReportResult, (reportRows) => (
           <TableScrollable>
             <Thead>
               <Tr>
@@ -95,7 +82,7 @@ export default React.memo(function ManualDuplicationReport() {
                 <SortableTh
                   sorted={
                     isEqual(sortColumns, [
-                      'supplementaryDaycareName',
+                      'connectedDaycareName',
                       'childLastName',
                       'childFirstName'
                     ])
@@ -104,16 +91,16 @@ export default React.memo(function ManualDuplicationReport() {
                   }
                   onClick={() =>
                     sortBy([
-                      'supplementaryDaycareName',
+                      'connectedDaycareName',
                       'childLastName',
                       'childFirstName'
                     ])
                   }
                 >
-                  {i18n.reports.manualDuplication.supplementaryDaycare}
+                  {i18n.reports.manualDuplication.connectedDaycare}
                 </SortableTh>
-                <Th>{i18n.reports.manualDuplication.supplementarySno}</Th>
-                <Th>{i18n.reports.manualDuplication.supplementaryDuration}</Th>
+                <Th>{i18n.reports.manualDuplication.connectedSno}</Th>
+                <Th>{i18n.reports.manualDuplication.connectedDuration}</Th>
 
                 <SortableTh
                   sorted={
@@ -153,14 +140,14 @@ export default React.memo(function ManualDuplicationReport() {
                   <WrappableTd>
                     <Link
                       target="_blank"
-                      to={`/units/${row.supplementaryDaycareId}`}
+                      to={`/units/${row.connectedDaycareId}`}
                     >
-                      {row.supplementaryDaycareName}
+                      {row.connectedDaycareName}
                     </Link>
                   </WrappableTd>
 
-                  <WrappableTd>{row.supplementarySnoName}</WrappableTd>
-                  <WrappableTd>{`${row.supplementaryStartDate.format()} - ${row.supplementaryEndDate.format()}`}</WrappableTd>
+                  <WrappableTd>{row.connectedSnoName}</WrappableTd>
+                  <WrappableTd>{`${row.connectedStartDate.format()} - ${row.connectedEndDate.format()}`}</WrappableTd>
 
                   <WrappableTd>
                     <Link
@@ -175,7 +162,7 @@ export default React.memo(function ManualDuplicationReport() {
               ))}
             </Tbody>
           </TableScrollable>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

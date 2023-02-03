@@ -650,10 +650,8 @@ export async function getManualDuplicationReport(): Promise<
         data.map((row) => ({
           ...row,
           dateOfBirth: LocalDate.parseIso(row.dateOfBirth),
-          supplementaryStartDate: LocalDate.parseIso(
-            row.supplementaryStartDate
-          ),
-          supplementaryEndDate: LocalDate.parseIso(row.supplementaryEndDate),
+          connectedStartDate: LocalDate.parseIso(row.connectedStartDate),
+          connectedEndDate: LocalDate.parseIso(row.connectedEndDate),
           preschoolStartDate: LocalDate.parseIso(row.preschoolStartDate),
           preschoolEndDate: LocalDate.parseIso(row.preschoolEndDate)
         }))

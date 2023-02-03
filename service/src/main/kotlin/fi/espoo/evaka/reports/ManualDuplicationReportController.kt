@@ -43,45 +43,45 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
     private fun Database.Read.getManualDuplicationReportRows(): List<ManualDuplicationReportRow> {
         val sql =
             """
-select supp_a.id                                       as supplementary_application_id,
+select conn_app.id                                     as connected_application_id,
        p.id                                            as child_id,
        p.first_name                                    as child_first_name,
        p.last_name                                     as child_last_name,
        p.date_of_birth,
-       supplementary_decision.type                     as supplementary_decision_type,
-       d.id                                            as supplementary_daycare_id,
-       d.name                                          as supplementary_daycare_name,
-       supplementary_decision.start_date               as supplementary_start_date,
-       supplementary_decision.end_date                 as supplementary_end_date,
-       af.document -> 'serviceNeedOption' ->> 'nameFi' as supplementary_sno_name,
+       connected_decision.type                         as connected_decision_type,
+       d.id                                            as connected_daycare_id,
+       d.name                                          as connected_daycare_name,
+       connected_decision.start_date                   as connected_start_date,
+       connected_decision.end_date                     as connected_end_date,
+       af.document -> 'serviceNeedOption' ->> 'nameFi' as connected_sno_name,
        preschool_decision.preschool_daycare_id,
        preschool_decision.preschool_daycare_name,
        preschool_decision.preschool_decision_type,
        preschool_decision.preschool_start_date,
        preschool_decision.preschool_end_date
-from decision supplementary_decision
-         join application supp_a on supplementary_decision.application_id = supp_a.id
-         join application_form af on supp_a.id = af.application_id and af.latest IS TRUE
-         join daycare d on supplementary_decision.unit_id = d.id
-         join person p on supp_a.child_id = p.id
+from decision connected_decision
+         join application conn_app on connected_decision.application_id = conn_app.id
+         join application_form af on conn_app.id = af.application_id and af.latest IS TRUE
+         join daycare d on connected_decision.unit_id = d.id
+         join person p on conn_app.child_id = p.id
          join lateral (
-    select pre_d.type                        as preschool_decision_type,
-           d.id                              as preschool_daycare_id,
-           d.name                            as preschool_daycare_name,
+    select pre_d.type       as preschool_decision_type,
+           d.id             as preschool_daycare_id,
+           d.name           as preschool_daycare_name,
            pre_d.start_date as preschool_start_date,
            pre_d.end_date   as preschool_end_date
     from decision pre_d
-             join application pre_a on pre_d.application_id = pre_a.id
+             join application pre_app on pre_d.application_id = pre_app.id
              join daycare d on pre_d.unit_id = d.id
-             join person p on pre_a.child_id = p.id
-    where pre_a.child_id = supp_a.child_id
+             join person p on pre_app.child_id = p.id
+    where pre_app.child_id = conn_app.child_id
       and pre_d.type = 'PRESCHOOL'
       and pre_d.status = 'ACCEPTED'
       and daterange(pre_d.start_date, pre_d.end_date, '[]') &&
-          daterange(supplementary_decision.start_date, supplementary_decision.end_date, '[]')
-      and supplementary_decision.unit_id <> pre_d.unit_id ) preschool_decision on true
-where supplementary_decision.type = 'PRESCHOOL_DAYCARE'
-  and supplementary_decision.status = 'ACCEPTED';
+          daterange(connected_decision.start_date, connected_decision.end_date, '[]')
+      and connected_decision.unit_id <> pre_d.unit_id ) preschool_decision on true
+where connected_decision.type = 'PRESCHOOL_DAYCARE'
+  and connected_decision.status = 'ACCEPTED';
             """
                 .trimIndent()
 
@@ -89,16 +89,16 @@ where supplementary_decision.type = 'PRESCHOOL_DAYCARE'
     }
 
     data class ManualDuplicationReportRow(
-        val supplementaryDaycareId: DaycareId,
-        val supplementaryDaycareName: String,
+        val connectedDaycareId: DaycareId,
+        val connectedDaycareName: String,
         val childId: ChildId,
         val childFirstName: String,
         val childLastName: String,
         val dateOfBirth: LocalDate,
-        val supplementaryDecisionType: DecisionType,
-        val supplementaryStartDate: LocalDate,
-        val supplementaryEndDate: LocalDate,
-        val supplementarySnoName: String,
+        val connectedDecisionType: DecisionType,
+        val connectedStartDate: LocalDate,
+        val connectedEndDate: LocalDate,
+        val connectedSnoName: String,
         val preschoolDaycareId: DaycareId,
         val preschoolDaycareName: String,
         val preschoolDecisionType: DecisionType,

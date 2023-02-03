@@ -3228,9 +3228,9 @@ export const fi = {
         'Raportti listaa esiopetusta täydentävän varhaiskasvatuksen tapaukset, jotka mahdollisesti vaativat lapsen manuaalista toisinnusta',
       childName: 'Lapsen nimi',
       dateOfBirth: 'Syntymäaika',
-      supplementaryDaycare: 'Täydentävän yksikkö',
-      supplementarySno: 'Täydentävän palveluntarve',
-      supplementaryDuration: 'Täydentävän kesto',
+      connectedDaycare: 'Täydentävän yksikkö',
+      connectedSno: 'Täydentävän palveluntarve',
+      connectedDuration: 'Täydentävän kesto',
       preschoolDaycare: 'Esiopetuksen yksikkö',
       preschooldDuration: 'Esiopetuksen kesto'
     },
