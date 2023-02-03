@@ -99,7 +99,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
             Hyvä(t) huoltaja(t),
 
-            Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa https://espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
+            Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa https://espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
 
             Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.
 
@@ -114,7 +114,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
             <p>Hyvä(t) huoltaja(t),</p>
 
-            <p>Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+            <p>Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
 
             <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
 
