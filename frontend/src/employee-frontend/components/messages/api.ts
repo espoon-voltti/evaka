@@ -245,3 +245,12 @@ export async function getThread(
     .then(({ data }) => Success.of(deserializeMessageThread(data)))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function getMessageThreadForApplication(
+  applicationId: UUID
+): Promise<Result<MessageThread>> {
+  return client
+    .get<JsonOf<MessageThread>>(`/messages/application/${applicationId}`)
+    .then(({ data }) => Success.of(deserializeMessageThread(data)))
+    .catch((e) => Failure.fromError(e))
+}

@@ -182,6 +182,7 @@ export const MessageContextProvider = React.memo(
     const prefilledTitle = searchParams.get('title')
     const prefilledRecipient = searchParams.get('recipient')
     const relatedApplicationId = searchParams.get('applicationId')
+    const replyBoxActive = searchParams.get('reply')
 
     const setParams = useCallback(
       (params: {
@@ -204,7 +205,8 @@ export const MessageContextProvider = React.memo(
               : undefined),
             ...(relatedApplicationId
               ? { applicationId: relatedApplicationId }
-              : undefined)
+              : undefined),
+            ...(replyBoxActive ? { reply: replyBoxActive } : undefined)
           },
           { replace: true }
         )
@@ -213,7 +215,8 @@ export const MessageContextProvider = React.memo(
         setSearchParams,
         prefilledTitle,
         prefilledRecipient,
-        relatedApplicationId
+        relatedApplicationId,
+        replyBoxActive
       ]
     )
 
@@ -575,6 +578,17 @@ export const MessageContextProvider = React.memo(
       [addNotification, removeNotification, theme.colors.main.m1]
     )
 
+    const appendMessageToSingleThread = useCallback(
+      (message: Message) =>
+        setSingleThread((prevState: Result<MessageThread> | undefined) =>
+          prevState?.map((thread) => ({
+            ...thread,
+            messages: [...thread.messages, message]
+          }))
+        ),
+      [setSingleThread]
+    )
+
     const [replyState, setReplyState] = useState<Result<void>>()
     const setReplyResponse = useCallback(
       (res: Result<ThreadReply>) => {
@@ -583,14 +597,18 @@ export const MessageContextProvider = React.memo(
           const {
             value: { message, threadId }
           } = res
-          setReceivedMessages(
-            appendMessageAndMoveThreadToTopOfList(threadId, message)
-          )
+          if (selectedAccount?.view === 'thread') {
+            appendMessageToSingleThread(message)
+          } else {
+            setReceivedMessages(
+              appendMessageAndMoveThreadToTopOfList(threadId, message)
+            )
+          }
           setSelectedThread(threadId)
           setReplyContents((state) => ({ ...state, [threadId]: '' }))
         }
       },
-      [setSelectedThread]
+      [selectedAccount, appendMessageToSingleThread, setSelectedThread]
     )
     const sendReply = useRestApi(
       (params: ReplyToThreadParams) =>

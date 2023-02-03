@@ -219,3 +219,9 @@ WHERE content.id = :id
         .bind("id", id)
         .mapTo<MessageAccountId>()
         .list()
+
+fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
+    createQuery("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'")
+        .mapTo<MessageAccountId>()
+        .findOne()
+        .orElse(null)
