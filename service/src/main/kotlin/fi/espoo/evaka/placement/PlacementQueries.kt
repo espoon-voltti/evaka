@@ -511,14 +511,21 @@ SELECT
     terminated_by.id AS terminated_by_id,
     terminated_by.name AS terminated_by_name,
     terminated_by.type AS terminated_by_type,
-    dg.name AS current_daycare_group_name
+    dg.name AS current_daycare_group_name,
+    (pl.type = 'PRESCHOOL_DAYCARE' OR pl.type = 'PREPARATORY_DAYCARE') AND EXISTS (
+        SELECT 1 FROM placement pl_next
+        WHERE pl_next.child_id = pl.child_id
+        AND pl_next.unit_id = pl.unit_id
+        AND pl_next.type = CASE pl.type WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'::placement_type WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'::placement_type END
+        AND pl_next.start_date = pl.end_date + 1
+    ) AS connected_daycare_only
     FROM placement pl
     JOIN daycare d on pl.unit_id = d.id
     JOIN person ch on pl.child_id = ch.id
     LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
     LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
     LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-    WHERE (pl.unit_id = :daycareId)
+    WHERE pl.unit_id = :daycareId
     AND daterange(:terminationRequestedMinDate, :terminationRequestedMaxDate, '[]') @> pl.termination_requested_date 
     """
                 .trimIndent()
@@ -537,7 +544,8 @@ data class TerminatedPlacement(
     val terminationRequestedDate: LocalDate?,
     @Nested("child") val child: ChildBasics,
     @Nested("terminated_by") val terminatedBy: EvakaUser?,
-    var currentDaycareGroupName: String?
+    val currentDaycareGroupName: String?,
+    val connectedDaycareOnly: Boolean
 )
 
 data class ChildPlacement(

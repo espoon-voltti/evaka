@@ -10,14 +10,16 @@ import { TerminatedPlacement } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { Translations, useTranslation } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
-function renderTerminatedPlacementRow(
-  placement: TerminatedPlacement,
-  i18n: Translations
-) {
+function TerminatedPlacementRow({
+  placement
+}: {
+  placement: TerminatedPlacement
+}) {
+  const { i18n } = useTranslation()
   return (
     <Tr key={`${placement.child.id}`} data-qa="terminated-placement-row">
       <Td data-qa="child-name">
@@ -32,7 +34,13 @@ function renderTerminatedPlacementRow(
       </Td>
       <Td data-qa="child-dob">{placement.child.dateOfBirth.format()}</Td>
       <Td data-qa="placement-type">
-        <CareTypeChip type={placement.type} />
+        <CareTypeChip
+          type={
+            placement.connectedDaycareOnly
+              ? 'connected-daycare'
+              : placement.type
+          }
+        />
       </Td>
       <Td data-qa="termination-requested-date">{`${
         placement.terminationRequestedDate?.format() ?? ''
@@ -75,7 +83,12 @@ export default React.memo(function TerminatedPlacements({
             </Tr>
           </Thead>
           <Tbody>
-            {sortedRows.map((row) => renderTerminatedPlacementRow(row, i18n))}
+            {sortedRows.map((row) => (
+              <TerminatedPlacementRow
+                key={`${row.id}-${row.type}`}
+                placement={row}
+              />
+            ))}
           </Tbody>
         </Table>
       </div>

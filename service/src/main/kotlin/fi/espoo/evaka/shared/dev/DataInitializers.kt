@@ -477,12 +477,14 @@ fun Database.Transaction.insertTestPlacement(
     unitId: DaycareId = DaycareId(UUID.randomUUID()),
     type: PlacementType = PlacementType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    terminationRequestedDate: LocalDate? = null,
+    terminatedBy: EvakaUserId? = null
 ): PlacementId {
     createUpdate(
             """
-            INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date)
-            VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate)
+            INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by)
+            VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate, :terminationRequestedDate, :terminatedBy)
             """
         )
         .bind("id", id)
@@ -491,6 +493,8 @@ fun Database.Transaction.insertTestPlacement(
         .bind("type", type)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
+        .bind("terminationRequestedDate", terminationRequestedDate)
+        .bind("terminatedBy", terminatedBy)
         .execute()
     return id
 }

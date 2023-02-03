@@ -9,14 +9,26 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import { careTypeColors } from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
-import { CareTypeLabel } from '../../types'
+
+export type CareTypeLabel =
+  | 'club'
+  | 'daycare'
+  | 'daycare5yo'
+  | 'preschool'
+  | 'preparatory'
+  | 'backup-care'
+  | 'temporary'
+  | 'school-shift-care'
+  | 'connected-daycare'
 
 const placementTypeToCareTypeLabel = (
-  type: PlacementType | 'backup-care'
+  type: PlacementType | 'backup-care' | 'connected-daycare'
 ): CareTypeLabel => {
   switch (type) {
     case 'backup-care':
       return 'backup-care'
+    case 'connected-daycare':
+      return 'connected-daycare'
     case 'CLUB':
       return 'club'
     case 'DAYCARE':
@@ -41,7 +53,7 @@ const placementTypeToCareTypeLabel = (
 }
 
 interface Props {
-  type: PlacementType | 'backup-care'
+  type: PlacementType | 'backup-care' | 'connected-daycare'
 }
 
 export function CareTypeChip({ type }: Props) {
