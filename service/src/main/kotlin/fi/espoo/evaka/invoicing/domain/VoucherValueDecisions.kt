@@ -165,7 +165,8 @@ enum class VoucherValueDecisionDifference(
     FEE_ALTERATIONS({ d1, d2 -> d1.feeAlterations == d2.feeAlterations }),
     FINAL_CO_PAYMENT({ d1, d2 -> d1.finalCoPayment == d2.finalCoPayment }),
     BASE_VALUE({ d1, d2 -> d1.baseValue == d2.baseValue }),
-    VOUCHER_VALUE({ d1, d2 -> d1.voucherValue == d2.voucherValue });
+    VOUCHER_VALUE({ d1, d2 -> d1.voucherValue == d2.voucherValue }),
+    FEE_THRESHOLDS({ d1, d2 -> d1.feeThresholds == d2.feeThresholds });
 
     override val sqlType: String = "voucher_value_decision_difference"
 

@@ -2314,7 +2314,8 @@ export const fi = {
           FEE_ALTERATIONS: 'Maksumuutokset',
           FINAL_CO_PAYMENT: 'Omavastuuosuus',
           BASE_VALUE: 'Perusarvo',
-          VOUCHER_VALUE: 'Palvelusetelin arvo'
+          VOUCHER_VALUE: 'Palvelusetelin arvo',
+          FEE_THRESHOLDS: 'Maksuasetukset'
         },
         valueShort: {
           GUARDIANS: 'H',
@@ -2327,7 +2328,8 @@ export const fi = {
           FEE_ALTERATIONS: 'M',
           FINAL_CO_PAYMENT: 'O',
           BASE_VALUE: 'PA',
-          VOUCHER_VALUE: 'PS'
+          VOUCHER_VALUE: 'PS',
+          FEE_THRESHOLDS: 'MA'
         }
       },
       annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
