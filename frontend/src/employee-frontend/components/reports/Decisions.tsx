@@ -169,6 +169,10 @@ export default React.memo(function Decisions() {
                   key: 'preschoolDaycare'
                 },
                 {
+                  label: i18n.reports.decisions.connectedDaycareOnly,
+                  key: 'connectedDaycareOnly'
+                },
+                {
                   label: i18n.reports.decisions.preparatory,
                   key: 'preparatory'
                 },
@@ -209,6 +213,7 @@ export default React.memo(function Decisions() {
                   <Th>{i18n.reports.decisions.daycareOver3}</Th>
                   <Th>{i18n.reports.decisions.preschool}</Th>
                   <Th>{i18n.reports.decisions.preschoolDaycare}</Th>
+                  <Th>{i18n.reports.decisions.connectedDaycareOnly}</Th>
                   <Th>{i18n.reports.decisions.preparatory}</Th>
                   <Th>{i18n.reports.decisions.preparatoryDaycare}</Th>
                   <Th>{i18n.reports.decisions.club}</Th>
@@ -233,6 +238,7 @@ export default React.memo(function Decisions() {
                     <Td>{row.daycareOver3}</Td>
                     <Td>{row.preschool}</Td>
                     <Td>{row.preschoolDaycare}</Td>
+                    <Td>{row.connectedDaycareOnly}</Td>
                     <Td>{row.preparatory}</Td>
                     <Td>{row.preparatoryDaycare}</Td>
                     <Td>{row.club}</Td>
@@ -258,6 +264,12 @@ export default React.memo(function Decisions() {
                   <Td>{reducePropertySum(filteredRows, (r) => r.preschool)}</Td>
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.preschoolDaycare)}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.connectedDaycareOnly
+                    )}
                   </Td>
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.preparatory)}

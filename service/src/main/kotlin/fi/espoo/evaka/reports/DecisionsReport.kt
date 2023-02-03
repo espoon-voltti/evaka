@@ -66,11 +66,11 @@ SELECT
     u.provider_type,
     de.id AS decision_id,
     de.type AS decision_type,
+    a.id AS application_id,
     (
         SELECT array_agg(e::UUID)
         FROM jsonb_array_elements_text(af.document -> 'apply' -> 'preferredUnits') e
     ) AS preferred_units,
-    (af.document ->> 'connectedDaycare') :: BOOLEAN AS connected_daycare,
     date_part('year', age(de.sent_date, ch.date_of_birth)) AS age
 FROM application a
 JOIN decision de ON de.application_id = a.id
@@ -89,6 +89,9 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
     return queryResult
         .groupBy { it.unitId }
         .map { (unitId, rows) ->
+            val applicationDecisionCount =
+                rows.groupBy { it.applicationId }.mapValues { it.value.size }
+
             val daycareUnder3 =
                 rows.filter {
                     it.age < 3 &&
@@ -101,20 +104,37 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
                         it.decisionType in
                             setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
                 }
-            val preschool = rows.filter { it.decisionType == DecisionType.PRESCHOOL }
-            val preschoolDaycare = rows.filter { it.decisionType == DecisionType.PRESCHOOL_DAYCARE }
+            val preschool =
+                rows.filter {
+                    it.decisionType == DecisionType.PRESCHOOL &&
+                        applicationDecisionCount.getValue(it.applicationId) == 1
+                }
+            val preschoolDaycare =
+                rows.filter {
+                    it.decisionType == DecisionType.PRESCHOOL &&
+                        applicationDecisionCount.getValue(it.applicationId) == 2
+                }
             val preparatory =
                 rows.filter {
-                    it.decisionType == DecisionType.PREPARATORY_EDUCATION && !it.connectedDaycare
+                    it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
+                        applicationDecisionCount.getValue(it.applicationId) == 1
                 }
             val preparatoryDaycare =
                 rows.filter {
-                    it.decisionType == DecisionType.PREPARATORY_EDUCATION && it.connectedDaycare
+                    it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
+                        applicationDecisionCount.getValue(it.applicationId) == 2
+                }
+            val connectedDaycareOnly =
+                rows.filter {
+                    // PRESCHOOL_DAYCARE is used for connected daycare for both preschool and
+                    // preparatory
+                    it.decisionType == DecisionType.PRESCHOOL_DAYCARE &&
+                        applicationDecisionCount.getValue(it.applicationId) == 1
                 }
             val club = rows.filter { it.decisionType == DecisionType.CLUB }
-            val preference1 = rows.filter { it.unitId == it.preferredUnits[0] }
-            val preference2 = rows.filter { it.unitId == it.preferredUnits[1] }
-            val preference3 = rows.filter { it.unitId == it.preferredUnits[2] }
+            val preference1 = rows.filter { it.unitId == it.preferredUnits.getOrNull(0) }
+            val preference2 = rows.filter { it.unitId == it.preferredUnits.getOrNull(1) }
+            val preference3 = rows.filter { it.unitId == it.preferredUnits.getOrNull(2) }
             val preferenceNone = rows.filter { !it.preferredUnits.contains(it.unitId) }
 
             DecisionsReportRow(
@@ -128,6 +148,7 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
                 preschoolDaycare = preschoolDaycare.count(),
                 preparatory = preparatory.count(),
                 preparatoryDaycare = preparatoryDaycare.count(),
+                connectedDaycareOnly = connectedDaycareOnly.count(),
                 club = club.count(),
                 preference1 = preference1.count(),
                 preference2 = preference2.count(),
@@ -146,8 +167,8 @@ private data class DecisionsReportQueryRow(
     val providerType: ProviderType,
     val decisionId: DecisionId,
     val decisionType: DecisionType,
+    val applicationId: ApplicationId,
     val preferredUnits: List<DaycareId>,
-    val connectedDaycare: Boolean,
     val age: Int
 )
 
@@ -162,6 +183,7 @@ data class DecisionsReportRow(
     val preschoolDaycare: Int,
     val preparatory: Int,
     val preparatoryDaycare: Int,
+    val connectedDaycareOnly: Int,
     val club: Int,
     val preference1: Int,
     val preference2: Int,
