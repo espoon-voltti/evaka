@@ -5,11 +5,17 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.controllers.upsertAdditionalInformation
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createEmptyPerson
+import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.duplicatePerson
+import fi.espoo.evaka.pis.getFosterChildren
+import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.FridgeFamilyService
@@ -23,12 +29,15 @@ import fi.espoo.evaka.pis.service.addToGuardianBlocklist
 import fi.espoo.evaka.pis.service.deleteFromGuardianBlocklist
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.getBlockedGuardians
+import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -94,6 +103,76 @@ class PersonController(
                     ?: throw NotFound("Person $personId not found")
             }
             .also { Audit.PersonDetailsRead.log(targetId = personId) }
+    }
+
+    @PostMapping("/{personId}/duplicate")
+    fun duplicate(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable personId: PersonId
+    ): PersonId {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.DUPLICATE,
+                        personId
+                    )
+
+                    val duplicateId =
+                        tx.duplicatePerson(personId) ?: throw NotFound("Person $personId not found")
+                    tx.getChild(personId)?.let { child ->
+                        tx.upsertAdditionalInformation(
+                            childId = duplicateId,
+                            data = child.additionalInformation
+                        )
+                    }
+
+                    val parentRelationships =
+                        tx.getChildGuardians(personId).map { guardianId ->
+                            CreateFosterParentRelationshipBody(
+                                childId = duplicateId,
+                                parentId = guardianId,
+                                DateRange(clock.today(), null)
+                            )
+                        } +
+                            tx.getFosterParents(personId).map { relationship ->
+                                CreateFosterParentRelationshipBody(
+                                    childId = duplicateId,
+                                    parentId = relationship.parent.id,
+                                    validDuring = relationship.validDuring
+                                )
+                            }
+                    parentRelationships.forEach { relationship ->
+                        tx.createFosterParentRelationship(relationship)
+                    }
+
+                    val childRelationships =
+                        tx.getGuardianChildIds(personId).map { childId ->
+                            CreateFosterParentRelationshipBody(
+                                childId = childId,
+                                parentId = duplicateId,
+                                validDuring = DateRange(clock.today(), null)
+                            )
+                        } +
+                            tx.getFosterChildren(personId).map { relationship ->
+                                CreateFosterParentRelationshipBody(
+                                    childId = relationship.child.id,
+                                    parentId = duplicateId,
+                                    validDuring = relationship.validDuring
+                                )
+                            }
+                    childRelationships.forEach { relationship ->
+                        tx.createFosterParentRelationship(relationship)
+                    }
+
+                    duplicateId
+                }
+            }
+            .also { Audit.PersonDuplicate.log(targetId = personId) }
     }
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
