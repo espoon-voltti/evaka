@@ -213,7 +213,7 @@ class DevApi(
         }
     }
 
-    @GetMapping
+    @GetMapping("/")
     fun healthCheck() {
         // HTTP 200
     }
