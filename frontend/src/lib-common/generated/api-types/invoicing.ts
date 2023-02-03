@@ -876,7 +876,8 @@ export const voucherValueDecisionDifferences = [
   'FEE_ALTERATIONS',
   'FINAL_CO_PAYMENT',
   'BASE_VALUE',
-  'VOUCHER_VALUE'
+  'VOUCHER_VALUE',
+  'FEE_THRESHOLDS'
 ] as const
 
 export type VoucherValueDecisionDifference = typeof voucherValueDecisionDifferences[number]

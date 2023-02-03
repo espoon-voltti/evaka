@@ -11,6 +11,7 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoe
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
@@ -30,6 +31,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
+import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
@@ -1046,6 +1048,84 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         VoucherValueDecisionDifference.BASE_VALUE,
                         VoucherValueDecisionDifference.VOUCHER_VALUE
                     )
+                )
+            )
+    }
+
+    @Test
+    fun `fee thresholds difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        db.transaction { tx ->
+            tx.createUpdate(
+                    "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
+                )
+                .bind("endDate", subPeriod1.end)
+                .updateExactlyOne()
+            tx.insertTestFeeThresholds(
+                FeeThresholds(
+                    validDuring = subPeriod2.copy(end = null),
+                    minIncomeThreshold2 = 213600,
+                    minIncomeThreshold3 = 275600,
+                    minIncomeThreshold4 = 312900,
+                    minIncomeThreshold5 = 350200,
+                    minIncomeThreshold6 = 387400,
+                    maxIncomeThreshold2 = 482300,
+                    maxIncomeThreshold3 = 544300,
+                    maxIncomeThreshold4 = 581600,
+                    maxIncomeThreshold5 = 618900,
+                    maxIncomeThreshold6 = 656100,
+                    incomeMultiplier2 = BigDecimal("0.1070"),
+                    incomeMultiplier3 = BigDecimal("0.1070"),
+                    incomeMultiplier4 = BigDecimal("0.1070"),
+                    incomeMultiplier5 = BigDecimal("0.1070"),
+                    incomeMultiplier6 = BigDecimal("0.1070"),
+                    incomeThresholdIncrease6Plus = 14200,
+                    siblingDiscount2 = BigDecimal("0.5"),
+                    siblingDiscount2Plus = BigDecimal("0.8"),
+                    maxFee = 28900,
+                    minFee = 2700,
+                    temporaryFee = 2900,
+                    temporaryFeePartDay = 1500,
+                    temporaryFeeSibling = 1500,
+                    temporaryFeeSiblingPartDay = 800
+                )
+            )
+            tx.insertTestIncome(
+                DevIncome(
+                    personId = testAdult_1.id,
+                    validFrom = period.start,
+                    data =
+                        mapOf(
+                            "MAIN_INCOME" to
+                                IncomeValue(
+                                    amount = 0,
+                                    coefficient = IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                                    multiplier = 1
+                                )
+                        ),
+                    effect = IncomeEffect.INCOME,
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
+            )
+        }
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+        }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ it.validFrom }, { it.validTo }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1.start, subPeriod1.end, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(
+                    subPeriod2.start,
+                    subPeriod2.end,
+                    setOf(VoucherValueDecisionDifference.FEE_THRESHOLDS)
                 )
             )
     }
