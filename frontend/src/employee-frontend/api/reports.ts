@@ -20,6 +20,7 @@ import {
   FamilyConflictReportRow,
   FamilyContactReportRow,
   InvoiceReport,
+  ManualDuplicationReportRow,
   MissingHeadOfFamilyReportRow,
   MissingServiceNeedReportRow,
   OccupancyGroupReportResultRow,
@@ -633,6 +634,26 @@ export async function getAssistanceReservationReportByChild(
             row.reservationEndTime !== null
               ? LocalTime.parse(row.reservationEndTime, 'HH:mm')
               : null
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getManualDuplicationReport(): Promise<
+  Result<ManualDuplicationReportRow[]>
+> {
+  return client
+    .get<JsonOf<ManualDuplicationReportRow[]>>('/reports/manual-duplication')
+    .then(({ data }) =>
+      Success.of(
+        data.map((row) => ({
+          ...row,
+          dateOfBirth: LocalDate.parseIso(row.dateOfBirth),
+          connectedStartDate: LocalDate.parseIso(row.connectedStartDate),
+          connectedEndDate: LocalDate.parseIso(row.connectedEndDate),
+          preschoolStartDate: LocalDate.parseIso(row.preschoolStartDate),
+          preschoolEndDate: LocalDate.parseIso(row.preschoolEndDate)
         }))
       )
     )

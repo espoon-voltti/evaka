@@ -14,6 +14,7 @@ import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
 import { AssistanceMeasure } from './assistanceaction'
 import { AssistanceNeedDecisionStatus } from './assistanceneed'
+import { DecisionType } from './decision'
 import { OccupancyValues } from './occupancy'
 import { PlacementType } from './placement'
 import { ProviderType } from './daycare'
@@ -279,6 +280,27 @@ export interface InvoiceReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.ManualDuplicationReportController.ManualDuplicationReportRow
+*/
+export interface ManualDuplicationReportRow {
+  childFirstName: string
+  childId: UUID
+  childLastName: string
+  connectedDaycareId: UUID
+  connectedDaycareName: string
+  connectedDecisionType: DecisionType
+  connectedEndDate: LocalDate
+  connectedSnoName: string
+  connectedStartDate: LocalDate
+  dateOfBirth: LocalDate
+  preschoolDaycareId: UUID
+  preschoolDaycareName: string
+  preschoolDecisionType: DecisionType
+  preschoolEndDate: LocalDate
+  preschoolStartDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
@@ -483,6 +505,7 @@ export type Report =
   | 'ENDED_PLACEMENTS'
   | 'FAMILY_CONFLICT'
   | 'INVOICE'
+  | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'
   | 'MISSING_SERVICE_NEED'
   | 'OCCUPANCY'

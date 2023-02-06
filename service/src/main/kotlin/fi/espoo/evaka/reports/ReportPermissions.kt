@@ -24,6 +24,7 @@ enum class Report {
     ENDED_PLACEMENTS,
     FAMILY_CONFLICT,
     INVOICE,
+    MANUAL_DUPLICATION,
     MISSING_HEAD_OF_FAMILY,
     MISSING_SERVICE_NEED,
     OCCUPANCY,
@@ -101,6 +102,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.INVOICE.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_INVOICE_REPORT)
+                    },
+                    Report.MANUAL_DUPLICATION.takeIf {
+                        permittedGlobalActions.contains(
+                            Action.Global.READ_MANUAL_DUPLICATION_REPORT
+                        )
                     },
                     Report.MISSING_HEAD_OF_FAMILY.takeIf {
                         permittedActionsForSomeUnit.contains(

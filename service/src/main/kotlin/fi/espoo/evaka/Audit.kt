@@ -215,6 +215,7 @@ enum class Audit(
     InvoicesSend,
     InvoicesSendByDate,
     InvoicesUpdate,
+    ManualDuplicationReportRead,
     MessagingBlocklistEdit,
     MessagingBlocklistRead,
     MessagingMyAccountsRead,
