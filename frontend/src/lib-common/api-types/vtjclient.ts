@@ -14,6 +14,7 @@ export interface Child {
 export interface CitizenFeatures {
   childDocumentation: boolean
   messages: boolean
+  composeNewMessage: boolean
   reservations: boolean
 }
 

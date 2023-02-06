@@ -18,8 +18,10 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): CitizenFeatures {
+        val messaging = tx.citizenHasAccessToMessaging(clock, user.id)
         return CitizenFeatures(
-            messages = tx.citizenHasAccessToMessaging(clock, user.id),
+            messages = messaging,
+            composeNewMessage = messaging && tx.citizenHasChildWithActivePlacement(clock, user.id),
             reservations =
                 tx.citizenHasAccessToReservations(
                     clock,
@@ -62,6 +64,32 @@ SELECT EXISTS (
     JOIN message_recipients mr ON ma.id = mr.recipient_id
     JOIN application app ON p.id = app.guardian_id
     WHERE app.status = 'SENT' AND p.id = :userId AND mr.id IS NOT NULL
+)
+"""
+        return createQuery(sql)
+            .bind("today", clock.today())
+            .bind("userId", userId)
+            .mapTo<Boolean>()
+            .first()
+    }
+
+    private fun Database.Read.citizenHasChildWithActivePlacement(
+        clock: EvakaClock,
+        userId: PersonId
+    ): Boolean {
+        // language=sql
+        val sql =
+            """
+WITH children AS (
+    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = :userId
+    UNION ALL
+    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+)
+SELECT EXISTS (
+    SELECT 1
+    FROM children c
+    JOIN placement pl ON c.child_id = pl.child_id
+    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :today
 )
 """
         return createQuery(sql)

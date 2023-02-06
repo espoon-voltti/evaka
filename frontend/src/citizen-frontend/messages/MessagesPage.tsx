@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
+import { useUser } from 'citizen-frontend/auth/state'
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -73,6 +74,8 @@ export default React.memo(function MessagesPage() {
     [t.messages.staffAnnotation]
   )
 
+  const user = useUser()
+
   useEffect(() => {
     setEditorVisible(searchParams.get('editorVisible') === 'true')
   }, [setEditorVisible, searchParams])
@@ -109,6 +112,9 @@ export default React.memo(function MessagesPage() {
     changeEditorVisibility(false)
   }, [refreshThreads, changeEditorVisibility])
 
+  const canSendNewMessage =
+    !editorVisible && !!user?.accessibleFeatures.composeNewMessage
+
   return (
     <Container>
       <UnwrapResult result={combine(accountId, receivers)}>
@@ -123,7 +129,7 @@ export default React.memo(function MessagesPage() {
                   accountId={id}
                   selectThread={selectThread}
                   setEditorVisible={changeEditorVisibility}
-                  newMessageButtonEnabled={!editorVisible}
+                  newMessageButtonEnabled={canSendNewMessage}
                 />
                 {selectedThread ? (
                   <ThreadView
