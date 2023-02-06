@@ -5,11 +5,10 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.EmailEnv
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.shared.MessageId
-import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.JobParams
@@ -25,15 +24,12 @@ import org.springframework.stereotype.Service
 class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
-    env: EvakaEnv,
+    private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendMessageNotification)
     }
-
-    val baseUrl: String = env.frontendBaseUrlFi
-    val baseUrlSv: String = env.frontendBaseUrlSv
 
     fun getMessageNotifications(
         tx: Database.Transaction,
@@ -111,87 +107,24 @@ class MessageNotificationEmailService(
         clock: EvakaClock,
         msg: AsyncJob.SendMessageNotificationEmail
     ) {
-        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language, urgent) =
-            msg
+        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language) = msg
 
         db.transaction { tx ->
             // The message has been undone and the recipient should no longer get an email
             // notification
-            if (
-                messageId != null &&
-                    recipientId != null &&
-                    !tx.unreadMessageForRecipientExists(messageId, recipientId)
-            ) {
+            if (!tx.unreadMessageForRecipientExists(messageId, recipientId)) {
                 return@transaction
             }
+
+            val thread = tx.getMessageThreadStub(threadId)
 
             emailClient.sendEmail(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
                 fromAddress = emailEnv.sender(language),
-                subject = getSubject(urgent),
-                htmlBody = getHtml(language, threadId, urgent),
-                textBody = getText(language, threadId, urgent)
+                content = emailMessageProvider.messageNotification(language, thread)
             )
             tx.markNotificationAsSent(messageRecipientId, clock.now())
         }
-    }
-
-    private fun getSubject(urgent: Boolean): String {
-        return if (urgent) {
-            "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka"
-        } else {
-            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka"
-        }
-    }
-
-    private fun getCitizenMessageUrl(lang: Language, threadId: MessageThreadId?): String {
-        val base =
-            when (lang) {
-                Language.sv -> baseUrlSv
-                else -> baseUrl
-            }
-        return "$base/messages${if (threadId == null) "" else "/$threadId"}"
-    }
-
-    private fun getHtml(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
-        val messagesUrl = getCitizenMessageUrl(language, threadId)
-        return """
-                <p>Sinulle on saapunut uusi ${if (urgent) "kiireellinen " else ""}tiedote/viesti eVakaan. Lue viesti ${if (urgent) "mahdollisimman pian " else ""}täältä: <a href="$messagesUrl">$messagesUrl</a></p>
-                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
-            
-                <hr>
-                
-                <p>Du har fått ett nytt ${if (urgent) "brådskande " else ""}allmänt/personligt meddelande i eVaka. Läs meddelandet ${if (urgent) "så snart som möjligt " else ""}här: <a href="$messagesUrl">$messagesUrl</a></p>
-                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
-                
-                <hr>
-                
-                <p>You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: <a href="$messagesUrl">$messagesUrl</a></p>
-                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
-        """
-            .trimIndent()
-    }
-
-    private fun getText(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
-        val messageUrl = getCitizenMessageUrl(language, threadId)
-        return """
-                Sinulle on saapunut uusi ${if (urgent) "kiireellinen " else ""}tiedote/viesti eVakaan. Lue viesti ${if (urgent) "mahdollisimman pian " else ""}täältä: $messageUrl
-                
-                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
-                
-                -----
-       
-                Du har fått ett nytt ${if (urgent) "brådskande " else ""}allmänt/personligt meddelande i eVaka. Läs meddelandet ${if (urgent) "så snart som möjligt " else ""}här: $messageUrl
-                
-                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
-                
-                -----
-                
-                You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: $messageUrl
-                
-                This is an automatic message from the eVaka system. Do not reply to this message.  
-        """
-            .trimIndent()
     }
 }

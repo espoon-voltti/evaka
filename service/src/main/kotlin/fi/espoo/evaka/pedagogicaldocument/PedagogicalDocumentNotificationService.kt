@@ -5,9 +5,9 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.EmailEnv
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -24,15 +24,12 @@ private val logger = KotlinLogging.logger {}
 class PedagogicalDocumentNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
-    env: EvakaEnv,
+    private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendNotification)
     }
-
-    val baseUrl: String = env.frontendBaseUrlFi
-    val baseUrlSv: String = env.frontendBaseUrlSv
 
     fun getPedagogicalDocumentationNotifications(
         tx: Database.Transaction,
@@ -138,66 +135,10 @@ SELECT EXISTS(
                 traceId = pedagogicalDocumentId.toString(),
                 toAddress = recipientEmail,
                 fromAddress = emailEnv.sender(language),
-                subject = getSubject(),
-                htmlBody = getHtml(language),
-                textBody = getText(language)
+                content = emailMessageProvider.pedagogicalDocumentNotification(language)
             )
             tx.markPedagogicalDocumentNotificationSent(pedagogicalDocumentId)
         }
-    }
-
-    private fun getSubject(): String {
-        return "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka"
-    }
-
-    private fun getDocumentsUrl(lang: Language): String {
-        val base =
-            when (lang) {
-                Language.sv -> baseUrlSv
-                else -> baseUrl
-            }
-        return "$base/pedagogical-documents"
-    }
-
-    private fun getHtml(language: Language): String {
-        val documentsUrl = getDocumentsUrl(language)
-        return """
-                <p>Sinulle on saapunut uusi pedagoginen dokumentti eVakaan. Lue dokumentti täältä: <a href="$documentsUrl">$documentsUrl</a></p>
-                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
-            
-                <hr>
-                
-                <p>Du har fått ett nytt pedagogiskt dokument i eVaka. Läs dokumentet här: <a href="$documentsUrl">$documentsUrl</a></p>
-                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
-                
-                <hr>
-                
-                <p>You have received a new eVaka pedagogical document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
-                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
-        """
-            .trimIndent()
-    }
-
-    private fun getText(language: Language): String {
-        val documentsUrl = getDocumentsUrl(language)
-        return """
-                Sinulle on saapunut uusi pedagoginen dokumentti eVakaan. Lue dokumentti täältä: $documentsUrl
-                
-                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
-                
-                -----
-       
-                Du har fått ett nytt pedagogiskt dokument i eVaka. Läs dokumentet här: $documentsUrl
-                
-                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
-                
-                -----
-                
-                You have received a new eVaka pedagogical document. Read the document here: $documentsUrl
-                
-                This is an automatic message from the eVaka system. Do not reply to this message.  
-        """
-            .trimIndent()
     }
 }
 

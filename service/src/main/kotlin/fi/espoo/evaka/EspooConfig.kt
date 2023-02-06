@@ -101,7 +101,8 @@ class EspooConfig {
 
     @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
-    @Bean fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
+    @Bean
+    fun emailMessageProvider(env: EvakaEnv): IEmailMessageProvider = EvakaEmailMessageProvider(env)
 
     @Bean
     fun documentService(

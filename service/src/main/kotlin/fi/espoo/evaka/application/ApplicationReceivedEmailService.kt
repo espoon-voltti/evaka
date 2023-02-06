@@ -28,40 +28,17 @@ class ApplicationReceivedEmailService(
         sentWithinPreschoolApplicationPeriod: Boolean? = null
     ) {
         val fromAddress = emailEnv.applicationReceivedSender(language)
-
-        val subject =
+        val content =
             when (type) {
-                ApplicationType.DAYCARE ->
-                    emailMessageProvider.getDaycareApplicationReceivedEmailSubject()
-                ApplicationType.CLUB ->
-                    emailMessageProvider.getClubApplicationReceivedEmailSubject()
+                ApplicationType.CLUB -> emailMessageProvider.clubApplicationReceived(language)
+                ApplicationType.DAYCARE -> emailMessageProvider.daycareApplicationReceived(language)
                 ApplicationType.PRESCHOOL ->
-                    emailMessageProvider.getPreschoolApplicationReceivedEmailSubject()
-            }
-
-        val html =
-            when (type) {
-                ApplicationType.DAYCARE ->
-                    emailMessageProvider.getDaycareApplicationReceivedEmailHtml()
-                ApplicationType.CLUB -> emailMessageProvider.getClubApplicationReceivedEmailHtml()
-                ApplicationType.PRESCHOOL ->
-                    emailMessageProvider.getPreschoolApplicationReceivedEmailHtml(
+                    emailMessageProvider.preschoolApplicationReceived(
+                        language,
                         sentWithinPreschoolApplicationPeriod!!
                     )
             }
-
-        val text =
-            when (type) {
-                ApplicationType.DAYCARE ->
-                    emailMessageProvider.getDaycareApplicationReceivedEmailText()
-                ApplicationType.CLUB -> emailMessageProvider.getClubApplicationReceivedEmailText()
-                ApplicationType.PRESCHOOL ->
-                    emailMessageProvider.getPreschoolApplicationReceivedEmailText(
-                        sentWithinPreschoolApplicationPeriod!!
-                    )
-            }
-
         logger.info { "Sending application email (personId: $personId)" }
-        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, subject, html, text)
+        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, content)
     }
 }

@@ -93,14 +93,11 @@ AND email IS NOT NULL
                     .firstOrNull()
             }
                 ?: return
-        val email = emailMessageProvider.missingReservationsNotification(language, msg.range)
         emailClient.sendEmail(
             traceId = msg.guardian.toString(),
             toAddress = recipient,
             fromAddress = emailEnv.sender(language),
-            subject = email.subject,
-            htmlBody = email.html,
-            textBody = email.text,
+            content = emailMessageProvider.missingReservationsNotification(language, msg.range)
         )
     }
 }

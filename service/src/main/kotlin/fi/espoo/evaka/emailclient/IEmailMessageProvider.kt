@@ -5,7 +5,7 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
@@ -16,50 +16,25 @@ data class EmailContent(
 )
 
 interface IEmailMessageProvider {
+    fun pendingDecisionNotification(language: Language): EmailContent
 
-    val subjectForPendingDecisionEmail: String
-    val subjectForClubApplicationReceivedEmail: String
-    val subjectForDaycareApplicationReceivedEmail: String
-    val subjectForPreschoolApplicationReceivedEmail: String
-    val subjectForDecisionEmail: String
+    fun clubApplicationReceived(language: Language): EmailContent
+    fun daycareApplicationReceived(language: Language): EmailContent
+    fun preschoolApplicationReceived(
+        language: Language,
+        withinApplicationPeriod: Boolean
+    ): EmailContent
 
-    fun getPendingDecisionEmailSubject(): String {
-        return subjectForPendingDecisionEmail
-    }
-
-    fun getPendingDecisionEmailHtml(): String
-    fun getPendingDecisionEmailText(): String
-
-    fun getClubApplicationReceivedEmailSubject(): String {
-        return subjectForClubApplicationReceivedEmail
-    }
-
-    fun getClubApplicationReceivedEmailHtml(): String
-    fun getClubApplicationReceivedEmailText(): String
-
-    fun getDaycareApplicationReceivedEmailSubject(): String {
-        return subjectForDaycareApplicationReceivedEmail
-    }
-
-    fun getDaycareApplicationReceivedEmailHtml(): String
-    fun getDaycareApplicationReceivedEmailText(): String
-
-    fun getPreschoolApplicationReceivedEmailSubject(): String {
-        return subjectForPreschoolApplicationReceivedEmail
-    }
-
-    fun getPreschoolApplicationReceivedEmailHtml(withinApplicationPeriod: Boolean): String
-    fun getPreschoolApplicationReceivedEmailText(withinApplicationPeriod: Boolean): String
-
-    fun getDecisionEmailSubject(): String {
-        return subjectForDecisionEmail
-    }
-
-    fun getDecisionEmailHtml(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
-    fun getDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
+    fun assistanceNeedDecisionNotification(language: Language): EmailContent
 
     fun missingReservationsNotification(
         language: Language,
         checkedRange: FiniteDateRange
     ): EmailContent
+
+    fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent
+
+    fun vasuNotification(language: Language, childId: ChildId): EmailContent
+
+    fun pedagogicalDocumentNotification(language: Language): EmailContent
 }

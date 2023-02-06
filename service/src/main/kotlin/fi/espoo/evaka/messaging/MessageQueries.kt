@@ -1539,3 +1539,17 @@ SELECT EXISTS (
         .mapTo<Boolean>()
         .first()
 }
+
+fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
+    createQuery<MessageThreadStub> {
+            sql(
+                """
+SELECT id, message_type AS type, title, urgent, is_copy
+FROM message_thread
+WHERE id = ${bind(id)}
+    """
+                    .trimIndent()
+            )
+        }
+        .mapTo<MessageThreadStub>()
+        .single()
