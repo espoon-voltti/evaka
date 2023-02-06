@@ -63,7 +63,8 @@ export default React.memo(function MessagesPage({
     openMessageUndo,
     prefilledRecipient,
     prefilledTitle,
-    relatedApplicationId
+    relatedApplicationId,
+    accountAllowsNewMessage
   } = useContext(MessageContext)
 
   const { setErrorMessage } = useContext(UIContext)
@@ -210,6 +211,7 @@ export default React.memo(function MessagesPage({
         <Sidebar
           showEditor={() => setShowEditor(true)}
           setReceivers={setReceivers}
+          enableNewMessage={accountAllowsNewMessage()}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
         {showEditor &&

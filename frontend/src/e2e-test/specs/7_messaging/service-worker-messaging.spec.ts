@@ -26,6 +26,7 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -262,6 +263,13 @@ describe('Service Worker Messaging', () => {
         .applicationRow(applicationFixtureId)
         .openApplication()
       await applReadView.assertNote(2, `Lähetetty viesti\n\n${replyContent}`)
+    })
+
+    it('should not be possible for service workers to compose new messages from the messages page', async () => {
+      await openStaffPage(mockedTime)
+      await new EmployeeNav(staffPage).messagesTab.click()
+      const messagesPage = new MessagesPage(staffPage)
+      await messagesPage.newMessageButton.assertDisabled(true)
     })
   })
 })
