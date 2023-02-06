@@ -26,6 +26,8 @@ export default class ChildAttendancePage {
   #nonAbsenceActions = this.page.find('[data-qa="non-absence-actions"]')
   #setTimeInput = new TextInput(this.page.find('[data-qa="set-time"]'))
 
+  setTimeInfo = this.page.findByDataQa('set-time-info')
+
   #markAbsentByTypeButton = (type: AbsenceType) =>
     this.page.find(`[data-qa="mark-absent-${type}"]`)
 
