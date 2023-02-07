@@ -126,6 +126,7 @@ private fun Database.Read.getAttendanceReservationReport(
         WITH reservations AS (
           SELECT
             CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
+            ar.child_id,
             ar.date,
             ar.start_time,
             ar.end_time,
@@ -176,6 +177,7 @@ private fun Database.Read.getAttendanceReservationReport(
           r.date + r.end_time + interval '30 minutes' - interval '1 second'
         WHERE extract(isodow FROM dateTime) = ANY(g.operation_days)
           AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
+          AND NOT EXISTS(SELECT 1 FROM absence WHERE absence.child_id = r.child_id AND absence.date = r.date)  
         GROUP BY 1, 2, 3
         ORDER BY 2, 3
     """

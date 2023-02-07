@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.LocalTimeRange
 import fi.espoo.evaka.children.Group
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -1018,6 +1020,74 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         "end" to date.format(ISO_DATE),
                         "groupIds" to ""
                     )
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `Absence is supported`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            listOf(testChild_1, testChild_2).forEach { testChild ->
+                tx.insertTestPlacement(
+                    childId = testChild.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 15),
+                        endTime = LocalTime.of(8, 16),
+                        createdBy = admin.evakaUserId
+                    )
+                )
+            }
+
+            tx.insertTestAbsence(
+                childId = testChild_2.id,
+                category = AbsenceCategory.BILLABLE,
+                date = date
+            )
+        }
+
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
                 .asUser(admin)
                 .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
