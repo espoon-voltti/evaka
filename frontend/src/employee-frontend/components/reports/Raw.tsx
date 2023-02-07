@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { RawReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -17,13 +15,13 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { getRawReport, PeriodFilters, sendPatuReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow } from './common'
 
 export default React.memo(function Raw() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<RawReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
     from: LocalDate.todayInSystemTz(),
     to: LocalDate.todayInSystemTz()
@@ -31,12 +29,7 @@ export default React.memo(function Raw() {
   const invertedRange = filters.to.isBefore(filters.from)
   const tooLongRange = filters.to.isAfter(filters.from.addDays(7))
 
-  useEffect(() => {
-    setRows(Loading.of())
-    if (!invertedRange && !tooLongRange) {
-      void getRawReport(filters).then(setRows)
-    }
-  }, [filters, invertedRange, tooLongRange])
+  const [rows] = useApiState(() => getRawReport(filters), [filters])
 
   const mapYesNo = (value: boolean | null | undefined) => {
     if (value === true) {
@@ -82,88 +75,78 @@ export default React.memo(function Raw() {
         ) : tooLongRange ? (
           <span>Liian pitkä aikaväli (max 7 päivää)</span>
         ) : (
-          <>
-            {rows.isLoading && <Loader />}
-            {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-            {rows.isSuccess && (
-              <>
-                <ReportDownload
-                  data={rows.value.map((row) => ({
-                    ...row,
-                    day: row.day.format(),
-                    childLink: `${window.location.protocol}//${window.location.host}/employee/child-information/${row.childId}`,
-                    dateOfBirth: row.dateOfBirth?.format(),
-                    placementType: i18n.placement.type[row.placementType],
-                    unitType:
-                      row.unitType &&
-                      i18n.reports.common.unitTypes[row.unitType],
-                    unitProviderType:
-                      i18n.reports.common.unitProviderTypes[
-                        row.unitProviderType
-                      ],
-                    caretakersPlanned: mapFloat(row.caretakersPlanned),
-                    caretakersRealized: mapFloat(row.caretakersRealized),
-                    hasServiceNeed: mapYesNo(row.hasServiceNeed),
-                    partDay: mapYesNo(row.partDay),
-                    partWeek: mapYesNo(row.partWeek),
-                    shiftCare: mapYesNo(row.shiftCare),
-                    hoursPerWeek: mapFloat(row.hoursPerWeek),
-                    hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
-                    capacityFactor: mapFloat(row.capacityFactor),
-                    capacity: mapFloat(row.capacity),
-                    absencePaid:
-                      row.absencePaid &&
-                      i18n.absences.absenceTypes[row.absencePaid],
-                    absenceFree:
-                      row.absenceFree &&
-                      i18n.absences.absenceTypes[row.absenceFree]
-                  }))}
-                  headers={[
-                    { label: 'Päivämäärä', key: 'day' },
-                    { label: 'Lapsen id', key: 'childId' },
-                    { label: 'Linkki lapseen', key: 'childLink' },
-                    { label: 'Sukunimi', key: 'lastName' },
-                    { label: 'Etunimi', key: 'firstName' },
-                    { label: 'Syntymäaika', key: 'dateOfBirth' },
-                    { label: 'Ikä', key: 'age' },
-                    { label: 'Kieli', key: 'language' },
-                    { label: 'Postinumero', key: 'postalCode' },
-                    { label: 'Kotikunta', key: 'postOffice' },
-                    { label: 'Sijoitustyyppi', key: 'placementType' },
-                    { label: 'Sijoitettu yksikköön', key: 'unitId' },
-                    { label: 'Yksikkö', key: 'unitName' },
-                    { label: 'Palvelualue', key: 'careArea' },
-                    { label: 'Toimintamuoto', key: 'unitType' },
-                    { label: 'Järjestämismuoto', key: 'unitProviderType' },
-                    { label: 'Kustannuspaikka', key: 'costCenter' },
-                    { label: 'Sijoitettu ryhmään', key: 'daycareGroupId' },
-                    { label: 'Ryhmä', key: 'groupName' },
-                    {
-                      label: 'Henkilökuntaa ryhmässä',
-                      key: 'caretakersPlanned'
-                    },
-                    { label: 'Henkilökuntaa läsnä', key: 'caretakersRealized' },
-                    { label: 'Varahoidossa yksikössä', key: 'backupUnitId' },
-                    { label: 'Varahoidossa ryhmässä', key: 'backupGroupId' },
-                    { label: 'Palveluntarve merkitty', key: 'hasServiceNeed' },
-                    { label: 'Osapäiväinen', key: 'partDay' },
-                    { label: 'Osaviikkoinen', key: 'partWeek' },
-                    { label: 'Vuorohoito', key: 'shiftCare' },
-                    { label: 'Tunteja viikossa', key: 'hoursPerWeek' },
-                    { label: 'Tuentarve', key: 'hasAssistanceNeed' },
-                    { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },
-                    { label: 'Lapsen kapasiteetti', key: 'capacity' },
-                    { label: 'Poissa maksullisesta', key: 'absencePaid' },
-                    { label: 'Poissa maksuttomasta', key: 'absenceFree' },
-                    { label: 'Henkilöstömitoitus', key: 'staffDimensioning' }
-                  ]}
-                  filename={`${
-                    i18n.reports.raw.title
-                  } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
-                />
-              </>
-            )}
-          </>
+          renderResult(rows, (rows) => (
+            <ReportDownload
+              data={rows.map((row) => ({
+                ...row,
+                day: row.day.format(),
+                childLink: `${window.location.protocol}//${window.location.host}/employee/child-information/${row.childId}`,
+                dateOfBirth: row.dateOfBirth?.format(),
+                placementType: i18n.placement.type[row.placementType],
+                unitType:
+                  row.unitType && i18n.reports.common.unitTypes[row.unitType],
+                unitProviderType:
+                  i18n.reports.common.unitProviderTypes[row.unitProviderType],
+                caretakersPlanned: mapFloat(row.caretakersPlanned),
+                caretakersRealized: mapFloat(row.caretakersRealized),
+                hasServiceNeed: mapYesNo(row.hasServiceNeed),
+                partDay: mapYesNo(row.partDay),
+                partWeek: mapYesNo(row.partWeek),
+                shiftCare: mapYesNo(row.shiftCare),
+                hoursPerWeek: mapFloat(row.hoursPerWeek),
+                hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
+                capacityFactor: mapFloat(row.capacityFactor),
+                capacity: mapFloat(row.capacity),
+                absencePaid:
+                  row.absencePaid &&
+                  i18n.absences.absenceTypes[row.absencePaid],
+                absenceFree:
+                  row.absenceFree && i18n.absences.absenceTypes[row.absenceFree]
+              }))}
+              headers={[
+                { label: 'Päivämäärä', key: 'day' },
+                { label: 'Lapsen id', key: 'childId' },
+                { label: 'Linkki lapseen', key: 'childLink' },
+                { label: 'Sukunimi', key: 'lastName' },
+                { label: 'Etunimi', key: 'firstName' },
+                { label: 'Syntymäaika', key: 'dateOfBirth' },
+                { label: 'Ikä', key: 'age' },
+                { label: 'Kieli', key: 'language' },
+                { label: 'Postinumero', key: 'postalCode' },
+                { label: 'Kotikunta', key: 'postOffice' },
+                { label: 'Sijoitustyyppi', key: 'placementType' },
+                { label: 'Sijoitettu yksikköön', key: 'unitId' },
+                { label: 'Yksikkö', key: 'unitName' },
+                { label: 'Palvelualue', key: 'careArea' },
+                { label: 'Toimintamuoto', key: 'unitType' },
+                { label: 'Järjestämismuoto', key: 'unitProviderType' },
+                { label: 'Kustannuspaikka', key: 'costCenter' },
+                { label: 'Sijoitettu ryhmään', key: 'daycareGroupId' },
+                { label: 'Ryhmä', key: 'groupName' },
+                {
+                  label: 'Henkilökuntaa ryhmässä',
+                  key: 'caretakersPlanned'
+                },
+                { label: 'Henkilökuntaa läsnä', key: 'caretakersRealized' },
+                { label: 'Varahoidossa yksikössä', key: 'backupUnitId' },
+                { label: 'Varahoidossa ryhmässä', key: 'backupGroupId' },
+                { label: 'Palveluntarve merkitty', key: 'hasServiceNeed' },
+                { label: 'Osapäiväinen', key: 'partDay' },
+                { label: 'Osaviikkoinen', key: 'partWeek' },
+                { label: 'Vuorohoito', key: 'shiftCare' },
+                { label: 'Tunteja viikossa', key: 'hoursPerWeek' },
+                { label: 'Tuentarve', key: 'hasAssistanceNeed' },
+                { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },
+                { label: 'Lapsen kapasiteetti', key: 'capacity' },
+                { label: 'Poissa maksullisesta', key: 'absencePaid' },
+                { label: 'Poissa maksuttomasta', key: 'absenceFree' },
+                { label: 'Henkilöstömitoitus', key: 'staffDimensioning' }
+              ]}
+              filename={`${
+                i18n.reports.raw.title
+              } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
+            />
+          ))
         )}
         <div hidden>
           <AsyncButton
