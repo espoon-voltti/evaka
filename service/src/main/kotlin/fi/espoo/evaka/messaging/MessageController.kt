@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.notes.createApplicationNote
+import fi.espoo.evaka.application.personHasSentApplicationWithId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -345,6 +347,31 @@ class MessageController(
                         throw BadRequest(
                             "Municipal message accounts are only allowed to send bulletins"
                         )
+                    }
+
+                    if (senderAccountType == AccountType.SERVICE_WORKER) {
+                        if (body.relatedApplicationId == null) {
+                            throw BadRequest(
+                                "Service worker message accounts must have a related application"
+                            )
+                        } else if (
+                            body.recipients.any { it.type != MessageRecipientType.CITIZEN }
+                        ) {
+                            throw BadRequest(
+                                "Service worker message accounts can only send messages to citizens"
+                            )
+                        } else if (
+                            body.recipients.any {
+                                !tx.personHasSentApplicationWithId(
+                                    PersonId(it.id.raw),
+                                    body.relatedApplicationId
+                                )
+                            }
+                        ) {
+                            throw BadRequest(
+                                "Service worker message accounts can only send messages to citizens with sent applications"
+                            )
+                        }
                     }
 
                     val messageRecipients =

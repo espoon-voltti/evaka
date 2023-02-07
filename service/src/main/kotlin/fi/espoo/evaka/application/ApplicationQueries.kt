@@ -1326,3 +1326,24 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
 
     return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().one()
 }
+
+fun Database.Read.personHasSentApplicationWithId(
+    citizenId: PersonId,
+    applicationId: ApplicationId
+): Boolean {
+    val sql =
+        """
+    SELECT EXISTS (
+        SELECT 1
+        FROM application app
+        WHERE app.guardian_id = :citizenId 
+              AND app.id = :applicationId
+    )
+    """
+            .trimIndent()
+    return createQuery(sql)
+        .bind("citizenId", citizenId)
+        .bind("applicationId", applicationId)
+        .mapTo<Boolean>()
+        .one()
+}
