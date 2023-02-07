@@ -47,6 +47,12 @@ export default class MessagesPage {
     this.page.find('[data-qa="message-reply-content"]')
   )
   #urgent = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
+  #messageTypeMessage = new Checkbox(
+    this.page.findByDataQa('radio-message-type-message')
+  )
+  #messageTypeBulletin = new Checkbox(
+    this.page.findByDataQa('radio-message-type-bulletin')
+  )
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
 
   async getReceivedMessageCount() {
@@ -59,6 +65,14 @@ export default class MessagesPage {
 
   async existsSentMessage() {
     return (await this.page.findAll('[data-qa="sent-message-row"]').count()) > 0
+  }
+
+  async assertSimpleViewVisible() {
+    await this.inputTitle.waitUntilVisible()
+    await this.#messageTypeMessage.waitUntilHidden()
+    await this.#messageTypeBulletin.waitUntilHidden()
+    await this.#urgent.waitUntilHidden()
+    await this.#fileUpload.waitUntilHidden()
   }
 
   async assertMessageIsSentForParticipants(nth: number, participants: string) {
