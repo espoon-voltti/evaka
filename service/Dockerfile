@@ -3,7 +3,13 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 ARG BASE_IMAGE=evaka-java:latest
+
 FROM "${BASE_IMAGE}" as builder
+
+COPY ./service/certificates/ /certificates/
+
+# We only add public certificates to truststore here, but keytool requires password, so using dummy password
+RUN TRUSTSTORE_PASSWORD="public-certificates-only" /certificates/integraatiopalvelu.sh truststore
 
 COPY ./espoo-customizations/ ./espoo-customizations/
 COPY ./service/gradle/ ./service/gradle/
@@ -41,6 +47,7 @@ WORKDIR /evaka/service
 COPY ./service/entrypoint.sh entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
+COPY --from=builder /certificates/truststore/ /certificates/truststore/
 COPY --from=builder /evaka/service/target/ .
 
 USER evaka

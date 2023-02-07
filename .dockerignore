@@ -13,6 +13,7 @@
 !service/owasp-suppressions.xml
 !service/src
 !service/*.sh
+!service/certificates/
 
 !service/buildSrc/*.kts
 !service/buildSrc/src
