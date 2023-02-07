@@ -5,10 +5,8 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.application.personHasSentApplicationWithId
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -348,7 +346,6 @@ class MessageController(
                             "Municipal message accounts are only allowed to send bulletins"
                         )
                     }
-
                     if (senderAccountType == AccountType.SERVICE_WORKER) {
                         if (body.relatedApplicationId == null) {
                             throw BadRequest(
@@ -374,64 +371,29 @@ class MessageController(
                         }
                     }
 
-                    val messageRecipients =
-                        tx.getMessageAccountsForRecipients(
-                            accountId,
-                            body.recipients,
-                            clock.today()
-                        )
-                    if (messageRecipients.isEmpty()) return@transaction null
-
-                    val staffCopyRecipients =
-                        if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
-                            tx.getStaffCopyRecipients(
-                                accountId,
-                                body.recipients.mapNotNull {
-                                    if (it.type == MessageRecipientType.AREA) AreaId(it.id.raw)
-                                    else null
-                                },
-                                body.recipients.mapNotNull {
-                                    if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw)
-                                    else null
-                                },
-                                body.recipients.mapNotNull {
-                                    if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw)
-                                    else null
-                                },
-                                clock.today()
-                            )
-                        } else {
-                            setOf()
-                        }
-
-                    val messageContentId =
-                        messageService.createMessageThreadsForRecipientGroups(
+                    messageService
+                        .sendMessageAsEmployee(
                             tx,
-                            clock,
-                            title = body.title,
-                            content = body.content,
-                            sender = accountId,
+                            user,
+                            clock.now(),
+                            accountId,
                             type = body.type,
-                            urgent = body.urgent,
+                            msg =
+                                NewMessageStub(
+                                    title = body.title,
+                                    content = body.content,
+                                    urgent = body.urgent
+                                ),
+                            recipients = body.recipients,
                             recipientNames = body.recipientNames,
-                            messageRecipients = messageRecipients,
-                            attachmentIds = body.attachmentIds,
-                            staffCopyRecipients = staffCopyRecipients,
-                            applicationId = body.relatedApplicationId,
-                            municipalAccountName = featureConfig.municipalMessageAccountName,
-                            serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
+                            attachments = body.attachmentIds,
+                            relatedApplication = body.relatedApplicationId
                         )
-                    if (body.draftId != null)
-                        tx.deleteDraft(accountId = accountId, draftId = body.draftId)
-                    if (body.relatedApplicationId != null) {
-                        tx.createApplicationNote(
-                            applicationId = body.relatedApplicationId,
-                            content = body.content,
-                            createdBy = user.evakaUserId,
-                            messageContentId = messageContentId
-                        )
-                    }
-                    messageContentId
+                        .also {
+                            if (body.draftId != null) {
+                                tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                            }
+                        }
                 }
             }
             .also { Audit.MessagingNewMessageWrite.log(targetId = accountId, objectId = it) }

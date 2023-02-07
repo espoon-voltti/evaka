@@ -6,9 +6,12 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -107,32 +110,53 @@ class MessageService(
         return threadId
     }
 
-    fun createMessageThreadsForRecipientGroups(
+    fun sendMessageAsEmployee(
         tx: Database.Transaction,
-        clock: EvakaClock,
-        title: String,
-        content: String,
-        type: MessageType,
-        urgent: Boolean,
+        user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         sender: MessageAccountId,
-        messageRecipients: List<Pair<MessageAccountId, ChildId?>>,
+        type: MessageType,
+        msg: NewMessageStub,
+        recipients: Set<MessageRecipient>,
         recipientNames: List<String>,
-        attachmentIds: Set<AttachmentId> = setOf(),
-        staffCopyRecipients: Set<MessageAccountId>,
-        applicationId: ApplicationId?,
-        municipalAccountName: String,
-        serviceWorkerAccountName: String
-    ): MessageContentId {
+        attachments: Set<AttachmentId>,
+        relatedApplication: ApplicationId?
+    ): MessageContentId? {
+        val messageRecipients =
+            tx.getMessageAccountsForRecipients(sender, recipients, now.toLocalDate())
+        if (messageRecipients.isEmpty()) return null
+
+        val staffCopyRecipients =
+            if (recipients.none { it.type == MessageRecipientType.CHILD }) {
+                tx.getStaffCopyRecipients(
+                    sender,
+                    recipients.mapNotNull {
+                        if (it.type == MessageRecipientType.AREA) AreaId(it.id.raw) else null
+                    },
+                    recipients.mapNotNull {
+                        if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw) else null
+                    },
+                    recipients.mapNotNull {
+                        if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw) else null
+                    },
+                    now.toLocalDate(),
+                )
+            } else {
+                setOf()
+            }
+
         val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId?>>> =
             if (type == MessageType.BULLETIN) {
-                // bulletins cannot be replied to so there is no need to group threads for families
+                // bulletins cannot be replied to so there is no need to group threads
+                // for families
                 messageRecipients
                     .groupBy { (accountId, _) -> accountId }
                     .map { (accountId, pairs) ->
                         setOf(accountId) to pairs.map { (_, childId) -> childId }.toSet()
                     }
             } else {
-                // groupings where all the parents can read the messages of all the children
+                // groupings where all the parents can read the messages of all the
+                // children
                 messageRecipients
                     .groupBy { (_, childId) -> childId }
                     .mapValues { (_, accountChildPairs) ->
@@ -145,26 +169,25 @@ class MessageService(
                     }
                     .toList()
             }
-
-        // for each recipient group, create a thread, message and message_recipients while re-using
+        // for each recipient group, create a thread, message and message_recipients
+        // while re-using
         // content
-        val contentId = tx.insertMessageContent(content, sender)
-        tx.reAssociateMessageAttachments(attachmentIds, contentId)
-        val now = clock.now()
+        val contentId = tx.insertMessageContent(content = msg.content, sender = sender)
+        tx.reAssociateMessageAttachments(attachmentIds = attachments, messageContentId = contentId)
         val threadAndMessageIds =
             tx.insertThreadsWithMessages(
                 recipientGroups.size,
                 now,
-                type,
-                title,
-                urgent,
-                false,
-                contentId,
-                sender,
-                recipientNames,
-                applicationId,
-                municipalAccountName,
-                serviceWorkerAccountName
+                type = type,
+                title = msg.title,
+                urgent = msg.urgent,
+                isCopy = false,
+                contentId = contentId,
+                senderId = sender,
+                recipientNames = recipientNames,
+                applicationId = relatedApplication,
+                municipalAccountName = featureConfig.municipalMessageAccountName,
+                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
             )
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
         tx.insertMessageThreadChildren(
@@ -173,18 +196,16 @@ class MessageService(
             }
         )
         tx.upsertSenderThreadParticipants(
-            sender,
-            threadAndMessageIds.map { (threadId, _) -> threadId },
-            now
+            senderId = sender,
+            threadIds = threadAndMessageIds.map { (threadId, _) -> threadId },
+            now = now
         )
         tx.insertRecipients(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
                 ids.second to recipients.first
             }
         )
-
         val senderAccountType = tx.getMessageAccountType(sender)
-
         notificationEmailService.scheduleSendingMessageNotifications(
             tx,
             threadAndMessageIds.map { (_, messageId) -> messageId },
@@ -192,29 +213,29 @@ class MessageService(
             if (senderAccountType == AccountType.MUNICIPAL) SPREAD_MESSAGE_NOTIFICATION_SECONDS
             else 0
         )
-
         if (staffCopyRecipients.isNotEmpty()) {
             // a separate copy for staff
             val staffThreadAndMessageIds =
                 tx.insertThreadsWithMessages(
                     staffCopyRecipients.size,
                     now,
-                    type,
-                    title,
-                    urgent,
-                    true,
-                    contentId,
-                    sender,
-                    recipientNames,
-                    applicationId,
-                    municipalAccountName,
-                    serviceWorkerAccountName
+                    type = type,
+                    title = msg.title,
+                    urgent = msg.urgent,
+                    isCopy = true,
+                    contentId = contentId,
+                    senderId = sender,
+                    recipientNames = recipientNames,
+                    applicationId = relatedApplication,
+                    municipalAccountName = featureConfig.municipalMessageAccountName,
+                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                 )
-            val staffRecipientsWithMessageIds = staffThreadAndMessageIds.zip(staffCopyRecipients)
+            val staffRecipientsWithMessageIds =
+                staffThreadAndMessageIds.zip(other = staffCopyRecipients)
             tx.upsertSenderThreadParticipants(
-                sender,
-                staffThreadAndMessageIds.map { (threadId, _) -> threadId },
-                now
+                senderId = sender,
+                threadIds = staffThreadAndMessageIds.map { (threadId, _) -> threadId },
+                now = now
             )
             tx.insertRecipients(
                 staffRecipientsWithMessageIds.map { (ids, recipient) ->
@@ -222,8 +243,15 @@ class MessageService(
                 }
             )
         }
-
         asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
+        if (relatedApplication != null) {
+            tx.createApplicationNote(
+                applicationId = relatedApplication,
+                content = msg.content,
+                createdBy = user.evakaUserId,
+                messageContentId = contentId
+            )
+        }
         return contentId
     }
 
