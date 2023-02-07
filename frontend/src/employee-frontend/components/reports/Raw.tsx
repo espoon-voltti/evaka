@@ -97,6 +97,7 @@ export default React.memo(function Raw() {
                 hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
                 capacityFactor: mapFloat(row.capacityFactor),
                 capacity: mapFloat(row.capacity),
+                realizedCapacity: mapFloat(row.realizedCapacity),
                 absencePaid:
                   row.absencePaid &&
                   i18n.absences.absenceTypes[row.absencePaid],
@@ -138,6 +139,10 @@ export default React.memo(function Raw() {
                 { label: 'Tuentarve', key: 'hasAssistanceNeed' },
                 { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },
                 { label: 'Lapsen kapasiteetti', key: 'capacity' },
+                {
+                  label: 'Lapsen kapasiteetti (käyttö)',
+                  key: 'realizedCapacity'
+                },
                 { label: 'Poissa maksullisesta', key: 'absencePaid' },
                 { label: 'Poissa maksuttomasta', key: 'absenceFree' },
                 { label: 'Henkilöstömitoitus', key: 'staffDimensioning' }

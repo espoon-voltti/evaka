@@ -473,6 +473,7 @@ export interface RawReportRow {
   placementType: PlacementType
   postOffice: string
   postalCode: string
+  realizedCapacity: number
   shiftCare: boolean
   staffDimensioning: number
   unitId: UUID
