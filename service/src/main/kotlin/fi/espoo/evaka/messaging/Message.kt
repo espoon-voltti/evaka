@@ -153,3 +153,5 @@ data class MessageChild(
     val lastName: String,
     val preferredName: String
 )
+
+data class NewMessageStub(val title: String, val content: String, val urgent: Boolean)

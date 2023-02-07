@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -26,7 +27,8 @@ import org.springframework.stereotype.Component
 @Component
 class MessageService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val notificationEmailService: MessageNotificationEmailService
+    private val notificationEmailService: MessageNotificationEmailService,
+    private val featureConfig: FeatureConfig,
 ) {
     init {
         asyncJobRunner.registerHandler(::handleMarkMessageAsSent)
@@ -74,6 +76,35 @@ class MessageService(
                     .one()
             tx.upsertReceiverThreadParticipants(contentId, msg.sentAt)
         }
+    }
+
+    fun sendMessageAsCitizen(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        sender: MessageAccountId,
+        msg: NewMessageStub,
+        recipients: Set<MessageAccountId>,
+        children: Set<ChildId>,
+    ): MessageThreadId {
+        val contentId = tx.insertMessageContent(msg.content, sender)
+        val threadId = tx.insertThread(MessageType.MESSAGE, msg.title, msg.urgent, isCopy = false)
+        tx.upsertSenderThreadParticipants(sender, listOf(threadId), now)
+        val recipientNames =
+            tx.getAccountNames(recipients, featureConfig.serviceWorkerMessageAccountName)
+        val messageId =
+            tx.insertMessage(
+                now = now,
+                contentId = contentId,
+                threadId = threadId,
+                sender = sender,
+                recipientNames = recipientNames,
+                municipalAccountName = featureConfig.municipalMessageAccountName,
+                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
+            )
+        tx.insertMessageThreadChildren(listOf(children to threadId))
+        tx.insertRecipients(listOf(messageId to recipients))
+        asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
+        return threadId
     }
 
     fun createMessageThreadsForRecipientGroups(

@@ -11,8 +11,6 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -36,7 +34,6 @@ data class CitizenMessageBody(
 @RestController
 @RequestMapping("/citizen/messages")
 class MessageControllerCitizen(
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
     private val messageService: MessageService
 ) {
@@ -190,37 +187,19 @@ class MessageControllerCitizen(
                         }
                     }
                 if (allReceiversValid) {
-                    val recipientIds = body.recipients
                     dbc.transaction { tx ->
-                        val contentId = tx.insertMessageContent(body.content, senderId)
-                        val threadId =
-                            tx.insertThread(
-                                MessageType.MESSAGE,
-                                body.title,
-                                urgent = false,
-                                isCopy = false
-                            )
-                        tx.upsertSenderThreadParticipants(senderId, listOf(threadId), now)
-                        val recipientNames =
-                            tx.getAccountNames(
-                                recipientIds,
-                                featureConfig.serviceWorkerMessageAccountName
-                            )
-                        val messageId =
-                            tx.insertMessage(
-                                now = now,
-                                contentId = contentId,
-                                threadId = threadId,
-                                sender = senderId,
-                                recipientNames = recipientNames,
-                                municipalAccountName = featureConfig.municipalMessageAccountName,
-                                serviceWorkerAccountName =
-                                    featureConfig.serviceWorkerMessageAccountName
-                            )
-                        tx.insertMessageThreadChildren(listOf(body.children to threadId))
-                        tx.insertRecipients(listOf(messageId to recipientIds))
-                        asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
-                        threadId
+                        messageService.sendMessageAsCitizen(
+                            tx,
+                            now,
+                            senderId,
+                            NewMessageStub(
+                                title = body.title,
+                                content = body.content,
+                                urgent = false
+                            ),
+                            body.recipients,
+                            body.children
+                        )
                     }
                 } else {
                     throw Forbidden("Permission denied.")
