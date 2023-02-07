@@ -216,16 +216,19 @@ interface Props {
   setReceivers: React.Dispatch<
     React.SetStateAction<MessageReceiversResponse[] | undefined>
   >
+  enableNewMessage?: boolean
 }
 
 export default React.memo(function Sidebar({
   showEditor,
-  setReceivers
+  setReceivers,
+  enableNewMessage = true
 }: Props) {
   const { i18n } = useTranslation()
   const { accounts } = useContext(MessageContext)
 
-  const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
+  const newMessageEnabled =
+    accounts.isSuccess && accounts.value.length > 0 && enableNewMessage
   return (
     <Container>
       <AccountContainer>

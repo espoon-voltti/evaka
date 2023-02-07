@@ -110,6 +110,7 @@ export interface MessagesState {
   prefilledRecipient: string | null
   prefilledTitle: string | null
   relatedApplicationId: UUID | null
+  accountAllowsNewMessage: () => boolean
 }
 
 const defaultState: MessagesState = {
@@ -148,7 +149,8 @@ const defaultState: MessagesState = {
   openMessageUndo: () => undefined,
   prefilledRecipient: null,
   prefilledTitle: null,
-  relatedApplicationId: null
+  relatedApplicationId: null,
+  accountAllowsNewMessage: () => false
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -310,6 +312,11 @@ export const MessageContextProvider = React.memo(
       }
       return undefined
     }, [accountId, accounts, messageBox, unitId])
+
+    const accountAllowsNewMessage = useCallback(
+      () => selectedAccount?.account.type !== 'SERVICE_WORKER',
+      [selectedAccount]
+    )
 
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
@@ -740,7 +747,8 @@ export const MessageContextProvider = React.memo(
         openMessageUndo,
         prefilledRecipient,
         prefilledTitle,
-        relatedApplicationId
+        relatedApplicationId,
+        accountAllowsNewMessage
       }),
       [
         accounts,
@@ -775,7 +783,8 @@ export const MessageContextProvider = React.memo(
         openMessageUndo,
         prefilledRecipient,
         prefilledTitle,
-        relatedApplicationId
+        relatedApplicationId,
+        accountAllowsNewMessage
       ]
     )
 

@@ -15,7 +15,7 @@ import {
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
 
-  #newMessageButton = this.page.find('[data-qa="new-message-btn"]')
+  newMessageButton = this.page.find('[data-qa="new-message-btn"]')
   sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
   #closeMessageEditorButton = this.page.find(
     '[data-qa="close-message-editor-btn"]'
@@ -113,7 +113,7 @@ export default class MessagesPage {
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
-    await this.#newMessageButton.click()
+    await this.newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())
     await this.inputTitle.fill(message.title)
     await this.inputContent.fill(message.content)
@@ -166,7 +166,7 @@ export default class MessagesPage {
   }
 
   async draftNewMessage(title: string, content: string) {
-    await this.#newMessageButton.click()
+    await this.newMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), true)
     await this.inputTitle.fill(title)
     await this.inputContent.fill(content)
