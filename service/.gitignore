@@ -32,3 +32,4 @@ out/
 *.ntvs*
 *.njsproj
 *.sln
+./certificates/truststore
