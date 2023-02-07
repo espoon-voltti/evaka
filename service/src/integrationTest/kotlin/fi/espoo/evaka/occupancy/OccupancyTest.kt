@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -49,27 +50,27 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
-    val today = LocalDate.of(2020, 1, 16) // Thursday
+    private val today = LocalDate.of(2020, 1, 16) // Thursday
 
-    val careArea1: AreaId = AreaId(UUID.randomUUID())
-    val careArea2: AreaId = AreaId(UUID.randomUUID())
+    private val careArea1: AreaId = AreaId(UUID.randomUUID())
+    private val careArea2: AreaId = AreaId(UUID.randomUUID())
 
-    val daycareInArea1: DaycareId = DaycareId(UUID.randomUUID())
-    val daycareGroup1: GroupId = GroupId(UUID.randomUUID())
-    val daycareGroup2: GroupId = GroupId(UUID.randomUUID())
+    private val daycareInArea1: DaycareId = DaycareId(UUID.randomUUID())
+    private val daycareGroup1: GroupId = GroupId(UUID.randomUUID())
+    private val daycareGroup2: GroupId = GroupId(UUID.randomUUID())
 
-    val familyUnitInArea2: DaycareId = DaycareId(UUID.randomUUID())
-    val familyGroup1: GroupId = GroupId(UUID.randomUUID())
-    val familyGroup2: GroupId = GroupId(UUID.randomUUID())
+    private val familyUnitInArea2: DaycareId = DaycareId(UUID.randomUUID())
+    private val familyGroup1: GroupId = GroupId(UUID.randomUUID())
+    private val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
-    val openingDaycare: DaycareId = DaycareId(UUID.randomUUID())
-    val openingDaycareGroup: GroupId = GroupId(UUID.randomUUID())
+    private val openingDaycare: DaycareId = DaycareId(UUID.randomUUID())
+    private val openingDaycareGroup: GroupId = GroupId(UUID.randomUUID())
 
-    val closedDaycare: DaycareId = DaycareId(UUID.randomUUID())
-    val closedDaycareGroup: GroupId = GroupId(UUID.randomUUID())
+    private val closedDaycare: DaycareId = DaycareId(UUID.randomUUID())
+    private val closedDaycareGroup: GroupId = GroupId(UUID.randomUUID())
 
-    val employeeId = EmployeeId(UUID.randomUUID())
-    val employeeId2 = EmployeeId(UUID.randomUUID())
+    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val employeeId2 = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     fun setUp() {
@@ -536,7 +537,68 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `occupancy for a child under 3 year old is 1,75`() {
+    fun `realizedOccupancyCoefficientUnder3y is used for realized occupancy of a child under 3 years`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today).addChild().withAge(2).saveAnd {
+                addPlacement()
+                    .ofType(PlacementType.DAYCARE_PART_TIME)
+                    .toUnit(daycareInArea1)
+                    .fromDay(-1)
+                    .toDay(0)
+                    .saveAnd {
+                        addServiceNeed()
+                            .createdBy(EvakaUserId(employeeId.raw))
+                            .withOption(
+                                snDaycareContractDays10
+                            ) // realizedOccupancyCoefficientUnder3y = 1.25
+                            .save()
+                    }
+            }
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(
+                tx,
+                daycareInArea1,
+                OccupancyType.REALIZED,
+                today.minusDays(1L),
+                1.25,
+            )
+        }
+    }
+    @Test
+    fun `realizedOccupancyCoefficient used for realized occupancy of a child over 3 years`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today).addChild().withAge(3, 0, 1).saveAnd {
+                addPlacement()
+                    .ofType(PlacementType.DAYCARE_PART_TIME)
+                    .toUnit(daycareInArea1)
+                    .fromDay(-1)
+                    .toDay(0)
+                    .saveAnd {
+                        addServiceNeed()
+                            .createdBy(EvakaUserId(employeeId.raw))
+                            .withOption(
+                                snDaycareContractDays10
+                            ) // realizedOccupancyCoefficient = 0.5
+                            .save()
+                    }
+            }
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(
+                tx,
+                daycareInArea1,
+                OccupancyType.REALIZED,
+                today.minusDays(1L),
+                0.5,
+            )
+        }
+    }
+
+    @Test
+    fun `confirmed occupancy for a child under 3 year old is 1,75`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
                 addPlacement()

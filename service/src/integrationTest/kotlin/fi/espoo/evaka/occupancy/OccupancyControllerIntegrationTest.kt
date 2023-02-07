@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.occupancy
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
@@ -16,7 +15,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -24,6 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestCaretakers
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -35,8 +34,11 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var occupancyController: OccupancyController
+
     private val startDate = LocalDate.of(2019, 1, 1)
     private val endDate = LocalDate.of(2021, 12, 31)
 
@@ -350,20 +352,16 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     ): OccupancyResponseSpeculated {
         val user =
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-        val (_, _, body) =
-            http
-                .get(
-                    "/occupancy/by-unit/$unitId/speculated/$applicationId",
-                    listOf(
-                        "from" to period.start.toString(),
-                        "to" to period.end.toString(),
-                        "preschoolDaycareFrom" to (preschoolDaycarePeriod?.start?.toString() ?: ""),
-                        "preschoolDaycareTo" to (preschoolDaycarePeriod?.end?.toString() ?: "")
-                    )
-                )
-                .asUser(user)
-                .responseObject<OccupancyResponseSpeculated>(jsonMapper)
-
-        return body.get()
+        return occupancyController.getOccupancyPeriodsSpeculated(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            unitId,
+            applicationId,
+            from = period.start,
+            to = period.end,
+            preschoolDaycareFrom = preschoolDaycarePeriod?.start,
+            preschoolDaycareTo = preschoolDaycarePeriod?.end,
+        )
     }
 }

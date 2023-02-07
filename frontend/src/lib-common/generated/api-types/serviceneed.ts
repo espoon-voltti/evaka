@@ -63,6 +63,8 @@ export interface ServiceNeedOption {
   occupancyCoefficientUnder3y: number
   partDay: boolean
   partWeek: boolean
+  realizedOccupancyCoefficient: number
+  realizedOccupancyCoefficientUnder3y: number
   updated: HelsinkiDateTime
   validPlacementType: PlacementType
   voucherValueDescriptionFi: string

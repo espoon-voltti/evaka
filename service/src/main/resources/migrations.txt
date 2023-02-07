@@ -296,3 +296,4 @@ V296__assistance_need_decision_annulled.sql
 V297__application_note_message_content_id.sql
 V298__message_thread_application_id.sql
 V299__voucher_value_decision_thresholds_difference.sql
+V300__realized_occupancy_coefficients.sql
