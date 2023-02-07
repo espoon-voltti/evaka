@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -477,6 +478,14 @@ SELECT
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
         ELSE sno.occupancy_coefficient_under_3y
     END AS occupancy_coefficient_under_3y,
+    CASE
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+        ELSE sno.realized_occupancy_coefficient
+    END AS realized_occupancy_coefficient,
+    CASE
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+        ELSE sno.realized_occupancy_coefficient_under_3y
+    END AS realized_occupancy_coefficient_under_3y,
     daterange(sn.start_date, sn.end_date, '[]') AS period
 FROM service_need sn
 JOIN placement pl ON sn.placement_id = pl.id
@@ -492,16 +501,19 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val defaultServiceNeedCoefficients =
         this.createQuery(
-                "SELECT occupancy_coefficient, occupancy_coefficient_under_3y, valid_placement_type FROM service_need_option WHERE default_option"
+                """
+                SELECT 
+                    occupancy_coefficient, 
+                    occupancy_coefficient_under_3y, 
+                    realized_occupancy_coefficient, 
+                    realized_occupancy_coefficient_under_3y, 
+                    valid_placement_type
+                FROM service_need_option WHERE default_option
+                """
             )
             .map { row ->
                 row.mapColumn<PlacementType>("valid_placement_type") to
-                    object {
-                        val occupancyCoefficient =
-                            row.mapColumn<BigDecimal>("occupancy_coefficient")
-                        val occupancyCoefficientUnder3y =
-                            row.mapColumn<BigDecimal>("occupancy_coefficient_under_3y")
-                    }
+                    row.mapRow<ServiceNeedCoefficients>()
             }
             .toMap()
 
@@ -536,21 +548,36 @@ WHERE sn.placement_id = ANY(:placementIds)
                 ?: error("No date of birth found for child ${placement.childId}")
 
         val serviceNeedCoefficient = run {
-            val (coefficient, coefficientUnder3y) =
+            val coefficients =
                 serviceNeeds[placement.placementId]
                     ?.let { it.find { sn -> sn.period.includes(date) } }
-                    ?.let { it.occupancyCoefficient to it.occupancyCoefficientUnder3y }
-                    ?: defaultServiceNeedCoefficients[placement.type]?.let {
-                        it.occupancyCoefficient to it.occupancyCoefficientUnder3y
+                    ?.let {
+                        ServiceNeedCoefficients(
+                            it.occupancyCoefficient,
+                            it.occupancyCoefficientUnder3y,
+                            it.realizedOccupancyCoefficient,
+                            it.realizedOccupancyCoefficientUnder3y
+                        )
                     }
+                    ?: defaultServiceNeedCoefficients[placement.type]
                         ?: error(
                         "No occupancy coefficients found for placement type ${placement.type}"
                     )
 
-            when {
-                placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
-                date < dateOfBirth.plusYears(3) -> coefficientUnder3y
-                else -> coefficient
+            when (type) {
+                OccupancyType.REALIZED ->
+                    when {
+                        placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
+                        date < dateOfBirth.plusYears(3) ->
+                            coefficients.realizedOccupancyCoefficientUnder3y
+                        else -> coefficients.realizedOccupancyCoefficient
+                    }
+                else ->
+                    when {
+                        placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
+                        date < dateOfBirth.plusYears(3) -> coefficients.occupancyCoefficientUnder3y
+                        else -> coefficients.occupancyCoefficient
+                    }
             }
         }
 
@@ -607,6 +634,13 @@ WHERE sn.placement_id = ANY(:placementIds)
         DailyOccupancyValues(key = key, occupancies = occupancies)
     }
 }
+
+private data class ServiceNeedCoefficients(
+    val occupancyCoefficient: BigDecimal,
+    val occupancyCoefficientUnder3y: BigDecimal,
+    val realizedOccupancyCoefficient: BigDecimal,
+    val realizedOccupancyCoefficientUnder3y: BigDecimal
+)
 
 private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
@@ -711,6 +745,8 @@ data class ServiceNeed(
     val placementId: PlacementId,
     val occupancyCoefficient: BigDecimal,
     val occupancyCoefficientUnder3y: BigDecimal,
+    val realizedOccupancyCoefficient: BigDecimal,
+    val realizedOccupancyCoefficientUnder3y: BigDecimal,
     val period: FiniteDateRange
 )
 

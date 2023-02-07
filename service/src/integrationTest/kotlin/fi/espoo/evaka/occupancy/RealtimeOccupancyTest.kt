@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
@@ -45,7 +46,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun testOccupancyIsCalculatedFromAttendances() {
+    fun `occupancy is calculated from attendances`() {
         db.transaction { tx ->
             FixtureBuilder(tx, date)
                 .addChild()
@@ -77,6 +78,21 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
                     addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(8, 15)).save()
+                }
+                .addChild()
+                .withAge(2, 11)
+                .saveAnd {
+                    addPlacement().toUnit(testDaycare.id).saveAnd {
+                        addServiceNeed()
+                            .withOption(snDaycareContractDays10)
+                            .createdBy(EvakaUserId(testDecisionMaker_1.id.raw))
+                            .save()
+                    }
+                    addAttendance()
+                        .inUnit(testDaycare.id)
+                        .arriving(LocalTime.of(8, 30))
+                        .departing(LocalTime.of(16, 30))
+                        .save()
                 }
                 .addEmployee()
                 .withScopedRole(UserRole.STAFF, testDaycare.id)
@@ -130,10 +146,11 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         val child1Capacity = 1.75
         val child2Capacity = 2.0 * 1.75
         val child3Capacity = 1.0
+        val child4Capacity = 1.25 // service need option's realizedOccupancyCoefficientUnder3y
 
         val result = getRealtimeOccupancy()
         val occupancies = result.occupancySeries
-        assertEquals(9, occupancies.size)
+        assertEquals(10, occupancies.size)
 
         // 7:00, staff 1 arrives
         occupancies
@@ -166,16 +183,37 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
             ?: error("data point missing")
 
+        // 8:30, child 4 arrives
+        occupancies
+            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(8, 30)) }
+            ?.also {
+                assertEquals(
+                    child1Capacity + child2Capacity + child3Capacity + child4Capacity,
+                    it.childCapacity
+                )
+            }
+            ?.also { assertEquals(7.0, it.staffCapacity) }
+            ?.also {
+                assertEquals(
+                    (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / (7 * 1),
+                    it.occupancyRatio
+                )
+            }
+            ?: error("data point missing")
+
         // 10:00, staff 2 arrives
         occupancies
             .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(10, 0)) }
             ?.also {
-                assertEquals(child1Capacity + child2Capacity + child3Capacity, it.childCapacity)
+                assertEquals(
+                    child1Capacity + child2Capacity + child3Capacity + child4Capacity,
+                    it.childCapacity
+                )
             }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also {
                 assertEquals(
-                    (child1Capacity + child2Capacity + child3Capacity) / 10.5,
+                    (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
                     it.occupancyRatio
                 )
             }
@@ -185,12 +223,15 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         occupancies
             .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(11, 0)) }
             ?.also {
-                assertEquals(child1Capacity + child2Capacity + child3Capacity, it.childCapacity)
+                assertEquals(
+                    child1Capacity + child2Capacity + child3Capacity + child4Capacity,
+                    it.childCapacity
+                )
             }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also {
                 assertEquals(
-                    (child1Capacity + child2Capacity + child3Capacity) / 10.5,
+                    (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
                     it.occupancyRatio
                 )
             }
@@ -200,18 +241,21 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         occupancies
             .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(15, 0)) }
             ?.also {
-                assertEquals(child1Capacity + child2Capacity + child3Capacity, it.childCapacity)
+                assertEquals(
+                    child1Capacity + child2Capacity + child3Capacity + child4Capacity,
+                    it.childCapacity
+                )
             }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also {
                 assertEquals(
-                    (child1Capacity + child2Capacity + child3Capacity) / 10.5,
+                    (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
                     it.occupancyRatio
                 )
             }
             ?: error("data point missing")
 
-        // 16:30, children 1 and 2 depart
+        // 16:30, children 1, 2 and 4 depart
         occupancies
             .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(16, 30)) }
             ?.also { assertEquals(child3Capacity, it.childCapacity) }
@@ -237,7 +281,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun childWithoutPlacementGetsCapacityFactor1() {
+    fun `child without placement gets capacity factor 1`() {
         db.transaction { tx ->
             FixtureBuilder(tx, date).addChild().withAge(2, 10).saveAnd {
                 // addPlacement().toUnit(testDaycare.id).save()
@@ -271,7 +315,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun testGraphDataShowsNoGapsForOvernightAttendances() {
+    fun `graph data shows no gaps for overnight attendances`() {
         val tomorrow = date.plusDays(1)
         db.transaction { tx ->
             FixtureBuilder(tx, date)

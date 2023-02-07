@@ -1318,6 +1318,8 @@ export class Fixture {
       nameEn: `test_service_need_option_${id}`,
       occupancyCoefficient: 0,
       occupancyCoefficientUnder3y: 0,
+      realizedOccupancyCoefficient: 0,
+      realizedOccupancyCoefficientUnder3y: 0,
       partDay: false,
       partWeek: false,
       updated: HelsinkiDateTime.now(),
