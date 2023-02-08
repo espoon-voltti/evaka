@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM ubuntu:22.04
+FROM ubuntu:23.04
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
