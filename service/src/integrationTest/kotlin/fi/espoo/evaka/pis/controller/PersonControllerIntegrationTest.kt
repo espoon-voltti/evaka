@@ -37,9 +37,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.catchThrowable
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -55,22 +55,18 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `duplicate throws forbidden when user is staff`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.STAFF))
 
-        val thrown = catchThrowable {
+        assertThrows<Forbidden> {
             controller.duplicate(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
         }
-
-        assertThat(thrown).isInstanceOf(Forbidden::class.java)
     }
 
     @Test
     fun `duplicate throws not found when person doesn't exist`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
-        val thrown = catchThrowable {
+        assertThrows<NotFound> {
             controller.duplicate(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
         }
-
-        assertThat(thrown).isInstanceOf(NotFound::class.java)
     }
 
     @Test
