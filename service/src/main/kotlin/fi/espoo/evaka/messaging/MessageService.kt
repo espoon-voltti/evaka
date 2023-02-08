@@ -44,9 +44,18 @@ class MessageService(
         clock: EvakaClock,
         msg: AsyncJob.MarkMessagesAsSent
     ) {
-        db.transaction {
-            it.upsertReceiverThreadParticipants(msg.messageContentId, msg.sentAt)
-            it.markMessagesAsSent(msg.messageContentId, msg.sentAt)
+        db.transaction { tx ->
+            val sender = tx.getMessageAuthor(msg.messageContentId) ?: return@transaction
+            tx.upsertReceiverThreadParticipants(msg.messageContentId, msg.sentAt)
+            val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)
+            val senderAccountType = tx.getMessageAccountType(sender)
+            notificationEmailService.scheduleSendingMessageNotifications(
+                tx,
+                messages,
+                clock.now(),
+                if (senderAccountType == AccountType.MUNICIPAL) SPREAD_MESSAGE_NOTIFICATION_SECONDS
+                else 0
+            )
         }
     }
 
@@ -185,14 +194,6 @@ class MessageService(
                 ids.second to recipients.first
             }
         )
-        val senderAccountType = tx.getMessageAccountType(sender)
-        notificationEmailService.scheduleSendingMessageNotifications(
-            tx,
-            threadAndMessageIds.map { (_, messageId) -> messageId },
-            now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5),
-            if (senderAccountType == AccountType.MUNICIPAL) SPREAD_MESSAGE_NOTIFICATION_SECONDS
-            else 0
-        )
         if (staffCopyRecipients.isNotEmpty()) {
             // a separate copy for staff
             val staffThreadAndMessageIds =
@@ -281,11 +282,6 @@ class MessageService(
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
-                notificationEmailService.scheduleSendingMessageNotifications(
-                    tx,
-                    listOf(messageId),
-                    now,
-                )
                 if (applicationId != null) {
                     tx.createApplicationNote(
                         applicationId = applicationId,

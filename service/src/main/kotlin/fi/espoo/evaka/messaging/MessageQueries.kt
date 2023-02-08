@@ -294,15 +294,27 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         .execute()
 }
 
-fun Database.Transaction.markMessagesAsSent(contentId: MessageContentId, sentAt: HelsinkiDateTime) {
-    createUpdate("""
+fun Database.Transaction.markMessagesAsSent(
+    contentId: MessageContentId,
+    sentAt: HelsinkiDateTime
+): List<MessageId> =
+    createUpdate(
+            """
 UPDATE message SET sent_at = :sentAt
 WHERE content_id = :contentId
-""")
+RETURNING id
+"""
+        )
         .bind("sentAt", sentAt)
         .bind("contentId", contentId)
-        .execute()
-}
+        .executeAndReturnGeneratedKeys()
+        .mapTo<MessageId>()
+        .toList()
+
+fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
+    createQuery<Any> { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
+        .mapTo<MessageAccountId?>()
+        .one()
 
 fun Database.Transaction.insertThreadsWithMessages(
     count: Int,
