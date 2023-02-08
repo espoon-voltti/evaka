@@ -409,12 +409,3 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 }
-
-// deserializing JSON to RealtimeOccupancy causes weird bugs with computed properties
-private data class RealtimeOccupancyResponse(
-    val childAttendances: List<ChildOccupancyAttendance>,
-    val staffAttendances: List<StaffOccupancyAttendance>,
-    val childCapacitySumSeries: List<ChildCapacityPoint>,
-    val staffCapacitySumSeries: List<StaffCapacityPoint>,
-    val occupancySeries: List<OccupancyPoint>
-)

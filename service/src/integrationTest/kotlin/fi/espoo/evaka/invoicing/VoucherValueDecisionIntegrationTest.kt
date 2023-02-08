@@ -14,21 +14,18 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
-import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementResponse
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
-import fi.espoo.evaka.serviceneed.ServiceNeedController
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -65,8 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
-    @Autowired lateinit var voucherValueDecisionService: VoucherValueDecisionService
 
     @BeforeEach
     fun beforeEach() {
@@ -552,31 +547,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
         return data.get().placements.first().id
-    }
-
-    private fun addServiceNeed(
-        placementId: PlacementId,
-        startDate: LocalDate,
-        endDate: LocalDate,
-        optionId: ServiceNeedOptionId
-    ) {
-        val body =
-            ServiceNeedController.ServiceNeedCreateRequest(
-                placementId,
-                startDate,
-                endDate,
-                optionId,
-                false
-            )
-
-        http
-            .post("/service-needs")
-            .asUser(adminUser)
-            .objectBody(body, mapper = jsonMapper)
-            .response()
-            .also { (_, res, _) -> assertEquals(200, res.statusCode) }
-
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
     }
 
     private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {

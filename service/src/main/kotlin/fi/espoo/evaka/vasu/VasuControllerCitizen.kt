@@ -26,8 +26,6 @@ class VasuControllerCitizen(
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl
 ) {
-    data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
-
     @GetMapping("/children/{childId}/vasu-summaries")
     fun getChildVasuSummaries(
         db: Database,

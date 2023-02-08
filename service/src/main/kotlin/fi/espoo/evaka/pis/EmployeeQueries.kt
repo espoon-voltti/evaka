@@ -201,12 +201,6 @@ WHERE id = :id
 fun Database.Read.getEmployeeUser(id: EmployeeId): EmployeeUser? =
     createEmployeeUserQuery("WHERE id = :id").bind("id", id).mapTo<EmployeeUser>().singleOrNull()
 
-fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeUser? =
-    createEmployeeUserQuery("WHERE external_id = :externalId")
-        .bind("externalId", externalId)
-        .mapTo<EmployeeUser>()
-        .singleOrNull()
-
 fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles? {
     // language=SQL
     val sql =

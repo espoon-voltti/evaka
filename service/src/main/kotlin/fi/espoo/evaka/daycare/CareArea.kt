@@ -99,23 +99,6 @@ enum class CareType : DatabaseEnum {
     override val sqlType: String = "care_types"
 }
 
-data class Location(
-    val id: DaycareId,
-    val name: String,
-    val type: Set<CareType>,
-    val care_area_id: AreaId,
-    @Nested("") val visitingAddress: VisitingAddress,
-    @Nested("mailing") val mailingAddress: MailingAddress,
-    val daycareApplyPeriod: DateRange?,
-    val preschoolApplyPeriod: DateRange?,
-    val clubApplyPeriod: DateRange?,
-    val provider_type: ProviderType? = ProviderType.MUNICIPAL,
-    val language: Language? = Language.fi,
-    val location: Coordinate? = null,
-    val phone: String? = null,
-    val url: String? = null
-)
-
 data class UnitStub(val id: DaycareId, val name: String)
 
 data class UnitFeatures(

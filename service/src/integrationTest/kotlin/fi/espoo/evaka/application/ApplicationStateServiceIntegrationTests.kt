@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
@@ -18,7 +17,6 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -92,10 +90,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Autowired private lateinit var decisionDraftService: DecisionDraftService
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
-    @Autowired lateinit var mapper: JsonMapper
-
-    @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
 
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))

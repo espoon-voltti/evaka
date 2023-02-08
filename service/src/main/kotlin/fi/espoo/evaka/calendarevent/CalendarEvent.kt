@@ -25,8 +25,6 @@ data class CalendarEvent(
     val period: FiniteDateRange
 )
 
-data class CitizenIndividualChild(val id: ChildId, val groupId: GroupId)
-
 data class AttendingChild(
     val periods: List<FiniteDateRange>,
     val type: String,

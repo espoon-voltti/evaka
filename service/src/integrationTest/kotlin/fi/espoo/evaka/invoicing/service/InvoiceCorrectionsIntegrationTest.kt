@@ -608,10 +608,4 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             )
         }
     }
-
-    private fun FiniteDateRange.getNextMonth() =
-        this.copy(
-            start = this.start.plusMonths(1).withDayOfMonth(1),
-            end = this.start.plusMonths(2).withDayOfMonth(1)
-        )
 }

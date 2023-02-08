@@ -293,18 +293,6 @@ fun Database.Transaction.updateChildDailyServiceTimes(
     this.createUpdate(sql).bindKotlin(times.asUpdateRow()).bind("id", id).execute()
 }
 
-fun Database.Transaction.setDailyServiceTimesEndDate(id: DailyServiceTimesId, endDate: LocalDate) {
-    val sql =
-        """
-        UPDATE daily_service_time
-        SET validity_period = daterange(lower(validity_period), :endDate, '[]')
-        WHERE id = :id
-    """
-            .trimIndent()
-
-    this.createUpdate(sql).bind("id", id).bind("endDate", endDate).execute()
-}
-
 fun Database.Transaction.addDailyServiceTimesNotification(
     today: LocalDate,
     id: DailyServiceTimesId,
