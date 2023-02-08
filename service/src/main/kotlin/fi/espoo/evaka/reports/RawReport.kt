@@ -98,11 +98,16 @@ SELECT
 
     an IS NOT NULL as has_assistance_need,
     coalesce(an.capacity_factor, 1.0) as capacity_factor,
-    coalesce(capacity_factor, 1.0) * (CASE
+    coalesce(an.capacity_factor, 1.0) * (CASE
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
         WHEN date_part('year', age(t::date, p.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
         ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
     END) AS capacity,
+    coalesce(an.capacity_factor, 1.0) * (CASE
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+        WHEN date_part('year', age(t::date, p.date_of_birth)) < 3 THEN coalesce(sno.realized_occupancy_coefficient_under_3y, default_sno.realized_occupancy_coefficient_under_3y)
+        ELSE coalesce(sno.realized_occupancy_coefficient, default_sno.realized_occupancy_coefficient)
+    END) AS realized_capacity,
 
     ab1.absence_type as absence_paid,
     ab2.absence_type as absence_free,
@@ -168,6 +173,7 @@ data class RawReportRow(
     val hasAssistanceNeed: Boolean,
     val capacityFactor: Double,
     val capacity: Double,
+    val realizedCapacity: Double,
     val absencePaid: AbsenceType?,
     val absenceFree: AbsenceType?,
     val staffDimensioning: Int
