@@ -363,7 +363,7 @@ export async function batchWithdrawPlacementProposal(
 
 export async function getApplicationNotes(
   applicationId: UUID
-): Promise<Result<ApplicationNoteResponse[]>> {
+): Promise<ApplicationNoteResponse[]> {
   return client
     .get<JsonOf<ApplicationNoteResponse[]>>(
       `/note/application/${applicationId}`
@@ -378,8 +378,6 @@ export async function getApplicationNotes(
         permittedActions
       }))
     )
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function createNote(
