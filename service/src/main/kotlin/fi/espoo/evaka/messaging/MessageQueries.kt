@@ -1348,27 +1348,27 @@ fun Database.Transaction.markNotificationAsSent(
 
 fun Database.Read.getStaffCopyRecipients(
     senderId: MessageAccountId,
-    areaIds: List<AreaId>,
-    unitIds: List<DaycareId>,
-    groupIds: List<GroupId>,
-    date: LocalDate
+    recipients: Collection<MessageRecipient>
 ): Set<MessageAccountId> {
-    return this.createQuery(
-            """
+    val areaIds = recipients.mapNotNull { it.toAreaId() }
+    val unitIds = recipients.mapNotNull { it.toUnitId() }
+    val groupIds = recipients.mapNotNull { it.toGroupId() }
+    if (areaIds.isEmpty() && unitIds.isEmpty() && groupIds.isEmpty()) return emptySet()
+
+    return this.createQuery<Any> {
+            sql(
+                """
 SELECT receiver_acc.id
 FROM message_account sender_acc
 JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id OR sender_acc.type = 'MUNICIPAL'
 JOIN daycare u ON u.id = acl.daycare_id
 JOIN daycare_group g ON u.id = g.daycare_id
 JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
-WHERE sender_acc.id = :senderId AND (u.care_area_id = ANY(:areaIds) OR u.id = ANY(:unitIds) OR g.id = ANY(:groupIds))
+WHERE sender_acc.id = ${bind(senderId)}
+AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g.id = ANY(${bind(groupIds)}))
 """
-        )
-        .bind("senderId", senderId)
-        .bind("areaIds", areaIds)
-        .bind("unitIds", unitIds)
-        .bind("groupIds", groupIds)
-        .bind("date", date)
+            )
+        }
         .mapTo<MessageAccountId>()
         .toSet()
 }

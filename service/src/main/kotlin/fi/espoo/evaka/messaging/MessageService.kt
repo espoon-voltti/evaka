@@ -6,12 +6,9 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -126,24 +123,7 @@ class MessageService(
             tx.getMessageAccountsForRecipients(sender, recipients, now.toLocalDate())
         if (messageRecipients.isEmpty()) return null
 
-        val staffCopyRecipients =
-            if (recipients.none { it.type == MessageRecipientType.CHILD }) {
-                tx.getStaffCopyRecipients(
-                    sender,
-                    recipients.mapNotNull {
-                        if (it.type == MessageRecipientType.AREA) AreaId(it.id.raw) else null
-                    },
-                    recipients.mapNotNull {
-                        if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw) else null
-                    },
-                    recipients.mapNotNull {
-                        if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw) else null
-                    },
-                    now.toLocalDate(),
-                )
-            } else {
-                setOf()
-            }
+        val staffCopyRecipients = tx.getStaffCopyRecipients(sender, recipients)
 
         val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId?>>> =
             if (type == MessageType.BULLETIN) {
