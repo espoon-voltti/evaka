@@ -1317,7 +1317,7 @@ export const fi = {
       'Palveluohjauksen ja talouden käyttäjät eivät saa asetettua lapselle henkilötunnusta. Kun henkilötunnus puuttuu, lapsella ei ole huoltajasuhdetta. Jos henkilötunnus halutaan myöhemmin asettaa, lapsen aiemmat dokumentit on poistettava järjestelmästä.',
     ssnInvalid: 'Epäkelpo henkilötunnus',
     ssnConflict: 'Tämä käyttäjä löytyy jo järjestelmästä.',
-    duplicate: 'Monista',
+    duplicate: 'Monista hetuton',
     updateFromVtj: 'Päivitä VTJ:stä',
     partner: 'Puolisot',
     partnerInfo:
