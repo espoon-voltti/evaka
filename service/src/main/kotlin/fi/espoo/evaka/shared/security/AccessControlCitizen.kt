@@ -62,8 +62,9 @@ SELECT EXISTS (
     FROM person p 
     JOIN message_account ma ON p.id = ma.person_id
     JOIN message_recipients mr ON ma.id = mr.recipient_id
+    JOIN message m ON mr.message_id = m.id
     JOIN application app ON p.id = app.guardian_id
-    WHERE app.status = 'SENT' AND p.id = :userId AND mr.id IS NOT NULL
+    WHERE app.status = 'SENT' AND p.id = :userId AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
 )
 """
         return createQuery(sql)
