@@ -471,6 +471,8 @@ export interface VoucherProviderChildrenReportFilters {
 export interface PlacementSketchingReportFilters {
   earliestPreferredStartDate: LocalDate
   placementStartDate: LocalDate
+  earliestApplicationSentDate: LocalDate | null
+  latestApplicationSentDate: LocalDate | null
 }
 
 export async function getPlacementSketchingReport(
@@ -483,7 +485,11 @@ export async function getPlacementSketchingReport(
         params: {
           earliestPreferredStartDate:
             filters.earliestPreferredStartDate.formatIso(),
-          placementStartDate: filters.placementStartDate.formatIso()
+          placementStartDate: filters.placementStartDate.formatIso(),
+          earliestApplicationSentDate:
+            filters.earliestApplicationSentDate?.formatIso(),
+          latestApplicationSentDate:
+            filters.latestApplicationSentDate?.formatIso()
         }
       }
     )
@@ -493,7 +499,10 @@ export async function getPlacementSketchingReport(
           ...row,
           childDob: LocalDate.parseIso(row.childDob),
           preferredStartDate: LocalDate.parseIso(row.preferredStartDate),
-          sentDate: LocalDate.parseIso(row.sentDate)
+          sentDate: LocalDate.parseIso(row.sentDate),
+          childMovingDate: row.childMovingDate
+            ? LocalDate.parseIso(row.childMovingDate)
+            : null
         }))
       )
     )

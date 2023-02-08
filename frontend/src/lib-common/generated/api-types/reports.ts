@@ -410,10 +410,14 @@ export interface PlacementSketchingReportRow {
   applicationId: UUID
   areaName: string
   assistanceNeeded: boolean | null
+  childCorrectedCity: string
+  childCorrectedPostalCode: string
+  childCorrectedStreetAddress: string
   childDob: LocalDate
   childFirstName: string
   childId: UUID
   childLastName: string
+  childMovingDate: LocalDate | null
   childPostalCode: string | null
   childStreetAddr: string | null
   connectedDaycare: boolean | null
@@ -421,6 +425,7 @@ export interface PlacementSketchingReportRow {
   currentUnitName: string | null
   guardianEmail: string | null
   guardianPhoneNumber: string | null
+  hasAdditionalInfo: boolean
   otherPreferredUnits: string[]
   preferredStartDate: LocalDate
   preparatoryEducation: boolean | null
