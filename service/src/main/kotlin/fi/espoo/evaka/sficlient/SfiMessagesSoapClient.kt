@@ -172,7 +172,7 @@ class SfiMessagesSoapClient(
                                         kuvausTeksti =
                                             StringEscapeUtils.unescapeJava(msg.messageContent)
                                         lahetysPvm = LocalDate.now(europeHelsinki).toXmlGregorian()
-                                        lahettajaNimi = ""
+                                        lahettajaNimi = "eVaka"
                                         tiedostot =
                                             ArrayOfTiedosto().apply {
                                                 tiedosto +=
