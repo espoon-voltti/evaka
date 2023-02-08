@@ -142,7 +142,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `duplicate children as foster children`() {
+    fun `do not duplicate children as foster children`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
@@ -153,9 +153,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
 
         val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
-        assertThat(fosterChildren)
-            .extracting({ it.child.firstName }, { it.parent.id }, { it.validDuring })
-            .containsExactly(Tuple("Test", duplicateId, DateRange(clock.today(), null)))
+        assertThat(fosterChildren).isEmpty()
     }
 
     @Test
@@ -183,7 +181,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `duplicate foster children as foster children`() {
+    fun `do not duplicate foster children as foster children`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
@@ -201,9 +199,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
 
         val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
-        assertThat(fosterChildren)
-            .extracting({ it.child.firstName }, { it.parent.id }, { it.validDuring })
-            .containsExactly(Tuple("Test", duplicateId, fosterValidDuring))
+        assertThat(fosterChildren).isEmpty()
     }
 
     @Test

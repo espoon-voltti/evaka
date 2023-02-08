@@ -14,7 +14,6 @@ import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.duplicatePerson
-import fi.espoo.evaka.pis.getFosterChildren
 import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
@@ -30,7 +29,6 @@ import fi.espoo.evaka.pis.service.deleteFromGuardianBlocklist
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardians
-import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
@@ -147,25 +145,6 @@ class PersonController(
                                 )
                             }
                     parentRelationships.forEach { relationship ->
-                        tx.createFosterParentRelationship(relationship)
-                    }
-
-                    val childRelationships =
-                        tx.getGuardianChildIds(personId).map { childId ->
-                            CreateFosterParentRelationshipBody(
-                                childId = childId,
-                                parentId = duplicateId,
-                                validDuring = DateRange(clock.today(), null)
-                            )
-                        } +
-                            tx.getFosterChildren(personId).map { relationship ->
-                                CreateFosterParentRelationshipBody(
-                                    childId = relationship.child.id,
-                                    parentId = duplicateId,
-                                    validDuring = relationship.validDuring
-                                )
-                            }
-                    childRelationships.forEach { relationship ->
                         tx.createFosterParentRelationship(relationship)
                     }
 

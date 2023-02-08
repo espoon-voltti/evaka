@@ -6,13 +6,11 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { CHILD_AGE } from 'employee-frontend/constants'
 import { Loading, Result, Success } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
-import { getAge } from 'lib-common/utils/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -197,11 +195,7 @@ export default React.memo(function PersonDetails({
     void duplicatePerson(person.id).then((response) => {
       setDuplicateOngoing(false)
       if (response.isSuccess) {
-        const redirectUrlBase =
-          getAge(person.dateOfBirth) >= CHILD_AGE
-            ? '/profile'
-            : '/child-information'
-        navigate(`${redirectUrlBase}/${response.value}`)
+        navigate(`/child-information/${response.value}`)
       }
     })
   }
@@ -227,6 +221,7 @@ export default React.memo(function PersonDetails({
       <RightAlignedRow>
         {featureFlags.experimental?.personDuplicate &&
         permittedActions.has('DUPLICATE') &&
+        isChild &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
             {duplicateOngoing ? (
