@@ -21,8 +21,6 @@ services:
       context: ..
       target: builder
       dockerfile: service/Dockerfile
-      args:
-        BASE_IMAGE: "${JAVA_BASE_IMAGE:-evaka-java}"
     volumes:
       - ./test-results/:/evaka/service/build/test-results/
     depends_on:

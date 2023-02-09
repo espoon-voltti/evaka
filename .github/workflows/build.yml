@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 name: Build
 on:
   pull_request:
@@ -100,59 +104,6 @@ jobs:
     outputs:
       image: ${{ steps.build.outputs.image }}
 
-  base:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build base image
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        id: build
-        uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          registry: ${{ env.ECR_REGISTRY }}
-          name: evaka/base
-          path: ./evaka-base
-          push: true
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
-
-  yarn:
-    needs:
-      - base
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build yarn image
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          registry: ${{ env.ECR_REGISTRY }}
-          name: evaka/yarn
-          path: ./evaka-base
-          dockerfile: evaka-base/yarn.Dockerfile
-          push: true
-          build-args: |
-            BASE_IMAGE=${{ needs.base.outputs.image }}
-          cache_from_images: ${{ needs.base.outputs.image_name }}
-
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
-
   customizations:
     runs-on: ubuntu-latest
     steps:
@@ -192,8 +143,6 @@ jobs:
   frontend:
     needs:
       - customizations
-      - base
-      - yarn
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -219,7 +168,6 @@ jobs:
           name: evaka/frontend
           path: ./frontend
           build-args: |
-            BASE_IMAGE=${{ needs.yarn.outputs.image }}
             SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -245,7 +193,6 @@ jobs:
           path: ./frontend
           target: builder
           build-args: |
-            BASE_IMAGE=${{ needs.yarn.outputs.image }}
             SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -264,8 +211,6 @@ jobs:
 
   frontend-test:
     needs:
-      - base
-      - yarn
       - customizations
       - frontend
     runs-on: ubuntu-latest
@@ -304,54 +249,14 @@ jobs:
         id: fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         run: |
-          cd ./evaka-base
-          ./build.sh
-          cd ../frontend
+          cd ./frontend
           ./build-docker.sh test
 
-  java:
-    needs:
-      - base
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build java image
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          registry: ${{ env.ECR_REGISTRY }}
-          name: evaka/java
-          path: ./evaka-base
-          dockerfile: evaka-base/java.Dockerfile
-          push: true
-          build-args: |
-            BASE_IMAGE=${{ needs.base.outputs.image }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-
-      - if: failure()
-        uses: espoon-voltti/voltti-actions/notify@v1
-        with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
-
   api-gateway:
-    needs:
-      - base
-      - yarn
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build and run API-gateway tests"
+      - name: Build and run API-gateway tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: test
@@ -371,7 +276,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.yarn.outputs.image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
@@ -394,7 +298,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.yarn.outputs.image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
@@ -402,9 +305,7 @@ jobs:
       - name: Build docker tests and image
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         run: |
-          cd ./evaka-base
-          ./build.sh
-          cd ../apigw
+          cd ./apigw
 
           ./build-docker.sh test
           ./build-docker.sh
@@ -413,8 +314,6 @@ jobs:
 
   service:
     needs:
-      - base
-      - java
       - customizations
     runs-on: ubuntu-latest
     steps:
@@ -444,7 +343,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.java.outputs.image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
@@ -469,7 +367,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.java.outputs.image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
@@ -483,8 +380,6 @@ jobs:
 
   service-test:
     needs:
-      - base
-      - java
       - service
     runs-on: ubuntu-latest
     steps:
@@ -526,14 +421,11 @@ jobs:
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
-          cd ./evaka-base
-          ./build.sh
-          cd ../service
+          cd ./service
           ./build-docker.sh test
 
   service-integration-test:
     needs:
-      - java
       - keycloak
       - service
     runs-on: ubuntu-latest
@@ -567,7 +459,6 @@ jobs:
         shell: bash
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
-          export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
           export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
           cd ./compose
           ./compose-integration pull
@@ -577,7 +468,6 @@ jobs:
         shell: bash
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
-          export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
           export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
           cd ./compose
           mkdir -p test-results/
