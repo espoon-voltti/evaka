@@ -274,15 +274,15 @@ describe('Child message thread', () => {
   })
 
   test('Message button goes to unread messages if user has no pin session', async () => {
-    await listPage.gotoMessages()
+    await nav.messages.click()
     await unreadMessageCountsPage.groupLinksExist()
     await unreadMessageCountsPage.pinButtonExists()
   })
 
   test('Message button goes to messages if user has pin session', async () => {
     await employeeLoginsToMessagesPage()
-    await nav.openPage('children')
-    await listPage.gotoMessages()
+    await nav.children.click()
+    await nav.messages.click()
     await messagesPage.messagesContainer.waitUntilVisible()
   })
 
@@ -379,17 +379,17 @@ async function userSeesNewMessagesIndicator() {
 
 async function userSeesNewMessageIndicatorAndClicks() {
   await userSeesNewMessagesIndicator()
-  await listPage.gotoMessages()
+  await nav.messages.click()
 }
 
 async function staffLoginsToMessagesPage() {
-  await listPage.gotoMessages()
+  await nav.messages.click()
   await unreadMessageCountsPage.pinLoginButton.click()
   await pinLoginPage.login(staffName, pin)
 }
 
 async function staff2LoginsToMessagesPage() {
-  await listPage.gotoMessages()
+  await nav.messages.click()
   await unreadMessageCountsPage.pinLoginButton.click()
   await pinLoginPage.login(staff2Name, pin)
 }
@@ -407,11 +407,11 @@ async function employeeNavigatesToMessagesSelectingGroup() {
 }
 
 async function employeeLoginsToMessagesPage() {
-  await listPage.gotoMessages()
+  await nav.messages.click()
   await employeeNavigatesToMessagesSelectingLogin()
 }
 
 async function employeeLoginsToMessagesPageThroughGroup() {
-  await listPage.gotoMessages()
+  await nav.messages.click()
   await employeeNavigatesToMessagesSelectingGroup()
 }

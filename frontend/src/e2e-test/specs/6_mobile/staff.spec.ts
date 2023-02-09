@@ -40,7 +40,7 @@ beforeEach(async () => {
 
   mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
   await page.goto(mobileSignupUrl)
-  await nav.openPage('staff')
+  await nav.staff.click()
   staffPage = new StaffPage(page)
 })
 
