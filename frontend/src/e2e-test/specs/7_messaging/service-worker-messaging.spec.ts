@@ -271,5 +271,16 @@ describe('Service Worker Messaging', () => {
       const messagesPage = new MessagesPage(staffPage)
       await messagesPage.newMessageButton.assertDisabled(true)
     })
+
+    it('should show the simple message editor for service workers', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      await messagesPage.assertSimpleViewVisible()
+    })
   })
 })

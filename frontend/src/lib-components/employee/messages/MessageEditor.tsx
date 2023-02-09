@@ -151,6 +151,7 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
+  simpleMode?: boolean
 }
 
 export default React.memo(function MessageEditor({
@@ -204,6 +205,15 @@ export default React.memo(function MessageEditor({
       accounts.find(({ account }) => account.id === senderId),
     [accounts]
   )
+  const senderAccountType = useMemo(
+    () => getSenderAccount(message.sender.value)?.account.type,
+    [getSenderAccount, message]
+  )
+  const simpleMode = useMemo(
+    () => senderAccountType === 'SERVICE_WORKER',
+    [senderAccountType]
+  )
+
   const setSender = useCallback(
     (sender: SelectOption | null) => {
       if (!sender) return
@@ -327,13 +337,10 @@ export default React.memo(function MessageEditor({
   )
 
   useEffect(() => {
-    if (
-      getSenderAccount(message.sender.value)?.account.type === 'MUNICIPAL' &&
-      message.type !== 'BULLETIN'
-    ) {
+    if (senderAccountType === 'MUNICIPAL' && message.type !== 'BULLETIN') {
       updateMessage({ type: 'BULLETIN' })
     }
-  }, [getSenderAccount, message.sender, message.type, updateMessage])
+  }, [senderAccountType, message.type, updateMessage])
 
   const sendEnabled =
     !sending &&
@@ -361,12 +368,13 @@ export default React.memo(function MessageEditor({
       }
     }
     const messageType =
-      getSenderAccount(message.sender.value)?.account.type === 'MUNICIPAL' ? (
+      senderAccountType === 'MUNICIPAL' ? (
         <FixedSpaceRow>
           <Radio
             label={i18n.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
+            data-qa="radio-message-type-bulletin"
           />
         </FixedSpaceRow>
       ) : (
@@ -375,11 +383,13 @@ export default React.memo(function MessageEditor({
             label={i18n.type.message}
             checked={message.type === 'MESSAGE'}
             onChange={() => updateMessage({ type: 'MESSAGE' })}
+            data-qa="radio-message-type-message"
           />
           <Radio
             label={i18n.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
+            data-qa="radio-message-type-bulletin"
           />
         </FixedSpaceRow>
       )
@@ -452,7 +462,7 @@ export default React.memo(function MessageEditor({
                   />
                 </HorizontalField>
               </Dropdowns>
-              {expandedView && (
+              {expandedView && !simpleMode && (
                 <ExpandedRightPane>
                   <HorizontalField long={true}>
                     <Bold>{i18n.type.label}</Bold>
@@ -481,7 +491,7 @@ export default React.memo(function MessageEditor({
                 data-qa="input-title"
               />
             </HorizontalField>
-            {!expandedView && (
+            {!expandedView && !simpleMode && (
               <>
                 <Gap size="s" />
                 <FixedSpaceRow justifyContent="space-between">
@@ -512,16 +522,18 @@ export default React.memo(function MessageEditor({
               onChange={(e) => updateMessage({ content: e.target.value })}
               data-qa="input-content"
             />
-            <FileUpload
-              slim
-              disabled={!draftId}
-              data-qa="upload-message-attachment"
-              files={message.attachments}
-              i18n={i18nWithReplacedTitle}
-              getDownloadUrl={getAttachmentUrl}
-              onUpload={handleAttachmentUpload}
-              onDelete={handleAttachmentDelete}
-            />
+            {!simpleMode && (
+              <FileUpload
+                slim
+                disabled={!draftId}
+                data-qa="upload-message-attachment"
+                files={message.attachments}
+                i18n={i18nWithReplacedTitle}
+                getDownloadUrl={getAttachmentUrl}
+                onUpload={handleAttachmentUpload}
+                onDelete={handleAttachmentDelete}
+              />
+            )}
             <Gap size="L" />
           </ScrollableFormArea>
           <BottomBar>
