@@ -186,6 +186,14 @@ export default class ApplicationReadView {
       .assertTextEquals(note)
   }
 
+  async assertNoteNotEditable(index: number) {
+    await this.#notes.nth(index).findByDataQa('edit-note').waitUntilHidden()
+  }
+
+  async assertNoteNotDeletable(index: number) {
+    await this.#notes.nth(index).findByDataQa('delete-note').waitUntilHidden()
+  }
+
   async assertNoNotes() {
     await this.#notes.nth(0).waitUntilHidden()
   }

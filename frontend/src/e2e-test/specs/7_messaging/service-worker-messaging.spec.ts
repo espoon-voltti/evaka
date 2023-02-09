@@ -282,5 +282,21 @@ describe('Service Worker Messaging', () => {
       const messagesPage = await applReadView.openMessagesPage()
       await messagesPage.assertSimpleViewVisible()
     })
+
+    it('should not be possible for service workers to delete or edit notes created from messages', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      await messagesPage.inputContent.fill('message content')
+      await messagesPage.sendMessageButton.click()
+
+      await applReadView.reload()
+      await applReadView.assertNoteNotEditable(0)
+      await applReadView.assertNoteNotDeletable(0)
+    })
   })
 })
