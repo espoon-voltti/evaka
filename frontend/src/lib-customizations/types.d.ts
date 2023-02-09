@@ -140,6 +140,7 @@ interface BaseFeatureFlags {
     staffAttendanceTypes?: boolean
     fosterParents?: boolean
     serviceWorkerMessaging?: boolean
+    personDuplicate?: boolean
   }
 }
 

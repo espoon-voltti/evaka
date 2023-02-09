@@ -328,6 +328,13 @@ export function updateSsnAddingDisabled(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function duplicatePerson(personId: UUID): Promise<Result<UUID>> {
+  return client
+    .post<UUID>(`/person/${personId}/duplicate`)
+    .then((response) => Success.of(response.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function updatePersonAndFamilyFromVtj(
   personId: UUID
 ): Promise<Result<PersonJSON>> {

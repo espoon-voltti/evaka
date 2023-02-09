@@ -284,6 +284,7 @@ enum class Audit(
     PersonBlockedGuardiansRead(securityEvent = true, securityLevel = "high"),
     PersonDetailsRead(securityEvent = true, securityLevel = "high"),
     PersonDetailsSearch,
+    PersonDuplicate,
     PersonIncomeCreate,
     PersonIncomeDelete,
     PersonIncomeRead,

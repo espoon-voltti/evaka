@@ -1361,6 +1361,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()
         ),
         DELETE(HasGlobalRole(ADMIN)),
+        DUPLICATE(HasGlobalRole(ADMIN)),
         DISABLE_SSN_ADDING(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         ENABLE_SSN_ADDING(HasGlobalRole(ADMIN)),
         GENERATE_RETROACTIVE_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),

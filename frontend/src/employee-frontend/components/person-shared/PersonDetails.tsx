@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result, Success } from 'lib-common/api'
@@ -25,9 +26,11 @@ import {
   InfoButton,
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
-import { faPen, faSync } from 'lib-icons'
+import { featureFlags } from 'lib-customizations/employee'
+import { faCopy, faPen, faSync } from 'lib-icons'
 
 import {
+  duplicatePerson,
   patchPersonDetails,
   updatePersonAndFamilyFromVtj,
   updateSsnAddingDisabled
@@ -93,6 +96,7 @@ export default React.memo(function PersonDetails({
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const editing = uiMode === 'person-details-editing'
   const [form, setForm] = useState<Form>({
@@ -138,6 +142,7 @@ export default React.memo(function PersonDetails({
     [setShowSsnAddingDisabledInfo]
   )
 
+  const [duplicateOngoing, setDuplicateOngoing] = useState<boolean>(false)
   const [vtjUpdateOngoing, setVtjUpdateOngoing] = useState<boolean>(false)
 
   useEffect(() => {
@@ -185,6 +190,16 @@ export default React.memo(function PersonDetails({
     })
   }
 
+  const onDuplicate = () => {
+    setDuplicateOngoing(true)
+    void duplicatePerson(person.id).then((response) => {
+      setDuplicateOngoing(false)
+      if (response.isSuccess) {
+        navigate(`/child-information/${response.value}`)
+      }
+    })
+  }
+
   const onVtjUpdate = () => {
     setVtjUpdateOngoing(true)
     void updatePersonAndFamilyFromVtj(person.id).then((res) => {
@@ -204,6 +219,22 @@ export default React.memo(function PersonDetails({
         <AddSsnModal personId={person.id} onUpdateComplete={onUpdateComplete} />
       )}
       <RightAlignedRow>
+        {featureFlags.experimental?.personDuplicate &&
+        permittedActions.has('DUPLICATE') &&
+        isChild &&
+        uiMode !== 'person-details-editing' ? (
+          <ButtonSpacer>
+            {duplicateOngoing ? (
+              <SpinnerSegment margin="xxs" />
+            ) : (
+              <InlineButton
+                icon={faCopy}
+                onClick={onDuplicate}
+                text={i18n.personProfile.duplicate}
+              />
+            )}
+          </ButtonSpacer>
+        ) : null}
         {permittedActions.has('UPDATE_FROM_VTJ') &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>

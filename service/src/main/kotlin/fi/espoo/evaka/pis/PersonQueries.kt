@@ -248,6 +248,73 @@ fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
         .first()
 }
 
+fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? =
+    createUpdate(
+            """
+INSERT INTO person (
+    first_name,
+    last_name,
+    email,
+    aad_object_id,
+    language,
+    date_of_birth,
+    street_address,
+    postal_code,
+    post_office,
+    nationalities,
+    restricted_details_enabled,
+    restricted_details_end_date,
+    phone,
+    invoicing_street_address,
+    invoicing_postal_code,
+    invoicing_post_office,
+    invoice_recipient_name,
+    date_of_death,
+    residence_code,
+    force_manual_fee_decisions,
+    backup_phone,
+    oph_person_oid,
+    ssn_adding_disabled,
+    preferred_name,
+    duplicate_of
+)
+SELECT
+    first_name,
+    last_name,
+    email,
+    aad_object_id,
+    language,
+    date_of_birth,
+    street_address,
+    postal_code,
+    post_office,
+    nationalities,
+    restricted_details_enabled,
+    restricted_details_end_date,
+    phone,
+    invoicing_street_address,
+    invoicing_postal_code,
+    invoicing_post_office,
+    invoice_recipient_name,
+    date_of_death,
+    residence_code,
+    force_manual_fee_decisions,
+    backup_phone,
+    oph_person_oid,
+    TRUE AS ssn_adding_disabled,
+    preferred_name,
+    id AS duplicate_of
+FROM person WHERE id = :id
+RETURNING id
+"""
+                .trimIndent()
+        )
+        .bind("id", id)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<PersonId>()
+        .findOne()
+        .orElse(null)
+
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     // language=SQL
     val sql =
