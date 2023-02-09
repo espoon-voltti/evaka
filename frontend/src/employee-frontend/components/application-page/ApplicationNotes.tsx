@@ -5,13 +5,13 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getApplicationNotes } from '../../api/applications'
+import { applicationNotesQuery } from '../../api/applications-queries'
 import ApplicationNoteBox from '../../components/application-page/ApplicationNoteBox'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -32,10 +32,7 @@ export default React.memo(function ApplicationNotes({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [notesResponse, loadNotes] = useApiState(
-    () => getApplicationNotes(applicationId),
-    [applicationId]
-  )
+  const notesResponse = useQueryResult(applicationNotesQuery(applicationId))
   const [editing, setEditing] = useState<UUID | null>(null)
   const [creating, setCreating] = useState<boolean>(false)
 
@@ -49,7 +46,6 @@ export default React.memo(function ApplicationNotes({
               note={note}
               onSave={() => {
                 setEditing(null)
-                void loadNotes()
               }}
               onCancel={() => setEditing(null)}
             />
@@ -68,7 +64,6 @@ export default React.memo(function ApplicationNotes({
                 permittedActions.includes('DELETE')
               }
               onStartEdit={() => setEditing(note.id)}
-              onDelete={() => loadNotes()}
             />
           )
         )}
@@ -82,7 +77,6 @@ export default React.memo(function ApplicationNotes({
             applicationId={applicationId}
             onSave={() => {
               setCreating(false)
-              void loadNotes()
             }}
             onCancel={() => setCreating(false)}
           />

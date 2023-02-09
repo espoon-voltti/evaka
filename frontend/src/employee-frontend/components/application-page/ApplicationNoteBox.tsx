@@ -6,7 +6,13 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import {
+  createApplicationNote,
+  deleteApplicationNote,
+  updateApplicationNote
+} from 'employee-frontend/api/applications-queries'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
+import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -18,7 +24,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { createNote, deleteNote, updateNote } from '../../api/applications'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatParagraphs } from '../../utils/html-utils'
@@ -59,7 +64,7 @@ interface ReadProps {
   editable: boolean
   deletable: boolean
   onStartEdit: () => void
-  onDelete: () => void
+  onDelete?: () => void
 }
 
 interface InputProps {
@@ -106,6 +111,10 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
     setText(isEdit(props) ? props.note.content : '')
   }, [props])
 
+  const { mutateAsync: updateNote } = useMutation(updateApplicationNote)
+  const { mutateAsync: createNote } = useMutation(createApplicationNote)
+  const { mutateAsync: deleteNote } = useMutation(deleteApplicationNote)
+
   const save = () => {
     if (!isInput(props)) return
 
@@ -113,8 +122,12 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
     void (
       isEdit(props)
-        ? updateNote(props.note.id, text)
-        : createNote(props.applicationId, text)
+        ? updateNote({
+            applicationId: props.note.applicationId,
+            id: props.note.id,
+            text
+          })
+        : createNote({ applicationId: props.applicationId, text })
     )
       .then(() => props.onSave())
       .catch(() =>
@@ -132,8 +145,8 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
     const { note, onDelete } = props
 
-    void deleteNote(note.id)
-      .then(() => onDelete())
+    void deleteNote({ applicationId: note.applicationId, id: note.id })
+      .then(() => onDelete && onDelete())
       .catch(() =>
         setErrorMessage({
           type: 'error',
