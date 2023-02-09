@@ -44,6 +44,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -944,6 +945,63 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             now = clock.now()
         )
         assertEquals(1, unreadMessagesCount(serviceWorkerAccount, serviceWorker))
+    }
+
+    @Test
+    fun `service workers cannot send messages without a related application ID`() {
+        // when a message thread related to an application is created
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = serviceWorkerAccount,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+                user = serviceWorker,
+                relatedApplicationId = null
+            )
+        }
+    }
+
+    @Test
+    fun `service workers cannot send messages to children`() {
+        // when a message thread related to an application is created
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = serviceWorkerAccount,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                user = serviceWorker,
+                relatedApplicationId = ApplicationId(UUID.randomUUID())
+            )
+        }
+    }
+
+    @Test
+    fun `service workers cannot send messages to a citizen who has not sent the application identified by related application id`() {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE
+                )
+            }
+
+        // when a message thread related to an application is created
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = serviceWorkerAccount,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_2.id)),
+                user = serviceWorker,
+                relatedApplicationId = applicationId
+            )
+        }
     }
 
     private fun getUnreadReceivedMessages(
