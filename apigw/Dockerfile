@@ -2,12 +2,32 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG BASE_IMAGE=evaka-yarn:latest
-FROM "${BASE_IMAGE}" AS builder
-
-USER root
+ARG BASE_IMAGE=node:18-buster-slim
+FROM "${BASE_IMAGE}" AS base
 
 WORKDIR /project
+
+ARG CACHE_BUST=2023-02-08
+
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
+ENV LANGUAGE C.UTF-8
+RUN apt-get update \
+ && apt-get -y dist-upgrade \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      tzdata \
+      ca-certificates \
+      curl \
+      unzip \
+ && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.3.0/s3downloader-linux-amd64 \
+       -o /bin/s3download \
+ && chmod +x /bin/s3download \
+ && echo "d0ee074cbc04c1a36fb8cee6f99d9ff591fee89ea38d34a328d0ee1acb039a48  /bin/s3download" | sha256sum -c - \
+ && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
+ && dpkg-reconfigure --frontend noninteractive tzdata \
+ && rm -rf /var/lib/apt/lists/*
+
+FROM base AS builder
 
 COPY ./.yarn ./.yarn
 COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
@@ -23,13 +43,14 @@ FROM builder AS test
 RUN yarn lint
 RUN yarn test-ci
 
-FROM "${BASE_IMAGE}"
+FROM base
+
+ENV NODE_ENV production
 
 WORKDIR /home/evaka
 
-COPY --from=builder --chown=evaka:evaka /project .
+COPY --from=builder /project .
 
-ENV NODE_ENV production
 RUN yarn workspaces focus --production \
  && yarn cache clean --all
 
