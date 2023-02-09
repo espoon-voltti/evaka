@@ -2,9 +2,29 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG BASE_IMAGE=evaka-java:latest
+FROM openjdk:17-slim-buster as base
 
-FROM "${BASE_IMAGE}" as builder
+LABEL maintainer="https://github.com/espoon-voltti/evaka"
+
+ARG CACHE_BUST=2023-02-08
+
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
+ENV LANGUAGE C.UTF-8
+RUN apt-get update \
+ && apt-get -y dist-upgrade \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      tzdata \
+      ca-certificates \
+      curl \
+      unzip \
+ && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
+ && dpkg-reconfigure --frontend noninteractive tzdata \
+ && rm -rf /var/lib/apt/lists/*
+
+FROM base as builder
+
+WORKDIR /evaka
 
 COPY ./service/certificates/ /certificates/
 
@@ -40,17 +60,34 @@ RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin \
 RUN cd custom-ktlint-rules \
  && ./gradlew --no-daemon assemble
 
-FROM "${BASE_IMAGE}"
+FROM base
 
 WORKDIR /evaka/service
+
+RUN curl -sSL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.3.1/s3downloader-linux-amd64 -o /usr/local/bin/s3download \
+ && chmod +x /usr/local/bin/s3download
+
+ARG DD_JAVA_AGENT_VERSION="1.4.0"
+ARG DD_JAVA_AGENT_SHA256="a8fcc0b614d47872a98cf1fe3ab099ec626935b5d5027a873ca3e47ca2ed3a65"
+
+RUN curl -sSfo /opt/dd-java-agent.jar "https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_JAVA_AGENT_VERSION}/dd-java-agent-${DD_JAVA_AGENT_VERSION}.jar" \
+ && echo "${DD_JAVA_AGENT_SHA256}  /opt/dd-java-agent.jar" | sha256sum -c -
+
+ADD ./service/dd-jmxfetch/ /etc/jmxfetch/
 
 COPY ./service/entrypoint.sh entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
+ENV USERNAME evaka
+ENV HOME_DIR /home/${USERNAME}
+ENV USER_ID 1000
+
+RUN adduser ${USERNAME} --gecos "" -q --home ${HOME_DIR} --uid ${USER_ID} --disabled-password
+
 COPY --from=builder /certificates/truststore/ /certificates/truststore/
 COPY --from=builder /evaka/service/target/ .
 
-USER evaka
+USER ${USERNAME}
 
 ARG build=none
 ARG commit=none

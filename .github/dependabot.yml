@@ -10,7 +10,11 @@ version: 2
 #       and there's no support for OS packages: https://github.com/dependabot/dependabot-core/issues/2129
 updates:
 - package-ecosystem: docker
-  directory: "/evaka-base"
+  directory: "/service"
+  schedule:
+    interval: weekly
+- package-ecosystem: docker
+  directory: "/apigw"
   schedule:
     interval: weekly
 - package-ecosystem: docker
