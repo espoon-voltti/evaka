@@ -40,10 +40,7 @@ beforeEach(async () => {
           serviceNeedOption: true
         }
       }
-    },
-
-    // Avoid elements from hiding behind the floating footer
-    viewport: { width: 1280, height: 1000 }
+    }
   })
   await employeeLogin(page, admin.data)
 

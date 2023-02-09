@@ -480,6 +480,7 @@ export default React.memo(function ApplicationEditView({
                                 'form.preferences.connectedDaycarePreferredStartDate'
                               ]
                             }
+                            data-qa="input-warning-connected-daycare-preferred-start-date"
                           />
                         </>
                       ) : null}
