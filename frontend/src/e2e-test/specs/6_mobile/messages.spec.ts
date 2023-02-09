@@ -281,7 +281,7 @@ describe('Child message thread', () => {
 
   test('Message button goes to messages if user has pin session', async () => {
     await employeeLoginsToMessagesPage()
-    await page.goto(config.mobileUrl)
+    await nav.openPage('children')
     await listPage.gotoMessages()
     await messagesPage.messagesContainer.waitUntilVisible()
   })
