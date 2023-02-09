@@ -61,11 +61,12 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             raw.employeeId
                         }
                     val attendanceEmployeeToGroups =
-                        tx.getGroupsForEmployees(attendancesByEmployee.keys)
+                        tx.getGroupsForEmployees(unitId, attendancesByEmployee.keys)
                     val staffForAttendanceCalendar =
                         tx.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
                     val noAttendanceEmployeeToGroups =
                         tx.getGroupsForEmployees(
+                            unitId,
                             staffForAttendanceCalendar.map { emp -> emp.id }.toSet()
                         )
                     val plannedAttendances =
@@ -297,6 +298,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0))
                         )
                     tx.deleteStaffAttendancesInRangeExcept(
+                        body.unitId,
                         body.employeeId,
                         wholeDay,
                         body.entries.mapNotNull { it.id }
