@@ -2,11 +2,11 @@
 
 Espoo AD (production):
 
-- `espooad-internal-prod.pem`
+- `espooad-internal-prod.2022.pem`
 
 Espoo AD (staging):
 
-- `espooad-internal-staging.pem`
+- `espooad-internal-staging.2022.pem`
 
 Voltti IDP (dev/test):
 
