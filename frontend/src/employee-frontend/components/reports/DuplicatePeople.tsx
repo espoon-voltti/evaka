@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -14,19 +14,24 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { colors } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
 import { deletePerson, mergePeople } from '../../api/person'
-import { getDuplicatePeopleReport } from '../../api/reports'
+import {
+  DuplicatePeopleFilters,
+  getDuplicatePeopleReport
+} from '../../api/reports'
 import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
-import { TableScrollable } from './common'
+import { FilterRow, TableScrollable } from './common'
 
 interface RowProps {
   odd: boolean
@@ -62,20 +67,40 @@ export default React.memo(function DuplicatePeople() {
   const [deleteId, setDeleteId] = useState<UUID | null>(null)
   const { setErrorMessage } = useContext(UIContext)
 
-  const loadData = () => {
+  const [filters, setFilters] = useState<DuplicatePeopleFilters>({
+    showIntentionalDuplicates: !featureFlags.experimental?.personDuplicate
+  })
+
+  const loadData = useCallback(() => {
     setRows(Loading.of())
-    void getDuplicatePeopleReport().then(setRows)
-  }
+    void getDuplicatePeopleReport(filters).then(setRows)
+  }, [filters])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.duplicatePeople.title}</Title>
+        {featureFlags.experimental?.personDuplicate && (
+          <FilterRow>
+            <Checkbox
+              onChange={(checkedValue) =>
+                setFilters({
+                  ...filters,
+                  showIntentionalDuplicates: checkedValue
+                })
+              }
+              label={
+                i18n.reports.duplicatePeople.filters.showIntentionalDuplicates
+              }
+              checked={filters.showIntentionalDuplicates}
+            />
+          </FilterRow>
+        )}
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (
