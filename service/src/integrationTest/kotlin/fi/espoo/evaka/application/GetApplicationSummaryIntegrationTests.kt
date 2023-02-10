@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -28,9 +29,11 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
+import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -139,6 +142,52 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
                 Tuple(ApplicationType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE),
                 Tuple(ApplicationType.PRESCHOOL, PlacementType.PRESCHOOL_CLUB)
             )
+    }
+
+    @Test
+    fun `getChildApplicationSummaries returns only given child's applications`() {
+        assertThat(
+                applicationControllerV2.getChildApplicationSummaries(
+                    dbInstance(),
+                    serviceWorker,
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))
+                    ),
+                    testChild_1.id
+                )
+            )
+            .extracting<ChildId> { it.childId }
+            .containsExactly(testChild_1.id)
+    }
+
+    @Test
+    fun `getChildApplicationSummaries returns empty list with child without applications`() {
+        assertThat(
+                applicationControllerV2.getChildApplicationSummaries(
+                    dbInstance(),
+                    serviceWorker,
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))
+                    ),
+                    testChild_7.id
+                )
+            )
+            .isEmpty()
+    }
+
+    @Test
+    fun `getChildApplicationSummaries returns empty list with unknown child id`() {
+        assertThat(
+                applicationControllerV2.getChildApplicationSummaries(
+                    dbInstance(),
+                    serviceWorker,
+                    MockEvakaClock(
+                        HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))
+                    ),
+                    ChildId(UUID.randomUUID())
+                )
+            )
+            .isEmpty()
     }
 
     private fun getApplicationSummaries(
