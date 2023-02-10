@@ -26,7 +26,7 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam("showIntentionalDuplicates", required = false)
-        showIntentionalDuplicates: Boolean = false,
+        showIntentionalDuplicates: Boolean?,
     ): List<DuplicatePeopleReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -37,7 +37,7 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
                         Action.Global.READ_DUPLICATE_PEOPLE_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getDuplicatePeople(showIntentionalDuplicates)
+                    it.getDuplicatePeople(showIntentionalDuplicates ?: false)
                 }
             }
             .also { Audit.DuplicatePeopleReportRead.log(meta = mapOf("count" to it.size)) }
