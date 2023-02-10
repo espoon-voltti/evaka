@@ -671,17 +671,17 @@ export const MessageContextProvider = React.memo(
     )
 
     const selectDefaultAccount = useCallback(() => {
-      if (municipalAccount) {
-        setParams({
-          messageBox: messageBox ?? municipalMessageBoxes[0],
-          accountId: municipalAccount.account.id,
-          unitId: null,
-          threadId: threadId
-        })
-      } else if (serviceWorkerAccount) {
+      if (serviceWorkerAccount) {
         setParams({
           messageBox: messageBox ?? serviceWorkerMessageBoxes[0],
           accountId: serviceWorkerAccount.account.id,
+          unitId: null,
+          threadId: threadId
+        })
+      } else if (municipalAccount) {
+        setParams({
+          messageBox: messageBox ?? municipalMessageBoxes[0],
+          accountId: municipalAccount.account.id,
           unitId: null,
           threadId: threadId
         })
