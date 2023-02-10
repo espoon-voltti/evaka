@@ -92,7 +92,10 @@ class FamilyInitializerService(
             )
         }
 
-        if (familyFromApplication.fridgePartner != null) {
+        if (
+            familyFromApplication.fridgePartner != null &&
+                familyFromApplication.fridgePartner.id != familyFromApplication.headOfFamily.id
+        ) {
             tx.subTransaction {
                 createPartnership(
                     tx,
