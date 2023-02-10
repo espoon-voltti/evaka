@@ -437,17 +437,21 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
 private data class EmployeeGroups(val employeeId: EmployeeId, val groupIds: List<GroupId>)
 
 fun Database.Read.getGroupsForEmployees(
+    unitId: DaycareId,
     employeeIds: Set<EmployeeId>
 ): Map<EmployeeId, List<GroupId>> =
     createQuery(
             """
     SELECT employee_id, array_agg(daycare_group_id) AS group_ids
     FROM daycare_group_acl
-    WHERE employee_id = ANY(:employeeIds)
+    WHERE
+      daycare_group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = :unitId) AND
+      employee_id = ANY(:employeeIds)
     GROUP BY employee_id
     """
                 .trimIndent()
         )
+        .bind("unitId", unitId)
         .bind("employeeIds", employeeIds)
         .mapTo<EmployeeGroups>()
         .associateBy({ it.employeeId }, { it.groupIds })
@@ -574,6 +578,7 @@ ORDER BY departed DESC LIMIT 1
         .orElseGet { null }
 
 fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
+    unitId: DaycareId,
     employeeId: EmployeeId,
     timeRange: HelsinkiDateTimeRange,
     exceptIds: List<StaffAttendanceId>
@@ -581,9 +586,14 @@ fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     createUpdate(
             """
 DELETE FROM staff_attendance_realtime
-WHERE employee_id = :employeeId AND tstzrange(arrived, departed) && :timeRange AND NOT id = ANY(:exceptIds)
+WHERE
+    group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = :unitId) AND
+    employee_id = :employeeId AND
+    tstzrange(arrived, departed) && :timeRange AND
+    NOT id = ANY(:exceptIds)
 """
         )
+        .bind("unitId", unitId)
         .bind("employeeId", employeeId)
         .bind("timeRange", timeRange)
         .bind("exceptIds", exceptIds)
