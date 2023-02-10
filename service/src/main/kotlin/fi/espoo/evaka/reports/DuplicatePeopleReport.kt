@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -23,7 +24,9 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
     fun getDuplicatePeopleReport(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
+        @RequestParam("showIntentionalDuplicates", required = false)
+        showIntentionalDuplicates: Boolean = false,
     ): List<DuplicatePeopleReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -34,16 +37,19 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
                         Action.Global.READ_DUPLICATE_PEOPLE_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getDuplicatePeople()
+                    it.getDuplicatePeople(showIntentionalDuplicates)
                 }
             }
             .also { Audit.DuplicatePeopleReportRead.log(meta = mapOf("count" to it.size)) }
     }
 }
 
-private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
+private fun Database.Read.getDuplicatePeople(
+    showIntentionalDuplicates: Boolean
+): List<DuplicatePeopleReportRow> {
     val personReferences = getTransferablePersonReferences()
-
+    val intentionalDuplicateFilterClause =
+        if (showIntentionalDuplicates) "" else "AND p.duplicate_of IS NULL"
     // language=sql
     val sql =
         """
@@ -61,6 +67,7 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
             FROM person p
             WHERE p.first_name IS NOT NULL AND p.last_name IS NOT NULL 
                 AND p.first_name <> '' AND p.last_name <> '' AND lower(last_name) <> 'testaaja'
+                $intentionalDuplicateFilterClause
         ), duplicate_keys AS (
             SELECT key
             FROM people p
