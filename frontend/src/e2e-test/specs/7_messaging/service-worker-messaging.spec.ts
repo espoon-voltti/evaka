@@ -34,6 +34,7 @@ let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
 let staffPage: Page
 let serviceWorker: EmployeeDetail
+let messagingAndServiceWorker: EmployeeDetail
 
 const mockedToday = LocalDate.of(2022, 11, 8)
 const mockedTime = HelsinkiDateTime.fromLocal(
@@ -45,6 +46,13 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  messagingAndServiceWorker = (
+    await Fixture.employeeServiceWorker()
+      .with({
+        roles: ['SERVICE_WORKER', 'MESSAGING']
+      })
+      .save()
+  ).data
   await upsertMessageAccounts()
 })
 
@@ -53,9 +61,12 @@ async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   await enduserLogin(citizenPage)
 }
 
-async function openStaffPage(mockedTime: HelsinkiDateTime) {
+async function openStaffPage(
+  mockedTime: HelsinkiDateTime,
+  employee: EmployeeDetail
+) {
   staffPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
-  await employeeLogin(staffPage, serviceWorker)
+  await employeeLogin(staffPage, employee)
   await staffPage.goto(config.employeeUrl)
 }
 
@@ -81,7 +92,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should be possible for service workers to send messages relating to an application', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -103,7 +114,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should NOT be possible for a citizen without placed children to send new messages', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -121,7 +132,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should prefill the receiver and title fields when sending a new message', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -138,7 +149,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should create an application note with the message contents when sending a new message', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -154,7 +165,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should create an application note with a clickable link to the message thread', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -174,7 +185,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should delete the application note if the message is cancelled', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -191,7 +202,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should create an application note when the citizen answers a message', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       let applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       let applReadView = await applicationsPage
@@ -213,7 +224,7 @@ describe('Service Worker Messaging', () => {
       const replyContent = 'This is my reply'
       await citizenMessagesPage.replyToFirstThread(replyContent)
 
-      await openStaffPage(mockedTime.addHours(2))
+      await openStaffPage(mockedTime.addHours(2), serviceWorker)
       applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       applReadView = await applicationsPage
@@ -223,7 +234,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should open the reply to thread box and create an application note when the service worker sends a second message', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       let applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       let applReadView = await applicationsPage
@@ -244,7 +255,7 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.assertThreadContent({ title, content })
       await citizenMessagesPage.replyToFirstThread('This is a reply')
 
-      await openStaffPage(mockedTime.addHours(2))
+      await openStaffPage(mockedTime.addHours(2), serviceWorker)
       applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       applReadView = await applicationsPage
@@ -256,7 +267,7 @@ describe('Service Worker Messaging', () => {
       await messagesPage.fillReplyContent(replyContent)
       await messagesPage.sendReplyButton.click()
 
-      await openStaffPage(mockedTime.addHours(2))
+      await openStaffPage(mockedTime.addHours(2), serviceWorker)
       applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       applReadView = await applicationsPage
@@ -266,14 +277,14 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should not be possible for service workers to compose new messages from the messages page', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       await new EmployeeNav(staffPage).messagesTab.click()
       const messagesPage = new MessagesPage(staffPage)
       await messagesPage.newMessageButton.assertDisabled(true)
     })
 
     it('should show the simple message editor for service workers', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -284,7 +295,7 @@ describe('Service Worker Messaging', () => {
     })
 
     it('should not be possible for service workers to delete or edit notes created from messages', async () => {
-      await openStaffPage(mockedTime)
+      await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
       const applReadView = await applicationsPage
@@ -297,6 +308,30 @@ describe('Service Worker Messaging', () => {
       await applReadView.reload()
       await applReadView.assertNoteNotEditable(0)
       await applReadView.assertNoteNotDeletable(0)
+    })
+
+    it('should show the correct thread even when an employee with both messaging and service worker roles click the thread link on the application', async () => {
+      await openStaffPage(mockedTime, serviceWorker)
+      let applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      let applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+      const content = 'This is the message'
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
+
+      await openStaffPage(mockedTime, messagingAndServiceWorker)
+      applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      await applReadView.assertNote(0, `Lähetetty viesti\n\n${content}`)
+      const messagesPageWithThread =
+        await applReadView.clickMessageThreadLinkInNote(0)
+      await messagesPageWithThread.assertMessageContent(0, content)
     })
   })
 })
