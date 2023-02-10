@@ -56,12 +56,14 @@ export default React.memo(function ApplicationNotes({
               editable={
                 !creating &&
                 editing === null &&
-                permittedActions.includes('UPDATE')
+                permittedActions.includes('UPDATE') &&
+                note.messageThreadId === null
               }
               deletable={
                 !creating &&
                 editing === null &&
-                permittedActions.includes('DELETE')
+                permittedActions.includes('DELETE') &&
+                note.messageThreadId === null
               }
               onStartEdit={() => setEditing(note.id)}
             />

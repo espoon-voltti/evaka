@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -22,7 +23,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
+import { faEnvelope, faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -57,6 +58,10 @@ const ButtonsBar = styled.div`
 
 const DetailText = styled(Light)`
   font-size: 12px;
+`
+
+const NoteIcon = styled(FontAwesomeIcon)`
+  margin-right: ${defaultMargins.xxs};
 `
 
 interface ReadProps {
@@ -184,7 +189,14 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
               <Label>{i18n.application.notes.newNote}</Label>
             ) : (
               <>
-                <Label>{props.note.createdByName}</Label>
+                <Label>
+                  <>
+                    {props.note.messageThreadId !== null && (
+                      <NoteIcon icon={faEnvelope} />
+                    )}
+                    {props.note.createdByName}
+                  </>
+                </Label>
                 <span>
                   {i18n.application.notes.created}:{' '}
                   {props.note.created.format()}
