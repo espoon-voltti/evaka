@@ -17,8 +17,9 @@ export default class MobileNav {
     return this.page.find(`[data-qa="group--${id}"]`)
   }
 
-  readonly #children = this.page.find('[data-qa="bottomnav-children"]')
-  readonly #staff = this.page.find('[data-qa="bottomnav-staff"]')
+  children = this.page.find('[data-qa="bottomnav-children"]')
+  staff = this.page.find('[data-qa="bottomnav-staff"]')
+  messages = this.page.find('[data-qa="bottomnav-messages"]')
 
   get selectedGroupName() {
     return this.#groupSelectorButton.text
@@ -27,14 +28,5 @@ export default class MobileNav {
   async selectGroup(id: UUID) {
     await this.#groupSelectorButton.click()
     await this.groupWithId(id).click()
-  }
-
-  async openPage(tab: 'children' | 'staff') {
-    switch (tab) {
-      case 'children':
-        return await this.#children.click()
-      case 'staff':
-        return await this.#staff.click()
-    }
   }
 }

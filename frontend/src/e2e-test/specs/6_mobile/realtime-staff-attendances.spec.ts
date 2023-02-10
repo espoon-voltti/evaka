@@ -88,7 +88,7 @@ const initPages = async (mockedTime: Date) => {
 
   mobileSignupUrl = await pairMobileDevice(daycare2Fixture.id)
   await page.goto(mobileSignupUrl)
-  await nav.openPage('staff')
+  await nav.staff.click()
   staffAttendancePage = new StaffAttendancePage(page)
 }
 

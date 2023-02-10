@@ -12,16 +12,17 @@ import { fasExclamationTriangle } from 'lib-icons'
 interface Props {
   text: string
   iconPosition?: 'before' | 'after'
+  'data-qa'?: string
 }
 
-export function InputWarning({ text, iconPosition }: Props) {
+export function InputWarning({ text, iconPosition, 'data-qa': dataQa }: Props) {
   return iconPosition === 'after' ? (
-    <div>
+    <div data-qa={dataQa}>
       <WarningText margin="right">{text}</WarningText>
       <WarningIcon />
     </div>
   ) : (
-    <div>
+    <div data-qa={dataQa}>
       <WarningIcon />
       <WarningText>{text}</WarningText>
     </div>

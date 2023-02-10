@@ -46,11 +46,6 @@ export default class MobileListPage {
       .waitUntilHidden()
   }
 
-  async gotoMessages() {
-    const elem = this.page.find(`[data-qa="bottomnav-messages"]`)
-    return elem.click()
-  }
-
   async getAttendanceCounts() {
     const tabs = ['coming', 'present', 'departed', 'absent']
     const tabToDataQa = (t: string) => `[data-qa="${t}-tab"] [data-qa="count"]`

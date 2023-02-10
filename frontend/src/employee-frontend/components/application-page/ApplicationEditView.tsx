@@ -247,7 +247,7 @@ export default React.memo(function ApplicationEditView({
       >
         <ListGrid>
           <Label>{i18n.application.serviceNeed.startDate}</Label>
-          <div data-qa="datepicker-start-date">
+          <div>
             <HorizontalContainer>
               <DatePickerDeprecated
                 type="short"
@@ -480,6 +480,7 @@ export default React.memo(function ApplicationEditView({
                                 'form.preferences.connectedDaycarePreferredStartDate'
                               ]
                             }
+                            data-qa="input-warning-connected-daycare-preferred-start-date"
                           />
                         </>
                       ) : null}

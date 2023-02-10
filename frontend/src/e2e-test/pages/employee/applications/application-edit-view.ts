@@ -38,6 +38,9 @@ export default class ApplicationEditView {
       '[data-qa="datepicker-connected-daycare-preferred-start-date"]'
     )
   )
+  #connectedDaycarePreferredStartDateInputWarning = this.page.find(
+    '[data-qa="input-warning-connected-daycare-preferred-start-date"]'
+  )
   #preferredUnit = new Combobox(this.page.find('[data-qa="preferred-unit"]'))
   #applicantPhone = new TextInput(
     this.page.find('[data-qa="application-person-phone"]')
@@ -71,7 +74,9 @@ export default class ApplicationEditView {
   }
 
   async fillConnectedDaycarePreferredStartDate(date: string) {
+    await this.#connectedDaycarePreferredStartDateInputWarning.waitUntilVisible()
     await this.#connectedDaycarePreferredStartDate.fill(date)
+    await this.#connectedDaycarePreferredStartDateInputWarning.waitUntilHidden()
   }
 
   async selectPreschoolPlacementType(type: PlacementType) {
