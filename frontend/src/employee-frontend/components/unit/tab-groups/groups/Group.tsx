@@ -33,7 +33,6 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -622,14 +621,10 @@ export default React.memo(function Group({
                                   : 'full'
                               }
                               label={
-                                featureFlags.groupsTableServiceNeeds ? (
-                                  <ServiceNeedTooltipLabel
-                                    placement={placement}
-                                    filters={filters}
-                                  />
-                                ) : (
-                                  i18n.placement.type[placement.type]
-                                )
+                                <ServiceNeedTooltipLabel
+                                  placement={placement}
+                                  filters={filters}
+                                />
                               }
                             />
                           ) : null}

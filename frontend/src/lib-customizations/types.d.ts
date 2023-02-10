@@ -120,7 +120,6 @@ interface BaseFeatureFlags {
     serviceNeedOption: boolean
   }
   decisionDraftMultipleUnits: boolean
-  groupsTableServiceNeeds: boolean
   preschool: boolean
   preparatory: boolean
   urgencyAttachments: boolean
