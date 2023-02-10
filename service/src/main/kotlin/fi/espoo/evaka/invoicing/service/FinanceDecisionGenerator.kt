@@ -53,7 +53,10 @@ class FinanceDecisionGenerator(
         headOfFamily: PersonId,
         from: LocalDate
     ) {
-        val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
+        val families =
+            tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
+                it.headOfFamily == headOfFamily
+            }
         tx.handleFeeDecisionChanges(
             clock,
             jsonMapper,
@@ -70,7 +73,10 @@ class FinanceDecisionGenerator(
         headOfFamily: PersonId,
         from: LocalDate
     ) {
-        val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
+        val families =
+            tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
+                it.headOfFamily == headOfFamily
+            }
         families
             .flatMap { family -> family.children.map { it to family } }
             .groupingBy { (child, _) -> child }
