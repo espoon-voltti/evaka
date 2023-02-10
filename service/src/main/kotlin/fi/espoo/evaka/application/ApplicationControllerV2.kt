@@ -326,7 +326,14 @@ class ApplicationControllerV2(
                         Action.Child.READ_APPLICATION,
                         childId
                     )
-                    it.fetchApplicationSummariesForChild(childId)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Application.READ
+                        )
+                    it.fetchApplicationSummariesForChild(childId, filter)
                 }
             }
             .also { Audit.ApplicationRead.log(targetId = childId) }

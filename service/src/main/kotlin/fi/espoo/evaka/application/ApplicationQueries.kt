@@ -33,6 +33,8 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
@@ -603,11 +605,12 @@ fun Database.Read.fetchApplicationSummariesForGuardian(
 }
 
 fun Database.Read.fetchApplicationSummariesForChild(
-    childId: ChildId
-): List<PersonApplicationSummary> {
-    // language=SQL
-    val sql =
-        """
+    childId: ChildId,
+    filter: AccessControlFilter<ApplicationId>
+): List<PersonApplicationSummary> =
+    createQuery<Any> {
+            sql(
+                """
         SELECT
             a.id AS applicationId,
             a.preferredUnit AS preferredUnitId,
@@ -621,14 +624,16 @@ fun Database.Read.fetchApplicationSummariesForChild(
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
         LEFT JOIN person p ON a.guardianId = p.id
-        WHERE childId = :childId
+        WHERE childId = ${bind(childId)}
+        AND ${predicate(filter.forTable("a"))}
         AND status != 'CREATED'::application_status_type
         ORDER BY sentDate DESC
         """
-            .trimIndent()
-
-    return createQuery(sql).bind("childId", childId).mapTo<PersonApplicationSummary>().toList()
-}
+                    .trimIndent()
+            )
+        }
+        .mapTo<PersonApplicationSummary>()
+        .toList()
 
 fun Database.Read.fetchApplicationSummariesForCitizen(
     citizenId: PersonId
