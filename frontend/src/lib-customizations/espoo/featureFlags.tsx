@@ -30,7 +30,6 @@ const features: Features = {
     urgencyAttachments: true,
     experimental: {
       leops: true,
-      citizenVasu: true,
       voucherUnitPayments: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
@@ -56,7 +55,6 @@ const features: Features = {
     urgencyAttachments: true,
     experimental: {
       leops: true,
-      citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: true,
@@ -81,7 +79,6 @@ const features: Features = {
     urgencyAttachments: true,
     experimental: {
       leops: true,
-      citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: false,

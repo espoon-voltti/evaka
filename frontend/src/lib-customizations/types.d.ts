@@ -132,7 +132,6 @@ interface BaseFeatureFlags {
    */
   experimental?: {
     leops?: boolean
-    citizenVasu?: boolean
     voucherUnitPayments?: boolean
     assistanceNeedDecisions?: boolean
     assistanceNeedDecisionsLanguageSelect?: boolean
