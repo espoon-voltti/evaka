@@ -33,7 +33,13 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         placementStartDate: LocalDate,
         @RequestParam("earliestPreferredStartDate")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        earliestPreferredStartDate: LocalDate?
+        earliestPreferredStartDate: LocalDate?,
+        @RequestParam("earliestApplicationSentDate", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        earliestApplicationSentDate: LocalDate? = null,
+        @RequestParam("latestApplicationSentDate", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        latestApplicationSentDate: LocalDate? = null
     ): List<PlacementSketchingReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -46,7 +52,9 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementSketchingReportRows(
                         placementStartDate,
-                        earliestPreferredStartDate
+                        earliestPreferredStartDate,
+                        earliestApplicationSentDate,
+                        latestApplicationSentDate
                     )
                 }
             }
@@ -65,7 +73,9 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
 
 private fun Database.Read.getPlacementSketchingReportRows(
     placementStartDate: LocalDate,
-    earliestPreferredStartDate: LocalDate?
+    earliestPreferredStartDate: LocalDate?,
+    earliestApplicationSentDate: LocalDate?,
+    latestApplicationSentDate: LocalDate?
 ): List<PlacementSketchingReportRow> {
     // language=sql
     val sql =
@@ -106,7 +116,14 @@ SELECT
     application.guardianphonenumber,
     form.document->'guardian'->>'email' AS guardian_email,
     (SELECT array_agg(name) as other_preferred_units
-     FROM daycare JOIN (SELECT unnest(preferredUnits) FROM application WHERE application.id = application_id) pu ON daycare.id = pu.unnest) AS other_preferred_units
+     FROM daycare JOIN (SELECT unnest(preferredUnits) FROM application WHERE application.id = application_id) pu ON daycare.id = pu.unnest) AS other_preferred_units,
+    (form.document -> 'additionalDetails' ->> 'otherInfo' <> ''
+        OR form.document -> 'additionalDetails' ->> 'dietType' <> ''
+        OR form.document -> 'additionalDetails' ->> 'allergyType' <> '') as hasAdditionalInfo,
+    unrestricted_corrected_child_address_details.childMovingDate,
+    COALESCE(unrestricted_corrected_child_address_details.childCorrectedStreetAddress,'') as childCorrectedStreetAddress,
+    COALESCE(unrestricted_corrected_child_address_details.childCorrectedPostalCode,'') as childCorrectedPostalCode,
+    COALESCE(unrestricted_corrected_child_address_details.childCorrectedCity,'') as childCorrectedCity
 FROM
     daycare
 LEFT JOIN
@@ -118,11 +135,17 @@ LEFT JOIN
 LEFT JOIN
     person AS child ON application.childid = child.id
 LEFT JOIN
-    application_form AS form ON application.id = form.application_id AND form.latest is TRUE 
+    application_form AS form ON application.id = form.application_id AND form.latest is TRUE
+LEFT JOIN LATERAL (select (form.document -> 'child' ->> 'childMovingDate')::date            as childMovingDate,
+                           form.document -> 'child' -> 'correctingAddress' ->> 'street'     as childCorrectedStreetAddress,
+                           form.document -> 'child' -> 'correctingAddress' ->> 'postalCode' as childCorrectedPostalCode,
+                           form.document -> 'child' -> 'correctingAddress' ->> 'city'       as childCorrectedCity
+) as unrestricted_corrected_child_address_details on child.restricted_details_enabled IS FALSE
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
     AND application.type = 'PRESCHOOL'
+    AND daterange(:earliestApplicationSentDate, :latestApplicationSentDate, '[]') @> application.sentdate
 ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
         """
@@ -130,6 +153,8 @@ ORDER BY
     return createQuery(sql)
         .bind("placementStartDate", placementStartDate)
         .bind("earliestPreferredStartDate", earliestPreferredStartDate)
+        .bind("earliestApplicationSentDate", earliestApplicationSentDate)
+        .bind("latestApplicationSentDate", latestApplicationSentDate)
         .mapTo<PlacementSketchingReportRow>()
         .toList()
 }
@@ -156,5 +181,10 @@ data class PlacementSketchingReportRow(
     val sentDate: LocalDate,
     val guardianPhoneNumber: String?,
     val guardianEmail: String?,
-    val otherPreferredUnits: List<String>
+    val otherPreferredUnits: List<String>,
+    val hasAdditionalInfo: Boolean,
+    val childMovingDate: LocalDate?,
+    val childCorrectedStreetAddress: String,
+    val childCorrectedPostalCode: String,
+    val childCorrectedCity: String
 )

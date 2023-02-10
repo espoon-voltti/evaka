@@ -17,6 +17,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faFileAlt } from 'lib-icons'
 
 import {
@@ -26,6 +27,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
+import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
@@ -42,7 +44,7 @@ const Wrapper = styled.div`
 `
 
 export default React.memo(function PlacementSketching() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [rows, setRows] = useState<Result<PlacementSketchingReportRow[]>>(
     Loading.of()
   )
@@ -52,7 +54,9 @@ export default React.memo(function PlacementSketching() {
       LocalDate.todayInSystemTz().year,
       8,
       1
-    )
+    ),
+    earliestApplicationSentDate: null,
+    latestApplicationSentDate: null
   })
 
   const [displayFilters, setDisplayFilters] =
@@ -86,6 +90,8 @@ export default React.memo(function PlacementSketching() {
           .join(',')
       : ''
 
+  const currentLocalDate = LocalDate.todayInSystemTz()
+
   const showServiceNeedOption = filteredRows.some(
     (item) => item.serviceNeedOption !== null
   )
@@ -118,6 +124,39 @@ export default React.memo(function PlacementSketching() {
               setFilters({ ...filters, earliestPreferredStartDate })
             }
           />
+        </FilterRow>
+
+        <FilterRow>
+          <FlexRow>
+            <FilterLabel>
+              {i18n.reports.placementSketching.applicationSentDateRange}
+            </FilterLabel>
+            <DatePicker
+              id="earliest-sent-date"
+              date={filters.earliestApplicationSentDate}
+              onChange={(earliestApplicationSentDate) => {
+                setFilters({ ...filters, earliestApplicationSentDate })
+              }}
+              hideErrorsBeforeTouched
+              locale={lang}
+              isInvalidDate={(d) =>
+                d.isAfter(currentLocalDate)
+                  ? i18n.validationErrors.dateTooEarly
+                  : null
+              }
+            />
+            <span>{' - '}</span>
+
+            <DatePicker
+              id="latest-sent-date"
+              date={filters.latestApplicationSentDate}
+              onChange={(latestApplicationSentDate) => {
+                setFilters({ ...filters, latestApplicationSentDate })
+              }}
+              hideErrorsBeforeTouched
+              locale={lang}
+            />
+          </FlexRow>
         </FilterRow>
 
         <FilterRow>
@@ -176,7 +215,8 @@ export default React.memo(function PlacementSketching() {
                 preparatoryEducation: row.preparatoryEducation ? 'k' : 'e',
                 siblingBasis: row.siblingBasis ? 'k' : 'e',
                 connectedDaycare: row.connectedDaycare ? 'k' : 'e',
-                otherPreferredUnits: formatOtherPreferredUnits(row)
+                otherPreferredUnits: formatOtherPreferredUnits(row),
+                hasAdditionalInfo: row.hasAdditionalInfo ? 'k' : 'e'
               }))}
               headers={[
                 {
@@ -238,6 +278,28 @@ export default React.memo(function PlacementSketching() {
                 {
                   label: i18n.reports.placementSketching.otherPreferredUnits,
                   key: 'otherPreferredUnits'
+                },
+                {
+                  label: i18n.reports.placementSketching.additionalInfo,
+                  key: 'hasAdditionalInfo'
+                },
+                {
+                  label: i18n.reports.placementSketching.childMovingDate,
+                  key: 'childMovingDate'
+                },
+                {
+                  label:
+                    i18n.reports.placementSketching.childCorrectedStreetAddress,
+                  key: 'childCorrectedStreetAddress'
+                },
+                {
+                  label:
+                    i18n.reports.placementSketching.childCorrectedPostalCode,
+                  key: 'childCorrectedPostalCode'
+                },
+                {
+                  label: i18n.reports.placementSketching.childCorrectedCity,
+                  key: 'childCorrectedCity'
                 }
               ]}
               filename={`sijoitushahmottelu_${filters.placementStartDate.formatIso()}-${
@@ -269,6 +331,18 @@ export default React.memo(function PlacementSketching() {
                   <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.placementSketching.otherPreferredUnits}</Th>
+                  <Th>{i18n.reports.placementSketching.additionalInfo}</Th>
+                  <Th>{i18n.reports.placementSketching.childMovingDate}</Th>
+                  <Th>
+                    {
+                      i18n.reports.placementSketching
+                        .childCorrectedStreetAddress
+                    }
+                  </Th>
+                  <Th>
+                    {i18n.reports.placementSketching.childCorrectedPostalCode}
+                  </Th>
+                  <Th>{i18n.reports.placementSketching.childCorrectedCity}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -318,6 +392,11 @@ export default React.memo(function PlacementSketching() {
                     <Td data-qa="other-preferred-units">
                       {formatOtherPreferredUnits(row)}
                     </Td>
+                    <Td>{yesNo(row.hasAdditionalInfo)}</Td>
+                    <Td>{row.childMovingDate?.format()}</Td>
+                    <Td>{row.childCorrectedStreetAddress}</Td>
+                    <Td>{row.childCorrectedPostalCode}</Td>
+                    <Td>{row.childCorrectedCity}</Td>
                   </Tr>
                 ))}
               </Tbody>

@@ -3275,7 +3275,13 @@ export const fi = {
       connected: 'Liittyvä',
       preferredStartDate: 'Toivottu aloituspäivä',
       sentDate: 'Lähetyspäivä',
-      otherPreferredUnits: 'Muut hakutoiveet'
+      otherPreferredUnits: 'Muut hakutoiveet',
+      additionalInfo: 'Lisätiedot',
+      childMovingDate: 'Lapsen muuttopäivä',
+      childCorrectedStreetAddress: 'Lapsen uusi katuosoite',
+      childCorrectedPostalCode: 'Lapsen uusi postinumero',
+      childCorrectedCity: 'Lapsen uusi postitoimipaikka',
+      applicationSentDateRange: 'Hakemus lähetetty välillä'
     },
     vardaErrors: {
       title: 'Varda-virheet',
