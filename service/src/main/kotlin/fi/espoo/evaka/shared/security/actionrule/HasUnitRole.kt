@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -202,7 +203,7 @@ WHERE employee_id = ${bind(ctx.user.id)}
             }
         )
 
-    fun inPlacementPlanUnitOfApplication() =
+    fun inPlacementPlanUnitOfApplication(onlyAllowDeletedForTypes: Set<ApplicationType>? = null) =
         rule<ApplicationId> { user, _ ->
             sql(
                 """
@@ -212,6 +213,7 @@ JOIN placement_plan pp ON pp.application_id = av.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)} AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
+${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDeletedForTypes)}) OR NOT pp.deleted)" else ""}
             """
                     .trimIndent()
             )
