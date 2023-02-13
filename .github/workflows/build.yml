@@ -540,8 +540,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_chunk_number: [1, 2, 3, 4]
-        test_chunk_count: [4] # must max value of above list
+        test_chunk_number: [1, 2, 3, 4, 5]
+        test_chunk_count: [5] # must max value of above list
 
     steps:
       - uses: actions/checkout@v3
@@ -613,8 +613,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_chunk_number: [1, 2, 3, 4]
-        test_chunk_count: [4] # must max value of above list
+        test_chunk_number: [1, 2, 3, 4, 5, 6]
+        test_chunk_count: [6] # must max value of above list
 
     steps:
       - uses: actions/checkout@v3
