@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageService
-import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.messaging.NewMessageStub
 import fi.espoo.evaka.messaging.archiveThread
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.messaging.getArchiveFolderId
@@ -246,20 +246,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             }
 
         db.transaction { tx ->
-            messageService.createMessageThreadsForRecipientGroups(
+            messageService.sendMessageAsCitizen(
                 tx,
-                RealEvakaClock(),
-                title = "Juhannus",
-                content = "Juhannus tulee kohta",
-                type = MessageType.MESSAGE,
-                urgent = false,
+                HelsinkiDateTime.now(),
                 sender = senderDuplicateAccount,
-                messageRecipients = listOf(receiverAccount to testChild_1.id),
-                recipientNames = listOf(),
-                staffCopyRecipients = setOf(),
-                applicationId = null,
-                municipalAccountName = "Espoo",
-                serviceWorkerAccountName = "Espoon palveluohjaus"
+                dummyMessage,
+                recipients = setOf(receiverAccount),
+                children = setOf(testChild_1.id)
             )
         }
         assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
@@ -298,20 +291,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             }
 
         db.transaction { tx ->
-            messageService.createMessageThreadsForRecipientGroups(
+            messageService.sendMessageAsCitizen(
                 tx,
-                MockEvakaClock(now.minusMinutes(1)),
-                title = "Juhannus",
-                content = "Juhannus tulee kohta",
-                type = MessageType.MESSAGE,
-                urgent = false,
+                now.minusMinutes(1),
                 sender = senderAccount,
-                messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
-                recipientNames = listOf(),
-                staffCopyRecipients = setOf(),
-                applicationId = null,
-                municipalAccountName = "Espoo",
-                serviceWorkerAccountName = "Espoon palveluohjaus"
+                dummyMessage,
+                recipients = setOf(receiverDuplicateAccount),
+                children = setOf(testChild_1.id)
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -368,20 +354,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 }
             }
         db.transaction { tx ->
-            messageService.createMessageThreadsForRecipientGroups(
+            messageService.sendMessageAsCitizen(
                 tx,
-                MockEvakaClock(now.minusMinutes(1)),
-                title = "Juhannus",
-                content = "Juhannus tulee kohta",
-                type = MessageType.MESSAGE,
-                urgent = false,
+                now.minusMinutes(1),
                 sender = senderAccount,
-                messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
-                recipientNames = listOf(),
-                staffCopyRecipients = setOf(),
-                applicationId = null,
-                municipalAccountName = "Espoo",
-                serviceWorkerAccountName = "Espoon palveluohjaus"
+                dummyMessage,
+                recipients = setOf(receiverDuplicateAccount),
+                children = setOf(testChild_1.id)
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -501,4 +480,10 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
         }
     }
+    private val dummyMessage =
+        NewMessageStub(
+            title = "Juhannus",
+            content = "Juhannus tulee kohta",
+            urgent = false,
+        )
 }
