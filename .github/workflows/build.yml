@@ -104,10 +104,17 @@ jobs:
     outputs:
       image: ${{ steps.build.outputs.image }}
 
-  customizations:
+  frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Write AWS config
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        shell: bash
+        run: |
+          mkdir -p ~/.aws
+          echo '${{ secrets.AWS_CONFIG }}' > ~/.aws/config
 
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -118,40 +125,19 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           mask-aws-account-id: false
 
-      - name: Write AWS config
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          mkdir -p ~/.aws
-          echo '${{ secrets.AWS_CONFIG }}' > ~/.aws/config
-
-      - name: Fetch files
+      - name: Copy customizations
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
-          aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/build-customizations/" ./espoo-customizations/
-          aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" ./vendor/fortawesome/
+          mkdir -p frontend/espoo-customizations/ frontend/vendor/fortawesome/
+          cp -r customizations/espoo/* frontend/espoo-customizations/
+          aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" frontend/vendor/fortawesome/
 
-      - name: Upload customizations
-        uses: actions/upload-artifact@v3
-        with:
-          name: customizations
-          path: |
-            espoo-customizations/
-            vendor/fortawesome/
-          retention-days: 1
-
-  frontend:
-    needs:
-      - customizations
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download customizations
-        uses: actions/download-artifact@v3
-        with:
-          name: customizations
-          path: frontend/
+      - name: Unset AWS creds env vars
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        run: |
+          echo "AWS_ACCESS_KEY_ID=" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=" >> $GITHUB_ENV
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -211,7 +197,6 @@ jobs:
 
   frontend-test:
     needs:
-      - customizations
       - frontend
     runs-on: ubuntu-latest
     steps:
@@ -313,16 +298,15 @@ jobs:
       image: ${{ steps.build.outputs.image }}
 
   service:
-    needs:
-      - customizations
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Download customizations
-        uses: actions/download-artifact@v3
-        with:
-          name: customizations
-          path: .
+
+      - name: Copy customizations
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        run: |
+          rm -r espoo-customizations/
+          cp -r customizations/espoo/ espoo-customizations/
 
       - name: Build Evaka Service image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
