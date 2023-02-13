@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
 # eVaka – ERP for early childhood education
 
 [![REUSE status](https://api.reuse.software/badge/github.com/espoon-voltti/evaka)](https://api.reuse.software/info/github.com/espoon-voltti/evaka)
