@@ -1360,6 +1360,28 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `retroactive decisions are created after head of family changes`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+
+        insertPartnership(testAdult_2.id, testAdult_1.id, period)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction { tx ->
+            generator.createRetroactiveFeeDecisions(tx, clock, testAdult_1.id, period.start)
+        }
+
+        assertEquals(
+            listOf(Tuple(subPeriod1, testAdult_1.id)),
+            getAllFeeDecisions().map { Tuple(it.validDuring, it.headOfFamilyId) }
+        )
+    }
+
+    @Test
     fun `head of family income difference`() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
