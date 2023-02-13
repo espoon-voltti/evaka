@@ -111,18 +111,49 @@ interface BaseFeatureFlags {
    */
   citizenContractDayAbsence: boolean
 
+  /**
+   * Enable assistance action type "other"
+   */
   assistanceActionOther: boolean
+
   daycareApplication: {
+    /**
+     * Citizen must specify daily daycare start and end times the daycare application
+     */
     dailyTimes: boolean
   }
   preschoolApplication: {
+    /**
+     * Citizen must select the preferred start date for connected daycare on preschool application
+     */
     connectedDaycarePreferredStartDate: boolean
+    /**
+     * Citizen must select a service need option on preschool application
+     */
     serviceNeedOption: boolean
   }
+
+  /**
+   * Separate units can be selected for each decision on a decision draft (sijoitushahmotelma)
+   *
+   * Preschool + connected daycare applications generate two decisions. This flag enables selecting
+   * different units for each decision.
+   */
   decisionDraftMultipleUnits: boolean
-  groupsTableServiceNeeds: boolean
+
+  /**
+   * Enable support for preschool
+   */
   preschool: boolean
+
+  /**
+   * Enable support for preparatory education
+   */
   preparatory: boolean
+
+  /**
+   * Require one or more attachments for urgent applications
+   */
   urgencyAttachments: boolean
 
   /**
@@ -132,14 +163,44 @@ interface BaseFeatureFlags {
    * are deemed ready or promoted to top-level flags.
    */
   experimental?: {
+    /**
+     * Enable support for LEOPS (lapsen esiopetussuunnitelma)
+     */
     leops?: boolean
-    citizenVasu?: boolean
+
+    /**
+     * Enable payments for voucher units (palvelusetelimaksatus)
+     */
     voucherUnitPayments?: boolean
+
+    /**
+     * Enable assistance need decisions (tuen päätös)
+     */
     assistanceNeedDecisions?: boolean
+
+    /**
+     * Enable language selection for assistance need decisions
+     */
     assistanceNeedDecisionsLanguageSelect?: boolean
+
+    /**
+     * Enable attendance types for realtime staff attendances, instead of just present/absent
+     */
     staffAttendanceTypes?: boolean
+
+    /**
+     * Enable support for foster parents
+     */
     fosterParents?: boolean
+
+    /**
+     * Enable support for messaging to application guardian for service workers (palveluohjauksen viestintä)
+     */
     serviceWorkerMessaging?: boolean
+
+    /**
+     * Enable support for duplicating a child as a new SSN-less person
+     */
     personDuplicate?: boolean
   }
 }

@@ -16,7 +16,7 @@ import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { featureFlags, Translations } from 'lib-customizations/employee'
+import { Translations } from 'lib-customizations/employee'
 import { faArrowRight } from 'lib-icons'
 
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
@@ -69,13 +69,7 @@ function renderMissingGroupPlacementRow(
         {placementType && (
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
-            label={
-              featureFlags.groupsTableServiceNeeds ? (
-                <ServiceNeedTooltipLabel placement={missingPlacement} />
-              ) : (
-                i18n.placement.type[placementType]
-              )
-            }
+            label={<ServiceNeedTooltipLabel placement={missingPlacement} />}
           />
         )}
       </Td>

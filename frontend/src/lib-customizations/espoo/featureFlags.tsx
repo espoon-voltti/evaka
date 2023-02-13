@@ -25,13 +25,11 @@ const features: Features = {
       serviceNeedOption: false
     },
     decisionDraftMultipleUnits: false,
-    groupsTableServiceNeeds: false,
     preschool: true,
     preparatory: true,
     urgencyAttachments: true,
     experimental: {
       leops: true,
-      citizenVasu: true,
       voucherUnitPayments: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
@@ -52,13 +50,11 @@ const features: Features = {
       serviceNeedOption: false
     },
     decisionDraftMultipleUnits: false,
-    groupsTableServiceNeeds: false,
     preschool: true,
     preparatory: true,
     urgencyAttachments: true,
     experimental: {
       leops: true,
-      citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: true,
@@ -78,13 +74,11 @@ const features: Features = {
       serviceNeedOption: false
     },
     decisionDraftMultipleUnits: false,
-    groupsTableServiceNeeds: false,
     preschool: true,
     preparatory: true,
     urgencyAttachments: true,
     experimental: {
       leops: true,
-      citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: false,
