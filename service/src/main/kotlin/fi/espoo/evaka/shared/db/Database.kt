@@ -464,6 +464,15 @@ class Predicate<Tag>(val f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> P
     }
     companion object {
         fun <Tag> alwaysTrue(): Predicate<Tag> = Predicate { where("TRUE") }
+        fun <Tag> alwaysFalse(): Predicate<Tag> = Predicate { where("FALSE") }
+        fun <Tag> all(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> = Predicate { table ->
+            val sqlPredicates = predicates.map { predicate(it.forTable(table)) }
+            where(if (sqlPredicates.isEmpty()) "TRUE" else sqlPredicates.joinToString(" AND "))
+        }
+        fun <Tag> any(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> = Predicate { table ->
+            val sqlPredicates = predicates.map { predicate(it.forTable(table)) }
+            where(if (sqlPredicates.isEmpty()) "FALSE" else sqlPredicates.joinToString(" OR "))
+        }
     }
 }
 

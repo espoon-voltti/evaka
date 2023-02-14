@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -24,11 +25,13 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import org.jdbi.v3.core.result.RowView
@@ -316,48 +319,28 @@ fun Database.Read.paginatedSearch(
 
 fun Database.Read.searchInvoices(
     status: InvoiceStatus? = null,
-    sentAt: FiniteDateRange? = null
+    sentAt: HelsinkiDateTimeRange? = null
 ): List<InvoiceDetailed> {
-    val params =
-        listOf<Binding<*>>()
-            .let { ps -> if (status != null) ps + Binding.of("status", status) else ps }
-            .let { ps ->
-                if (sentAt != null) ps + (Binding.of("sentAt", sentAt.asHelsinkiDateTimeRange()))
-                else ps
-            }
-
-    val conditions =
-        listOfNotNull(
-            if (status != null) "invoice.status = :status" else null,
-            if (sentAt != null) ":sentAt @> invoice.sent_at" else null
+    val predicate =
+        Predicate.all<DatabaseTable.Invoice>(
+            listOfNotNull(
+                if (status != null) Predicate { where("$it.status = ${bind(status)}") } else null,
+                if (sentAt != null) Predicate { where("$it.sent_at <@ ${bind(sentAt)}") } else null
+            )
         )
 
-    val where =
-        if (conditions.isEmpty()) {
-            ""
-        } else {
-            """
-            WHERE invoice.id IN (
-                SELECT invoice.id
-                FROM invoice
-                LEFT JOIN invoice_row AS row ON invoice.id = row.invoice_id
-                LEFT JOIN person AS head ON invoice.head_of_family = head.id
-                LEFT JOIN person AS child ON row.child = child.id
-                WHERE ${conditions.joinToString("\nAND ")}
+    return createQuery<DatabaseTable.Invoice> {
+            sql(
+                """
+$invoiceDetailedQueryBase
+WHERE ${predicate(predicate.forTable("invoice"))}
+ORDER BY status DESC, due_date, invoice.id, row.idx
+"""
+                    .trimIndent()
             )
-            """
-                .trimIndent()
         }
-
-    val sql =
-        """
-        $invoiceDetailedQueryBase
-        $where
-        ORDER BY status DESC, due_date, invoice.id, row.idx
-        """
-            .trimIndent()
-
-    return createQuery(sql).addBindings(params).map(toDetailedInvoice).let(::flattenDetailed)
+        .map(toDetailedInvoice)
+        .let(::flattenDetailed)
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
