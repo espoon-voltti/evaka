@@ -18,6 +18,9 @@ import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
+import fi.espoo.evaka.shared.withSpan
+import io.opentracing.Tracer
+import io.opentracing.noop.NoopTracerFactory
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.math.BigDecimal
@@ -41,20 +44,27 @@ class Page(val template: Template, val context: Context)
 class PdfGenerator(
     private val messageProvider: IMessageProvider,
     private val templateProvider: ITemplateProvider,
-    private val templateEngine: ITemplateEngine
+    private val templateEngine: ITemplateEngine,
+    private val tracer: Tracer = NoopTracerFactory.create()
 ) {
-    fun render(page: Page): ByteArray {
-        val html = templateEngine.process(page.template.name, page.context)
+    fun render(page: Page): ByteArray =
+        tracer.withSpan("render pdf ${page.template.name}") {
+            val html =
+                tracer.withSpan("process") {
+                    templateEngine.process(page.template.name, page.context)
+                }
 
-        val output = ByteArrayOutputStream()
-        with(ITextRenderer()) {
-            fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
-            setDocumentFromString(html)
-            layout()
-            createPDF(output, true)
+            val output = ByteArrayOutputStream()
+            tracer.withSpan("render html") {
+                with(ITextRenderer()) {
+                    fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
+                    setDocumentFromString(html)
+                    layout()
+                    createPDF(output, true)
+                }
+            }
+            output.toByteArray()
         }
-        return output.toByteArray()
-    }
 
     fun generateFeeDecisionPdf(data: FeeDecisionPdfData): ByteArray {
         val template = Template(templateProvider.getFeeDecisionPath())
