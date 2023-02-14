@@ -80,17 +80,29 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                     // Find the correct placement status for each child on this
                                     // date.
                                     // Precedence: Backup > Group placement > Placement
-                                    .map { (childId, rows) ->
+                                    .flatMap { (childId, rows) ->
                                         val backup = rows.find { it.isBackup }
-                                        val groupInOwnUnit = rows.find { it.group != null }?.group
+                                        val originalGroup = rows.find { it.group != null }?.group
                                         val group =
                                             if (backup != null && !backup.inOtherUnit) backup.group
-                                            else groupInOwnUnit
-                                        ChildPlacementStatus(
-                                            date = date,
-                                            childId = childId,
-                                            group = group,
-                                            inOtherUnit = backup?.inOtherUnit ?: false
+                                            else originalGroup
+                                        listOfNotNull(
+                                            ChildPlacementStatus(
+                                                date = date,
+                                                childId = childId,
+                                                group = group,
+                                                inOtherUnit = backup?.inOtherUnit ?: false,
+                                                otherGroup = originalGroup
+                                            ),
+                                            if (backup != null && !backup.inOtherUnit)
+                                                ChildPlacementStatus(
+                                                    date = date,
+                                                    childId = childId,
+                                                    group = originalGroup,
+                                                    inOtherUnit = false,
+                                                    otherGroup = backup.group
+                                                )
+                                            else null
                                         )
                                     }
                             }
@@ -197,7 +209,8 @@ data class UnitAttendanceReservations(
         val attendance: AttendanceTimes?,
         val absence: Absence?,
         val dailyServiceTimes: DailyServiceTimesValue?,
-        val inOtherUnit: Boolean
+        val inOtherUnit: Boolean,
+        val isInBackupGroup: Boolean
     )
 
     data class ReservationTimes(val startTime: String, val endTime: String)
@@ -245,7 +258,8 @@ private data class ChildPlacementStatus(
     val date: LocalDate,
     val childId: ChildId,
     val group: UnitAttendanceReservations.ReservationGroup?,
-    val inOtherUnit: Boolean
+    val inOtherUnit: Boolean,
+    val otherGroup: UnitAttendanceReservations.ReservationGroup?
 )
 
 private data class EffectiveGroupPlacementPeriod(
@@ -467,6 +481,7 @@ private fun dailyRecord(
         attendance = attendance,
         absence = childData.absences[date],
         dailyServiceTimes = serviceTimes?.find { dst -> dst.validityPeriod.includes(date) },
-        inOtherUnit = inOtherUnit
+        inOtherUnit = inOtherUnit,
+        isInBackupGroup = placementStatus.group != placementStatus.otherGroup
     )
 }

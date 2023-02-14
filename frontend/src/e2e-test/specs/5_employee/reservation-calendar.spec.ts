@@ -40,7 +40,7 @@ let unitSupervisor: EmployeeDetail
 
 const mockedToday = LocalDate.of(2023, 2, 15)
 const placementStartDate = mockedToday.subWeeks(4)
-const placementEndDate = mockedToday.addWeeks(4)
+const placementEndDate = mockedToday.addWeeks(8)
 const backupCareStartDate = mockedToday.startOfWeek().addWeeks(2)
 const backupCareEndDate = backupCareStartDate.addDays(8)
 const groupId: UUID = uuidv4()
@@ -130,6 +130,40 @@ describe('Unit group calendar', () => {
     await waitUntilEqual(
       () => childReservations.childRowCount(child1Fixture.id),
       1
+    )
+  })
+
+  test('Child in backup care part of the week is shown', async () => {
+    const groupId3 = uuidv4()
+    const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
+    const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
+    await Fixture.daycareGroup()
+      .with({
+        id: groupId3,
+        daycareId: daycare.id,
+        name: 'Varasijoitusryhmä samassa'
+      })
+      .save()
+    await Fixture.backupCare()
+      .with({
+        id: uuidv4(),
+        childId: child1Fixture.id,
+        unitId: daycare.id,
+        groupId: groupId3,
+        period: {
+          start: backupCareSameUnitStartDate.formatIso(),
+          end: backupCareSameUnitEndDate.formatIso()
+        }
+      })
+      .save()
+
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(backupCareSameUnitStartDate)
+    await waitUntilEqual(
+      () => childReservations.childInOtherUnitCount(child1Fixture.id),
+      4
     )
   })
 

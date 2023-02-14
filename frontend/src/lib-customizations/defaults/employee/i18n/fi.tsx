@@ -2051,7 +2051,8 @@ export const fi = {
       },
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
       doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
-      inOtherUnit: 'Muussa yksikössä'
+      inOtherUnit: 'Muussa yksikössä',
+      inOtherGroup: 'Muussa ryhmässä'
     },
     staffAttendance: {
       startTime: 'tulo',
