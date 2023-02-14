@@ -41,6 +41,13 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
 
     fun asDateRange(): DateRange = DateRange(start, end)
 
+    fun asHelsinkiDateTimeRange(): HelsinkiDateTimeRange =
+        HelsinkiDateTimeRange(
+            HelsinkiDateTime.atStartOfDay(start),
+            // date time range is exclusive, so we need first date time *not* in range
+            HelsinkiDateTime.atStartOfDay(end.plusDays(1))
+        )
+
     /** Returns true if this date range fully contains the given date range. */
     fun contains(other: FiniteDateRange) = this.start <= other.start && other.end <= this.end
 
@@ -104,10 +111,12 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
 
     companion object {
-        fun ofMonth(year: Int, month: Month): FiniteDateRange {
-            val start = LocalDate.of(year, month, 1)
-            val end = start.with(lastDayOfMonth())
-            return FiniteDateRange(start, end)
+        fun ofMonth(year: Int, month: Month): FiniteDateRange =
+            ofMonth(LocalDate.of(year, month, 1))
+        fun ofMonth(date: LocalDate): FiniteDateRange {
+            val from = date.with(date.withDayOfMonth(1))
+            val to = date.with(lastDayOfMonth())
+            return FiniteDateRange(from, to)
         }
     }
 }
@@ -151,10 +160,11 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     }
 
     companion object {
-        fun ofMonth(year: Int, month: Month): DateRange {
-            val start = LocalDate.of(year, month, 1)
-            val end = start.with(lastDayOfMonth())
-            return DateRange(start, end)
+        fun ofMonth(year: Int, month: Month): DateRange = ofMonth(LocalDate.of(year, month, 1))
+        fun ofMonth(date: LocalDate): DateRange {
+            val from = date.with(date.withDayOfMonth(1))
+            val to = date.with(lastDayOfMonth())
+            return DateRange(from, to)
         }
     }
 }

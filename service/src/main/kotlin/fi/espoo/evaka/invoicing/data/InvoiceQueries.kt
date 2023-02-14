@@ -319,7 +319,7 @@ fun Database.Read.searchInvoices(
     areas: List<String> = listOf(),
     unit: DaycareId? = null,
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
-    sentAt: DateRange? = null
+    sentAt: FiniteDateRange? = null
 ): List<InvoiceDetailed> {
     val params =
         listOf<Binding<*>>()
@@ -327,12 +327,7 @@ fun Database.Read.searchInvoices(
             .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
             .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
             .let { ps ->
-                if (sentAt != null)
-                    ps +
-                        listOf(
-                            Binding.of("sentAtStart", sentAt.start),
-                            Binding.of("sentAtEnd", sentAt.end)
-                        )
+                if (sentAt != null) ps + (Binding.of("sentAt", sentAt.asHelsinkiDateTimeRange()))
                 else ps
             }
 
@@ -348,8 +343,7 @@ fun Database.Read.searchInvoices(
             if (withMissingAddress)
                 "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
             else null,
-            if (sentAt != null) "daterange(:sentAtStart, :sentAtEnd) @> invoice.sent_at::date"
-            else null
+            if (sentAt != null) ":sentAt @> invoice.sent_at" else null
         )
 
     val where =
