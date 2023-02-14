@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeThresholds
+import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
@@ -38,9 +39,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
 
-class PdfServiceTest {
-    private val service: PDFService =
-        PDFService(EvakaMessageProvider(), EvakaTemplateProvider(), PDFConfig.templateEngine())
+class PdfGenerationTest {
+    private val service: PdfGenerator =
+        PdfGenerator(EvakaMessageProvider(), EvakaTemplateProvider(), PDFConfig.templateEngine())
 
     private val normalDecision =
         FeeDecisionDetailed(

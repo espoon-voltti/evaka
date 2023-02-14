@@ -30,6 +30,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
@@ -54,7 +55,7 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class FeeDecisionService(
-    private val pdfService: PDFService,
+    private val pdfGenerator: PdfGenerator,
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -194,7 +195,7 @@ class FeeDecisionService(
         val lang = getDecisionLanguage(decision)
 
         val pdfByteArray =
-            pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
+            pdfGenerator.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
         val documentKey =
             documentClient
                 .upload(

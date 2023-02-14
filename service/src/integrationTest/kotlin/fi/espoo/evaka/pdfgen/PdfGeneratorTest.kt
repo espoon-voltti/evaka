@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.shared
+package fi.espoo.evaka.pdfgen
 
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -16,6 +16,10 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.setting.SettingType
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -24,7 +28,6 @@ import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
-import fi.espoo.voltti.pdfgen.PDFService
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
@@ -120,7 +123,7 @@ private val manager =
     DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
 @TestConfiguration
-class PDFServiceTestConfiguration {
+class PdfGeneratorTestConfiguration {
     @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
@@ -128,11 +131,10 @@ class PDFServiceTestConfiguration {
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    classes = [PDFServiceTestConfiguration::class, PDFConfig::class, PDFService::class]
+    classes = [PdfGeneratorTestConfiguration::class, PDFConfig::class, PdfGenerator::class]
 )
-class PDFServiceTest {
-
-    @Autowired lateinit var pdfService: PDFService
+class PdfGeneratorTest {
+    @Autowired lateinit var pdfGenerator: PdfGenerator
 
     @Test
     fun createFinnishPDFs() {
@@ -168,7 +170,7 @@ class PDFServiceTest {
             createDecisionPdf(
                 EvakaMessageProvider(),
                 EvakaTemplateProvider(),
-                pdfService,
+                pdfGenerator,
                 settings,
                 decision,
                 guardian,

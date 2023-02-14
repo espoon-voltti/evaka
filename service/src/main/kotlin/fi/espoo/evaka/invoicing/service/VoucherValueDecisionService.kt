@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
@@ -35,7 +36,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class VoucherValueDecisionService(
-    private val pdfService: PDFService,
+    private val pdfGenerator: PdfGenerator,
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -153,7 +154,7 @@ class VoucherValueDecisionService(
         settings: Map<SettingType, String>
     ): ByteArray {
         val lang = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
-        return pdfService.generateVoucherValueDecisionPdf(
+        return pdfGenerator.generateVoucherValueDecisionPdf(
             VoucherValueDecisionPdfData(decision, settings, lang)
         )
     }

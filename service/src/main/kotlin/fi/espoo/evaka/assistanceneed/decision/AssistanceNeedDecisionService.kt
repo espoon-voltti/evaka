@@ -13,6 +13,9 @@ import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
+import fi.espoo.evaka.pdfgen.Page
+import fi.espoo.evaka.pdfgen.PdfGenerator
+import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
@@ -32,9 +35,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import fi.espoo.voltti.pdfgen.PDFService
-import fi.espoo.voltti.pdfgen.Page
-import fi.espoo.voltti.pdfgen.Template
 import java.time.LocalDate
 import java.util.Locale
 import mu.KotlinLogging
@@ -50,7 +50,7 @@ const val assistanceNeedDecisionsBucketPrefix = "assistance-need-decisions/"
 class AssistanceNeedDecisionService(
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val pdfService: PDFService,
+    private val pdfGenerator: PdfGenerator,
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val messageProvider: IMessageProvider,
@@ -241,7 +241,7 @@ class AssistanceNeedDecisionService(
         sendAddress: DecisionSendAddress? = null,
         guardian: PersonDTO? = null
     ): ByteArray {
-        return pdfService.render(
+        return pdfGenerator.render(
             Page(
                 Template(templateProvider.getAssistanceNeedDecisionPath()),
                 Context().apply {

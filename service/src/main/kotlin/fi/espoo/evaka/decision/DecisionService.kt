@@ -13,6 +13,9 @@ import fi.espoo.evaka.daycare.getUnitManager
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
+import fi.espoo.evaka.pdfgen.Page
+import fi.espoo.evaka.pdfgen.PdfGenerator
+import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -32,9 +35,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import fi.espoo.voltti.pdfgen.PDFService
-import fi.espoo.voltti.pdfgen.Page
-import fi.espoo.voltti.pdfgen.Template
 import java.util.Locale
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
@@ -48,7 +48,7 @@ class DecisionService(
     private val personService: PersonService,
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
-    private val pdfService: PDFService,
+    private val pdfGenerator: PdfGenerator,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: BucketEnv
@@ -142,7 +142,7 @@ class DecisionService(
             createDecisionPdf(
                 messageProvider,
                 templateProvider,
-                pdfService,
+                pdfGenerator,
                 settings,
                 decision,
                 guardian,
@@ -335,7 +335,7 @@ class DecisionService(
 fun createDecisionPdf(
     messageProvider: IMessageProvider,
     templateProvider: ITemplateProvider,
-    pdfService: PDFService,
+    pdfService: PdfGenerator,
     settings: Map<SettingType, String>,
     decision: Decision,
     guardian: PersonDTO,
