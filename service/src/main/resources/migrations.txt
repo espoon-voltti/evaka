@@ -300,3 +300,4 @@ V300__realized_occupancy_coefficients.sql
 V301__person_duplicate_of.sql
 V302__drop_pointless_index.sql
 V303__message_thread_application_index.sql
+V304__invoice_indexing.sql
