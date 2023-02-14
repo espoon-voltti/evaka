@@ -924,5 +924,5 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
-        db.transaction { tx -> tx.searchInvoices(listOf(status), listOf(), null, listOf()) }
+        db.transaction { tx -> tx.searchInvoices(status) }
 }

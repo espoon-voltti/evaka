@@ -315,34 +315,20 @@ fun Database.Read.paginatedSearch(
 }
 
 fun Database.Read.searchInvoices(
-    statuses: List<InvoiceStatus> = listOf(),
-    areas: List<String> = listOf(),
-    unit: DaycareId? = null,
-    distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
+    status: InvoiceStatus? = null,
     sentAt: FiniteDateRange? = null
 ): List<InvoiceDetailed> {
     val params =
         listOf<Binding<*>>()
-            .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
-            .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
-            .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
+            .let { ps -> if (status != null) ps + Binding.of("status", status) else ps }
             .let { ps ->
                 if (sentAt != null) ps + (Binding.of("sentAt", sentAt.asHelsinkiDateTimeRange()))
                 else ps
             }
 
-    val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
-
     val conditions =
         listOfNotNull(
-            if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-            if (areas.isNotEmpty())
-                "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))"
-            else null,
-            if (unit != null) "row.unit_id = :unit" else null,
-            if (withMissingAddress)
-                "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
-            else null,
+            if (status != null) "invoice.status = :status" else null,
             if (sentAt != null) ":sentAt @> invoice.sent_at" else null
         )
 
