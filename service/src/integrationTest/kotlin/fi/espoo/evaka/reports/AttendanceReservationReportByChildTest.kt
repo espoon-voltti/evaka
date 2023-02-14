@@ -13,14 +13,17 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
+import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -596,6 +599,75 @@ internal class AttendanceReservationReportByChildTest :
                     LocalDate.of(2022, 10, 28),
                     LocalTime.of(8, 15),
                     AbsenceType.PARENTLEAVE
+                )
+            )
+    }
+
+    @Test
+    fun `daily service times are returned if exists and there is no reservation for the day`() {
+        val startDate = LocalDate.of(2022, 10, 24)
+        val endDate = LocalDate.of(2022, 10, 26)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = startDate,
+                endDate = endDate
+            )
+
+            // 8-16 every day
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(startDate, endDate)
+                )
+            )
+
+            // Reservation on the second day 9:00 - 15:00
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(1),
+                    startTime = LocalTime.of(9, 0),
+                    endTime = LocalTime.of(15, 0),
+                    createdBy = admin.evakaUserId
+                )
+            )
+
+            // Absence on the third day
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = endDate,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.SICKLEAVE
+            )
+        }
+
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get())
+            .extracting(
+                { it.childId },
+                { it.date },
+                { it.reservationStartTime },
+                { it.absenceType }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(testChild_1.id, LocalDate.of(2022, 10, 24), LocalTime.of(8, 0), null),
+                Tuple(testChild_1.id, LocalDate.of(2022, 10, 25), LocalTime.of(9, 0), null),
+                Tuple(
+                    testChild_1.id,
+                    LocalDate.of(2022, 10, 26),
+                    LocalTime.of(8, 0),
+                    AbsenceType.SICKLEAVE
                 )
             )
     }

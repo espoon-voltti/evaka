@@ -226,6 +226,18 @@ private fun Database.Read.getAttendanceReservationReportByChild(
           WHERE u.id = :unitId
             AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
             AND extract(isodow FROM date) = ANY(u.operation_days)
+        ), child_daily_service_times AS (
+            SELECT
+                child_id,
+                CASE WHEN daily_service_time.type = 'REGULAR' 
+                        THEN array[(regular_times).start, (regular_times).start, (regular_times).start, (regular_times).start, (regular_times).start, (regular_times).start, (regular_times).start]
+                        ELSE array[(sunday_times).start, (monday_times).start, (tuesday_times).start, (wednesday_times).start, (thursday_times).start, (friday_times).start, (saturday_times).start]
+                END start_times,
+                CASE WHEN daily_service_time.type = 'REGULAR'
+                    THEN array[(regular_times).end, (regular_times).end, (regular_times).end, (regular_times).end, (regular_times).end, (regular_times).end, (regular_times).end]
+                    ELSE array[(sunday_times).end, (monday_times).end, (tuesday_times).end, (wednesday_times).end, (thursday_times).end, (friday_times).end, (saturday_times).end]
+                END end_times
+            FROM daily_service_time
         )
         SELECT
           ${if (groupIds != null) "c.group_id, c.group_name" else "NULL AS group_id, NULL as group_name"},
@@ -237,11 +249,12 @@ private fun Database.Read.getAttendanceReservationReportByChild(
           a.id AS absence_id,
           a.absence_type,
           r.id AS reservation_id,
-          r.start_time AS reservation_start_time,
-          r.end_time AS reservation_end_time
+          COALESCE(r.start_time, dst.start_times[extract(isodow FROM c.date)]) AS reservation_start_time,
+          COALESCE(r.end_time, dst.end_times[extract(isodow FROM c.date)]) AS reservation_end_time
         FROM children c
         LEFT JOIN absence a ON a.child_id = c.id AND a.date = c.date
         LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date
+        LEFT JOIN child_daily_service_times dst ON dst.child_id = c.id
     """
             .trimIndent()
     return createQuery(sql)
