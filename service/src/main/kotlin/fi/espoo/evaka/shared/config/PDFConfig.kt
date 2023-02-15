@@ -7,19 +7,11 @@ package fi.espoo.evaka.shared.config
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 
-@Import(
-    value =
-        [
-            fi.espoo.evaka.invoicing.service.PDFService::class,
-            fi.espoo.voltti.pdfgen.PDFService::class
-        ]
-)
 @Configuration
 class PDFConfig {
     @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine()
