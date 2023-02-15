@@ -7,17 +7,23 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.checkAndCreateGroupPlacement
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_CLOSED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_READY
@@ -220,6 +226,108 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `preschool document publishing and state transitions`() {
         documentPublishingAndStateTransitions(CurriculumType.PRESCHOOL)
+    }
+
+    @Test
+    fun `daycare document shows all placements even when the child moves from one group to another`() {
+        val template = getTemplate(CurriculumType.DAYCARE)
+        val documentId =
+            postVasuDocument(
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = template.id)
+            )
+
+        val (groupId1, groupId2) =
+            db.transaction { tx ->
+                val testDaycareGroup =
+                    DevDaycareGroup(daycareId = testDaycare.id, name = "first group")
+                val testDaycareGroup2 =
+                    DevDaycareGroup(daycareId = testDaycare.id, name = "second group")
+                val placementStart = LocalDate.now()
+                val placementEnd = placementStart.plusMonths(9)
+                val placementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                val groupId1 = tx.insertTestDaycareGroup(testDaycareGroup)
+                tx.checkAndCreateGroupPlacement(
+                    daycarePlacementId = placementId,
+                    groupId = groupId1,
+                    startDate = placementStart,
+                    endDate = placementStart.plusMonths(1)
+                )
+
+                val groupId2 = tx.insertTestDaycareGroup(testDaycareGroup2)
+                tx.checkAndCreateGroupPlacement(
+                    daycarePlacementId = placementId,
+                    groupId = groupId2,
+                    startDate = placementStart.plusMonths(1).plusDays(1),
+                    endDate = placementEnd
+                )
+                Pair(groupId1, groupId2)
+            }
+
+        val basics = getVasuDocument(documentId).basics
+        assertEquals(2, basics.placements?.size)
+        assertEquals(groupId1, basics.placements?.first()?.groupId)
+        assertEquals(groupId2, basics.placements?.last()?.groupId)
+    }
+
+    @Test
+    fun `daycare document shows all placements even when the child moves from one unit to another`() {
+        val template = getTemplate(CurriculumType.DAYCARE)
+        val documentId =
+            postVasuDocument(
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = template.id)
+            )
+
+        db.transaction { tx ->
+            val testDaycareGroup = DevDaycareGroup(daycareId = testDaycare.id, name = "first group")
+            val testDaycareGroup2 =
+                DevDaycareGroup(daycareId = testDaycare2.id, name = "second group")
+            var placementStart = LocalDate.now()
+            var placementEnd = placementStart.plusMonths(1)
+            val placementId1 =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            val groupId1 = tx.insertTestDaycareGroup(testDaycareGroup)
+            tx.checkAndCreateGroupPlacement(
+                daycarePlacementId = placementId1,
+                groupId = groupId1,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+
+            placementStart = placementEnd.plusDays(1)
+            placementEnd = placementStart.plusMonths(1)
+            val placementId2 =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            val groupId2 = tx.insertTestDaycareGroup(testDaycareGroup2)
+            tx.checkAndCreateGroupPlacement(
+                daycarePlacementId = placementId2,
+                groupId = groupId2,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+        }
+
+        val basics = getVasuDocument(documentId).basics
+        assertEquals(2, basics.placements?.size)
+        assertEquals(testDaycare.id, basics.placements?.first()?.unitId)
+        assertEquals(testDaycare2.id, basics.placements?.last()?.unitId)
     }
 
     private fun documentPublishingAndStateTransitions(type: CurriculumType) {
