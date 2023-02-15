@@ -355,7 +355,8 @@ export default {
       title: 'Kaikkia muutoksia ei voitu tallentaa',
       text: (
         <>
-          Ilmoittautumisaika osalle valitsemistasi päivistä on jo mennyt kiinni.
+          Valitsemallesi ajanjaksolle sisältyi päiviä, joiden ilmoittautumisaika
+          on jo mennyt kiinni. Muutoksia näille päiville ei voitu tallentaa.
           Muutoksia näille ajoille ei voitu tallentaa. Tarkista merkitsemäsi
           läsnäolot ja ilmoita puuttuvat muutokset henkilökunnalle{' '}
           <Link to="/messages">viestitoiminnolla</Link>.
