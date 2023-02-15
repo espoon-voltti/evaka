@@ -3041,6 +3041,9 @@ export const fi = {
         'message_content.author_id': 'Kirjoitettuja viesti- sisältöjä',
         'message_recipients.recipient_id': 'Saatuja viestejä',
         'message_draft.account_id': 'Viesti- luonnoksia'
+      },
+      filters: {
+        showIntentionalDuplicates: 'Näytä myös tarkoituksellisesti monistetut'
       }
     },
     familyConflicts: {

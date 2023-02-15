@@ -345,12 +345,17 @@ export async function getEndedPlacementsReport(
     )
     .catch((e) => Failure.fromError(e))
 }
+export interface DuplicatePeopleFilters {
+  showIntentionalDuplicates: boolean
+}
 
-export async function getDuplicatePeopleReport(): Promise<
-  Result<DuplicatePeopleReportRow[]>
-> {
+export async function getDuplicatePeopleReport(
+  params: DuplicatePeopleFilters
+): Promise<Result<DuplicatePeopleReportRow[]>> {
   return client
-    .get<JsonOf<DuplicatePeopleReportRow[]>>('/reports/duplicate-people')
+    .get<JsonOf<DuplicatePeopleReportRow[]>>('/reports/duplicate-people', {
+      params
+    })
     .then((res) =>
       Success.of(
         res.data.map((row) => ({
