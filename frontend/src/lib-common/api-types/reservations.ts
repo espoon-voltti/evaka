@@ -43,6 +43,7 @@ export interface ChildRecordOfDay {
   absence: { type: AbsenceType } | null
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
+  isInBackupGroup: boolean
 }
 
 interface Group {

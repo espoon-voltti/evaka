@@ -108,14 +108,18 @@ export default React.memo(function ChildDay({
   if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
     return null
 
-  if (dailyData.inOtherUnit) {
+  if (dailyData.inOtherUnit || dailyData.isInBackupGroup) {
     return (
       <FixedSpaceRow
         alignItems="center"
         justifyContent="center"
         data-qa="in-other-unit"
       >
-        <Light>{i18n.unit.attendanceReservations.inOtherUnit}</Light>
+        <Light>
+          {dailyData.isInBackupGroup
+            ? i18n.unit.attendanceReservations.inOtherGroup
+            : i18n.unit.attendanceReservations.inOtherUnit}
+        </Light>
       </FixedSpaceRow>
     )
   }
