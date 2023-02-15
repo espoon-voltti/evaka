@@ -175,7 +175,6 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
-        TRIGGER_SCHEDULED_JOBS(HasGlobalRole(ADMIN)),
         READ_PERSONAL_MOBILE_DEVICES(IsEmployee.any()),
         CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(
             HasGlobalRole(ADMIN),

@@ -82,40 +82,12 @@ export const pilotFeatures = [
 export type PilotFeature = typeof pilotFeatures[number]
 
 /**
-* Generated from fi.espoo.evaka.shared.job.ScheduledJob
-*/
-export type ScheduledJob =
-  | 'CancelOutdatedTransferApplications'
-  | 'DvvUpdate'
-  | 'EndOfDayAttendanceUpkeep'
-  | 'EndOfDayStaffAttendanceUpkeep'
-  | 'EndOfDayReservationUpkeep'
-  | 'FreezeVoucherValueReports'
-  | 'KoskiUpdate'
-  | 'RemoveOldAsyncJobs'
-  | 'RemoveOldDaycareDailyNotes'
-  | 'RemoveOldDraftApplications'
-  | 'SendPendingDecisionReminderEmails'
-  | 'VardaUpdate'
-  | 'VardaReset'
-  | 'InactivePeopleCleanup'
-  | 'InactiveEmployeesRoleReset'
-  | 'SendMissingReservationReminders'
-
-/**
 * Generated from fi.espoo.evaka.shared.domain.Translatable
 */
 export interface Translatable {
   en: string
   fi: string
   sv: string
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.controllers.ScheduledJobTriggerController.TriggerBody
-*/
-export interface TriggerBody {
-  type: ScheduledJob
 }
 
 /**
