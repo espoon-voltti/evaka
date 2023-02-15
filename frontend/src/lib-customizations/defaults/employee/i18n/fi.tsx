@@ -3237,7 +3237,16 @@ export const fi = {
       connectedSno: 'Täydentävän palveluntarve',
       connectedDuration: 'Täydentävän kesto',
       preschoolDaycare: 'Esiopetuksen yksikkö',
-      preschooldDuration: 'Esiopetuksen kesto'
+      preschooldDuration: 'Esiopetuksen kesto',
+      filters: {
+        viewOption: {
+          label: 'Valitse näkymä:',
+          items: {
+            DUPLICATED: 'Näytä vain jo monistetut tapaukset',
+            NONDUPLICATED: 'Näytä vain käsittelemättömät tapaukset'
+          }
+        }
+      }
     },
     placementCount: {
       title: 'Sijoitusten määrä',

@@ -649,11 +649,22 @@ export async function getAssistanceReservationReportByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getManualDuplicationReport(): Promise<
-  Result<ManualDuplicationReportRow[]>
-> {
+export type ManualDuplicationViewOption = 'NONDUPLICATED' | 'DUPLICATED'
+
+export interface ManualDuplicationReportFilters {
+  viewOption: ManualDuplicationViewOption
+}
+
+export async function getManualDuplicationReport(
+  filters: ManualDuplicationReportFilters
+): Promise<Result<ManualDuplicationReportRow[]>> {
+  const params = {
+    toggleDuplicatedCaseVisibility: filters.viewOption === 'DUPLICATED'
+  }
   return client
-    .get<JsonOf<ManualDuplicationReportRow[]>>('/reports/manual-duplication')
+    .get<JsonOf<ManualDuplicationReportRow[]>>('/reports/manual-duplication', {
+      params
+    })
     .then(({ data }) =>
       Success.of(
         data.map((row) => ({
