@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -24,11 +25,13 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import org.jdbi.v3.core.result.RowView
@@ -315,69 +318,29 @@ fun Database.Read.paginatedSearch(
 }
 
 fun Database.Read.searchInvoices(
-    statuses: List<InvoiceStatus> = listOf(),
-    areas: List<String> = listOf(),
-    unit: DaycareId? = null,
-    distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
-    sentAt: DateRange? = null
+    status: InvoiceStatus? = null,
+    sentAt: HelsinkiDateTimeRange? = null
 ): List<InvoiceDetailed> {
-    val params =
-        listOf<Binding<*>>()
-            .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
-            .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
-            .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
-            .let { ps ->
-                if (sentAt != null)
-                    ps +
-                        listOf(
-                            Binding.of("sentAtStart", sentAt.start),
-                            Binding.of("sentAtEnd", sentAt.end)
-                        )
-                else ps
-            }
-
-    val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
-
-    val conditions =
-        listOfNotNull(
-            if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-            if (areas.isNotEmpty())
-                "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))"
-            else null,
-            if (unit != null) "row.unit_id = :unit" else null,
-            if (withMissingAddress)
-                "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
-            else null,
-            if (sentAt != null) "daterange(:sentAtStart, :sentAtEnd) @> invoice.sent_at::date"
-            else null
+    val predicate =
+        Predicate.all<DatabaseTable.Invoice>(
+            listOfNotNull(
+                if (status != null) Predicate { where("$it.status = ${bind(status)}") } else null,
+                if (sentAt != null) Predicate { where("$it.sent_at <@ ${bind(sentAt)}") } else null
+            )
         )
 
-    val where =
-        if (conditions.isEmpty()) {
-            ""
-        } else {
-            """
-            WHERE invoice.id IN (
-                SELECT invoice.id
-                FROM invoice
-                LEFT JOIN invoice_row AS row ON invoice.id = row.invoice_id
-                LEFT JOIN person AS head ON invoice.head_of_family = head.id
-                LEFT JOIN person AS child ON row.child = child.id
-                WHERE ${conditions.joinToString("\nAND ")}
+    return createQuery<DatabaseTable.Invoice> {
+            sql(
+                """
+$invoiceDetailedQueryBase
+WHERE ${predicate(predicate.forTable("invoice"))}
+ORDER BY status DESC, due_date, invoice.id, row.idx
+"""
+                    .trimIndent()
             )
-            """
-                .trimIndent()
         }
-
-    val sql =
-        """
-        $invoiceDetailedQueryBase
-        $where
-        ORDER BY status DESC, due_date, invoice.id, row.idx
-        """
-            .trimIndent()
-
-    return createQuery(sql).addBindings(params).map(toDetailedInvoice).let(::flattenDetailed)
+        .map(toDetailedInvoice)
+        .let(::flattenDetailed)
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {

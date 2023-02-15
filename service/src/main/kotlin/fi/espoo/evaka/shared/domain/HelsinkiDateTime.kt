@@ -142,6 +142,9 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
          */
         fun from(value: ZonedDateTime): HelsinkiDateTime =
             HelsinkiDateTime(value.toInstant().truncateNanos())
+
+        fun atStartOfDay(date: LocalDate): HelsinkiDateTime =
+            from(date.atStartOfDay(europeHelsinki))
     }
 
     class FromJson : StdConverter<ZonedDateTime, HelsinkiDateTime>() {

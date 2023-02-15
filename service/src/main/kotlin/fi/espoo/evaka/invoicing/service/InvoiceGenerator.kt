@@ -35,13 +35,11 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
-import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
-import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 import kotlin.math.abs
 import org.jdbi.v3.core.mapper.Nested
@@ -49,10 +47,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
-    fun createAndStoreAllDraftInvoices(
-        tx: Database.Transaction,
-        range: DateRange = getPreviousMonthRange()
-    ) {
+    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
@@ -170,13 +165,6 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 }
             }
         }
-    }
-
-    private fun getPreviousMonthRange(): DateRange {
-        val lastMonth = LocalDate.now(europeHelsinki).minusMonths(1)
-        val from = lastMonth.with(TemporalAdjusters.firstDayOfMonth())
-        val to = lastMonth.with(TemporalAdjusters.lastDayOfMonth())
-        return DateRange(from, to)
     }
 
     fun applyCorrections(

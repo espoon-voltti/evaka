@@ -78,7 +78,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertInvoices(testInvoices)
 
-            val result = tx.searchInvoices(listOf(InvoiceStatus.DRAFT))
+            val result = tx.searchInvoices(InvoiceStatus.DRAFT)
             assertEquals(2, result.size)
         }
     }
@@ -88,7 +88,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertInvoices(testInvoices)
 
-            val result = tx.searchInvoices(listOf(InvoiceStatus.CANCELED))
+            val result = tx.searchInvoices(InvoiceStatus.CANCELED)
             assertEquals(0, result.size)
         }
     }
@@ -98,7 +98,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertInvoices(testInvoices)
 
-            val result = tx.searchInvoices(listOf(InvoiceStatus.SENT))
+            val result = tx.searchInvoices(InvoiceStatus.SENT)
             assertEquals(1, result.size)
         }
     }
@@ -118,7 +118,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertInvoices(testInvoices)
 
-            val result = tx.searchInvoices(listOf(InvoiceStatus.SENT))
+            val result = tx.searchInvoices(InvoiceStatus.SENT)
             val invoice = result.get(0)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { row ->

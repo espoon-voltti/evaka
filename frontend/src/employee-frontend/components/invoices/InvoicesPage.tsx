@@ -7,7 +7,7 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
-import { Result, Success } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import { InvoiceSummaryResponse } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -62,7 +62,7 @@ export default React.memo(function InvoicesPage() {
         <Invoices
           user={user}
           actions={actions}
-          invoices={invoices[page]}
+          invoices={invoices[page] ?? Loading.of()}
           refreshInvoices={refreshInvoices}
           total={invoiceTotals?.total}
           pages={invoiceTotals?.pages}

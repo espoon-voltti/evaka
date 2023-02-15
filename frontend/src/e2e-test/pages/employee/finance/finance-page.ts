@@ -39,7 +39,7 @@ export class FinancePage {
   async selectInvoicesTab() {
     await this.page.find(`[data-qa="invoices-tab"]`).click()
     const page = new InvoicesPage(this.page)
-    await page.invoicesPageIsLoaded()
+    await page.assertLoaded()
     return page
   }
 
@@ -246,7 +246,7 @@ export class InvoicesPage {
 
   #invoicesPage = this.page.find('[data-qa="invoices-page"]')
   #invoiceDetailsPage = this.page.find('[data-qa="invoice-details-page"]')
-  #spinner = this.page.find('.loader-spinner')
+  #invoices = this.page.find('.invoices')
   #createInvoicesButton = this.page.find('[data-qa="create-invoices"]')
   #invoiceInList = this.page.find('[data-qa="table-invoice-row"]')
   #allInvoicesToggle = new Checkbox(
@@ -285,14 +285,14 @@ export class InvoicesPage {
     this.page.find('[data-qa="invoice-actions-mark-sent"]')
   )
 
-  async invoicesPageIsLoaded() {
+  async assertLoaded() {
     await this.#invoicesPage.waitUntilVisible()
-    await this.#spinner.waitUntilHidden()
+    await this.#invoices.assertAttributeEquals('data-isloading', 'false')
   }
 
   async createInvoiceDrafts() {
     await this.#createInvoicesButton.click()
-    await this.#spinner.waitUntilHidden()
+    await this.assertLoaded()
   }
 
   async assertInvoiceCount(count: number) {

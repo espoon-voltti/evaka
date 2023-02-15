@@ -11,22 +11,15 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-
-internal fun getMonthPeriod(date: LocalDate): DateRange {
-    val from = date.with(TemporalAdjusters.firstDayOfMonth())
-    val to = date.with(TemporalAdjusters.lastDayOfMonth())
-    return DateRange(from, to)
-}
 
 @RestController
 class InvoiceReportController(private val accessControl: AccessControl) {
@@ -46,7 +39,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
                         Action.Global.READ_INVOICE_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getInvoiceReportWithRows(getMonthPeriod(date))
+                    it.getInvoiceReportWithRows(FiniteDateRange.ofMonth(date))
                 }
             }
             .also {
@@ -57,8 +50,8 @@ class InvoiceReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getInvoiceReportWithRows(period: DateRange): InvoiceReport {
-    val invoices = searchInvoices(statuses = listOf(InvoiceStatus.SENT), sentAt = period)
+private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): InvoiceReport {
+    val invoices = searchInvoices(InvoiceStatus.SENT, sentAt = period.asHelsinkiDateTimeRange())
 
     val rows =
         invoices
