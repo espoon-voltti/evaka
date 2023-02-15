@@ -8,7 +8,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { Failure, isLoading, Loading, Result, Success } from 'lib-common/api'
 import { User } from 'lib-common/api-types/employee-auth'
 import {
   InvoiceSortParam,
@@ -45,7 +45,7 @@ import { InvoicesActions } from './invoices-state'
 interface Props {
   user: User | undefined
   actions: InvoicesActions
-  invoices?: Result<InvoiceSummaryResponse[]>
+  invoices: Result<InvoiceSummaryResponse[]>
   refreshInvoices: () => Promise<void>
   total?: number
   pages?: number
@@ -79,7 +79,7 @@ export default React.memo(function Invoices({
   )
 
   return (
-    <div className="invoices">
+    <div className="invoices" data-isloading={isLoading(invoices)}>
       {user?.accessibleFeatures.createDraftInvoices && (
         <RefreshInvoices>
           {refreshResult.isFailure ? (
