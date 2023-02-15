@@ -123,7 +123,17 @@ private fun Database.Read.getAttendanceReservationReport(
 ): List<AttendanceReservationReportRow> {
     val sql =
         """
-        WITH reservations AS (
+        WITH dates AS (SELECT generate_series::date AS date FROM generate_series(:start, :end, interval '1 day')),
+        reservation_times AS (
+            SELECT 
+                dates.date,
+                child_id,
+                COALESCE(start_time, (daily_service_time_for_date(dates.date, child_id)).start) AS start_time,
+                COALESCE(end_time, (daily_service_time_for_date(dates.date, child_id)).end) AS end_time
+            FROM dates
+                LEFT JOIN attendance_reservation ar ON ar.date = dates.date
+        ),
+        reservations AS (
           SELECT
             CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
             ar.child_id,
@@ -137,7 +147,7 @@ private fun Database.Read.getAttendanceReservationReport(
               ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
             END AS service_need_factor,
             coalesce(an.capacity_factor, 1) AS assistance_need_factor
-          FROM attendance_reservation ar
+          FROM reservation_times ar
           JOIN person p ON p.id = ar.child_id
           JOIN placement pl ON pl.child_id = p.id AND ar.date BETWEEN pl.start_date AND pl.end_date
           LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND ar.date BETWEEN dgp.start_date AND dgp.end_date
