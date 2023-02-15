@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -23,7 +24,8 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
     fun getPlacementCountReport(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
+        @RequestParam("toggleDuplicatedCaseVisibility") toggleDuplicatedCaseVisibility: Boolean?
     ): List<ManualDuplicationReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -34,13 +36,19 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
                         Action.Global.READ_MANUAL_DUPLICATION_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getManualDuplicationReportRows()
+                    it.getManualDuplicationReportRows(toggleDuplicatedCaseVisibility ?: false)
                 }
             }
             .also { Audit.ManualDuplicationReportRead.log() }
     }
 
-    private fun Database.Read.getManualDuplicationReportRows(): List<ManualDuplicationReportRow> {
+    private fun Database.Read.getManualDuplicationReportRows(
+        toggleDuplicatedCaseVisibility: Boolean
+    ): List<ManualDuplicationReportRow> {
+        val showDuplicatedWhereClause =
+            if (toggleDuplicatedCaseVisibility)
+                "AND EXISTS(select from person per where per.duplicate_of = p.id)"
+            else "AND NOT EXISTS(select from person per where per.duplicate_of = p.id)"
         val sql =
             """
 select conn_app.id                                     as connected_application_id,
@@ -81,7 +89,8 @@ from decision connected_decision
           daterange(connected_decision.start_date, connected_decision.end_date, '[]')
       and connected_decision.unit_id <> pre_d.unit_id ) preschool_decision on true
 where connected_decision.type = 'PRESCHOOL_DAYCARE'
-  and connected_decision.status = 'ACCEPTED';
+  and connected_decision.status = 'ACCEPTED'
+  $showDuplicatedWhereClause;
             """
                 .trimIndent()
 
