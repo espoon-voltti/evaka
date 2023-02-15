@@ -119,6 +119,24 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `4xx errors don't fail the upload, and the study right remains in pending state until upload succeeds`() {
+        val daycare = testDaycare
+        val today = preschoolTerm2019.end.plusDays(1)
+
+        fun countPendingStudyRights() = db.read { it.getPendingStudyRights(today) }.size
+
+        db.transaction { it.setUnitOid(daycare.id, MockKoskiServer.UNIT_OID_THAT_TRIGGERS_400) }
+        insertPlacement(daycareId = daycare.id)
+
+        koskiTester.triggerUploads(today)
+        assertEquals(1, countPendingStudyRights())
+
+        db.transaction { it.setUnitOids() }
+        koskiTester.triggerUploads(today)
+        assertEquals(0, countPendingStudyRights())
+    }
+
+    @Test
     fun `voiding considers status 404 as success`() {
         val placementId = insertPlacement()
 

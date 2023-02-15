@@ -66,13 +66,24 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
         val oppija = jsonMapper.readValue(ctx.body(), Oppija::class.java)
 
         when (ctx.method()) {
-            HandlerType.POST ->
+            HandlerType.POST -> {
                 if (oppija.opiskeluoikeudet.any { it.oid != null }) {
                     ctx.contentType("text/plain")
                         .status(SC_BAD_REQUEST)
                         .result("Trying to create a study right with OID")
                     return
                 }
+                oppija.opiskeluoikeudet.forEach { opiskeluOikeus ->
+                    opiskeluOikeus.suoritukset.forEach {
+                        if (it.toimipiste.oid == UNIT_OID_THAT_TRIGGERS_400) {
+                            ctx.contentType("text/plain")
+                                .status(SC_BAD_REQUEST)
+                                .result("Simulated bad request")
+                            return
+                        }
+                    }
+                }
+            }
             HandlerType.PUT ->
                 if (
                     oppija.opiskeluoikeudet
@@ -168,6 +179,7 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
     }
 
     companion object {
+        const val UNIT_OID_THAT_TRIGGERS_400 = "SIMULATE_BAD_REQUEST"
         fun start(): MockKoskiServer {
             return MockKoskiServer(defaultJsonMapper(), port = 0)
         }

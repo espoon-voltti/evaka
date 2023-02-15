@@ -27,16 +27,15 @@ internal data class KoskiStudyRightRaw(
 internal fun Database.Read.getStoredResults() =
     createQuery("select * from koski_study_right").mapTo<KoskiStudyRightRaw>().toList()
 
-internal fun Database.Transaction.setUnitOids() {
-    createUpdate("UPDATE daycare SET oph_unit_oid = :unitOid WHERE daycare.id = :unitId")
-        .bind("unitId", testDaycare.id)
-        .bind("unitOid", "1.2.246.562.10.1111111111")
+internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) =
+    createUpdate<Any> {
+            sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
+        }
         .execute()
 
-    createUpdate("UPDATE daycare SET oph_unit_oid = :unitOid WHERE daycare.id = :unitId")
-        .bind("unitId", testDaycare2.id)
-        .bind("unitOid", "1.2.246.562.10.2222222222")
-        .execute()
+internal fun Database.Transaction.setUnitOids() {
+    setUnitOid(testDaycare.id, "1.2.246.562.10.1111111111")
+    setUnitOid(testDaycare2.id, "1.2.246.562.10.2222222222")
 }
 
 internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
