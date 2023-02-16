@@ -8,6 +8,12 @@ USER root
 
 WORKDIR /project
 
+RUN apt-get update \
+ && apt-get -y dist-upgrade \
+ && apt-get -y install \
+      ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY ./.yarn ./.yarn
 COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
 
