@@ -127,11 +127,14 @@ private fun Database.Read.getAttendanceReservationReport(
         reservation_times AS (
             SELECT 
                 dates.date,
-                child_id,
-                COALESCE(start_time, (daily_service_time_for_date(dates.date, child_id)).start) AS start_time,
-                COALESCE(end_time, (daily_service_time_for_date(dates.date, child_id)).end) AS end_time
+                pl.child_id,
+                COALESCE(start_time, (daily_service_time_for_date(dates.date, pl.child_id)).start) AS start_time,
+                COALESCE(end_time, (daily_service_time_for_date(dates.date, pl.child_id)).end) AS end_time
             FROM dates
-                LEFT JOIN attendance_reservation ar ON ar.date = dates.date
+                CROSS JOIN person p 
+                JOIN placement pl ON pl.child_id = p.id
+                LEFT JOIN attendance_reservation ar ON ar.date = dates.date AND ar.child_id = p.id
+                WHERE pl.unit_id = :unitId
         ),
         reservations AS (
           SELECT
