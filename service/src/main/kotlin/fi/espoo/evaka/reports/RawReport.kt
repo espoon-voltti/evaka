@@ -7,7 +7,9 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.occupancy.defaultOccupancyCoefficient
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
+import fi.espoo.evaka.occupancy.workingDayHours
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -61,6 +63,23 @@ fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow>
     // language=sql
     val sql =
         """
+WITH realtime_attendances AS (
+    SELECT sar.group_id, ROUND(SUM(EXTRACT(EPOCH FROM (
+            LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
+        )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient), 1) AS realized_caretakers
+    FROM generate_series(:start_date, :end_date, '1 day') t
+    JOIN (
+        SELECT group_id, arrived, departed, occupancy_coefficient
+        FROM staff_attendance_realtime
+        WHERE departed IS NOT NULL
+            AND type = ANY ('{"PRESENT", "OVERTIME", "JUSTIFIED_CHANGE"}')
+        UNION ALL
+        SELECT group_id, arrived, departed, occupancy_coefficient
+        FROM staff_attendance_external
+        WHERE departed IS NOT NULL
+    ) sar ON (tstzrange(sar.arrived, sar.departed) && tstzrange(t::timestamp AT TIME ZONE 'Europe/Helsinki', (t::date+1)::timestamp AT TIME ZONE 'Europe/Helsinki'))
+    GROUP BY sar.group_id
+)
 SELECT
     t::date as day,
     p.id as child_id,
@@ -85,7 +104,7 @@ SELECT
     dgp.daycare_group_id,
     dg.name as group_name,
     dc.amount as caretakers_planned,
-    sa.count as caretakers_realized,
+    coalesce(sar.realized_caretakers, sa.count) as caretakers_realized,
 
     bc.unit_id as backup_unit_id,
     bc.group_id as backup_group_id,
@@ -120,6 +139,7 @@ JOIN person p ON p.id = pl.child_id
 LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
 LEFT JOIN daycare_group dg on dg.id = dgp.daycare_group_id
 LEFT JOIN daycare_caretaker dc on dg.id = dc.group_id AND daterange(dc.start_date, dc.end_date, '[]') @> t::date
+LEFT JOIN realtime_attendances sar ON dg.id = sar.group_id
 LEFT JOIN staff_attendance sa on dg.id = sa.group_id AND sa.date = t::date
 LEFT JOIN backup_care bc on bc.child_id = p.id AND daterange(bc.start_date, bc.end_date, '[]') @> t::date
 LEFT JOIN daycare bcu on bc.unit_id = bcu.id

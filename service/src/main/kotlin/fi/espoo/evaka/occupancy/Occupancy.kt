@@ -30,6 +30,8 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.result.RowView
 
 const val familyUnitPlacementCoefficient = "1.75"
+const val workingDayHours = 7.75
+const val defaultOccupancyCoefficient = 7
 
 enum class OccupancyType {
     PLANNED,
@@ -238,8 +240,6 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     unitId: DaycareId?,
     noinline mapper: (RowView) -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {
-    val workingDayHours = 7.75
-    val defaultOccupancyCoefficient = 7
     val caretakersSum =
         if (type == OccupancyType.REALIZED) {
             """
