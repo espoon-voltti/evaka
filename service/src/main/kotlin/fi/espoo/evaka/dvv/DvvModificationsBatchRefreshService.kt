@@ -6,6 +6,8 @@ package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.AsyncJobType
+import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.util.UUID
@@ -38,7 +40,7 @@ class DvvModificationsBatchRefreshService(
     fun scheduleBatch(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount =
             db.transaction { tx ->
-                tx.deleteOldJobs()
+                tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.DvvModificationsRefresh::class)))
 
                 val ssns = tx.getPersonSsnsToUpdate()
 
@@ -62,12 +64,6 @@ class DvvModificationsBatchRefreshService(
         return jobCount
     }
 }
-
-private fun Database.Transaction.deleteOldJobs() =
-    createUpdate(
-            "DELETE FROM async_job WHERE type = 'DVV_MODIFICATIONS_REFRESH' AND (claimed_by IS NULL OR completed_at IS NOT NULL)"
-        )
-        .execute()
 
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> =
     createQuery(
