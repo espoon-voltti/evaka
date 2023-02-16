@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM openjdk:17-slim-buster as base
+FROM openjdk:18-slim-buster as base
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
