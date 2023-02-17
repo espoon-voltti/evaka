@@ -23,7 +23,7 @@
     "cookie-parser": "^1.4.6",
     "csurf": "^1.11.0",
     "date-fns": "^2.28.0",
-    "dd-trace": "^2.5.0",
+    "dd-trace": "^3.13.2",
     "express": "^4.17.3",
     "express-basic-auth": "^1.2.1",
     "express-http-proxy": "^1.6.3",
