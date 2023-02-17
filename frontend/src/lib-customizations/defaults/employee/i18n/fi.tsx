@@ -2163,7 +2163,7 @@ export const fi = {
           ? 'Valitse laskut valitulta aikaväliltä ja alueilta'
           : 'Valitse tämän kuun laskut valituilta alueilta',
       individualSendAlertText:
-        'Muista nostaa aiemmin siirretyt laskut Communityyn ennen uusien siirtämistä.'
+        'Muista nostaa aiemmin siirretyt laskut laskutusjärjestelmään ennen uusien siirtämistä.'
     },
     sendModal: {
       title: 'Siirrä valitut laskut',
@@ -3176,7 +3176,7 @@ export const fi = {
     invoices: {
       title: 'Laskujen täsmäytys',
       description:
-        'Laskujen täsmäytysraportti Community-järjestelmään vertailua varten',
+        'Laskujen täsmäytysraportti laskutusjärjestelmään vertailua varten',
       areaCode: 'Alue',
       amountOfInvoices: 'Laskuja',
       totalSumCents: 'Summa',

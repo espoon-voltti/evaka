@@ -126,7 +126,7 @@ class EspooInvoiceIntegrationClientTest {
     }
 
     @Test
-    fun `invoice sent to Community has the rows grouped by child`() {
+    fun `invoice sent to invoicing system has the rows grouped by child`() {
         val firstChild =
             testPerson(
                 firstName = "First",
