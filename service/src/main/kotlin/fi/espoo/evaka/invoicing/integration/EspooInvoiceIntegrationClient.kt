@@ -121,7 +121,7 @@ class EspooInvoiceIntegrationClient(
                                                 .flatMap { (child, rows) ->
                                                     val nameRow =
                                                         emptyRow(
-                                                            "${child.lastName.take(communityLastNameMaxLength)} ${child.firstName}"
+                                                            "${child.lastName.take(invoicingLastNameMaxLength)} ${child.firstName}"
                                                         )
                                                     val rowsWithContent =
                                                         rows.map { row ->
@@ -177,9 +177,9 @@ class EspooInvoiceIntegrationClient(
             return true
         }
 
-        private const val communityFirstNameMaxLength = 24
-        private const val communityLastNameMaxLength = 50
-        private const val communityDescriptionMaxLength = 52
+        private const val invoicingFirstNameMaxLength = 24
+        private const val invoicingLastNameMaxLength = 50
+        private const val invoicingDescriptionMaxLength = 52
 
         const val fallbackStreetAddress = "PL 30"
         const val fallbackPostalCode = "02070"
@@ -195,8 +195,8 @@ class EspooInvoiceIntegrationClient(
             val addressIsUseable = addressIsValid(streetAddress, postalCode, postOffice)
             return EspooClient(
                 ssn = headOfFamily.ssn!!,
-                lastname = headOfFamily.lastName.take(communityLastNameMaxLength),
-                firstnames = headOfFamily.firstName.take(communityFirstNameMaxLength),
+                lastname = headOfFamily.lastName.take(invoicingLastNameMaxLength),
+                firstnames = headOfFamily.firstName.take(invoicingFirstNameMaxLength),
                 language = lang.value,
                 street = streetAddress.takeIf { addressIsUseable },
                 postalCode = postalCode.takeIf { addressIsUseable },
@@ -237,8 +237,8 @@ class EspooInvoiceIntegrationClient(
                 }
 
             return EspooRecipient(
-                lastname.take(communityLastNameMaxLength),
-                firstnames.take(communityFirstNameMaxLength),
+                lastname.take(invoicingLastNameMaxLength),
+                firstnames.take(invoicingFirstNameMaxLength),
                 street,
                 post,
                 postalCode
@@ -260,8 +260,8 @@ class EspooInvoiceIntegrationClient(
             )
         }
 
-        private const val communityProductCodeLength = 12
-        private const val communitySubCostCenterLength = 2
+        private const val invoicingProductCodeLength = 12
+        private const val invoicingSubCostCenterLength = 2
 
         private fun invoiceRow(
             lang: EspooLang,
@@ -280,11 +280,11 @@ class EspooInvoiceIntegrationClient(
             val espooProduct = EspooInvoiceProducts.findProduct(product)
 
             val productCode = "$agType${espooProduct.code}"
-            require(productCode.length <= communityProductCodeLength) {
-                "Invoice product code can be at most $communityProductCodeLength characters long, was '$productCode'"
+            require(productCode.length <= invoicingProductCodeLength) {
+                "Invoice product code can be at most $invoicingProductCodeLength characters long, was '$productCode'"
             }
-            require((subCostC?.length ?: 0) <= communitySubCostCenterLength) {
-                "Invoice sub cost center should be at most $communitySubCostCenterLength characters long, was '$subCostC'"
+            require((subCostC?.length ?: 0) <= invoicingSubCostCenterLength) {
+                "Invoice sub cost center should be at most $invoicingSubCostCenterLength characters long, was '$subCostC'"
             }
 
             return EspooInvoiceRow(
@@ -302,14 +302,14 @@ class EspooInvoiceIntegrationClient(
                                 EspooLang.SV -> espooProduct.nameOnInvoiceSv
                             }
                         }
-                        .take(communityDescriptionMaxLength),
+                        .take(invoicingDescriptionMaxLength),
                 account = acc,
                 costCenter = costC,
                 subCostCenter1 =
                     if (subCostC.isNullOrBlank()) {
                         null
                     } else {
-                        subCostC.padStart(communitySubCostCenterLength, '0')
+                        subCostC.padStart(invoicingSubCostCenterLength, '0')
                     }
             )
         }
@@ -322,7 +322,7 @@ class EspooInvoiceIntegrationClient(
                 unitCount = 0,
                 unitPrice = 0,
                 amount = 0,
-                description = desc.take(communityDescriptionMaxLength),
+                description = desc.take(invoicingDescriptionMaxLength),
                 account = 0,
                 costCenter = "",
                 subCostCenter1 = null
