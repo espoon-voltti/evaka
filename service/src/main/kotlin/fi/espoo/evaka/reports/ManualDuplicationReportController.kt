@@ -25,7 +25,7 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("toggleDuplicatedCaseVisibility") toggleDuplicatedCaseVisibility: Boolean?
+        @RequestParam("viewMode") viewMode: ManualDuplicationReportViewMode?
     ): List<ManualDuplicationReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -36,19 +36,25 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
                         Action.Global.READ_MANUAL_DUPLICATION_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getManualDuplicationReportRows(toggleDuplicatedCaseVisibility ?: false)
+                    it.getManualDuplicationReportRows(
+                        viewMode ?: ManualDuplicationReportViewMode.NONDUPLICATED
+                    )
                 }
             }
             .also { Audit.ManualDuplicationReportRead.log() }
     }
 
     private fun Database.Read.getManualDuplicationReportRows(
-        toggleDuplicatedCaseVisibility: Boolean
+        viewMode: ManualDuplicationReportViewMode
     ): List<ManualDuplicationReportRow> {
         val showDuplicatedWhereClause =
-            if (toggleDuplicatedCaseVisibility)
-                "AND EXISTS(select from person per where per.duplicate_of = p.id)"
-            else "AND NOT EXISTS(select from person per where per.duplicate_of = p.id)"
+            when (viewMode) {
+                ManualDuplicationReportViewMode.DUPLICATED ->
+                    "AND EXISTS(select from person per where per.duplicate_of = p.id)"
+                ManualDuplicationReportViewMode.NONDUPLICATED ->
+                    "AND NOT EXISTS(select from person per where per.duplicate_of = p.id)"
+            }
+
         val sql =
             """
 select conn_app.id                                     as connected_application_id,
@@ -114,4 +120,9 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
         val preschoolStartDate: LocalDate,
         val preschoolEndDate: LocalDate
     )
+}
+
+enum class ManualDuplicationReportViewMode {
+    DUPLICATED,
+    NONDUPLICATED
 }

@@ -21,6 +21,7 @@ import {
   FamilyContactReportRow,
   InvoiceReport,
   ManualDuplicationReportRow,
+  ManualDuplicationReportViewMode,
   MissingHeadOfFamilyReportRow,
   MissingServiceNeedReportRow,
   OccupancyGroupReportResultRow,
@@ -649,17 +650,15 @@ export async function getAssistanceReservationReportByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export type ManualDuplicationViewOption = 'NONDUPLICATED' | 'DUPLICATED'
-
 export interface ManualDuplicationReportFilters {
-  viewOption: ManualDuplicationViewOption
+  viewMode: ManualDuplicationReportViewMode
 }
 
 export async function getManualDuplicationReport(
   filters: ManualDuplicationReportFilters
 ): Promise<Result<ManualDuplicationReportRow[]>> {
   const params = {
-    toggleDuplicatedCaseVisibility: filters.viewOption === 'DUPLICATED'
+    viewMode: filters.viewMode
   }
   return client
     .get<JsonOf<ManualDuplicationReportRow[]>>('/reports/manual-duplication', {

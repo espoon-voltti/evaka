@@ -9,7 +9,10 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
+import {
+  ManualDuplicationReportRow,
+  ManualDuplicationReportViewMode
+} from 'lib-common/generated/api-types/reports'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -27,8 +30,7 @@ import { Gap } from 'lib-components/white-space'
 
 import {
   getManualDuplicationReport,
-  ManualDuplicationReportFilters,
-  ManualDuplicationViewOption
+  ManualDuplicationReportFilters
 } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -46,7 +48,7 @@ export default React.memo(function ManualDuplicationReport() {
   const { i18n } = useTranslation()
 
   const [filters, setFilters] = useState<ManualDuplicationReportFilters>({
-    viewOption: 'NONDUPLICATED'
+    viewMode: 'NONDUPLICATED'
   })
   const [reportResult] = useApiState(
     () => getManualDuplicationReport(filters),
@@ -80,7 +82,7 @@ export default React.memo(function ManualDuplicationReport() {
     [reportResult, sortColumns, sortDirection]
   )
 
-  const viewOptions: ManualDuplicationViewOption[] = [
+  const viewModes: ManualDuplicationReportViewMode[] = [
     'NONDUPLICATED',
     'DUPLICATED'
   ]
@@ -98,11 +100,11 @@ export default React.memo(function ManualDuplicationReport() {
           <Combobox
             fullWidth={true}
             clearable={false}
-            items={viewOptions}
-            selectedItem={filters.viewOption}
+            items={viewModes}
+            selectedItem={filters.viewMode}
             onChange={(selectionValue) => {
               if (selectionValue !== null) {
-                setFilters({ ...filters, viewOption: selectionValue })
+                setFilters({ ...filters, viewMode: selectionValue })
               }
             }}
             getItemLabel={(selectionValue) =>
