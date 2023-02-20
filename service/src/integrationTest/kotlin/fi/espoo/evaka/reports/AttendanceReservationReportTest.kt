@@ -14,16 +14,19 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
+import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
+import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareContractDays10
@@ -1121,6 +1124,100 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
+
+    @Test
+    fun `Daily service times are used if attendance reservation is missing`() {
+        // Three consecutive days
+        val startDate = LocalDate.of(2020, 5, 28)
+        val endDate = startDate.plusDays(2)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = startDate,
+                endDate = endDate
+            )
+
+            // Reservation for 8:15-8:16 on the first day only
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+
+            // Daily service times 8-16 on all three days, so these should show on the second day
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(startDate, endDate)
+                )
+            )
+
+            // Absence on the third day
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                category = AbsenceCategory.BILLABLE,
+                date = startDate.plusDays(2)
+            )
+        }
+
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(startDate, endDate).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(startDate, LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(startDate, LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    *createRowsForTimespan(
+                            AttendanceReservationReportRow(
+                                groupId = null,
+                                groupName = null,
+                                HelsinkiDateTime.of(startDate, LocalTime.of(8, 30)),
+                                childCountUnder3 = 1,
+                                childCountOver3 = 0,
+                                childCount = 1,
+                                capacityFactor = 1.75,
+                                staffCountRequired = 0.3
+                            ),
+                            HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(8, 0)),
+                            HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(16, 0))
+                        )
+                        .toTypedArray()
+                )
+            }
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
 }
 
 data class RowKey(val group: Group?, val dateTime: HelsinkiDateTime)
@@ -1168,4 +1265,15 @@ private fun addExpectedRow(
     rows.forEach { row ->
         map[RowKey(row.groupId?.let { Group(it, row.groupName!!) }, row.dateTime)] = row
     }
+}
+
+private fun createRowsForTimespan(
+    row: AttendanceReservationReportRow,
+    startTime: HelsinkiDateTime,
+    endTime: HelsinkiDateTime
+): List<AttendanceReservationReportRow> {
+    return generateSequence(startTime) { it.plusMinutes(30) }
+        .takeWhile { it <= endTime }
+        .map { row.copy(dateTime = it) }
+        .toList()
 }

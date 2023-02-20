@@ -161,3 +161,31 @@ WHERE dst.child_id = childId
   AND NOT EXISTS(SELECT ca.date FROM child_attendance ca WHERE ca.child_id = dst.child_id AND ca.date = theDate)
   AND NOT EXISTS(SELECT ar.date FROM attendance_reservation ar WHERE ar.child_id = dst.child_id AND ar.date = theDate)
 $$;
+
+DROP FUNCTION IF EXISTS daily_service_time_for_date;
+
+CREATE FUNCTION daily_service_time_for_date(the_date date, the_child uuid) RETURNS timerange
+    LANGUAGE SQL
+    STABLE
+AS
+$$
+SELECT (
+           CASE
+               WHEN dst.type = 'REGULAR' THEN dst.regular_times
+               ELSE CASE extract(dow FROM the_date)
+                       WHEN 0 THEN dst.sunday_times
+                       WHEN 1 THEN dst.monday_times
+                       WHEN 2 THEN dst.tuesday_times
+                       WHEN 3 THEN dst.wednesday_times
+                       WHEN 4 THEN dst.thursday_times
+                       WHEN 5 THEN dst.friday_times
+                       WHEN 6 THEN dst.saturday_times
+                    END
+           END
+    )
+FROM person p
+         LEFT JOIN daily_service_time dst ON dst.child_id = p.id AND dst.validity_period @> the_date
+WHERE p.id = the_child
+$$;
+COMMENT ON FUNCTION daily_service_time_for_date IS
+    'Make using daily_service_time easier';
