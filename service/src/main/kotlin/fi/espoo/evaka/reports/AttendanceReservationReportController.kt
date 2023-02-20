@@ -179,15 +179,15 @@ private fun Database.Read.getAttendanceReservationReport(
           count(*) FILTER (WHERE r.age IS NOT NULL) AS child_count,
           coalesce(sum(r.service_need_factor * r.assistance_need_factor), 0) AS capacity_factor,
           coalesce(round(sum(r.service_need_factor * r.assistance_need_factor) / 7, 1), 0) AS staff_count_required
-        FROM generate_series(:start, :end + interval '1 day' - interval '1 second', interval '30 minutes') dateTime
+        FROM generate_series(:start, :end + interval '1 day' - interval '1 second', interval '15 minutes') dateTime
         CROSS JOIN groups g
         LEFT JOIN reservations r ON
           (r.group_id IS NULL AND g.id IS NULL OR r.group_id = g.id)
           AND
           dateTime BETWEEN
-          r.date + r.start_time - interval '30 minutes' + interval '1 second'
+          r.date + r.start_time - interval '15 minutes' + interval '1 second'
           AND
-          r.date + r.end_time + interval '30 minutes' - interval '1 second'
+          r.date + r.end_time + interval '15 minutes' - interval '1 second'
         WHERE extract(isodow FROM dateTime) = ANY(g.operation_days)
           AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
           AND NOT EXISTS(SELECT 1 FROM absence WHERE absence.child_id = r.child_id AND absence.date = r.date)  
