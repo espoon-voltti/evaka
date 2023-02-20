@@ -83,7 +83,7 @@ const features: Features = {
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: false,
       fosterParents: true,
-      serviceWorkerMessaging: false
+      serviceWorkerMessaging: true
     }
   }
 }
