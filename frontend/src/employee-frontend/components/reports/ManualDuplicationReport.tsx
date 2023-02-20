@@ -9,10 +9,14 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
+import {
+  ManualDuplicationReportRow,
+  ManualDuplicationReportViewMode
+} from 'lib-common/generated/api-types/reports'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   Th,
@@ -22,12 +26,16 @@ import {
   Tbody,
   SortableTh
 } from 'lib-components/layout/Table'
+import { Gap } from 'lib-components/white-space'
 
-import { getManualDuplicationReport } from '../../api/reports'
+import {
+  getManualDuplicationReport,
+  ManualDuplicationReportFilters
+} from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { TableScrollable } from './common'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 type ReportColumnKey = keyof ManualDuplicationReportRow
 
@@ -39,7 +47,13 @@ const WrappableTd = styled(Td)`
 export default React.memo(function ManualDuplicationReport() {
   const { i18n } = useTranslation()
 
-  const [reportResult] = useApiState(getManualDuplicationReport, [])
+  const [filters, setFilters] = useState<ManualDuplicationReportFilters>({
+    viewMode: 'NONDUPLICATED'
+  })
+  const [reportResult] = useApiState(
+    () => getManualDuplicationReport(filters),
+    [filters]
+  )
 
   const [sortColumns, setSortColumns] = useState<ReportColumnKey[]>([
     'connectedDaycareName',
@@ -68,11 +82,39 @@ export default React.memo(function ManualDuplicationReport() {
     [reportResult, sortColumns, sortDirection]
   )
 
+  const viewModes: ManualDuplicationReportViewMode[] = [
+    'NONDUPLICATED',
+    'DUPLICATED'
+  ]
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.manualDuplication.title}</Title>
+
+        <FilterRow>
+          <FilterLabel>
+            {i18n.reports.manualDuplication.filters.viewOption.label}
+          </FilterLabel>
+          <Combobox
+            fullWidth={true}
+            clearable={false}
+            items={viewModes}
+            selectedItem={filters.viewMode}
+            onChange={(selectionValue) => {
+              if (selectionValue !== null) {
+                setFilters({ ...filters, viewMode: selectionValue })
+              }
+            }}
+            getItemLabel={(selectionValue) =>
+              i18n.reports.manualDuplication.filters.viewOption.items[
+                selectionValue
+              ]
+            }
+          />
+        </FilterRow>
+        <Gap />
         {renderResult(sortedReportResult, (reportRows) => (
           <TableScrollable>
             <Thead>

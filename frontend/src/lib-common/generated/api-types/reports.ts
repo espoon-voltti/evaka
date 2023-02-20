@@ -301,6 +301,13 @@ export interface ManualDuplicationReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.ManualDuplicationReportViewMode
+*/
+export type ManualDuplicationReportViewMode =
+  | 'DUPLICATED'
+  | 'NONDUPLICATED'
+
+/**
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
