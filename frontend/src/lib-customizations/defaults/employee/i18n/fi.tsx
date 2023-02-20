@@ -1758,7 +1758,11 @@ export const fi = {
       email: 'Sähköpostiosoite',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
-      addPerson: 'Lisää henkilö',
+      addPersonModal: {
+        title: 'Lisää henkilö',
+        groups: 'Valitse ryhmä',
+        employees: 'Valitse henkilö'
+      },
       choosePerson: 'Valitse henkilö',
       mobileDevices: {
         mobileDevices: 'Yksikön mobiililaitteet',

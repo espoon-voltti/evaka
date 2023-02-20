@@ -20,6 +20,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -29,14 +30,15 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
   addDaycareAclEarlyChildhoodEducationSecretary,
   addDaycareAclSpecialEducationTeacher,
-  addDaycareAclStaff,
   addDaycareAclSupervisor,
+  addStaffWithGroupAcl,
   DaycareAclRow,
   DaycareGroupSummary,
   removeDaycareAclEarlyChildhoodEducationSecretary,
@@ -52,6 +54,8 @@ import { UserContext } from '../../../state/user'
 import { Employee } from '../../../types/employee'
 import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
+
+import StaffAclAdditionModal from './StaffAclAdditionModal'
 
 type Props = {
   groups: Record<UUID, DaycareGroupSummary>
@@ -373,7 +377,7 @@ const AddAcl = React.memo(function AddAcl({
 
   return (
     <>
-      <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
+      <AddAclLabel>{i18n.unit.accessControl.addPersonModal.title}</AddAclLabel>
       <AddAclSelectContainer>
         <Combobox
           data-qa="acl-combobox"
@@ -515,11 +519,6 @@ export default React.memo(function UnitAccessControl({
     [unitId]
   )
 
-  const addStaff = useCallback(
-    (employeeId: UUID) => addDaycareAclStaff(unitId, employeeId),
-    [unitId]
-  )
-
   const updateStaffGroupAcls = useCallback(
     (employeeId: UUID, groupIds: UUID[]) => {
       void updateDaycareGroupAcl(unitId, employeeId, groupIds).then(() =>
@@ -532,6 +531,7 @@ export default React.memo(function UnitAccessControl({
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
     undefined
   )
+
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
   const openRemoveModal = useCallback(
@@ -551,6 +551,19 @@ export default React.memo(function UnitAccessControl({
     reloadDaycareAclRows()
   }, [closeRemoveModal, reloadDaycareAclRows, removeState, unitId])
 
+  const openAddStaffModal = useCallback(() => {
+    toggleUiMode(`add-staff-daycare-acl-${unitId}`)
+  }, [toggleUiMode, unitId])
+
+  const closeAddStaffModal = useCallback(() => {
+    clearUiMode()
+  }, [clearUiMode])
+
+  const confirmAddStaffModal = useCallback(() => {
+    closeAddStaffModal()
+    reloadDaycareAclRows()
+  }, [closeAddStaffModal, reloadDaycareAclRows])
+
   return (
     <div data-qa="daycare-acl" data-isloading={isLoading(daycareAclRows)}>
       {uiMode === `remove-daycare-acl-${unitId}` && (
@@ -559,6 +572,21 @@ export default React.memo(function UnitAccessControl({
           onConfirm={confirmRemoveModal}
         />
       )}
+
+      {renderResult(candidateEmployees, (candidateEmployees) => (
+        <>
+          {uiMode === `add-staff-daycare-acl-${unitId}` && (
+            <StaffAclAdditionModal
+              onClose={closeAddStaffModal}
+              onSuccess={confirmAddStaffModal}
+              addPersonAndGroupAcl={addStaffWithGroupAcl}
+              employees={candidateEmployees}
+              unitId={unitId}
+              groups={groups}
+            />
+          )}
+        </>
+      ))}
       <ContentArea opaque data-qa="daycare-acl-supervisors">
         <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
         {renderResult(
@@ -659,33 +687,33 @@ export default React.memo(function UnitAccessControl({
       </ContentArea>
       <ContentArea opaque data-qa="daycare-acl-staff">
         <H2>{i18n.unit.accessControl.staff}</H2>
-        {renderResult(
-          combine(staff, candidateEmployees),
-          ([staff, candidateEmployees]) => (
-            <>
-              <AclTable
-                rows={staff}
-                onDeleteAclRow={(employeeId) =>
-                  openRemoveModal({
-                    employeeId,
-                    removeFn: removeDaycareAclStaff
-                  })
-                }
-                unitGroups={groups}
-                onChangeAclGroups={updateStaffGroupAcls}
-                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
-                deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
-              />
-              {permittedActions.has('INSERT_ACL_STAFF') && (
-                <AddAcl
-                  employees={candidateEmployees}
-                  onSave={addStaff}
-                  onSuccess={reloadDaycareAclRows}
+        {renderResult(staff, (staff) => (
+          <>
+            <AclTable
+              rows={staff}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclStaff
+                })
+              }
+              unitGroups={groups}
+              onChangeAclGroups={updateStaffGroupAcls}
+              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+            />
+            {permittedActions.has('INSERT_ACL_STAFF') && (
+              <>
+                <Gap />
+                <AddButton
+                  text={i18n.unit.accessControl.addPersonModal.title}
+                  onClick={openAddStaffModal}
+                  data-qa="open-staff-add-modal"
                 />
-              )}
-            </>
-          )
-        )}
+              </>
+            )}
+          </>
+        ))}
       </ContentArea>
     </div>
   )
