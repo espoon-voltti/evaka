@@ -2,29 +2,9 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM openjdk:17-slim-buster as base
+ARG BASE_IMAGE=evaka-java:latest
 
-LABEL maintainer="https://github.com/espoon-voltti/evaka"
-
-ARG CACHE_BUST=2023-02-08
-
-ENV LC_ALL C.UTF-8
-ENV LANG C.UTF-8
-ENV LANGUAGE C.UTF-8
-RUN apt-get update \
- && apt-get -y dist-upgrade \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      tzdata \
-      ca-certificates \
-      curl \
-      unzip \
- && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
- && dpkg-reconfigure --frontend noninteractive tzdata \
- && rm -rf /var/lib/apt/lists/*
-
-FROM base as builder
-
-WORKDIR /evaka
+FROM "${BASE_IMAGE}" as builder
 
 COPY ./service/certificates/ /certificates/
 
@@ -60,7 +40,7 @@ RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin \
 RUN cd custom-ktlint-rules \
  && ./gradlew --no-daemon assemble
 
-FROM base
+FROM "${BASE_IMAGE}"
 
 WORKDIR /evaka/service
 
@@ -78,16 +58,10 @@ ADD ./service/dd-jmxfetch/ /etc/jmxfetch/
 COPY ./service/entrypoint.sh entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
-ENV USERNAME evaka
-ENV HOME_DIR /home/${USERNAME}
-ENV USER_ID 1000
-
-RUN adduser ${USERNAME} --gecos "" -q --home ${HOME_DIR} --uid ${USER_ID} --disabled-password
-
 COPY --from=builder /certificates/truststore/ /certificates/truststore/
 COPY --from=builder /evaka/service/target/ .
 
-USER ${USERNAME}
+USER evaka
 
 ARG build=none
 ARG commit=none

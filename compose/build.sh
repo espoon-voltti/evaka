@@ -8,6 +8,7 @@
 
 set -euo pipefail
 
+(cd ../evaka-base && ./build.sh)
 (cd ../apigw && ./build-docker.sh)
 (cd ../service && ./build-docker.sh)
 (cd ../keycloak && ./build-docker.sh)

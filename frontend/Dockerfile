@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM node:18-buster-slim AS builder
+ARG BASE_IMAGE=evaka-yarn:latest
+FROM "${BASE_IMAGE}" AS builder
 
 USER root
 

@@ -1,0 +1,105 @@
+name: Build base images
+
+# This will build base images from master nightly or on change.
+# Note that when changing files under 'evaka-base/' the :latest tags
+# are created paraller in CI so re-execution of workflow might be necessary.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'evaka-base/**'
+  schedule:
+    - cron:  '42 0 * * 0-4' # At 00:42 from Sunday to Thursday
+
+env:
+  ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  AWS_REGION: eu-west-1
+
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build base image
+        id: build
+        uses: espoon-voltti/voltti-actions/docker-build-s3@master
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
+          registry: ${{ env.ECR_REGISTRY }}
+          name: evaka/base
+          path: ./evaka-base
+          push: true
+          tag_latest: master
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+      image_name: ${{ steps.build.outputs.image_name }}
+
+  yarn:
+    needs:
+      - base
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build yarn image
+        uses: espoon-voltti/voltti-actions/docker-build-s3@master
+        id: build
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
+          registry: ${{ env.ECR_REGISTRY }}
+          name: evaka/yarn
+          path: ./evaka-base
+          dockerfile: evaka-base/yarn.Dockerfile
+          push: true
+          build-args: |
+            BASE_IMAGE=${{ needs.base.outputs.image }}
+          cache_from_images: ${{ needs.base.outputs.image_name }}
+          tag_latest: master
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+      image_name: ${{ steps.build.outputs.image_name }}
+
+  java:
+    needs:
+      - base
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build java image
+        uses: espoon-voltti/voltti-actions/docker-build-s3@master
+        id: build
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
+          registry: ${{ env.ECR_REGISTRY }}
+          name: evaka/java
+          path: ./evaka-base
+          dockerfile: evaka-base/java.Dockerfile
+          push: true
+          build-args: |
+            BASE_IMAGE=${{ needs.base.outputs.image }}
+          cache_from_images: |
+            ${{ needs.base.outputs.image_name }}
+          tag_latest: master
+
+      - if: failure()
+        uses: espoon-voltti/voltti-actions/notify@v1
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+    outputs:
+      image: ${{ steps.build.outputs.image }}
