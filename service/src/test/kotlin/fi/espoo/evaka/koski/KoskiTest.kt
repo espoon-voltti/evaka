@@ -64,6 +64,7 @@ class KoskiTest {
                 placement = Timeline.of(preschoolTerm2020),
                 present = Timeline.of(preschoolTerm2020),
                 plannedAbsence = Timeline.of(),
+                sickLeaveAbsence = Timeline.of(),
                 unknownAbsence = Timeline.of()
             ),
             timelines
@@ -122,10 +123,55 @@ class KoskiTest {
                         FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
                     ),
                 plannedAbsence = Timeline.of(),
+                sickLeaveAbsence = Timeline.of(),
                 unknownAbsence =
                     Timeline.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29))
                     )
+            ),
+            timelines
+        )
+    }
+
+    /*
+             Mo Tu We Th Fr Sa Su
+    Week 12  AA AA AA AA AA 27 28
+    Week 13  AA 30 31  1 HH  3 HH
+    Week 14  HH  6  7  8  9 10 11
+    Week 15  12 13 14 15 16 17 18
+
+    Sick leave 22.3 - 29.3, and a Koski absence is generated
+         */
+    @Test
+    fun testSimpleAbsenceScenario3() {
+        val timelines =
+            calculateStudyRightTimelines(
+                placementRanges = sequenceOf(preschoolTerm2020),
+                holidays = holidays,
+                absences =
+                    sequenceOf(
+                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 22), AbsenceType.SICKLEAVE),
+                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 23), AbsenceType.SICKLEAVE),
+                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 24), AbsenceType.SICKLEAVE),
+                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 25), AbsenceType.SICKLEAVE),
+                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 26), AbsenceType.SICKLEAVE),
+                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 29), AbsenceType.SICKLEAVE)
+                    )
+            )
+        assertEquals(
+            StudyRightTimelines(
+                placement = Timeline.of(preschoolTerm2020),
+                present =
+                    Timeline.of(
+                        FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
+                        FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
+                    ),
+                plannedAbsence = Timeline.of(),
+                sickLeaveAbsence =
+                    Timeline.of(
+                        FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29))
+                    ),
+                unknownAbsence = Timeline.of()
             ),
             timelines
         )
@@ -176,6 +222,7 @@ class KoskiTest {
                 placement = Timeline.of(preschoolTerm2020),
                 present = Timeline.of(preschoolTerm2020),
                 plannedAbsence = Timeline.of(),
+                sickLeaveAbsence = Timeline.of(),
                 unknownAbsence = Timeline.of()
             ),
             timelines
@@ -230,6 +277,7 @@ class KoskiTest {
                     Timeline.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 29), LocalDate.of(2021, 4, 6))
                     ),
+                sickLeaveAbsence = Timeline.of(),
                 unknownAbsence = Timeline.of()
             ),
             timelines
