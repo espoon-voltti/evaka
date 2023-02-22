@@ -32,22 +32,22 @@ import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
-interface StaffAclOption {
+interface EmployeeOption {
   label: string
   value: string
 }
 
-type StaffAdditionFormState = {
-  selectedEmployee: StaffAclOption | null
+type DaycareAclAdditionFormState = {
+  selectedEmployee: EmployeeOption | null
   selectedGroups: DaycareGroupSummary[]
 }
 
 const validateForm = (
-  formState: StaffAdditionFormState
+  formState: DaycareAclAdditionFormState
 ):
   | [{ employeeId: UUID; groupIds: UUID[] }]
-  | [undefined, ErrorsOf<StaffAdditionFormState>] => {
-  const errors: ErrorsOf<StaffAdditionFormState> = {
+  | [undefined, ErrorsOf<DaycareAclAdditionFormState>] => {
+  const errors: ErrorsOf<DaycareAclAdditionFormState> = {
     selectedGroups: undefined,
     selectedEmployee: !formState.selectedEmployee ? 'required' : undefined
   }
@@ -64,10 +64,11 @@ const validateForm = (
   ]
 }
 
-type StaffAdditionModalProps = {
+type DaycareAclAdditionModalProps = {
   onClose: () => void
   onSuccess: () => void
-  addPersonAndGroupAcl: (
+  addDaycareAcl?: (unitId: UUID, employeeId: UUID) => Promise<Result<unknown>>
+  updateGroupsAcl: (
     unitId: UUID,
     employeeId: UUID,
     groupIds: UUID[]
@@ -77,17 +78,18 @@ type StaffAdditionModalProps = {
   employees: Employee[]
 }
 
-export default React.memo(function StaffAclAdditionModal({
+export default React.memo(function DaycareAclAdditionModal({
   onClose,
   onSuccess,
-  addPersonAndGroupAcl,
+  addDaycareAcl,
+  updateGroupsAcl,
   unitId,
   groups,
   employees
-}: StaffAdditionModalProps) {
+}: DaycareAclAdditionModalProps) {
   const { i18n } = useTranslation()
 
-  const [formData, setFormData] = useState<StaffAdditionFormState>({
+  const [formData, setFormData] = useState<DaycareAclAdditionFormState>({
     selectedEmployee: null,
     selectedGroups: []
   })
@@ -97,19 +99,24 @@ export default React.memo(function StaffAclAdditionModal({
     [formData]
   )
 
-  const submit = useCallback(() => {
-    if (requestBody === undefined) {
+  const submit = useCallback(async () => {
+    if (requestBody === undefined || addDaycareAcl === undefined) {
       return Promise.reject(Failure.of({ message: 'validation error' }))
     } else {
-      return addPersonAndGroupAcl(
-        unitId,
-        requestBody.employeeId,
-        requestBody.groupIds
-      )
+      try {
+        await addDaycareAcl(unitId, requestBody.employeeId)
+        return updateGroupsAcl(
+          unitId,
+          requestBody.employeeId,
+          requestBody.groupIds
+        )
+      } catch (err) {
+        return Promise.reject(Failure.fromError(err))
+      }
     }
-  }, [requestBody, unitId, addPersonAndGroupAcl])
+  }, [requestBody, unitId, addDaycareAcl, updateGroupsAcl])
 
-  const staffOptions: StaffAclOption[] = useMemo(
+  const employeeOptions: EmployeeOption[] = useMemo(
     () =>
       employees.map(({ id, email, firstName, lastName }) => {
         const name = formatName(firstName, lastName, i18n)
@@ -140,11 +147,11 @@ export default React.memo(function StaffAclAdditionModal({
           <IconWrapper>
             <FontAwesomeIcon icon={faPlus} />
           </IconWrapper>
-          <H1 noMargin>{i18n.unit.accessControl.addPersonModal.title}</H1>
+          <H1 noMargin>{i18n.unit.accessControl.addDaycareAclModal.title}</H1>
         </Centered>
         <div>
           <FieldLabel>
-            {i18n.unit.accessControl.addPersonModal.employees}
+            {i18n.unit.accessControl.addDaycareAclModal.employees}
           </FieldLabel>
           <Combobox
             data-qa="acl-combobox"
@@ -153,7 +160,7 @@ export default React.memo(function StaffAclAdditionModal({
             onChange={(item) =>
               setFormData({ ...formData, selectedEmployee: item })
             }
-            items={staffOptions}
+            items={employeeOptions}
             menuEmptyLabel={i18n.common.noResults}
             getItemLabel={(item) => item?.label ?? ''}
             getItemDataQa={(item) => `value-${item?.value ?? 'none'}`}
@@ -168,7 +175,7 @@ export default React.memo(function StaffAclAdditionModal({
         </div>
         <div>
           <FieldLabel>
-            {i18n.unit.accessControl.addPersonModal.groups}
+            {i18n.unit.accessControl.addDaycareAclModal.groups}
           </FieldLabel>
           <MultiSelect
             data-qa="add-person-group-select"

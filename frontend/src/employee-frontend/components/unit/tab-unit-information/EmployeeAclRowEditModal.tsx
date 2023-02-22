@@ -27,11 +27,11 @@ import { useTranslation } from '../../../state/i18n'
 
 import { FormattedRow } from './UnitAccessControl'
 
-type StaffEditFormState = {
+type EmployeeRowEditFormState = {
   selectedGroups: DaycareGroupSummary[]
 }
 
-type StaffEditModalProps = {
+type EmployeeRowEditModalProps = {
   onClose: () => void
   onSuccess: () => void
   updatesGroupAcl: (
@@ -44,14 +44,14 @@ type StaffEditModalProps = {
   employeeRow?: FormattedRow
 }
 
-export default React.memo(function StaffAclEditModal({
+export default React.memo(function EmployeeAclRowEditModal({
   onClose,
   onSuccess,
   updatesGroupAcl,
   unitId,
   groups,
   employeeRow
-}: StaffEditModalProps) {
+}: EmployeeRowEditModalProps) {
   const { i18n } = useTranslation()
 
   const groupOptions = useMemo(
@@ -70,7 +70,7 @@ export default React.memo(function StaffAclEditModal({
     return groupOptions.filter((option) => groupIds.includes(option.id))
   }
 
-  const [formData, setFormData] = useState<StaffEditFormState>({
+  const [formData, setFormData] = useState<EmployeeRowEditFormState>({
     selectedGroups: initSelectedGroups(employeeRow?.groupIds ?? [])
   })
 
@@ -93,13 +93,13 @@ export default React.memo(function StaffAclEditModal({
           <IconWrapper>
             <FontAwesomeIcon icon={faPlus} />
           </IconWrapper>
-          <H1 noMargin>{i18n.unit.accessControl.editPersonModal.title}</H1>
+          <H1 noMargin>{i18n.unit.accessControl.editEmployeeRowModal.title}</H1>
 
           <H2 noMargin>{employeeRow?.name ?? ''}</H2>
         </Centered>
         <div>
           <FieldLabel>
-            {i18n.unit.accessControl.addPersonModal.groups}
+            {i18n.unit.accessControl.addDaycareAclModal.groups}
           </FieldLabel>
           <MultiSelect
             data-qa="add-person-group-select"

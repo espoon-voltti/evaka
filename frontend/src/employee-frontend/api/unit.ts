@@ -628,26 +628,6 @@ export async function updateDaycareGroupAcl(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function addStaffWithGroupAcl(
-  unitId: UUID,
-  employeeId: UUID,
-  groupIds: UUID[]
-): Promise<Result<void>> {
-  if (groupIds.length > 0) {
-    return client
-      .put(`/daycares/${unitId}/staff/${employeeId}`)
-      .then(() => {
-        return updateDaycareGroupAcl(unitId, employeeId, groupIds)
-      })
-      .catch((e) => Failure.fromError(e))
-  } else {
-    return client
-      .put(`/daycares/${unitId}/staff/${employeeId}`)
-      .then(() => Success.of(undefined))
-      .catch((e) => Failure.fromError(e))
-  }
-}
-
 export async function deleteMobileDevice(
   mobileId: UUID
 ): Promise<Result<void>> {

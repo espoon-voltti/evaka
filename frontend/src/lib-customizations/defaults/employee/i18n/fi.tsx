@@ -1758,12 +1758,12 @@ export const fi = {
       email: 'Sähköpostiosoite',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
-      addPersonModal: {
+      addDaycareAclModal: {
         title: 'Lisää henkilö',
         groups: 'Valitse ryhmä',
         employees: 'Valitse henkilö'
       },
-      editPersonModal: {
+      editEmployeeRowModal: {
         title: 'Muokkaa henkilön tietoja',
         groups: 'Valitse ryhmä'
       },
