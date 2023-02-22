@@ -14,3 +14,5 @@ val fileHeader = """
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 """.trimStart()
+
+fun String.skipFileHeader() = lineSequence().drop(fileHeader.lineSequence().count()).joinToString("\n")

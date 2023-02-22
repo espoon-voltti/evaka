@@ -9,11 +9,8 @@ import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.ForceCodeGenType
 import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.absolute
 import kotlin.io.path.createDirectory
 import kotlin.io.path.div
-import kotlin.io.path.exists
 import kotlin.io.path.writeText
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -25,14 +22,12 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmErasure
-import kotlin.system.exitProcess
 
-fun generateApiTypes() {
-    val root = locateRoot()
-    root.toFile().deleteRecursively()
-    root.createDirectory()
+fun generateApiTypes(target: Path) {
+    target.toFile().deleteRecursively()
+    target.createDirectory()
 
-    getApiTypesInTypeScript(root).entries.forEach { (path, content) ->
+    getApiTypesInTypeScript(target).entries.forEach { (path, content) ->
         path.writeText(content)
     }
 }
@@ -94,16 +89,6 @@ private fun analyzeClasses(): Map<String, List<AnalyzedClass>> {
     }
 
     return analyzedClasses.groupBy { getBasePackage(it.fullName) }
-}
-
-fun locateRoot(): Path {
-    // the working directory is expected to be the "service" directory
-    val workingDir = Path("")
-    val path = (workingDir / "../frontend/src/lib-common/generated").absolute().normalize()
-    if (!path.exists()) {
-        exitProcess(1)
-    }
-    return path / "api-types"
 }
 
 private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {

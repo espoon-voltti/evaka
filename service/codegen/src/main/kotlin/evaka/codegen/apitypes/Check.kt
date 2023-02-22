@@ -5,17 +5,17 @@
 package evaka.codegen.apitypes
 
 import mu.KotlinLogging
+import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.system.exitProcess
 
 val logger = KotlinLogging.logger {}
 
-fun checkGeneratedApiTypes() {
-    val root = locateRoot()
-    getApiTypesInTypeScript(root).entries.forEach { (path, content) ->
+fun checkGeneratedApiTypes(target: Path) {
+    getApiTypesInTypeScript(target).entries.forEach { (path, content) ->
         val currentContent = path.readText()
-        val relativePath = path.relativeTo(root)
+        val relativePath = path.relativeTo(target)
         if (content == currentContent) {
             logger.info("Generated api types up to date ($relativePath)")
         } else {

@@ -1,19 +1,21 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.codegen.actionenum.cli
+package evaka.codegen.actionenum
 
-import evaka.codegen.actionenum.generatedFiles
+import mu.KotlinLogging
+import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.readText
 import kotlin.system.exitProcess
 
-fun checkGeneratedActionEnumTypes() {
-    val root = locateRoot()
+private val logger = KotlinLogging.logger {}
+
+fun checkGeneratedActionEnumTypes(target: Path) {
     var errors = 0
     for (definition in generatedFiles) {
-        val file = root / definition.name
+        val file = target / definition.name
         if (definition.generate() != file.readText()) {
             logger.error("File is not up to date: $file")
             errors += 1
@@ -24,5 +26,13 @@ fun checkGeneratedActionEnumTypes() {
         exitProcess(1)
     } else {
         logger.info("All files up to date")
+    }
+}
+
+fun generateActionEnumTypes(target: Path) {
+    for (definition in generatedFiles) {
+        val file = target / definition.name
+        definition.generateTo(file)
+        logger.info("Generated $file")
     }
 }

@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -39,6 +45,7 @@ import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import { useTranslation } from '../../state/i18n'
 import { UIContext, UiState } from '../../state/ui'
+import { isoLanguages } from '../../../lib-common/generated/language'
 
 const PostalCodeAndOffice = styled.div`
   display: flex;
@@ -213,6 +220,13 @@ export default React.memo(function PersonDetails({
 
   const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
 
+  const language = useMemo(
+    () =>
+      (person.language && isoLanguages[person.language]?.nameFi) ??
+      person.language,
+    [person.language]
+  )
+
   return (
     <>
       {uiMode === 'add-ssn-modal' && (
@@ -317,12 +331,7 @@ export default React.memo(function PersonDetails({
           {
             label: i18n.childInformation.personDetails.language,
             dataQa: 'person-language',
-            value:
-              person.language === 'fi'
-                ? i18n.language.fi
-                : person.language === 'sv'
-                ? i18n.language.sv
-                : person.language
+            value: language
           },
           {
             label: i18n.common.form.socialSecurityNumber,
