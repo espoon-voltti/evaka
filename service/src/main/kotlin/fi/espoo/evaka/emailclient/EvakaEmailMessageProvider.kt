@@ -6,6 +6,7 @@ package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.ChildId
@@ -763,6 +764,191 @@ There are missing attendance reservations for the week starting $start. Please m
                 <hr>
                 
                 <p>Du har fått ett nytt pedagogiskt dokument i eVaka. Läs dokumentet här: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
+                
+                <hr>
+                
+                <p>You have received a new eVaka pedagogical document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
+        """
+                    .trimIndent()
+        )
+    }
+
+    override fun outdatedIncomeNotification(
+        notificationType: IncomeNotificationType,
+        language: Language
+    ): EmailContent {
+        return when (notificationType) {
+            IncomeNotificationType.INITIAL_EMAIL -> outdatedIncomeNotificationInitial(language)
+            IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder(language)
+            IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired(language)
+        }
+    }
+
+    fun outdatedIncomeNotificationInitial(language: Language): EmailContent {
+        val documentsUrl = "${baseUrl(language)}/income"
+        return EmailContent(
+            subject = "Tulotietojen tarkastus- kehotus",
+            text =
+                """
+                Hyvä asiakkaamme
+                
+                Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain.
+                
+                Pyydämme toimittamaan tuloselvityksen eVakassa 14 päivän kuluessa tästä ilmoituksesta.
+                
+                eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.
+                
+                Mikäli ette toimita uusia tulotietoja, asiakasmaksu määräytyy korkeimman maksuluokan mukaan.
+                
+                Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.
+                
+                Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen 
+                
+                Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut 
+                PL 30 02070 Espoon kaupunki    
+                    
+                Tulotiedot: $documentsUrl
+                
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+                
+                -----
+                
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
+                
+                -----
+
+                This is an automatic message from the eVaka system. Do not reply to this message.  
+        """
+                    .trimIndent(),
+            html =
+                """
+                <p>Hyvä asiakkaamme</p>
+                <p>Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain.</p>
+                <p>Pyydämme toimittamaan tuloselvityksen eVakassa 14 päivän kuluessa tästä ilmoituksesta.</p>
+                <p>eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.</p>
+                <p>Mikäli ette toimita uusia tulotietoja, asiakasmaksu määräytyy korkeimman maksuluokan mukaan.</p>
+                <p>Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.</p>
+                <p>Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen</p>
+                <p>Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut 
+                PL 30 02070 Espoon kaupunki</p>
+                
+                <p>Tulotiedot: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+            
+                <hr>
+                
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
+                
+                <hr>
+                
+                <p>You have received a new eVaka pedagogical document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
+        """
+                    .trimIndent()
+        )
+    }
+
+    fun outdatedIncomeNotificationReminder(language: Language): EmailContent {
+        val documentsUrl = "${baseUrl(language)}/income"
+        return EmailContent(
+            subject = "Tulotietojen tarkastus- kehotus",
+            text =
+                """
+                Hyvä asiakkaamme
+                
+                Ette ole vielä toimittaneet uusia tulotietoja.
+                
+                Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain.
+                
+                Pyydämme toimittamaan tuloselvityksen eVakassa 7 päivän kuluessa tästä ilmoituksesta.
+                
+                eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.
+                
+                Mikäli ette toimita uusia tulotietoja, asiakasmaksu määräytyy korkeimman maksuluokan mukaan.
+                
+                Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.
+                
+                Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen
+                
+                Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut 
+                PL 30 02070 Espoon kaupunki    
+                    
+                Tulotiedot: $documentsUrl
+                
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+                
+                -----
+                
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
+                
+                -----
+
+                This is an automatic message from the eVaka system. Do not reply to this message.  
+        """
+                    .trimIndent(),
+            html =
+                """
+                <p>Hyvä asiakkaamme</p>
+                <p>Ette ole vielä toimittaneet uusia tulotietoja.</p>
+                <p>Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain.</p>
+                <p>Pyydämme toimittamaan tuloselvityksen eVakassa 7 päivän kuluessa tästä ilmoituksesta.</p>
+                <p>eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.</p>
+                <p>Mikäli ette toimita uusia tulotietoja, asiakasmaksu määräytyy korkeimman maksuluokan mukaan.</p>
+                <p>Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.</p>
+                <p>Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen</p>
+                <p>Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut 
+                PL 30 02070 Espoon kaupunki</p>
+                
+                <p>Tulotiedot: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+            
+                <hr>
+                
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
+                
+                <hr>
+                
+                <p>You have received a new eVaka pedagogical document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
+        """
+                    .trimIndent()
+        )
+    }
+
+    fun outdatedIncomeNotificationExpired(language: Language): EmailContent {
+        val documentsUrl = "${baseUrl(language)}/income"
+        return EmailContent(
+            subject = "Tulotietojen tarkastus- kehotus",
+            text =
+                """
+                Hyvä asiakkaamme
+                
+                Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan, sillä ette ole toimittaneet uusia tulotietoja määräaikaan mennessä.
+                
+                Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi.
+                
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+                
+                -----
+                
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
+                
+                -----
+
+                This is an automatic message from the eVaka system. Do not reply to this message.  
+        """
+                    .trimIndent(),
+            html =
+                """
+                <p>Hyvä asiakkaamme</p>
+                <p>Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan, sillä ette ole toimittaneet uusia tulotietoja määräaikaan mennessä.</p>
+                <p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+            
+                <hr>
+                
                 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
                 
                 <hr>

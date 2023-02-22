@@ -51,6 +51,7 @@ sealed interface DatabaseTable {
     sealed class HolidayPeriod : DatabaseTable
     sealed class HolidayQuestionnaire : DatabaseTable
     sealed class Income : DatabaseTable
+    sealed class IncomeNotification : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
     sealed class Invoice : DatabaseTable
     sealed class InvoiceCorrection : DatabaseTable
@@ -166,6 +167,8 @@ typealias HolidayPeriodId = Id<DatabaseTable.HolidayPeriod>
 typealias HolidayQuestionnaireId = Id<DatabaseTable.HolidayQuestionnaire>
 
 typealias IncomeId = Id<DatabaseTable.Income>
+
+typealias IncomeNotificationId = Id<DatabaseTable.IncomeNotification>
 
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
 

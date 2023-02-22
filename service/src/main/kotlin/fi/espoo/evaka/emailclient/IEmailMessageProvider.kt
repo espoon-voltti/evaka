@@ -5,6 +5,7 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -37,4 +38,9 @@ interface IEmailMessageProvider {
     fun vasuNotification(language: Language, childId: ChildId): EmailContent
 
     fun pedagogicalDocumentNotification(language: Language): EmailContent
+
+    fun outdatedIncomeNotification(
+        notificationType: IncomeNotificationType,
+        language: Language
+    ): EmailContent
 }
