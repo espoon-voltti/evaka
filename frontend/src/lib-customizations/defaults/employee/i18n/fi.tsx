@@ -1763,6 +1763,10 @@ export const fi = {
         groups: 'Valitse ryhmä',
         employees: 'Valitse henkilö'
       },
+      editPersonModal: {
+        title: 'Muokkaa henkilön tietoja',
+        groups: 'Valitse ryhmä'
+      },
       choosePerson: 'Valitse henkilö',
       mobileDevices: {
         mobileDevices: 'Yksikön mobiililaitteet',

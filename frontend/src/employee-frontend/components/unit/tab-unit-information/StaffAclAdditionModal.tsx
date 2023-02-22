@@ -134,7 +134,7 @@ export default React.memo(function StaffAclAdditionModal({
   )
 
   return (
-    <PlainModal margin="auto" data-qa="staff-attendance-add-person-modal">
+    <PlainModal margin="auto" data-qa="staff-add-person-modal">
       <Content>
         <Centered>
           <IconWrapper>
