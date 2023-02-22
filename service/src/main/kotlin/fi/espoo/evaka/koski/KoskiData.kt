@@ -179,10 +179,9 @@ data class KoskiActiveDataRaw(
                         OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> canBeQualified
                         OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
                             // We intentionally only include here absence ranges longer than one
-                            // week
-                            // So, it doesn't matter even if the child is randomly absent for 31 or
-                            // more individual days
-                            // if they don't form long enough continuous absence ranges
+                            // week, so it doesn't matter even if the child is randomly absent for
+                            // 31 or more individual days if they don't form long enough continuous
+                            // absence ranges
                             val totalAbsences =
                                 studyRightTimelines.plannedAbsence
                                     .addAll(studyRightTimelines.unknownAbsence)
@@ -231,6 +230,10 @@ data class KoskiActiveDataRaw(
             }
         val holidays =
             studyRightTimelines.plannedAbsence.ranges().map { Opiskeluoikeusjakso.loma(it.start) }
+        val sick =
+            studyRightTimelines.sickLeaveAbsence.ranges().map {
+                Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start)
+            }
         val absent =
             studyRightTimelines.unknownAbsence.ranges().map {
                 Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start)
@@ -240,7 +243,7 @@ data class KoskiActiveDataRaw(
         result.addAll(
             // Make sure we don't end up with duplicate states on the termination dates.
             // For example, if we have 1-day placement, `present` will include the termination date
-            (present + gaps + holidays + absent).filterNot { it.alku == termination?.date }
+            (present + gaps + holidays + sick + absent).filterNot { it.alku == termination?.date }
         )
         when (termination) {
             is StudyRightTermination.Qualified ->
@@ -419,6 +422,7 @@ internal data class StudyRightTimelines(
     val placement: Timeline,
     val present: Timeline,
     val plannedAbsence: Timeline,
+    val sickLeaveAbsence: Timeline,
     val unknownAbsence: Timeline
 )
 
@@ -445,6 +449,20 @@ internal fun calculateStudyRightTimelines(
                     .ranges()
                     .filter { it.durationInDays() > 7 }
             )
+    val sickLeaveAbsence =
+        Timeline()
+            .addAll(
+                Timeline()
+                    .addAll(
+                        absences
+                            .filter { it.type == AbsenceType.SICKLEAVE }
+                            .map { it.date.toFiniteDateRange() }
+                    )
+                    .fillWeekendAndHolidayGaps(holidays)
+                    .intersection(placement)
+                    .ranges()
+                    .filter { it.durationInDays() > 7 }
+            )
     val unknownAbsence =
         Timeline()
             .addAll(
@@ -462,8 +480,13 @@ internal fun calculateStudyRightTimelines(
 
     return StudyRightTimelines(
         placement = placement,
-        present = placement.removeAll(plannedAbsence).removeAll(unknownAbsence),
+        present =
+            placement
+                .removeAll(plannedAbsence)
+                .removeAll(sickLeaveAbsence)
+                .removeAll(unknownAbsence),
         plannedAbsence = plannedAbsence,
+        sickLeaveAbsence = sickLeaveAbsence,
         unknownAbsence = unknownAbsence
     )
 }
