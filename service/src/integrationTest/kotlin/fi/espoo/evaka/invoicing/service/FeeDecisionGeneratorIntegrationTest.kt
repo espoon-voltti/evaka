@@ -274,19 +274,21 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val periodInPast = DateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 12, 31))
         val oldDraft =
             createFeeDecisionFixture(
-                FeeDecisionStatus.DRAFT,
-                FeeDecisionType.NORMAL,
-                periodInPast,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        testChild_2.id,
-                        LocalDate.of(2010, 1, 1),
-                        testDaycare.id,
-                        DAYCARE,
-                        snDefaultDaycare.toFeeDecisionServiceNeed()
-                    )
-                )
+                status = FeeDecisionStatus.DRAFT,
+                decisionType = FeeDecisionType.NORMAL,
+                period = periodInPast,
+                headOfFamilyId = testAdult_1.id,
+                children =
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            testChild_2.id,
+                            LocalDate.of(2010, 1, 1),
+                            testDaycare.id,
+                            DAYCARE,
+                            snDefaultDaycare.toFeeDecisionServiceNeed()
+                        )
+                    ),
+                created = HelsinkiDateTime.atStartOfDay(periodInPast.start.minusDays(1))
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDraft)) }
 
@@ -310,6 +312,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(periodInPast.end, it.validTo)
             assertEquals(testAdult_1.id, it.headOfFamilyId)
             assertEquals(oldDraft.children, it.children)
+            assertEquals(oldDraft.created, it.created)
         }
         result.last().let {
             assertEquals(placementPeriod.start, it.validFrom)
