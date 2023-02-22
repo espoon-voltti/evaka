@@ -183,11 +183,8 @@ private fun Database.Read.getAttendanceReservationReport(
         CROSS JOIN groups g
         LEFT JOIN reservations r ON
           (r.group_id IS NULL AND g.id IS NULL OR r.group_id = g.id)
-          AND
-          dateTime BETWEEN
-          r.date + r.start_time - interval '15 minutes' + interval '1 second'
-          AND
-          r.date + r.end_time + interval '15 minutes' - interval '1 second'
+          AND dateTime > r.date + r.start_time - interval '15 minutes'
+          AND dateTime < r.date + r.end_time + interval '15 minutes'
         WHERE extract(isodow FROM dateTime) = ANY(g.operation_days)
           AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
           AND NOT EXISTS(SELECT 1 FROM absence WHERE absence.child_id = r.child_id AND absence.date = r.date)  
