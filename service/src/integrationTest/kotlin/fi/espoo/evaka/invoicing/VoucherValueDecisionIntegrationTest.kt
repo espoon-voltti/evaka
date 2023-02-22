@@ -252,6 +252,18 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `value decision drafts not overlapping the period have the same created date after generating new value decision drafts`() {
+        createPlacement(startDate, endDate)
+        val initialDecisionDraft = getAllValueDecisions().first()
+
+        createPlacement(startDate.plusYears(1), endDate.plusYears(1))
+        getAllValueDecisions().let { decisions ->
+            assertEquals(2, decisions.size)
+            assertEquals(1, decisions.count { it.created == initialDecisionDraft.created })
+        }
+    }
+
+    @Test
     fun `value decision is replaced when child is placed into another voucher unit`() {
         createPlacement(startDate, endDate)
         sendAllValueDecisions()

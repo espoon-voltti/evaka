@@ -139,9 +139,22 @@ internal fun Database.Transaction.handleValueDecisionChanges(
 
     val updatedDecisions =
         updateExistingDecisions(clock.now(), from, newDrafts, existingDrafts, activeDecisions)
+    val updatedDrafts = preserveCreatedDates(updatedDecisions.updatedDrafts, existingDrafts)
     deleteValueDecisions(existingDrafts.map { it.id })
-    upsertValueDecisions(updatedDecisions.updatedDrafts)
+    upsertValueDecisions(updatedDrafts)
     updateVoucherValueDecisionEndDates(updatedDecisions.updatedActiveDecisions, clock.now())
+}
+
+private fun preserveCreatedDates(
+    updatedDrafts: List<VoucherValueDecision>,
+    existingDrafts: List<VoucherValueDecision>
+): List<VoucherValueDecision> {
+    return updatedDrafts.map { draft ->
+        val existingDraft = existingDrafts.find { decisionContentsAreEqual(it, draft) }
+        if (existingDraft != null) {
+            draft.copy(created = existingDraft.created)
+        } else draft
+    }
 }
 
 private fun generateNewValueDecisions(
