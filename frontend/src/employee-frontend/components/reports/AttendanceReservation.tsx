@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
@@ -14,6 +14,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -80,6 +81,12 @@ export default React.memo(function AttendanceReservation() {
         : Promise.resolve(Loading.of<AttendanceReservationReportRow[]>()),
     [unitId, filters]
   )
+
+  const autoScrollRef = useRef<HTMLTableRowElement>(null)
+
+  useEffect(() => {
+    scrollRefIntoView(autoScrollRef)
+  }, [report])
 
   const filteredRows = report
     .map<AttendanceReservationReportUiRow[]>((data) =>
@@ -154,7 +161,7 @@ export default React.memo(function AttendanceReservation() {
             })}
           </Tr>
         </Thead>
-        <Tbody>{getTableBody(rowsByTime)}</Tbody>
+        <Tbody>{getTableBody(rowsByTime, autoScrollRef)}</Tbody>
       </TableScrollable>
     )
   })
@@ -279,12 +286,13 @@ export default React.memo(function AttendanceReservation() {
 })
 
 const getTableBody = (
-  rowsByTime: Map<string, AttendanceReservationReportUiRow[]>
+  rowsByTime: Map<string, AttendanceReservationReportUiRow[]>,
+  autoScrollRef: RefObject<HTMLTableRowElement>
 ) => {
   const components: React.ReactNode[] = []
   rowsByTime.forEach((rows, time) => {
     components.push(
-      <Tr key={time}>
+      <Tr key={time} ref={time == '05:30' ? autoScrollRef : undefined}>
         <Td sticky>{time}</Td>
         {rows.map((row) => {
           const isToday = row.dateTime.toLocalDate().isToday()
