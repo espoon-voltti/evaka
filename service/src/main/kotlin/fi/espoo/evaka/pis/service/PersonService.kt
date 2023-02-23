@@ -546,7 +546,9 @@ data class PersonPatch(
     val invoicingPostalCode: String? = null,
     val invoicingPostOffice: String? = null,
     val forceManualFeeDecisions: Boolean? = null,
-    val ophPersonOid: String? = null
+    val ophPersonOid: String? = null,
+    val languageAtHome: String? = null,
+    val languageAtHomeDetails: String? = null,
 )
 
 data class PersonWithChildrenDTO(

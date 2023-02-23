@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import React, {
   useCallback,
   useContext,
@@ -16,12 +17,15 @@ import { Loading, Result, Success } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import {
   FixedSpaceColumn,
@@ -29,8 +33,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
-  InfoButton,
-  ExpandingInfoBox
+  ExpandingInfoBox,
+  InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/employee'
 import { faCopy, faPen, faSync } from 'lib-icons'
@@ -45,7 +49,6 @@ import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import { useTranslation } from '../../state/i18n'
 import { UIContext, UiState } from '../../state/ui'
-import { isoLanguages } from '../../../lib-common/generated/language'
 
 const PostalCodeAndOffice = styled.div`
   display: flex;
@@ -84,6 +87,8 @@ interface Form {
   invoicingPostOffice: string
   forceManualFeeDecisions: boolean
   ophPersonOid: string
+  languageAtHome: string
+  languageAtHomeDetails: string
 }
 
 const RightAlignedRow = styled.div`
@@ -121,7 +126,9 @@ export default React.memo(function PersonDetails({
     invoicingPostalCode: '',
     invoicingPostOffice: '',
     forceManualFeeDecisions: false,
-    ophPersonOid: ''
+    ophPersonOid: '',
+    languageAtHome: '',
+    languageAtHomeDetails: ''
   })
   const [ssnDisableRequest, setSsnDisableRequest] = useState<Result<void>>(
     Success.of()
@@ -169,7 +176,9 @@ export default React.memo(function PersonDetails({
         invoicingPostalCode: person.invoicingPostalCode ?? '',
         invoicingPostOffice: person.invoicingPostOffice ?? '',
         forceManualFeeDecisions: person.forceManualFeeDecisions ?? false,
-        ophPersonOid: person.ophPersonOid ?? ''
+        ophPersonOid: person.ophPersonOid ?? '',
+        languageAtHome: person.languageAtHome,
+        languageAtHomeDetails: person.languageAtHomeDetails
       })
     }
   }, [person, editing])
@@ -225,6 +234,18 @@ export default React.memo(function PersonDetails({
       (person.language && isoLanguages[person.language]?.nameFi) ??
       person.language,
     [person.language]
+  )
+
+  const languageAtHome = useMemo(
+    () =>
+      (person.languageAtHome ? isoLanguages[person.languageAtHome] : null) ??
+      null,
+    [person.languageAtHome]
+  )
+
+  const languages = useMemo(
+    () => sortBy(Object.values(isoLanguages), ({ nameFi }) => nameFi),
+    []
   )
 
   return (
@@ -472,6 +493,52 @@ export default React.memo(function PersonDetails({
                 }
               ]
             : []),
+          {
+            label: i18n.childInformation.personDetails.languageAtHome,
+            value: editing ? (
+              <>
+                <Combobox
+                  data-qa="input-language-at-home"
+                  items={languages}
+                  getItemDataQa={(item) => `language-${item.alpha2}`}
+                  selectedItem={
+                    (form.languageAtHome
+                      ? isoLanguages[form.languageAtHome]
+                      : null) ?? null
+                  }
+                  onChange={(item) =>
+                    updateForm({ languageAtHome: item?.alpha2 ?? '' })
+                  }
+                  getItemLabel={(item) => item?.nameFi}
+                  placeholder={
+                    i18n.childInformation.personDetails.placeholder
+                      .languageAtHome
+                  }
+                  clearable={true}
+                />
+                <TextArea
+                  data-qa="input-language-at-home-details"
+                  value={form.languageAtHomeDetails}
+                  placeholder={
+                    i18n.childInformation.personDetails.placeholder
+                      .languageAtHomeDetails
+                  }
+                  onChange={(languageAtHomeDetails) =>
+                    updateForm({ languageAtHomeDetails })
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <div data-qa="person-language-at-home">
+                  {languageAtHome?.nameFi ?? ''}
+                </div>
+                <div data-qa="person-language-at-home-details">
+                  {person.languageAtHomeDetails}
+                </div>
+              </>
+            )
+          },
           ...(!isChild && permittedActions.has('READ_INVOICE_ADDRESS')
             ? [
                 {

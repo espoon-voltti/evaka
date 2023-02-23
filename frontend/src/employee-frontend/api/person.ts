@@ -13,6 +13,7 @@ import {
 import {
   CreatePersonBody,
   PersonJSON,
+  PersonPatch,
   PersonResponse,
   PersonSummary,
   PersonWithChildrenDTO
@@ -67,7 +68,7 @@ export async function getChildDetails(
 
 export async function patchPersonDetails(
   id: UUID,
-  data: PatchPersonRequest
+  data: PersonPatch
 ): Promise<Result<PersonJSON>> {
   return client
     .patch<JsonOf<PersonJSON>>(`/person/${id}`, data)
@@ -278,18 +279,6 @@ export async function getGuardianDecisions(
     )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
-}
-
-export interface PatchPersonRequest {
-  firstName: string | undefined
-  lastName: string | undefined
-  dateOfBirth: LocalDate | undefined
-  email: string | undefined
-  phone: string | undefined
-  streetAddress: string | undefined
-  postalCode: string | undefined
-  postOffice: string | undefined
-  backupPhone: string | undefined
 }
 
 export async function mergePeople(

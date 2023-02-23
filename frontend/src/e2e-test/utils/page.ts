@@ -410,9 +410,11 @@ export class Combobox extends Element {
     await this.findAll(`[data-qa="item"]`).first().click()
   }
 
-  async fillAndSelectItem(text: string, value: string) {
+  async fillAndSelectItem(text: string, itemDataQa: string) {
     await this.#input.fill(text)
-    await this.find(`[data-qa="item"]`).find(`[data-qa="${value}"]`).click()
+    await this.find(`[data-qa="item"]`)
+      .find(`[data-qa="${itemDataQa}"]`)
+      .click()
   }
 }
 

@@ -562,9 +562,14 @@ export const fi = {
       email: 'Sähköposti',
       socialSecurityNumber: 'Henkilötunnus',
       birthday: 'Syntymäaika',
-      language: 'Kieli',
+      language: 'Kieli (VTJ)',
       address: 'Osoite',
-      familyLink: 'Perheen tiedot'
+      familyLink: 'Perheen tiedot',
+      languageAtHome: 'Kotikieli, jos muu kuin VTJ:ssä mainittu',
+      placeholder: {
+        languageAtHome: 'Valitse kieli',
+        languageAtHomeDetails: 'Lisätiedot kotikielestä'
+      }
     },
     familyContacts: {
       title: 'Perheen yhteystiedot ja varahakijat',
