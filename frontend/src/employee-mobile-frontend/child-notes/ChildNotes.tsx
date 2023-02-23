@@ -18,12 +18,11 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faArrowLeft } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { childrenQuery } from '../child-attendance/queries'
 import { useChild } from '../child-attendance/utils'
-import { BackButtonInline } from '../common/components'
+import ChildNameBackButton from '../common/ChildNameBackButton'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
 
@@ -167,11 +166,7 @@ export default React.memo(function ChildNotes() {
       paddingVertical="zero"
     >
       <TopRow>
-        <BackButtonInline
-          onClick={() => navigate(-1)}
-          icon={faArrowLeft}
-          text={`${child.firstName} ${child.lastName}`}
-        />
+        <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
       </TopRow>
       <FixedSpaceColumn>
         <TitleArea shadow opaque paddingHorizontal="s" paddingVertical="6px">

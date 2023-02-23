@@ -29,10 +29,11 @@ import {
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
+import { faExclamation, faTrash } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
-import { Actions, BackButtonInline, CustomTitle } from '../../common/components'
+import ChildNameBackButton from '../../common/ChildNameBackButton'
+import { Actions, CustomTitle } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import {
@@ -127,7 +128,8 @@ export default React.memo(function MarkAbsentBeforehand() {
         {renderResult(child, (child) => (
           <>
             <div>
-              <BackButtonInline
+              <ChildNameBackButton
+                child={child}
                 onClick={() => {
                   if (selectedAbsenceType && canSave) {
                     setUiMode('confirmExit')
@@ -135,12 +137,6 @@ export default React.memo(function MarkAbsentBeforehand() {
                     goBack()
                   }
                 }}
-                icon={faArrowLeft}
-                text={
-                  child
-                    ? `${child.firstName} ${child.lastName}`
-                    : i18n.common.back
-                }
               />
             </div>
             <ContentArea

@@ -152,6 +152,7 @@ export default React.memo(function ChildListItem({
           <NameRow>
             <Bold data-qa="child-name">
               {child.firstName} {child.lastName}
+              {child.preferredName ? ` (${child.preferredName})` : null}
             </Bold>
             <GroupName data-qa={`child-group-name-${child.id}`}>
               {maybeGroupName}
