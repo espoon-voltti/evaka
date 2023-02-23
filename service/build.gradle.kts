@@ -68,8 +68,9 @@ dependencies {
     integrationTestImplementation(kotlin("test-junit5"))
 
     // Logging
-    implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter")
+    implementation("ch.qos.logback:logback-access")
     implementation("io.github.microutils:kotlin-logging-jvm")
+    implementation("net.logstash.logback:logstash-logback-encoder")
 
     // Spring
     api("org.springframework.boot:spring-boot-starter")

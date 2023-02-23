@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.kotlin.plugin.allopen")
@@ -23,7 +21,6 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
 
     // Logging
-    implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter")
     implementation("io.github.microutils:kotlin-logging-jvm")
     implementation("net.logstash.logback:logstash-logback-encoder")
 

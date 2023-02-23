@@ -28,7 +28,6 @@ dependencies {
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:31.1-jre")
         api("com.zaxxer:HikariCP:5.0.1")
-        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.3")
         api("io.github.microutils:kotlin-logging-jvm:3.0.4")
         api("io.javalin:javalin:5.3.2")
         api("io.opentracing:opentracing-api:${Version.openTracing}")
