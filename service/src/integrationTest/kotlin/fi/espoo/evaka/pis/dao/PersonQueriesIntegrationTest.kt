@@ -323,7 +323,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             postOffice = "Jokula",
             residenceCode = "",
             restrictedDetailsEnabled = true,
-            restrictedDetailsEndDate = LocalDate.now().plusYears(1)
+            restrictedDetailsEndDate = LocalDate.now().plusYears(1),
+            languageAtHome = "",
+            languageAtHomeDetails = "",
         )
     }
 }

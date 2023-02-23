@@ -305,3 +305,4 @@ V305__foreign_key_indexes.sql
 V306__finance_decision_sending_indexes.sql
 V307__add_missing_updated_triggers.sql
 V308__remove_old_tables.sql
+V309__language_at_home.sql

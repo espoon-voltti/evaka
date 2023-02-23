@@ -1735,7 +1735,9 @@ data class DevPerson(
     val dependants: List<DevPerson> = emptyList(),
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
-    val ophPersonOid: String = ""
+    val ophPersonOid: String = "",
+    val languageAtHome: String = "",
+    val languageAtHomeDetails: String = "",
 ) {
     fun toPersonDTO() =
         PersonDTO(
@@ -1762,7 +1764,9 @@ data class DevPerson(
             invoicingStreetAddress = this.invoicingStreetAddress,
             invoicingPostalCode = this.invoicingPostalCode,
             invoicingPostOffice = this.invoicingPostOffice,
-            ophPersonOid = this.ophPersonOid
+            ophPersonOid = this.ophPersonOid,
+            languageAtHome = this.languageAtHome,
+            languageAtHomeDetails = this.languageAtHomeDetails,
         )
 }
 

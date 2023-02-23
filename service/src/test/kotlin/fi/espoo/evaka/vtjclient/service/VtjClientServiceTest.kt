@@ -315,7 +315,9 @@ class VtjClientServiceTest {
             postalCode = postalCode,
             residenceCode = "",
             restrictedDetailsEnabled = false,
-            restrictedDetailsEndDate = null
+            restrictedDetailsEndDate = null,
+            languageAtHome = "",
+            languageAtHomeDetails = "",
         )
 
     private fun createPersonResponse(forSsn: String? = DEFAULT_PERSON_SSN) =
