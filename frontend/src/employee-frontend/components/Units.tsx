@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -70,42 +70,63 @@ export default React.memo(function Units() {
     })
   }, [setUnits])
 
-  const renderUnits = () =>
-    units
-      .map((us) =>
-        orderBy(us, [sortColumn], [sortDirection === 'ASC' ? 'asc' : 'desc'])
-          .filter((unit: Unit) =>
-            unit.name.toLowerCase().includes(filter.toLowerCase())
+  const orderedUnits = useCallback(
+    (units: Unit[]) =>
+      sortColumn === 'name'
+        ? orderBy(
+            units,
+            [sortColumn],
+            [sortDirection === 'ASC' ? 'asc' : 'desc']
           )
-          .filter(
-            (unit: Unit) =>
-              includeClosed ||
-              !unit.closingDate?.isBefore(LocalDate.todayInSystemTz())
-          )
-          .map((unit: Unit) => {
-            return (
-              <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
-                <Td>
-                  <Link to={`/units/${unit.id}`}>{unit.name}</Link>
-                </Td>
-                <Td>{unit.area.name}</Td>
-                <Td>
-                  {unit.visitingAddress.streetAddress &&
-                  unit.visitingAddress.postalCode
-                    ? [
-                        unit.visitingAddress.streetAddress,
-                        unit.visitingAddress.postalCode
-                      ].join(', ')
-                    : unit.visitingAddress.streetAddress}
-                </Td>
-                <Td>
-                  {unit.type.map((type) => i18n.common.types[type]).join(', ')}
-                </Td>
-              </Tr>
+        : orderBy(
+            units,
+            [sortColumn, 'name'],
+            [sortDirection === 'ASC' ? 'asc' : 'desc', 'asc']
+          ),
+    [sortColumn, sortDirection]
+  )
+
+  const renderUnits = useCallback(
+    () =>
+      units
+        .map((us) =>
+          orderedUnits(us)
+            .filter((unit: Unit) =>
+              unit.name.toLowerCase().includes(filter.toLowerCase())
             )
-          })
-      )
-      .getOrElse(null)
+            .filter(
+              (unit: Unit) =>
+                includeClosed ||
+                !unit.closingDate?.isBefore(LocalDate.todayInSystemTz())
+            )
+            .map((unit: Unit) => {
+              return (
+                <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
+                  <Td>
+                    <Link to={`/units/${unit.id}`}>{unit.name}</Link>
+                  </Td>
+                  <Td>{unit.area.name}</Td>
+                  <Td>
+                    {unit.visitingAddress.streetAddress &&
+                    unit.visitingAddress.postalCode
+                      ? [
+                          unit.visitingAddress.streetAddress,
+                          unit.visitingAddress.postalCode
+                        ].join(', ')
+                      : unit.visitingAddress.streetAddress}
+                  </Td>
+                  <Td>
+                    {unit.type
+                      .map((type) => i18n.common.types[type])
+                      .join(', ')}
+                  </Td>
+                </Tr>
+              )
+            })
+        )
+        .getOrElse(null),
+    [filter, i18n.common.types, includeClosed, units, orderedUnits]
+  )
 
   if (
     units.isSuccess &&
