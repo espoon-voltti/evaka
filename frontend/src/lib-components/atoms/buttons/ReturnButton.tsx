@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -47,17 +47,16 @@ export default React.memo(function ReturnButton({
 }: Props & WrapperProps) {
   const { colors } = useTheme()
   const navigate = useNavigate()
-  const defaultBehaviour = () => navigate(-1)
-  return (
+  const defaultBehaviour = useCallback(() => navigate(-1), [navigate])
+  return onClick || history.length > 1 ? (
     <ReturnButtonWrapper margin={margin}>
       <InlineButton
         icon={faAngleLeft}
         text={label}
         onClick={onClick ?? defaultBehaviour}
         data-qa={dataQa}
-        disabled={history.length <= 1}
         color={colors.main.m1}
       />
     </ReturnButtonWrapper>
-  )
+  ) : null
 })
