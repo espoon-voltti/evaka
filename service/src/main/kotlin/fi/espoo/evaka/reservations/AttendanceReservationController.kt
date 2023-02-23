@@ -223,7 +223,7 @@ data class UnitAttendanceReservations(
         val id: ChildId,
         val firstName: String,
         val lastName: String,
-        val preferredName: String?,
+        val preferredName: String,
         val dateOfBirth: LocalDate
     )
 

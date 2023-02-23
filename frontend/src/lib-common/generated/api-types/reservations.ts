@@ -69,7 +69,7 @@ export interface ReservationChild {
   lastName: string
   maxOperationalDays: number[]
   placements: FiniteDateRange[]
-  preferredName: string | null
+  preferredName: string
 }
 
 /**

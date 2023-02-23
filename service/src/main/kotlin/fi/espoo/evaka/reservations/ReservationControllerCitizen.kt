@@ -224,7 +224,7 @@ data class ReservationChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val preferredName: String?,
+    val preferredName: String,
     val imageId: ChildImageId?,
     val placements: List<FiniteDateRange>,
     val maxOperationalDays: Set<Int>,

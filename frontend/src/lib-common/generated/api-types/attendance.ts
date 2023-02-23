@@ -109,7 +109,7 @@ export interface Child {
   imageUrl: string | null
   lastName: string
   placementType: PlacementType
-  preferredName: string | null
+  preferredName: string
   reservations: AttendanceReservation[]
   stickyNotes: ChildStickyNote[]
 }
