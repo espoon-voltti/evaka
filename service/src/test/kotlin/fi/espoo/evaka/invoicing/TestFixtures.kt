@@ -227,7 +227,8 @@ fun createFeeDecisionFixture(
         testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null,
     partnerIncome: DecisionIncome? = null,
-    familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0
+    familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0,
+    created: HelsinkiDateTime = HelsinkiDateTime.now()
 ) =
     FeeDecision(
         id = FeeDecisionId(UUID.randomUUID()),
@@ -241,7 +242,8 @@ fun createFeeDecisionFixture(
         familySize = familySize,
         feeThresholds = feeThresholds,
         children = children,
-        difference = emptySet()
+        difference = emptySet(),
+        created = created
     )
 
 fun createVoucherValueDecisionFixture(

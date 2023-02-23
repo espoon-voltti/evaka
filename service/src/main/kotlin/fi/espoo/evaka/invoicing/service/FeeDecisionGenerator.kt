@@ -195,8 +195,22 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
             combinedActiveDecisions
         )
     deleteFeeDecisions(existingDrafts.map { it.id })
+    val updatedDrafts = preserveCreatedDates(updatedDecisions.updatedDrafts, existingDrafts)
+    deleteFeeDecisions(existingDrafts.map { it.id })
     updateFeeDecisionStatusAndDates(updatedDecisions.updatedActiveDecisions)
-    upsertFeeDecisions(updatedDecisions.updatedDrafts)
+    upsertFeeDecisions(updatedDrafts)
+}
+
+fun preserveCreatedDates(
+    updatedDrafts: List<FeeDecision>,
+    existingDrafts: List<FeeDecision>
+): List<FeeDecision> {
+    return updatedDrafts.map { updatedDraft ->
+        val existingDraft = existingDrafts.find { decisionContentsAreEqual(it, updatedDraft) }
+        if (existingDraft != null) {
+            updatedDraft.copy(created = existingDraft.created)
+        } else updatedDraft
+    }
 }
 
 private fun generateFeeDecisions(

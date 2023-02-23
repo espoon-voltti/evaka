@@ -65,7 +65,8 @@ INSERT INTO voucher_value_decision (
     base_value,
     assistance_need_coefficient,
     voucher_value,
-    difference
+    difference,
+    created
 ) VALUES (
     :id,
     :status::voucher_value_decision_status,
@@ -99,7 +100,8 @@ INSERT INTO voucher_value_decision (
     :baseValue,
     :assistanceNeedCoefficient,
     :voucherValue,
-    :difference
+    :difference,
+    :created
 ) ON CONFLICT (id) DO UPDATE SET
     status = :status::voucher_value_decision_status,
     decision_number = :decisionNumber,
@@ -131,7 +133,8 @@ INSERT INTO voucher_value_decision (
     base_value = :baseValue,
     assistance_need_coefficient = :assistanceNeedCoefficient,
     voucher_value = :voucherValue,
-    difference = :difference
+    difference = :difference,
+    created = :created
 """
 
     decisions.forEach { decision ->
@@ -161,6 +164,7 @@ INSERT INTO voucher_value_decision (
             )
             .bind("serviceNeedMissing", decision.serviceNeed?.missing ?: false)
             .bind("sentAt", decision.sentAt)
+            .bind("created", decision.created)
             .execute()
     }
 }
