@@ -55,6 +55,7 @@ export interface Child {
   id: string
   firstName: string
   lastName: string
+  preferredName: string | null
   dateOfBirth: LocalDate
 }
 

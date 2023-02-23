@@ -20,16 +20,12 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faArrowLeft, farStickyNote } from 'lib-icons'
+import { farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { groupNotesQuery } from '../../child-notes/queries'
-import {
-  Actions,
-  BackButtonInline,
-  CustomTitle,
-  DailyNotes
-} from '../../common/components'
+import ChildNameBackButton from '../../common/ChildNameBackButton'
+import { Actions, CustomTitle, DailyNotes } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
@@ -67,13 +63,7 @@ export default React.memo(function MarkAbsent() {
     >
       {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
         <>
-          <BackButtonInline
-            onClick={() => navigate(-2)}
-            icon={faArrowLeft}
-            text={
-              child ? `${child.firstName} ${child.lastName}` : i18n.common.back
-            }
-          />
+          <ChildNameBackButton child={child} onClick={() => navigate(-2)} />
           <ContentArea
             shadow
             opaque={true}

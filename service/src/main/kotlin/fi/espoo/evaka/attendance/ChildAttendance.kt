@@ -30,7 +30,7 @@ data class Child(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val preferredName: String?,
+    val preferredName: String,
     val dateOfBirth: LocalDate,
     val placementType: PlacementType,
     val groupId: GroupId?,

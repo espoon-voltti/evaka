@@ -292,6 +292,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_1.id,
                         testChild_1.firstName,
                         testChild_1.lastName,
+                        testChild_1.preferredName,
                         testChild_1.dateOfBirth
                     ),
                     listOf(
@@ -342,6 +343,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_6.id,
                         testChild_6.firstName,
                         testChild_6.lastName,
+                        testChild_6.preferredName,
                         testChild_6.dateOfBirth
                     ),
                     listOf(
@@ -394,6 +396,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_1.id,
                         testChild_1.firstName,
                         testChild_1.lastName,
+                        testChild_1.preferredName,
                         testChild_1.dateOfBirth
                     ),
                     listOf(emptyChildRecords(FiniteDateRange(thu, fri)))
@@ -403,6 +406,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_6.id,
                         testChild_6.firstName,
                         testChild_6.lastName,
+                        testChild_6.preferredName,
                         testChild_6.dateOfBirth
                     ),
                     listOf(
@@ -429,6 +433,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_5.id,
                         testChild_5.firstName,
                         testChild_5.lastName,
+                        testChild_5.preferredName,
                         testChild_5.dateOfBirth
                     ),
                     listOf(
@@ -462,6 +467,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_4.id,
                         testChild_4.firstName,
                         testChild_4.lastName,
+                        testChild_4.preferredName,
                         testChild_4.dateOfBirth
                     ),
                     listOf(emptyChildRecords(FiniteDateRange(wed, fri)))
@@ -550,6 +556,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_1.id,
                         testChild_1.firstName,
                         testChild_1.lastName,
+                        testChild_1.preferredName,
                         testChild_1.dateOfBirth
                     ),
                     listOf(
