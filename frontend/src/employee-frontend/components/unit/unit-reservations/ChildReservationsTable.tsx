@@ -133,6 +133,7 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
                           i18n,
                           true
                         )}
+                        {child.preferredName ? ` (${child.preferredName})` : ''}
                       </Link>
                     </NameWrapper>
                   )}

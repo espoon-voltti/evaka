@@ -223,6 +223,7 @@ data class UnitAttendanceReservations(
         val id: ChildId,
         val firstName: String,
         val lastName: String,
+        val preferredName: String?,
         val dateOfBirth: LocalDate
     )
 
@@ -368,6 +369,7 @@ SELECT
     p.id,
     p.first_name,
     p.last_name,
+    p.preferred_name,
     p.date_of_birth,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
@@ -406,6 +408,7 @@ WHERE p.id = ANY(:childIds)
                         id = row.mapColumn("id"),
                         firstName = row.mapColumn("first_name"),
                         lastName = row.mapColumn("last_name"),
+                        preferredName = row.mapColumn("preferred_name"),
                         dateOfBirth = row.mapColumn("date_of_birth")
                     ),
                 reservations =
