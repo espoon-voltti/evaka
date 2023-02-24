@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
 import java.time.LocalDate
 
@@ -20,32 +21,38 @@ data class KoskiStudyRightKey(
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,
     params: KoskiSearchParams = KoskiSearchParams()
-): List<KoskiStudyRightKey> =
-    createQuery(
-            // language=SQL
-            """
+): List<KoskiStudyRightKey> {
+    val childPredicate =
+        if (params.personIds.isEmpty()) Predicate.alwaysTrue()
+        else Predicate<Any> { where("$it.child_id = ANY(${bind(params.personIds)})") }
+    val daycarePredicate =
+        if (params.daycareIds.isEmpty()) Predicate.alwaysTrue()
+        else Predicate<Any> { where("$it.unit_id = ANY(${bind(params.daycareIds)})") }
+
+    return createQuery<Any> {
+            sql(
+                """
 SELECT kasr.child_id, kasr.unit_id, kasr.type
-FROM koski_active_study_right(:today) kasr
+FROM koski_active_study_right(${bind(today)}) kasr
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE to_jsonb(kasr) IS DISTINCT FROM ksr.input_data
-AND (:personIds = '{}' OR kasr.child_id = ANY(:personIds))
-AND (:daycareIds = '{}' OR kasr.unit_id = ANY(:daycareIds))
+AND ${predicate(childPredicate.forTable("kasr"))}
+AND ${predicate(daycarePredicate.forTable("kasr"))}
 
 UNION
 
 SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
-FROM koski_voided_study_right(:today) kvsr
+FROM koski_voided_study_right(${bind(today)}) kvsr
 WHERE kvsr.void_date IS NULL
-AND (:personIds = '{}' OR kvsr.child_id = ANY(:personIds))
-AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
+AND ${predicate(childPredicate.forTable("kvsr"))}
+AND ${predicate(daycarePredicate.forTable("kvsr"))}
 """
-        )
-        .bind("personIds", params.personIds)
-        .bind("daycareIds", params.daycareIds)
-        .bind("today", today)
+            )
+        }
         .mapTo<KoskiStudyRightKey>()
         .list()
+}
 
 fun Database.Transaction.beginKoskiUpload(
     sourceSystem: String,
