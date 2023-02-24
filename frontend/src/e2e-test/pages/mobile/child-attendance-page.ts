@@ -25,6 +25,7 @@ export default class ChildAttendancePage {
   #childStatusLabel = this.page.find('[data-qa="child-status"]')
   #nonAbsenceActions = this.page.find('[data-qa="non-absence-actions"]')
   #setTimeInput = new TextInput(this.page.find('[data-qa="set-time"]'))
+  groupNote = this.page.findAllByDataQa('group-note')
 
   setTimeInfo = this.page.findByDataQa('set-time-info')
 

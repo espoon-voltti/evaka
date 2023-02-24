@@ -25,6 +25,7 @@ import { DaycarePlacement } from '../../dev-api/types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
+import MobileNotePage from '../../pages/mobile/note-page'
 import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
@@ -458,5 +459,38 @@ describe('Child mobile attendance list', () => {
 
     await page.goto(await pairMobileDevice(daycare2Fixture.id))
     await assertAttendanceCounts(1, 0, 0, 0, 1)
+  })
+})
+
+describe('Notes on child departure page', () => {
+  test('All group notes are shown on the child departure page', async () => {
+    const child1 = enduserChildFixtureKaarina.id
+    await createPlacements(child1)
+    await createPlacements(enduserChildFixturePorriHatterRestricted.id)
+    await createPlacements(enduserChildFixtureJari.id, group2.id)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectChild(child1)
+    childPage = new MobileChildPage(page)
+    await childPage.openNotes()
+    const notePage = new MobileNotePage(page)
+    await notePage.selectTab('group')
+    await notePage.typeAndSaveStickyNote('This is a group note')
+    await notePage.initNewStickyNote()
+    await notePage.typeAndSaveStickyNote('This is another group note')
+
+    await page.goto(mobileSignupUrl)
+    await listPage.selectComingChildren()
+    await listPage.selectChild(child1)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:00')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child1)
+    await childPage.selectMarkDepartedView()
+    await waitUntilEqual(() => childAttendancePage.groupNote.count(), 2)
   })
 })
