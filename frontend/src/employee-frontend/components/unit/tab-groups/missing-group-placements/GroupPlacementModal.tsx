@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
+import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -24,6 +25,11 @@ import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
+
+const FieldWrapper = styled.section`
+  display: flex;
+  flex-direction: column;
+`
 
 interface Props {
   groups: DaycareGroup[]
@@ -171,11 +177,11 @@ export default React.memo(function GroupPlacementModal({
       rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
-        <section>
+        <FieldWrapper>
           <Bold>{i18n.unit.placements.modal.child}</Bold>
           <span>{formatName(firstName, lastName, i18n)}</span>
-        </section>
-        <section>
+        </FieldWrapper>
+        <FieldWrapper>
           <Bold>{i18n.unit.placements.modal.group}</Bold>
           <Select
             items={openGroups}
@@ -191,8 +197,8 @@ export default React.memo(function GroupPlacementModal({
             getItemLabel={({ name }) => name}
             placeholder={i18n.common.select}
           />
-        </section>
-        <section>
+        </FieldWrapper>
+        <FieldWrapper>
           <Bold>{i18n.common.form.startDate}</Bold>
           <DatePickerDeprecated
             {...disableDateEditIfBackupPlacement}
@@ -202,8 +208,8 @@ export default React.memo(function GroupPlacementModal({
             minDate={minDate}
             maxDate={maxDate}
           />
-        </section>
-        <section>
+        </FieldWrapper>
+        <FieldWrapper>
           <Bold>{i18n.common.form.endDate}</Bold>
           <DatePickerDeprecated
             {...disableDateEditIfBackupPlacement}
@@ -213,7 +219,7 @@ export default React.memo(function GroupPlacementModal({
             minDate={minDate}
             maxDate={maxDate}
           />
-        </section>
+        </FieldWrapper>
         {form.errors.length > 0 && (
           <section>
             {form.errors.map((error, index) => (
