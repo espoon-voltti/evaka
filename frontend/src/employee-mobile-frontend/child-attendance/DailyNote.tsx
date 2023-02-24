@@ -7,7 +7,9 @@ import styled from 'styled-components'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { GroupNote } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -15,12 +17,36 @@ import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
 
+const GroupNotes = React.memo(function GroupNotes({
+  groupNotes
+}: {
+  groupNotes: GroupNote[]
+}) {
+  const { i18n } = useTranslation()
+
+  return (
+    <FixedSpaceColumn spacing="xxs">
+      <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
+      <UnorderedList spacing="xxs">
+        {groupNotes.map(
+          (groupNote) =>
+            groupNote.expires.isAfter(LocalDate.todayInHelsinkiTz()) && (
+              <li data-qa="group-note" key={groupNote.id}>
+                {groupNote.note}
+              </li>
+            )
+        )}
+      </UnorderedList>
+    </FixedSpaceColumn>
+  )
+})
+
 interface Props {
   child: Child | undefined
-  groupNote: GroupNote | undefined
+  groupNotes: GroupNote[] | undefined
 }
 
-export default React.memo(function DailyNote({ child, groupNote }: Props) {
+export default React.memo(function DailyNote({ child, groupNotes }: Props) {
   const { i18n } = useTranslation()
 
   return (
@@ -82,18 +108,10 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
               </span>
             </FixedSpaceColumn>
           )}
-          {groupNote && (
-            <FixedSpaceColumn spacing="xxs">
-              <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
-              <span>{groupNote.note}</span>
-            </FixedSpaceColumn>
-          )}
+          {groupNotes && <GroupNotes groupNotes={groupNotes} />}
         </FixedSpaceColumn>
-      ) : groupNote ? (
-        <FixedSpaceColumn spacing="xxs">
-          <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
-          <span>{groupNote.note}</span>
-        </FixedSpaceColumn>
+      ) : groupNotes && groupNotes.length > 0 ? (
+        <GroupNotes groupNotes={groupNotes} />
       ) : (
         <div>{i18n.attendances.notes.noNotes}</div>
       )}

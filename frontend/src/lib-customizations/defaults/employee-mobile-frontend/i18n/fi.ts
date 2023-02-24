@@ -201,7 +201,7 @@ export const fi = {
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
         reminderNote: 'Muistettavia asioita',
-        groupNotesHeader: 'Koko ryhmän muistiinpano'
+        groupNotesHeader: 'Koko ryhmän muistiinpanot'
       },
       sleepingValues: {
         GOOD: 'Hyvin',

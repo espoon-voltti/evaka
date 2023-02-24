@@ -168,7 +168,7 @@ export default React.memo(function MarkPresent() {
               </span>
               <DailyNote
                 child={child ? child : undefined}
-                groupNote={groupNotes.length > 0 ? groupNotes[0] : undefined}
+                groupNotes={groupNotes}
               />
             </DailyNotes>
           </ContentArea>
