@@ -307,73 +307,49 @@ export default React.memo(function DayView({
                             <Gap size="s" />
 
                             <ReservationTable>
-                              <thead>
-                                <tr>
-                                  <th>
-                                    <LabelLike>
-                                      {i18n.calendar.reservation}
-                                    </LabelLike>
-                                  </th>
-                                  <th>
-                                    <LabelLike>
-                                      {i18n.calendar.realized}
-                                    </LabelLike>
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>
-                                    {editing &&
-                                    (reservationEditable ||
-                                      reservations.length) ? (
-                                      <EditReservation
-                                        childId={child.id}
-                                        canAddSecondReservation={
-                                          !reservations[1] &&
-                                          child.inShiftCareUnit
-                                        }
-                                        childState={childState}
-                                        editorStateSetter={editorStateSetter}
-                                        editorAbsenceSetter={
-                                          editorAbsenceSetter
-                                        }
-                                        addSecondReservation={
-                                          addSecondReservation
-                                        }
-                                        removeSecondReservation={
-                                          removeSecondReservation
-                                        }
-                                      />
-                                    ) : absence ? (
-                                      <Absence
-                                        absence={absence}
-                                        markedByEmployee={markedByEmployee}
-                                      />
-                                    ) : (
-                                      <Reservations
-                                        reservations={reservations}
-                                      />
-                                    )}
-                                  </td>
-                                  <td>
-                                    {attendances.length > 0
-                                      ? attendances.map(
-                                          ({ startTime, endTime }) => (
-                                            <div
-                                              key={JSON.stringify([
-                                                startTime,
-                                                endTime
-                                              ])}
-                                            >
-                                              {startTime} – {endTime ?? ''}
-                                            </div>
-                                          )
-                                        )
-                                      : '–'}
-                                  </td>
-                                </tr>
-                              </tbody>
+                              <LabelLike>{i18n.calendar.reservation}</LabelLike>
+                              <div>
+                                {editing &&
+                                (reservationEditable || reservations.length) ? (
+                                  <EditReservation
+                                    childId={child.id}
+                                    canAddSecondReservation={
+                                      !reservations[1] && child.inShiftCareUnit
+                                    }
+                                    childState={childState}
+                                    editorStateSetter={editorStateSetter}
+                                    editorAbsenceSetter={editorAbsenceSetter}
+                                    addSecondReservation={addSecondReservation}
+                                    removeSecondReservation={
+                                      removeSecondReservation
+                                    }
+                                  />
+                                ) : absence ? (
+                                  <Absence
+                                    absence={absence}
+                                    markedByEmployee={markedByEmployee}
+                                  />
+                                ) : (
+                                  <Reservations reservations={reservations} />
+                                )}
+                              </div>
+                              <LabelLike>{i18n.calendar.realized}</LabelLike>
+                              <div>
+                                {attendances.length > 0
+                                  ? attendances.map(
+                                      ({ startTime, endTime }) => (
+                                        <div
+                                          key={JSON.stringify([
+                                            startTime,
+                                            endTime
+                                          ])}
+                                        >
+                                          {startTime} – {endTime ?? ''}
+                                        </div>
+                                      )
+                                    )
+                                  : '–'}
+                              </div>
                             </ReservationTable>
                             {showAttendanceWarning && (
                               <AlertBox
@@ -869,6 +845,7 @@ export function addTimeRangeValidationErrors(
 
 const DayHeader = styled.div<{ highlight: boolean }>`
   position: sticky;
+  z-index: 100;
   border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   text-transform: capitalize;
   padding: ${defaultMargins.m} 0;
@@ -953,16 +930,9 @@ const EmptyButtonFooterElement = styled.div`
   }
 `
 
-const ReservationTable = styled.table`
-  border-collapse: collapse;
-  width: 100%;
-
-  * {
-    text-align: left;
-  }
-
-  th,
-  td {
-    width: 50%;
-  }
+const ReservationTable = styled.div`
+  display: grid;
+  grid-template-rows: minmax(38px, max-content) minmax(38px, max-content);
+  grid-template-columns: 42% 58%;
+  row-gap: ${defaultMargins.xxs};
 `
