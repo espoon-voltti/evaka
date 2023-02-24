@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
@@ -43,7 +44,8 @@ enum class VasuDocumentState {
 data class VasuDocumentEvent(
     val id: UUID,
     val created: HelsinkiDateTime,
-    val eventType: VasuDocumentEventType
+    val eventType: VasuDocumentEventType,
+    val employeeId: EmployeeId
 )
 
 private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState {
@@ -80,13 +82,15 @@ data class VasuDocumentSummary(
 data class VasuDocument(
     val id: VasuDocumentId,
     val modifiedAt: HelsinkiDateTime,
+    val templateId: VasuTemplateId,
     val templateName: String,
     val templateRange: FiniteDateRange,
     val type: CurriculumType,
     val language: VasuLanguage,
     @Json val events: List<VasuDocumentEvent> = listOf(),
     @Json val basics: VasuBasics,
-    @Json val content: VasuContent
+    @Json val content: VasuContent,
+    val publishedAt: HelsinkiDateTime?
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)

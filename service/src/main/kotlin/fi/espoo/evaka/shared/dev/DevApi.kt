@@ -1738,6 +1738,7 @@ data class DevPerson(
     val ophPersonOid: String = "",
     val languageAtHome: String = "",
     val languageAtHomeDetails: String = "",
+    val duplicateOf: PersonId? = null
 ) {
     fun toPersonDTO() =
         PersonDTO(
