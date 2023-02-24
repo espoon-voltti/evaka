@@ -248,7 +248,7 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): MessageThread {
+    ): MessageThread? {
         return db.connect { dbc ->
                 val accountId =
                     dbc.read { it.getServiceWorkerAccountId() }
@@ -263,7 +263,7 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(applicationId, it.id)) }
+            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(applicationId, it?.id)) }
     }
 
     @GetMapping("/unread")

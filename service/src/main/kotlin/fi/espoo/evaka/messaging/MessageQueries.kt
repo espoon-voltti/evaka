@@ -1027,7 +1027,7 @@ fun Database.Read.getMessageThreadByApplicationId(
     applicationId: ApplicationId,
     municipalAccountName: String,
     serviceWorkerAccountName: String
-): MessageThread {
+): MessageThread? {
     val thread =
         createQuery(
                 """
@@ -1058,19 +1058,20 @@ GROUP BY t.id
             .bind("applicationId", applicationId)
             .mapTo<ReceivedThread>()
             .firstOrNull()
-            ?: throw NotFound("No thread found for $applicationId")
 
-    val messagesByThread =
-        getThreadMessages(
-            accountId,
-            listOf(thread.id),
-            municipalAccountName,
-            serviceWorkerAccountName
-        )
-    return combineThreadsAndMessages(accountId, Paged(listOf(thread), 1, 1), messagesByThread)
-        .data
-        .firstOrNull()
-        ?: throw NotFound("No thread found for $applicationId")
+    if (thread != null) {
+        val messagesByThread =
+            getThreadMessages(
+                accountId,
+                listOf(thread.id),
+                municipalAccountName,
+                serviceWorkerAccountName
+            )
+        return combineThreadsAndMessages(accountId, Paged(listOf(thread), 1, 1), messagesByThread)
+            .data
+            .firstOrNull()
+    }
+    return null
 }
 
 data class UnitMessageReceiversResult(
