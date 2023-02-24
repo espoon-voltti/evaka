@@ -303,3 +303,4 @@ V303__message_thread_application_index.sql
 V304__invoice_indexing.sql
 V305__foreign_key_indexes.sql
 V306__finance_decision_sending_indexes.sql
+V307__add_missing_updated_triggers.sql
