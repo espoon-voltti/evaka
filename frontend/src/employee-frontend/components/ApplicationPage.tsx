@@ -204,7 +204,11 @@ export default React.memo(function ApplicationPage() {
 
   const getSendMessageUrl = useCallback(
     (applicationData: ApplicationResponse) => {
-      if (messageThread.isSuccess && messageThread.value.messages.length > 0) {
+      if (
+        messageThread.isSuccess &&
+        messageThread.value !== null &&
+        messageThread.value.messages.length > 0
+      ) {
         return `${getEmployeeUrlPrefix()}/employee/messages/?applicationId=${
           applicationData.application.id
         }&messageBox=thread&threadId=${messageThread.value.id}&reply=true`
