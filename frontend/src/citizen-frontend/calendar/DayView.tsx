@@ -27,7 +27,7 @@ import {
 } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Button from 'lib-components/atoms/buttons/Button'
+import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
@@ -938,6 +938,11 @@ const ButtonFooter = styled.div`
 
     & > * {
       grid-row: 1;
+    }
+
+    // Fit more text to the buttons
+    & > ${StyledButton} {
+      padding: 0;
     }
   }
 `
