@@ -337,9 +337,6 @@ fun calculateBaseFee(
     return roundToEuros(feeInCents).toInt()
 }
 
-fun roundToEuros(cents: BigDecimal): BigDecimal =
-    cents.divide(BigDecimal(100), 0, RoundingMode.HALF_UP).multiply(BigDecimal(100))
-
 fun getTotalIncomeEffect(
     hasPartner: Boolean,
     headIncomeEffect: IncomeEffect?,
