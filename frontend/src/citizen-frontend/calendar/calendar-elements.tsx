@@ -83,9 +83,6 @@ export const Reservations = React.memo(function Reservations({
               images={childImages.filter((image) =>
                 group.childIds.includes(image.childId)
               )}
-              imageSize={32}
-              imageBorder={2}
-              imageOverlap={16}
             />
             <GroupedElementText
               className={group.type}

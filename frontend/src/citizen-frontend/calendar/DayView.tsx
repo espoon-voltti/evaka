@@ -279,7 +279,7 @@ export default React.memo(function DayView({
                               <FixedSpaceColumn>
                                 <RoundChildImage
                                   imageId={child.imageId}
-                                  initialLetter={
+                                  fallbackText={
                                     (formatFirstName(child) || '?')[0]
                                   }
                                   colorIndex={childIndex}

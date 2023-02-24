@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import take from 'lodash/take'
+import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
@@ -20,20 +21,21 @@ export interface ChildImageData {
 
 export interface Props {
   images: ChildImageData[]
-  imageSize: number
-  imageBorder: number
-  imageOverlap: number
 }
 
-export default React.memo(function RoundChildImages({
-  images,
-  imageSize,
-  imageBorder,
-  imageOverlap
-}: Props) {
+export default React.memo(function RoundChildImages({ images }: Props) {
+  const imageSize = 32
+  const imageBorder = 2
+  const imageOverlap = 16
+  const maxImages = 4
+
+  const imagesToShow = useMemo(
+    () => (images.length <= maxImages ? images : take(images, maxImages - 1)),
+    [images]
+  )
   return (
     <RoundChildImagesContainer borderSize={imageBorder}>
-      {images.map((image, index) => (
+      {imagesToShow.map((image, index) => (
         <Overlap
           key={image.childId}
           overlap={imageOverlap}
@@ -43,13 +45,25 @@ export default React.memo(function RoundChildImages({
         >
           <RoundChildImage
             imageId={image.imageId}
-            initialLetter={image.initialLetter}
+            fallbackText={image.initialLetter}
             colorIndex={image.colorIndex}
             size={imageSize}
             border={imageBorder}
           />
         </Overlap>
       ))}
+      {images.length > maxImages ? (
+        <Overlap overlap={imageOverlap} index={imagesToShow.length}>
+          <ChildImageFallback
+            textColor={theme.colors.grayscale.g0}
+            backgroundColor={theme.colors.main.m2}
+            size={imageSize}
+            border={imageBorder}
+          >
+            +{images.length - maxImages + 1}
+          </ChildImageFallback>
+        </Overlap>
+      ) : null}
     </RoundChildImagesContainer>
   )
 })
@@ -66,7 +80,7 @@ const Overlap = styled.div<{ overlap: number; index: number }>`
 
 export interface RoundChildImageProps {
   imageId: UUID | null
-  initialLetter: string
+  fallbackText: string
   colorIndex: number
   size: number
   border?: number
@@ -74,7 +88,7 @@ export interface RoundChildImageProps {
 
 export const RoundChildImage = React.memo(function RoundChildImage({
   imageId,
-  initialLetter,
+  fallbackText,
   colorIndex,
   size,
   border = 0
@@ -86,9 +100,14 @@ export const RoundChildImage = React.memo(function RoundChildImage({
       border={border}
     />
   ) : (
-    <ChildInitialLetter colorIndex={colorIndex} size={size} border={border}>
-      {initialLetter}
-    </ChildInitialLetter>
+    <ChildImageFallback
+      textColor={theme.colors.grayscale.g100}
+      backgroundColor={accentColors[colorIndex % accentColors.length]}
+      size={size}
+      border={border}
+    >
+      {fallbackText}
+    </ChildImageFallback>
   )
 })
 
@@ -110,13 +129,15 @@ const accentColors = [
   theme.colors.accents.a5orangeLight
 ]
 
-const ChildInitialLetter = styled.div<{
+const ChildImageFallback = styled.div<{
   size: number
   border: number
-  colorIndex: number
+  textColor: string
+  backgroundColor: string
 }>`
   ${roundMixin};
-  background-color: ${(p) => accentColors[p.colorIndex % accentColors.length]};
+  color: ${(p) => p.textColor ?? p.theme.colors.grayscale.g100};
+  background-color: ${(p) => p.backgroundColor};
   font-weight: ${fontWeights.semibold};
   display: flex;
   justify-content: center;
