@@ -37,7 +37,7 @@ export function query<
   const { api, queryKey, options } = opts
   return (
     api.length === 0
-      ? { api, queryKey: (queryKey as any)() }
+      ? { api, queryKey: (queryKey as any)(), queryOptions: options }
       : (...args: Args) => ({
           api: () => api(...args),
           queryKey: queryKey(...args),
