@@ -8,8 +8,8 @@ import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
@@ -27,10 +27,10 @@ import { OverlayContext } from '../overlay/state'
 
 import ChildrenIncomeStatements from './ChildrenIncomeStatements'
 import {
-  deleteIncomeStatement,
-  getGuardianIncomeStatementChildren,
-  getIncomeStatements
-} from './api'
+  deleteIncomeStatementMutation,
+  guardianIncomeStatementChildrenQuery,
+  incomeStatementsQuery
+} from './queries'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -124,15 +124,14 @@ export default React.memo(function IncomeStatements() {
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [page, setPage] = useState(1)
-  const [incomeStatements, fetchIncomeStatements] = useApiState(
-    () => getIncomeStatements(page, 10),
-    [page]
+  const incomeStatements = useQueryResult(incomeStatementsQuery(page, 10))
+  const { mutateAsync: deleteIncomeStatement } = useMutation(
+    deleteIncomeStatementMutation
   )
 
-  const [children, fetchChildren] = useApiState(
-    () => getGuardianIncomeStatementChildren(),
-    []
-  )
+  const children = useQueryResult(guardianIncomeStatementChildrenQuery, {
+    staleTime: 1000 * 60 * 60 * 24 // children change rarely
+  })
 
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'
@@ -141,19 +140,19 @@ export default React.memo(function IncomeStatements() {
   const onDelete = useCallback(
     (id: UUID) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
-      void deleteIncomeStatement(id).then((res) => {
-        if (res.isFailure) {
+      deleteIncomeStatement(id)
+        .then(() => {
+          setDeletionState({ status: 'row-not-selected' })
+        })
+        .catch(() => {
           setErrorMessage({
             title: t.income.errors.deleteFailed,
             type: 'error',
             resolveLabel: t.common.ok
           })
-        }
-        setDeletionState({ status: 'row-not-selected' })
-        void fetchIncomeStatements()
-      })
+        })
     },
-    [fetchIncomeStatements, setErrorMessage, t]
+    [deleteIncomeStatement, setErrorMessage, t]
   )
 
   return (
@@ -219,10 +218,7 @@ export default React.memo(function IncomeStatements() {
           <Gap size="s" />
           {renderResult(children, (children) => (
             <>
-              <ChildrenIncomeStatements
-                childInfo={children}
-                onRemoveIncomeStatement={fetchChildren}
-              />
+              <ChildrenIncomeStatements childInfo={children} />
             </>
           ))}
         </Container>

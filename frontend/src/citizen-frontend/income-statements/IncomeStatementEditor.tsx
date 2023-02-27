@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -17,11 +17,11 @@ import { renderResult } from '../async-rendering'
 import { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import IncomeStatementForm from './IncomeStatementForm'
 import {
-  createIncomeStatement,
-  getIncomeStatement,
-  getIncomeStatementStartDates,
-  updateIncomeStatement
-} from './api'
+  createIncomeStatementMutation,
+  incomeStatementQuery,
+  incomeStatementStartDatesQuery,
+  updateIncomeStatementMutation
+} from './queries'
 import { fromBody } from './types/body'
 import * as Form from './types/form'
 import { initialFormData } from './types/form'
@@ -32,17 +32,13 @@ interface EditorState {
   formData: Form.IncomeStatementForm
 }
 
-async function initializeEditorState(
-  id: UUID | undefined
-): Promise<Result<EditorState>> {
-  const incomeStatementPromise: Promise<Result<IncomeStatement | undefined>> =
-    id ? getIncomeStatement(id) : Promise.resolve(Success.of(undefined))
-  const [incomeStatement, startDates] = await Promise.all([
-    incomeStatementPromise,
-    getIncomeStatementStartDates()
-  ])
+function useInitialEditorState(id: UUID | undefined): Result<EditorState> {
+  const incomeStatement = useQueryResult(incomeStatementQuery(id ?? ''), {
+    enabled: !!id
+  })
+  const startDates = useQueryResult(incomeStatementStartDatesQuery)
 
-  return combine(incomeStatement, startDates).map(
+  return combine(id ? incomeStatement : Success.of(undefined), startDates).map(
     ([incomeStatement, startDates]) => ({
       id,
       startDates,
@@ -59,11 +55,12 @@ export default React.memo(function IncomeStatementEditor() {
   const navigate = useNavigate()
   const incomeStatementId =
     params.incomeStatementId === 'new' ? undefined : params.incomeStatementId
-  const [state, setState] = useState<Result<EditorState>>(Loading.of())
 
-  useEffect(() => {
-    void initializeEditorState(incomeStatementId).then(setState)
-  }, [incomeStatementId])
+  const [state, setState] = useState<Result<EditorState>>(Loading.of())
+  const initialEditorState = useInitialEditorState(incomeStatementId)
+  if (state.isLoading && initialEditorState.isSuccess) {
+    setState(initialEditorState)
+  }
 
   const [showFormErrors, setShowFormErrors] = useState(false)
 
@@ -81,6 +78,13 @@ export default React.memo(function IncomeStatementEditor() {
     []
   )
 
+  const { mutateAsync: createIncomeStatement } = useMutationResult(
+    createIncomeStatementMutation
+  )
+  const { mutateAsync: updateIncomeStatement } = useMutationResult(
+    updateIncomeStatementMutation
+  )
+
   return renderResult(state, (state) => {
     const { id, formData, startDates } = state
 
@@ -88,7 +92,7 @@ export default React.memo(function IncomeStatementEditor() {
       const validatedData = formData ? fromBody('adult', formData) : undefined
       if (validatedData) {
         if (id) {
-          return updateIncomeStatement(id, validatedData)
+          return updateIncomeStatement({ id, body: validatedData })
         } else {
           return createIncomeStatement(validatedData)
         }

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -17,11 +17,11 @@ import { renderResult } from '../async-rendering'
 import ChildIncomeStatementForm from './ChildIncomeStatementForm'
 import { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {
-  createChildIncomeStatement,
-  getChildIncomeStatement,
-  getChildIncomeStatementStartDates,
-  updateChildIncomeStatement
-} from './api'
+  childIncomeStatementQuery,
+  childIncomeStatementStartDatesQuery,
+  createChildIncomeStatementMutation,
+  updateChildIncomeStatementMutation
+} from './queries'
 import { fromBody } from './types/body'
 import * as Form from './types/form'
 import { initialFormData } from './types/form'
@@ -32,21 +32,19 @@ interface EditorState {
   formData: Form.IncomeStatementForm
 }
 
-async function initializeEditorState(
+function useInitialEditorState(
   childId: UUID,
   id: UUID | undefined
-): Promise<Result<EditorState>> {
-  const incomeStatementPromise: Promise<Result<IncomeStatement | undefined>> =
-    id
-      ? getChildIncomeStatement(childId, id)
-      : Promise.resolve(Success.of(undefined))
+): Result<EditorState> {
+  const incomeStatement = useQueryResult(
+    childIncomeStatementQuery(childId, id ?? ''),
+    { enabled: !!id }
+  )
+  const startDates = useQueryResult(
+    childIncomeStatementStartDatesQuery(childId)
+  )
 
-  const [incomeStatement, startDates] = await Promise.all([
-    incomeStatementPromise,
-    getChildIncomeStatementStartDates(childId)
-  ])
-
-  return combine(incomeStatement, startDates).map(
+  return combine(id ? incomeStatement : Success.of(undefined), startDates).map(
     ([incomeStatement, startDates]) => ({
       id,
       startDates,
@@ -70,10 +68,10 @@ export default React.memo(function ChildIncomeStatementEditor() {
   const childId = params.childId
 
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
-
-  useEffect(() => {
-    void initializeEditorState(childId, incomeStatementId).then(setState)
-  }, [incomeStatementId, childId])
+  const initialEditorState = useInitialEditorState(childId, incomeStatementId)
+  if (state.isLoading && initialEditorState.isSuccess) {
+    setState(initialEditorState)
+  }
 
   const [showFormErrors, setShowFormErrors] = useState(false)
 
@@ -91,6 +89,13 @@ export default React.memo(function ChildIncomeStatementEditor() {
     []
   )
 
+  const { mutateAsync: createChildIncomeStatement } = useMutationResult(
+    createChildIncomeStatementMutation
+  )
+  const { mutateAsync: updateChildIncomeStatement } = useMutationResult(
+    updateChildIncomeStatementMutation
+  )
+
   return renderResult(state, (state) => {
     const { id, formData, startDates } = state
 
@@ -98,9 +103,13 @@ export default React.memo(function ChildIncomeStatementEditor() {
       const validatedData = formData ? fromBody('child', formData) : undefined
       if (validatedData) {
         if (id) {
-          return updateChildIncomeStatement(childId, id, validatedData)
+          return updateChildIncomeStatement({
+            childId,
+            id,
+            body: validatedData
+          })
         } else {
-          return createChildIncomeStatement(childId, validatedData)
+          return createChildIncomeStatement({ childId, body: validatedData })
         }
       } else {
         setShowFormErrors(true)
