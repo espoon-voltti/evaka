@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
+import styled from 'styled-components'
 
 import { ErrorKey } from 'lib-common/form-validation'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -34,7 +35,7 @@ export default React.memo(function TimeRangeInput({
   const onChangeEnd = useMemo(() => onChange('endTime'), [onChange])
 
   return (
-    <>
+    <TimeRangeWrapper>
       <TimeInput
         value={startTime}
         onChange={onChangeStart}
@@ -50,6 +51,17 @@ export default React.memo(function TimeRangeInput({
         placeholder={i18n.calendar.reservationModal.end}
         data-qa={dataQa ? `${dataQa}-end` : undefined}
       />
-    </>
+    </TimeRangeWrapper>
   )
 })
+
+const TimeRangeWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 5fr 1fr 5fr;
+
+  & > :nth-child(2) {
+    display: flex;
+    justify-content: center;
+    padding-top: 8px;
+  }
+`
