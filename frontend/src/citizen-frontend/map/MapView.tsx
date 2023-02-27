@@ -6,7 +6,6 @@ import sortBy from 'lodash/sortBy'
 import React, { ReactNode, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import {
   Language,
@@ -14,7 +13,7 @@ import {
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -28,9 +27,8 @@ import MobileTabs from './MobileTabs'
 import SearchSection from './SearchSection'
 import UnitDetailsPanel from './UnitDetailsPanel'
 import UnitList from './UnitList'
-import { fetchUnits, queryDistances } from './api'
 import { mapViewBreakpoint, MobileMode } from './const'
-import { calcStraightDistance, UnitWithStraightDistance } from './distances'
+import { unitsQuery, unitsWithDistancesQuery } from './queries'
 
 export type MapAddress = {
   coordinates: Coordinate
@@ -61,30 +59,6 @@ const MapFullscreenContainer = React.memo(function MapFullscreenContainer({
   )
 })
 
-async function fetchUnitsWithDistances(
-  selectedAddress: MapAddress | null,
-  filteredUnits: Result<PublicUnit[]>
-) {
-  if (selectedAddress && filteredUnits.isSuccess) {
-    const units = filteredUnits.value
-
-    const unitsWithStraightDistance = units.map<UnitWithStraightDistance>(
-      (unit) => ({
-        ...unit,
-        straightDistance: unit.location
-          ? calcStraightDistance(unit.location, selectedAddress.coordinates)
-          : null
-      })
-    )
-    return await queryDistances(
-      selectedAddress.coordinates,
-      unitsWithStraightDistance
-    )
-  } else {
-    return Success.of([])
-  }
-}
-
 export default React.memo(function MapView() {
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
@@ -100,16 +74,21 @@ export default React.memo(function MapView() {
   const [providerTypes, setProviderTypes] = useState<ProviderType[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
 
-  const [allUnits] = useApiState(() => fetchUnits(careType), [careType])
+  const allUnits = useQueryResult(unitsQuery(careType))
 
-  const filteredUnits = useMemo<Result<PublicUnit[]>>(
-    () => filterUnits(allUnits, careType, languages, providerTypes, shiftCare),
+  const filteredUnits = useMemo(
+    () =>
+      allUnits.map((units) =>
+        filterAndSortUnits(units, careType, languages, providerTypes, shiftCare)
+      ),
     [allUnits, careType, languages, providerTypes, shiftCare]
   )
 
-  const [unitsWithDistances] = useApiState(
-    () => fetchUnitsWithDistances(selectedAddress, filteredUnits),
-    [selectedAddress, filteredUnits]
+  const unitsWithDistances = useQueryResult(
+    unitsWithDistancesQuery(
+      selectedAddress,
+      filteredUnits.isSuccess ? filteredUnits.value : []
+    )
   )
 
   useTitle(t, t.map.title)
@@ -180,57 +159,56 @@ export default React.memo(function MapView() {
   )
 })
 
-const filterUnits = (
-  unitsResult: Result<PublicUnit[]>,
+const filterAndSortUnits = (
+  units: PublicUnit[],
   careType: CareTypeOption,
   languages: Language[],
   providerTypes: ProviderType[],
   shiftCare: boolean
-): Result<PublicUnit[]> =>
-  unitsResult.map((value) => {
-    const filteredUnits = value
-      .filter((u) =>
-        careType === 'DAYCARE'
-          ? u.type.includes('CENTRE') ||
-            u.type.includes('FAMILY') ||
-            u.type.includes('GROUP_FAMILY')
-          : careType === 'CLUB'
-          ? u.type.includes('CLUB')
-          : careType === 'PRESCHOOL'
-          ? u.type.includes('PRESCHOOL') ||
-            u.type.includes('PREPARATORY_EDUCATION')
-          : false
-      )
-      .filter(
-        (u) =>
-          languages.length == 0 ||
-          (!(u.language === 'fi' && !languages.includes('fi')) &&
-            !(u.language === 'sv' && !languages.includes('sv')))
-      )
-      .filter(
-        (u) =>
-          providerTypes.length == 0 ||
-          (!(
-            (u.providerType === 'MUNICIPAL' ||
-              u.providerType === 'MUNICIPAL_SCHOOL') &&
-            !providerTypes.includes('MUNICIPAL')
+): PublicUnit[] => {
+  const filteredUnits = units
+    .filter((u) =>
+      careType === 'DAYCARE'
+        ? u.type.includes('CENTRE') ||
+          u.type.includes('FAMILY') ||
+          u.type.includes('GROUP_FAMILY')
+        : careType === 'CLUB'
+        ? u.type.includes('CLUB')
+        : careType === 'PRESCHOOL'
+        ? u.type.includes('PRESCHOOL') ||
+          u.type.includes('PREPARATORY_EDUCATION')
+        : false
+    )
+    .filter(
+      (u) =>
+        languages.length == 0 ||
+        (!(u.language === 'fi' && !languages.includes('fi')) &&
+          !(u.language === 'sv' && !languages.includes('sv')))
+    )
+    .filter(
+      (u) =>
+        providerTypes.length == 0 ||
+        (!(
+          (u.providerType === 'MUNICIPAL' ||
+            u.providerType === 'MUNICIPAL_SCHOOL') &&
+          !providerTypes.includes('MUNICIPAL')
+        ) &&
+          !(
+            u.providerType === 'PURCHASED' &&
+            !providerTypes.includes('PURCHASED')
           ) &&
-            !(
-              u.providerType === 'PURCHASED' &&
-              !providerTypes.includes('PURCHASED')
-            ) &&
-            !(
-              u.providerType === 'PRIVATE' && !providerTypes.includes('PRIVATE')
-            ) &&
-            !(
-              u.providerType === 'PRIVATE_SERVICE_VOUCHER' &&
-              !providerTypes.includes('PRIVATE_SERVICE_VOUCHER')
-            ))
-      )
-      .filter((u) => !shiftCare || u.roundTheClock)
+          !(
+            u.providerType === 'PRIVATE' && !providerTypes.includes('PRIVATE')
+          ) &&
+          !(
+            u.providerType === 'PRIVATE_SERVICE_VOUCHER' &&
+            !providerTypes.includes('PRIVATE_SERVICE_VOUCHER')
+          ))
+    )
+    .filter((u) => !shiftCare || u.roundTheClock)
 
-    return sortBy(filteredUnits, (u) => u.name)
-  })
+  return sortBy(filteredUnits, (u) => u.name)
+}
 
 const PanelWrapper = styled.div`
   width: 400px;

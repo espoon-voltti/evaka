@@ -5,7 +5,6 @@
 import axios from 'axios'
 import sortBy from 'lodash/sortBy'
 
-import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -17,15 +16,16 @@ import { mapConfig } from 'lib-customizations/citizen'
 import { client } from '../api-client'
 
 import { MapAddress } from './MapView'
-import { UnitWithDistance, UnitWithStraightDistance } from './distances'
+import {
+  calcStraightDistance,
+  UnitWithDistance,
+  UnitWithStraightDistance
+} from './distances'
 
-export async function fetchUnits(
-  type: ApplicationType
-): Promise<Result<PublicUnit[]>> {
+export async function fetchUnits(type: ApplicationType): Promise<PublicUnit[]> {
   return client
     .get<JsonOf<PublicUnit[]>>(`/public/units/${type}`)
-    .then(({ data }) => Success.of(data.map(deserializePublicUnit)))
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => data.map(deserializePublicUnit))
 }
 
 type AutocompleteResponse = {
@@ -42,9 +42,9 @@ type AutocompleteResponse = {
   }[]
 }
 
-export const queryAutocomplete = async (
+export const autocompleteAddress = async (
   text: string
-): Promise<Result<MapAddress[]>> => {
+): Promise<MapAddress[]> => {
   const url = isAutomatedTest
     ? '/api/internal/dev-api/digitransit/autocomplete'
     : 'https://api.digitransit.fi/geocoding/v1/autocomplete'
@@ -72,8 +72,6 @@ export const queryAutocomplete = async (
           feature.properties.locality ?? feature.properties.localadmin ?? ''
       }))
     )
-    .then((options) => Success.of(options))
-    .catch((e) => Failure.fromError(e))
 }
 
 type ItineraryResponse = {
@@ -92,22 +90,31 @@ const uuidToKey = (id: string) => `id${id.replace(/-/g, '')}`
 
 const accurateDistancesCount = 15
 
-export const queryDistances = async (
-  startLocation: Coordinate,
-  endLocations: UnitWithStraightDistance[]
-): Promise<Result<UnitWithDistance[]>> => {
-  if (endLocations.length === 0) {
-    return Success.of([])
+export async function fetchUnitsWithDistances(
+  selectedAddress: MapAddress,
+  units: PublicUnit[]
+): Promise<UnitWithDistance[]> {
+  const startLocation = selectedAddress.coordinates
+
+  const unitsWithStraightDistance = units.map<UnitWithStraightDistance>(
+    (unit) => ({
+      ...unit,
+      straightDistance: unit.location
+        ? calcStraightDistance(unit.location, startLocation)
+        : null
+    })
+  )
+
+  if (unitsWithStraightDistance.length === 0) {
+    return []
   } else if (isAutomatedTest) {
-    return Success.of(
-      endLocations.map((unit, index) => ({
-        ...unit,
-        drivingDistance: index + 1
-      }))
-    )
+    return unitsWithStraightDistance.map((unit, index) => ({
+      ...unit,
+      drivingDistance: index + 1
+    }))
   }
   const unitsToQuery = sortBy(
-    endLocations.filter((u) => u.straightDistance !== null),
+    unitsWithStraightDistance.filter((u) => u.straightDistance !== null),
     (u) => u.straightDistance
   ).slice(0, accurateDistancesCount)
 
@@ -148,7 +155,7 @@ export const queryDistances = async (
       }
     )
     .then((res) => {
-      return endLocations.map((unit) => {
+      return unitsWithStraightDistance.map((unit) => {
         const plan = res.data.data[uuidToKey(unit.id)]
         if (!plan)
           return {
@@ -174,16 +181,14 @@ export const queryDistances = async (
         }
       })
     })
-    .then((res) => Success.of(res))
-    .catch((e) => Failure.fromError(e))
 }
 
-export const queryDistance = async (
+export const fetchDistance = async (
   startLocation: Coordinate,
-  endLocations: Coordinate
-): Promise<Result<number>> => {
+  endLocation: Coordinate
+): Promise<number> => {
   if (isAutomatedTest) {
-    return Success.of(7)
+    return 7
   }
   const query = `
 {
@@ -193,8 +198,8 @@ export const queryDistance = async (
         lon: ${startLocation.lon}
       },
       to: {
-        lat: ${endLocations.lat},
-        lon: ${endLocations.lon}
+        lat: ${endLocation.lat},
+        lon: ${endLocation.lon}
       },
       modes: "WALK"
     ) {
@@ -222,6 +227,4 @@ export const queryDistance = async (
 
       return itineraries[0].legs.reduce((acc, leg) => acc + leg.distance, 0)
     })
-    .then((res) => Success.of(res))
-    .catch((e) => Failure.fromError(e))
 }
