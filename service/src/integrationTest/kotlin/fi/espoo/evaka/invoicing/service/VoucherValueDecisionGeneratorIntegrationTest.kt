@@ -103,7 +103,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(testChild_1.id, decision.child.id)
             assertEquals(134850, decision.baseValue)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
-            assertEquals(134850, decision.voucherValue)
+            assertEquals(134900, decision.voucherValue)
             assertEquals(28900, decision.finalCoPayment)
         }
         voucherValueDecisions.last().let { decision ->
@@ -143,7 +143,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(testChild_1.id, decision.child.id)
             assertEquals(134850, decision.baseValue)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
-            assertEquals(134850, decision.voucherValue)
+            assertEquals(134900, decision.voucherValue)
             assertEquals(14450, decision.finalCoPayment)
         }
         voucherValueDecisions.last().let { decision ->
@@ -188,7 +188,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(testChild.id, decision.child.id)
             assertEquals(134850, decision.baseValue)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
-            assertEquals(134850, decision.voucherValue)
+            assertEquals(134900, decision.voucherValue)
         }
         voucherValueDecisions.last().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
@@ -486,7 +486,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertAssistanceNeedCoefficient(testChild_2.id, period.asFiniteDateRange()!!, 3.0)
+        insertAssistanceNeedCoefficient(testChild_2.id, period.asFiniteDateRange()!!, 3.55)
 
         db.transaction {
             generator.generateNewDecisionsForAdult(
@@ -505,10 +505,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(period.end, decision.validTo)
             assertEquals(testChild_2.id, decision.child.id)
             assertEquals(87000, decision.baseValue)
-            assertEquals(BigDecimal("3.00"), decision.assistanceNeedCoefficient)
+            assertEquals(BigDecimal("3.55"), decision.assistanceNeedCoefficient)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
-            assertEquals(261000, decision.voucherValue)
+            assertEquals(308900, decision.voucherValue)
             assertEquals(28900, decision.coPayment)
         }
     }

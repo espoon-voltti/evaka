@@ -34,6 +34,7 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getVoucherValues
+import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -344,7 +345,8 @@ private fun generateNewValueDecisions(
                         baseValue = voucherValue.baseValue,
                         assistanceNeedCoefficient = assistanceNeedCoefficient,
                         voucherValue =
-                            (BigDecimal(voucherValue.value) * assistanceNeedCoefficient).toInt(),
+                            roundToEuros(BigDecimal(voucherValue.value) * assistanceNeedCoefficient)
+                                .toInt(),
                         difference = emptySet()
                     )
             }
