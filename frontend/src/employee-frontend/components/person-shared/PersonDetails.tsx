@@ -231,8 +231,12 @@ export default React.memo(function PersonDetails({
 
   const language = useMemo(
     () =>
-      (person.language && isoLanguages[person.language]?.nameFi) ??
-      person.language,
+      (person.language
+        ? Object.values(isoLanguages).find(
+            ({ alpha2 }) => alpha2 === person.language
+          )
+        : null
+      )?.nameFi ?? person.language,
     [person.language]
   )
 
@@ -500,14 +504,14 @@ export default React.memo(function PersonDetails({
                 <Combobox
                   data-qa="input-language-at-home"
                   items={languages}
-                  getItemDataQa={(item) => `language-${item.alpha2}`}
+                  getItemDataQa={(item) => `language-${item.id}`}
                   selectedItem={
                     (form.languageAtHome
                       ? isoLanguages[form.languageAtHome]
                       : null) ?? null
                   }
                   onChange={(item) =>
-                    updateForm({ languageAtHome: item?.alpha2 ?? '' })
+                    updateForm({ languageAtHome: item?.id ?? '' })
                   }
                   getItemLabel={(item) => item?.nameFi}
                   placeholder={

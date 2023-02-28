@@ -4,7 +4,7 @@
 
 package evaka.codegen
 
-import fi.espoo.evaka.shared.domain.ISO_LANGUAGES_WITH_ALPHA2_CODE
+import fi.espoo.evaka.shared.domain.ISO_LANGUAGES_SUBSET
 import fi.espoo.evaka.shared.domain.IsoLanguage
 import java.nio.file.Path
 import kotlin.io.path.readText
@@ -22,16 +22,16 @@ fun generateLanguages(target: Path) {
 
 private fun languageFileBody(): String {
     val languages =
-        ISO_LANGUAGES_WITH_ALPHA2_CODE.joinToString("\n") { lang ->
-            "  ${lang.alpha2}: ${lang.toTypescript()},"
+        ISO_LANGUAGES_SUBSET.joinToString("\n") { lang ->
+            "  ${lang.id}: ${lang.toTypescript()},"
         }
 
     @Language("typescript")
     val body =
         """
-export type IsoLanguage = { alpha2: string; nameFi: string }
+export type IsoLanguage = { id: string; alpha2: string; nameFi: string }
 
-const isoLanguages: { [alpha2: string]: IsoLanguage } = {
+const isoLanguages: { [id: string]: IsoLanguage } = {
 $languages
 }
 export { isoLanguages }
@@ -39,7 +39,7 @@ export { isoLanguages }
     return body.trim()
 }
 
-private fun IsoLanguage.toTypescript(): String = """{ alpha2: "$alpha2", nameFi: "$nameFi" }"""
+private fun IsoLanguage.toTypescript(): String = """{ id: "$id", alpha2: "$alpha2", nameFi: "$nameFi" }"""
 
 fun checkLanguages(target: Path) {
     if (languageFileBody() != target.readText().skipFileHeader()) {

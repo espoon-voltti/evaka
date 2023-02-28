@@ -17,11 +17,11 @@ data class IsoLanguage(
     val nameFi: String
 )
 
-// Subset of ISO 639-3 languages which have a ISO 639-1 alpha-2 code
+// A subset of ISO 639-3 languages
 // Source for data except nameFi: https://iso639-3.sil.org/code_tables/download_tables
 // Source for nameFi:
 // https://github.com/unicode-org/cldr-json/blob/main/cldr-json/cldr-localenames-modern/main/fi/languages.json
-val ISO_LANGUAGES_WITH_ALPHA2_CODE =
+val ISO_LANGUAGES_SUBSET =
     arrayOf(
         IsoLanguage("aar", "aar", "aar", "aa", "afar"),
         IsoLanguage("abk", "abk", "abk", "ab", "abhaasi"),

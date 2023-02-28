@@ -84,7 +84,7 @@ describe('Child Information - edit child information', () => {
   test('Language at home can be edited', async () => {
     const language = 'kreikka'
     const languageSearchText = 'kre'
-    const languageAlpha2 = 'el'
+    const languageId = 'ell'
     const details = 'Puhuu modernia kreikkaa, ei antiikin'
 
     await page.goto(
@@ -96,7 +96,7 @@ describe('Child Information - edit child information', () => {
     await childInformationPage.clickEdit()
     await childInformationPage.languageAtHomeCombobox.fillAndSelectItem(
       languageSearchText,
-      `language-${languageAlpha2}`
+      `language-${languageId}`
     )
     await childInformationPage.languageAtHomeDetailsInput.fill(details)
     await childInformationPage.confirmButton.click()
