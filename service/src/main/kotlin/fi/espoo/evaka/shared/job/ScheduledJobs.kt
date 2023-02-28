@@ -50,6 +50,8 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
     SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
+    SendOutdatedIncomeNotifications(ScheduledJobs::sendOutdatedIncomeNotifications)
+    SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
     SendPatuReport(ScheduledJobs::sendPatuReport)
 }
 
@@ -200,7 +202,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun sendOutdatedIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx ->
-            val count = outdatedIncomeNotifications.scheduleReminders(tx, clock)
+            val count = outdatedIncomeNotifications.scheduleNotifications(tx, clock)
             logger.info("Scheduled $count notifications about outdated income")
         }
     }

@@ -112,6 +112,11 @@ data class ScheduledJobSettings(
                         enabled = false,
                         schedule = JobSchedule.cron("0 0 18 * * 0") // Sunday 18:00
                     )
+                ScheduledJob.SendOutdatedIncomeNotifications ->
+                    ScheduledJobSettings(
+                        enabled = false,
+                        schedule = JobSchedule.daily(LocalTime.of(6, 45))
+                    )
                 ScheduledJob.SendPatuReport ->
                     ScheduledJobSettings(
                         enabled = false,

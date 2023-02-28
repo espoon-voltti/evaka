@@ -37,7 +37,7 @@ class OutdatedIncomeNotifications(
         }
     }
 
-    fun scheduleReminders(tx: Database.Transaction, clock: EvakaClock): Int {
+    fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
         tx.removeUnclaimedJobs(
             setOf(AsyncJobType(AsyncJob.SendOutdatedIncomeNotificationEmail::class))
         )
