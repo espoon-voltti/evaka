@@ -8,7 +8,6 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeNotificationId
 import fi.espoo.evaka.shared.PersonId
@@ -103,17 +102,16 @@ class OutdatedIncomeNotifications(
     fun sendEmail(db: Database.Connection, msg: AsyncJob.SendOutdatedIncomeNotificationEmail) {
         val (recipient, language) =
             db.read { tx ->
-                tx.createQuery<DatabaseTable> {
-                        sql(
-                            """
+                tx.createQuery(
+                        """
 SELECT email, language
 FROM person p
-WHERE p.id = ${bind(msg.guardianId)}
+WHERE p.id = :guardianId
 AND email IS NOT NULL
         """
-                                .trimIndent()
-                        )
-                    }
+                            .trimIndent()
+                    )
+                    .bind("guardianId", msg.guardianId)
                     .map { row ->
                         Pair(
                             row.mapColumn<String>("email"),
@@ -143,8 +141,6 @@ enum class IncomeNotificationType {
     EXPIRED_EMAIL
 }
 
-// TODO: max_fee_accepted mutta on valid_to asetettu?
-// TODO: jos uusi tuloselvitys, ei muistuteta tuloista
 fun Database.Read.guardiansWithOutdatedIncomeWithoutSentNotification(
     checkForExpirationRange: DateRange,
     notificationType: IncomeNotificationType,

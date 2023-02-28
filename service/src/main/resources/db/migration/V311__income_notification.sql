@@ -9,4 +9,5 @@ CREATE TABLE income_notification
     notification_type       income_notification_type NOT NULL
 );
 
+CREATE INDEX idx$income_notification_receiver_id ON income_notification (receiver_id);
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON income_notification FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
