@@ -19,6 +19,7 @@ import fi.espoo.evaka.sficlient.soap.Tiedosto
 import fi.espoo.evaka.sficlient.soap.Viranomainen
 import fi.espoo.evaka.sficlient.soap.Yhteyshenkilo
 import fi.espoo.evaka.shared.domain.europeHelsinki
+import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
 import java.time.LocalDate
 import java.time.ZoneId
@@ -38,8 +39,12 @@ import org.springframework.ws.WebServiceMessage
 import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.core.FaultMessageResolver
 import org.springframework.ws.client.core.WebServiceTemplate
+import org.springframework.ws.soap.SoapMessage
+import org.springframework.ws.soap.client.SoapFaultClientException
 import org.springframework.ws.soap.security.wss4j2.Wss4jSecurityInterceptor
 import org.springframework.ws.transport.http.HttpsUrlConnectionMessageSender
+import org.springframework.xml.transform.StringResult
+import org.springframework.xml.transform.TransformerFactoryUtils
 
 private const val MESSAGE_API_VERSION = "1.1"
 
@@ -276,12 +281,32 @@ private fun List<SignatureParts>.toPartsExpression(): String =
     this.map(SignatureParts::part).joinToString(separator = ";")
 
 private class SfiFaultMessageResolver : FaultMessageResolver {
+    private val logger = KotlinLogging.logger {}
+
     override fun resolveFault(message: WebServiceMessage) {
         when (message) {
+            is SoapMessage -> {
+                try {
+                    val meta = mapOf("envelope" to message.transformToString())
+                    logger.error(meta) {
+                        "Encountered SOAP fault: ${message.faultCode}. Reason: ${message.faultReason}"
+                    }
+                } catch (e: Exception) {
+                    logger.error(e) { "Failed to transform SOAP fault message to string" }
+                }
+                throw SoapFaultClientException(message)
+            }
             is FaultAwareWebServiceMessage -> throw WebServiceFaultException(message)
             else -> throw WebServiceFaultException("Message has unknown fault: $message")
         }
     }
+}
+
+private fun SoapMessage.transformToString(): String {
+    val transformer = TransformerFactoryUtils.newInstance().newTransformer()
+    val result = StringResult()
+    transformer.transform(this.envelope.source, result)
+    return result.toString()
 }
 
 private fun LocalDate.toXmlGregorian(): XMLGregorianCalendar =
