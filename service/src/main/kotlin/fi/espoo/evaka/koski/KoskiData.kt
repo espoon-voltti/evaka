@@ -16,6 +16,14 @@ import java.time.Month
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
+/**
+ * Cached input data version.
+ *
+ * This number should be incremented to bust the Koski input data cache, for example after making
+ * changes to data processing code in this file.
+ */
+const val KOSKI_DATA_VERSION: Int = 1
+
 data class KoskiData(
     val oppija: Oppija,
     val operation: KoskiOperation,

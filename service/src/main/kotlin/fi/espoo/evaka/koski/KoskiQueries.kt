@@ -36,7 +36,10 @@ SELECT kasr.child_id, kasr.unit_id, kasr.type
 FROM koski_active_study_right(${bind(today)}) kasr
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
-WHERE to_jsonb(kasr) IS DISTINCT FROM ksr.input_data
+WHERE (
+    to_jsonb(kasr) IS DISTINCT FROM ksr.input_data OR
+    ${bind(KOSKI_DATA_VERSION)} IS DISTINCT FROM ksr.input_data_version
+)
 AND ${predicate(childPredicate.forTable("kasr"))}
 AND ${predicate(daycarePredicate.forTable("kasr"))}
 
@@ -64,11 +67,11 @@ fun Database.Transaction.beginKoskiUpload(
     createQuery(
             // language=SQL
             """
-INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, payload, version)
+INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, input_data_version, payload, version)
 SELECT
     child_id, unit_id, type,
     CASE WHEN kvsr.child_id IS NOT NULL THEN :today END AS void_date,
-    coalesce(to_jsonb(kasr), to_jsonb(kvsr)), '{}', 0
+    coalesce(to_jsonb(kasr), to_jsonb(kvsr)), :inputDataVersion, '{}', 0
 FROM (
     SELECT :childId AS child_id, :unitId AS unit_id, :type::koski_study_right_type AS type
 ) params
@@ -82,11 +85,13 @@ ON CONFLICT (child_id, unit_id, type)
 DO UPDATE SET
     void_date = excluded.void_date,
     input_data = excluded.input_data,
+    input_data_version = excluded.input_data_version,
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
         )
         .bindKotlin(key)
+        .bind("inputDataVersion", KOSKI_DATA_VERSION)
         .bind("today", today)
         .map { row ->
             Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided"))
