@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 name: Build
-on:
-  pull_request:
-  push:
-    branches:
-    - master
+on: [push]
 
 env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
   ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
   AWS_REGION: eu-west-1
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-shell:
@@ -48,6 +48,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/proxy
           path: ./proxy
           push: true
@@ -73,6 +74,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/keycloak
           path: ./keycloak
           push: true
@@ -137,9 +139,6 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=pro
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.yarn.outputs.image_name }}
 
       - name: Build frontend builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -163,9 +162,7 @@ jobs:
             ICONS=pro
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.yarn.outputs.image_name }}
-            ${{ steps.build.outputs.image_name }}
+            ${{ steps.build.outputs.image }}
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -231,6 +228,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/api-gateway-test
           path: ./apigw
           push: false
@@ -239,9 +237,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.yarn.outputs.image_name }}
 
       - name: Build API-gateway image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -255,15 +250,13 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/api-gateway
           path: ./apigw
           push: true
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.yarn.outputs.image_name }}
 
       - name: Build docker tests and image
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
@@ -298,6 +291,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/service
           path: .
           dockerfile: service/Dockerfile
@@ -305,9 +299,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.java.outputs.image_name }}
 
       - name: Build Evaka Service builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -321,6 +312,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/service-builder
           target: builder
           path: .
@@ -330,9 +322,7 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
           cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.java.outputs.image_name }}
-            ${{ steps.build.outputs.image_name }}
+            ${{ steps.build.outputs.image }}
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -359,6 +349,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
           registry: ${{ env.ECR_REGISTRY }}
+          public_registry: ${{ env.ECR_PUBLIC_REGISTRY }}
           name: evaka/service-test
           path: .
           dockerfile: service/test.Dockerfile
@@ -369,9 +360,7 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             BASE_IMAGE=${{ needs.service.outputs.builder_image }}
           cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.java.outputs.image_name }}
-            ${{ needs.service.outputs.builder_image_name }}
+            ${{ needs.service.outputs.builder_image }}
 
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
