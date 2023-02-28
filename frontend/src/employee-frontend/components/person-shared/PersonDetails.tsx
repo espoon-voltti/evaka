@@ -17,7 +17,7 @@ import { Loading, Result, Success } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { isoLanguages } from 'lib-common/generated/language'
+import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -100,6 +100,14 @@ const RightAlignedRow = styled.div`
 const ButtonSpacer = styled.div`
   margin-right: 25px;
 `
+
+const filterLanguages = (
+  input: string,
+  items: IsoLanguage[]
+): IsoLanguage[] => {
+  const filter = input.toLowerCase()
+  return items.filter((item) => item.nameFi.includes(filter))
+}
 
 export default React.memo(function PersonDetails({
   person,
@@ -513,6 +521,7 @@ export default React.memo(function PersonDetails({
                   onChange={(item) =>
                     updateForm({ languageAtHome: item?.id ?? '' })
                   }
+                  filterItems={filterLanguages}
                   getItemLabel={(item) => item?.nameFi}
                   placeholder={
                     i18n.childInformation.personDetails.placeholder
