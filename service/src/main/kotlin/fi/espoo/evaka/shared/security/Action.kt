@@ -269,7 +269,8 @@ sealed interface Action {
                 )
                 .inAnyUnit()
         ),
-        SEARCH_EMPLOYEES(HasGlobalRole(ADMIN));
+        SEARCH_EMPLOYEES(HasGlobalRole(ADMIN)),
+        SUBMIT_PATU_REPORT(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

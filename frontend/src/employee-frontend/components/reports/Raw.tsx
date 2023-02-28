@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -15,6 +15,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { getRawReport, PeriodFilters, sendPatuReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
@@ -30,6 +31,7 @@ export default React.memo(function Raw() {
   const tooLongRange = filters.to.isAfter(filters.from.addDays(7))
 
   const [rows] = useApiState(() => getRawReport(filters), [filters])
+  const { user } = useContext(UserContext)
 
   const mapYesNo = (value: boolean | null | undefined) => {
     if (value === true) {
@@ -153,15 +155,17 @@ export default React.memo(function Raw() {
             />
           ))
         )}
-        <div hidden>
-          <AsyncButton
-            primary
-            text="Lähetä patu-raportti"
-            onClick={submitPatuReport}
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onSuccess={() => {}}
-          />
-        </div>
+        {user?.accessibleFeatures.submitPatuReport && (
+          <div>
+            <AsyncButton
+              primary
+              text="Lähetä patu-raportti"
+              onClick={submitPatuReport}
+              // eslint-disable-next-line @typescript-eslint/no-empty-function
+              onSuccess={() => {}}
+            />
+          </div>
+        )}
       </ContentArea>
     </Container>
   )
