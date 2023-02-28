@@ -9,9 +9,9 @@ import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import { ChildIncome } from 'lib-common/api-types/incomeStatement'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -32,7 +32,7 @@ import { renderResult } from '../async-rendering'
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { getChildIncomeStatement } from './api'
+import { childIncomeStatementQuery } from './queries'
 
 export default React.memo(function ChildIncomeStatementView() {
   const { childId, incomeStatementId } = useNonNullableParams<{
@@ -41,9 +41,8 @@ export default React.memo(function ChildIncomeStatementView() {
   }>()
   const t = useTranslation()
   const navigate = useNavigate()
-  const [result] = useApiState(
-    () => getChildIncomeStatement(childId, incomeStatementId),
-    [childId, incomeStatementId]
+  const result = useQueryResult(
+    childIncomeStatementQuery(childId, incomeStatementId)
   )
 
   const handleEdit = useCallback(() => {

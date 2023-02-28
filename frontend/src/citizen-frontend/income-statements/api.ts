@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import { Paged } from 'lib-common/api'
 import {
   deserializeIncomeStatement,
   IncomeStatement
@@ -19,7 +19,7 @@ import { IncomeStatementBody } from './types/body'
 export async function getIncomeStatements(
   page: number,
   pageSize: number
-): Promise<Result<Paged<IncomeStatement>>> {
+): Promise<Paged<IncomeStatement>> {
   return client
     .get<JsonOf<Paged<IncomeStatement>>>('/citizen/income-statements', {
       params: { page, pageSize }
@@ -28,15 +28,13 @@ export async function getIncomeStatements(
       ...rest,
       data: data.map(deserializeIncomeStatement)
     }))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function getChildIncomeStatements(
   childId: string,
   page: number,
   pageSize: number
-): Promise<Result<Paged<IncomeStatement>>> {
+): Promise<Paged<IncomeStatement>> {
   return client
     .get<JsonOf<Paged<IncomeStatement>>>(
       `/citizen/income-statements/child/${childId}`,
@@ -48,113 +46,95 @@ export async function getChildIncomeStatements(
       ...rest,
       data: data.map(deserializeIncomeStatement)
     }))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function getChildIncomeStatement(
   childId: UUID,
   id: UUID
-): Promise<Result<IncomeStatement>> {
+): Promise<IncomeStatement> {
   return client
     .get<JsonOf<IncomeStatement>>(
       `/citizen/income-statements/child/${childId}/${id}`
     )
     .then((res) => deserializeIncomeStatement(res.data))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
-export async function getIncomeStatement(
-  id: UUID
-): Promise<Result<IncomeStatement>> {
+export async function getIncomeStatement(id: UUID): Promise<IncomeStatement> {
   return client
     .get<JsonOf<IncomeStatement>>(`/citizen/income-statements/${id}`)
     .then((res) => deserializeIncomeStatement(res.data))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
-export const getIncomeStatementStartDates = (): Promise<Result<LocalDate[]>> =>
+export const getIncomeStatementStartDates = (): Promise<LocalDate[]> =>
   client
     .get<JsonOf<LocalDate[]>>(`/citizen/income-statements/start-dates/`)
     .then(({ data }) => data.map((d) => LocalDate.parseIso(d)))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 
 export const getChildIncomeStatementStartDates = (
   childId: string
-): Promise<Result<LocalDate[]>> =>
+): Promise<LocalDate[]> =>
   client
     .get<JsonOf<LocalDate[]>>(
       `/citizen/income-statements/child/start-dates/${childId}`
     )
     .then(({ data }) => data.map((d) => LocalDate.parseIso(d)))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 
 export async function createIncomeStatement(
   body: IncomeStatementBody
-): Promise<Result<void>> {
-  return client
-    .post('/citizen/income-statements', body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+): Promise<void> {
+  return client.post('/citizen/income-statements', body)
 }
 
-export async function createChildIncomeStatement(
-  childId: string,
+export async function createChildIncomeStatement({
+  childId,
+  body
+}: {
+  childId: string
   body: IncomeStatementBody
-): Promise<Result<void>> {
-  return client
-    .post(`/citizen/income-statements/child/${childId}`, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+}): Promise<void> {
+  return client.post(`/citizen/income-statements/child/${childId}`, body)
 }
 
-export async function updateIncomeStatement(
-  id: UUID,
-  body: IncomeStatementBody
-): Promise<Result<void>> {
-  return client
-    .put(`/citizen/income-statements/${id}`, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function updateChildIncomeStatement(
-  childId: UUID,
-  id: UUID,
-  body: IncomeStatementBody
-): Promise<Result<void>> {
-  return client
-    .put(`/citizen/income-statements/child/${childId}/${id}`, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function deleteIncomeStatement(id: UUID): Promise<Result<void>> {
-  return client
-    .delete(`/citizen/income-statements/${id}`)
-    .then(() => Success.of())
-    .catch((err) => Failure.fromError(err))
-}
-
-export async function deleteChildIncomeStatement(
-  childId: UUID,
+export async function updateIncomeStatement({
+  id,
+  body
+}: {
   id: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/citizen/income-statements/child/${childId}/${id}`)
-    .then(() => Success.of())
-    .catch((err) => Failure.fromError(err))
+  body: IncomeStatementBody
+}): Promise<void> {
+  return client.put(`/citizen/income-statements/${id}`, body)
+}
+
+export async function updateChildIncomeStatement({
+  childId,
+  id,
+  body
+}: {
+  childId: UUID
+  id: UUID
+  body: IncomeStatementBody
+}): Promise<void> {
+  return client.put(`/citizen/income-statements/child/${childId}/${id}`, body)
+}
+
+export async function deleteIncomeStatement(id: UUID): Promise<void> {
+  return client.delete(`/citizen/income-statements/${id}`)
+}
+
+export async function deleteChildIncomeStatement({
+  childId,
+  id
+}: {
+  childId: UUID
+  id: UUID
+}): Promise<void> {
+  return client.delete(`/citizen/income-statements/child/${childId}/${id}`)
 }
 
 export function getGuardianIncomeStatementChildren(): Promise<
-  Result<ChildBasicInfo[]>
+  ChildBasicInfo[]
 > {
   return client
     .get<JsonOf<ChildBasicInfo[]>>('/citizen/income-statements/children')
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }

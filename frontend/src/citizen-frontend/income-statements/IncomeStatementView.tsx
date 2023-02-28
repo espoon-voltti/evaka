@@ -15,9 +15,9 @@ import {
   Gross,
   Income
 } from 'lib-common/api-types/incomeStatement'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -38,7 +38,7 @@ import { renderResult } from '../async-rendering'
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { getIncomeStatement } from './api'
+import { incomeStatementQuery } from './queries'
 
 export default React.memo(function IncomeStatementView() {
   const { incomeStatementId } = useNonNullableParams<{
@@ -46,10 +46,7 @@ export default React.memo(function IncomeStatementView() {
   }>()
   const t = useTranslation()
   const navigate = useNavigate()
-  const [result] = useApiState(
-    () => getIncomeStatement(incomeStatementId),
-    [incomeStatementId]
-  )
+  const result = useQueryResult(incomeStatementQuery(incomeStatementId))
 
   const handleEdit = useCallback(() => {
     navigate('edit')

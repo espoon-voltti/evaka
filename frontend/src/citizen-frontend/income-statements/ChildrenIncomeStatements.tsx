@@ -8,8 +8,8 @@ import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -25,7 +25,10 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 
-import { deleteChildIncomeStatement, getChildIncomeStatements } from './api'
+import {
+  childIncomeStatementsQuery,
+  deleteChildIncomeStatementMutation
+} from './queries'
 
 const HeadingContainer = styled.div`
   display: flex;
@@ -57,9 +60,8 @@ const ChildIncomeStatementsTable = React.memo(
     const navigate = useNavigate()
 
     const [page, setPage] = useState(1)
-    const [incomeStatements] = useApiState(
-      () => getChildIncomeStatements(child.id, page, 10),
-      [page, child]
+    const incomeStatements = useQueryResult(
+      childIncomeStatementsQuery(child.id, page, 10)
     )
 
     const onEdit = useCallback(
@@ -158,12 +160,10 @@ type DeletionState =
 
 interface ChildrenIncomeStatementsProps {
   childInfo: ChildBasicInfo[]
-  onRemoveIncomeStatement: () => void
 }
 
 export default React.memo(function ChildrenIncomeStatements({
-  childInfo,
-  onRemoveIncomeStatement
+  childInfo
 }: ChildrenIncomeStatementsProps) {
   const t = useTranslation()
   const navigate = useNavigate()
@@ -173,22 +173,26 @@ export default React.memo(function ChildrenIncomeStatements({
     status: 'row-not-selected'
   })
 
+  const { mutateAsync: deleteChildIncomeStatement } = useMutation(
+    deleteChildIncomeStatementMutation
+  )
+
   const onDelete = useCallback(
     (childId: UUID, id: UUID) => {
       setDeletionState({ status: 'deleting', rowToDelete: id, childId })
-      void deleteChildIncomeStatement(childId, id).then((res) => {
-        if (res.isFailure) {
+      deleteChildIncomeStatement({ childId, id })
+        .then(() => {
+          setDeletionState({ status: 'row-not-selected' })
+        })
+        .catch(() => {
           setErrorMessage({
             title: t.income.errors.deleteFailed,
             type: 'error',
             resolveLabel: t.common.ok
           })
-        }
-        setDeletionState({ status: 'row-not-selected' })
-        onRemoveIncomeStatement()
-      })
+        })
     },
-    [onRemoveIncomeStatement, setErrorMessage, t]
+    [deleteChildIncomeStatement, setErrorMessage, t]
   )
 
   return (

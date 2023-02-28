@@ -6,11 +6,9 @@ import { addDays, isSaturday, isSunday } from 'date-fns'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
 import { CareType, PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -22,21 +20,15 @@ import { faArrowLeft } from 'lib-icons'
 import { useLang, useTranslation } from '../localization'
 
 import { MapAddress } from './MapView'
-import { queryDistance } from './api'
 import { mapViewBreakpoint } from './const'
 import { formatDistance } from './distances'
+import { distanceQuery } from './queries'
 
 type Props = {
   unit: PublicUnit
   onClose: () => void
   selectedAddress: MapAddress | null
 }
-
-const getDistance = (
-  a: Coordinate | undefined | null,
-  b: Coordinate | undefined | null
-): Promise<Result<number | null>> =>
-  a && b ? queryDistance(a, b) : Promise.resolve(Success.of(null))
 
 export default React.memo(function UnitDetailsPanel({
   unit,
@@ -46,9 +38,8 @@ export default React.memo(function UnitDetailsPanel({
   const t = useTranslation()
   const [lang] = useLang()
 
-  const [distance] = useApiState(
-    () => getDistance(selectedAddress?.coordinates, unit.location),
-    [selectedAddress?.coordinates, unit.location]
+  const distance = useQueryResult(
+    distanceQuery(selectedAddress?.coordinates ?? null, unit.location)
   )
 
   const formatCareType = (type: CareType) => {

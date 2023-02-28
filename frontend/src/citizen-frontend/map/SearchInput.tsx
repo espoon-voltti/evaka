@@ -7,10 +7,10 @@ import classNames from 'classnames'
 import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Result, Success } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { useQueryResult } from 'lib-common/query'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   FixedSpaceColumn,
@@ -24,7 +24,7 @@ import { fasMapMarkerAlt } from 'lib-icons'
 import { useTranslation } from '../localization'
 
 import { MapAddress } from './MapView'
-import { queryAutocomplete } from './api'
+import { addressOptionsQuery } from './queries'
 
 type Props = {
   allUnits: Result<PublicUnit[]>
@@ -43,9 +43,8 @@ export default React.memo(function SearchInput({
   const [inputString, setInputString] = useState('')
   const debouncedInputString = useDebounce(inputString, 500)
 
-  const [addressOptions] = useApiState(
-    () => fetchAddressOptions(debouncedInputString),
-    [debouncedInputString]
+  const addressOptions = useQueryResult(
+    addressOptionsQuery(debouncedInputString)
   )
 
   const unitOptions = useMemo(() => {
@@ -139,14 +138,6 @@ export default React.memo(function SearchInput({
     </div>
   )
 })
-
-async function fetchAddressOptions(input: string) {
-  if (input.length > 0) {
-    return await queryAutocomplete(input)
-  } else {
-    return Success.of([])
-  }
-}
 
 const onFocus: FocusEventHandler<HTMLInputElement> = (e) => {
   e.target.select()
