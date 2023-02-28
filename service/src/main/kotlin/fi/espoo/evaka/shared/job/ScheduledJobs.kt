@@ -16,11 +16,13 @@ import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
+import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.varda.VardaResetService
@@ -46,7 +48,8 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     VardaReset(ScheduledJobs::vardaReset),
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
-    SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders)
+    SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
+    SendPatuReport(ScheduledJobs::sendPatuReport)
 }
 
 private val logger = KotlinLogging.logger {}
@@ -60,6 +63,7 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
+    private val patuReportingService: PatuReportingService,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     tracer: Tracer
 ) {
@@ -190,5 +194,11 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             val count = missingReservationsReminders.scheduleReminders(tx, clock)
             logger.info("Scheduled $count reminders about missing reservations")
         }
+    }
+
+    fun sendPatuReport(db: Database.Connection, clock: EvakaClock) {
+        val yesterday = clock.today().minusDays(1)
+        logger.info("Sending patu report for $yesterday")
+        patuReportingService.sendPatuReport(db, DateRange(yesterday, yesterday))
     }
 }
