@@ -99,6 +99,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed =
             invoice.rows.map { row ->
                 val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
                 val daycareType = allDaycares.find { it.id == row.unitId }?.type!!
+                val unitName = allDaycares.find { it.id == row.unitId }?.name!!
                 InvoiceRowDetailed(
                     id = row.id!!,
                     child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
@@ -108,6 +109,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed =
                     periodEnd = row.periodEnd,
                     product = row.product,
                     unitId = row.unitId,
+                    unitName = unitName,
                     daycareType = daycareType,
                     costCenter = costCenter,
                     subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
