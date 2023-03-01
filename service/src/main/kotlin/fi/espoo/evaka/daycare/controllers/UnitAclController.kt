@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.addEarlyChildhoodEducationSecretary
 import fi.espoo.evaka.daycare.addSpecialEducationTeacher
 import fi.espoo.evaka.daycare.addStaffMember
@@ -19,12 +20,15 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.clearDaycareGroupAcl
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import kotlin.reflect.KFunction3
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -270,6 +274,74 @@ class UnitAclController(private val accessControl: AccessControl) {
     }
 
     data class GroupAclUpdate(val groupIds: List<GroupId>)
-}
 
-data class DaycareAclResponse(val rows: List<DaycareAclRow>)
+    @PutMapping("/daycares/{daycareId}/full-acl/{employeeId}")
+    fun addDaycareAclWithGroupsForRole(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable employeeId: EmployeeId,
+        @RequestBody newAcls: TotalAclUpdate
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val roleActions = getRoleActions(newAcls.role)
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    roleActions.unitAction,
+                    daycareId
+                )
+                roleActions.insertAction(tx, daycareId, employeeId)
+                newAcls.groupIds?.let {
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                        daycareId
+                    )
+                    tx.clearDaycareGroupAcl(daycareId, employeeId)
+                    tx.insertDaycareGroupAcl(daycareId, employeeId, it)
+                }
+            }
+        }
+        Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
+    }
+
+    data class TotalAclUpdate(val groupIds: List<GroupId>?, val role: UserRole)
+
+    data class DaycareAclResponse(val rows: List<DaycareAclRow>)
+
+    @ExcludeCodeGen
+    data class RoleActions(
+        val unitAction: Action.Unit,
+        val insertAction: KFunction3<Database.Transaction, DaycareId, EmployeeId, Unit>
+    )
+    fun getRoleActions(role: UserRole): RoleActions =
+        when (role) {
+            UserRole.STAFF ->
+                RoleActions(
+                    unitAction = Action.Unit.INSERT_ACL_STAFF,
+                    insertAction = ::addStaffMember
+                )
+            UserRole.UNIT_SUPERVISOR ->
+                RoleActions(
+                    unitAction = Action.Unit.INSERT_ACL_UNIT_SUPERVISOR,
+                    insertAction = ::addUnitSupervisor
+                )
+            UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY ->
+                RoleActions(
+                    unitAction = Action.Unit.INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    insertAction = ::addEarlyChildhoodEducationSecretary
+                )
+            UserRole.SPECIAL_EDUCATION_TEACHER ->
+                RoleActions(
+                    unitAction = Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER,
+                    insertAction = ::addSpecialEducationTeacher
+                )
+            else -> throw BadRequest("Invalid daycare acl role: $role")
+        }
+}

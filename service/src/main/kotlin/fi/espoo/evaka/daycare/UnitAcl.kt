@@ -22,11 +22,13 @@ fun getDaycareAclRows(db: Database.Connection, daycareId: DaycareId): List<Dayca
 }
 
 fun addUnitSupervisor(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
-    db.transaction {
-        it.clearDaycareGroupAcl(daycareId, employeeId)
-        it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
-        it.upsertEmployeeMessageAccount(employeeId)
-    }
+    db.transaction { addUnitSupervisor(it, daycareId, employeeId) }
+}
+
+fun addUnitSupervisor(tx: Database.Transaction, daycareId: DaycareId, employeeId: EmployeeId) {
+    tx.clearDaycareGroupAcl(daycareId, employeeId)
+    tx.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
+    tx.upsertEmployeeMessageAccount(employeeId)
 }
 
 fun removeUnitSupervisor(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
@@ -41,11 +43,17 @@ fun addSpecialEducationTeacher(
     daycareId: DaycareId,
     employeeId: EmployeeId
 ) {
-    db.transaction {
-        it.clearDaycareGroupAcl(daycareId, employeeId)
-        it.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER)
-        it.upsertEmployeeMessageAccount(employeeId)
-    }
+    db.transaction { addSpecialEducationTeacher(it, daycareId, employeeId) }
+}
+
+fun addSpecialEducationTeacher(
+    tx: Database.Transaction,
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) {
+    tx.clearDaycareGroupAcl(daycareId, employeeId)
+    tx.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER)
+    tx.upsertEmployeeMessageAccount(employeeId)
 }
 
 fun removeSpecialEducationTeacher(
@@ -64,11 +72,17 @@ fun addEarlyChildhoodEducationSecretary(
     daycareId: DaycareId,
     employeeId: EmployeeId
 ) {
-    db.transaction {
-        it.clearDaycareGroupAcl(daycareId, employeeId)
-        it.insertDaycareAclRow(daycareId, employeeId, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-        it.upsertEmployeeMessageAccount(employeeId)
-    }
+    db.transaction { addEarlyChildhoodEducationSecretary(it, daycareId, employeeId) }
+}
+
+fun addEarlyChildhoodEducationSecretary(
+    tx: Database.Transaction,
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) {
+    tx.clearDaycareGroupAcl(daycareId, employeeId)
+    tx.insertDaycareAclRow(daycareId, employeeId, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+    tx.upsertEmployeeMessageAccount(employeeId)
 }
 
 fun removeEarlyChildhoodEducationSecretary(
@@ -84,10 +98,12 @@ fun removeEarlyChildhoodEducationSecretary(
 }
 
 fun addStaffMember(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
-    db.transaction {
-        it.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF)
-        it.upsertEmployeeMessageAccount(employeeId)
-    }
+    db.transaction { addStaffMember(it, daycareId, employeeId) }
+}
+
+fun addStaffMember(tx: Database.Transaction, daycareId: DaycareId, employeeId: EmployeeId) {
+    tx.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF)
+    tx.upsertEmployeeMessageAccount(employeeId)
 }
 
 fun removeStaffMember(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
