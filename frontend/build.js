@@ -143,13 +143,40 @@ async function buildProject(project, config) {
 
   const resolveExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
 
-  const context = await esbuild.context({
-    entryPoints: [`${srcdir}/index.tsx`],
-    entryNames: '[name]-[hash]',
+  const buildOptions = {
     bundle: true,
     sourcemap: dev,
     minify: !dev,
     resolveExtensions,
+    publicPath: project.publicPath,
+    define: {
+      'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
+    },
+    plugins: [
+      evakaAliasesPlugin(resolveExtensions, customizationsModule, icons)
+    ],
+    logLevel: 'info',
+    color: dev
+  }
+
+  if (project.serviceWorker) {
+    const swContext = await esbuild.context({
+      ...buildOptions,
+      entryPoints: [`${srcdir}/service-worker.js`],
+      entryNames: '[name]',
+      outfile: `${outdir}/service-worker.js`
+    })
+    if (watch) {
+      await swContext.watch()
+    } else {
+      await swContext.rebuild()
+    }
+  }
+
+  const context = await esbuild.context({
+    ...buildOptions,
+    entryPoints: [`${srcdir}/index.tsx`],
+    entryNames: '[name]-[hash]',
     loader: {
       '.ico': 'file',
       '.png': 'file',
@@ -157,12 +184,10 @@ async function buildProject(project, config) {
       '.woff': 'file',
       '.woff2': 'file'
     },
-    publicPath: project.publicPath,
-    define: {
-      'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
-    },
+    metafile: true,
+    outdir,
     plugins: [
-      evakaAliasesPlugin(resolveExtensions, customizationsModule, icons),
+      ...buildOptions.plugins,
       {
         name: 'evaka-static-files',
         setup(build) {
@@ -173,11 +198,7 @@ async function buildProject(project, config) {
           })
         }
       }
-    ],
-    metafile: true,
-    logLevel: 'info',
-    color: dev,
-    outdir
+    ]
   })
   if (watch) {
     await context.watch()
@@ -267,7 +288,11 @@ async function main() {
     }).argv
 
   const projects = [
-    { name: 'employee-mobile-frontend', publicPath: '/employee/mobile/' },
+    {
+      name: 'employee-mobile-frontend',
+      publicPath: '/employee/mobile/',
+      serviceWorker: true
+    },
     { name: 'employee-frontend', publicPath: '/employee/' },
     { name: 'citizen-frontend', publicPath: '/' }
   ]
