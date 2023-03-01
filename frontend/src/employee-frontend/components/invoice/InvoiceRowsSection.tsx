@@ -59,6 +59,7 @@ const emptyInvoiceRow = (
   product: 'DAYCARE' as const,
   description: '',
   unitId: '',
+  unitName: '',
   daycareType: [],
   costCenter: '',
   subCostCenter: '',

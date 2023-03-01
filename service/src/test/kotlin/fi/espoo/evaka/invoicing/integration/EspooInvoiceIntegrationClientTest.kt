@@ -201,6 +201,7 @@ class EspooInvoiceIntegrationClientTest {
             periodEnd = LocalDate.of(2020, 1, 31),
             product = EspooInvoiceProducts.Product.DAYCARE.key,
             unitId = DaycareId(UUID.randomUUID()),
+            unitName = "Satunnainen päivähoitopaikka",
             daycareType = setOf(CareType.CENTRE),
             costCenter = "12345",
             subCostCenter = "01",

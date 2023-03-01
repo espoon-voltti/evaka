@@ -494,6 +494,7 @@ export interface InvoiceRowDetailed {
   savedCostCenter: string | null
   subCostCenter: string | null
   unitId: UUID
+  unitName: string
   unitPrice: number
 }
 
