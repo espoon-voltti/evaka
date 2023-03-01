@@ -182,7 +182,7 @@ export default React.memo(function ThreadView({
   onThreadDeleted
 }: Props) {
   const i18n = useTranslation()
-  const { sendReply, replyState, setReplyContent, getReplyContent } =
+  const { sendReply, setReplyContent, getReplyContent } =
     useContext(MessageContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
@@ -214,15 +214,18 @@ export default React.memo(function ThreadView({
   }, [setReplyContent, setReplyEditorVisible, threadId])
 
   const replyContent = getReplyContent(threadId)
-  const onSubmit = () =>
-    sendReply({
-      content: replyContent,
-      messageId: messages.slice(-1)[0].id,
-      recipientAccountIds: recipients
-        .filter((r) => r.selected)
-        .map((r) => r.id),
-      staffAnnotation: i18n.messages.staffAnnotation
-    })
+  const onSubmit = useCallback(
+    () =>
+      sendReply({
+        content: replyContent,
+        messageId: messages.slice(-1)[0].id,
+        recipientAccountIds: recipients
+          .filter((r) => r.selected)
+          .map((r) => r.id),
+        staffAnnotation: i18n.messages.staffAnnotation
+      }),
+    [i18n, messages, recipients, replyContent, sendReply]
+  )
 
   const editorLabels = useMemo(
     () => ({
@@ -282,7 +285,6 @@ export default React.memo(function ThreadView({
       {replyEditorVisible ? (
         <ReplyEditorContainer>
           <MessageReplyEditor
-            replyState={replyState}
             onSubmit={onSubmit}
             onUpdateContent={onUpdateContent}
             onDiscard={onDiscard}

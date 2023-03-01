@@ -9,7 +9,7 @@ import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { faTrash } from 'lib-icons'
 
-import Button from '../atoms/buttons/Button'
+import AsyncButton from '../atoms/buttons/AsyncButton'
 import InlineButton from '../atoms/buttons/InlineButton'
 import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'
@@ -53,9 +53,8 @@ interface Labels {
 interface Props {
   recipients: SelectableAccount[]
   onToggleRecipient: (id: UUID, selected: boolean) => void
-  onSubmit: () => void
+  onSubmit: () => Promise<Result<unknown>>
   onDiscard: () => void
-  replyState: Result<void> | undefined
   onUpdateContent: (content: string) => void
   replyContent: string
   i18n: Labels
@@ -68,13 +67,9 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
   onUpdateContent,
   onToggleRecipient,
   recipients,
-  replyContent,
-  replyState
+  replyContent
 }: Props) {
-  const sendEnabled =
-    !!replyContent &&
-    !replyState?.isLoading &&
-    recipients.some((r) => r.selected)
+  const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
   return (
     <>
       <EditorRow>
@@ -101,11 +96,13 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
       </EditorRow>
       <EditorRow>
         <ButtonContainer justify="space-between">
-          <Button
-            text={replyState?.isLoading ? i18n.sending : i18n.send}
+          <AsyncButton
+            text={i18n.send}
+            textInProgress={i18n.sending}
             primary
             data-qa="message-send-btn"
             onClick={onSubmit}
+            onSuccess={() => undefined}
             disabled={!sendEnabled}
           />
           <InlineButton

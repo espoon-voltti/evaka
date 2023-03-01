@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { Failure, Loading, Result } from 'lib-common/api'
 import {
   MessageThread,
   ThreadReply
@@ -21,6 +21,7 @@ import {
   queryResult,
   useInfiniteQuery,
   useMutation,
+  useMutationResult,
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -43,8 +44,7 @@ export interface MessagePageState {
   loadMoreThreads: () => void
   selectedThread: MessageThread | undefined
   setSelectedThread: (threadId: UUID | undefined) => void
-  sendReply: (params: ReplyToThreadParams) => void
-  replyState: Result<void> | undefined
+  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
@@ -56,8 +56,7 @@ const defaultState: MessagePageState = {
   hasMoreThreads: false,
   selectedThread: undefined,
   setSelectedThread: () => undefined,
-  sendReply: () => undefined,
-  replyState: undefined,
+  sendReply: () => Promise.resolve(Failure.of({ message: 'Not initialized' })),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -131,22 +130,23 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const [replyState, setReplyState] = useState<Result<void>>()
-    const { mutate: sendReply } = useMutation(replyToThreadMutation, {
-      onMutate: () => setReplyState(Loading.of()),
-      onSuccess: ({ message, threadId }: ThreadReply) => {
-        setReplyState(Success.of(undefined))
-        transformPages((page) => ({
-          ...page,
-          data: page.data.map((thread) =>
-            thread.id === threadId
-              ? { ...thread, messages: [...thread.messages, message] }
-              : thread
-          )
-        }))
-        setReplyContents((state) => ({ ...state, [threadId]: '' }))
+    const { mutateAsync: sendReply } = useMutationResult(
+      replyToThreadMutation,
+      {
+        onSuccess: ({ message, threadId }: ThreadReply) => {
+          // Append the new message to the thread
+          transformPages((page) => ({
+            ...page,
+            data: page.data.map((thread) =>
+              thread.id === threadId
+                ? { ...thread, messages: [...thread.messages, message] }
+                : thread
+            )
+          }))
+          setReplyContents((state) => ({ ...state, [threadId]: '' }))
+        }
       }
-    })
+    )
 
     const selectedThread = useMemo(
       () =>
@@ -196,7 +196,6 @@ export const MessageContextProvider = React.memo(
         hasMoreThreads: hasNextPage !== undefined && hasNextPage,
         selectedThread,
         setSelectedThread: setSelectedThreadId,
-        replyState,
         sendReply
       }),
       [
@@ -205,7 +204,6 @@ export const MessageContextProvider = React.memo(
         getReplyContent,
         hasNextPage,
         isFetchingNextPage,
-        replyState,
         selectedThread,
         sendReply,
         setReplyContent,
