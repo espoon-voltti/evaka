@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
-import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
@@ -44,7 +44,7 @@ export default React.memo(function ThreadList({
   newMessageButtonEnabled
 }: Props) {
   const t = useTranslation()
-  const { selectedThread, threads, threadLoadingResult, loadMoreThreads } =
+  const { selectedThread, threads, loadMoreThreads, hasMoreThreads } =
     useContext(MessageContext)
   const [confirmDelete, setConfirmDelete] = useState<UUID>()
 
@@ -93,33 +93,40 @@ export default React.memo(function ThreadList({
           </FloatingButton>
         </MobileOnly>
 
-        {threadLoadingResult.isSuccess && threads.length === 0 && (
-          <>
-            <SolidLine />
-            <ThreadListContainer>
-              <Gap size="s" />
-              <NoMessagesInfo>{t.messages.noMessagesInfo}</NoMessagesInfo>
-              <Gap size="XXL" />
-            </ThreadListContainer>
-          </>
+        {renderResult(threads, (threads) =>
+          threads.length > 0 ? (
+            <>
+              <ThreadListItems>
+                {threads.map((thread) => (
+                  <li key={thread.id}>
+                    <ThreadListItem
+                      thread={thread}
+                      onClick={() => selectThread(thread.id)}
+                      onDelete={() => setConfirmDelete(thread.id)}
+                      active={selectedThread?.id === thread.id}
+                      hasUnreadMessages={hasUnreadMessages(thread, accountId)}
+                    />
+                  </li>
+                ))}
+              </ThreadListItems>
+              {hasMoreThreads ? (
+                <>
+                  <OnEnterView onEnter={loadMoreThreads} />
+                  <SpinnerSegment />
+                </>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <SolidLine />
+              <ThreadListContainer>
+                <Gap size="s" />
+                <NoMessagesInfo>{t.messages.noMessagesInfo}</NoMessagesInfo>
+                <Gap size="XXL" />
+              </ThreadListContainer>
+            </>
+          )
         )}
-
-        <ThreadListItems>
-          {threads.map((thread) => (
-            <li key={thread.id}>
-              <ThreadListItem
-                thread={thread}
-                onClick={() => selectThread(thread.id)}
-                onDelete={() => setConfirmDelete(thread.id)}
-                active={selectedThread?.id === thread.id}
-                hasUnreadMessages={hasUnreadMessages(thread, accountId)}
-              />
-            </li>
-          ))}
-        </ThreadListItems>
-        {renderResult(threadLoadingResult, () => (
-          <OnEnterView onEnter={loadMoreThreads} />
-        ))}
         {confirmDelete !== undefined ? (
           <ConfirmDeleteThread
             threadId={confirmDelete}
@@ -210,6 +217,21 @@ const OnEnterView = React.memo(function IsInView({
 }: {
   onEnter: () => void
 }) {
-  const ref = useIntersectionObserver<HTMLDivElement>(onEnter)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!ref.current) return undefined
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        onEnter()
+      }
+    })
+    observer.observe(ref.current)
+    return () => {
+      observer.disconnect()
+    }
+  }, [onEnter])
+
   return <div ref={ref} />
 })

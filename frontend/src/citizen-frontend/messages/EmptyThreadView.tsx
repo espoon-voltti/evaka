@@ -4,37 +4,39 @@
 
 import { faInbox } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H3 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
-interface Props {
-  inboxEmpty: boolean
-  loadingState: Result<unknown>
-}
+import { MessageContext } from './state'
 
-export default React.memo(function EmptyThreadView({
-  inboxEmpty,
-  loadingState
-}: Props) {
+export default React.memo(function EmptyThreadView() {
   const i18n = useTranslation()
-  const loading =
-    loadingState.isLoading ||
-    (loadingState.isSuccess && loadingState.isReloading)
-  return inboxEmpty ? (
-    <EmptyThreadViewContainer data-qa="inbox-empty" data-loading={loading}>
-      <FontAwesomeIcon icon={faInbox} size="7x" color={colors.grayscale.g35} />
-      <H3>{i18n.messages.emptyInbox}</H3>
-    </EmptyThreadViewContainer>
-  ) : (
+  const { threads } = useContext(MessageContext)
+  return (
     <EmptyThreadViewContainer>
-      <H3>{i18n.messages.noSelectedMessage}</H3>
+      {renderResult(threads, (threads, isReloading) =>
+        threads.length === 0 ? (
+          <>
+            <FontAwesomeIcon
+              icon={faInbox}
+              size="7x"
+              color={colors.grayscale.g35}
+            />
+            <H3 data-qa="inbox-empty" data-loading={isReloading}>
+              {i18n.messages.emptyInbox}
+            </H3>
+          </>
+        ) : (
+          <H3>{i18n.messages.noSelectedMessage}</H3>
+        )
+      )}
     </EmptyThreadViewContainer>
   )
 })

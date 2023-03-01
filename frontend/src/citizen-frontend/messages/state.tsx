@@ -11,13 +11,18 @@ import React, {
   useState
 } from 'react'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import {
   MessageThread,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { useInfiniteQuery, useMutation, useQueryResult } from 'lib-common/query'
+import {
+  queryResult,
+  useInfiniteQuery,
+  useMutation,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
@@ -33,8 +38,8 @@ import {
 
 export interface MessagePageState {
   accountId: Result<UUID>
-  threads: MessageThread[]
-  threadLoadingResult: Result<unknown>
+  threads: Result<MessageThread[]>
+  hasMoreThreads: boolean
   loadMoreThreads: () => void
   selectedThread: MessageThread | undefined
   setSelectedThread: (threadId: UUID | undefined) => void
@@ -46,9 +51,9 @@ export interface MessagePageState {
 
 const defaultState: MessagePageState = {
   accountId: Loading.of(),
-  threads: [],
-  threadLoadingResult: Loading.of(),
+  threads: Loading.of(),
   loadMoreThreads: () => undefined,
+  hasMoreThreads: false,
   selectedThread: undefined,
   setSelectedThread: () => undefined,
   sendReply: () => undefined,
@@ -81,29 +86,38 @@ export const MessageContextProvider = React.memo(
 
     const isLoggedIn = useUser() !== undefined
     const accountId = useQueryResult(messageAccountQuery, {
-      enabled: isLoggedIn
+      enabled: isLoggedIn,
+      staleTime: 24 * 60 * 60 * 1000
     })
 
-    const { data, isLoading, isError, fetchNextPage, transformPages } =
-      useInfiniteQuery(receivedMessagesQuery(t.messages.staffAnnotation, 10), {
+    const {
+      data,
+      fetchNextPage,
+      transformPages,
+      error,
+      isFetching,
+      isFetchingNextPage,
+      hasNextPage
+    } = useInfiniteQuery(
+      receivedMessagesQuery(t.messages.staffAnnotation, 10),
+      {
         enabled: accountId.isSuccess
-      })
-    const threads = useMemo(() => {
-      if (!data) return []
-      return uniqBy(
-        data.pages.flatMap((p) => p.data),
-        'id'
-      )
-    }, [data])
+      }
+    )
 
-    const threadLoadingResult = useMemo(
+    const isFetchingFirstPage = isFetching && !isFetchingNextPage
+    const threads = useMemo(
       () =>
-        isLoading
-          ? Loading.of()
-          : isError
-          ? Failure.of({ message: '' })
-          : Success.of(),
-      [isError, isLoading]
+        // Use .map() to only call uniqBy/flatMap when it's a Success
+        queryResult(null, error, isFetchingFirstPage).map(() =>
+          data
+            ? uniqBy(
+                data.pages.flatMap((p) => p.data),
+                'id'
+              )
+            : []
+        ),
+      [data, error, isFetchingFirstPage]
     )
 
     const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
@@ -137,7 +151,9 @@ export const MessageContextProvider = React.memo(
     const selectedThread = useMemo(
       () =>
         selectedThreadId !== undefined
-          ? threads.find((t) => t.id === selectedThreadId)
+          ? threads
+              .map((threads) => threads.find((t) => t.id === selectedThreadId))
+              .getOrElse(undefined)
           : undefined,
       [selectedThreadId, threads]
     )
@@ -170,10 +186,14 @@ export const MessageContextProvider = React.memo(
       () => ({
         accountId,
         threads,
-        threadLoadingResult,
         getReplyContent,
         setReplyContent,
-        loadMoreThreads: fetchNextPage,
+        loadMoreThreads: () => {
+          if (hasNextPage && !isFetchingNextPage) {
+            void fetchNextPage()
+          }
+        },
+        hasMoreThreads: hasNextPage !== undefined && hasNextPage,
         selectedThread,
         setSelectedThread: setSelectedThreadId,
         replyState,
@@ -183,11 +203,12 @@ export const MessageContextProvider = React.memo(
         accountId,
         fetchNextPage,
         getReplyContent,
+        hasNextPage,
+        isFetchingNextPage,
         replyState,
         selectedThread,
         sendReply,
         setReplyContent,
-        threadLoadingResult,
         threads
       ]
     )

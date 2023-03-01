@@ -7,9 +7,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
-import { UnwrapResult } from 'citizen-frontend/async-rendering'
+import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
-import { combine } from 'lib-common/api'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Main from 'lib-components/atoms/Main'
@@ -44,13 +43,8 @@ const StyledFlex = styled(AdaptiveFlex)`
 export default React.memo(function MessagesPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const {
-    accountId,
-    selectedThread,
-    setSelectedThread,
-    threads,
-    threadLoadingResult
-  } = useContext(MessageContext)
+  const { accountId, selectedThread, setSelectedThread } =
+    useContext(MessageContext)
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
   const t = useTranslation()
@@ -100,37 +94,34 @@ export default React.memo(function MessagesPage() {
 
   return (
     <Container>
-      <UnwrapResult result={combine(accountId, receivers)}>
-        {([id, receivers]) => (
-          <>
-            <Main>
-              <TabletAndDesktop>
-                <Gap size="L" />
-              </TabletAndDesktop>
-              <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-                <ThreadList
+      {renderResult(accountId, (id) => (
+        <>
+          <Main>
+            <TabletAndDesktop>
+              <Gap size="L" />
+            </TabletAndDesktop>
+            <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+              <ThreadList
+                accountId={id}
+                selectThread={selectThread}
+                setEditorVisible={changeEditorVisibility}
+                newMessageButtonEnabled={canSendNewMessage}
+              />
+              {selectedThread ? (
+                <ThreadView
                   accountId={id}
-                  selectThread={selectThread}
-                  setEditorVisible={changeEditorVisibility}
-                  newMessageButtonEnabled={canSendNewMessage}
+                  closeThread={() => selectThread(undefined)}
+                  thread={selectedThread}
+                  onThreadDeleted={() => onSelectedThreadDeleted()}
                 />
-                {selectedThread ? (
-                  <ThreadView
-                    accountId={id}
-                    closeThread={() => selectThread(undefined)}
-                    thread={selectedThread}
-                    onThreadDeleted={() => onSelectedThreadDeleted()}
-                  />
-                ) : (
-                  <EmptyThreadView
-                    inboxEmpty={threads.length === 0}
-                    loadingState={threadLoadingResult}
-                  />
-                )}
-              </StyledFlex>
-              {editorVisible && (
+              ) : (
+                <EmptyThreadView />
+              )}
+            </StyledFlex>
+            {editorVisible &&
+              renderResult(receivers, (receiverOptions) => (
                 <MessageEditor
-                  receiverOptions={receivers}
+                  receiverOptions={receiverOptions}
                   onSend={sendMessage}
                   onSuccess={() => {
                     changeEditorVisibility(false)
@@ -139,12 +130,11 @@ export default React.memo(function MessagesPage() {
                   onClose={() => changeEditorVisibility(false)}
                   displaySendError={displaySendError}
                 />
-              )}
-            </Main>
-            <Footer />
-          </>
-        )}
-      </UnwrapResult>
+              ))}
+          </Main>
+          <Footer />
+        </>
+      ))}
     </Container>
   )
 })
