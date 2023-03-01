@@ -50,8 +50,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
     SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
-    SendOutdatedIncomeNotifications(ScheduledJobs::sendOutdatedIncomeNotifications)
-    SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
+    SendOutdatedIncomeNotifications(ScheduledJobs::sendOutdatedIncomeNotifications),
     SendPatuReport(ScheduledJobs::sendPatuReport)
 }
 

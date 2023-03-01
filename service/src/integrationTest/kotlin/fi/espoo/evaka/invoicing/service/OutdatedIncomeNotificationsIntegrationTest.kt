@@ -129,6 +129,22 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
+    fun `if expiration date is in the past no notification is sent`() {
+        db.transaction {
+            it.insertTestIncome(
+                DevIncome(
+                    personId = guardianId,
+                    updatedBy = employeeEvakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().minusDays(1)
+                )
+            )
+        }
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
     fun `expiring income is not notified if there is a new income statement`() {
         val incomeExpirationDate = clock.today().plusDays(13)
 
