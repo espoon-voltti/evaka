@@ -143,7 +143,7 @@ async function buildProject(project, config) {
 
   const resolveExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
 
-  const buildOutput = await esbuild.build({
+  const context = await esbuild.context({
     entryPoints: [`${srcdir}/index.tsx`],
     entryNames: '[name]-[hash]',
     bundle: true,
@@ -162,25 +162,28 @@ async function buildProject(project, config) {
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
     },
     plugins: [
-      evakaAliasesPlugin(resolveExtensions, customizationsModule, icons)
+      evakaAliasesPlugin(resolveExtensions, customizationsModule, icons),
+      {
+        name: 'evaka-static-files',
+        setup(build) {
+          build.onEnd(async (result) => {
+            if (!result.metafile) return
+            await staticFiles(project, result.metafile.outputs)
+            console.log(`${project.name}: Build done`)
+          })
+        }
+      }
     ],
     metafile: true,
     logLevel: 'info',
     color: dev,
-    outdir,
-    watch: watch
-      ? {
-          async onRebuild(error, result) {
-            if (error) return
-            await staticFiles(project, result.metafile.outputs)
-            console.log(`${project.name}: Build done`)
-          }
-        }
-      : undefined
+    outdir
   })
-
-  const outputs = buildOutput.metafile.outputs
-  await staticFiles(project, outputs)
+  if (watch) {
+    await context.watch()
+  } else {
+    await context.rebuild()
+  }
 }
 
 async function staticFiles(project, outputs) {
