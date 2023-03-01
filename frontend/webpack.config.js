@@ -57,7 +57,10 @@ function resolveIcons() {
 const customizationsModule = resolveCustomizations()
 const icons = resolveIcons()
 
-function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
+function baseConfig(
+  { isDevelopment, isDevServer },
+  { name, publicPath, entry }
+) {
   const plugins = [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, `src/${name}/index.html`),
@@ -111,7 +114,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
     context: path.resolve(__dirname, `src/${name}`),
     mode: isDevelopment ? 'development' : 'production',
     devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
-    entry: path.resolve(__dirname, `src/${name}/index.tsx`),
+    entry: entry ?? path.resolve(__dirname, `src/${name}/index.tsx`),
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, `dist/bundle/${name}`),
@@ -246,7 +249,17 @@ function employee(flags) {
 function employeeMobile(flags) {
   const config = baseConfig(flags, {
     name: 'employee-mobile-frontend',
-    publicPath: '/employee/mobile/'
+    publicPath: '/employee/mobile/',
+    entry: {
+      main: path.resolve(__dirname, 'src/employee-mobile-frontend/index.tsx'),
+      'service-worker': {
+        import: path.resolve(
+          __dirname,
+          'src/employee-mobile-frontend/service-worker.js'
+        ),
+        filename: '[name].js'
+      }
+    }
   })
   config.plugins.push(
     new WebpackPwaManifest({
