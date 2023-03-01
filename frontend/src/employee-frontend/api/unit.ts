@@ -4,6 +4,7 @@
 
 import mapValues from 'lodash/mapValues'
 
+import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
@@ -623,6 +624,21 @@ export async function updateDaycareGroupAcl(
   return client
     .put(`/daycares/${unitId}/staff/${employeeId}/groups`, {
       groupIds
+    })
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function addDaycareFullAcl(
+  unitId: UUID,
+  employeeId: UUID,
+  role: DaycareAclRole,
+  groupIds?: UUID[]
+): Promise<Result<void>> {
+  return client
+    .put(`/daycares/${unitId}/full-acl/${employeeId}`, {
+      groupIds,
+      role
     })
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))

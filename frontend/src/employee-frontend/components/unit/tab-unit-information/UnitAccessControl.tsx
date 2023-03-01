@@ -7,9 +7,10 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, isLoading, Result } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
+import { UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
@@ -24,10 +25,6 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
-  addDaycareAclEarlyChildhoodEducationSecretary,
-  addDaycareAclSpecialEducationTeacher,
-  addDaycareAclStaff,
-  addDaycareAclSupervisor,
   DaycareAclRow,
   DaycareGroupSummary,
   removeDaycareAclEarlyChildhoodEducationSecretary,
@@ -50,6 +47,14 @@ type Props = {
   groups: Record<UUID, DaycareGroupSummary>
   permittedActions: Set<Action.Unit>
 }
+
+export type DaycareAclRole = Extract<
+  UserRole,
+  | 'UNIT_SUPERVISOR'
+  | 'STAFF'
+  | 'SPECIAL_EDUCATION_TEACHER'
+  | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+>
 
 export interface FormattedRow {
   id: UUID
@@ -207,7 +212,7 @@ export interface UpdateState {
 }
 
 interface AdditionState {
-  addDaycareAclFn: (unitId: UUID, employeeId: UUID) => Promise<Result<unknown>>
+  role: DaycareAclRole
 }
 
 function formatRowsOfRole(
@@ -362,24 +367,24 @@ export default React.memo(function UnitAccessControl({
   // daycare addition modal role-based addition fns
   const openAddStaffModal = useCallback(() => {
     toggleUiMode(`add-daycare-acl-${unitId}`)
-    setAdditionState({ addDaycareAclFn: addDaycareAclStaff })
+    setAdditionState({ role: 'STAFF' })
   }, [toggleUiMode, unitId])
 
   const openAddEcesModal = useCallback(() => {
     toggleUiMode(`add-daycare-acl-${unitId}`)
     setAdditionState({
-      addDaycareAclFn: addDaycareAclEarlyChildhoodEducationSecretary
+      role: 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
     })
   }, [toggleUiMode, unitId])
 
   const openAddSpecialEducatioTeachedModal = useCallback(() => {
     toggleUiMode(`add-daycare-acl-${unitId}`)
-    setAdditionState({ addDaycareAclFn: addDaycareAclSpecialEducationTeacher })
+    setAdditionState({ role: 'SPECIAL_EDUCATION_TEACHER' })
   }, [toggleUiMode, unitId])
 
   const openAddSupervisorModal = useCallback(() => {
     toggleUiMode(`add-daycare-acl-${unitId}`)
-    setAdditionState({ addDaycareAclFn: addDaycareAclSupervisor })
+    setAdditionState({ role: 'UNIT_SUPERVISOR' })
   }, [toggleUiMode, unitId])
 
   // daycare addition modal generic fns
@@ -418,11 +423,11 @@ export default React.memo(function UnitAccessControl({
             <DaycareAclAdditionModal
               onClose={closeAddDaycareAclModal}
               onSuccess={confirmAddDaycareAclModal}
-              addDaycareAcl={additionState?.addDaycareAclFn}
-              updateGroupsAcl={updateDaycareGroupAcl}
+              role={additionState?.role}
               employees={candidateEmployees}
               unitId={unitId}
               groups={groups}
+              groupsPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
             />
           )}
         </>
