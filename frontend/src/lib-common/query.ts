@@ -8,9 +8,13 @@ import {
   UseMutationOptions,
   UseMutationResult,
   useQuery as useQueryOriginal,
+  useInfiniteQuery as useInfiniteQueryOriginal,
   useQueryClient,
   UseQueryOptions,
-  UseQueryResult
+  UseQueryResult,
+  UseInfiniteQueryOptions,
+  UseInfiniteQueryResult,
+  InfiniteData
 } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
@@ -55,7 +59,12 @@ export function useQuery<Data, Key extends QueryKey>(
   >
 ): UseQueryResult<Data> {
   const { api, queryKey, queryOptions } = queryDescription
-  return useQueryOriginal(queryKey, api, { ...queryOptions, ...options })
+  return useQueryOriginal({
+    queryKey,
+    queryFn: api,
+    ...queryOptions,
+    ...options
+  })
 }
 
 function toResult<T>(
@@ -82,6 +91,86 @@ export function useQueryResult<Data, Key extends QueryKey>(
     () => toResult(data, error, isFetching),
     [data, error, isFetching]
   )
+}
+
+export interface InfiniteQueryDescription<PageArg, Data, Key extends QueryKey> {
+  api: (pageArg: PageArg) => Promise<Data>
+  queryKey: Key
+  firstPageParam: PageArg
+  getNextPageParam: (lastPage: Data, pages: Data[]) => PageArg | undefined
+  queryOptions?: UseInfiniteQueryOptions<Data, unknown, Data, Data, Key>
+}
+
+export function infiniteQuery<
+  Args extends unknown[],
+  PageArg,
+  Data,
+  Key extends QueryKey
+>(opts: {
+  api: (...args: Args) => (pageArg: PageArg) => Promise<Data>
+  queryKey: (...arg: Args) => Key
+  firstPageParam: PageArg
+  getNextPageParam: (lastPage: Data, pages: Data[]) => PageArg | undefined
+  options?: UseInfiniteQueryOptions<Data, unknown, Data, Data, Key>
+}): Args extends []
+  ? InfiniteQueryDescription<PageArg, Data, Key>
+  : (...arg: Args) => InfiniteQueryDescription<PageArg, Data, Key> {
+  /* eslint-disable */
+  const { api, queryKey, firstPageParam, getNextPageParam, options } = opts
+  return (
+    api.length === 0
+      ? {
+          api: (api as any)(),
+          queryKey: (queryKey as any)(),
+          firstPageParam,
+          getNextPageParam,
+          queryOptions: options
+        }
+      : (...args: Args) => ({
+          api: api(...args),
+          queryKey: queryKey(...args),
+          firstPageParam,
+          getNextPageParam,
+          queryOptions: options
+        })
+  ) as any
+  /* eslint-enable */
+}
+
+export type UseInfiniteQueryResultWithTransform<Data> =
+  UseInfiniteQueryResult<Data> & {
+    transformPages: (f: (page: Data, index: number) => Data) => void
+  }
+
+export function useInfiniteQuery<PageArg, Data, Key extends QueryKey>(
+  queryDescription: InfiniteQueryDescription<PageArg, Data, Key>,
+  options?: Omit<
+    UseInfiniteQueryOptions<Data, unknown, Data, Data, Key>,
+    'queryKey' | 'queryFn' | 'getNextPageParam'
+  >
+): UseInfiniteQueryResultWithTransform<Data> {
+  const { api, queryKey, firstPageParam, getNextPageParam, queryOptions } =
+    queryDescription
+  const queryClient = useQueryClient()
+  const result = useInfiniteQueryOriginal({
+    queryKey,
+    queryFn: (context: { pageParam?: PageArg }) =>
+      api(context.pageParam ?? firstPageParam),
+    getNextPageParam,
+    ...queryOptions,
+    ...options
+  })
+  const transformPages = useCallback(
+    (fn: (page: Data, index: number) => Data) => {
+      queryClient.setQueryData<InfiniteData<Data>>(queryKey, (currentData) =>
+        currentData
+          ? { ...currentData, pages: currentData.pages.map(fn) }
+          : undefined
+      )
+    },
+    [queryClient, queryKey]
+  )
+  return { ...result, transformPages }
 }
 
 export interface MutationDescription<Arg, Data, Key extends QueryKey> {
