@@ -34,7 +34,7 @@ import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { applicationNotificationsQuery } from '../decisions/queries'
 import { langs, useLang, useTranslation } from '../localization'
-import { MessageContext } from '../messages/state'
+import { unreadMessagesCountQuery } from '../messages/queries'
 
 import AttentionIndicator from './AttentionIndicator'
 import {
@@ -53,7 +53,9 @@ export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
   const loggedIn = user.map((u) => u !== undefined).getOrElse(false)
-  const { unreadMessagesCount } = useContext(MessageContext)
+  const { data: unreadMessagesCount = 0 } = useQuery(unreadMessagesCountQuery, {
+    enabled: loggedIn
+  })
   const { data: unreadDecisions = 0 } = useQuery(
     applicationNotificationsQuery,
     { enabled: loggedIn }

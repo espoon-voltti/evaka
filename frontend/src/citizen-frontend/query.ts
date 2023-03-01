@@ -15,6 +15,7 @@ export type QueryKeyPrefix =
   | 'children'
   | 'incomeStatements'
   | 'map'
+  | 'messages'
   | 'pedagogicalDocuments'
   | 'vasuAndLeops'
 

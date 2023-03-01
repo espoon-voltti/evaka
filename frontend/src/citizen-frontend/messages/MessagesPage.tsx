@@ -10,8 +10,8 @@ import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
 import { combine } from 'lib-common/api'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -25,7 +25,7 @@ import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
-import { getReceivers, sendMessage } from './api'
+import { receiversQuery, sendMessageMutation } from './queries'
 import { MessageContext } from './state'
 
 const StyledFlex = styled(AdaptiveFlex)`
@@ -46,33 +46,15 @@ export default React.memo(function MessagesPage() {
   const [searchParams] = useSearchParams()
   const {
     accountId,
-    loadAccount,
     selectedThread,
     setSelectedThread,
-    refreshThreads,
     threads,
     threadLoadingResult
   } = useContext(MessageContext)
-  useEffect(() => {
-    if (!accountId.isSuccess) {
-      loadAccount()
-    }
-  }, [accountId, loadAccount])
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
   const t = useTranslation()
-  const [receivers] = useApiState(
-    () =>
-      getReceivers(t.messages.staffAnnotation).then((receivers) =>
-        receivers.map((rs) => ({
-          ...rs,
-          messageAccounts: rs.messageAccounts.sort((a, b) =>
-            a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase())
-          )
-        }))
-      ),
-    [t.messages.staffAnnotation]
-  )
+  const receivers = useQueryResult(receiversQuery(t.messages.staffAnnotation))
 
   const user = useUser()
 
@@ -108,12 +90,13 @@ export default React.memo(function MessagesPage() {
   )
 
   const onSelectedThreadDeleted = useCallback(() => {
-    refreshThreads()
     changeEditorVisibility(false)
-  }, [refreshThreads, changeEditorVisibility])
+  }, [changeEditorVisibility])
 
   const canSendNewMessage =
     !editorVisible && !!user?.accessibleFeatures.composeNewMessage
+
+  const { mutateAsync: sendMessage } = useMutationResult(sendMessageMutation)
 
   return (
     <Container>
@@ -148,9 +131,8 @@ export default React.memo(function MessagesPage() {
               {editorVisible && (
                 <MessageEditor
                   receiverOptions={receivers}
-                  onSend={(message) => sendMessage(message)}
+                  onSend={sendMessage}
                   onSuccess={() => {
-                    refreshThreads()
                     changeEditorVisibility(false)
                   }}
                   onFailure={() => setDisplaySendError(true)}

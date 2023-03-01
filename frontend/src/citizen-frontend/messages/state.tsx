@@ -11,47 +11,29 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Paged, Result } from 'lib-common/api'
+import { Failure, Loading, Result, Success } from 'lib-common/api'
 import {
   MessageThread,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useInfiniteQuery, useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 
+import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
+import { ReplyToThreadParams } from './api'
 import {
-  getMessageAccount,
-  getReceivedMessages,
-  getUnreadMessagesCount,
-  markThreadRead,
-  replyToThread,
-  ReplyToThreadParams
-} from './api'
-
-const initialThreadState: ThreadsState = {
-  threads: [],
-  selectedThread: undefined,
-  loadingResult: Loading.of(),
-  currentPage: 0,
-  pages: Infinity
-}
-
-interface ThreadsState {
-  threads: MessageThread[]
-  selectedThread: UUID | undefined
-  loadingResult: Result<unknown>
-  currentPage: number
-  pages: number
-}
+  markThreadReadMutation,
+  messageAccountQuery,
+  receivedMessagesQuery,
+  replyToThreadMutation
+} from './queries'
 
 export interface MessagePageState {
   accountId: Result<UUID>
-  loadAccount: () => void
   threads: MessageThread[]
-  refreshThreads: () => void
   threadLoadingResult: Result<unknown>
   loadMoreThreads: () => void
   selectedThread: MessageThread | undefined
@@ -60,15 +42,11 @@ export interface MessagePageState {
   replyState: Result<void> | undefined
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
-  unreadMessagesCount: number | undefined
-  refreshUnreadMessagesCount: () => void
 }
 
 const defaultState: MessagePageState = {
   accountId: Loading.of(),
-  loadAccount: () => undefined,
   threads: [],
-  refreshThreads: () => undefined,
   threadLoadingResult: Loading.of(),
   loadMoreThreads: () => undefined,
   selectedThread: undefined,
@@ -76,9 +54,7 @@ const defaultState: MessagePageState = {
   sendReply: () => undefined,
   replyState: undefined,
   getReplyContent: () => '',
-  setReplyContent: () => undefined,
-  unreadMessagesCount: undefined,
-  refreshUnreadMessagesCount: () => undefined
+  setReplyContent: () => undefined
 }
 
 export const MessageContext = createContext<MessagePageState>(defaultState)
@@ -102,89 +78,37 @@ const markMatchingThreadRead = (
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
     const t = useTranslation()
-    const [accountId, setAccountId] = useState<Result<UUID>>(Loading.of())
-    const loadAccount = useRestApi(getMessageAccount, setAccountId)
 
-    const [threads, setThreads] = useState<ThreadsState>(initialThreadState)
+    const isLoggedIn = useUser() !== undefined
+    const accountId = useQueryResult(messageAccountQuery, {
+      enabled: isLoggedIn
+    })
 
-    const setMessagesResult = useCallback(
-      (result: Result<Paged<MessageThread>>) =>
-        setThreads((state) => ({
-          ...result.mapAll({
-            loading: () => state,
-            failure: () => state,
-            success: ({ data, pages }) => ({
-              ...state,
-              threads: uniqBy(
-                [...state.threads, ...data],
-                (thread) => thread.id
-              ),
-              pages
-            })
-          }),
-          loadingResult: result
-        })),
-      []
+    const { data, isLoading, isError, fetchNextPage, transformPages } =
+      useInfiniteQuery(receivedMessagesQuery(t.messages.staffAnnotation, 10), {
+        enabled: accountId.isSuccess
+      })
+    const threads = useMemo(() => {
+      if (!data) return []
+      return uniqBy(
+        data.pages.flatMap((p) => p.data),
+        'id'
+      )
+    }, [data])
+
+    const threadLoadingResult = useMemo(
+      () =>
+        isLoading
+          ? Loading.of()
+          : isError
+          ? Failure.of({ message: '' })
+          : Success.of(),
+      [isError, isLoading]
     )
 
-    const loadMessages = useRestApi(getReceivedMessages, setMessagesResult)
-    const refreshThreads = useCallback(() => {
-      setThreads({ ...initialThreadState })
-      setThreads((threads) => ({ ...threads, currentPage: 1 }))
-    }, [])
-
-    useEffect(() => {
-      if (threads.currentPage > 0) {
-        setThreads((state) => ({ ...state, loadingResult: Loading.of() }))
-        void loadMessages(threads.currentPage, t.messages.staffAnnotation)
-      }
-    }, [loadMessages, threads.currentPage, t.messages.staffAnnotation])
-
-    const loadMoreThreads = useCallback(() => {
-      if (threads.currentPage < threads.pages) {
-        setThreads((state) => ({
-          ...state,
-          currentPage: state.currentPage + 1
-        }))
-      }
-    }, [threads.currentPage, threads.pages])
-
-    useEffect(() => {
-      if (accountId.isSuccess) {
-        setThreads((state) => ({ ...state, currentPage: 1 }))
-      }
-    }, [accountId])
-
-    const [replyState, setReplyState] = useState<Result<void>>()
-    const setReplyResponse = useCallback((res: Result<ThreadReply>) => {
-      setReplyState(res.map(() => undefined))
-      if (res.isSuccess) {
-        const {
-          value: { message, threadId }
-        } = res
-        setThreads(function appendMessageAndMoveThreadToTopOfList(state) {
-          const thread = state.threads.find((t) => t.id === threadId)
-          if (!thread) return state
-          const otherThreads = state.threads.filter((t) => t.id !== threadId)
-          return {
-            ...state,
-            threads: [
-              {
-                ...thread,
-                messages: [...thread.messages, message]
-              },
-              ...otherThreads
-            ]
-          }
-        })
-        setReplyContents((state) => ({ ...state, [threadId]: '' }))
-      }
-    }, [])
-    const reply = useRestApi(replyToThread, setReplyResponse)
-    const sendReply = useCallback(reply, [reply])
+    const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
-
     const getReplyContent = useCallback(
       (threadId: UUID) => replyContents[threadId] ?? '',
       [replyContents]
@@ -193,86 +117,78 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>()
-    const setUnreadResult = useCallback((res: Result<number>) => {
-      if (res.isSuccess) {
-        setUnreadMessagesCount(res.value)
+    const [replyState, setReplyState] = useState<Result<void>>()
+    const { mutate: sendReply } = useMutation(replyToThreadMutation, {
+      onMutate: () => setReplyState(Loading.of()),
+      onSuccess: ({ message, threadId }: ThreadReply) => {
+        setReplyState(Success.of(undefined))
+        transformPages((page) => ({
+          ...page,
+          data: page.data.map((thread) =>
+            thread.id === threadId
+              ? { ...thread, messages: [...thread.messages, message] }
+              : thread
+          )
+        }))
+        setReplyContents((state) => ({ ...state, [threadId]: '' }))
       }
-    }, [])
-    const refreshUnreadMessagesCount = useRestApi(
-      getUnreadMessagesCount,
-      setUnreadResult
-    )
-
-    const setSelectedThread = useCallback(
-      (threadId: UUID | undefined) =>
-        setThreads((state) => ({ ...state, selectedThread: threadId })),
-      [setThreads]
-    )
+    })
 
     const selectedThread = useMemo(
       () =>
-        threads.selectedThread
-          ? threads.threads.find((t) => t.id === threads.selectedThread)
+        selectedThreadId !== undefined
+          ? threads.find((t) => t.id === selectedThreadId)
           : undefined,
-      [threads.selectedThread, threads.threads]
+      [selectedThreadId, threads]
     )
 
+    const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
     useEffect(() => {
-      if (!selectedThread) return
-
       if (!accountId.isSuccess) return
+      if (!selectedThreadId || !selectedThread) return
 
       const hasUnreadMessages = selectedThread?.messages.some(
         (m) => !m.readAt && m.sender.id !== accountId.value
       )
 
       if (hasUnreadMessages) {
-        setThreads((state) => {
-          return {
-            ...state,
-            threads: markMatchingThreadRead(state.threads, selectedThread.id)
-          }
-        })
-
-        void markThreadRead(selectedThread.id).then(() => {
-          void refreshUnreadMessagesCount()
-        })
+        markThreadRead(selectedThread.id)
+        transformPages((page) => ({
+          ...page,
+          data: markMatchingThreadRead(page.data, selectedThreadId)
+        }))
       }
-    }, [selectedThread, accountId, refreshUnreadMessagesCount])
+    }, [
+      accountId,
+      markThreadRead,
+      selectedThread,
+      selectedThreadId,
+      transformPages
+    ])
 
     const value = useMemo(
       () => ({
         accountId,
-        loadAccount,
-        threads: threads.threads,
-        refreshThreads,
-        threadLoadingResult: threads.loadingResult,
+        threads,
+        threadLoadingResult,
         getReplyContent,
         setReplyContent,
-        loadMoreThreads,
+        loadMoreThreads: fetchNextPage,
         selectedThread,
-        setSelectedThread,
+        setSelectedThread: setSelectedThreadId,
         replyState,
-        sendReply,
-        unreadMessagesCount,
-        refreshUnreadMessagesCount
+        sendReply
       }),
       [
         accountId,
-        loadAccount,
-        threads.threads,
-        refreshThreads,
-        threads.loadingResult,
+        fetchNextPage,
         getReplyContent,
-        setReplyContent,
-        loadMoreThreads,
-        selectedThread,
-        setSelectedThread,
         replyState,
+        selectedThread,
         sendReply,
-        unreadMessagesCount,
-        refreshUnreadMessagesCount
+        setReplyContent,
+        threadLoadingResult,
+        threads
       ]
     )
 

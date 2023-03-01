@@ -67,7 +67,7 @@ export function useQuery<Data, Key extends QueryKey>(
   })
 }
 
-function toResult<T>(
+export function queryResult<T>(
   data: T | undefined,
   error: unknown,
   isFetching: boolean
@@ -88,7 +88,7 @@ export function useQueryResult<Data, Key extends QueryKey>(
 ): Result<Data> {
   const { data, error, isFetching } = useQuery(queryDescription, options)
   return useMemo(
-    () => toResult(data, error, isFetching),
+    () => queryResult(data, error, isFetching),
     [data, error, isFetching]
   )
 }

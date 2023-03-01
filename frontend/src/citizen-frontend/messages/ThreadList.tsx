@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
@@ -44,20 +44,9 @@ export default React.memo(function ThreadList({
   newMessageButtonEnabled
 }: Props) {
   const t = useTranslation()
-  const {
-    selectedThread,
-    threads,
-    threadLoadingResult,
-    loadMoreThreads,
-    refreshThreads,
-    refreshUnreadMessagesCount
-  } = useContext(MessageContext)
+  const { selectedThread, threads, threadLoadingResult, loadMoreThreads } =
+    useContext(MessageContext)
   const [confirmDelete, setConfirmDelete] = useState<UUID>()
-
-  const refreshEverything = useCallback(() => {
-    refreshThreads()
-    refreshUnreadMessagesCount()
-  }, [refreshThreads, refreshUnreadMessagesCount])
 
   return (
     <>
@@ -137,7 +126,6 @@ export default React.memo(function ThreadList({
             onClose={() => setConfirmDelete(undefined)}
             onSuccess={() => {
               setConfirmDelete(undefined)
-              refreshEverything()
             }}
           />
         ) : null}
