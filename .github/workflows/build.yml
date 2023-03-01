@@ -13,8 +13,6 @@ env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
   ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
   AWS_REGION: eu-west-1
-  # Migrating to this in fugure variable if depndabot uses this
-  EXTERNAL_SOURCE: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
 
 jobs:
   lint-shell:
@@ -635,131 +633,31 @@ jobs:
               --profile "voltti-${{ matrix.environment }}"
           fi
 
-  ok: # dummy task for pull request
-    runs-on: ubuntu-latest
-    needs:
-      - check-licenses
-      - lint-shell
-      - frontend-test
-      - service-test
-      - service-integration-test
-      - e2e
-
-    steps:
-      - name: OK
-        run: echo OK
-
   deploy:
     if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+    env:
+      DEPLOY_REPO_OWNER: 'espoon-voltti'
+      DEPLOY_REPO_NAME: 'evaka-deploy'
+      DEPLOY_REPO_WORKFLOW: 'deploy.yml'
     runs-on: ubuntu-latest
     needs:
-      - frontend-install
       - service-test
       - service-integration-test
-      - api-gateway
-      - proxy
       - e2e
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - environment: dev
-          - environment: test
-
+      - frontend-install
+      - lint-shell
+      - check-licenses
     steps:
-      - name: Check out infra
-        uses: actions/checkout@v3
+      - uses: actions/github-script@v6
         with:
-          repository: espoon-voltti/evaka-infra
-          ssh-key: '${{ secrets.SSH_KEY }}'
-          ref: 'refs/heads/master'
-
-      - name: Get branch name
-        id: variables
-        run: echo "branch=${BRANCH##*/}" >> $GITHUB_OUTPUT
-        env:
-          BRANCH: ${{ github.head_ref || github.ref_name }}
-
-      - name: Write AWS config
-        shell: bash
-        run: |
-          mkdir -p ~/.aws
-          echo '${{ secrets.AWS_CONFIG_TERRAFORM }}' > ~/.aws/config
-          cat << EOF > ~/.aws/credentials
-          [voltti-federation]
-          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          EOF
-
-      - uses: espoon-voltti/voltti-actions/tfenv@master
-
-      - name: Setup SSH
-        shell: bash
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-
-      - name: Prepare frontend
-        run: |
-          for path in citizen employee employee/mobile maintenance-page; do
-            aws s3 sync "s3://evaka-static-${{ matrix.environment }}/frontend/${path}/${{ github.event.pull_request.head.sha || github.sha }}" \
-              "s3://evaka-static-${{ matrix.environment }}/${path}" \
-              --acl public-read \
-              --exact-timestamps \
-              --exclude "*index.html" \
-              --profile "voltti-${{ matrix.environment }}"
-          done
-
-      - name: Prepare Terraform
-        working-directory: terraform/evaka-ecs
-        run: |
-          terraform init
-          terraform workspace select "${{ matrix.environment }}"
-
-      - name: Install applications
-        working-directory: terraform/evaka-ecs
-        run: |
-          terraform apply \
-              -input=false \
-              -auto-approve \
-              -lock-timeout=300s \
-              -var enduser-api-gw_version="${{ github.event.pull_request.head.sha || github.sha }}" \
-              -var internal-api-gw_version="${{ github.event.pull_request.head.sha || github.sha }}" \
-              -var evaka-srv_version="${{ github.event.pull_request.head.sha || github.sha }}" \
-              -var proxy_version="${{ github.event.pull_request.head.sha || github.sha }}" \
-              -var ses-notification-processor_version="${{ github.event.pull_request.head.sha || github.sha }}" > /dev/null 2> /dev/null
-
-      - name: Deploy frontend
-        run: |
-          for path in citizen employee employee/mobile maintenance-page; do
-            aws s3 sync "s3://evaka-static-${{ matrix.environment }}/frontend/${path}/${{ github.event.pull_request.head.sha || github.sha }}" \
-              "s3://evaka-static-${{ matrix.environment }}/${path}" \
-              --acl public-read \
-              --exact-timestamps \
-              --exclude '*' \
-              --include '*index.html' \
-              --profile "voltti-${{ matrix.environment }}"
-          done
-
-          cat <<EOF>> deploy.metadata.yaml
-          version: '1'
-          updated: '$(date --iso-8601=seconds)'
-          sha1: ${{ github.event.pull_request.head.sha || github.sha }}
-          branch: ${{ steps.variables.outputs.branch }}
-          EOF
-
-          aws s3 cp deploy.metadata.yaml "s3://evaka-static-${{ matrix.environment }}/frontend/deploy.metadata.yaml" \
-            --profile "voltti-${{ matrix.environment }}"
-
-      - if: always()
-        run: rm -rf ~/.aws
-
-      - if: failure()
-        uses: espoon-voltti/voltti-actions/notify@v1
-        with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          github-token: '${{ secrets.EVAKA_PAT }}'
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: '${{ env.DEPLOY_REPO_OWNER }}',
+              repo: '${{ env.DEPLOY_REPO_NAME }}',
+              workflow_id: '${{ env.DEPLOY_REPO_WORKFLOW }}',
+              ref: 'main',
+              inputs: {
+                version: '${{ github.event.pull_request.head.sha || github.sha }}'
+              }
+            })
