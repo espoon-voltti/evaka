@@ -2143,9 +2143,9 @@ const en: Translations = {
       },
       noRecord: 'No record',
       givePermissionToShareInfoVasu:
-        'If necessary, some information from the plan will be transferred to other recipients (Sections 40 and 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
+        'If necessary, some information from the plan will be transferred to other recipients (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
       givePermissionToShareInfoVasuInfoText:
-        "Contact the unit for early childhood education if you want to change the recipients mentioned in the plan. The plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 4 of the Act on Early Childhood Education and Care, Sections 40 and 41 of the Basic Education Act).",
+        "Contact the unit for early childhood education if you want to change the recipients mentioned in the plan. The plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 41 of the Act on Early Childhood Education and Care, Section 41 of the Basic Education Act).",
       givePermissionToShareTitleVasu:
         'Confirmation of the transfer of the early childhood education plan to other recipients',
       givePermissionToShareTitleLeops:
@@ -2161,11 +2161,11 @@ const en: Translations = {
       sharingLeopsDisclaimer:
         "When a child changes to another early childhood education unit in the City of Espoo, the early childhood education plan and other early childhood education documents are transferred to the new unit (also applies to early childhood education organized by Espoo as a purchasing service). The guardian will be informed about the transfer in advance. We ask the guardian for permission to hand over the early childhood education plan to an outsider. However, if a child enters private or other municipality's early childhood education, the early childhood education plan must be submitted to the new early childhood education provider even without permission, if the information is necessary for arranging the child's early childhood education (section 41 (3) of the Early Childhood Education Act). In addition, the early childhood education plan must be submitted to the organizer of pre-primary or primary education if it is necessary for the organization of the child's education (section 41 (4) of the Basic Education Act). The guardian will be informed of the transfer in advance.",
       sharingVasuDisclaimer:
-        "The pre-school learning plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 4 of the Act on Early Childhood Education and Care, Sections 40 and 41 of the Basic Education Act).",
+        "The pre-school learning plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 4 of the Act on Early Childhood Education and Care, Section 41 of the Basic Education Act).",
       givePermissionToShareVasuBrief:
-        'Necessary information will be shared if required to do so. (Sections 40 and 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
+        'Necessary information will be shared if required to do so. (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
       givePermissionToShareLeopsBrief:
-        'Necessary information will be shared if required to do so. (Section 41 of the Act on Early Childhood Education and Care, sections 40 and 41 of the Basic Education Act)'
+        'Necessary information will be shared if required to do so. (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)'
     }
   },
   accessibilityStatement: (
