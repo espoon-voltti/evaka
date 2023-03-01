@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.reports.patu
 
-import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
-import fi.espoo.evaka.reports.getRawRows
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -15,7 +13,7 @@ private val logger = KotlinLogging.logger {}
 
 class PatuAsyncJobProcessor(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val patuIntegrationClient: PatuIntegrationClient
+    private val patuReportingService: PatuReportingService,
 ) {
     init {
         asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendPatuReport ->
@@ -25,11 +23,6 @@ class PatuAsyncJobProcessor(
 
     fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {
         logger.info("Running patu report job ${msg.dateRange}")
-        val rows =
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getRawRows(msg.dateRange.start, msg.dateRange.end ?: msg.dateRange.start)
-            }
-        patuIntegrationClient.send(rows)
+        patuReportingService.sendPatuReport(dbc, msg.dateRange)
     }
 }

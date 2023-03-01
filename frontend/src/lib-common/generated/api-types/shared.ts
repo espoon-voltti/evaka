@@ -53,6 +53,7 @@ export interface EmployeeFeatures {
   pinCode: boolean
   reports: boolean
   settings: boolean
+  submitPatuReport: boolean
   unitFeatures: boolean
   units: boolean
   vasuTemplates: boolean

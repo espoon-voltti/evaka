@@ -184,6 +184,10 @@ class SystemController(
                                 createDraftInvoices =
                                     permittedGlobalActions.contains(
                                         Action.Global.CREATE_DRAFT_INVOICES
+                                    ),
+                                submitPatuReport =
+                                    permittedGlobalActions.contains(
+                                        Action.Global.SUBMIT_PATU_REPORT
                                     )
                             )
 

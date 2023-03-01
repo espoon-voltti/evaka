@@ -20,6 +20,7 @@ import fi.espoo.evaka.logging.defaultAccessLoggingValve
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
+import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -88,7 +89,7 @@ class EspooConfig {
     fun espooPatuAsyncJobProcessor(
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
         patuIntegrationClient: PatuIntegrationClient
-    ) = PatuAsyncJobProcessor(asyncJobRunner, patuIntegrationClient)
+    ) = PatuAsyncJobProcessor(asyncJobRunner, PatuReportingService(patuIntegrationClient))
 
     @Bean
     @Profile("local")
