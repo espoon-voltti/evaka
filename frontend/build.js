@@ -184,7 +184,7 @@ async function buildProject(project, config) {
 }
 
 async function staticFiles(project, outputs) {
-  const { publicPath } = project
+  const { publicPath, name } = project
   const srcdir = resolveSrcdir(project)
   const outdir = resolveOutdir(project)
 
