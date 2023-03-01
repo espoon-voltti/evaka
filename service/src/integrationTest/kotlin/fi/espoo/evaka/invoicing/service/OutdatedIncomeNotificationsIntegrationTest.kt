@@ -8,6 +8,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.incomestatement.IncomeStatementType
+import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -39,6 +41,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.snDaycareContractDays15
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -70,13 +73,26 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             childId = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
-            tx.insertTestPlacement(
-                DevPlacement(
-                    childId = childId,
-                    unitId = daycareId,
-                    startDate = clock.today().minusMonths(2),
-                    endDate = clock.today().plusMonths(2)
+            val placementStart = clock.today().minusMonths(2)
+            val placementEnd = clock.today().plusMonths(2)
+            val placementId =
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
+            tx.insertServiceNeedOptions()
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = placementStart,
+                endDate = placementEnd,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
             )
             employeeId = tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.upsertEmployeeUser(employeeId)
@@ -186,6 +202,26 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
             it.createUpdate("DELETE FROM placement WHERE child_id = :personId")
                 .bind("personId", childId)
+                .execute()
+        }
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `If there is no invoicable service need option for the placement no notification is sent`() {
+        db.transaction {
+            it.insertTestIncome(
+                DevIncome(
+                    personId = guardianId,
+                    updatedBy = employeeEvakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().plusDays(13)
+                )
+            )
+
+            it.createUpdate("UPDATE service_need_option SET fee_coefficient = 0 WHERE id = :snoId")
+                .bind("snoId", snDaycareContractDays15.id)
                 .execute()
         }
 
