@@ -211,7 +211,7 @@ async function staticFiles(project, outputs) {
   )
 }
 
-async function serve(projects) {
+function serve(projects) {
   const app = express()
   app.use(
     '/api/internal',
