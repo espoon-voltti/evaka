@@ -469,7 +469,8 @@ jobs:
       matrix:
         test_chunk_number: [1, 2, 3, 4, 5, 6]
         test_chunk_count: [6] # must max value of above list
-
+    permissions:
+      actions: read
     steps:
       - uses: actions/checkout@v3
 
@@ -514,9 +515,11 @@ jobs:
 
       - name: Run e2e tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eo pipefail
-          ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
+          ./bin/timings.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}" | tee -a frontend/playwright-filenames.txt
           cd ./compose
           export EVAKA_FRONTEND_IMAGE=${{ needs.frontend.outputs.image }}
           export EVAKA_GW_IMAGE=${{ needs.api-gateway.outputs.image }}
