@@ -75,6 +75,10 @@ class EspooConfig {
         }
 
     @Bean
+    fun patuReportingService(client: PatuIntegrationClient): PatuReportingService =
+        PatuReportingService(client)
+
+    @Bean
     @Lazy
     fun espooInvoiceIntegrationEnv(env: Environment) =
         EspooInvoiceIntegrationEnv.fromEnvironment(env)

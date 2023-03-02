@@ -8,9 +8,7 @@ import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
 import fi.espoo.evaka.reports.getRawRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import org.springframework.stereotype.Service
 
-@Service
 class PatuReportingService(private val patuIntegrationClient: PatuIntegrationClient) {
     fun sendPatuReport(dbc: Database.Connection, dateRange: DateRange) {
         val rows =
