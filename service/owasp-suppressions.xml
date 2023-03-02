@@ -100,4 +100,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <packageUrl regex="true">^pkg:maven/org\.codehaus\.woodstox/stax2\-api@.*$</packageUrl>
         <cpe>cpe:/a:fasterxml:woodstox</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Low risk and severity. All guava versions are affected, but the vulnerable function is marked deprecated and not used by our codebase.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
+        <cve>CVE-2020-8908</cve>
+    </suppress>
 </suppressions>
