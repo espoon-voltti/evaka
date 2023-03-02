@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import sortBy from 'lodash/sortBy'
+
+import { Paged } from 'lib-common/api'
 import {
   deserializeMessageAccount,
   deserializeMessageThread,
@@ -21,69 +23,60 @@ import { UUID } from 'lib-common/types'
 import { client } from '../api-client'
 
 export async function getReceivedMessages(
-  page: number,
   staffAnnotation: string,
-  pageSize = 10
-): Promise<Result<Paged<MessageThread>>> {
+  page: number,
+  pageSize: number
+): Promise<Paged<MessageThread>> {
   return client
     .get<JsonOf<Paged<MessageThread>>>('/citizen/messages/received', {
       params: { page, pageSize }
     })
-    .then((res) =>
-      Success.of({
-        ...res.data,
-        data: res.data.data.map((d) =>
-          deserializeMessageThread(d, staffAnnotation)
-        )
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then((res) => ({
+      ...res.data,
+      data: res.data.data.map((d) =>
+        deserializeMessageThread(d, staffAnnotation)
+      )
+    }))
 }
 
 export async function getReceivers(
   staffAnnotation: string
-): Promise<Result<GetReceiversResponse>> {
+): Promise<GetReceiversResponse> {
   return client
     .get<GetReceiversResponse>(`/citizen/messages/receivers`)
-    .then((res) =>
-      Success.of({
-        ...res.data,
-        messageAccounts: res.data.messageAccounts.map((d) =>
+    .then((res) => ({
+      ...res.data,
+      messageAccounts: sortBy(
+        res.data.messageAccounts.map((d) =>
           deserializeMessageAccount(d, staffAnnotation)
-        )
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+        ),
+        'name'
+      )
+    }))
 }
 
-export async function getMessageAccount(): Promise<Result<UUID>> {
+export async function getMessageAccount(): Promise<UUID> {
   return client
     .get<UUID>(`/citizen/messages/my-account`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
-export async function markThreadRead(id: string): Promise<Result<void>> {
+export async function markThreadRead(id: string): Promise<void> {
   return client
     .put(`/citizen/messages/threads/${id}/read`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
-export async function getUnreadMessagesCount(): Promise<Result<number>> {
+export async function getUnreadMessagesCount(): Promise<number> {
   return client
     .get<number>(`/citizen/messages/unread-count`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
-export async function sendMessage(
-  message: CitizenMessageBody
-): Promise<Result<UUID>> {
+export async function sendMessage(message: CitizenMessageBody): Promise<UUID> {
   return client
     .post<JsonOf<UUID>>(`/citizen/messages`, message)
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => data)
 }
 
 export type ReplyToThreadParams = ReplyToMessageBody & {
@@ -96,21 +89,17 @@ export async function replyToThread({
   content,
   recipientAccountIds,
   staffAnnotation
-}: ReplyToThreadParams): Promise<Result<ThreadReply>> {
+}: ReplyToThreadParams): Promise<ThreadReply> {
   return client
     .post<JsonOf<ThreadReply>>(`/citizen/messages/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
-    .then(({ data }) =>
-      Success.of(deserializeReplyResponse(data, staffAnnotation))
-    )
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => deserializeReplyResponse(data, staffAnnotation))
 }
 
-export async function archiveThread(id: UUID): Promise<Result<void>> {
+export async function archiveThread(id: UUID): Promise<void> {
   return client
     .put(`/citizen/messages/threads/${id}/archive`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }

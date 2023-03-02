@@ -63,7 +63,6 @@ export interface MessagesState {
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
-  replyState: Result<void> | undefined
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
@@ -81,7 +80,6 @@ const defaultState: MessagesState = {
   selectedThread: undefined,
   selectThread: () => undefined,
   sendReply: () => undefined,
-  replyState: undefined,
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -187,9 +185,7 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const [replyState, setReplyState] = useState<Result<void>>()
     const setReplyResponse = useCallback((res: Result<ThreadReply>) => {
-      setReplyState(res.map(() => undefined))
       if (res.isSuccess) {
         const {
           value: { message, threadId }
@@ -221,8 +217,7 @@ export const MessageContextProvider = React.memo(
         selectedThread,
         getReplyContent,
         sendReply,
-        setReplyContent,
-        replyState
+        setReplyContent
       }),
       [
         accounts,
@@ -236,8 +231,7 @@ export const MessageContextProvider = React.memo(
         selectThread,
         getReplyContent,
         sendReply,
-        setReplyContent,
-        replyState
+        setReplyContent
       ]
     )
 

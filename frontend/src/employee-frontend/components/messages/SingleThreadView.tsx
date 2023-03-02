@@ -171,7 +171,7 @@ export function SingleThreadView({
   onArchived
 }: Props) {
   const { i18n } = useTranslation()
-  const { getReplyContent, sendReply, replyState, setReplyContent } =
+  const { getReplyContent, sendReply, setReplyContent } =
     useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
@@ -263,7 +263,6 @@ export function SingleThreadView({
           (replyEditorVisible ? (
             <MessageContainer>
               <MessageReplyEditor
-                replyState={replyState}
                 onSubmit={onSubmitReply}
                 onDiscard={onDiscard}
                 onUpdateContent={onUpdateContent}

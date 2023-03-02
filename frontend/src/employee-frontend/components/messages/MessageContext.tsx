@@ -14,7 +14,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import { useTheme } from 'styled-components'
 
-import { Loading, Paged, Result } from 'lib-common/api'
+import { Failure, Loading, Paged, Result } from 'lib-common/api'
 import {
   DraftContent,
   Message,
@@ -98,8 +98,7 @@ export interface MessagesState {
   setSelectedThread: (threadId: UUID) => void
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
-  sendReply: (params: ReplyToThreadParams) => void
-  replyState: Result<void> | undefined
+  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
   refreshMessages: (account?: UUID) => void
@@ -138,8 +137,7 @@ const defaultState: MessagesState = {
   setSelectedThread: () => undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
-  sendReply: () => undefined,
-  replyState: undefined,
+  sendReply: () => Promise.resolve(Failure.of({ message: 'Not initialized' })),
   getReplyContent: () => '',
   setReplyContent: () => undefined,
   refreshMessages: () => undefined,
@@ -596,10 +594,8 @@ export const MessageContextProvider = React.memo(
       [setSingleThread]
     )
 
-    const [replyState, setReplyState] = useState<Result<void>>()
     const setReplyResponse = useCallback(
       (res: Result<ThreadReply>) => {
-        setReplyState(res.map(() => undefined))
         if (res.isSuccess) {
           const {
             value: { message, threadId }
@@ -736,7 +732,6 @@ export const MessageContextProvider = React.memo(
         setSelectedThread,
         selectedThread,
         selectThread,
-        replyState,
         sendReply,
         getReplyContent,
         setReplyContent,
@@ -772,7 +767,6 @@ export const MessageContextProvider = React.memo(
         setSelectedThread,
         selectedThread,
         selectThread,
-        replyState,
         sendReply,
         getReplyContent,
         setReplyContent,

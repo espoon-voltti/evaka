@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sumBy from 'lodash/sumBy'
-import React, { useContext, useEffect } from 'react'
+import React from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -14,7 +14,7 @@ import colors from 'lib-customizations/common'
 import { useUser } from '../auth/state'
 import { assistanceDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries'
 import { applicationNotificationsQuery } from '../decisions/queries'
-import { MessageContext, MessagePageState } from '../messages/state'
+import { unreadMessagesCountQuery } from '../messages/queries'
 
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
@@ -25,12 +25,9 @@ import { LanguageMenu } from './shared-components'
 export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const loggedIn = useUser() !== undefined
 
-  const { unreadMessagesCount, refreshUnreadMessagesCount } =
-    useContext<MessagePageState>(MessageContext)
-
-  useEffect(() => {
-    if (loggedIn) refreshUnreadMessagesCount()
-  }, [refreshUnreadMessagesCount, loggedIn])
+  const { data: unreadMessagesCount } = useQuery(unreadMessagesCountQuery, {
+    enabled: loggedIn
+  })
 
   const { data: unreadAssistanceNeedDecisionCounts = [] } = useQuery(
     assistanceDecisionUnreadCountsQuery,

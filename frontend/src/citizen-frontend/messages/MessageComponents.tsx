@@ -5,6 +5,7 @@
 import React, { useCallback } from 'react'
 import styled, { css } from 'styled-components'
 
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { desktopMin } from 'lib-components/breakpoints'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -14,7 +15,7 @@ import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { archiveThread } from './api'
+import { archiveThreadMutation } from './queries'
 
 const messageContainerStyles = css`
   background-color: ${colors.grayscale.g0};
@@ -52,10 +53,10 @@ export const ConfirmDeleteThread = React.memo(function ConfirmDeleteThread({
   onSuccess
 }: ConfirmDeleteThreadProps) {
   const t = useTranslation()
-  const onArchive = useCallback(() => archiveThread(threadId), [threadId])
+  const { mutateAsync: archive } = useMutationResult(archiveThreadMutation)
   return (
     <AsyncFormModal
-      resolveAction={onArchive}
+      resolveAction={useCallback(() => archive(threadId), [archive, threadId])}
       rejectAction={onClose}
       title={t.messages.confirmDelete.title}
       text={t.messages.confirmDelete.text}
