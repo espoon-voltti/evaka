@@ -15,6 +15,7 @@
 
 set -euo pipefail
 #set -x
+
 SPLIT_PRINT="$1"
 SPLIT_COUNT="$2"
 
@@ -52,39 +53,12 @@ while IFS="" read -r line || [ -n "$line" ]; do
     fi
 done < <( get_log_output | grep '^e2e' | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | grep ' e2e-test ' )
 
+
 # Set missing test times to zeros
 while IFS="" read -r line || [ -n "$line" ]; do
     [ "${timings[$line]+found}" ] || timings["$line"]="0"
 done < <(cd frontend; find src/e2e-test/specs/ -type f -name '*.ts' ; cd ..)
 
-# Sort files by time and put $lines array
-lines=($(
-    for key in "${!timings[@]}"; do
-        echo "${timings[$key]} $key"
-    done | sort -n | cut -d ' ' -f 2
-))
-
-# Poor man algorithm to split test to even chunks by test execution duration
-# Takes first and last element from list sorted by duration
-current_split=1
-while true; do
-    if [[ "${#lines[@]}" = "0" ]]; then
-        break
-    fi
-    if [ "$SPLIT_PRINT" = "$current_split" ]; then
-        echo "${lines[0]}"
-    fi
-    lines=("${lines[@]:1}")
-    if [[ "${#lines[@]}" = "0" ]]; then
-        break
-    fi
-    if [ "$SPLIT_PRINT" = "$current_split" ]; then
-        echo "${lines[-1]}"
-    fi
-    unset 'lines[-1]'
-
-    current_split=$((current_split+1))
-    if [ "$current_split" = "$(( SPLIT_COUNT + 1 ))" ]; then
-        current_split=1
-    fi
-done
+for key in "${!timings[@]}"; do
+    echo "${timings[$key]} $key"
+done | sort -rn | shuf --random-source=<(yes 42) | python ./bin/timings.py "$SPLIT_PRINT" "$SPLIT_COUNT"
