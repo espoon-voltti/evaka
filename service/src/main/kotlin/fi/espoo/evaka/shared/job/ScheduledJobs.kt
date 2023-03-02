@@ -63,7 +63,7 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
-    private val patuReportingService: PatuReportingService,
+    private val patuReportingService: PatuReportingService?,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     tracer: Tracer
 ) {
@@ -199,6 +199,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     fun sendPatuReport(db: Database.Connection, clock: EvakaClock) {
         val yesterday = clock.today().minusDays(1)
         logger.info("Sending patu report for $yesterday")
-        patuReportingService.sendPatuReport(db, DateRange(yesterday, yesterday))
+        patuReportingService!!.sendPatuReport(db, DateRange(yesterday, yesterday))
     }
 }
