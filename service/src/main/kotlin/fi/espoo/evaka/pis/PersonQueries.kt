@@ -50,7 +50,9 @@ val personDTOColumns =
         "invoicing_post_office",
         "force_manual_fee_decisions",
         "oph_person_oid",
-        "updated_from_vtj"
+        "updated_from_vtj",
+        "language_at_home",
+        "language_at_home_details"
     )
 val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
 
@@ -383,7 +385,9 @@ fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPa
             invoicing_postal_code = coalesce(:invoicingPostalCode, invoicing_postal_code),
             invoicing_post_office = coalesce(:invoicingPostOffice, invoicing_post_office),
             force_manual_fee_decisions = coalesce(:forceManualFeeDecisions, force_manual_fee_decisions),
-            oph_person_oid = coalesce(:ophPersonOid, oph_person_oid)
+            oph_person_oid = coalesce(:ophPersonOid, oph_person_oid),
+            language_at_home = coalesce(:languageAtHome, language_at_home),
+            language_at_home_details = coalesce(:languageAtHomeDetails, language_at_home_details)
         WHERE id = :id
         RETURNING id
         """
@@ -411,7 +415,9 @@ fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPa
             invoicing_postal_code = coalesce(:invoicingPostalCode, invoicing_postal_code),
             invoicing_post_office = coalesce(:invoicingPostOffice, invoicing_post_office),
             force_manual_fee_decisions = coalesce(:forceManualFeeDecisions, force_manual_fee_decisions),
-            oph_person_oid = coalesce(:ophPersonOid, oph_person_oid)
+            oph_person_oid = coalesce(:ophPersonOid, oph_person_oid),
+            language_at_home = coalesce(:languageAtHome, language_at_home),
+            language_at_home_details = coalesce(:languageAtHomeDetails, language_at_home_details)
         WHERE id = :id AND social_security_number IS NULL
         RETURNING id
         """
@@ -460,7 +466,9 @@ private val toPersonDTO: (RowView) -> PersonDTO = { row ->
         invoicingPostalCode = row.mapColumn("invoicing_postal_code"),
         invoicingPostOffice = row.mapColumn("invoicing_post_office"),
         forceManualFeeDecisions = row.mapColumn("force_manual_fee_decisions"),
-        ophPersonOid = row.mapColumn("oph_person_oid")
+        ophPersonOid = row.mapColumn("oph_person_oid"),
+        languageAtHome = row.mapColumn("language_at_home"),
+        languageAtHomeDetails = row.mapColumn("language_at_home_details"),
     )
 }
 

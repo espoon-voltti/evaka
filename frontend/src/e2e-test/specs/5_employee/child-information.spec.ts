@@ -81,6 +81,28 @@ describe('Child Information - edit child information', () => {
     await childInformationPage.setOphPersonOid('1.2.3')
     await childInformationPage.assertOphPersonOid('1.2.3')
   })
+  test('Language at home can be edited', async () => {
+    const language = 'kreikka'
+    const languageSearchText = 'kre'
+    const languageId = 'ell'
+    const details = 'Puhuu modernia kreikkaa, ei antiikin'
+
+    await page.goto(
+      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+    )
+    await childInformationPage.waitUntilLoaded()
+    await childInformationPage.languageAtHome.assertTextEquals('')
+    await childInformationPage.languageAtHomeDetails.assertTextEquals('')
+    await childInformationPage.clickEdit()
+    await childInformationPage.languageAtHomeCombobox.fillAndSelectItem(
+      languageSearchText,
+      `language-${languageId}`
+    )
+    await childInformationPage.languageAtHomeDetailsInput.fill(details)
+    await childInformationPage.confirmButton.click()
+    await childInformationPage.languageAtHome.assertTextEquals(language)
+    await childInformationPage.languageAtHomeDetails.assertTextEquals(details)
+  })
 })
 
 describe('Child Information - edit additional information', () => {

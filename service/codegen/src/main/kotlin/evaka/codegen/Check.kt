@@ -6,12 +6,15 @@ package evaka.codegen
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
-import evaka.codegen.actionenum.cli.checkGeneratedActionEnumTypes
+import evaka.codegen.actionenum.checkGeneratedActionEnumTypes
 import evaka.codegen.apitypes.checkGeneratedApiTypes
 import org.slf4j.LoggerFactory
+import kotlin.io.path.div
 
 fun main() {
     (LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("ROOT").level = Level.INFO
-    checkGeneratedActionEnumTypes()
-    checkGeneratedApiTypes()
+    val generatedPath = locateGeneratedDirectory()
+    checkGeneratedActionEnumTypes(generatedPath)
+    checkGeneratedApiTypes(generatedPath / "api-types")
+    checkLanguages(generatedPath / "language.ts")
 }

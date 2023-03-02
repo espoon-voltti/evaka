@@ -33,11 +33,23 @@ export default class ChildInformationPage {
     this.page.find('[data-qa="person-oph-person-oid"]')
   )
 
+  readonly languageAtHome = this.page.findByDataQa('person-language-at-home')
+  readonly languageAtHomeCombobox = new Combobox(
+    this.page.findByDataQa('input-language-at-home')
+  )
+
+  readonly languageAtHomeDetails = this.page.findByDataQa(
+    'person-language-at-home-details'
+  )
+  readonly languageAtHomeDetailsInput = new TextInput(
+    this.page.findByDataQa('input-language-at-home-details')
+  )
+
   readonly #editButton = this.page.find(
     '[data-qa="edit-person-settings-button"]'
   )
 
-  readonly #confirmButton = this.page.find(
+  readonly confirmButton = this.page.find(
     '[data-qa="confirm-edited-person-button"]'
   )
 
@@ -69,7 +81,7 @@ export default class ChildInformationPage {
   async setOphPersonOid(text: string) {
     await this.#ophPersonOidInput.click()
     await this.#ophPersonOidInput.type(text)
-    await this.#confirmButton.click()
+    await this.confirmButton.click()
   }
 
   async assertCollapsiblesVisible(params: Record<Collapsible, boolean>) {

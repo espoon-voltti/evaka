@@ -284,7 +284,9 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             postOffice = person.city,
             residenceCode = person.residenceCode,
             restrictedDetailsEnabled = person.restrictedDetailsEnabled,
-            restrictedDetailsEndDate = person.restrictedDetailsEndDate
+            restrictedDetailsEndDate = person.restrictedDetailsEndDate,
+            languageAtHome = "",
+            languageAtHomeDetails = "",
         )
 
     private fun toPersonWithChildrenDTO(
@@ -395,7 +397,9 @@ data class PersonDTO(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
-    val ophPersonOid: String? = ""
+    val ophPersonOid: String? = "",
+    val languageAtHome: String = "",
+    val languageAtHomeDetails: String = "",
 ) {
     fun toVtjPersonDTO() =
         VtjPersonDTO(
@@ -491,7 +495,9 @@ data class PersonJSON(
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
     val ophPersonOid: String? = "",
-    val updatedFromVtj: HelsinkiDateTime? = null
+    val updatedFromVtj: HelsinkiDateTime? = null,
+    val languageAtHome: String = "",
+    val languageAtHomeDetails: String = "",
 ) {
     companion object {
         fun from(p: PersonDTO): PersonJSON =
@@ -518,7 +524,9 @@ data class PersonJSON(
                 invoicingPostOffice = p.invoicingPostOffice,
                 forceManualFeeDecisions = p.forceManualFeeDecisions,
                 ophPersonOid = p.ophPersonOid,
-                updatedFromVtj = p.updatedFromVtj
+                updatedFromVtj = p.updatedFromVtj,
+                languageAtHome = p.languageAtHome,
+                languageAtHomeDetails = p.languageAtHomeDetails,
             )
     }
 }
@@ -538,7 +546,9 @@ data class PersonPatch(
     val invoicingPostalCode: String? = null,
     val invoicingPostOffice: String? = null,
     val forceManualFeeDecisions: Boolean? = null,
-    val ophPersonOid: String? = null
+    val ophPersonOid: String? = null,
+    val languageAtHome: String? = null,
+    val languageAtHomeDetails: String? = null,
 )
 
 data class PersonWithChildrenDTO(
@@ -582,7 +592,9 @@ data class PersonWithChildrenDTO(
             language = nativeLanguage?.code,
             email = email,
             phone = phone,
-            backupPhone = backupPhone
+            backupPhone = backupPhone,
+            languageAtHome = "",
+            languageAtHomeDetails = "",
         )
 }
 
@@ -688,7 +700,9 @@ private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
         dateOfDeath = inputPerson.dateOfDeath,
         email = null,
         phone = "",
-        backupPhone = ""
+        backupPhone = "",
+        languageAtHome = "",
+        languageAtHomeDetails = "",
     )
 
 private fun getPersonWithUpdatedProperties(

@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import sortBy from 'lodash/sortBy'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -10,12 +17,15 @@ import { Loading, Result, Success } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import {
   FixedSpaceColumn,
@@ -23,8 +33,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
-  InfoButton,
-  ExpandingInfoBox
+  ExpandingInfoBox,
+  InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/employee'
 import { faCopy, faPen, faSync } from 'lib-icons'
@@ -77,6 +87,8 @@ interface Form {
   invoicingPostOffice: string
   forceManualFeeDecisions: boolean
   ophPersonOid: string
+  languageAtHome: string
+  languageAtHomeDetails: string
 }
 
 const RightAlignedRow = styled.div`
@@ -88,6 +100,14 @@ const RightAlignedRow = styled.div`
 const ButtonSpacer = styled.div`
   margin-right: 25px;
 `
+
+const filterLanguages = (
+  input: string,
+  items: IsoLanguage[]
+): IsoLanguage[] => {
+  const filter = input.toLowerCase()
+  return items.filter((item) => item.nameFi.includes(filter))
+}
 
 export default React.memo(function PersonDetails({
   person,
@@ -114,7 +134,9 @@ export default React.memo(function PersonDetails({
     invoicingPostalCode: '',
     invoicingPostOffice: '',
     forceManualFeeDecisions: false,
-    ophPersonOid: ''
+    ophPersonOid: '',
+    languageAtHome: '',
+    languageAtHomeDetails: ''
   })
   const [ssnDisableRequest, setSsnDisableRequest] = useState<Result<void>>(
     Success.of()
@@ -162,7 +184,9 @@ export default React.memo(function PersonDetails({
         invoicingPostalCode: person.invoicingPostalCode ?? '',
         invoicingPostOffice: person.invoicingPostOffice ?? '',
         forceManualFeeDecisions: person.forceManualFeeDecisions ?? false,
-        ophPersonOid: person.ophPersonOid ?? ''
+        ophPersonOid: person.ophPersonOid ?? '',
+        languageAtHome: person.languageAtHome,
+        languageAtHomeDetails: person.languageAtHomeDetails
       })
     }
   }, [person, editing])
@@ -212,6 +236,29 @@ export default React.memo(function PersonDetails({
   }
 
   const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
+
+  const language = useMemo(
+    () =>
+      (person.language
+        ? Object.values(isoLanguages).find(
+            ({ alpha2 }) => alpha2 === person.language
+          )
+        : null
+      )?.nameFi ?? person.language,
+    [person.language]
+  )
+
+  const languageAtHome = useMemo(
+    () =>
+      (person.languageAtHome ? isoLanguages[person.languageAtHome] : null) ??
+      null,
+    [person.languageAtHome]
+  )
+
+  const languages = useMemo(
+    () => sortBy(Object.values(isoLanguages), ({ nameFi }) => nameFi),
+    []
+  )
 
   return (
     <>
@@ -317,12 +364,7 @@ export default React.memo(function PersonDetails({
           {
             label: i18n.childInformation.personDetails.language,
             dataQa: 'person-language',
-            value:
-              person.language === 'fi'
-                ? i18n.language.fi
-                : person.language === 'sv'
-                ? i18n.language.sv
-                : person.language
+            value: language
           },
           {
             label: i18n.common.form.socialSecurityNumber,
@@ -463,6 +505,53 @@ export default React.memo(function PersonDetails({
                 }
               ]
             : []),
+          {
+            label: i18n.childInformation.personDetails.languageAtHome,
+            value: editing ? (
+              <>
+                <Combobox
+                  data-qa="input-language-at-home"
+                  items={languages}
+                  getItemDataQa={(item) => `language-${item.id}`}
+                  selectedItem={
+                    (form.languageAtHome
+                      ? isoLanguages[form.languageAtHome]
+                      : null) ?? null
+                  }
+                  onChange={(item) =>
+                    updateForm({ languageAtHome: item?.id ?? '' })
+                  }
+                  filterItems={filterLanguages}
+                  getItemLabel={(item) => item?.nameFi}
+                  placeholder={
+                    i18n.childInformation.personDetails.placeholder
+                      .languageAtHome
+                  }
+                  clearable={true}
+                />
+                <TextArea
+                  data-qa="input-language-at-home-details"
+                  value={form.languageAtHomeDetails}
+                  placeholder={
+                    i18n.childInformation.personDetails.placeholder
+                      .languageAtHomeDetails
+                  }
+                  onChange={(languageAtHomeDetails) =>
+                    updateForm({ languageAtHomeDetails })
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <div data-qa="person-language-at-home">
+                  {languageAtHome?.nameFi ?? ''}
+                </div>
+                <div data-qa="person-language-at-home-details">
+                  {person.languageAtHomeDetails}
+                </div>
+              </>
+            )
+          },
           ...(!isChild && permittedActions.has('READ_INVOICE_ADDRESS')
             ? [
                 {

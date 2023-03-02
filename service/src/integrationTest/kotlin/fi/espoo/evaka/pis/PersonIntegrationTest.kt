@@ -44,7 +44,9 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         streetAddress = "",
                         postalCode = "",
                         postOffice = "",
-                        residenceCode = ""
+                        residenceCode = "",
+                        languageAtHome = "",
+                        languageAtHomeDetails = "",
                     )
                 )
             }
