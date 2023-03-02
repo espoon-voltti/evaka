@@ -39,6 +39,7 @@ import AttendanceChildPage from './child-info/AttendanceChildPage'
 import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
 import { I18nContextProvider, useTranslation } from './common/i18n'
+import { ServiceWorkerContextProvider } from './common/service-worker'
 import { UnitContextProvider } from './common/unit'
 import MessageEditorPage from './messages/MessageEditorPage'
 import MessagesPage from './messages/MessagesPage'
@@ -69,34 +70,39 @@ export default function App() {
               <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
             )}
           >
-            <UserContextProvider>
-              <NotificationsContextProvider>
-                <Notifications apiVersion={apiVersion} />
-                <Router basename="/employee/mobile">
-                  <Routes>
-                    <Route path="/landing" element={<MobileLander />} />
-                    <Route path="/pairing" element={<PairingWizard />} />
-                    <Route
-                      path="/units"
-                      element={
-                        <RequireAuth>
-                          <UnitList />
-                        </RequireAuth>
-                      }
-                    />
-                    <Route
-                      path="/units/:unitId/*"
-                      element={
-                        <RequireAuth>
-                          <UnitRouter />
-                        </RequireAuth>
-                      }
-                    />
-                    <Route index element={<Navigate replace to="/landing" />} />
-                  </Routes>
-                </Router>
-              </NotificationsContextProvider>
-            </UserContextProvider>
+            <ServiceWorkerContextProvider>
+              <UserContextProvider>
+                <NotificationsContextProvider>
+                  <Notifications apiVersion={apiVersion} />
+                  <Router basename="/employee/mobile">
+                    <Routes>
+                      <Route path="/landing" element={<MobileLander />} />
+                      <Route path="/pairing" element={<PairingWizard />} />
+                      <Route
+                        path="/units"
+                        element={
+                          <RequireAuth>
+                            <UnitList />
+                          </RequireAuth>
+                        }
+                      />
+                      <Route
+                        path="/units/:unitId/*"
+                        element={
+                          <RequireAuth>
+                            <UnitRouter />
+                          </RequireAuth>
+                        }
+                      />
+                      <Route
+                        index
+                        element={<Navigate replace to="/landing" />}
+                      />
+                    </Routes>
+                  </Router>
+                </NotificationsContextProvider>
+              </UserContextProvider>
+            </ServiceWorkerContextProvider>
           </ErrorBoundary>
         </ThemeProvider>
       </I18nContextProvider>
