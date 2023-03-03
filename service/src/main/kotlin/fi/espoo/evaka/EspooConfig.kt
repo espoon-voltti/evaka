@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.espoobi.EspooBiPoc
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -130,6 +131,14 @@ class EspooConfig {
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
+    fun espooBiPoc(env: EspooEnv): EspooBiPoc? =
+        if (env.espooBiPocEnabled) {
+            EspooBiPoc()
+        } else {
+            null
+        }
+
+    @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
             valueDecisionCapacityFactorEnabled = false,
@@ -166,7 +175,11 @@ class EspooConfig {
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 }
 
-data class EspooEnv(val invoiceIntegrationEnabled: Boolean, val patuIntegrationEnabled: Boolean) {
+data class EspooEnv(
+    val invoiceIntegrationEnabled: Boolean,
+    val patuIntegrationEnabled: Boolean,
+    val espooBiPocEnabled: Boolean
+) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
             EspooEnv(
@@ -176,7 +189,8 @@ data class EspooEnv(val invoiceIntegrationEnabled: Boolean, val patuIntegrationE
                         "fi.espoo.integration.invoice.enabled"
                     )
                         ?: true,
-                patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false
+                patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
+                espooBiPocEnabled = env.lookup("espoo.integration.bi_poc.enabled") ?: false
             )
     }
 }
