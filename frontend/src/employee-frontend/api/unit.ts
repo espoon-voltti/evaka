@@ -536,32 +536,12 @@ export async function getDaycareAclRows(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function addDaycareAclSupervisor(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/supervisors/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function removeDaycareAclSupervisor(
   unitId: UUID,
   personId: UUID
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/supervisors/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function addDaycareAclSpecialEducationTeacher(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/specialeducationteacher/${personId}`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
@@ -576,32 +556,12 @@ export async function removeDaycareAclSpecialEducationTeacher(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function addDaycareAclEarlyChildhoodEducationSecretary(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/earlychildhoodeducationsecretary/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function removeDaycareAclEarlyChildhoodEducationSecretary(
   unitId: UUID,
   personId: UUID
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/earlychildhoodeducationsecretary/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function addDaycareAclStaff(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/staff/${personId}`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }

@@ -72,16 +72,12 @@ export default React.memo(function DaycareAclAdditionModal({
     if (requestBody.employeeId === '' || !role) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
     } else {
-      try {
-        return addDaycareFullAcl(
-          unitId,
-          requestBody.employeeId,
-          role,
-          requestBody.groupIds
-        )
-      } catch (err) {
-        return Promise.reject(Failure.fromError(err))
-      }
+      return addDaycareFullAcl(
+        unitId,
+        requestBody.employeeId,
+        role,
+        requestBody.groupIds
+      )
     }
   }, [formData, unitId, role])
 
