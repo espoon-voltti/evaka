@@ -4,6 +4,8 @@
 
 package evaka.codegen.apitypes
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
@@ -56,8 +58,8 @@ ${classes.sortedBy { it.name }.joinToString("\n\n") { it.toTs() }}
 private fun getImports(classes: List<AnalyzedClass>): List<String> {
     val classesToImport =
         classes
-            .flatMap { if (it is AnalyzedClass.DataClass) it.properties else emptyList() }
-            .flatMap { prop -> prop.type.declarableTypes.map { it.qualifiedName!! } }
+            .flatMap { it.declarableTypes() }
+            .map { it.qualifiedName!! }
             .filter { classes.none { c -> c.fullName == it } }
             .toSet()
 
@@ -83,14 +85,10 @@ private fun analyzeClasses(): Map<String, List<AnalyzedClass>> {
         val analyzed = analyzeClass(waiting.removeFirst()) ?: continue
         analyzedClasses.add(analyzed)
         knownClasses.add(analyzed.fullName)
-        if (analyzed is AnalyzedClass.DataClass) {
-            analyzed.properties
-                .flatMap { it.type.declarableTypes }
-                .forEach { type ->
-                    if (!knownClasses.contains(type.qualifiedName) && waiting.none { it == type }) {
-                        waiting.addLast(type)
-                    }
-                }
+        analyzed.declarableTypes().forEach { type ->
+            if (!knownClasses.contains(type.qualifiedName) && waiting.none { it == type }) {
+                waiting.addLast(type)
+            }
         }
     }
 
@@ -129,7 +127,32 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                 name = clazz.qualifiedName ?: error("no class name"),
                 properties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
             )
-        clazz.isSealed -> null // Not yet supported
+        clazz.isSealed -> {
+            clazz.annotations
+                .find { it.annotationClass == JsonTypeInfo::class }
+                ?.let { it as JsonTypeInfo }
+                ?.let { jsonTypeInfo ->
+                    when (jsonTypeInfo.use) {
+                        JsonTypeInfo.Id.NAME -> {
+                            // Discriminated union
+                            AnalyzedClass.SealedClass(
+                                name = clazz.qualifiedName ?: error("no class name"),
+                                nestedClasses =
+                                    clazz.nestedClasses.map {
+                                        analyzeDiscriminatedUnionMember(jsonTypeInfo.property, it)
+                                    }
+                            )
+                        }
+                        JsonTypeInfo.Id.DEDUCTION ->
+                            // Just union
+                            AnalyzedClass.SealedClass(
+                                name = clazz.qualifiedName ?: error("no class name"),
+                                nestedClasses = clazz.nestedClasses.mapNotNull { analyzeClass(it) }
+                            )
+                        else -> null
+                    }
+                }
+        }
         else -> error("unhandled case: $clazz")
     }
 }
@@ -142,11 +165,40 @@ private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedPropert
     return AnalyzedProperty(prop.name, analyzeType(type))
 }
 
+private fun analyzeDiscriminatedUnionMember(discriminant: String, clazz: KClass<*>): AnalyzedClass {
+    val discriminantValue =
+        clazz.annotations
+            .find { it.annotationClass == JsonTypeName::class }
+            ?.let { annotation -> (annotation as JsonTypeName).value }
+            ?: error("Nested class ${clazz.qualifiedName} is missing JsonTypeName annotation")
+
+    val discriminantProperty = AnalyzedProperty(discriminant, TsStringLiteral(discriminantValue))
+    return when {
+        clazz.isData ->
+            AnalyzedClass.DataClass(
+                name = clazz.qualifiedName ?: error("no class name"),
+                properties =
+                    listOf(discriminantProperty) +
+                        clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
+            )
+        clazz.objectInstance != null ->
+            AnalyzedClass.DataClass(
+                name = clazz.qualifiedName ?: error("no class name"),
+                properties = listOf(discriminantProperty)
+            )
+        else -> error("unhandled case: $clazz")
+    }
+}
+
 private sealed class AnalyzedClass(val fullName: String) {
     val name: String = fullName.substringAfterLast('.')
+    abstract fun declarableTypes(): List<KClass<*>>
     abstract fun toTs(): String
 
     class DataClass(name: String, val properties: List<AnalyzedProperty>) : AnalyzedClass(name) {
+        override fun declarableTypes(): List<KClass<*>> {
+            return properties.flatMap { it.type.declarableTypes }
+        }
         override fun toTs(): String {
             return """/**
 * Generated from $fullName
@@ -159,6 +211,7 @@ ${properties.joinToString("\n") { "  " + it.toTs() }}
 
     class EnumClass(name: String, val values: List<String>, val constList: String?) :
         AnalyzedClass(name) {
+        override fun declarableTypes(): List<KClass<*>> = emptyList()
         override fun toTs(): String {
             val doc = """/**
 * Generated from $fullName
@@ -176,6 +229,23 @@ export type $name = typeof $constList[number]"""
             return doc + """
 export type $name =
 ${values.joinToString("\n") { "  | '$it'" }}"""
+        }
+    }
+
+    class SealedClass(name: String, val nestedClasses: List<AnalyzedClass>) : AnalyzedClass(name) {
+        override fun declarableTypes(): List<KClass<*>> {
+            return nestedClasses.flatMap { it.declarableTypes() }
+        }
+        override fun toTs(): String {
+            return """export namespace $name {
+${nestedClasses.joinToString("\n\n") { it.toTs() }.prependIndent("  ")}
+}
+
+/**
+* Generated from $fullName
+*/
+export type $name = ${nestedClasses.joinToString(" | ") { "$name.${it.name}" }}
+"""
         }
     }
 }
@@ -199,6 +269,11 @@ sealed interface AnalyzedType {
 data class TsPlain(val type: KType) : AnalyzedType {
     override val declarableTypes = listOf(type.jvmErasure)
     override fun toTs() = toTs(type)
+}
+
+data class TsStringLiteral(val value: String) : AnalyzedType {
+    override val declarableTypes = emptyList<KClass<*>>()
+    override fun toTs() = "'$value'"
 }
 
 data class TsArray(val type: KType) : AnalyzedType {

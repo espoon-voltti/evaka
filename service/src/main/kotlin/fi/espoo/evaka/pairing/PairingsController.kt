@@ -6,6 +6,7 @@ package fi.espoo.evaka.pairing
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
@@ -39,6 +40,7 @@ class PairingsController(
      *
      * Pairing status is WAITING_CHALLENGE.
      */
+    @ExcludeCodeGen
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
     sealed class PostPairingReq(val id: Id<*>) {
         data class Unit(val unitId: DaycareId) : PostPairingReq(unitId)
