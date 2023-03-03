@@ -28,4 +28,13 @@ class WebPushCryptoTest {
         val base64 = keyPair.publicKeyBase64()
         assertEquals(keyPair.publicKey, WebPushCrypto.decodePublicKey(base64))
     }
+
+    @Test
+    fun `the exactly same key pair can be derived from just the private key`() {
+        val keyPair = WebPushCrypto.generateKeyPair()
+        val derived = WebPushKeyPair.fromPrivateKey(keyPair.privateKey)
+        assertEquals(keyPair, derived)
+        assertEquals(keyPair.publicKeyBase64(), derived.publicKeyBase64())
+        assertEquals(keyPair.privateKeyBase64(), derived.privateKeyBase64())
+    }
 }

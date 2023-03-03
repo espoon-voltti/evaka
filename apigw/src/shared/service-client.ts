@@ -169,6 +169,7 @@ export interface MobileDevice {
   unitIds: UUID[]
   employeeId?: UUID
   personalDevice: boolean
+  pushApplicationServerKey: string | undefined
 }
 
 export async function identifyMobileDevice(

@@ -34,7 +34,8 @@ data class MobileDeviceDetails(
     val name: String,
     val unitIds: List<DaycareId>,
     val employeeId: EmployeeId?,
-    val personalDevice: Boolean
+    val personalDevice: Boolean,
+    val pushApplicationServerKey: String? = null,
 )
 
 data class MobileDevice(val id: MobileDeviceId, val name: String)
