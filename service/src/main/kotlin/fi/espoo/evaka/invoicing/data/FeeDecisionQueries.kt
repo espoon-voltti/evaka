@@ -76,7 +76,7 @@ SELECT
         'feeAlterations', part.fee_alterations,
         'finalFee', part.final_fee,
         'childIncome', part.child_income
-    ) ORDER BY part.child_date_of_birth DESC) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
+    ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
 FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 ${if (where != null) "WHERE $where" else ""}
@@ -155,7 +155,7 @@ SELECT
         'feeAlterations', part.fee_alterations,
         'finalFee', part.final_fee,
         'childIncome', part.child_income
-    ) ORDER BY part.child_date_of_birth DESC) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
+    ) ORDER BY part.child_date_of_birth DESC, sibling_discount) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
 FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 LEFT JOIN person as head ON decision.head_of_family_id = head.id
@@ -423,7 +423,7 @@ fun Database.Read.searchFeeDecisions(
                 fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
                 daycare.finance_decision_handler AS finance_decision_handler,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC) AS rownum
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount) AS rownum
             FROM fee_decision_child
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
@@ -506,7 +506,7 @@ fun Database.Read.searchFeeDecisions(
                 'firstName', child.first_name,
                 'lastName', child.last_name,
                 'ssn', child.social_security_number
-            ) ORDER BY part.child_date_of_birth DESC) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
+            ) ORDER BY part.child_date_of_birth DESC, sibling_discount) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
         FROM decision_ids
         LEFT JOIN fee_decision AS decision ON decision_ids.id = decision.id
         LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
@@ -603,7 +603,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
             SELECT
                 fee_decision_child.fee_decision_id AS decision_id,
                 daycare.finance_decision_handler AS finance_decision_handler_id,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC) AS rownum
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount) AS rownum
             FROM fee_decision_child
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
         )

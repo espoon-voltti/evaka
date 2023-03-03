@@ -6,11 +6,11 @@ package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
+import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.pis.determineHeadOfFamily
@@ -271,9 +271,23 @@ private fun generateFamilyCompositions(
                 Quadruple(
                     headOfFamily,
                     partner?.id,
-                    children.map { ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth) },
+                    children.map {
+                        PersonBasic(
+                            it.id,
+                            it.dateOfBirth,
+                            it.firstName,
+                            it.lastName,
+                            it.socialSecurityNumber
+                        )
+                    },
                     fridgePartnerChildren.map {
-                        ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth)
+                        PersonBasic(
+                            it.id,
+                            it.dateOfBirth,
+                            it.firstName,
+                            it.lastName,
+                            it.socialSecurityNumber
+                        )
                     }
                 )
         }
@@ -463,14 +477,14 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
 }
 
 internal fun addECHAFeeAlterations(
-    children: Set<ChildWithDateOfBirth>,
+    children: Set<ChildId>,
     incomes: List<Income>
 ): List<FeeAlteration> {
     return incomes
         .filter { it.worksAtECHA }
         .flatMap { income ->
-            children.map { child ->
-                getECHAIncrease(child.id, DateRange(income.validFrom, income.validTo))
+            children.map { childId ->
+                getECHAIncrease(childId, DateRange(income.validFrom, income.validTo))
             }
         }
 }

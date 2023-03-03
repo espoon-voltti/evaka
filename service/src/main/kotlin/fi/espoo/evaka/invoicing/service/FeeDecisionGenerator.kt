@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedValue
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
@@ -72,7 +73,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 
     val feeAlterations =
         getFeeAlterationsFrom(children.map { it.id }, from) +
-            addECHAFeeAlterations(children, adultIncomes)
+            addECHAFeeAlterations(children.map { it.id }.toSet(), adultIncomes)
 
     val placements = getPaidPlacements(from, children).toMap()
     val invoicedUnits = getUnitsThatAreInvoiced()
@@ -217,7 +218,7 @@ private fun generateFeeDecisions(
     from: LocalDate,
     headOfFamily: PersonId,
     families: List<FridgeFamily>,
-    allPlacements: Map<ChildWithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
+    allPlacements: Map<PersonBasic, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
     incomes: List<Income>,
     childIncomes: Map<ChildId, List<Income>>,
@@ -284,7 +285,14 @@ private fun generateFeeDecisions(
                         family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
 
                     validPlacements
-                        .sortedByDescending { (child, _) -> child.dateOfBirth }
+                        .sortedWith(
+                            compareByDescending<Pair<PersonBasic, PlacementWithServiceNeed>> {
+                                    (child, _) ->
+                                    child.dateOfBirth
+                                }
+                                .thenBy { (child, _) -> child.ssn }
+                                .thenBy { (child, _) -> child.firstName }
+                        )
                         .mapIndexed { index, (child, placement) ->
                             if (!family.children.contains(child)) {
                                 return@mapIndexed null
@@ -331,7 +339,7 @@ private fun generateFeeDecisions(
                                 feeBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
                             FeeDecisionChild(
-                                child,
+                                ChildWithDateOfBirth(child.id, child.dateOfBirth),
                                 FeeDecisionPlacement(placement.unitId, placement.type),
                                 FeeDecisionServiceNeed(
                                     placement.serviceNeed.feeCoefficient,
@@ -381,8 +389,8 @@ private fun Database.Read.getUnitsThatAreInvoiced(): List<DaycareId> {
 
 internal fun Database.Read.getPaidPlacements(
     from: LocalDate,
-    children: Set<ChildWithDateOfBirth>
-): List<Pair<ChildWithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>> {
+    children: Set<PersonBasic>
+): List<Pair<PersonBasic, List<Pair<DateRange, PlacementWithServiceNeed>>>> {
     return children.map { child ->
         val placements = getActivePaidPlacements(child.id, from)
         if (placements.isEmpty())
