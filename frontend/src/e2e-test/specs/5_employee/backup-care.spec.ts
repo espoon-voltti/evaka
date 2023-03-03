@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -40,6 +41,7 @@ beforeEach(async () => {
   ).save()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
+  const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
   const startDate = LocalDate.of(2023, 2, 1).subYears(1)
   const endDate = LocalDate.of(2023, 2, 3).addYears(1)
   const placement = await Fixture.placement()
@@ -68,7 +70,7 @@ beforeEach(async () => {
   )
   await insertBackupCareFixtures([backupCareFixture])
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: now.toSystemTzDate() })
   await employeeLogin(page, unitSupervisor.data)
   const unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(fixtures.daycareFixture.id)
