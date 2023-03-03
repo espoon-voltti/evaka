@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
-import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
+import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.data.upsertInvoices
@@ -18,7 +18,6 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
-import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -327,18 +326,19 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
-    val sql =
-        """
-            $feeDecisionQueryBase
-            WHERE decision.valid_during && :dateRange
-                AND decision.status = ANY(:effective::fee_decision_status[])
-        """
-
-    return createQuery(sql)
+    return createQuery(
+            feeDecisionQuery(
+                where =
+                    """
+                    decision.valid_during && :dateRange AND
+                    decision.status = ANY(:effective::fee_decision_status[])
+                    """
+            )
+        )
         .bind("dateRange", dateRange)
         .bind("effective", FeeDecisionStatus.effective)
         .mapTo<FeeDecision>()
-        .merge()
+        .list()
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {

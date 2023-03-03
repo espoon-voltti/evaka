@@ -8,7 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
-import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
+import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -20,7 +20,6 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
-import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.invoicing.oldTestFeeThresholds
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -3748,7 +3747,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-                tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().merge().map {
+                tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().map {
                     it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
                 }
             }

@@ -6,13 +6,12 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
+import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.shared.ChildId
@@ -163,12 +162,9 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-                tx.createQuery(feeDecisionQueryBase)
-                    .mapTo<FeeDecision>()
-                    .let { it.merge() }
-                    .map {
-                        it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
-                    }
+                tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().map {
+                    it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
+                }
             }
             .shuffled() // randomize order to expose assumptions
     }

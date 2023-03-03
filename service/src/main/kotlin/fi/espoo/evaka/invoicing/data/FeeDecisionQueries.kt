@@ -14,7 +14,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -33,49 +32,75 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import java.time.LocalDate
 import java.util.UUID
 
-// language=SQL
-const val feeDecisionQueryBase =
+fun feeDecisionQuery(where: String? = null) =
+    // language=SQL
     """
 SELECT
-    decision.*,
-    part.child_id,
-    part.child_date_of_birth,
-    part.sibling_discount,
-    part.placement_unit_id,
-    part.placement_type,
-    part.service_need_fee_coefficient,
-    part.service_need_contract_days_per_month,
-    part.service_need_description_fi,
-    part.service_need_description_sv,
-    part.service_need_missing,
-    part.base_fee,
-    part.fee,
-    part.fee_alterations,
-    part.final_fee,
-    part.child_income
+    decision.id,
+    decision.created,
+    decision.status,
+    decision.valid_during,
+    decision.decision_type,
+    decision.head_of_family_id,
+    decision.head_of_family_income,
+    decision.partner_id,
+    decision.partner_income,
+    decision.family_size,
+    decision.fee_thresholds,
+    decision.decision_number,
+    decision.document_key,
+    decision.approved_at,
+    decision.approved_by_id,
+    decision.decision_handler_id,
+    decision.sent_at,
+    decision.difference,
+    COALESCE(jsonb_agg(json_build_object(
+        'child', json_build_object(
+            'id', part.child_id,
+            'dateOfBirth', part.child_date_of_birth
+        ),
+        'placement', json_build_object(
+            'unitId', part.placement_unit_id,
+            'type', part.placement_type
+        ),
+        'serviceNeed', json_build_object(
+            'feeCoefficient', part.service_need_fee_coefficient,
+            'contractDaysPerMonth', part.service_need_contract_days_per_month,
+            'descriptionFi', part.service_need_description_fi,
+            'descriptionSv', part.service_need_description_sv,
+            'missing', part.service_need_missing
+        ),
+        'baseFee', part.base_fee,
+        'siblingDiscount', part.sibling_discount,
+        'fee', part.fee,
+        'feeAlterations', part.fee_alterations,
+        'finalFee', part.final_fee,
+        'childIncome', part.child_income
+    ) ORDER BY part.child_date_of_birth DESC) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
 FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
+${if (where != null) "WHERE $where" else ""}
+GROUP BY decision.id
 """
 
-// language=SQL
-const val feeDecisionDetailedQueryBase =
+private fun feeDecisionDetailedQuery(where: String) =
+    // language=SQL
     """
 SELECT
-    decision.*,
-    part.child_id,
-    part.child_date_of_birth,
-    part.placement_unit_id,
-    part.placement_type,
-    part.service_need_fee_coefficient,
-    part.service_need_description_fi,
-    part.service_need_description_sv,
-    part.service_need_missing,
-    part.base_fee,
-    part.sibling_discount,
-    part.fee,
-    part.fee_alterations,
-    part.final_fee,
-    part.child_income,
+    decision.id,
+    decision.created,
+    decision.status,
+    decision.valid_during,
+    decision.decision_type,
+    decision.head_of_family_income,
+    decision.partner_income,
+    decision.family_size,
+    decision.fee_thresholds,
+    decision.decision_number,
+    decision.document_key,
+    decision.approved_at,
+    decision.sent_at,
+    decision.head_of_family_id AS head_id,
     head.date_of_birth as head_date_of_birth,
     head.first_name as head_first_name,
     head.last_name as head_last_name,
@@ -86,6 +111,7 @@ SELECT
     head.language as head_language,
     head.restricted_details_enabled as head_restricted_details_enabled,
     head.force_manual_fee_decisions as head_force_manual_fee_decisions,
+    decision.partner_id,
     partner.date_of_birth as partner_date_of_birth,
     partner.first_name as partner_first_name,
     partner.last_name as partner_last_name,
@@ -94,21 +120,42 @@ SELECT
     partner.postal_code as partner_postal_code,
     partner.post_office as partner_post_office,
     partner.restricted_details_enabled as partner_restricted_details_enabled,
+    decision.approved_by_id,
     coalesce(approved_by.preferred_first_name, approved_by.first_name) as approved_by_first_name,
     approved_by.last_name as approved_by_last_name,
-    child.first_name as child_first_name,
-    child.last_name as child_last_name,
-    child.social_security_number as child_ssn,
-    child.street_address as child_address,
-    child.postal_code as child_postal_code,
-    child.post_office as child_post_office,
-    child.restricted_details_enabled as child_restricted_details_enabled,
-    daycare.name as placement_unit_name,
-    daycare.language as placement_unit_lang,
-    care_area.id as placement_unit_area_id,
-    care_area.name as placement_unit_area_name,
     coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
-    finance_decision_handler.last_name AS finance_decision_handler_last_name
+    finance_decision_handler.last_name AS finance_decision_handler_last_name,
+    COALESCE(jsonb_agg(json_build_object(
+        'child', json_build_object( 
+            'id', part.child_id,
+            'dateOfBirth', part.child_date_of_birth,
+            'firstName', child.first_name,
+            'lastName', child.last_name,
+            'ssn', child.social_security_number,
+            'streetAddress', child.street_address,
+            'postalCode', child.postal_code,
+            'postOffice', child.post_office,
+            'restrictedDetailsEnabled', child.restricted_details_enabled
+        ),
+        'placementType', part.placement_type,
+        'placementUnit', json_build_object(
+            'id', part.placement_unit_id,
+            'name', daycare.name,
+            'areaId', care_area.id,
+            'areaName', care_area.name,
+            'language', daycare.language
+        ),
+        'serviceNeedFeeCoefficient', part.service_need_fee_coefficient,
+        'serviceNeedDescriptionFi', part.service_need_description_fi,
+        'serviceNeedDescriptionSv', part.service_need_description_sv,
+        'serviceNeedMissing', part.service_need_missing,
+        'baseFee', part.base_fee,
+        'siblingDiscount', part.sibling_discount,
+        'fee', part.fee,
+        'feeAlterations', part.fee_alterations,
+        'finalFee', part.final_fee,
+        'childIncome', part.child_income
+    ) ORDER BY part.child_date_of_birth DESC) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
 FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 LEFT JOIN person as head ON decision.head_of_family_id = head.id
@@ -118,6 +165,8 @@ LEFT JOIN daycare ON part.placement_unit_id = daycare.id
 LEFT JOIN care_area ON daycare.care_area_id = care_area.id
 LEFT JOIN employee as approved_by ON decision.approved_by_id = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler_id
+WHERE $where
+GROUP BY decision.id, head.id, partner.id, approved_by.id, finance_decision_handler.id
 """
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
@@ -412,7 +461,7 @@ fun Database.Read.searchFeeDecisions(
     val sql =
         """
         WITH decision_ids AS (
-            ${ if (CTEs.length > 0) "WITH $CTEs" else ""}
+            ${if (CTEs.length > 0) "WITH $CTEs" else ""}
             SELECT decision.id, count(*) OVER ()
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
@@ -436,26 +485,35 @@ fun Database.Read.searchFeeDecisions(
         )
         SELECT
             decision_ids.count,
-            decision.*,
-            part.child_id,
-            part.child_date_of_birth,
-            part.fee,
-            part.fee_alterations,
-            part.final_fee,
+            decision.id,
+            decision.created,
+            decision.status,
+            decision.valid_during,
+            decision.decision_number,
+            decision.approved_at,
+            decision.sent_at,
+            decision.total_fee AS final_price,
+            decision.difference,
+            decision.head_of_family_id AS head_id,
             head.date_of_birth AS head_date_of_birth,
             head.first_name AS head_first_name,
             head.last_name AS head_last_name,
             head.social_security_number AS head_ssn,
             head.force_manual_fee_decisions AS head_force_manual_fee_decisions,
-            child.first_name AS child_first_name,
-            child.last_name AS child_last_name,
-            child.social_security_number AS child_ssn
+            COALESCE(jsonb_agg(json_build_object(
+                'id', part.child_id,
+                'dateOfBirth', part.child_date_of_birth,
+                'firstName', child.first_name,
+                'lastName', child.last_name,
+                'ssn', child.social_security_number
+            ) ORDER BY part.child_date_of_birth DESC) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
         FROM decision_ids
         LEFT JOIN fee_decision AS decision ON decision_ids.id = decision.id
         LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
         LEFT JOIN person AS head ON decision.head_of_family_id = head.id
         LEFT JOIN person AS child ON part.child_id = child.id
-        ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.child_date_of_birth DESC
+        GROUP BY decision_ids.count, decision.id, head.id
+        ORDER BY $sortColumn ${sortDirection.name}, decision.id
         """
             .trimIndent()
 
@@ -463,48 +521,31 @@ fun Database.Read.searchFeeDecisions(
         .addBindings(params)
         .addBindings(freeTextParams)
         .addBindings(numberParams)
-        .mapToPaged<FeeDecisionSummary>(pageSize)
-        .let { it.copy(data = it.data.merge()) }
+        .mapToPaged(pageSize)
 }
 
 fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
-
-    val sql = """
-$feeDecisionQueryBase
-WHERE decision.id = ANY(:ids)
-"""
-
-    return createQuery(sql).bind("ids", ids).mapTo<FeeDecision>().merge()
+    return createQuery(feeDecisionQuery(where = "decision.id = ANY(:ids)"))
+        .bind("ids", ids)
+        .mapTo<FeeDecision>()
+        .list()
 }
 
 fun Database.Read.getDetailedFeeDecisionsByIds(
     ids: List<FeeDecisionId>
 ): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
-
-    val sql =
-        """
-$feeDecisionDetailedQueryBase
-WHERE decision.id = ANY(:ids)
-ORDER BY part.child_date_of_birth DESC
-"""
-
-    return createQuery(sql).bind("ids", ids).mapTo<FeeDecisionDetailed>().merge()
+    return createQuery(feeDecisionDetailedQuery(where = "decision.id = ANY(:ids)"))
+        .bind("ids", ids)
+        .mapTo<FeeDecisionDetailed>()
+        .list()
 }
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
-    val sql =
-        """
-        $feeDecisionDetailedQueryBase
-        WHERE decision.id = :id
-        ORDER BY part.child_date_of_birth DESC
-    """
-
-    return createQuery(sql)
+    return createQuery(feeDecisionDetailedQuery(where = "decision.id = :id"))
         .bind("id", uuid)
         .mapTo<FeeDecisionDetailed>()
-        .merge()
         .firstOrNull()
         ?.let { it ->
             it.copy(
@@ -524,16 +565,16 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
     period: DateRange?,
     status: List<FeeDecisionStatus>?
 ): List<FeeDecision> {
-    val sql =
-        """
-        $feeDecisionQueryBase
-        WHERE
-            decision.head_of_family_id = :headOfFamilyId
-            ${period?.let { "AND decision.valid_during && :period" } ?: ""}
-            ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
-    """
-
-    return createQuery(sql)
+    return createQuery(
+            feeDecisionQuery(
+                where =
+                    """
+                    decision.head_of_family_id = :headOfFamilyId
+                    ${period?.let { "AND decision.valid_during && :period" } ?: ""}
+                    ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
+                    """
+            )
+        )
         .bind("headOfFamilyId", headOfFamilyId)
         .let { query ->
             if (period != null) {
@@ -546,7 +587,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
             if (status != null) query.bind("status", status.map { it.name }) else query
         }
         .mapTo<FeeDecision>()
-        .merge()
+        .list()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(
