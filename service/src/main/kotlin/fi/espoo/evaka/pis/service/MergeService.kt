@@ -15,10 +15,13 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
 class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+    private val logger = KotlinLogging.logger {}
+
     fun mergePeople(
         tx: Database.Transaction,
         clock: EvakaClock,
@@ -110,6 +113,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 .bind("id_duplicate", duplicate)
                 .execute()
         } catch (e: Exception) {
+            logger.warn("Failed to merge persons $master and $duplicate", e)
             throw mapPSQLException(e)
         }
 
