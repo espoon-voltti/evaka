@@ -494,7 +494,11 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
             IsCitizen(allowWeakLogin = false).ownerOfApplication()
         ),
-        READ_NOTES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        READ_NOTES(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()
+        ),
         CREATE_NOTE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
@@ -1673,10 +1677,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
-        READ_MISSING_HEAD_OF_FAMILY_REPORT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
-        ),
+        READ_MISSING_HEAD_OF_FAMILY_REPORT(HasGlobalRole(ADMIN)),
         READ_MISSING_SERVICE_NEED_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
