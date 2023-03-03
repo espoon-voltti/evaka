@@ -33,12 +33,14 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -220,6 +222,13 @@ val testRoundTheClockDaycare =
         type = setOf(CareType.CENTRE),
         roundTheClock = true,
         operationDays = setOf(1, 2, 3, 4, 5, 6, 7)
+    )
+
+val testDaycareGroup =
+    DevDaycareGroup(
+        id = GroupId(UUID.randomUUID()),
+        daycareId = testDaycare.id,
+        name = "Test group 1"
     )
 
 val testAdult_1 =
