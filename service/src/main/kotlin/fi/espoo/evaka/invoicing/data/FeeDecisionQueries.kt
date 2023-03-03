@@ -54,33 +54,35 @@ SELECT
     decision.decision_handler_id,
     decision.sent_at,
     decision.difference,
-    COALESCE(jsonb_agg(json_build_object(
-        'child', json_build_object(
-            'id', part.child_id,
-            'dateOfBirth', part.child_date_of_birth
-        ),
-        'placement', json_build_object(
-            'unitId', part.placement_unit_id,
-            'type', part.placement_type
-        ),
-        'serviceNeed', json_build_object(
-            'feeCoefficient', part.service_need_fee_coefficient,
-            'contractDaysPerMonth', part.service_need_contract_days_per_month,
-            'descriptionFi', part.service_need_description_fi,
-            'descriptionSv', part.service_need_description_sv,
-            'missing', part.service_need_missing
-        ),
-        'baseFee', part.base_fee,
-        'siblingDiscount', part.sibling_discount,
-        'fee', part.fee,
-        'feeAlterations', part.fee_alterations,
-        'finalFee', part.final_fee,
-        'childIncome', part.child_income
-    ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
+    COALESCE((
+        SELECT jsonb_agg(json_build_object(
+            'child', json_build_object(
+                'id', part.child_id,
+                'dateOfBirth', part.child_date_of_birth
+            ),
+            'placement', json_build_object(
+                'unitId', part.placement_unit_id,
+                'type', part.placement_type
+            ),
+            'serviceNeed', json_build_object(
+                'feeCoefficient', part.service_need_fee_coefficient,
+                'contractDaysPerMonth', part.service_need_contract_days_per_month,
+                'descriptionFi', part.service_need_description_fi,
+                'descriptionSv', part.service_need_description_sv,
+                'missing', part.service_need_missing
+            ),
+            'baseFee', part.base_fee,
+            'siblingDiscount', part.sibling_discount,
+            'fee', part.fee,
+            'feeAlterations', part.fee_alterations,
+            'finalFee', part.final_fee,
+            'childIncome', part.child_income
+        ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount)
+        FROM fee_decision_child as part
+        WHERE part.fee_decision_id = decision.id
+    ), '[]'::jsonb) AS children
 FROM fee_decision as decision
-LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 ${if (where != null) "WHERE $where" else ""}
-GROUP BY decision.id
 """
 
 private fun feeDecisionDetailedQuery(where: String) =
@@ -125,48 +127,50 @@ SELECT
     approved_by.last_name as approved_by_last_name,
     coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
     finance_decision_handler.last_name AS finance_decision_handler_last_name,
-    COALESCE(jsonb_agg(json_build_object(
-        'child', json_build_object( 
-            'id', part.child_id,
-            'dateOfBirth', part.child_date_of_birth,
-            'firstName', child.first_name,
-            'lastName', child.last_name,
-            'ssn', child.social_security_number,
-            'streetAddress', child.street_address,
-            'postalCode', child.postal_code,
-            'postOffice', child.post_office,
-            'restrictedDetailsEnabled', child.restricted_details_enabled
-        ),
-        'placementType', part.placement_type,
-        'placementUnit', json_build_object(
-            'id', part.placement_unit_id,
-            'name', daycare.name,
-            'areaId', care_area.id,
-            'areaName', care_area.name,
-            'language', daycare.language
-        ),
-        'serviceNeedFeeCoefficient', part.service_need_fee_coefficient,
-        'serviceNeedDescriptionFi', part.service_need_description_fi,
-        'serviceNeedDescriptionSv', part.service_need_description_sv,
-        'serviceNeedMissing', part.service_need_missing,
-        'baseFee', part.base_fee,
-        'siblingDiscount', part.sibling_discount,
-        'fee', part.fee,
-        'feeAlterations', part.fee_alterations,
-        'finalFee', part.final_fee,
-        'childIncome', part.child_income
-    ) ORDER BY part.child_date_of_birth DESC, sibling_discount) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
+    COALESCE((
+        SELECT jsonb_agg(json_build_object(
+            'child', json_build_object( 
+                'id', part.child_id,
+                'dateOfBirth', part.child_date_of_birth,
+                'firstName', child.first_name,
+                'lastName', child.last_name,
+                'ssn', child.social_security_number,
+                'streetAddress', child.street_address,
+                'postalCode', child.postal_code,
+                'postOffice', child.post_office,
+                'restrictedDetailsEnabled', child.restricted_details_enabled
+            ),
+            'placementType', part.placement_type,
+            'placementUnit', json_build_object(
+                'id', part.placement_unit_id,
+                'name', daycare.name,
+                'areaId', care_area.id,
+                'areaName', care_area.name,
+                'language', daycare.language
+            ),
+            'serviceNeedFeeCoefficient', part.service_need_fee_coefficient,
+            'serviceNeedDescriptionFi', part.service_need_description_fi,
+            'serviceNeedDescriptionSv', part.service_need_description_sv,
+            'serviceNeedMissing', part.service_need_missing,
+            'baseFee', part.base_fee,
+            'siblingDiscount', part.sibling_discount,
+            'fee', part.fee,
+            'feeAlterations', part.fee_alterations,
+            'finalFee', part.final_fee,
+            'childIncome', part.child_income
+        ) ORDER BY part.child_date_of_birth DESC, sibling_discount)
+        FROM fee_decision_child as part 
+        JOIN person as child ON part.child_id = child.id
+        JOIN daycare ON part.placement_unit_id = daycare.id
+        JOIN care_area ON daycare.care_area_id = care_area.id
+        WHERE part.fee_decision_id = decision.id
+    ), '[]'::jsonb) AS children
 FROM fee_decision as decision
-LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 LEFT JOIN person as head ON decision.head_of_family_id = head.id
 LEFT JOIN person as partner ON decision.partner_id = partner.id
-LEFT JOIN person as child ON part.child_id = child.id
-LEFT JOIN daycare ON part.placement_unit_id = daycare.id
-LEFT JOIN care_area ON daycare.care_area_id = care_area.id
 LEFT JOIN employee as approved_by ON decision.approved_by_id = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler_id
 WHERE $where
-GROUP BY decision.id, head.id, partner.id, approved_by.id, finance_decision_handler.id
 """
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
@@ -500,19 +504,21 @@ fun Database.Read.searchFeeDecisions(
             head.last_name AS head_last_name,
             head.social_security_number AS head_ssn,
             head.force_manual_fee_decisions AS head_force_manual_fee_decisions,
-            COALESCE(jsonb_agg(json_build_object(
-                'id', part.child_id,
-                'dateOfBirth', part.child_date_of_birth,
-                'firstName', child.first_name,
-                'lastName', child.last_name,
-                'ssn', child.social_security_number
-            ) ORDER BY part.child_date_of_birth DESC, sibling_discount) FILTER (WHERE part.id IS NOT NULL), '[]'::jsonb) AS children
+            COALESCE((
+                SELECT jsonb_agg(json_build_object(
+                    'id', part.child_id,
+                    'dateOfBirth', part.child_date_of_birth,
+                    'firstName', child.first_name,
+                    'lastName', child.last_name,
+                    'ssn', child.social_security_number
+                ) ORDER BY part.child_date_of_birth DESC, sibling_discount)
+                FROM fee_decision_child AS part
+                JOIN person AS child ON part.child_id = child.id
+                WHERE part.fee_decision_id = decision.id 
+            ), '[]'::jsonb) AS children
         FROM decision_ids
         LEFT JOIN fee_decision AS decision ON decision_ids.id = decision.id
-        LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
         LEFT JOIN person AS head ON decision.head_of_family_id = head.id
-        LEFT JOIN person AS child ON part.child_id = child.id
-        GROUP BY decision_ids.count, decision.id, head.id
         ORDER BY $sortColumn ${sortDirection.name}, decision.id
         """
             .trimIndent()
