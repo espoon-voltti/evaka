@@ -2244,9 +2244,9 @@ const sv: Translations = {
       },
       noRecord: 'Inga anmärkningar',
       givePermissionToShareInfoVasu:
-        'Vid behov kommer nödvändiga delar av planen att överföras till övriga mottagare. (Lag om småbarnspedagogik 40 § och 41 §, lag om grundläggande utbildning 41 §)',
+        'Vid behov kommer nödvändiga delar av planen att överföras till övriga mottagare. (Lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)',
       givePermissionToShareInfoVasuInfoText:
-        'Tag kontakt med enheten för småbarnspedagogik om du vill ändra de i planen nämnda mottagarna. Planen kan överlåtas till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 40 § och 41 §).',
+        'Tag kontakt med enheten för småbarnspedagogik om du vill ändra de i planen nämnda mottagarna. Planen kan överlåtas till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §).',
       givePermissionToShareTitleVasu:
         'Bekräftelse att överföra barnets plan för småbarnspedagogik till övriga mottagare',
       givePermissionToShareTitleLeops:
@@ -2260,13 +2260,13 @@ const sv: Translations = {
       givePermissionToShareReminder:
         'Bekräfta mottagarna planen kan överföras till',
       sharingVasuDisclaimer:
-        'Då barnets plats inom småbarnspedagogik byts till en annan av stads enheter för småbarnspedagogik överförs barnets plan och andra handlingar för småbarnspedagogik till den nya enheten (gäller även stads köpavtalsenheter). Om barnets plan lämnas över till en utomstående aktör bes vårdnadshavarnas samtycke. Om ett barn övergår till småbarnspedagogik i annan kommun eller till privat anordnare ska barnets plan lämnas över till den nya anordnaren av småbarnspedagogik, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik för barnet (lag om småbarnspedagogik 40 § och 41 §). Barnets plan ska även lämnas över till anordnare av förskoleundervisning och grundläggande utbildning om uppgifterna är nödvändiga för att anordna undervisningen för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)  Vårdnadshavare informeras på förhand om överföringen.',
+        'Då barnets plats inom småbarnspedagogik byts till en annan av stads enheter för småbarnspedagogik överförs barnets plan och andra handlingar för småbarnspedagogik till den nya enheten (gäller även stads köpavtalsenheter). Om barnets plan lämnas över till en utomstående aktör bes vårdnadshavarnas samtycke. Om ett barn övergår till småbarnspedagogik i annan kommun eller till privat anordnare ska barnets plan lämnas över till den nya anordnaren av småbarnspedagogik, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik för barnet (lag om småbarnspedagogik 41 §). Barnets plan ska även lämnas över till anordnare av förskoleundervisning och grundläggande utbildning om uppgifterna är nödvändiga för att anordna undervisningen för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)  Vårdnadshavare informeras på förhand om överföringen.',
       sharingLeopsDisclaimer:
-        'Barnets plan för lärande i förskolan kan lämnas över till den nya anordnaren av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 40 § och 41 §).',
+        'Barnets plan för lärande i förskolan kan lämnas över till den nya anordnaren av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §).',
       givePermissionToShareVasuBrief:
-        'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om småbarnspedagogik 40 § och 41 §, lag om grundläggande utbildning 41 §)',
+        'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)',
       givePermissionToShareLeopsBrief:
-        'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om småbarnspedagogik 41 §, Lag om grundläggande utbildning 40 § ja 41 §)'
+        'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om småbarnspedagogik 41 §, Lag om grundläggande utbildning 41 §)'
     }
   },
   accessibilityStatement: (
