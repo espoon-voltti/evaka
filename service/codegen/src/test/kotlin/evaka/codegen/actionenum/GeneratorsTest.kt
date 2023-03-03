@@ -11,17 +11,20 @@ class GeneratorsTest {
     private enum class Empty
 
     @Suppress("unused")
-    private enum class Single { VARIANT }
+    private enum class Single {
+        VARIANT
+    }
 
     @Suppress("unused")
-    private enum class Multi { A, B, C }
+    private enum class Multi {
+        A,
+        B,
+        C
+    }
 
     @Test
     fun `an enum with no variants should generate a type aliased to never`() {
-        assertEquals(
-            "export type Empty = never\n",
-            generateEnum<Empty>()()
-        )
+        assertEquals("export type Empty = never\n", generateEnum<Empty>()())
     }
 
     @Test
@@ -37,7 +40,8 @@ export type Multi =
   | 'A'
   | 'B'
   | 'C'
-""".trimStart(),
+"""
+                .trimStart(),
             generateEnum<Multi>()()
         )
     }

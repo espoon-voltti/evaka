@@ -22,9 +22,7 @@ fun generateLanguages(target: Path) {
 
 private fun languageFileBody(): String {
     val languages =
-        ISO_LANGUAGES_SUBSET.joinToString("\n") { lang ->
-            "  ${lang.id}: ${lang.toTypescript()},"
-        }
+        ISO_LANGUAGES_SUBSET.joinToString("\n") { lang -> "  ${lang.id}: ${lang.toTypescript()}," }
 
     @Language("typescript")
     val body =
@@ -39,7 +37,8 @@ export { isoLanguages }
     return body.trim()
 }
 
-private fun IsoLanguage.toTypescript(): String = """{ id: "$id", alpha2: "$alpha2", nameFi: "$nameFi" }"""
+private fun IsoLanguage.toTypescript(): String =
+    """{ id: "$id", alpha2: "$alpha2", nameFi: "$nameFi" }"""
 
 fun checkLanguages(target: Path) {
     if (languageFileBody() != target.readText().skipFileHeader()) {

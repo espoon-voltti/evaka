@@ -4,11 +4,11 @@
 
 package evaka.codegen.apitypes
 
-import mu.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.system.exitProcess
+import mu.KotlinLogging
 
 val logger = KotlinLogging.logger {}
 

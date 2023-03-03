@@ -8,11 +8,11 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import evaka.codegen.actionenum.generateActionEnumTypes
 import evaka.codegen.apitypes.generateApiTypes
-import mu.KotlinLogging
-import org.slf4j.LoggerFactory
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.system.exitProcess
+import mu.KotlinLogging
+import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
