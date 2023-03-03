@@ -11,13 +11,12 @@ import { combine, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
   Accountant,
-  ChildIncome,
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  Income
-} from 'lib-common/api-types/incomeStatement'
-import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
+  IncomeStatement,
+  SetIncomeStatementHandledBody
+} from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -140,7 +139,11 @@ export default React.memo(function IncomeStatementPage() {
   )
 })
 
-function IncomeInfo({ incomeStatement }: { incomeStatement: Income }) {
+function IncomeInfo({
+  incomeStatement
+}: {
+  incomeStatement: IncomeStatement.Income
+}) {
   const { i18n } = useTranslation()
   const yesno = makeYesNo(i18n)
   return (
@@ -364,7 +367,7 @@ function AccountantInfo({ accountant }: { accountant: Accountant }) {
 function ChildIncomeInfo({
   incomeStatement
 }: {
-  incomeStatement: ChildIncome
+  incomeStatement: IncomeStatement.ChildIncome
 }) {
   const { i18n } = useTranslation()
   return (

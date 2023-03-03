@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ChildIncome,
-  HighestFee,
-  Income
-} from 'lib-common/api-types/incomeStatement'
+import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { stringToInt } from 'lib-common/utils/number'
@@ -15,15 +11,24 @@ import * as Form from './form'
 
 type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled' | 'handlerNote'
 
-export type HighestFeeBody = Omit<HighestFee, ReadOnlyFields>
+export type HighestFeeBody = Omit<
+  ApiTypes.IncomeStatementBody.HighestFee,
+  ReadOnlyFields
+>
 
 export interface ChildIncomeBody
-  extends Omit<ChildIncome, ReadOnlyFields | 'attachments'> {
+  extends Omit<
+    ApiTypes.IncomeStatementBody.ChildIncome,
+    ReadOnlyFields | 'attachments'
+  > {
   attachmentIds: UUID[]
 }
 
 export interface IncomeBody
-  extends Omit<Income, ReadOnlyFields | 'attachments'> {
+  extends Omit<
+    ApiTypes.IncomeStatementBody.Income,
+    ReadOnlyFields | 'attachments'
+  > {
   attachmentIds: UUID[]
 }
 

@@ -4,7 +4,6 @@
 
 import { TimeRange } from 'lib-common/api-types/child/common'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
-import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -38,11 +37,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 type ISODate = string
-
-export type HighestFeeFixture = Pick<
-  HighestFee,
-  'type' | 'startDate' | 'endDate'
->
 
 export interface CareArea {
   id: UUID

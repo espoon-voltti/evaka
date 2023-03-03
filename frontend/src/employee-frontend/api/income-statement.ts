@@ -5,12 +5,12 @@
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
   deserializeIncomeStatement,
-  deserializeIncomeStatementAwaitingHandler,
-  IncomeStatement,
-  IncomeStatementAwaitingHandler
+  deserializeIncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
 import {
   ChildBasicInfo,
+  IncomeStatement,
+  IncomeStatementAwaitingHandler,
   IncomeStatementSortParam,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'

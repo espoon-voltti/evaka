@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
-import { ChildIncome } from 'lib-common/api-types/incomeStatement'
+import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -88,7 +88,7 @@ export default React.memo(function ChildIncomeStatementView() {
 const ChildIncomeInfo = React.memo(function IncomeInfo({
   incomeStatement
 }: {
-  incomeStatement: ChildIncome
+  incomeStatement: IncomeStatement.ChildIncome
 }) {
   const t = useTranslation()
   return (

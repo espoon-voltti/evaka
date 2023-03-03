@@ -6,8 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
-import { formatDate } from 'lib-common/date'
+import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -70,7 +69,9 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
           {incomeStatement.endDate?.format()}
         </Link>
       </Td>
-      <Td verticalAlign="middle">{formatDate(incomeStatement.created)}</Td>
+      <Td verticalAlign="middle">
+        {incomeStatement.created.toLocalDate().format()}
+      </Td>
       <Td>
         <Checkbox
           data-qa="is-handled-checkbox"

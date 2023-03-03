@@ -5,9 +5,10 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
-import { formatDate } from 'lib-common/date'
-import { IncomeStatementSortParam } from 'lib-common/generated/api-types/incomestatement'
+import {
+  IncomeStatementAwaitingHandler,
+  IncomeStatementSortParam
+} from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -97,7 +98,7 @@ function IncomeStatementsList({
               </Link>
             </Td>
             <Td>{row.primaryCareArea}</Td>
-            <Td>{formatDate(row.created)}</Td>
+            <Td>{row.created.toLocalDate().format()}</Td>
             <Td>{row.startDate.format()}</Td>
             <Td data-qa="income-statement-type">
               {i18n.incomeStatement.statementTypes[row.type].toLowerCase()}
