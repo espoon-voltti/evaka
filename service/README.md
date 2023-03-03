@@ -189,6 +189,11 @@ Repeat for all environments:
 
     - **NOTE:** Cluster and service name are deployment specific
 
+### Generating VAPID private key for Web Push
+
+1. Run `./gradlew generateVapidKey`
+2. Copy the printed private key to configuration
+
 ## Tips
 
 ### DB migration bookkeeping

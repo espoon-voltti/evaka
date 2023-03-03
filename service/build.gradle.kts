@@ -239,6 +239,7 @@ tasks {
     }
 
     bootRun {
+        mainClass.set("fi.espoo.evaka.MainKt")
         // If you want to develop against VTJ, add vtj-dev here
         systemProperty("spring.profiles.active", "local")
     }
@@ -258,6 +259,12 @@ tasks {
         mainClass.set("com.pinterest.ktlint.Main")
         classpath = ktlint.get()
         args = listOf("applyToIDEAProject", "-y")
+    }
+
+    register("generateVapidKey", JavaExec::class) {
+        description = "Generate VAPID key for use with push notifications"
+        mainClass.set("fi.espoo.evaka.webpush.VapidKeyGeneratorKt")
+        classpath = sourceSets["test"].runtimeClasspath
     }
 
     dependencyCheck {
