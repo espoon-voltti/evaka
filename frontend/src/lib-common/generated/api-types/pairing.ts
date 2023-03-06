@@ -104,6 +104,28 @@ export interface PostPairingChallengeReq {
   challengeKey: string
 }
 
+export namespace PostPairingReq {
+  /**
+  * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Employee
+  */
+  export interface Employee {
+    employeeId: UUID
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Unit
+  */
+  export interface Unit {
+    unitId: UUID
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq
+*/
+export type PostPairingReq = PostPairingReq.Employee | PostPairingReq.Unit
+
+
 /**
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingResponseReq
 */
