@@ -65,7 +65,7 @@
     "react-linkify": "^1.0.0-alpha",
     "react-router-dom": "^6.3.0",
     "react-select": "^3.0.8",
-    "react-spring": "^9.5.2",
+    "react-spring": "^9.7.1",
     "seamless-scroll-polyfill": "2.2.0",
     "styled-components": "5.3.5",
     "tslib": "^2.5.0",
