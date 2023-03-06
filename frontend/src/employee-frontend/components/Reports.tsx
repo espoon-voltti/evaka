@@ -308,7 +308,9 @@ export default React.memo(function Reports() {
                     {assistanceNeedDecisionCounts
                       .map(
                         (unread) =>
-                          unread > 0 && <UnreadCount>{unread}</UnreadCount>
+                          unread > 0 && (
+                            <UnreadCount key="unread">{unread}</UnreadCount>
+                          )
                       )
                       .getOrElse(null)}
                   </Report>

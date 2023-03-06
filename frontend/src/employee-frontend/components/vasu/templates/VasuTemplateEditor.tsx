@@ -343,7 +343,7 @@ export default React.memo(function VasuTemplateEditor() {
         </QuestionInfo>
         {question.options.map((opt) =>
           opt.isIntervention ? (
-            <QuestionInfo info={opt.info ?? null}>
+            <QuestionInfo key={opt.key} info={opt.info ?? null}>
               <Bold>{opt.name}</Bold>
             </QuestionInfo>
           ) : (
@@ -382,7 +382,7 @@ export default React.memo(function VasuTemplateEditor() {
         </QuestionInfo>
         {question.options.map((opt) =>
           opt.isIntervention ? (
-            <QuestionInfo info={opt.info ?? null}>
+            <QuestionInfo key={opt.key} info={opt.info ?? null}>
               <Bold>{opt.name}</Bold>
             </QuestionInfo>
           ) : (

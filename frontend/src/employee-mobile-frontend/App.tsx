@@ -48,6 +48,7 @@ import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
 import PairingWizard from './pairing/PairingWizard'
 import { queryClient, QueryClientProvider } from './query'
+import StaffPage from './staff/StaffPage'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './staff-attendance/MarkExternalStaffMemberArrivalPage'
 import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
@@ -55,7 +56,6 @@ import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
 import { StaffAttendanceContextProvider } from './staff-attendance/state'
-import StaffPage from './staff/StaffPage'
 
 export default function App() {
   const { i18n } = useTranslation()

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Locale } from 'date-fns'
-import { formatInTimeZone } from 'date-fns-tz'
 import { enGB, fi, sv } from 'date-fns/locale'
+import { formatInTimeZone } from 'date-fns-tz'
 
 import HelsinkiDateTime from './helsinki-date-time'
 

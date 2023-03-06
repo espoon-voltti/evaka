@@ -306,7 +306,9 @@ export default React.memo(function Header() {
                     assistanceNeedDecisionCounts
                       .map(
                         (unread) =>
-                          unread > 0 && <UnreadCount>{unread}</UnreadCount>
+                          unread > 0 && (
+                            <UnreadCount key="unread">{unread}</UnreadCount>
+                          )
                       )
                       .getOrElse(null)}
                 </NavLinkWrapper>
