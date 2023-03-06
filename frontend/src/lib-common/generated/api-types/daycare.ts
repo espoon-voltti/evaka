@@ -401,6 +401,14 @@ export interface FinanceDecisionHandler {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.FullAclUpdate
+*/
+export interface FullAclUpdate {
+  groupIds: UUID[] | null
+  role: UserRole
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.GroupAclUpdate
 */
 export interface GroupAclUpdate {
@@ -516,14 +524,6 @@ export interface StaffAttendanceUpdate {
   countOther: number | null
   date: LocalDate
   groupId: UUID
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.TotalAclUpdate
-*/
-export interface TotalAclUpdate {
-  groupIds: UUID[] | null
-  role: UserRole
 }
 
 /**

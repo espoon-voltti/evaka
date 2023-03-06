@@ -186,7 +186,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-        @RequestBody aclUpdate: TotalAclUpdate
+        @RequestBody aclUpdate: FullAclUpdate
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -213,7 +213,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    data class TotalAclUpdate(val groupIds: List<GroupId>?, val role: UserRole)
+    data class FullAclUpdate(val groupIds: List<GroupId>?, val role: UserRole)
 
     data class DaycareAclResponse(val rows: List<DaycareAclRow>)
 

@@ -41,7 +41,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     private lateinit var admin: AuthenticatedUser
 
-    private fun getRoleBodyString(body: UnitAclController.TotalAclUpdate) =
+    private fun getRoleBodyString(body: UnitAclController.FullAclUpdate) =
         jsonMapper.writeValueAsString(body)
 
     @BeforeEach
@@ -155,7 +155,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .asUser(admin)
                 .jsonBody(
                     getRoleBodyString(
-                        UnitAclController.TotalAclUpdate(
+                        UnitAclController.FullAclUpdate(
                             role = UserRole.UNIT_SUPERVISOR,
                             groupIds = null
                         )
@@ -178,7 +178,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .asUser(admin)
                 .jsonBody(
                     getRoleBodyString(
-                        UnitAclController.TotalAclUpdate(groupIds = null, role = UserRole.STAFF)
+                        UnitAclController.FullAclUpdate(groupIds = null, role = UserRole.STAFF)
                     )
                 )
                 .response()
@@ -198,7 +198,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .asUser(admin)
                 .jsonBody(
                     getRoleBodyString(
-                        UnitAclController.TotalAclUpdate(
+                        UnitAclController.FullAclUpdate(
                             groupIds = listOf(testDaycareGroup.id),
                             role = UserRole.UNIT_SUPERVISOR
                         )
