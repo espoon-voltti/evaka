@@ -9,7 +9,8 @@
   @typescript-eslint/no-var-requires,
   no-undef
 */
-const NodeEnvironment = require('jest-environment-node')
+
+const NodeEnvironment = require('jest-environment-node').default
 
 class PlaywrightEnvironment extends NodeEnvironment {
   async handleTestEvent(event) {
