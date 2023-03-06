@@ -14,6 +14,7 @@ const val basePackage = "fi.espoo.evaka"
 private val standardTsMapping: Map<String, String> =
     mapOf(
         "kotlin.String" to "string",
+        "kotlin.Byte" to "number",
         "kotlin.Int" to "number",
         "kotlin.Long" to "number",
         "kotlin.Double" to "number",
