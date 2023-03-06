@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
+import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
@@ -49,6 +50,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
     SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
+    SendOutdatedIncomeNotifications(ScheduledJobs::sendOutdatedIncomeNotifications),
     SendPatuReport(ScheduledJobs::sendPatuReport)
 }
 
@@ -63,6 +65,7 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
+    private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val patuReportingService: PatuReportingService?,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     tracer: Tracer
@@ -193,6 +196,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction { tx ->
             val count = missingReservationsReminders.scheduleReminders(tx, clock)
             logger.info("Scheduled $count reminders about missing reservations")
+        }
+    }
+
+    fun sendOutdatedIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = outdatedIncomeNotifications.scheduleNotifications(tx, clock)
+            logger.info("Scheduled $count notifications about outdated income")
         }
     }
 

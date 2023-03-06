@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -240,6 +241,13 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendOutdatedIncomeNotificationEmail(
+        val guardianId: PersonId,
+        val type: IncomeNotificationType
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -276,6 +284,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendAssistanceNeedDecisionEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
+                    SendOutdatedIncomeNotificationEmail::class,
                     SendPedagogicalDocumentNotificationEmail::class,
                     SendPendingDecisionEmail::class,
                     SendVasuNotificationEmail::class,
