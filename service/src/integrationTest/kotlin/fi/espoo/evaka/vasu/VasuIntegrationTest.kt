@@ -39,6 +39,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -341,15 +342,16 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 CurriculumType.PRESCHOOL -> ChildLanguage("kiina", "kiina")
             }
 
-        db.transaction { tx ->
-            tx.insertTestPerson(
-                testChild_1.copy(
-                    id = PersonId(UUID.randomUUID()),
-                    ssn = null,
-                    duplicateOf = testChild_1.id
+        val duplicateId =
+            db.transaction { tx ->
+                tx.insertTestPerson(
+                    testChild_1.copy(
+                        id = PersonId(UUID.randomUUID()),
+                        ssn = null,
+                        duplicateOf = testChild_1.id
+                    )
                 )
-            )
-        }
+            }
         val documentId =
             postVasuDocument(
                 testChild_1.id,
@@ -484,6 +486,22 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
         )
+        db.read { tx ->
+            val original = tx.getVasuDocumentMaster(documentId)
+            val summaries = tx.getVasuDocumentSummaries(duplicateId)
+            assertThat(summaries).hasSize(1)
+            val duplicate = tx.getVasuDocumentMaster(summaries[0].id)
+            assertThat(duplicate)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "id",
+                    "basics.child.id",
+                    "events.id",
+                    "events.created",
+                    "modifiedAt"
+                )
+                .isEqualTo(original)
+        }
         postVasuDocumentState(
             documentId,
             VasuController.ChangeDocumentStateRequest(RETURNED_TO_REVIEWED)
