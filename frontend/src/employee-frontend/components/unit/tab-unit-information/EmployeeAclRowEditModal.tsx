@@ -82,7 +82,7 @@ export default React.memo(function EmployeeAclRowEditModal({
   }, [formData, unitId, employeeRow, updatesGroupAcl])
 
   return (
-    <PlainModal margin="auto" data-qa="staff-edit-person-modal">
+    <PlainModal margin="auto" data-qa="employee-row-edit-person-modal">
       <Content>
         <Centered>
           <H1 noMargin>{i18n.unit.accessControl.editEmployeeRowModal.title}</H1>
@@ -94,7 +94,7 @@ export default React.memo(function EmployeeAclRowEditModal({
             {i18n.unit.accessControl.addDaycareAclModal.groups}
           </FieldLabel>
           <MultiSelect
-            data-qa="add-person-group-select"
+            data-qa="group-select"
             value={formData.selectedGroups}
             options={groupOptions}
             getOptionId={(item) => item.id}
@@ -110,13 +110,13 @@ export default React.memo(function EmployeeAclRowEditModal({
           <InlineButton
             className="left-button"
             text={i18n.common.cancel}
-            data-qa="edit-person-cancel-btn"
+            data-qa="edit-acl-row-cancel-btn"
             onClick={onClose}
           />
           <InlineAsyncButton
             className="right-button"
             text={i18n.common.save}
-            data-qa="edit-person-save-btn"
+            data-qa="edit-acl-row-save-btn"
             onClick={submit}
             onSuccess={onSuccess}
           />

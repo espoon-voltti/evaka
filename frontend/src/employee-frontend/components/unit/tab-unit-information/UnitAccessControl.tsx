@@ -243,6 +243,7 @@ const DeleteConfirmationModal = React.memo(function DeleteConfirmationModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
+      data-qa="remove-daycare-acl-modal"
       type="warning"
       title={i18n.unit.accessControl.removeConfirmation}
       icon={faQuestion}
@@ -457,7 +458,7 @@ export default React.memo(function UnitAccessControl({
                 <AddButton
                   text={i18n.unit.accessControl.addDaycareAclModal.title}
                   onClick={openAddSupervisorModal}
-                  data-qa="open-add-supervisor-modal"
+                  data-qa="open-add-daycare-acl-modal"
                 />
               </>
             )}
@@ -489,7 +490,7 @@ export default React.memo(function UnitAccessControl({
                 <AddButton
                   text={i18n.unit.accessControl.addDaycareAclModal.title}
                   onClick={openAddSpecialEducatioTeachedModal}
-                  data-qa="open-add-seteacher-modal"
+                  data-qa="open-add-daycare-acl-modal"
                 />
               </>
             )}
@@ -525,7 +526,7 @@ export default React.memo(function UnitAccessControl({
                   <AddButton
                     text={i18n.unit.accessControl.addDaycareAclModal.title}
                     onClick={openAddEcesModal}
-                    data-qa="open-add-eces-modal"
+                    data-qa="open-add-daycare-acl-modal"
                   />
                 </>
               )}
@@ -556,7 +557,7 @@ export default React.memo(function UnitAccessControl({
                 <AddButton
                   text={i18n.unit.accessControl.addDaycareAclModal.title}
                   onClick={openAddStaffModal}
-                  data-qa="open-add-staff-modal"
+                  data-qa="open-add-daycare-acl-modal"
                 />
               </>
             )}

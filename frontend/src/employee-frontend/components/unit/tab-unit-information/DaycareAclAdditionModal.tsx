@@ -106,7 +106,7 @@ export default React.memo(function DaycareAclAdditionModal({
   )
 
   return (
-    <PlainModal margin="auto" data-qa="staff-add-person-modal">
+    <PlainModal margin="auto" data-qa="add-daycare-acl-modal">
       <Content>
         <Centered>
           <H1 noMargin>{i18n.unit.accessControl.addDaycareAclModal.title}</H1>
@@ -117,7 +117,7 @@ export default React.memo(function DaycareAclAdditionModal({
           </FieldLabel>
           <Combobox
             clearable
-            data-qa="acl-combobox"
+            data-qa="add-daycare-acl-emp-combobox"
             placeholder={i18n.unit.accessControl.choosePerson}
             selectedItem={formData.selectedEmployee}
             onChange={(item) =>
@@ -135,7 +135,7 @@ export default React.memo(function DaycareAclAdditionModal({
               {i18n.unit.accessControl.addDaycareAclModal.groups}
             </FieldLabel>
             <MultiSelect
-              data-qa="add-person-group-select"
+              data-qa="add-daycare-acl-group-select"
               value={formData.selectedGroups ?? []}
               options={groupOptions}
               getOptionId={(item) => item.id}
@@ -151,13 +151,13 @@ export default React.memo(function DaycareAclAdditionModal({
           <InlineButton
             className="left-button"
             text={i18n.common.cancel}
-            data-qa="add-person-cancel-btn"
+            data-qa="add-daycare-acl-cancel-btn"
             onClick={onClose}
           />
           <InlineAsyncButton
             className="right-button"
             text={i18n.common.save}
-            data-qa="add-person-save-btn"
+            data-qa="add-daycare-acl-save-btn"
             onClick={submit}
             onSuccess={onSuccess}
             disabled={!formData.selectedEmployee}

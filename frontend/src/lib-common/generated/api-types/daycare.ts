@@ -22,6 +22,7 @@ import { TerminatedPlacement } from './placement'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
+import { UserRole } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.Absence
@@ -287,7 +288,7 @@ export interface Daycare {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareAclResponse
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.DaycareAclResponse
 */
 export interface DaycareAclResponse {
   rows: DaycareAclRow[]
@@ -515,6 +516,14 @@ export interface StaffAttendanceUpdate {
   countOther: number | null
   date: LocalDate
   groupId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.TotalAclUpdate
+*/
+export interface TotalAclUpdate {
+  groupIds: UUID[] | null
+  role: UserRole
 }
 
 /**

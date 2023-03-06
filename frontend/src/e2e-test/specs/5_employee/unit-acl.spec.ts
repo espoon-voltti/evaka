@@ -8,7 +8,7 @@ import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
-import { UnitPage } from '../../pages/employee/units/unit'
+import { EmployeeRowEditModal, UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -65,13 +65,13 @@ describe('Employee - unit ACL', () => {
     const unitInfoPage = await unitPage.openUnitInformation()
     await unitInfoPage.supervisorAcl.assertRows([expectedAclRows.esko])
 
-    await unitInfoPage.supervisorAcl.addAcl(yrjo.email)
+    await unitInfoPage.supervisorAcl.addAcl(yrjo.email, [])
     await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.yrjo
     ])
 
-    await unitInfoPage.supervisorAcl.addAcl(pete.email)
+    await unitInfoPage.supervisorAcl.addAcl(pete.email, [])
     await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.yrjo,
@@ -96,12 +96,12 @@ describe('Employee - unit ACL', () => {
 
     await unitInfoPage.specialEducationTeacherAcl.assertRows([])
 
-    await unitInfoPage.specialEducationTeacherAcl.addAcl(pete.email)
+    await unitInfoPage.specialEducationTeacherAcl.addAcl(pete.email, [])
     await unitInfoPage.specialEducationTeacherAcl.assertRows([
       expectedAclRows.pete
     ])
 
-    await unitInfoPage.specialEducationTeacherAcl.addAcl(yrjo.email)
+    await unitInfoPage.specialEducationTeacherAcl.addAcl(yrjo.email, [])
     await unitInfoPage.specialEducationTeacherAcl.assertRows([
       expectedAclRows.pete,
       expectedAclRows.yrjo
@@ -114,11 +114,14 @@ describe('Employee - unit ACL', () => {
   })
 
   test('Staff can be added and assigned/removed to/from groups', async () => {
-    async function toggleGroups() {
+    async function toggleGroups(page: Page, groups: UUID[]) {
       const row = unitInfoPage.staffAcl.getRow(pete.id)
-      const rowEditor = await row.edit()
-      await rowEditor.toggleStaffGroups([groupId])
-      await rowEditor.save()
+      await row.edit()
+      const editModal = new EmployeeRowEditModal(
+        page.find('[data-qa="employee-row-edit-person-modal"]')
+      )
+      await editModal.toggleGroups(groups)
+      await editModal.saveButton.click()
     }
 
     await Fixture.daycareGroup()
@@ -128,18 +131,19 @@ describe('Employee - unit ACL', () => {
     await employeeLogin(page, esko)
     const unitPage = await UnitPage.openUnit(page, daycareId)
     const unitInfoPage = await unitPage.openUnitInformation()
-    await unitInfoPage.staffAcl.addAcl(expectedAclRows.pete.email)
+    await unitInfoPage.staffAcl.addAcl(expectedAclRows.pete.email, [groupId])
 
-    await unitInfoPage.staffAcl.assertRows([
-      { ...expectedAclRows.pete, groups: [] }
-    ])
-    await toggleGroups()
     await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: ['Testailijat'] }
     ])
-    await toggleGroups()
+
+    await toggleGroups(page, [groupId])
     await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: [] }
+    ])
+    await toggleGroups(page, [groupId])
+    await unitInfoPage.staffAcl.assertRows([
+      { ...expectedAclRows.pete, groups: ['Testailijat'] }
     ])
   })
 
