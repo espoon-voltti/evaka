@@ -9,6 +9,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.checkAndCreateGroupPlacement
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -32,10 +34,12 @@ import fi.espoo.evaka.vasu.VasuDocumentEventType.PUBLISHED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -338,6 +342,16 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 CurriculumType.PRESCHOOL -> ChildLanguage("kiina", "kiina")
             }
 
+        val duplicateId =
+            db.transaction { tx ->
+                tx.insertTestPerson(
+                    testChild_1.copy(
+                        id = PersonId(UUID.randomUUID()),
+                        ssn = null,
+                        duplicateOf = testChild_1.id
+                    )
+                )
+            }
         val documentId =
             postVasuDocument(
                 testChild_1.id,
@@ -472,6 +486,22 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
         )
+        db.read { tx ->
+            val original = tx.getVasuDocumentMaster(documentId)
+            val summaries = tx.getVasuDocumentSummaries(duplicateId)
+            assertThat(summaries).hasSize(1)
+            val duplicate = tx.getVasuDocumentMaster(summaries[0].id)
+            assertThat(duplicate)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "id",
+                    "basics.child.id",
+                    "events.id",
+                    "events.created",
+                    "modifiedAt"
+                )
+                .isEqualTo(original)
+        }
         postVasuDocumentState(
             documentId,
             VasuController.ChangeDocumentStateRequest(RETURNED_TO_REVIEWED)

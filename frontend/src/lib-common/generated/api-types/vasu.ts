@@ -123,6 +123,8 @@ export interface VasuDocument {
   id: UUID
   language: VasuLanguage
   modifiedAt: HelsinkiDateTime
+  publishedAt: HelsinkiDateTime | null
+  templateId: UUID
   templateName: string
   templateRange: FiniteDateRange
   type: CurriculumType
@@ -133,6 +135,7 @@ export interface VasuDocument {
 */
 export interface VasuDocumentEvent {
   created: HelsinkiDateTime
+  employeeId: UUID
   eventType: VasuDocumentEventType
   id: UUID
 }

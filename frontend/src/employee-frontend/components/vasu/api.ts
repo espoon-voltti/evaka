@@ -29,7 +29,15 @@ const mapVasuDocumentEvent = (
 })
 
 const mapVasuDocumentResponse = ({
-  data: { events, modifiedAt, templateRange, basics, content, ...rest },
+  data: {
+    events,
+    modifiedAt,
+    templateRange,
+    basics,
+    content,
+    publishedAt,
+    ...rest
+  },
   permittedActions
 }: JsonOf<VasuDocumentWithPermittedActions>): VasuDocumentWithPermittedActions => ({
   data: {
@@ -38,6 +46,8 @@ const mapVasuDocumentResponse = ({
     events: events.map(mapVasuDocumentEvent),
     modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
     templateRange: FiniteDateRange.parseJson(templateRange),
+    publishedAt:
+      publishedAt !== null ? HelsinkiDateTime.parseIso(publishedAt) : null,
     basics: {
       ...basics,
       child: {

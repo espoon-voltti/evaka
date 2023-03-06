@@ -109,6 +109,12 @@ WHERE social_security_number = :ssn
         .firstOrNull()
 }
 
+fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
+    createQuery("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = :id")
+        .bind("id", id)
+        .map(toPersonDTO)
+        .list()
+
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
 

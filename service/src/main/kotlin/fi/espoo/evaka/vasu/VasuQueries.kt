@@ -101,15 +101,18 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
             cd.child_id,
             cd.modified_at,
             cd.basics,
+            ct.id AS template_id,
             ct.name AS template_name,
             ct.valid AS template_range,
             ct.type,
             ct.language,
             vc.content,
+            vc.published_at,
             (SELECT jsonb_agg(json_build_object(
                    'id', event.id,
                    'created', event.created,
-                   'eventType', event.event_type
+                   'eventType', event.event_type,
+                   'employeeId', event.employee_id
                ) ORDER BY event.created) 
                FROM curriculum_document_event event
                WHERE event.curriculum_document_id = :id
@@ -139,22 +142,25 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
             cd.child_id,
             cd.basics,
             cd.modified_at,
+            ct.id AS template_id,
             ct.name AS template_name,
             ct.valid AS template_range,
             ct.type,
             ct.language,
             vc.content,
+            vc.published_at,
             (SELECT jsonb_agg(json_build_object(
                    'id', event.id,
                    'created', event.created,
-                   'eventType', event.event_type
+                   'eventType', event.event_type,
+                   'employeeId', event.employee_id
                ) ORDER BY event.created) 
                FROM curriculum_document_event event
                WHERE event.curriculum_document_id = :id
            ) AS events
         FROM curriculum_document cd
         JOIN LATERAL (
-            SELECT vc.content
+            SELECT vc.content, vc.published_at
             FROM curriculum_content vc
             WHERE vc.published_at IS NOT NULL AND vc.document_id = cd.id
             ORDER BY vc.published_at DESC
@@ -229,6 +235,7 @@ data class SummaryResultRow(
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null,
+    val eventEmployeeId: EmployeeId? = null,
     val type: CurriculumType
 )
 
@@ -284,12 +291,14 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                             if (
                                 it.eventId != null &&
                                     it.eventCreated != null &&
-                                    it.eventType != null
+                                    it.eventType != null &&
+                                    it.eventEmployeeId != null
                             ) {
                                 VasuDocumentEvent(
                                     id = it.eventId,
                                     created = it.eventCreated,
-                                    eventType = it.eventType
+                                    eventType = it.eventType,
+                                    employeeId = it.eventEmployeeId
                                 )
                             } else {
                                 null
@@ -310,7 +319,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
         """
         INSERT INTO curriculum_document_event (curriculum_document_id, employee_id, event_type)
         VALUES (:documentId, :employeeId, :eventType)
-        RETURNING id, created, event_type
+        RETURNING id, created, event_type, employee_id
     """
             .trimIndent()
 

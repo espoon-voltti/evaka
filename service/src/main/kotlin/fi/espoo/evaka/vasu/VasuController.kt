@@ -6,7 +6,10 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
+import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -375,10 +378,11 @@ class VasuController(
                     }.exhaust()
                 }
 
-                val currentState =
-                    tx.getVasuDocumentMaster(id)?.documentState
-                        ?: throw NotFound("Vasu was not found")
-                validateStateTransition(eventType = body.eventType, currentState = currentState)
+                val document = tx.getVasuDocumentMaster(id) ?: throw NotFound("Vasu was not found")
+                validateStateTransition(
+                    eventType = body.eventType,
+                    currentState = document.documentState
+                )
 
                 if (events.contains(PUBLISHED)) {
                     tx.publishVasuDocument(clock, id)
@@ -389,12 +393,46 @@ class VasuController(
                     tx.freezeVasuPlacements(id)
                 }
 
-                events.forEach { eventType ->
-                    tx.insertVasuDocumentEvent(
-                        documentId = id,
-                        eventType = eventType,
-                        employeeId = user.id
-                    )
+                val addedEvents =
+                    events.map { eventType ->
+                        tx.insertVasuDocumentEvent(
+                            documentId = id,
+                            eventType = eventType,
+                            employeeId = user.id
+                        )
+                    }
+
+                if (events.contains(MOVED_TO_CLOSED)) {
+                    val duplicates = tx.listPersonByDuplicateOf(document.basics.child.id)
+                    if (duplicates.isNotEmpty()) {
+                        val child = tx.getChild(document.basics.child.id)!!
+                        val template = tx.getVasuTemplate(document.templateId)!!
+                        val allEvents = document.events + addedEvents
+                        duplicates.forEach { duplicate ->
+                            val duplicateChild =
+                                tx.getChild(duplicate.id)
+                                    ?: tx.createChild(child.copy(id = duplicate.id))
+                            val duplicateDocumentId =
+                                tx.insertVasuDocument(
+                                    clock = clock,
+                                    childId = duplicateChild.id,
+                                    template = template
+                                )
+                            tx.updateVasuDocumentMaster(
+                                clock = clock,
+                                id = duplicateDocumentId,
+                                content = document.content,
+                                childLanguage = document.basics.childLanguage
+                            )
+                            allEvents.forEach { event ->
+                                tx.insertVasuDocumentEvent(
+                                    documentId = duplicateDocumentId,
+                                    eventType = event.eventType,
+                                    employeeId = event.employeeId
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
