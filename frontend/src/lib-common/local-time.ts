@@ -124,7 +124,7 @@ export default class LocalTime implements Ordered<LocalTime> {
     throw new RangeError(`Invalid time ${text}`)
   }
 
-  static tryParse(text: string, pattern: 'HH:mm'): LocalTime | undefined {
+  static tryParse(text: string, pattern = 'HH:mm'): LocalTime | undefined {
     const timestamp = parse(text, pattern, new Date(1970, 0, 1))
     return LocalTime.tryCreate(
       timestamp.getHours(),
@@ -133,7 +133,7 @@ export default class LocalTime implements Ordered<LocalTime> {
       millisToNanos(timestamp.getMilliseconds())
     )
   }
-  static parse(text: string, pattern: 'HH:mm'): LocalTime {
+  static parse(text: string, pattern = 'HH:mm'): LocalTime {
     const result = LocalTime.tryParse(text, pattern)
     if (!result) {
       throw new RangeError(`Invalid time ${text}`)

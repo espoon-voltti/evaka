@@ -66,7 +66,7 @@ function validateTime(
       l.arrived > r.arrived ? -1 : 1
     )[0]
 
-    const parsedTime = LocalTime.parse(time, 'HH:mm')
+    const parsedTime = LocalTime.parse(time)
     const parsedTimestamp =
       LocalDate.todayInSystemTz().toHelsinkiDateTime(parsedTime)
     if (!parsedTimestamp.isAfter(latestArrival.arrived)) {

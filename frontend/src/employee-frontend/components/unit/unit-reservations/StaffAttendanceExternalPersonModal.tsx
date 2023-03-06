@@ -87,12 +87,12 @@ const validateForm = (
           attendanceId,
           arrived: HelsinkiDateTime.fromLocal(
             formState.date,
-            LocalTime.parse(formState.arrivalTime, 'HH:mm')
+            LocalTime.parse(formState.arrivalTime)
           ),
           departed: formState.departureTime
             ? HelsinkiDateTime.fromLocal(
                 formState.date,
-                LocalTime.parse(formState.departureTime, 'HH:mm')
+                LocalTime.parse(formState.departureTime)
               )
             : null,
           name: formState.name,
