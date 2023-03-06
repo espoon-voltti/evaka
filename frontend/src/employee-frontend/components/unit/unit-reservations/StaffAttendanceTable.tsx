@@ -809,7 +809,7 @@ const validateArrived = (
   previousDeparted: HelsinkiDateTime | null | undefined
 ): [undefined, ErrorKey] | [HelsinkiDateTime, undefined] => {
   const parsedArrived = item.arrived
-    ? LocalTime.tryParse(item.arrived, 'HH:mm')
+    ? LocalTime.tryParse(item.arrived)
     : undefined
 
   const isOvernightAttendance =
@@ -842,7 +842,7 @@ const validateDeparted = (
   arrived: HelsinkiDateTime | undefined
 ): [undefined, ErrorKey] | [HelsinkiDateTime | null, undefined] => {
   const parsedDeparted = item.departed
-    ? LocalTime.tryParse(item.departed, 'HH:mm')
+    ? LocalTime.tryParse(item.departed)
     : undefined
 
   if (!item.departed && isLastAttendance && config.date.isToday()) {

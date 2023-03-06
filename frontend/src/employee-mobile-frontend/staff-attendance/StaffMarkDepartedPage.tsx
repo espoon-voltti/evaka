@@ -82,7 +82,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
   const isValidTimeString = (time: string) =>
-    LocalTime.tryParse(time, 'HH:mm') ? true : false
+    LocalTime.tryParse(time) ? true : false
 
   const staffInfo = useMemo(
     () =>
@@ -124,9 +124,7 @@ export default React.memo(function StaffMarkDepartedPage() {
     () =>
       isValidTime(time) &&
       isAfter(
-        HelsinkiDateTime.now()
-          .withTime(LocalTime.parse(time, 'HH:mm'))
-          .toSystemTzDate(),
+        HelsinkiDateTime.now().withTime(LocalTime.parse(time)).toSystemTzDate(),
         now
       ),
     [time, now]
@@ -136,7 +134,7 @@ export default React.memo(function StaffMarkDepartedPage() {
     () =>
       staffMember
         .map((staff) => {
-          const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+          const parsedTime = LocalTime.tryParse(time)
           if (!parsedTime || !staff?.spanningPlan) return []
           const departed = HelsinkiDateTime.fromLocal(
             LocalDate.todayInHelsinkiTz(),
@@ -160,7 +158,7 @@ export default React.memo(function StaffMarkDepartedPage() {
       ? postStaffDeparture({
           employeeId,
           groupId,
-          time: LocalTime.parse(time, 'HH:mm'),
+          time: LocalTime.parse(time),
           pinCode: pinCode.join(''),
           type: attendanceType ?? null
         })
