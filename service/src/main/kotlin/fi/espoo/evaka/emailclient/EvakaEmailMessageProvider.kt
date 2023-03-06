@@ -813,9 +813,9 @@ There are missing attendance reservations for the week starting $start. Please m
                 
                 Inkomstuppgifterna som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel granskas årligen.
                 
-                Vi ber att du skickar en inkomstutredning via eVaka inom 14 dagar från den här anmälan.I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.
+                Vi ber att du skickar en inkomstutredning via eVaka inom 14 dagar från den här anmälan. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.
                 
-                Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grundval av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.
+                Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.
                 
                 Du kan vid behov också skicka inkomstutredningen per post till adressen Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad
                 
@@ -866,9 +866,9 @@ There are missing attendance reservations for the week starting $start. Please m
                                 
                 <p>Inkomstuppgifterna som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel granskas årligen.</p>
                                 
-                <p>Vi ber att du skickar en inkomstutredning via eVaka inom 14 dagar från den här anmälan.I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
+                <p>Vi ber att du skickar en inkomstutredning via eVaka inom 14 dagar från den här anmälan. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
                                 
-                <p>Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grundval av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
+                <p>Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
                                 
                 <p>Du kan vid behov också skicka inkomstutredningen per post till adressen Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad</p>
                                 
@@ -929,7 +929,7 @@ There are missing attendance reservations for the week starting $start. Please m
                 
                 Vi ber att du skickar en inkomstutredning via eVaka inom sju dagar från denna anmälan. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.
                 
-                Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grundval av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.
+                Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.
                 
                 Du kan vid behov också skicka inkomstutredningen per post till adressen: Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad
                 
@@ -980,7 +980,7 @@ There are missing attendance reservations for the week starting $start. Please m
                                 
                 <p>Vi ber att du skickar en inkomstutredning via eVaka inom sju dagar från denna anmälan. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
                                 
-                <p>Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grundval av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
+                <p>Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
                                 
                 <p>Du kan vid behov också skicka inkomstutredningen per post till adressen: Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad</p>
                                 
