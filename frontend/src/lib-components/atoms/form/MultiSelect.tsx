@@ -27,9 +27,9 @@ interface MultiSelectProps<T> {
   placeholder: string
   noOptionsMessage?: string
   showValuesInInput?: boolean
-  closeMenuOnSelect?: Props<T>['closeMenuOnSelect']
-  isClearable?: Props<T>['isClearable']
-  inputId?: Props<T>['inputId']
+  closeMenuOnSelect?: Props<never>['closeMenuOnSelect']
+  isClearable?: Props<never>['isClearable']
+  inputId?: Props<never>['inputId']
   'data-qa'?: string
   autoFocus?: boolean
 }
@@ -84,8 +84,14 @@ function MultiSelect<T>({
         backspaceRemovesValue={false}
         closeMenuOnSelect={closeMenuOnSelect ?? false}
         noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
-        getOptionLabel={getOptionLabel}
-        getOptionValue={getOptionId}
+        getOptionLabel={
+          /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+          getOptionLabel as any
+        }
+        getOptionValue={
+          /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+          getOptionId as any
+        }
         value={value}
         tabSelectsValue={false}
         onFocus={(ev) => {
