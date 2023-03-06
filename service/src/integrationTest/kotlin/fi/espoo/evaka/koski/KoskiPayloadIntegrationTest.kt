@@ -23,9 +23,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
+import org.springframework.beans.factory.annotation.Autowired
 
 class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private lateinit var koskiServer: MockKoskiServer
+    @Autowired private lateinit var koskiEndpoint: MockKoskiEndpoint
     private lateinit var koskiTester: KoskiTester
 
     private val preschoolTerm2019 =
@@ -33,13 +34,12 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     @BeforeAll
     fun initDependencies() {
-        koskiServer = MockKoskiServer.start()
         koskiTester =
             KoskiTester(
                 db,
                 KoskiClient(
                     KoskiEnv.fromEnvironment(env)
-                        .copy(url = "http://localhost:${koskiServer.port}"),
+                        .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env),
                     fuel = http,
                     asyncJobRunner = null
@@ -53,7 +53,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             tx.insertGeneralTestFixtures()
             tx.setUnitOids()
         }
-        koskiServer.clearData()
+        koskiEndpoint.clearData()
     }
 
     @Test

@@ -19,7 +19,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.webpush.MockWebPushServer
+import fi.espoo.evaka.webpush.MockWebPushEndpoint
 import fi.espoo.evaka.webpush.PushNotificationCategory
 import fi.espoo.evaka.webpush.WebPushCrypto
 import fi.espoo.evaka.webpush.WebPushSubscription
@@ -31,17 +31,16 @@ import java.time.Duration
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private lateinit var mockServer: MockWebPushServer
     private lateinit var clock: MockEvakaClock
     private val keyPair = WebPushCrypto.generateKeyPair(SecureRandom())
 
+    @Autowired private lateinit var mockEndpoint: MockWebPushEndpoint
     @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -53,13 +52,12 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
-        mockServer = MockWebPushServer.start()
         clock = MockEvakaClock(2023, 1, 1, 12, 0)
     }
 
     @BeforeEach
     fun beforeEach() {
-        mockServer.clearData()
+        mockEndpoint.clearData()
         db.transaction { tx ->
             val area = tx.insert(DevCareArea())
             val unit =
@@ -85,15 +83,9 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         }
     }
 
-    @AfterAll
-    override fun afterAll() {
-        super.afterAll()
-        mockServer.close()
-    }
-
     @Test
     fun `a push notification is sent when a citizen sends a message to a group`() {
-        val endpoint = URI("http://localhost:${mockServer.port}/subscription/1234")
+        val endpoint = URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
         db.transaction { tx ->
             tx.upsertPushSubscription(
                 device,
@@ -125,11 +117,11 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         clock.tick(Duration.ofMinutes(30))
         asyncJobRunner.runPendingJobsSync(clock)
 
-        val request = mockServer.getCapturedRequests("1234").single()
-        assertEquals("normal", request.headers["Urgency"])
-        assertNotNull(request.headers["TTL"]?.toIntOrNull())
-        assertTrue(request.headers["Authorization"]?.startsWith("vapid") ?: false)
-        assertEquals("aes128gcm", request.headers["Content-Encoding"])
+        val request = mockEndpoint.getCapturedRequests("1234").single()
+        assertEquals("normal", request.headers["urgency"])
+        assertNotNull(request.headers["ttl"]?.toIntOrNull())
+        assertTrue(request.headers["authorization"]?.startsWith("vapid") ?: false)
+        assertEquals("aes128gcm", request.headers["content-encoding"])
         assertTrue(request.body.isNotEmpty())
     }
 }
