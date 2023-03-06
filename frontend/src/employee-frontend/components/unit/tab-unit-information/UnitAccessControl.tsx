@@ -367,25 +367,25 @@ export default React.memo(function UnitAccessControl({
 
   // daycare addition modal role-based addition fns
   const openAddStaffModal = useCallback(() => {
-    toggleUiMode(`add-daycare-acl-${unitId}`)
     setAdditionState({ role: 'STAFF' })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
   }, [toggleUiMode, unitId])
 
   const openAddEcesModal = useCallback(() => {
-    toggleUiMode(`add-daycare-acl-${unitId}`)
     setAdditionState({
       role: 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
     })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
   }, [toggleUiMode, unitId])
 
   const openAddSpecialEducatioTeachedModal = useCallback(() => {
-    toggleUiMode(`add-daycare-acl-${unitId}`)
     setAdditionState({ role: 'SPECIAL_EDUCATION_TEACHER' })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
   }, [toggleUiMode, unitId])
 
   const openAddSupervisorModal = useCallback(() => {
-    toggleUiMode(`add-daycare-acl-${unitId}`)
     setAdditionState({ role: 'UNIT_SUPERVISOR' })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
   }, [toggleUiMode, unitId])
 
   // daycare addition modal generic fns
