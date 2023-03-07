@@ -5,6 +5,7 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import { BoundFormState } from 'lib-common/form/hooks'
 import { autocomplete } from 'lib-common/time'
 
 import InputField, { TextInputProps } from './InputField'
@@ -28,7 +29,7 @@ export interface TimeInputProps
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
-export default React.memo(function TimeInput({
+const TimeInput = React.memo(function TimeInput({
   value,
   onChange,
   onFocus,
@@ -54,6 +55,8 @@ export default React.memo(function TimeInput({
   )
 })
 
+export default TimeInput
+
 const ShorterInput = styled(InputField)`
   width: calc(3.2em + 24px);
   max-width: calc(3.2em + 24px);
@@ -62,3 +65,22 @@ const ShorterInput = styled(InputField)`
     font-size: 1em;
   }
 `
+
+export interface TimeInputFProps
+  extends Omit<TimeInputProps, 'value' | 'onChange'> {
+  bind: BoundFormState<string>
+}
+
+export const TimeInputF = React.memo(function TimeInputF({
+  bind: { state, set, inputInfo },
+  ...props
+}: TimeInputFProps) {
+  return (
+    <TimeInput
+      {...props}
+      value={state}
+      onChange={set}
+      info={'info' in props ? props.info : inputInfo()}
+    />
+  )
+})
