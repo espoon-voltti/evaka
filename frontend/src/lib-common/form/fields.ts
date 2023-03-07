@@ -2,8 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mapped, value } from './form'
+import LocalTime from '../local-time'
+
+import { mapped, transformed, value } from './form'
+import { ValidationError, ValidationResult, ValidationSuccess } from './types'
 
 export const string = mapped(value<string>(), (s) => s.trim())
 export const boolean = value<boolean>()
 export const number = value<number>()
+
+export const localTime = transformed(
+  string,
+  (s): ValidationResult<LocalTime | undefined, 'timeFormat'> => {
+    if (s === '') return ValidationSuccess.of(undefined)
+    const parsed = LocalTime.tryParse(s)
+    if (parsed === undefined) {
+      return ValidationError.of('timeFormat')
+    }
+    return ValidationSuccess.of(parsed)
+  }
+)
