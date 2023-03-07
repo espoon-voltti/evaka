@@ -8,7 +8,6 @@ const fs = require('fs')
 const path = require('path')
 
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
 const webpack = require('webpack')
@@ -57,10 +56,7 @@ function resolveIcons() {
 const customizationsModule = resolveCustomizations()
 const icons = resolveIcons()
 
-function baseConfig(
-  { isDevelopment, isDevServer },
-  { name, publicPath, entry }
-) {
+function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
   const plugins = [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, `src/${name}/index.html`),
@@ -85,10 +81,6 @@ function baseConfig(
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
     })
   ]
-
-  if (isDevServer) {
-    plugins.push(new ForkTsCheckerWebpackPlugin())
-  }
 
   // Only create a Sentry release when Sentry is enabled (i.e. production builds).
   // SentryWebpackPlugin automatically publishes source maps and creates a release.
@@ -162,7 +154,7 @@ function baseConfig(
                   [
                     'babel-plugin-styled-components',
                     {
-                      displayName: isDevServer,
+                      displayName: false,
                       fileName: false,
                       pure: true
                     }
@@ -174,8 +166,7 @@ function baseConfig(
               loader: 'ts-loader',
               options: {
                 onlyCompileBundledFiles: true,
-                projectReferences: true,
-                transpileOnly: isDevServer
+                projectReferences: true
               }
             }
           ]
@@ -227,8 +218,7 @@ function baseConfig(
     },
     performance: {
       hints: false
-    },
-    cache: isDevServer ? { type: 'filesystem' } : false
+    }
   }
 }
 
@@ -307,8 +297,7 @@ function employeeMobile(flags) {
 
 module.exports = (env, argv) => {
   const isDevelopment = !!(argv && argv['mode'] !== 'production')
-  const isDevServer = !!(env && env['DEV_SERVER'])
-  const flags = { isDevServer, isDevelopment }
+  const flags = { isDevelopment }
 
   return [citizen(flags), employee(flags), employeeMobile(flags)]
 }
