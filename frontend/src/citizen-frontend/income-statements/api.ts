@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Paged } from 'lib-common/api'
+import { deserializeIncomeStatement } from 'lib-common/api-types/incomeStatement'
 import {
-  deserializeIncomeStatement,
+  ChildBasicInfo,
   IncomeStatement
-} from 'lib-common/api-types/incomeStatement'
-import { ChildBasicInfo } from 'lib-common/generated/api-types/incomestatement'
+} from 'lib-common/generated/api-types/incomestatement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'

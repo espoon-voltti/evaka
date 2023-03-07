@@ -4,11 +4,11 @@
 
 package evaka.codegen.actionenum
 
-import mu.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.readText
 import kotlin.system.exitProcess
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

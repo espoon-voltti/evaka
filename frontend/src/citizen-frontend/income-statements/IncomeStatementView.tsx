@@ -13,8 +13,8 @@ import {
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  Income
-} from 'lib-common/api-types/incomeStatement'
+  IncomeStatement
+} from 'lib-common/generated/api-types/incomestatement'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -89,7 +89,7 @@ export default React.memo(function IncomeStatementView() {
 const IncomeInfo = React.memo(function IncomeInfo({
   incomeStatement
 }: {
-  incomeStatement: Income
+  incomeStatement: IncomeStatement.Income
 }) {
   const t = useTranslation()
   return (

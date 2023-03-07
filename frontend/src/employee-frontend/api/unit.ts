@@ -33,7 +33,10 @@ import {
   OccupancyResponseSpeculated,
   UnitOccupancies
 } from 'lib-common/generated/api-types/occupancy'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import {
+  MobileDevice,
+  PostPairingReq
+} from 'lib-common/generated/api-types/pairing'
 import {
   DaycarePlacementWithDetails,
   MissingGroupPlacement,
@@ -654,7 +657,7 @@ export interface PairingResponse {
 }
 
 export async function postPairing(
-  data: { unitId: UUID } | { employeeId: UUID }
+  data: PostPairingReq
 ): Promise<Result<PairingResponse>> {
   return client
     .post<JsonOf<PairingResponse>>(`/pairings`, data)

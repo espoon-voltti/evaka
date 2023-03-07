@@ -11,50 +11,74 @@ import java.util.UUID
 
 const val basePackage = "fi.espoo.evaka"
 
-private val standardTsMapping: Map<String, String> = mapOf(
-    "kotlin.String" to "string",
-    "kotlin.Int" to "number",
-    "kotlin.Long" to "number",
-    "kotlin.Double" to "number",
-    "java.math.BigDecimal" to "number",
-    "kotlin.Boolean" to "boolean",
-    "java.time.OffsetDateTime" to "Date"
-)
+private val standardTsMapping: Map<String, String> =
+    mapOf(
+        "kotlin.String" to "string",
+        "kotlin.Int" to "number",
+        "kotlin.Long" to "number",
+        "kotlin.Double" to "number",
+        "java.math.BigDecimal" to "number",
+        "kotlin.Boolean" to "boolean",
+        "java.time.OffsetDateTime" to "Date"
+    )
 
-private val customClassesMapping: Map<String, TSMapping> = mapOf(
-    "java.util.UUID" to TSMapping("UUID", "import { UUID } from '../../types'"),
-    "fi.espoo.evaka.shared.Id" to TSMapping("UUID", "import { UUID } from '../../types'"),
-    "java.time.LocalDate" to TSMapping("LocalDate", "import LocalDate from '../../local-date'"),
-    "java.time.LocalTime" to TSMapping("LocalTime", "import LocalTime from '../../local-time'"),
-    "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to TSMapping("HelsinkiDateTime", "import HelsinkiDateTime from '../../helsinki-date-time'"),
-    "fi.espoo.evaka.shared.domain.FiniteDateRange" to TSMapping("FiniteDateRange", "import FiniteDateRange from '../../finite-date-range'"),
-    "fi.espoo.evaka.shared.domain.DateRange" to TSMapping("DateRange", "import DateRange from '../../date-range'"),
-    "fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue" to TSMapping("DailyServiceTimesValue", "import { DailyServiceTimesValue } from '../../api-types/child/common'"),
-    "fi.espoo.evaka.vasu.VasuQuestion" to TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
-    "fi.espoo.evaka.messaging.MessageReceiver" to TSMapping("MessageReceiver", "import { MessageReceiver } from '../../api-types/messaging'"),
-    "fi.espoo.evaka.invoicing.domain.DecisionIncome" to TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
-    "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string")
-)
+private val customClassesMapping: Map<String, TSMapping> =
+    mapOf(
+        "java.util.UUID" to TSMapping("UUID", "import { UUID } from '../../types'"),
+        "fi.espoo.evaka.shared.Id" to TSMapping("UUID", "import { UUID } from '../../types'"),
+        "java.time.LocalDate" to TSMapping("LocalDate", "import LocalDate from '../../local-date'"),
+        "java.time.LocalTime" to TSMapping("LocalTime", "import LocalTime from '../../local-time'"),
+        "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to
+            TSMapping(
+                "HelsinkiDateTime",
+                "import HelsinkiDateTime from '../../helsinki-date-time'"
+            ),
+        "fi.espoo.evaka.shared.domain.FiniteDateRange" to
+            TSMapping("FiniteDateRange", "import FiniteDateRange from '../../finite-date-range'"),
+        "fi.espoo.evaka.shared.domain.DateRange" to
+            TSMapping("DateRange", "import DateRange from '../../date-range'"),
+        "fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue" to
+            TSMapping(
+                "DailyServiceTimesValue",
+                "import { DailyServiceTimesValue } from '../../api-types/child/common'"
+            ),
+        "fi.espoo.evaka.vasu.VasuQuestion" to
+            TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
+        "fi.espoo.evaka.messaging.MessageReceiver" to
+            TSMapping(
+                "MessageReceiver",
+                "import { MessageReceiver } from '../../api-types/messaging'"
+            ),
+        "fi.espoo.evaka.invoicing.domain.DecisionIncome" to
+            TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
+        "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string")
+    )
 
-private val actionsMapping: Map<String, TSMapping> = Action::class.nestedClasses.associate { action ->
-    action.qualifiedName!! to TSMapping("Action.${action.simpleName}", "import { Action } from '../action'")
-} + Action.Citizen::class.nestedClasses.associate { action ->
-    action.qualifiedName!! to TSMapping("Action.Citizen.${action.simpleName}", "import { Action } from '../action'")
-}
+private val actionsMapping: Map<String, TSMapping> =
+    Action::class.nestedClasses.associate { action ->
+        action.qualifiedName!! to
+            TSMapping("Action.${action.simpleName}", "import { Action } from '../action'")
+    } +
+        Action.Citizen::class.nestedClasses.associate { action ->
+            action.qualifiedName!! to
+                TSMapping(
+                    "Action.Citizen.${action.simpleName}",
+                    "import { Action } from '../action'"
+                )
+        }
 
-val tsMapping: Map<String, TSMapping> = standardTsMapping.mapValues { TSMapping(it.value) } + customClassesMapping + actionsMapping
+val tsMapping: Map<String, TSMapping> =
+    standardTsMapping.mapValues { TSMapping(it.value) } + customClassesMapping + actionsMapping
 
-data class TSMapping(
-    val type: String,
-    val import: String? = null
-)
+data class TSMapping(val type: String, val import: String? = null)
 
-val kotlinCollectionClasses = listOf(
-    Collection::class,
-    Array::class,
-    IntArray::class,
-    DoubleArray::class,
-    BooleanArray::class
-)
+val kotlinCollectionClasses =
+    listOf(
+        Collection::class,
+        Array::class,
+        IntArray::class,
+        DoubleArray::class,
+        BooleanArray::class
+    )
 
 val validMapKeyTypes = listOf(String::class, UUID::class, Id::class, LocalDate::class)

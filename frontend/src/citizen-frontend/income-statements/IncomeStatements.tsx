@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'

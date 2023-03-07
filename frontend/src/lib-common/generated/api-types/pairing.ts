@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable import/order, prettier/prettier */
+/* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
@@ -103,6 +103,28 @@ export type PinLoginStatus =
 export interface PostPairingChallengeReq {
   challengeKey: string
 }
+
+export namespace PostPairingReq {
+  /**
+  * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Employee
+  */
+  export interface Employee {
+    employeeId: UUID
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Unit
+  */
+  export interface Unit {
+    unitId: UUID
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq
+*/
+export type PostPairingReq = PostPairingReq.Employee | PostPairingReq.Unit
+
 
 /**
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingResponseReq

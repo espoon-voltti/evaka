@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Attachment } from 'lib-common/api-types/attachment'
-import * as IncomeStatement from 'lib-common/api-types/incomeStatement'
+import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
 import { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 
@@ -128,7 +128,7 @@ export const initialFormData = (
 }
 
 export function fromIncomeStatement(
-  incomeStatement: IncomeStatement.IncomeStatement
+  incomeStatement: ApiTypes.IncomeStatement
 ): IncomeStatementForm {
   return {
     ...empty,
@@ -154,7 +154,7 @@ export function fromIncomeStatement(
   }
 }
 
-function mapGross(gross: IncomeStatement.Gross | null): Gross {
+function mapGross(gross: ApiTypes.Gross | null): Gross {
   if (!gross) return empty.gross
   return {
     selected: true,
@@ -165,9 +165,7 @@ function mapGross(gross: IncomeStatement.Gross | null): Gross {
   }
 }
 
-function mapEstimation(
-  estimatedIncome: IncomeStatement.EstimatedIncome | null
-): {
+function mapEstimation(estimatedIncome: ApiTypes.EstimatedIncome | null): {
   estimatedMonthlyIncome: string
   incomeStartDate: LocalDate | null
   incomeEndDate: LocalDate | null
@@ -181,7 +179,7 @@ function mapEstimation(
 }
 
 function mapEntrepreneur(
-  entrepreneur: IncomeStatement.Entrepreneur | null
+  entrepreneur: ApiTypes.Entrepreneur | null
 ): Entrepreneur {
   if (!entrepreneur) return empty.entrepreneur
   return {
@@ -200,7 +198,7 @@ function mapEntrepreneur(
 }
 
 function mapSelfEmployed(
-  selfEmployed: IncomeStatement.SelfEmployed | null
+  selfEmployed: ApiTypes.SelfEmployed | null
 ): SelfEmployed {
   if (!selfEmployed) return empty.entrepreneur.selfEmployed
   return {
@@ -212,7 +210,7 @@ function mapSelfEmployed(
 }
 
 function mapLimitedCompany(
-  limitedCompany: IncomeStatement.LimitedCompany | null
+  limitedCompany: ApiTypes.LimitedCompany | null
 ): LimitedCompany {
   if (!limitedCompany) return empty.entrepreneur.limitedCompany
   return {

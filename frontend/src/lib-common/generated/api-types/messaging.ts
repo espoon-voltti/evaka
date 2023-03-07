@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable import/order, prettier/prettier */
+/* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { MessageAttachment } from './attachment'

@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import Version.GradlePlugin.ktfmt
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jmailen.kotlinter")
+    id("com.ncorti.ktfmt.gradle") version Version.GradlePlugin.ktfmt
 }
 
 dependencies {
@@ -41,4 +42,8 @@ tasks {
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }
+}
+
+ktfmt {
+    kotlinLangStyle()
 }
