@@ -8,7 +8,7 @@ import fi.espoo.evaka.WebPushEnv
 
 class WebPush(env: WebPushEnv) {
     private val vapidKeyPair: WebPushKeyPair =
-        WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey))
+        WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey.value))
     val applicationServerKey: String
         get() = vapidKeyPair.publicKeyBase64()
 }

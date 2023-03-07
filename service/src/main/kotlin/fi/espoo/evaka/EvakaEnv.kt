@@ -100,10 +100,10 @@ data class JwtEnv(val publicKeysUrl: URI) {
     }
 }
 
-data class WebPushEnv(val vapidPrivateKey: String) {
+data class WebPushEnv(val vapidPrivateKey: Sensitive<String>) {
     companion object {
         fun fromEnvironment(env: Environment) =
-            WebPushEnv(vapidPrivateKey = env.lookup("evaka.web_push.vapid_private_key"))
+            WebPushEnv(vapidPrivateKey = Sensitive(env.lookup("evaka.web_push.vapid_private_key")))
     }
 }
 
