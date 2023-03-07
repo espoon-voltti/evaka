@@ -4,11 +4,16 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.getIncomesForPerson
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -32,16 +37,20 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.snDaycareContractDays15
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -54,9 +63,24 @@ import org.springframework.beans.factory.annotation.Autowired
 class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var mapper: JsonMapper
+    @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
 
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))
+
+    private val testChild =
+        DevPerson(
+            id = ChildId(UUID.randomUUID()),
+            dateOfBirth = LocalDate.of(2017, 6, 1),
+            ssn = "010617A123U",
+            firstName = "Ricky",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false
+        )
 
     private val guardianEmail = "guardian@example.com"
     private lateinit var guardianId: PersonId
@@ -71,7 +95,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             tx.upsertCitizenUser(guardianId)
             val areaId = tx.insertTestCareArea(DevCareArea())
             val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            childId = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
+            childId =
+                tx.insertTestPerson(testChild).also { tx.insertTestChild(DevChild(testChild.id)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
@@ -251,6 +276,12 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain"
                 )
         )
+        // A check that no new income has yet been generated (it is generated only after the third
+        // email)
+        assertEquals(
+            1,
+            db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }.size
+        )
 
         assertEquals(0, getEmails().size)
     }
@@ -284,6 +315,13 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertTrue(
             secondMails.get(0).textBody.contains("Ette ole vielä toimittaneet uusia tulotietoja")
         )
+
+        // A check that no new income has yet been generated (it is generated only after the third
+        // email)
+        assertEquals(
+            1,
+            db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }.size
+        )
     }
 
     @Test
@@ -294,7 +332,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today()
+                    validTo = clock.today(),
+                    effect = IncomeEffect.INCOME
                 )
             )
 
@@ -305,6 +344,43 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             it.createIncomeNotification(
                 receiverId = guardianId,
                 IncomeNotificationType.REMINDER_EMAIL
+            )
+
+            it.insertTestParentship(
+                guardianId,
+                childId,
+                startDate = clock.today().minusYears(1),
+                endDate = clock.today().plusYears(1)
+            )
+
+            it.insertTestFeeThresholds(
+                FeeThresholds(
+                    validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
+                    minIncomeThreshold2 = 210200,
+                    minIncomeThreshold3 = 271300,
+                    minIncomeThreshold4 = 308000,
+                    minIncomeThreshold5 = 344700,
+                    minIncomeThreshold6 = 381300,
+                    maxIncomeThreshold2 = 479900,
+                    maxIncomeThreshold3 = 541000,
+                    maxIncomeThreshold4 = 577700,
+                    maxIncomeThreshold5 = 614400,
+                    maxIncomeThreshold6 = 651000,
+                    incomeMultiplier2 = BigDecimal("0.1070"),
+                    incomeMultiplier3 = BigDecimal("0.1070"),
+                    incomeMultiplier4 = BigDecimal("0.1070"),
+                    incomeMultiplier5 = BigDecimal("0.1070"),
+                    incomeMultiplier6 = BigDecimal("0.1070"),
+                    incomeThresholdIncrease6Plus = 14200,
+                    siblingDiscount2 = BigDecimal("0.5"),
+                    siblingDiscount2Plus = BigDecimal("0.8"),
+                    maxFee = 28900,
+                    minFee = 2700,
+                    temporaryFee = 2900,
+                    temporaryFeePartDay = 1500,
+                    temporaryFeeSibling = 1500,
+                    temporaryFeeSiblingPartDay = 800
+                )
             )
         }
 
@@ -318,6 +394,14 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         )
 
         assertEquals(0, getEmails().size)
+
+        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }
+        assertEquals(2, incomes.size)
+        assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes[0].effect)
+        assertEquals(clock.today().plusDays(1), incomes[0].validFrom)
+
+        val feeFecisions = db.read { it.findFeeDecisionsForHeadOfFamily(guardianId, null, null) }
+        assertEquals(1, feeFecisions.size)
     }
 
     private fun getEmails(): List<MockEmail> {
