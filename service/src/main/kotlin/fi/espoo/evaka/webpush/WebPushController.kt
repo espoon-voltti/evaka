@@ -20,7 +20,12 @@ data class WebPushSubscription(
     val expires: HelsinkiDateTime?,
     val authSecret: List<Byte>,
     val ecdhKey: List<Byte>
-)
+) {
+    init {
+        require(authSecret.size <= 1024) { "Expected auth secret to be at most 1024 bytes, got ${authSecret.size}"}
+        WebPushCrypto.decodePublicKey(ecdhKey.toByteArray())
+    }
+}
 
 @RestController
 class WebPushController {
