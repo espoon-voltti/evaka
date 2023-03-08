@@ -490,6 +490,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val original = tx.getVasuDocumentMaster(documentId)
             val summaries = tx.getVasuDocumentSummaries(duplicateId)
             assertThat(summaries).hasSize(1)
+            assertThat(summaries.first().events).hasSize(6)
             val duplicate = tx.getVasuDocumentMaster(summaries[0].id)
             assertThat(duplicate)
                 .usingRecursiveComparison()
