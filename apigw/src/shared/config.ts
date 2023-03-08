@@ -336,3 +336,9 @@ export const titaniaConfig = titaniaUsername
       password: required(process.env.EVAKA_TITANIA_PASSWORD)
     }
   : undefined
+
+export const digitransitApiEnabled = ifNodeEnv(['local', 'test'], false) ?? true
+export const digitransitApiUrl =
+  ifNodeEnv(['local', 'test'], 'https://dev-api.digitransit.fi') ??
+  'https://api.digitransit.fi'
+export const digitransitApiKey = process.env.DIGITRANSIT_API_KEY
