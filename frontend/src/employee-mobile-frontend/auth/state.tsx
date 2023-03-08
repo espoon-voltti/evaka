@@ -119,6 +119,7 @@ class PushNotifications {
       if (!expiringSoon) {
         return sub
       }
+      await sub.unsubscribe()
     }
     return await this.pushManager.subscribe(this.options)
   }
