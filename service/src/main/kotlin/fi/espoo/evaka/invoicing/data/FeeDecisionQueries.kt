@@ -77,7 +77,7 @@ SELECT
             'feeAlterations', part.fee_alterations,
             'finalFee', part.final_fee,
             'childIncome', part.child_income
-        ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount)
+        ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount, part.child_id)
         FROM fee_decision_child as part
         WHERE part.fee_decision_id = decision.id
     ), '[]'::jsonb) AS children
@@ -158,7 +158,7 @@ SELECT
             'feeAlterations', part.fee_alterations,
             'finalFee', part.final_fee,
             'childIncome', part.child_income
-        ) ORDER BY part.child_date_of_birth DESC, sibling_discount)
+        ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount, part.child_id)
         FROM fee_decision_child as part 
         JOIN person as child ON part.child_id = child.id
         JOIN daycare ON part.placement_unit_id = daycare.id
@@ -427,7 +427,7 @@ fun Database.Read.searchFeeDecisions(
                 fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
                 daycare.finance_decision_handler AS finance_decision_handler,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount) AS rownum
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount, child_id) AS rownum
             FROM fee_decision_child
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
@@ -511,7 +511,7 @@ fun Database.Read.searchFeeDecisions(
                     'firstName', child.first_name,
                     'lastName', child.last_name,
                     'ssn', child.social_security_number
-                ) ORDER BY part.child_date_of_birth DESC, sibling_discount)
+                ) ORDER BY part.child_date_of_birth DESC, part.sibling_discount, part.child_id)
                 FROM fee_decision_child AS part
                 JOIN person AS child ON part.child_id = child.id
                 WHERE part.fee_decision_id = decision.id 
@@ -609,7 +609,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
             SELECT
                 fee_decision_child.fee_decision_id AS decision_id,
                 daycare.finance_decision_handler AS finance_decision_handler_id,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount) AS rownum
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount, child_id) AS rownum
             FROM fee_decision_child
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
         )

@@ -291,7 +291,7 @@ private fun generateFeeDecisions(
                                     child.dateOfBirth
                                 }
                                 .thenBy { (child, _) -> child.ssn }
-                                .thenBy { (child, _) -> child.firstName }
+                                .thenBy { (child, _) -> child.id }
                         )
                         .mapIndexed { index, (child, placement) ->
                             if (!family.children.contains(child)) {
