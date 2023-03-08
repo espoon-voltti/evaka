@@ -22,6 +22,8 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
@@ -32,9 +34,10 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import java.time.LocalDate
 import java.util.UUID
 
-fun feeDecisionQuery(where: String? = null) =
-    // language=SQL
-    """
+fun feeDecisionQuery(predicate: Predicate<Any> = Predicate.alwaysTrue()) =
+    QuerySql.of<Any> {
+        sql(
+            """
 SELECT
     decision.id,
     decision.created,
@@ -82,12 +85,15 @@ SELECT
         WHERE part.fee_decision_id = decision.id
     ), '[]'::jsonb) AS children
 FROM fee_decision as decision
-${if (where != null) "WHERE $where" else ""}
+WHERE ${predicate(predicate.forTable("decision"))}
 """
+        )
+    }
 
-private fun feeDecisionDetailedQuery(where: String) =
-    // language=SQL
-    """
+private fun feeDecisionDetailedQuery(predicate: Predicate<Any>) =
+    QuerySql.of<Any> {
+        sql(
+            """
 SELECT
     decision.id,
     decision.created,
@@ -170,8 +176,10 @@ LEFT JOIN person as head ON decision.head_of_family_id = head.id
 LEFT JOIN person as partner ON decision.partner_id = partner.id
 LEFT JOIN employee as approved_by ON decision.approved_by_id = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler_id
-WHERE $where
+WHERE ${predicate(predicate.forTable("decision"))}
 """
+        )
+    }
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
 
@@ -532,8 +540,7 @@ fun Database.Read.searchFeeDecisions(
 
 fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
-    return createQuery(feeDecisionQuery(where = "decision.id = ANY(:ids)"))
-        .bind("ids", ids)
+    return createQuery(feeDecisionQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .mapTo<FeeDecision>()
         .list()
 }
@@ -542,15 +549,13 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
     ids: List<FeeDecisionId>
 ): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
-    return createQuery(feeDecisionDetailedQuery(where = "decision.id = ANY(:ids)"))
-        .bind("ids", ids)
+    return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .mapTo<FeeDecisionDetailed>()
         .list()
 }
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
-    return createQuery(feeDecisionDetailedQuery(where = "decision.id = :id"))
-        .bind("id", uuid)
+    return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
         .mapTo<FeeDecisionDetailed>()
         .firstOrNull()
         ?.let { it ->
@@ -571,29 +576,20 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
     period: DateRange?,
     status: List<FeeDecisionStatus>?
 ): List<FeeDecision> {
-    return createQuery(
-            feeDecisionQuery(
-                where =
-                    """
-                    decision.head_of_family_id = :headOfFamilyId
-                    ${period?.let { "AND decision.valid_during && :period" } ?: ""}
-                    ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
-                    """
-            )
-        )
-        .bind("headOfFamilyId", headOfFamilyId)
-        .let { query ->
-            if (period != null) {
-                query.bind("period", period)
-            } else {
-                query
+    val headPredicate = Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
+    val validPredicate =
+        if (period == null) Predicate.alwaysTrue()
+        else Predicate<Any> { where("$it.valid_during && ${bind(period)}") }
+    val statusPredicate =
+        if (status == null) Predicate.alwaysTrue()
+        else
+            Predicate<Any> {
+                where(
+                    "$it.status = ANY (${bind(status.map { s -> s.name })}::fee_decision_status[])"
+                )
             }
-        }
-        .let { query ->
-            if (status != null) query.bind("status", status.map { it.name }) else query
-        }
-        .mapTo<FeeDecision>()
-        .list()
+    val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
+    return createQuery(feeDecisionQuery(predicate)).mapTo<FeeDecision>().list()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(

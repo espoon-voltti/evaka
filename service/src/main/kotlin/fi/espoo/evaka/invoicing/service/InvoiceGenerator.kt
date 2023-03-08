@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.mapRow
@@ -328,15 +329,16 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
     return createQuery(
             feeDecisionQuery(
-                where =
-                    """
-                    decision.valid_during && :dateRange AND
-                    decision.status = ANY(:effective::fee_decision_status[])
-                    """
+                Predicate {
+                    where(
+                        """
+                            $it.valid_during && ${bind(dateRange)} AND
+                            $it.status = ANY(${bind(FeeDecisionStatus.effective)}::fee_decision_status[])
+                            """
+                    )
+                }
             )
         )
-        .bind("dateRange", dateRange)
-        .bind("effective", FeeDecisionStatus.effective)
         .mapTo<FeeDecision>()
         .list()
 }
