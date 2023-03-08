@@ -50,9 +50,8 @@ export const UserContextProvider = React.memo(function UserContextProvider({
 
   const pushNotifications = useMemo(() => {
     const user = authStatus.map(({ user }) => user).getOrElse(undefined)
-    if (!user || !user.pushApplicationServerKey || !registration) {
-      return undefined
-    }
+    if (!user || !user.pushApplicationServerKey) return undefined
+    if (!registration || !('pushManager' in registration)) return undefined
     return new PushNotifications(user.id, registration.pushManager, {
       userVisibleOnly: true,
       applicationServerKey: user.pushApplicationServerKey
