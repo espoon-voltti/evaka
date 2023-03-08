@@ -291,7 +291,14 @@ private fun generateNewValueDecisions(
 
                 val siblingIndex =
                     validPlacements
-                        .sortedByDescending { (child, _) -> child.dateOfBirth }
+                        .sortedWith(
+                            compareByDescending<Pair<PersonBasic, PlacementWithServiceNeed>> {
+                                    (child, _) ->
+                                    child.dateOfBirth
+                                }
+                                .thenBy { (child, _) -> child.ssn }
+                                .thenBy { (child, _) -> child.id }
+                        )
                         .indexOfFirst { (child, _) -> child == voucherChild }
 
                 val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
