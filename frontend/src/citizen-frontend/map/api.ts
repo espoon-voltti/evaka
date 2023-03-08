@@ -10,7 +10,6 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { mapConfig } from 'lib-customizations/citizen'
 
 import { client } from '../api-client'
@@ -45,9 +44,7 @@ type AutocompleteResponse = {
 export const autocompleteAddress = async (
   text: string
 ): Promise<MapAddress[]> => {
-  const url = isAutomatedTest
-    ? '/api/internal/dev-api/digitransit/autocomplete'
-    : 'https://api.digitransit.fi/geocoding/v1/autocomplete'
+  const url = '/api/application/map-api/autocomplete'
 
   return axios
     .get<JsonOf<AutocompleteResponse>>(url, {
@@ -107,11 +104,6 @@ export async function fetchUnitsWithDistances(
 
   if (unitsWithStraightDistance.length === 0) {
     return []
-  } else if (isAutomatedTest) {
-    return unitsWithStraightDistance.map((unit, index) => ({
-      ...unit,
-      drivingDistance: index + 1
-    }))
   }
   const unitsToQuery = sortBy(
     unitsWithStraightDistance.filter((u) => u.straightDistance !== null),
@@ -148,12 +140,9 @@ export async function fetchUnitsWithDistances(
 }`
 
   return axios
-    .post<JsonOf<ItineraryResponse>>(
-      'https://api.digitransit.fi/routing/v1/routers/finland/index/graphql',
-      {
-        query
-      }
-    )
+    .post<JsonOf<ItineraryResponse>>('/api/application/map-api/query', {
+      query
+    })
     .then((res) => {
       return unitsWithStraightDistance.map((unit) => {
         const plan = res.data.data[uuidToKey(unit.id)]
@@ -187,9 +176,6 @@ export const fetchDistance = async (
   startLocation: Coordinate,
   endLocation: Coordinate
 ): Promise<number> => {
-  if (isAutomatedTest) {
-    return 7
-  }
   const query = `
 {
     plan(
@@ -212,12 +198,9 @@ export const fetchDistance = async (
 }`
 
   return axios
-    .post<JsonOf<ItineraryResponse>>(
-      'https://api.digitransit.fi/routing/v1/routers/finland/index/graphql',
-      {
-        query
-      }
-    )
+    .post<JsonOf<ItineraryResponse>>('/api/application/map-api/query', {
+      query
+    })
     .then((res) => {
       const plan = res.data.data['plan']
       if (!plan) throw Error('No plan found')

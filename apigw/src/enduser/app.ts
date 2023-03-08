@@ -25,6 +25,7 @@ import session, {
 } from '../shared/session'
 import publicRoutes from './publicRoutes'
 import routes from './routes'
+import mapRoutes from './mapRoutes'
 import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
@@ -69,6 +70,7 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
     const router = Router()
 
     router.use(publicRoutes)
+    router.use(mapRoutes)
     const suomifiSamlConfig = createSuomiFiSamlConfig(config.sfi, redisClient)
     router.use(
       createSamlRouter(config, {
