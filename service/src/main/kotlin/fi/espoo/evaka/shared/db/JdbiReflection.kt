@@ -27,11 +27,6 @@ fun <T> createQualifiedType(
     )
 
 fun KType.asJdbiJavaType(): Type {
-    if (this == typeOf<ByteArray>()) {
-        // Byte arrays seem to have problems with JDBI, so explicitly declare them as unsupported
-        // here
-        error("Unsupported type $this")
-    }
     return when (val classifier = this.classifier) {
         // Arrays need special handling, because Array<Byte>, ByteArray, and Array<Byte?> all behave
         // a bit

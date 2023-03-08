@@ -143,20 +143,11 @@ async function buildProject(project, config) {
 
   const resolveExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
 
-  const buildOutput = await esbuild.build({
-    entryPoints: [`${srcdir}/index.tsx`],
-    entryNames: '[name]-[hash]',
+  const buildOptions = {
     bundle: true,
     sourcemap: dev,
     minify: !dev,
     resolveExtensions,
-    loader: {
-      '.ico': 'file',
-      '.png': 'file',
-      '.svg': 'file',
-      '.woff': 'file',
-      '.woff2': 'file'
-    },
     publicPath: project.publicPath,
     define: {
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
@@ -164,27 +155,60 @@ async function buildProject(project, config) {
     plugins: [
       evakaAliasesPlugin(resolveExtensions, customizationsModule, icons)
     ],
-    metafile: true,
     logLevel: 'info',
-    color: dev,
+    color: dev
+  }
+
+  if (project.serviceWorker) {
+    const swContext = await esbuild.context({
+      ...buildOptions,
+      entryPoints: [`${srcdir}/service-worker.js`],
+      entryNames: '[name]',
+      outfile: `${outdir}/service-worker.js`
+    })
+    if (watch) {
+      await swContext.watch()
+    } else {
+      await swContext.rebuild()
+    }
+  }
+
+  const context = await esbuild.context({
+    ...buildOptions,
+    entryPoints: [`${srcdir}/index.tsx`],
+    entryNames: '[name]-[hash]',
+    loader: {
+      '.ico': 'file',
+      '.png': 'file',
+      '.svg': 'file',
+      '.woff': 'file',
+      '.woff2': 'file'
+    },
+    metafile: true,
     outdir,
-    watch: watch
-      ? {
-          async onRebuild(error, result) {
-            if (error) return
+    plugins: [
+      ...buildOptions.plugins,
+      {
+        name: 'evaka-static-files',
+        setup(build) {
+          build.onEnd(async (result) => {
+            if (!result.metafile) return
             await staticFiles(project, result.metafile.outputs)
             console.log(`${project.name}: Build done`)
-          }
+          })
         }
-      : undefined
+      }
+    ]
   })
-
-  const outputs = buildOutput.metafile.outputs
-  await staticFiles(project, outputs)
+  if (watch) {
+    await context.watch()
+  } else {
+    await context.rebuild()
+  }
 }
 
 async function staticFiles(project, outputs) {
-  const { publicPath } = project
+  const { publicPath, name } = project
   const srcdir = resolveSrcdir(project)
   const outdir = resolveOutdir(project)
 
@@ -211,7 +235,7 @@ async function staticFiles(project, outputs) {
   )
 }
 
-async function serve(projects) {
+function serve(projects) {
   const app = express()
   app.use(
     '/api/internal',
@@ -264,7 +288,11 @@ async function main() {
     }).argv
 
   const projects = [
-    { name: 'employee-mobile-frontend', publicPath: '/employee/mobile/' },
+    {
+      name: 'employee-mobile-frontend',
+      publicPath: '/employee/mobile/',
+      serviceWorker: true
+    },
     { name: 'employee-frontend', publicPath: '/employee/' },
     { name: 'citizen-frontend', publicPath: '/' }
   ]

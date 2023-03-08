@@ -19,6 +19,7 @@ import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.VtjXroadEnv
+import fi.espoo.evaka.WebPushEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -71,6 +72,13 @@ class EnvConfig {
     fun sfiEnv(evakaEnv: EvakaEnv, env: Environment): SfiEnv? =
         when (evakaEnv.sfiEnabled) {
             true -> SfiEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    @Bean
+    fun webPushEnv(evakaEnv: EvakaEnv, env: Environment): WebPushEnv? =
+        when (evakaEnv.webPushEnabled) {
+            true -> WebPushEnv.fromEnvironment(env)
             false -> null
         }
 }

@@ -32,6 +32,7 @@ export interface MobileDeviceDetails {
   id: UUID
   name: string
   personalDevice: boolean
+  pushApplicationServerKey: string | null
   unitIds: UUID[]
 }
 

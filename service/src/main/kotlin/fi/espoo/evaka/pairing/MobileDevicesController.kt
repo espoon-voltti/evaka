@@ -71,17 +71,6 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/system/mobile-devices/{id}")
-    fun getMobileDevice(
-        db: Database,
-        user: AuthenticatedUser.SystemInternalUser,
-        @PathVariable id: MobileDeviceId
-    ): MobileDeviceDetails {
-        // TODO access control
-        return db.connect { dbc -> dbc.read { it.getDevice(id) } }
-            .also { Audit.MobileDevicesRead.log(targetId = id) }
-    }
-
     data class RenameRequest(val name: String)
 
     @PutMapping("/mobile-devices/{id}/name")

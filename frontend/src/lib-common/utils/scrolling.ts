@@ -48,12 +48,12 @@ export function scrollIntoViewSoftKeyboard(
     target.scrollIntoView({
       block: blockPosition
     })
-    window.visualViewport.removeEventListener('resize', onResize)
+    window.visualViewport?.removeEventListener('resize', onResize)
   }
 
-  window.visualViewport.addEventListener('resize', onResize)
+  window.visualViewport?.addEventListener('resize', onResize)
   setTimeout(() => {
-    window.visualViewport.removeEventListener('resize', onResize)
+    window.visualViewport?.removeEventListener('resize', onResize)
   }, 1000)
 }
 

@@ -315,6 +315,7 @@ enum class Audit(
     PlacementTerminate,
     PlacementChildPlacementPeriodsRead,
     PresenceReportRead,
+    PushSubscriptionUpsert,
     RawReportRead,
     ServiceNeedOptionsRead,
     ServiceNeedReportRead,

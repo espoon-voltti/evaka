@@ -26,6 +26,7 @@ data class EvakaEnv(
     val koskiEnabled: Boolean,
     val sfiEnabled: Boolean,
     val vtjEnabled: Boolean,
+    val webPushEnabled: Boolean,
     val awsRegion: Region,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
@@ -53,6 +54,7 @@ data class EvakaEnv(
                 vtjEnabled =
                     env.lookup("evaka.integration.vtj.enabled", "fi.espoo.voltti.vtj.enabled")
                         ?: false,
+                webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
                 asyncJobRunnerDisabled = env.lookup("evaka.async_job_runner.disable_runner")
                         ?: false,
@@ -95,6 +97,13 @@ data class JwtEnv(val publicKeysUrl: URI) {
                 publicKeysUrl =
                     env.lookup("evaka.jwt.public_keys_url", "fi.espoo.voltti.auth.jwks.default.url")
             )
+    }
+}
+
+data class WebPushEnv(val vapidPrivateKey: Sensitive<String>) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            WebPushEnv(vapidPrivateKey = Sensitive(env.lookup("evaka.web_push.vapid_private_key")))
     }
 }
 

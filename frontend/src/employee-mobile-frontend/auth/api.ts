@@ -11,7 +11,9 @@ import {
   User
 } from 'lib-common/api-types/employee-auth'
 import { PinLoginResponse } from 'lib-common/generated/api-types/pairing'
+import { WebPushSubscription } from 'lib-common/generated/api-types/webpush'
 import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
@@ -66,4 +68,17 @@ export const mapPinLoginRequiredError = (
   return failure.errorCode === 'PIN_LOGIN_REQUIRED'
     ? Success.of(PinLoginRequired)
     : failure
+}
+
+export async function upsertPushSubscription(
+  id: UUID,
+  subscription: WebPushSubscription
+): Promise<Result<void>> {
+  return await client
+    .post<void>(`/mobile-devices/${encodeURIComponent(id)}/push-subscription`, {
+      ...subscription,
+      expires: subscription.expires?.toJSON()
+    })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }

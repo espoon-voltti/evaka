@@ -189,6 +189,11 @@ Repeat for all environments:
 
     - **NOTE:** Cluster and service name are deployment specific
 
+### Generating VAPID private key for Web Push
+
+1. Run `./gradlew generateVapidKey`
+2. Copy the printed private key to configuration (environment variable name is EVAKA_WEB_PUSH_VAPID_PRIVATE_KEY)
+
 ## Tips
 
 ### DB migration bookkeeping

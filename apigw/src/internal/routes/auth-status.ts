@@ -39,6 +39,7 @@ interface MobileUser {
   personalDevice: boolean
   unitIds: UUID[]
   pinLoginActive: boolean
+  pushApplicationServerKey: string | undefined
 }
 
 interface ValidatedUser {
@@ -60,7 +61,8 @@ async function validateUser(
       }
       const employeeId = device.employeeId ?? user.mobileEmployeeId ?? null
       const pinLoginActive = !!user.mobileEmployeeId
-      const { id, name, unitIds, personalDevice } = device
+      const { id, name, unitIds, personalDevice, pushApplicationServerKey } =
+        device
       return {
         user: {
           id,
@@ -69,7 +71,8 @@ async function validateUser(
           unitIds,
           employeeId,
           pinLoginActive,
-          personalDevice
+          personalDevice,
+          pushApplicationServerKey
         },
         globalRoles: [],
         allScopedRoles: ['MOBILE']

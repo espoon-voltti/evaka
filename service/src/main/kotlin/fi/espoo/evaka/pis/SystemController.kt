@@ -8,10 +8,13 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.pairing.MobileDeviceDetails
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
+import fi.espoo.evaka.pairing.getDevice
 import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -22,6 +25,7 @@ import fi.espoo.evaka.shared.security.EmployeeFeatures
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
+import fi.espoo.evaka.webpush.WebPush
 import java.util.UUID
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,7 +40,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class SystemController(
     private val personService: PersonService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val webPush: WebPush?
 ) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
@@ -204,6 +209,19 @@ class SystemController(
                 }
             }
             .also { Audit.EmployeeGetOrCreate.log(targetId = id) }
+    }
+
+    @GetMapping("/system/mobile-devices/{id}")
+    fun getMobileDevice(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        @PathVariable id: MobileDeviceId
+    ): MobileDeviceDetails {
+        return db.connect { dbc ->
+                dbc.read { it.getDevice(id) }
+                    .copy(pushApplicationServerKey = webPush?.applicationServerKey)
+            }
+            .also { Audit.MobileDevicesRead.log(targetId = id) }
     }
 
     @GetMapping("/system/mobile-identity/{token}")
