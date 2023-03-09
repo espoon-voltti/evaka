@@ -4,22 +4,28 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
-import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.invoicing.data.upsertIncome
+import fi.espoo.evaka.invoicing.domain.Income
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
+import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -27,16 +33,14 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class OutdatedIncomeNotifications(
-    private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
+    private val mapper: JsonMapper
 ) {
     init {
-        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendOutdatedIncomeNotificationEmail ->
-            sendEmail(db, msg)
-        }
+        asyncJobRunner.registerHandler(::sendEmail)
     }
 
     fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
@@ -106,7 +110,11 @@ class OutdatedIncomeNotifications(
             guardiansForExpirationNotification.size
     }
 
-    fun sendEmail(db: Database.Connection, msg: AsyncJob.SendOutdatedIncomeNotificationEmail) {
+    fun sendEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendOutdatedIncomeNotificationEmail
+    ) {
         val (recipient, language) =
             db.read { tx ->
                 tx.createQuery(
@@ -133,15 +141,68 @@ AND email IS NOT NULL
                 ?: return
 
         logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
-        emailClient
-            .sendEmail(
-                traceId = msg.guardianId.toString(),
-                toAddress = recipient,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.outdatedIncomeNotification(msg.type, language)
-            )
-            .also { db.transaction { it.createIncomeNotification(msg.guardianId, msg.type) } }
+        emailClient.sendEmail(
+            traceId = msg.guardianId.toString(),
+            toAddress = recipient,
+            fromAddress = emailEnv.sender(language),
+            content = emailMessageProvider.outdatedIncomeNotification(msg.type, language)
+        )
+
+        db.transaction {
+            it.createIncomeNotification(msg.guardianId, msg.type)
+
+            val tomorrow = clock.today().plusDays(1)
+            if (
+                msg.type == IncomeNotificationType.EXPIRED_EMAIL &&
+                    !it.personHasActiveIncomeOnDate(msg.guardianId, tomorrow)
+            ) {
+                it.upsertIncome(
+                    clock = clock,
+                    mapper = mapper,
+                    income =
+                        Income(
+                            id = IncomeId(UUID.randomUUID()),
+                            personId = msg.guardianId,
+                            effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                            updatedBy = AuthenticatedUser.SystemInternalUser.toString(),
+                            validFrom = tomorrow,
+                            validTo = null,
+                            data = emptyMap(),
+                            notes = "Set automatically because previous income expired"
+                        ),
+                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                )
+
+                asyncJobRunner.plan(
+                    it,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            msg.guardianId,
+                            DateRange(tomorrow, null)
+                        )
+                    ),
+                    runAt = clock.now()
+                )
+            }
+        }
     }
+}
+
+fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: LocalDate): Boolean {
+    return createQuery(
+            """
+                    SELECT 1
+                    FROM income
+                    WHERE daterange(valid_from, valid_to, '[]') @> :the_date
+                        AND person_id = :personId
+                """
+                .trimIndent()
+        )
+        .bind("personId", personId)
+        .bind("the_date", theDate)
+        .mapTo<Int>()
+        .list()
+        .isNotEmpty()
 }
 
 enum class IncomeNotificationType {
