@@ -250,6 +250,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
             e.id AS event_id,
             e.created AS event_created,
             e.event_type,
+            e.employee_id AS event_employee_id,
             vc.published_at,
             cd.basics,
             ct.type
