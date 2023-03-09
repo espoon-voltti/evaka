@@ -53,7 +53,7 @@ class MessageNotificationEmailService(
             JOIN message_thread t ON m.thread_id = t.id
             WHERE m.id = ANY(:messageIds)
               AND mr.read_at IS NULL
-              AND mr.notification_sent_at IS NULL
+              AND mr.email_notification_sent_at IS NULL
               AND p.email IS NOT NULL
             """
                     .trimIndent()
@@ -124,7 +124,7 @@ class MessageNotificationEmailService(
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.messageNotification(language, thread)
             )
-            tx.markNotificationAsSent(messageRecipientId, clock.now())
+            tx.markEmailNotificationAsSent(messageRecipientId, clock.now())
         }
     }
 }

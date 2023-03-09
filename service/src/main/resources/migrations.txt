@@ -309,3 +309,4 @@ V309__language_at_home.sql
 V310__koski_input_data_version.sql
 V311__income_notification.sql
 V312__mobile_device_push_subscription.sql
+V313__message_push_notifications.sql

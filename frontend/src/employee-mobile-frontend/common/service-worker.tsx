@@ -40,14 +40,22 @@ export const ServiceWorkerContextProvider = React.memo(
     const [registration, setRegistration] =
       useState<ServiceWorkerRegistration>()
 
+    const pushManager = useMemo(
+      () =>
+        registration && 'pushManager' in registration
+          ? registration.pushManager
+          : undefined,
+      [registration]
+    )
+
     const pushNotifications = useMemo(() => {
       if (!user?.pushApplicationServerKey) return undefined
-      if (!registration || !('pushManager' in registration)) return undefined
-      return new PushNotifications(user.id, registration.pushManager, {
+      if (!pushManager) return undefined
+      return new PushNotifications(user.id, pushManager, {
         userVisibleOnly: true,
         applicationServerKey: user.pushApplicationServerKey
       })
-    }, [user?.pushApplicationServerKey, user?.id, registration])
+    }, [user?.pushApplicationServerKey, user?.id, pushManager])
 
     useEffect(() => {
       registerServiceWorker()
@@ -60,8 +68,10 @@ export const ServiceWorkerContextProvider = React.memo(
     useEffect(() => {
       if (pushNotifications) {
         pushNotifications.enable().catch((err) => Sentry.captureException(err))
+      } else if (pushManager) {
+        unsubscribe(pushManager).catch((err) => Sentry.captureException(err))
       }
-    }, [pushNotifications])
+    }, [pushNotifications, pushManager])
 
     const value = { registration, pushNotifications }
 
@@ -144,4 +154,9 @@ export class PushNotifications {
     }
     return await this.pushManager.subscribe(this.options)
   }
+}
+
+async function unsubscribe(pushManager: PushManager): Promise<void> {
+  const sub = await pushManager.getSubscription()
+  await sub?.unsubscribe()
 }

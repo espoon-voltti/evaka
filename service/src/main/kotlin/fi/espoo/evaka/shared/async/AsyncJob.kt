@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -87,6 +88,13 @@ sealed interface AsyncJob : AsyncJobPayload {
         val personEmail: String,
         val language: Language,
         val urgent: Boolean = false
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendMessagePushNotification(
+        val recipient: MessageRecipientId,
+        val device: MobileDeviceId
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -294,7 +302,11 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "urgent"),
                 AsyncJobPool.Config(concurrency = 4),
-                setOf(UpdateMessageThreadRecipients::class, MarkMessagesAsSent::class)
+                setOf(
+                    MarkMessagesAsSent::class,
+                    SendMessagePushNotification::class,
+                    UpdateMessageThreadRecipients::class,
+                )
             )
         val suomiFi =
             AsyncJobRunner.Pool(

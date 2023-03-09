@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component
 class MessageService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val notificationEmailService: MessageNotificationEmailService,
+    private val messagePushNotifications: MessagePushNotifications,
     private val featureConfig: FeatureConfig,
 ) {
     init {
@@ -55,6 +56,11 @@ class MessageService(
                 clock.now(),
                 if (senderAccountType == AccountType.MUNICIPAL) SPREAD_MESSAGE_NOTIFICATION_SECONDS
                 else 0
+            )
+            asyncJobRunner.plan(
+                tx,
+                messagePushNotifications.getAsyncJobs(tx, messages),
+                runAt = clock.now()
             )
         }
     }
