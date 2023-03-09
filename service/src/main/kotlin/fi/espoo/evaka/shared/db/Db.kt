@@ -9,9 +9,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
-import fi.espoo.evaka.invoicing.domain.FeeDecision
-import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.lang.reflect.Type
@@ -145,9 +142,6 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
                 .takeIf { Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType)) }
         )
     }
-    jdbi.registerRowMapper(FeeDecision::class.java, feeDecisionRowMapper)
-    jdbi.registerRowMapper(FeeDecisionDetailed::class.java, feeDecisionDetailedRowMapper)
-    jdbi.registerRowMapper(FeeDecisionSummary::class.java, feeDecisionSummaryRowMapper)
     return jdbi
 }
 

@@ -12,10 +12,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class ChildWithDateOfBirth(
-    @PropagateNull val id: ChildId,
-    override val dateOfBirth: LocalDate
-) : HasDateOfBirth
+data class ChildWithDateOfBirth(@PropagateNull val id: ChildId, val dateOfBirth: LocalDate)
 
 data class EmployeeWithName(
     @PropagateNull val id: EmployeeId,
@@ -25,11 +22,11 @@ data class EmployeeWithName(
 
 data class PersonBasic(
     @PropagateNull val id: PersonId,
-    val dateOfBirth: LocalDate,
+    override val dateOfBirth: LocalDate,
     val firstName: String,
     val lastName: String,
     val ssn: String? = null
-)
+) : HasDateOfBirth
 
 data class PersonDetailed(
     @PropagateNull val id: PersonId,
@@ -59,7 +56,7 @@ fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): B
 data class FridgeFamily(
     val headOfFamily: PersonId,
     val partner: PersonId?,
-    val children: List<ChildWithDateOfBirth>,
+    val children: List<PersonBasic>,
     val period: DateRange
 ) {
     fun getSize(): Int {

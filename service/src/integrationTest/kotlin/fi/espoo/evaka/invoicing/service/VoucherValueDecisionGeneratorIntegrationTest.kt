@@ -28,13 +28,16 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
@@ -447,6 +450,55 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, decision.placement?.type)
             assertEquals(11600, decision.coPayment)
         }
+    }
+
+    @Test
+    fun `twins are ordered consistently for sibling discount`() {
+        // Younger per SSN
+        val twin1 =
+            testChild_1.copy(
+                id = ChildId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(2019, 1, 1),
+                ssn = "010117A901W"
+            )
+
+        // Older
+        val twin2 =
+            testChild_2.copy(
+                id = ChildId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(2019, 1, 1),
+                ssn = "010117A902X"
+            )
+
+        db.transaction { tx ->
+            listOf(twin1, twin2).forEach {
+                tx.insertTestPerson(it)
+                tx.insertTestChild(DevChild(id = it.id))
+            }
+        }
+
+        val placementPeriod = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        insertPlacement(twin1.id, placementPeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(twin2.id, placementPeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(twin1.id, twin2.id), placementPeriod)
+
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                twin1.id,
+                placementPeriod.start
+            )
+        }
+
+        val decisions = getAllVoucherValueDecisions()
+        assertEquals(2, decisions.size)
+        decisions
+            .find { it.child.id == twin1.id }!!
+            .let { decision -> assertEquals(0, decision.siblingDiscount) }
+        decisions
+            .find { it.child.id == twin2.id }!!
+            .let { decision -> assertEquals(50, decision.siblingDiscount) }
     }
 
     @Test

@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -58,7 +59,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     incomeTypesProvider: IncomeTypesProvider,
     clock: EvakaClock,
     from: LocalDate,
-    child: ChildWithDateOfBirth,
+    child: PersonBasic,
     families: List<FridgeFamily>
 ) {
     val children = families.flatMap { it.children }.toSet()
@@ -77,7 +78,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             }
         }
     val feeAlterations =
-        getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
+        getFeeAlterationsFrom(listOf(child.id), from) +
+            addECHAFeeAlterations(setOf(child.id), incomes)
 
     val placements = getPaidPlacements(from, children).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()
@@ -160,9 +162,9 @@ private fun preserveCreatedDates(
 
 private fun generateNewValueDecisions(
     from: LocalDate,
-    voucherChild: ChildWithDateOfBirth,
+    voucherChild: PersonBasic,
     families: List<FridgeFamily>,
-    allPlacements: Map<ChildWithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
+    allPlacements: Map<PersonBasic, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
     voucherValues: Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValue>>,
     incomes: List<Income>,
@@ -280,7 +282,7 @@ private fun generateNewValueDecisions(
                             feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
                             validFrom = period.start,
                             validTo = period.end,
-                            child = voucherChild,
+                            child = ChildWithDateOfBirth(voucherChild.id, voucherChild.dateOfBirth),
                             baseCoPayment = baseCoPayment,
                             siblingDiscount = price.siblingDiscountPercent(1),
                             baseValue = 0
@@ -289,7 +291,14 @@ private fun generateNewValueDecisions(
 
                 val siblingIndex =
                     validPlacements
-                        .sortedByDescending { (child, _) -> child.dateOfBirth }
+                        .sortedWith(
+                            compareByDescending<Pair<PersonBasic, PlacementWithServiceNeed>> {
+                                    (child, _) ->
+                                    child.dateOfBirth
+                                }
+                                .thenBy { (child, _) -> child.ssn }
+                                .thenBy { (child, _) -> child.id }
+                        )
                         .indexOfFirst { (child, _) -> child == voucherChild }
 
                 val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
@@ -321,7 +330,7 @@ private fun generateNewValueDecisions(
                         feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
                         validFrom = period.start,
                         validTo = period.end,
-                        child = voucherChild,
+                        child = ChildWithDateOfBirth(voucherChild.id, voucherChild.dateOfBirth),
                         placement = VoucherValueDecisionPlacement(placement.unitId, placement.type),
                         serviceNeed =
                             VoucherValueDecisionServiceNeed(

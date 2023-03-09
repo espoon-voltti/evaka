@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
@@ -27,7 +26,7 @@ import org.jdbi.v3.json.Json
 
 data class FeeDecision(
     override val id: FeeDecisionId,
-    override val children: List<FeeDecisionChild>,
+    @Json val children: List<FeeDecisionChild>,
     override val headOfFamilyId: PersonId,
     val validDuring: DateRange,
     val status: FeeDecisionStatus,
@@ -45,7 +44,7 @@ data class FeeDecision(
     val decisionHandlerId: EmployeeId? = null,
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now()
-) : FinanceDecision<FeeDecision>, Mergeable<FeeDecisionChild, FeeDecision> {
+) : FinanceDecision<FeeDecision> {
     val totalFee
         get() = children.fold(0) { sum, child -> sum + child.finalFee }
 
@@ -72,7 +71,6 @@ data class FeeDecision(
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
     override fun isEmpty(): Boolean = this.children.isEmpty()
     override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
-    override fun withChildren(children: List<FeeDecisionChild>) = this.copy(children = children)
 }
 
 data class FeeDecisionChild(
@@ -174,27 +172,27 @@ private fun <T> decisionChildrenEquals(
 }
 
 data class FeeDecisionDetailed(
-    override val id: FeeDecisionId,
-    override val children: List<FeeDecisionChildDetailed>,
+    val id: FeeDecisionId,
+    @Json val children: List<FeeDecisionChildDetailed>,
     val validDuring: DateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
-    val headOfFamily: PersonDetailed,
-    val partner: PersonDetailed?,
-    val headOfFamilyIncome: DecisionIncome?,
-    val partnerIncome: DecisionIncome?,
+    @Nested("head") val headOfFamily: PersonDetailed,
+    @Nested("partner") val partner: PersonDetailed?,
+    @Json val headOfFamilyIncome: DecisionIncome?,
+    @Json val partnerIncome: DecisionIncome?,
     val familySize: Int,
-    val feeThresholds: FeeDecisionThresholds,
+    @Json val feeThresholds: FeeDecisionThresholds,
     val documentKey: String? = null,
-    val approvedBy: EmployeeWithName? = null,
+    @Nested("approved_by") val approvedBy: EmployeeWithName? = null,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val partnerIsCodebtor: Boolean? = false
-) : Mergeable<FeeDecisionChildDetailed, FeeDecisionDetailed> {
+) {
     val totalFee
         get() = children.fold(0) { sum, part -> sum + part.finalFee }
 
@@ -236,9 +234,6 @@ data class FeeDecisionDetailed(
                 this.validDuring.start,
                 sentAt?.toLocalDate() ?: LocalDate.now(europeHelsinki)
             )
-
-    override fun withChildren(children: List<FeeDecisionChildDetailed>) =
-        this.copy(children = children)
 }
 
 fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {
@@ -263,44 +258,20 @@ data class FeeDecisionChildDetailed(
 )
 
 data class FeeDecisionSummary(
-    override val id: FeeDecisionId,
-    override val children: List<PersonBasic>,
+    val id: FeeDecisionId,
+    @Json val children: List<PersonBasic>,
     val validDuring: DateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
-    val headOfFamily: PersonBasic,
+    @Nested("head") val headOfFamily: PersonBasic,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val finalPrice: Int,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val difference: Set<FeeDecisionDifference>
-) : Mergeable<PersonBasic, FeeDecisionSummary> {
-    override fun withChildren(children: List<PersonBasic>) = this.copy(children = children)
-
+) {
     val annullingDecision
         get() = this.children.isEmpty()
-}
-
-private interface Mergeable<Child, Decision : Mergeable<Child, Decision>> {
-    val id: Id<*>
-    val children: List<Child>
-
-    fun withChildren(children: List<Child>): Decision
-}
-
-fun <Child, Decision : Mergeable<Child, Decision>, Decisions : Iterable<Decision>> Decisions
-    .merge(): List<Decision> {
-    val map = mutableMapOf<Id<*>, Decision>()
-    for (decision in this) {
-        val id = decision.id
-        if (map.containsKey(id)) {
-            val existing = map.getValue(id)
-            map[id] = existing.withChildren(existing.children + decision.children)
-        } else {
-            map[id] = decision
-        }
-    }
-    return map.values.toList()
 }
 
 fun useMaxFee(incomes: List<DecisionIncome?>): Boolean =

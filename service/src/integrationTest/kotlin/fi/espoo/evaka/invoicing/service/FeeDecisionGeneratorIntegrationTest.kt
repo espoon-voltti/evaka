@@ -8,7 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
-import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
+import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -20,7 +20,6 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
-import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.invoicing.oldTestFeeThresholds
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -42,9 +41,11 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -1098,6 +1099,60 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
+            }
+        }
+    }
+
+    @Test
+    fun `twins are ordered consistently for sibling discount`() {
+        // Younger per SSN
+        val twin1 =
+            testChild_1.copy(
+                id = ChildId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(2019, 1, 1),
+                ssn = "010117A901W"
+            )
+
+        // Older
+        val twin2 =
+            testChild_2.copy(
+                id = ChildId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(2019, 1, 1),
+                ssn = "010117A902X"
+            )
+
+        db.transaction { tx ->
+            listOf(twin1, twin2).forEach {
+                tx.insertTestPerson(it)
+                tx.insertTestChild(DevChild(id = it.id))
+            }
+        }
+
+        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertPlacement(twin1.id, placementPeriod, DAYCARE, testDaycare.id)
+        insertPlacement(twin2.id, placementPeriod, DAYCARE, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(twin1.id, twin2.id), placementPeriod)
+
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                twin1.id,
+                placementPeriod.start
+            )
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(2, decision.children.size)
+            decision.children.first().let { child ->
+                assertEquals(twin1.id, child.child.id)
+                assertEquals(0, child.siblingDiscount)
+            }
+            decision.children.last().let { child ->
+                assertEquals(twin2.id, child.child.id)
+                assertEquals(50, child.siblingDiscount)
             }
         }
     }
@@ -3748,7 +3803,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-                tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().merge().map {
+                tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().map {
                     it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
                 }
             }
