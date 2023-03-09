@@ -550,7 +550,12 @@ const ApplicationsList = React.memo(function Applications({
                 {i18n.applications.list.startDate}
               </SortableTh>
               <Th>{i18n.applications.list.basis}</Th>
-              <Th>{i18n.applications.list.unit}</Th>
+              <SortableTh
+                sorted={isSorted('UNIT_NAME')}
+                onClick={toggleSort('UNIT_NAME')}
+              >
+                {i18n.applications.list.unit}
+              </SortableTh>
               <SortableTh
                 sorted={isSorted('STATUS')}
                 onClick={toggleSort('STATUS')}

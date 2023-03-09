@@ -26,6 +26,7 @@ export type SortByApplications =
   | 'DUE_DATE'
   | 'START_DATE'
   | 'STATUS'
+  | 'UNIT_NAME'
 
 export interface ApplicationSearchParams {
   area?: string

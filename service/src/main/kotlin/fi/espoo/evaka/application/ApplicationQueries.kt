@@ -48,7 +48,8 @@ enum class ApplicationSortColumn {
     CHILD_NAME,
     DUE_DATE,
     START_DATE,
-    STATUS
+    STATUS,
+    UNIT_NAME
 }
 
 enum class ApplicationBasis {
@@ -469,6 +470,8 @@ fun Database.Read.fetchApplicationSummaries(
                 "$sql ORDER BY preferredStartDate $sortDir, last_name, first_name"
             ApplicationSortColumn.STATUS ->
                 "$sql ORDER BY application_status $sortDir, last_name, first_name"
+            ApplicationSortColumn.UNIT_NAME ->
+                "$sql ORDER BY d.name $sortDir, last_name, first_name"
         }.exhaust()
 
     val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
