@@ -545,9 +545,11 @@ fun Database.Read.calculateDeletedChildServiceNeeds(
     this.createQuery(
             """
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids
-FROM varda_service_need
-WHERE evaka_service_need_id NOT IN (
-    SELECT id FROM service_need
+FROM varda_service_need vsn
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM service_need sn
+    WHERE sn.id = vsn.evaka_service_need_id
 ) OR evaka_service_need_id NOT IN (
 SELECT
     sn.id AS service_need_id
