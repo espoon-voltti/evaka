@@ -475,9 +475,7 @@ export default React.memo(function PersonDetails({
           },
           {
             label: i18n.common.form.updatedFromVtj,
-            value: person.updatedFromVtj
-              ? person.updatedFromVtj.toLocaleString()
-              : ''
+            value: person.updatedFromVtj ? person.updatedFromVtj.format() : ''
           },
           ...(permittedActions.has('READ_OPH_OID')
             ? [
