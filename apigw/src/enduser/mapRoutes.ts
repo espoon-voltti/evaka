@@ -15,8 +15,11 @@ const router = Router()
 
 function createDigitransitProxy(path: string) {
   return expressHttpProxy(digitransitApiUrl, {
-    proxyReqPathResolver: () => path,
-    proxyReqOptDecorator: (proxyReqOpts) => {
+    proxyReqPathResolver: (req) => {
+      const query = req.url.split('?')[1]
+      return path + (query ? '?' + query : '')
+    },
+    proxyReqOptDecorator: (proxyReqOpts, _srcReq) => {
       proxyReqOpts.headers = {
         ...proxyReqOpts.headers,
         ...(digitransitApiKey
