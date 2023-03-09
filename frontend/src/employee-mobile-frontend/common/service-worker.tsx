@@ -21,10 +21,12 @@ import { UserContext } from '../auth/state'
 
 interface ServiceWorkerState {
   registration: ServiceWorkerRegistration | undefined
+  pushNotifications: PushNotifications | undefined
 }
 
 export const ServiceWorkerContext = createContext<ServiceWorkerState>({
-  registration: undefined
+  registration: undefined,
+  pushNotifications: undefined
 })
 
 export const ServiceWorkerContextProvider = React.memo(
@@ -61,7 +63,7 @@ export const ServiceWorkerContextProvider = React.memo(
       }
     }, [pushNotifications])
 
-    const value = { registration }
+    const value = { registration, pushNotifications }
 
     return (
       <ServiceWorkerContext.Provider value={value}>
@@ -103,7 +105,28 @@ export class PushNotifications {
     }
   }
 
+  async requestPermission(): Promise<boolean> {
+    if (!('Notification' in window)) {
+      return false
+    }
+    switch (Notification.permission) {
+      case 'granted':
+        return true
+      case 'denied':
+        return false
+      default:
+        break
+    }
+    // support both legacy callback-based API and modern Promise API
+    const result = await new Promise<NotificationPermission>(
+      (resolve, reject) =>
+        Notification.requestPermission(resolve)?.then(resolve, reject)
+    )
+    return result === 'granted'
+  }
+
   private async refreshSubscription(): Promise<PushSubscription | undefined> {
+    if (!(await this.requestPermission())) return undefined
     const state = await this.pushManager.permissionState(this.options)
     if (state !== 'granted' && state !== 'prompt') {
       return undefined
