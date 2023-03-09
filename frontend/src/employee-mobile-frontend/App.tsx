@@ -70,8 +70,8 @@ export default function App() {
               <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
             )}
           >
-            <ServiceWorkerContextProvider>
-              <UserContextProvider>
+            <UserContextProvider>
+              <ServiceWorkerContextProvider>
                 <NotificationsContextProvider>
                   <Notifications apiVersion={apiVersion} />
                   <Router basename="/employee/mobile">
@@ -101,8 +101,8 @@ export default function App() {
                     </Routes>
                   </Router>
                 </NotificationsContextProvider>
-              </UserContextProvider>
-            </ServiceWorkerContextProvider>
+              </ServiceWorkerContextProvider>
+            </UserContextProvider>
           </ErrorBoundary>
         </ThemeProvider>
       </I18nContextProvider>
