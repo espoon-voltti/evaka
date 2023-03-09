@@ -1758,7 +1758,15 @@ export const fi = {
       email: 'Sähköpostiosoite',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
-      addPerson: 'Lisää henkilö',
+      addDaycareAclModal: {
+        title: 'Lisää henkilö',
+        groups: 'Valitse ryhmä',
+        employees: 'Valitse henkilö'
+      },
+      editEmployeeRowModal: {
+        title: 'Muokkaa henkilön tietoja',
+        groups: 'Valitse ryhmä'
+      },
       choosePerson: 'Valitse henkilö',
       mobileDevices: {
         mobileDevices: 'Yksikön mobiililaitteet',

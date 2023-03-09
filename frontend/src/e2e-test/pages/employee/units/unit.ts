@@ -337,6 +337,39 @@ export class UnitEditor {
   }
 }
 
+class DaycareAclAdditionModal extends Modal {
+  personCombobox = new Combobox(
+    this.find('[data-qa="add-daycare-acl-emp-combobox"]')
+  )
+  groupSelect = this.find('[data-qa="add-daycare-acl-group-select"]')
+  submitButton = this.find('[data-qa="add-daycare-acl-save-btn"]')
+
+  async toggleGroups(groupIds: UUID[]) {
+    await this.groupSelect.find('> div').click()
+    for (const groupId of groupIds) {
+      await this.groupSelect
+        .find(`[data-qa="option"][data-id="${groupId}"]`)
+        .click()
+    }
+    await this.groupSelect.find('> div').click()
+  }
+}
+
+export class EmployeeRowEditModal extends Modal {
+  groupSelect = this.find('[data-qa="group-select"]')
+  saveButton = this.find('[data-qa="edit-acl-row-save-btn"]')
+
+  async toggleGroups(groupIds: UUID[]) {
+    await this.groupSelect.find('> div').click()
+    for (const groupId of groupIds) {
+      await this.groupSelect
+        .find(`[data-qa="option"][data-id="${groupId}"]`)
+        .click()
+    }
+    await this.groupSelect.find('> div').click()
+  }
+}
+
 class AclSection extends Element {
   constructor(private page: Page, root: Element) {
     super(root)
@@ -346,18 +379,26 @@ class AclSection extends Element {
   #tableRows = this.#table.findAll(`[data-qa^="acl-row-"]`)
   #tableRow = (id: UUID) => this.#table.find(`[data-qa="acl-row-${id}"]`)
 
-  #combobox = new Combobox(this.find('[data-qa="acl-combobox"]'))
-  #addButton = this.find('[data-qa="acl-add-button"]')
+  #addButton = this.find('[data-qa="open-add-daycare-acl-modal"]')
 
-  async addAcl(email: string) {
-    await this.#combobox.fillAndSelectFirst(email)
+  async addAcl(email: string, groupIds: UUID[]) {
     await this.#addButton.click()
+    const addModal = new DaycareAclAdditionModal(
+      this.page.find('[data-qa="add-daycare-acl-modal"]')
+    )
+    await addModal.personCombobox.fillAndSelectFirst(email)
+    if (groupIds.length > 0) {
+      await addModal.toggleGroups(groupIds)
+    }
+    await addModal.submitButton.click()
     await this.#table.waitUntilVisible()
   }
 
   async deleteAcl(id: UUID) {
     await this.#tableRow(id).find('[data-qa="delete"]').click()
-    await new Modal(this.page.find('[data-qa="modal"]')).submit()
+    await new Modal(
+      this.page.find('[data-qa="remove-daycare-acl-modal"]')
+    ).submit()
   }
 
   async assertRowFields(fields: { id: UUID; name: string; email: string }) {
@@ -449,29 +490,8 @@ class MobileDevicesSection extends Element {
 class StaffAclRow extends Element {
   readonly #editButton = this.find('[data-qa="edit"]')
 
-  async edit(): Promise<StaffAclRowEditor> {
+  async edit() {
     await this.#editButton.click()
-    return new StaffAclRowEditor(this)
-  }
-}
-
-class StaffAclRowEditor extends Element {
-  readonly #groupEditor = this.find('[data-qa="groups"]')
-  readonly #save = this.find('[data-qa="save"]')
-
-  async toggleStaffGroups(groupIds: UUID[]) {
-    await this.#groupEditor.find('> div').click()
-    for (const groupId of groupIds) {
-      await this.#groupEditor
-        .find(`[data-qa="option"][data-id="${groupId}"]`)
-        .click()
-    }
-    await this.#groupEditor.find('> div').click()
-  }
-
-  async save(): Promise<StaffAclRow> {
-    await this.#save.click()
-    return new StaffAclRow(this)
   }
 }
 

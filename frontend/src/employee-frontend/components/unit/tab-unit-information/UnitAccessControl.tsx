@@ -4,39 +4,27 @@
 
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, isLoading, Result } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
-import LocalDate from 'lib-common/local-date'
+import { UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { fontWeights, H2 } from 'lib-components/typography'
-import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
-  addDaycareAclEarlyChildhoodEducationSecretary,
-  addDaycareAclSpecialEducationTeacher,
-  addDaycareAclStaff,
-  addDaycareAclSupervisor,
   DaycareAclRow,
   DaycareGroupSummary,
   removeDaycareAclEarlyChildhoodEducationSecretary,
@@ -49,16 +37,26 @@ import { Translations, useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UnitContext } from '../../../state/unit'
 import { UserContext } from '../../../state/user'
-import { Employee } from '../../../types/employee'
 import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
+
+import DaycareAclAdditionModal from './DaycareAclAdditionModal'
+import EmployeeAclRowEditModal from './EmployeeAclRowEditModal'
 
 type Props = {
   groups: Record<UUID, DaycareGroupSummary>
   permittedActions: Set<Action.Unit>
 }
 
-interface FormattedRow {
+export type DaycareAclRole = Extract<
+  UserRole,
+  | 'UNIT_SUPERVISOR'
+  | 'STAFF'
+  | 'SPECIAL_EDUCATION_TEACHER'
+  | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+>
+
+export interface FormattedRow {
   id: UUID
   name: string
   email: string
@@ -99,115 +97,29 @@ function GroupListing({
   )
 }
 
-function AclRowEditor({
-  row,
-  onSave,
-  onCancel,
-  unitGroups
-}: {
-  row: FormattedRow
-  onSave: (groupIds: UUID[]) => void
-  onCancel: () => void
-  unitGroups: Record<UUID, DaycareGroupSummary>
-}) {
-  const { i18n } = useTranslation()
-  const options = useMemo(
-    () =>
-      sortBy(
-        Object.values(unitGroups).filter(
-          ({ id, endDate }) =>
-            endDate === null ||
-            endDate.isAfter(LocalDate.todayInHelsinkiTz()) ||
-            row.groupIds.includes(id)
-        ),
-        ({ name }) => name
-      ),
-    [row.groupIds, unitGroups]
-  )
-  const [groups, setGroups] = useState<DaycareGroupSummary[]>(
-    options.filter(({ id }) => row.groupIds.includes(id))
-  )
-
-  return (
-    <Tr data-qa={`acl-row-${row.id}`}>
-      <Td data-qa="name">{row.name}</Td>
-      <Td data-qa="email">{row.email}</Td>
-      <GroupMultiSelectTd>
-        <MultiSelect
-          data-qa="groups"
-          value={groups}
-          options={options}
-          getOptionId={(x) => x.id}
-          getOptionLabel={(x) => x.name}
-          onChange={(values) => setGroups(values)}
-          placeholder={`${i18n.common.select}...`}
-        />
-      </GroupMultiSelectTd>
-      <Td>
-        <RowButtons>
-          <InlineButton
-            icon={faTimes}
-            onClick={onCancel}
-            text={i18n.common.cancel}
-          />
-          <InlineButton
-            icon={faCheck}
-            data-qa="save"
-            onClick={() => onSave(groups.map(({ id }) => id))}
-            text={i18n.common.save}
-          />
-        </RowButtons>
-      </Td>
-    </Tr>
-  )
-}
-
 function AclRow({
   row,
   isEditable,
   isDeletable,
   onClickDelete,
-  onChangeGroups,
+  onClickEdit,
   unitGroups
 }: {
   row: FormattedRow
   isEditable: boolean
   isDeletable: boolean
   onClickDelete: () => void
-  onChangeGroups: (ids: UUID[]) => void
+  onClickEdit: (employeeRow: FormattedRow) => void
   unitGroups: Record<UUID, DaycareGroupSummary> | undefined
 }) {
-  const [editing, setEditing] = useState(false)
-
-  const onClickEdit = useCallback(() => setEditing(true), [setEditing])
-  const onCancelEditing = useCallback(() => setEditing(false), [setEditing])
-  const onSave = useCallback(
-    (groupIds: UUID[]) => {
-      setEditing(false)
-      onChangeGroups(groupIds)
-    },
-    [setEditing, onChangeGroups]
-  )
-
   const { i18n } = useTranslation()
-
-  if (editing) {
-    return (
-      <AclRowEditor
-        row={row}
-        unitGroups={unitGroups ?? {}}
-        onCancel={onCancelEditing}
-        onSave={onSave}
-      />
-    )
-  }
 
   const buttons = (
     <RowButtons>
       {isEditable && (
         <IconButton
           icon={faPen}
-          onClick={onClickEdit}
+          onClick={() => onClickEdit(row)}
           data-qa="edit"
           aria-label={i18n.common.edit}
         />
@@ -237,25 +149,6 @@ function AclRow({
   )
 }
 
-const GroupMultiSelectTd = styled(Td)`
-  padding: 0;
-  vertical-align: middle;
-`
-
-const AddAclSelectContainer = styled.div`
-  display: flex;
-  align-items: center;
-
-  > :nth-child(1) {
-    width: 400px;
-  }
-
-  > button {
-    margin-left: 20px;
-    flex: 0 0 auto;
-  }
-`
-
 const GroupsTh = styled(Th)`
   width: 40%;
 `
@@ -268,14 +161,14 @@ function AclTable({
   unitGroups,
   rows,
   onDeleteAclRow,
-  onChangeAclGroups,
+  onClickEdit,
   editPermitted,
   deletePermitted
 }: {
   unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
-  onChangeAclGroups?: (employeeId: UUID, groupIds: UUID[]) => void
+  onClickEdit: (employeeRow: FormattedRow) => void
   editPermitted?: boolean
   deletePermitted: boolean
 }) {
@@ -301,11 +194,7 @@ function AclTable({
             isDeletable={deletePermitted && row.id !== user?.id}
             isEditable={!!(editPermitted && unitGroups)}
             onClickDelete={() => onDeleteAclRow(row.id)}
-            onChangeGroups={
-              onChangeAclGroups
-                ? (ids) => onChangeAclGroups(row.id, ids)
-                : () => undefined
-            }
+            onClickEdit={onClickEdit}
           />
         ))}
       </Tbody>
@@ -313,93 +202,17 @@ function AclTable({
   )
 }
 
-const AddAclLabel = styled.p`
-  font-weight: ${fontWeights.semibold};
-  margin-bottom: 0;
-`
-
-interface AclOption {
-  label: string
-  value: string
-}
-
-function getAclItemLabel(item: AclOption): string {
-  return item.label
-}
-
-function getAclItemDataQa(item: AclOption): string {
-  return `value-${item.value}`
-}
-
-const AddAcl = React.memo(function AddAcl({
-  employees,
-  onSave,
-  onSuccess
-}: {
-  employees: Employee[]
-  onSave: (employeeId: UUID) => Promise<Result<unknown>>
-  onSuccess: () => void
-}) {
-  const { i18n } = useTranslation()
-  const [selectedEmployee, setSelectedEmployee] = useState<{
-    label: string
-    value: string
-  } | null>(null)
-  useEffect(() => {
-    if (
-      selectedEmployee &&
-      !employees.some((e) => e.id === selectedEmployee.value)
-    ) {
-      setSelectedEmployee(null)
-    }
-  }, [employees, selectedEmployee, setSelectedEmployee])
-
-  const options: AclOption[] = useMemo(
-    () =>
-      employees.map(({ id, email, firstName, lastName }) => {
-        const name = formatName(firstName, lastName, i18n)
-        return {
-          label: email ? `${email} (${name})` : name,
-          value: id
-        }
-      }),
-    [i18n, employees]
-  )
-
-  const onClick = useCallback(
-    () => (selectedEmployee ? onSave(selectedEmployee.value) : undefined),
-    [onSave, selectedEmployee]
-  )
-
-  return (
-    <>
-      <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
-      <AddAclSelectContainer>
-        <Combobox
-          data-qa="acl-combobox"
-          placeholder={i18n.unit.accessControl.choosePerson}
-          selectedItem={selectedEmployee}
-          onChange={setSelectedEmployee}
-          items={options}
-          menuEmptyLabel={i18n.common.noResults}
-          getItemLabel={getAclItemLabel}
-          getItemDataQa={getAclItemDataQa}
-        />
-        <AsyncButton
-          data-qa="acl-add-button"
-          disabled={!selectedEmployee}
-          onClick={onClick}
-          onSuccess={onSuccess}
-          text={i18n.common.add}
-        />
-      </AddAclSelectContainer>
-    </>
-  )
-})
-
 interface RemoveState {
   employeeId: UUID
   removeFn: (unitId: UUID, employeeId: UUID) => Promise<unknown>
+}
+
+export interface UpdateState {
+  employeeRow: FormattedRow
+}
+
+interface AdditionState {
+  role: DaycareAclRole
 }
 
 function formatRowsOfRole(
@@ -430,6 +243,7 @@ const DeleteConfirmationModal = React.memo(function DeleteConfirmationModal({
   const { i18n } = useTranslation()
   return (
     <InfoModal
+      data-qa="remove-daycare-acl-modal"
       type="warning"
       title={i18n.unit.accessControl.removeConfirmation}
       icon={faQuestion}
@@ -498,42 +312,40 @@ export default React.memo(function UnitAccessControl({
     [daycareAclRows, i18n]
   )
 
-  const addUnitSupervisor = useCallback(
-    (employeeId: UUID) => addDaycareAclSupervisor(unitId, employeeId),
-    [unitId]
-  )
-
-  const addSpecialEducationTeacher = useCallback(
-    (employeeId: UUID) =>
-      addDaycareAclSpecialEducationTeacher(unitId, employeeId),
-    [unitId]
-  )
-
-  const addEarlyChildhoodEducationSecretary = useCallback(
-    (employeeId: UUID) =>
-      addDaycareAclEarlyChildhoodEducationSecretary(unitId, employeeId),
-    [unitId]
-  )
-
-  const addStaff = useCallback(
-    (employeeId: UUID) => addDaycareAclStaff(unitId, employeeId),
-    [unitId]
-  )
-
-  const updateStaffGroupAcls = useCallback(
-    (employeeId: UUID, groupIds: UUID[]) => {
-      void updateDaycareGroupAcl(unitId, employeeId, groupIds).then(() =>
-        reloadDaycareAclRows()
-      )
-    },
-    [reloadDaycareAclRows, unitId]
-  )
-
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
     undefined
   )
+
+  const [updateState, setUpdateState] = useState<UpdateState | undefined>(
+    undefined
+  )
+
+  const [additionState, setAdditionState] = useState<AdditionState | undefined>(
+    undefined
+  )
+
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
+  // in-row editing modal generic fns
+  const openEmployeeAclRowEditModal = useCallback(
+    (employeeRow: FormattedRow) => {
+      setUpdateState({ employeeRow })
+      toggleUiMode(`edit-daycare-acl-${unitId}`)
+    },
+    [toggleUiMode, unitId]
+  )
+
+  const closeEmployeeAclRowEditModal = useCallback(() => {
+    clearUiMode()
+    setUpdateState(undefined)
+  }, [clearUiMode])
+
+  const confirmEmployeeAclRowEditModal = useCallback(() => {
+    closeEmployeeAclRowEditModal()
+    reloadDaycareAclRows()
+  }, [closeEmployeeAclRowEditModal, reloadDaycareAclRows])
+
+  // in-row removal modal generic fns
   const openRemoveModal = useCallback(
     (removeState: RemoveState) => {
       setRemoveState(removeState)
@@ -541,15 +353,50 @@ export default React.memo(function UnitAccessControl({
     },
     [toggleUiMode, unitId]
   )
+
   const closeRemoveModal = useCallback(() => {
     clearUiMode()
     setRemoveState(undefined)
   }, [clearUiMode])
+
   const confirmRemoveModal = useCallback(async () => {
     await removeState?.removeFn(unitId, removeState.employeeId)
     closeRemoveModal()
     reloadDaycareAclRows()
   }, [closeRemoveModal, reloadDaycareAclRows, removeState, unitId])
+
+  // daycare addition modal role-based addition fns
+  const openAddStaffModal = useCallback(() => {
+    setAdditionState({ role: 'STAFF' })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
+  }, [toggleUiMode, unitId])
+
+  const openAddEcesModal = useCallback(() => {
+    setAdditionState({
+      role: 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+    })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
+  }, [toggleUiMode, unitId])
+
+  const openAddSpecialEducatioTeachedModal = useCallback(() => {
+    setAdditionState({ role: 'SPECIAL_EDUCATION_TEACHER' })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
+  }, [toggleUiMode, unitId])
+
+  const openAddSupervisorModal = useCallback(() => {
+    setAdditionState({ role: 'UNIT_SUPERVISOR' })
+    toggleUiMode(`add-daycare-acl-${unitId}`)
+  }, [toggleUiMode, unitId])
+
+  // daycare addition modal generic fns
+  const closeAddDaycareAclModal = useCallback(() => {
+    clearUiMode()
+  }, [clearUiMode])
+
+  const confirmAddDaycareAclModal = useCallback(() => {
+    closeAddDaycareAclModal()
+    reloadDaycareAclRows()
+  }, [closeAddDaycareAclModal, reloadDaycareAclRows])
 
   return (
     <div data-qa="daycare-acl" data-isloading={isLoading(daycareAclRows)}>
@@ -559,75 +406,102 @@ export default React.memo(function UnitAccessControl({
           onConfirm={confirmRemoveModal}
         />
       )}
+
+      {uiMode === `edit-daycare-acl-${unitId}` && (
+        <EmployeeAclRowEditModal
+          onClose={closeEmployeeAclRowEditModal}
+          onSuccess={confirmEmployeeAclRowEditModal}
+          updatesGroupAcl={updateDaycareGroupAcl}
+          employeeRow={updateState?.employeeRow}
+          unitId={unitId}
+          groups={groups}
+        />
+      )}
+
+      {renderResult(candidateEmployees, (candidateEmployees) => (
+        <>
+          {uiMode === `add-daycare-acl-${unitId}` && (
+            <DaycareAclAdditionModal
+              onClose={closeAddDaycareAclModal}
+              onSuccess={confirmAddDaycareAclModal}
+              role={additionState?.role}
+              employees={candidateEmployees}
+              unitId={unitId}
+              groups={groups}
+              groupsPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+            />
+          )}
+        </>
+      ))}
       <ContentArea opaque data-qa="daycare-acl-supervisors">
         <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
-        {renderResult(
-          combine(unitSupervisors, candidateEmployees),
-          ([unitSupervisors, candidateEmployees]) => (
-            <>
-              <AclTable
-                rows={unitSupervisors}
-                onDeleteAclRow={(employeeId) =>
-                  openRemoveModal({
-                    employeeId,
-                    removeFn: removeDaycareAclSupervisor
-                  })
-                }
-                unitGroups={groups}
-                onChangeAclGroups={updateStaffGroupAcls}
-                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
-                deletePermitted={permittedActions.has(
-                  'DELETE_ACL_UNIT_SUPERVISOR'
-                )}
-              />
-              {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
-                <AddAcl
-                  employees={candidateEmployees}
-                  onSave={addUnitSupervisor}
-                  onSuccess={reloadDaycareAclRows}
-                />
+        {renderResult(unitSupervisors, (unitSupervisors) => (
+          <>
+            <AclTable
+              rows={unitSupervisors}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclSupervisor
+                })
+              }
+              unitGroups={groups}
+              onClickEdit={openEmployeeAclRowEditModal}
+              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              deletePermitted={permittedActions.has(
+                'DELETE_ACL_UNIT_SUPERVISOR'
               )}
-            </>
-          )
-        )}
+            />
+            {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
+              <>
+                <Gap />
+                <AddButton
+                  text={i18n.unit.accessControl.addDaycareAclModal.title}
+                  onClick={openAddSupervisorModal}
+                  data-qa="open-add-daycare-acl-modal"
+                />
+              </>
+            )}
+          </>
+        ))}
       </ContentArea>
       <ContentArea opaque data-qa="daycare-acl-set">
         <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
-        {renderResult(
-          combine(specialEducationTeachers, candidateEmployees),
-          ([specialEducationTeachers, candidateEmployees]) => (
-            <>
-              <AclTable
-                rows={specialEducationTeachers}
-                onDeleteAclRow={(employeeId) =>
-                  openRemoveModal({
-                    employeeId,
-                    removeFn: removeDaycareAclSpecialEducationTeacher
-                  })
-                }
-                unitGroups={groups}
-                onChangeAclGroups={updateStaffGroupAcls}
-                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
-                deletePermitted={permittedActions.has(
-                  'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
-                )}
-              />
-              {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
-                <AddAcl
-                  employees={candidateEmployees}
-                  onSave={addSpecialEducationTeacher}
-                  onSuccess={reloadDaycareAclRows}
-                />
+        {renderResult(specialEducationTeachers, (specialEducationTeachers) => (
+          <>
+            <AclTable
+              rows={specialEducationTeachers}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclSpecialEducationTeacher
+                })
+              }
+              unitGroups={groups}
+              onClickEdit={openEmployeeAclRowEditModal}
+              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              deletePermitted={permittedActions.has(
+                'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
               )}
-            </>
-          )
-        )}
+            />
+            {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
+              <>
+                <Gap />
+                <AddButton
+                  text={i18n.unit.accessControl.addDaycareAclModal.title}
+                  onClick={openAddSpecialEducatioTeachedModal}
+                  data-qa="open-add-daycare-acl-modal"
+                />
+              </>
+            )}
+          </>
+        ))}
       </ContentArea>
       <ContentArea opaque data-qa="daycare-acl-eces">
         <H2>{i18n.unit.accessControl.earlyChildhoodEducationSecretary}</H2>
         {renderResult(
-          combine(earlyChildhoodEducationSecretaries, candidateEmployees),
-          ([earlyChildhoodEducationSecretaries, candidateEmployees]) => (
+          earlyChildhoodEducationSecretaries,
+          (earlyChildhoodEducationSecretaries) => (
             <>
               <AclTable
                 rows={earlyChildhoodEducationSecretaries}
@@ -638,7 +512,7 @@ export default React.memo(function UnitAccessControl({
                   })
                 }
                 unitGroups={groups}
-                onChangeAclGroups={updateStaffGroupAcls}
+                onClickEdit={openEmployeeAclRowEditModal}
                 editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
                 deletePermitted={permittedActions.has(
                   'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
@@ -647,11 +521,14 @@ export default React.memo(function UnitAccessControl({
               {permittedActions.has(
                 'INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
               ) && (
-                <AddAcl
-                  employees={candidateEmployees}
-                  onSave={addEarlyChildhoodEducationSecretary}
-                  onSuccess={reloadDaycareAclRows}
-                />
+                <>
+                  <Gap />
+                  <AddButton
+                    text={i18n.unit.accessControl.addDaycareAclModal.title}
+                    onClick={openAddEcesModal}
+                    data-qa="open-add-daycare-acl-modal"
+                  />
+                </>
               )}
             </>
           )
@@ -659,33 +536,33 @@ export default React.memo(function UnitAccessControl({
       </ContentArea>
       <ContentArea opaque data-qa="daycare-acl-staff">
         <H2>{i18n.unit.accessControl.staff}</H2>
-        {renderResult(
-          combine(staff, candidateEmployees),
-          ([staff, candidateEmployees]) => (
-            <>
-              <AclTable
-                rows={staff}
-                onDeleteAclRow={(employeeId) =>
-                  openRemoveModal({
-                    employeeId,
-                    removeFn: removeDaycareAclStaff
-                  })
-                }
-                unitGroups={groups}
-                onChangeAclGroups={updateStaffGroupAcls}
-                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
-                deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
-              />
-              {permittedActions.has('INSERT_ACL_STAFF') && (
-                <AddAcl
-                  employees={candidateEmployees}
-                  onSave={addStaff}
-                  onSuccess={reloadDaycareAclRows}
+        {renderResult(staff, (staff) => (
+          <>
+            <AclTable
+              rows={staff}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclStaff
+                })
+              }
+              unitGroups={groups}
+              onClickEdit={openEmployeeAclRowEditModal}
+              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+            />
+            {permittedActions.has('INSERT_ACL_STAFF') && (
+              <>
+                <Gap />
+                <AddButton
+                  text={i18n.unit.accessControl.addDaycareAclModal.title}
+                  onClick={openAddStaffModal}
+                  data-qa="open-add-daycare-acl-modal"
                 />
-              )}
-            </>
-          )
-        )}
+              </>
+            )}
+          </>
+        ))}
       </ContentArea>
     </div>
   )

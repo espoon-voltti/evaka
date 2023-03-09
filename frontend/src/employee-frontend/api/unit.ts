@@ -4,6 +4,7 @@
 
 import mapValues from 'lodash/mapValues'
 
+import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
@@ -538,32 +539,12 @@ export async function getDaycareAclRows(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function addDaycareAclSupervisor(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/supervisors/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function removeDaycareAclSupervisor(
   unitId: UUID,
   personId: UUID
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/supervisors/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function addDaycareAclSpecialEducationTeacher(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/specialeducationteacher/${personId}`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
@@ -578,32 +559,12 @@ export async function removeDaycareAclSpecialEducationTeacher(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function addDaycareAclEarlyChildhoodEducationSecretary(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/earlychildhoodeducationsecretary/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function removeDaycareAclEarlyChildhoodEducationSecretary(
   unitId: UUID,
   personId: UUID
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/earlychildhoodeducationsecretary/${personId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function addDaycareAclStaff(
-  unitId: UUID,
-  personId: UUID
-): Promise<Result<void>> {
-  return client
-    .put(`/daycares/${unitId}/staff/${personId}`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
@@ -626,6 +587,21 @@ export async function updateDaycareGroupAcl(
   return client
     .put(`/daycares/${unitId}/staff/${employeeId}/groups`, {
       groupIds
+    })
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function addDaycareFullAcl(
+  unitId: UUID,
+  employeeId: UUID,
+  role: DaycareAclRole,
+  groupIds?: UUID[]
+): Promise<Result<void>> {
+  return client
+    .put(`/daycares/${unitId}/full-acl/${employeeId}`, {
+      groupIds,
+      role
     })
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))

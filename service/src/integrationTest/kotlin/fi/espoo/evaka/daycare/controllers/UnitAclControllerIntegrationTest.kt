@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.controllers
 
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
@@ -18,10 +19,12 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDaycareGroup
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -38,6 +41,9 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     private lateinit var admin: AuthenticatedUser
 
+    private fun getRoleBodyString(body: UnitAclController.FullAclUpdate) =
+        jsonMapper.writeValueAsString(body)
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -53,6 +59,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertTestDaycare(
                 DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name)
             )
+            tx.insertTestDaycareGroup(testDaycareGroup)
+
             employee.also {
                 tx.insertTestEmployee(
                     DevEmployee(
@@ -98,6 +106,26 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `full acl update flow`() {
+        assertTrue(getAclRows().isEmpty())
+
+        insertSupervisorWithGroup(testDaycare.id)
+        assertEquals(
+            listOf(
+                DaycareAclRow(
+                    employee = employee,
+                    role = UserRole.UNIT_SUPERVISOR,
+                    groupIds = listOf(testDaycareGroup.id)
+                )
+            ),
+            getAclRows()
+        )
+
+        deleteSupervisor(testDaycare.id)
+        assertTrue(getAclRows().isEmpty())
+    }
+
+    @Test
     fun `supervisor message account`() {
         assertEquals(MessageAccountState.NO_ACCOUNT, employeeMessageAccountState())
         insertSupervisor(testDaycare.id)
@@ -115,14 +143,25 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             http
                 .get("/daycares/${testDaycare.id}/acl")
                 .asUser(admin)
-                .responseObject<DaycareAclResponse>(jsonMapper)
+                .responseObject<UnitAclController.DaycareAclResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
         return body.get().rows
     }
 
     private fun insertSupervisor(daycareId: DaycareId) {
         val (_, res, _) =
-            http.put("/daycares/$daycareId/supervisors/${employee.id}").asUser(admin).response()
+            http
+                .put("/daycares/$daycareId/full-acl/${employee.id}")
+                .asUser(admin)
+                .jsonBody(
+                    getRoleBodyString(
+                        UnitAclController.FullAclUpdate(
+                            role = UserRole.UNIT_SUPERVISOR,
+                            groupIds = null
+                        )
+                    )
+                )
+                .response()
         assertTrue(res.isSuccessful)
     }
 
@@ -134,13 +173,38 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun insertStaff() {
         val (_, res, _) =
-            http.put("/daycares/${testDaycare.id}/staff/${employee.id}").asUser(admin).response()
+            http
+                .put("/daycares/${testDaycare.id}/full-acl/${employee.id}")
+                .asUser(admin)
+                .jsonBody(
+                    getRoleBodyString(
+                        UnitAclController.FullAclUpdate(groupIds = null, role = UserRole.STAFF)
+                    )
+                )
+                .response()
         assertTrue(res.isSuccessful)
     }
 
     private fun deleteStaff() {
         val (_, res, _) =
             http.delete("/daycares/${testDaycare.id}/staff/${employee.id}").asUser(admin).response()
+        assertTrue(res.isSuccessful)
+    }
+
+    private fun insertSupervisorWithGroup(daycareId: DaycareId) {
+        val (_, res, _) =
+            http
+                .put("/daycares/$daycareId/full-acl/${employee.id}")
+                .asUser(admin)
+                .jsonBody(
+                    getRoleBodyString(
+                        UnitAclController.FullAclUpdate(
+                            groupIds = listOf(testDaycareGroup.id),
+                            role = UserRole.UNIT_SUPERVISOR
+                        )
+                    )
+                )
+                .response()
         assertTrue(res.isSuccessful)
     }
 
