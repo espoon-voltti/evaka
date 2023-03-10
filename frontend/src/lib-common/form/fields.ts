@@ -4,8 +4,13 @@
 
 import LocalTime from '../local-time'
 
-import { mapped, transformed, value } from './form'
-import { ValidationError, ValidationResult, ValidationSuccess } from './types'
+import { mapped, object, transformed, value } from './form'
+import {
+  ObjectFieldError,
+  ValidationError,
+  ValidationResult,
+  ValidationSuccess
+} from './types'
 
 export const string = mapped(value<string>(), (s) => s.trim())
 export const boolean = value<boolean>()
@@ -20,5 +25,32 @@ export const localTime = transformed(
       return ValidationError.of('timeFormat')
     }
     return ValidationSuccess.of(parsed)
+  }
+)
+
+export const localTimeRange = transformed(
+  object({
+    startTime: localTime,
+    endTime: localTime
+  }),
+  ({
+    startTime,
+    endTime
+  }): ValidationResult<
+    { startTime: LocalTime; endTime: LocalTime } | undefined,
+    ObjectFieldError | 'timeFormat'
+  > => {
+    if (startTime === undefined && endTime === undefined) {
+      return ValidationSuccess.of(undefined)
+    }
+    if (
+      startTime === undefined ||
+      endTime === undefined ||
+      endTime.isBefore(startTime)
+    ) {
+      return ValidationError.of('timeFormat')
+    } else {
+      return ValidationSuccess.of({ startTime, endTime })
+    }
   }
 )
