@@ -6,7 +6,10 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { Paged, Result } from 'lib-common/api'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationSortColumn,
+  ApplicationSummary
+} from 'lib-common/generated/api-types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -19,10 +22,7 @@ import ApplicationsList from '../../components/applications/ApplicationsList'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
-import {
-  ApplicationSearchParams,
-  SortByApplications
-} from '../../types/application'
+import { ApplicationSearchParams } from '../../types/application'
 
 import ApplicationFilters from './ApplicationsFilters'
 
@@ -35,7 +35,8 @@ const pageSize = 50
 export default React.memo(function ApplicationsPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
-  const [sortBy, setSortBy] = useState<SortByApplications>('APPLICATION_TYPE')
+  const [sortBy, setSortBy] =
+    useState<ApplicationSortColumn>('APPLICATION_TYPE')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
 
   const {

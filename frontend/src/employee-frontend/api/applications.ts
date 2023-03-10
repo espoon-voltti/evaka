@@ -15,7 +15,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationNoteResponse,
   ApplicationSummary,
-  ApplicationType
+  ApplicationType,
+  ApplicationSortColumn
 } from 'lib-common/generated/api-types/application'
 import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
@@ -31,8 +32,7 @@ import { UUID } from 'lib-common/types'
 import { SearchOrder } from '../types'
 import {
   ApplicationResponse,
-  ApplicationSearchParams,
-  SortByApplications
+  ApplicationSearchParams
 } from '../types/application'
 import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
 
@@ -88,7 +88,7 @@ export const deserializeApplicationSummary = (
 export async function getApplications(
   page: number,
   pageSize: number,
-  sortBy: SortByApplications,
+  sortBy: ApplicationSortColumn,
   sortDir: SearchOrder,
   params: ApplicationSearchParams
 ): Promise<Result<Paged<ApplicationSummary>>> {
