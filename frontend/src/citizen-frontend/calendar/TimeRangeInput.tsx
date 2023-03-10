@@ -2,56 +2,61 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import classNames from 'classnames'
+import React from 'react'
 import styled from 'styled-components'
 
-import { ErrorKey } from 'lib-common/form-validation'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { useFormField, BoundFormShape } from 'lib-common/form/hooks'
+import { Form } from 'lib-common/form/types'
+import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
+import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
+import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 
-import { errorToInputInfo } from '../input-info-helper'
 import { useTranslation } from '../localization'
 
-export interface TimeRangeWithErrors {
-  startTime: string
-  endTime: string
-  errors: { startTime: ErrorKey | undefined; endTime: ErrorKey | undefined }
-}
-
-export default React.memo(function TimeRangeInput({
-  value,
-  onChange,
+export default React.memo(function TimeRangeInputF({
+  bind,
   'data-qa': dataQa
 }: {
-  value: TimeRangeWithErrors
-  onChange: (field: 'startTime' | 'endTime') => (value: string) => void
+  bind: BoundFormShape<
+    { startTime: string; endTime: string },
+    {
+      startTime: Form<unknown, string, string, unknown>
+      endTime: Form<unknown, string, string, unknown>
+    }
+  >
   'data-qa'?: string
 }) {
   const i18n = useTranslation()
-  const { startTime, endTime, errors } = value
 
-  // These are actually callbacks, but they are created by the onChange function
-  // call, so useMemo works better
-  const onChangeStart = useMemo(() => onChange('startTime'), [onChange])
-  const onChangeEnd = useMemo(() => onChange('endTime'), [onChange])
+  const startTime = useFormField(bind, 'startTime')
+  const endTime = useFormField(bind, 'endTime')
+  const inputInfo = bind.inputInfo()
 
   return (
-    <TimeRangeWrapper>
-      <TimeInput
-        value={startTime}
-        onChange={onChangeStart}
-        info={errorToInputInfo(errors.startTime, i18n.validationErrors)}
-        placeholder={i18n.calendar.reservationModal.start}
-        data-qa={dataQa ? `${dataQa}-start` : undefined}
-      />
-      <span>–</span>
-      <TimeInput
-        value={endTime}
-        onChange={onChangeEnd}
-        info={errorToInputInfo(errors.endTime, i18n.validationErrors)}
-        placeholder={i18n.calendar.reservationModal.end}
-        data-qa={dataQa ? `${dataQa}-end` : undefined}
-      />
-    </TimeRangeWrapper>
+    <>
+      <TimeRangeWrapper>
+        <TimeInputF
+          bind={startTime}
+          placeholder={i18n.calendar.reservationModal.start}
+          data-qa={dataQa ? `${dataQa}-start` : undefined}
+        />
+        <span>–</span>
+        <TimeInputF
+          bind={endTime}
+          placeholder={i18n.calendar.reservationModal.end}
+          data-qa={dataQa ? `${dataQa}-end` : undefined}
+        />
+      </TimeRangeWrapper>
+      {inputInfo !== undefined ? (
+        <InputFieldUnderRow className={classNames(inputInfo.status)}>
+          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+            {inputInfo.text}
+          </span>
+          <UnderRowStatusIcon status={inputInfo?.status} />
+        </InputFieldUnderRow>
+      ) : undefined}
+    </>
   )
 })
 
