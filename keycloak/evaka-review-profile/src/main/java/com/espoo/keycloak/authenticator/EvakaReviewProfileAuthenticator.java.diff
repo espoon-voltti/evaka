@@ -1,5 +1,5 @@
---- IdpReviewProfileAuthenticator.java.orig	2021-12-22 11:19:30.838000000 +0200
-+++ EvakaReviewProfileAuthenticator.java	2021-12-22 17:46:45.995644966 +0200
+--- IdpReviewProfileAuthenticator.java.orig	2023-03-10 14:15:52.462843088 +0200
++++ EvakaReviewProfileAuthenticator.java	2023-03-10 14:41:45.668407095 +0200
 @@ -15,7 +15,7 @@
   * limitations under the License.
   */
@@ -46,12 +46,8 @@
          }
  
          if(IdentityProviderRepresentation.UPFLM_MISSING.equals(updateProfileFirstLogin)) {
-@@ -107,9 +112,28 @@
-     @Override
-     protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext userCtx, BrokeredIdentityContext brokerContext) {
+@@ -109,6 +114,25 @@
          EventBuilder event = context.getEvent();
--        //velias: looks like UPDATE_PROFILE event is not fired. IMHO it should not be fired here as user record in keycloak is not changed, user doesn't exist yet 
-+        //velias: looks like UPDATE_PROFILE event is not fired. IMHO it should not be fired here as user record in keycloak is not changed, user doesn't exist yet
          event.event(EventType.UPDATE_PROFILE).detail(Details.CONTEXT, UserProfileContext.IDP_REVIEW.name());
          MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
 +
@@ -76,7 +72,7 @@
          UserModelDelegate updatedProfile = new UserModelDelegate(null) {
  
              @Override
-@@ -151,6 +175,7 @@
+@@ -155,6 +179,7 @@
          UserProfileProvider profileProvider = context.getSession().getProvider(UserProfileProvider.class);
          UserProfile profile = profileProvider.create(UserProfileContext.IDP_REVIEW, formData, updatedProfile);
  
@@ -84,7 +80,7 @@
          try {
              String oldEmail = userCtx.getEmail();
  
-@@ -161,8 +186,17 @@
+@@ -165,8 +190,17 @@
                  }
              });
          } catch (ValidationException pve) {
@@ -103,7 +99,7 @@
              Response challenge = context.form()
                      .setErrors(errors)
                      .setAttribute(LoginFormsProvider.UPDATE_PROFILE_CONTEXT_ATTR, userCtx)
-@@ -174,6 +208,11 @@
+@@ -178,6 +212,11 @@
              return;
          }
  

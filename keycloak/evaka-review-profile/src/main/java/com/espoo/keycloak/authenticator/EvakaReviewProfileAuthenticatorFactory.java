@@ -103,7 +103,7 @@ public class EvakaReviewProfileAuthenticatorFactory implements AuthenticatorFact
         ProviderConfigProperty property;
         property = new ProviderConfigProperty();
         property.setName(UPDATE_PROFILE_ON_FIRST_LOGIN);
-        property.setLabel("{{:: 'update-profile-on-first-login' | translate}}");
+        property.setLabel("Update Profile on First Login");
         property.setType(ProviderConfigProperty.LIST_TYPE);
         List<String> updateProfileValues = Arrays.asList(IdentityProviderRepresentation.UPFLM_ON, IdentityProviderRepresentation.UPFLM_MISSING, IdentityProviderRepresentation.UPFLM_OFF);
         property.setOptions(updateProfileValues);

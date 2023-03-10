@@ -18,7 +18,7 @@ evaka/account/resources/css/
 
 role-condition/target
 compose-resources/deployments/
-*.java.orig
+*.orig
 
 */target
 */.classpath

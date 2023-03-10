@@ -112,7 +112,6 @@ public class EvakaReviewProfileAuthenticator extends AbstractIdpAuthenticator {
     @Override
     protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext userCtx, BrokeredIdentityContext brokerContext) {
         EventBuilder event = context.getEvent();
-        //velias: looks like UPDATE_PROFILE event is not fired. IMHO it should not be fired here as user record in keycloak is not changed, user doesn't exist yet
         event.event(EventType.UPDATE_PROFILE).detail(Details.CONTEXT, UserProfileContext.IDP_REVIEW.name());
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
 
@@ -169,6 +168,11 @@ public class EvakaReviewProfileAuthenticator extends AbstractIdpAuthenticator {
             @Override
             public String getUsername() {
                 return userCtx.getUsername();
+            }
+
+            @Override
+            public String getServiceAccountClientLink() {
+                return null;
             }
         };
 
