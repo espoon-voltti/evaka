@@ -4,9 +4,16 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback } from 'react'
+import React, {
+  ChangeEvent,
+  FocusEventHandler,
+  useCallback,
+  useMemo
+} from 'react'
 import styled from 'styled-components'
 
+import { OneOf } from 'lib-common/form/form'
+import { BoundForm } from 'lib-common/form/hooks'
 import { faChevronDown } from 'lib-icons'
 
 import { borderStyles, DropdownProps, Root } from './shared'
@@ -18,17 +25,12 @@ type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &
 
 function Select<T>(props: SelectProps<T>) {
   const {
-    id,
     items,
     selectedItem,
     onChange,
-    disabled,
     getItemLabel = defaultGetItemLabel,
     getItemDataQa,
-    name,
-    onFocus,
-    fullWidth,
-    'data-qa': dataQa
+    ...rest
   } = props
 
   const getItemValue =
@@ -37,47 +39,88 @@ function Select<T>(props: SelectProps<T>) {
       : defaultGetItemLabel
 
   const onSelectedItemChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
+    (newValue: string) => {
       const newSelectedItem =
-        items.find((item) => getItemValue(item) === event.target.value) ?? null
+        items.find((item) => getItemValue(item) === newValue) ?? null
       onChange(newSelectedItem)
     },
     [items, getItemValue, onChange]
   )
 
+  const fooItems = useMemo(
+    () =>
+      items.map((item) => ({
+        value: getItemValue(item),
+        label: getItemLabel(item),
+        dataQa: getItemDataQa?.(item)
+      })),
+    [getItemDataQa, getItemLabel, getItemValue, items]
+  )
+
+  return (
+    <RawSelect
+      options={fooItems}
+      value={selectedItem ? getItemValue(selectedItem) : ''}
+      onChange={onSelectedItemChange}
+      {...rest}
+    />
+  )
+}
+
+interface RawProps {
+  id?: string
+  options: { value: string; label: string; dataQa: string | undefined }[]
+  value: string
+  onChange: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  name?: string
+  onFocus?: FocusEventHandler<HTMLSelectElement>
+  fullWidth?: boolean
+  'data-qa'?: string
+}
+
+const RawSelect = React.memo(function RawSelect({
+  id,
+  options,
+  value,
+  onChange,
+  disabled,
+  placeholder,
+  name,
+  onFocus,
+  fullWidth,
+  'data-qa': dataQa
+}: RawProps) {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      onChange(e.target.value)
+    },
+    [onChange]
+  )
   return (
     <Root data-qa={dataQa} className={classNames({ 'full-width': fullWidth })}>
       <Wrapper>
         <StyledSelect
           id={id}
           name={name}
-          value={selectedItem ? getItemValue(selectedItem) : ''}
-          onChange={onSelectedItemChange}
+          value={value}
+          onChange={handleChange}
           disabled={disabled}
           onFocus={onFocus}
         >
-          {'placeholder' in props && (
-            <option value="">{props.placeholder}</option>
-          )}
-          {items.map((item) => {
-            const itemValue = getItemValue(item)
-
-            return (
-              <option
-                key={itemValue}
-                value={itemValue}
-                data-qa={getItemDataQa?.(item)}
-              >
-                {getItemLabel(item)}
-              </option>
-            )
-          })}
+          {placeholder !== undefined && <option value="">{placeholder}</option>}
+          {options.map((item) => (
+            <option key={item.value} value={item.value} data-qa={item.dataQa}>
+              {item.label}
+            </option>
+          ))}
         </StyledSelect>
         <Icon size="sm" icon={faChevronDown} />
       </Wrapper>
     </Root>
   )
-}
+})
 
 function defaultGetItemLabel<T>(item: T) {
   return String(item)
@@ -108,3 +151,44 @@ const Icon = styled(FontAwesomeIcon)`
 `
 
 export default React.memo(Select) as typeof Select
+
+interface SelectFProps<T> {
+  bind: BoundForm<OneOf<T>>
+  id?: string
+  disabled?: boolean
+  placeholder?: string
+  name?: string
+  onFocus?: FocusEventHandler<HTMLSelectElement>
+  fullWidth?: boolean
+  'data-qa'?: string
+}
+
+function SelectFC<T>({ bind: { state, update }, ...props }: SelectFProps<T>) {
+  const { domValue, options } = state
+  const rawOptions = useMemo(
+    () =>
+      options.map((opt) => ({
+        value: opt.domValue,
+        label: opt.label,
+        dataQa: opt.dataQa
+      })),
+    [options]
+  )
+  const onChange = useCallback(
+    (value: string) => {
+      update((prev) => ({ ...prev, domValue: value }))
+    },
+    [update]
+  )
+
+  return (
+    <RawSelect
+      {...props}
+      options={rawOptions}
+      value={domValue}
+      onChange={onChange}
+    />
+  )
+}
+
+export const SelectF = React.memo(SelectFC) as typeof SelectFC
