@@ -683,9 +683,10 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('SMALLER_GROUP', 'Pedagogisesti vahvistettu ryhmä', 30),
     ('SPECIAL_GROUP', 'Erityisryhmä', 40),
     ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50),
+    ('PART_TIME_SPECIAL_EDUCATION', 'Osa-aikainen erityisopetus esiopetuksessa', 55),
     ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
     ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
-    ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', 80);
+    ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2-6kk)/lisäresurssi hankerahoituksella', 80);
 """
 
     createUpdate(sql).execute()
