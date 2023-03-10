@@ -3,21 +3,35 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { AuthContext, User } from 'citizen-frontend/auth/state'
 import { Result } from 'lib-common/api'
-import { email, phone } from 'lib-common/form-validation'
+import { boolean, string } from 'lib-common/form/fields'
+import {
+  chained,
+  object,
+  oneOf,
+  required,
+  validated
+} from 'lib-common/form/form'
+import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
+import { StateOf, ValidationSuccess } from 'lib-common/form/types'
+import {
+  requiredPhoneNumber,
+  requiredEmail,
+  optionalPhoneNumber
+} from 'lib-common/form/validators'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField from 'lib-components/atoms/form/InputField'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
+import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
@@ -35,7 +49,7 @@ import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
-import { Translations, useTranslation } from '../localization'
+import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
 import { updatePersonalData } from './api'
@@ -43,28 +57,37 @@ import { updatePersonalData } from './api'
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()
   const { user, refreshAuthStatus } = useContext(AuthContext)
-  const {
-    editing,
-    startEditing,
-    cancelEditing,
-    editorState,
-    errors,
-    errorCount,
-    updateState,
-    toggleEmailInfo,
-    save,
-    onSaveSuccess
-  } = useEditState(t, user, refreshAuthStatus)
 
-  const preferredNameOptions = useMemo(
-    () => getPreferredNameOptions(user),
-    [user]
+  const [editing, setEditing] = useBoolean(false)
+  const [emailInfo, setEmailInfo] = useBoolean(false)
+  const form = useForm(
+    personForm,
+    () => initialFormState(user),
+    t.validationErrors
   )
+  const preferredNameState = useFormField(form, 'preferredName')
+  const phoneState = useFormField(form, 'phone')
+  const backupPhoneState = useFormField(form, 'backupPhone')
+
+  const emailObjectState = useFormField(form, 'email')
+  const emailState = useFormField(emailObjectState, 'email')
+  const noEmailState = useFormField(emailObjectState, 'noEmail')
+
+  const set = form.set
+  useEffect(() => {
+    if (user.isSuccess) {
+      set(initialFormState(user))
+    }
+  }, [set, user])
 
   const navigateToLogin = useCallback(
     () => window.location.replace(getStrongLoginUri()),
     []
   )
+
+  const save = useCallback(async () => {
+    return await updatePersonalData(form.value())
+  }, [form])
 
   const formWrapper = (children: React.ReactNode) =>
     editing ? (
@@ -74,15 +97,21 @@ export default React.memo(function PersonalDetails() {
           <Button
             type="button"
             text={t.common.cancel}
-            onClick={cancelEditing}
+            onClick={() => {
+              setEditing.off()
+              form.set(initialFormState(user))
+            }}
           />
           <AsyncButton
             primary
             type="submit"
             text={t.common.save}
             onClick={save}
-            onSuccess={onSaveSuccess}
-            disabled={errorCount > 0}
+            onSuccess={() => {
+              refreshAuthStatus()
+              setEditing.off()
+            }}
+            disabled={!form.isValid()}
             data-qa="save"
           />
         </FixedSpaceRow>
@@ -145,7 +174,7 @@ export default React.memo(function PersonalDetails() {
                     <InlineButton
                       text={t.common.edit}
                       icon={canEdit ? faPen : faLockAlt}
-                      onClick={canEdit ? startEditing : navigateToLogin}
+                      onClick={canEdit ? setEditing.on : navigateToLogin}
                       disabled={editing}
                       data-qa={
                         canEdit ? 'start-editing' : 'start-editing-login'
@@ -167,10 +196,8 @@ export default React.memo(function PersonalDetails() {
                         </div>
                         <Label>{t.personalDetails.preferredName}</Label>
                         {editing ? (
-                          <Select
-                            items={preferredNameOptions}
-                            selectedItem={editorState.preferredName}
-                            onChange={updateState.preferredName}
+                          <SelectF
+                            bind={preferredNameState}
                             data-qa="preferred-name"
                           />
                         ) : (
@@ -186,12 +213,10 @@ export default React.memo(function PersonalDetails() {
                         <Label>{t.personalDetails.phone}</Label>
                         <div data-qa="phone">
                           {editing ? (
-                            <InputField
+                            <InputFieldF
                               type="text"
                               width="m"
-                              value={editorState.phone}
-                              onChange={updateState.phone}
-                              info={errors.phone}
+                              bind={phoneState}
                               hideErrorsBeforeTouched
                               placeholder="0401234567"
                             />
@@ -210,12 +235,10 @@ export default React.memo(function PersonalDetails() {
                         <Label>{t.personalDetails.backupPhone}</Label>
                         <div data-qa="backup-phone">
                           {editing ? (
-                            <InputField
+                            <InputFieldF
                               type="text"
                               width="m"
-                              value={editorState.backupPhone}
-                              onChange={updateState.backupPhone}
-                              info={errors.backupPhone}
+                              bind={backupPhoneState}
                               hideErrorsBeforeTouched
                               placeholder={
                                 t.personalDetails.backupPhonePlaceholder
@@ -229,26 +252,23 @@ export default React.memo(function PersonalDetails() {
                         {editing ? (
                           <FixedSpaceColumn spacing="xs">
                             <div data-qa="email">
-                              <InputField
+                              <InputFieldF
                                 type="text"
                                 width="m"
-                                value={editorState.email}
-                                onChange={updateState.email}
-                                readonly={editorState.noEmail}
-                                info={errors.email}
+                                bind={emailState}
+                                readonly={noEmailState.state}
                                 hideErrorsBeforeTouched
                                 placeholder={t.personalDetails.email}
                               />
                             </div>
                             <FixedSpaceRow alignItems="center">
-                              <Checkbox
+                              <CheckboxF
                                 label={t.personalDetails.noEmail}
-                                checked={editorState.noEmail}
-                                onChange={updateState.noEmail}
+                                bind={noEmailState}
                                 data-qa="no-email"
                               />
                               <InfoButton
-                                onClick={toggleEmailInfo}
+                                onClick={setEmailInfo.toggle}
                                 aria-label={t.common.openExpandingInfo}
                               />
                             </FixedSpaceRow>
@@ -265,11 +285,11 @@ export default React.memo(function PersonalDetails() {
                           </div>
                         )}
                       </ListGrid>
-                      {editorState.showEmailInfo && (
+                      {emailInfo && (
                         <>
                           <ExpandingInfoBox
                             info={t.personalDetails.emailInfo}
-                            close={toggleEmailInfo}
+                            close={setEmailInfo.off}
                             closeLabel={t.common.close}
                           />
                           <Gap size="s" />
@@ -288,149 +308,51 @@ export default React.memo(function PersonalDetails() {
   )
 })
 
-function getPreferredNameOptions(user: Result<User | undefined>): string[] {
-  return user.map((user) => user?.firstName.split(' ') ?? []).getOrElse([])
-}
-
-function useEditState(
-  t: Translations,
-  user: Result<User | undefined>,
-  reloadUser: () => void
-) {
-  const [editing, setEditing] = useState(false)
-  const [editorState, setEditorState] = useState(() => initialEditorState(user))
-
-  const errors = useMemo(() => {
-    const errors: Partial<
-      Record<
-        'phone' | 'backupPhone' | 'email',
-        { status: 'warning'; text: string }
-      >
-    > = {}
-
-    const phoneError = editorState.phone ? phone(editorState.phone) : 'required'
-
-    if (phoneError) {
-      errors['phone'] = {
-        status: 'warning',
-        text: t.validationErrors[phoneError]
+const personForm = object({
+  preferredName: required(oneOf<string>()),
+  phone: validated(string, requiredPhoneNumber),
+  backupPhone: validated(string, optionalPhoneNumber),
+  email: chained(
+    object({
+      email: validated(string, requiredEmail),
+      noEmail: boolean
+    }),
+    (form, state) => {
+      if (state.noEmail) {
+        return ValidationSuccess.of('')
       }
+      return form.shape.email.validate(state.email)
     }
-
-    const backupPhoneError =
-      editorState.backupPhone && phone(editorState.backupPhone)
-    if (backupPhoneError) {
-      errors['backupPhone'] = {
-        status: 'warning',
-        text: t.validationErrors[backupPhoneError]
-      }
-    }
-
-    const emailError = editorState.email
-      ? email(editorState.email)
-      : !editorState.noEmail && 'required'
-    if (emailError) {
-      errors['email'] = {
-        status: 'warning',
-        text: t.validationErrors[emailError]
-      }
-    }
-
-    return errors
-  }, [t, editorState])
-
-  const errorCount = Object.keys(errors).length
-
-  const updateState = useMemo(() => {
-    const updateFn =
-      (field: 'preferredName' | 'phone' | 'backupPhone' | 'email') =>
-      (value: string) =>
-        setEditorState((state) => ({ ...state, [field]: value }))
-
-    return {
-      preferredName: (value: string | null) =>
-        setEditorState((state) => ({ ...state, preferredName: value ?? '' })),
-      phone: updateFn('phone'),
-      backupPhone: updateFn('backupPhone'),
-      email: updateFn('email'),
-      noEmail: (value: boolean) =>
-        setEditorState((state) => ({ ...state, noEmail: value }))
-    }
-  }, [])
-
-  const toggleEmailInfo = useCallback(
-    () =>
-      setEditorState((state) => ({
-        ...state,
-        showEmailInfo: !state.showEmailInfo
-      })),
-    []
   )
+})
 
-  const startEditing = useCallback(() => {
-    setEditorState(initialEditorState(user))
-    setEditing(true)
-  }, [user])
+function initialFormState(
+  userResult: Result<User | undefined>
+): StateOf<typeof personForm> {
+  if (!userResult.isSuccess || userResult.value === undefined) {
+    throw new Error('User not loaded')
+  }
+  const user = userResult.value
+  const firstNames = user.firstName.split(' ')
 
-  const cancelEditing = useCallback(() => setEditing(false), [])
-
-  const save = useCallback(
-    () =>
-      updatePersonalData({
-        ...editorState,
-        email: editorState.noEmail ? '' : editorState.email
-      }),
-    [editorState]
-  )
-
-  const onSaveSuccess = useCallback(() => {
-    reloadUser()
-    cancelEditing()
-  }, [reloadUser, cancelEditing])
+  const preferredNameOptions = firstNames.map((name) => ({
+    value: name,
+    label: name,
+    domValue: name
+  }))
 
   return {
-    editing,
-    startEditing,
-    cancelEditing,
-    editorState,
-    errors,
-    errorCount,
-    updateState,
-    toggleEmailInfo,
-    save,
-    onSaveSuccess
-  }
-}
-
-function initialEditorState(userResult: Result<User | undefined>) {
-  const noEmail = false
-  const showEmailInfo = false
-  const preferredNameOptions = getPreferredNameOptions(userResult)
-
-  return (
-    userResult
-      .map((user) =>
-        user
-          ? {
-              preferredName:
-                user.preferredName || (preferredNameOptions[0] ?? ''),
-              phone: user.phone,
-              backupPhone: user.backupPhone,
-              email: user.email ?? '',
-              noEmail,
-              showEmailInfo
-            }
-          : undefined
-      )
-      .getOrElse(undefined) ?? {
-      preferredName: '',
-      phone: '',
-      backupPhone: '',
-      email: '',
-      noEmail,
-      showEmailInfo
+    preferredName: {
+      options: preferredNameOptions,
+      domValue: user.preferredName || (firstNames[0] ?? '')
+    },
+    phone: user.phone,
+    backupPhone: user.backupPhone,
+    email: {
+      email: user.email ?? '',
+      noEmail: false
     }
-  )
+  }
 }
 
 const EditButtonRow = styled.div`
