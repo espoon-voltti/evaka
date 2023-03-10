@@ -1444,10 +1444,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()
         ),
-        DELETE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()
-        ),
+        DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_GROUP_PLACEMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
