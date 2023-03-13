@@ -19,7 +19,9 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
+import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.getIncomeNotifications
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
@@ -255,6 +257,33 @@ class IncomeController(
             }
         }
         return incomeTypesProvider.get()
+    }
+
+    @GetMapping("/notifications")
+    fun getIncomeNotifications(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam personId: PersonId
+    ): Wrapper<List<IncomeNotification>> {
+        val incomeNotifications =
+            db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_INCOME_NOTIFICATIONS,
+                        personId
+                    )
+                    tx.getIncomeNotifications(personId)
+                }
+            }
+        Audit.PersonIncomeNotificationRead.log(
+            targetId = personId,
+            meta = mapOf("count" to incomeNotifications.size)
+        )
+        return Wrapper(incomeNotifications)
     }
 }
 

@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
@@ -251,7 +252,8 @@ AND NOT EXISTS (
 
 data class IncomeNotification(
     val receiverId: PersonId,
-    val notificationType: IncomeNotificationType
+    val notificationType: IncomeNotificationType,
+    val created: HelsinkiDateTime
 )
 
 fun Database.Transaction.createIncomeNotification(
@@ -275,7 +277,7 @@ fun Database.Transaction.createIncomeNotification(
 
 fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
     createQuery(
-            """SELECT receiver_id, notification_type FROM income_notification WHERE receiver_id = :receiverId"""
+            """SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = :receiverId"""
         )
         .bind("receiverId", receiverId)
         .mapTo<IncomeNotification>()

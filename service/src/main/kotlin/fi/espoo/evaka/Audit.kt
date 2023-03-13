@@ -289,6 +289,7 @@ enum class Audit(
     PersonIncomeDelete,
     PersonIncomeRead,
     PersonIncomeUpdate,
+    PersonIncomeNotificationRead,
     PersonMerge(securityEvent = true, securityLevel = "high"),
     PersonUpdate(securityEvent = true, securityLevel = "high"),
     PersonUpdateEvakaRights(securityEvent = true, securityLevel = "high"),
