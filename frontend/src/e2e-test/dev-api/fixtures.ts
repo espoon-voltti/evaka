@@ -20,6 +20,7 @@ import {
   FeeDecision,
   FeeDecisionStatus,
   FeeThresholds,
+  IncomeNotification,
   Invoice,
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'
@@ -106,7 +107,8 @@ import {
   insertCalendarEvent,
   insertCalendarEventAttendee,
   insertStaffRealtimeAttendance,
-  insertHoliday
+  insertHoliday,
+  insertIncomeNotification
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1530,6 +1532,14 @@ export class Fixture {
     })
   }
 
+  static incomeNotification(): IncomeNotificationBuilder {
+    return new IncomeNotificationBuilder({
+      receiverId: 'not_set',
+      notificationType: 'INITIAL_EMAIL',
+      created: HelsinkiDateTime.now()
+    })
+  }
+
   static vardaReset(): VardaResetBuilder {
     return new VardaResetBuilder({
       evakaChildId: uuidv4(),
@@ -2084,6 +2094,17 @@ export class IncomeBuilder extends FixtureBuilder<DevIncome> {
 
   copy() {
     return new IncomeBuilder({ ...this.data })
+  }
+}
+
+export class IncomeNotificationBuilder extends FixtureBuilder<IncomeNotification> {
+  async save() {
+    await insertIncomeNotification(this.data)
+    return this
+  }
+
+  copy() {
+    return new IncomeNotificationBuilder({ ...this.data })
   }
 }
 

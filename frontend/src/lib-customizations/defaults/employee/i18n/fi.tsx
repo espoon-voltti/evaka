@@ -1586,6 +1586,9 @@ export const fi = {
         confirmText: 'Haluatko varmasti poistaa tulotiedon ajalta',
         cancelButton: 'Peruuta',
         deleteButton: 'Poista'
+      },
+      incomeNotifications: {
+        title: 'Muistutus tulotietojen päivittämisestä lähetetty'
       }
     },
     incomeStatement: {

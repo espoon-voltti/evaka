@@ -5,6 +5,7 @@
 import partition from 'lodash/partition'
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
+import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -97,4 +98,22 @@ interface IncomeType {
   multiplier: number
   withCoefficient: boolean
   isSubType: boolean
+}
+
+export async function getIncomeNotifications(
+  personId: UUID
+): Promise<Result<IncomeNotification[]>> {
+  return client
+    .get<JsonOf<Response<IncomeNotification[]>>>(
+      `/incomes/notifications?personId=${personId}`
+    )
+    .then((res) => res.data.data)
+    .then((incomeNotifications) =>
+      incomeNotifications.map((incomeNotification) => ({
+        ...incomeNotification,
+        created: HelsinkiDateTime.parseIso(incomeNotification.created)
+      }))
+    )
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }

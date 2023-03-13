@@ -5,6 +5,8 @@
 import React from 'react'
 
 import { Failure, Result } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
+import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
@@ -22,10 +24,12 @@ import {
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
 import IncomeItemHeader from './IncomeItemHeader'
+import { IncomeNotifications } from './IncomeNotifications'
 
 interface Props {
   incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
+  incomeNotifications: IncomeNotification[]
   isRowOpen: (id: IncomeId) => boolean
   toggleRow: (id: IncomeId) => void
   editing: string | undefined
@@ -42,6 +46,7 @@ interface Props {
 const IncomeList = React.memo(function IncomeList({
   incomes,
   incomeTypeOptions,
+  incomeNotifications,
   isRowOpen,
   toggleRow,
   editing,
@@ -86,6 +91,19 @@ const IncomeList = React.memo(function IncomeList({
     )
   }
 
+  const incomeNotificationsForIncome = React.useCallback(
+    (income: Income) => {
+      return income
+        ? incomeNotifications.filter((incomeNotification) =>
+            new DateRange(income.validFrom, income.validTo || null).includes(
+              incomeNotification.created.toLocalDate()
+            )
+          )
+        : []
+    },
+    [incomeNotifications]
+  )
+
   return (
     <>
       {editing === 'new' && (
@@ -126,6 +144,11 @@ const IncomeList = React.memo(function IncomeList({
             startDeleting={() => setDeleting(item.id)}
             permittedActions={permittedActions}
           />
+          {incomeNotificationsForIncome(item) && (
+            <IncomeNotifications
+              incomeNotifications={incomeNotificationsForIncome(item)}
+            />
+          )}
           {isRowOpen(item.id) ? (
             <>
               <Gap size="m" />

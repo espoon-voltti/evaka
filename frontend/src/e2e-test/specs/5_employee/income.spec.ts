@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -24,7 +25,9 @@ let page: Page
 let personId: UUID
 let incomesSection: IncomeSection
 let fixtures: AreaAndPersonFixtures
-
+let placementStart: LocalDate
+let placementEnd: LocalDate
+let financeAdminId: UUID
 beforeEach(async () => {
   await resetDatabase()
 
@@ -32,6 +35,7 @@ beforeEach(async () => {
   personId = fixtures.enduserGuardianFixture.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  financeAdminId = financeAdmin.data.id
 
   await Fixture.fridgeChild()
     .with({
@@ -41,12 +45,16 @@ beforeEach(async () => {
       endDate: LocalDate.of(2020, 12, 31)
     })
     .save()
+
+  placementStart = LocalDate.of(2020, 1, 1)
+  placementEnd = LocalDate.of(2020, 3, 31)
+
   await Fixture.placement()
     .with({
       childId: fixtures.enduserChildFixtureJari.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: '2020-01-01',
-      endDate: '2020-03-31'
+      startDate: placementStart.formatIso(),
+      endDate: placementEnd.formatIso()
     })
     .save()
 
@@ -227,5 +235,47 @@ describe('Income', () => {
     await incomesSection.cancelEdit()
 
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
+  })
+
+  it('Income notifications are shown', async () => {
+    const incomeEndDate = placementEnd.subMonths(1)
+    await Fixture.income()
+      .with({
+        personId: personId,
+        validFrom: placementStart,
+        validTo: incomeEndDate,
+        updatedBy: financeAdminId,
+        updatedAt: placementStart.toSystemTzDate()
+      })
+      .save()
+
+    await Fixture.incomeNotification()
+      .with({
+        receiverId: personId,
+        notificationType: 'INITIAL_EMAIL',
+        created: incomeEndDate
+          .subWeeks(2)
+          .toHelsinkiDateTime(LocalTime.of(6, 0))
+      })
+      .save()
+
+    await Fixture.incomeNotification()
+      .with({
+        receiverId: personId,
+        notificationType: 'REMINDER_EMAIL',
+        created: incomeEndDate
+          .subWeeks(1)
+          .toHelsinkiDateTime(LocalTime.of(6, 0))
+      })
+      .save()
+
+    await page.reload()
+    await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 2)
+    await incomesSection.incomeNotificationRows
+      .nth(0)
+      .assertTextEquals('15.02.2020 06:00')
+    await incomesSection.incomeNotificationRows
+      .nth(1)
+      .assertTextEquals('22.02.2020 06:00')
   })
 })

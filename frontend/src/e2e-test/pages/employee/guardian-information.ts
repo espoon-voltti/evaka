@@ -304,6 +304,8 @@ export class IncomeSection extends Section {
     '[data-qa="child-income-statement-title"]'
   )
 
+  incomeNotificationRows = this.findAllByDataQa('income-notification-sent-date')
+
   async assertIncomeStatementChildName(nth: number, childName: string) {
     await this.#childIncomeStatementsTitles.nth(nth).assertTextEquals(childName)
   }

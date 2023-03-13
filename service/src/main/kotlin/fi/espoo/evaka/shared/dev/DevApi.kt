@@ -62,6 +62,8 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.service.IncomeNotification
+import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
@@ -514,6 +516,19 @@ class DevApi(
     @PostMapping("/income")
     fun createIncome(db: Database, @RequestBody body: DevIncome) {
         db.connect { dbc -> dbc.transaction { it.insertTestIncome(body) } }
+    }
+
+    @PostMapping("/income-notifications")
+    fun createIncomeNotification(db: Database, @RequestBody body: IncomeNotification) {
+        db.connect { dbc ->
+            dbc.transaction {
+                val id = it.createIncomeNotification(body.receiverId, body.notificationType)
+                it.createUpdate("UPDATE income_notification SET created = :created WHERE id = :id")
+                    .bind("id", id)
+                    .bind("created", body.created)
+                    .execute()
+            }
+        }
     }
 
     @PostMapping("/person")
