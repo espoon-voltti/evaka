@@ -19,6 +19,7 @@ export function createProxy({
   url = evakaServiceUrl
 }: ProxyOptions = {}) {
   return expressHttpProxy(url, {
+    limit: '10mb',
     parseReqBody: !multipart,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
