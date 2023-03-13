@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testRoundTheClockDaycare
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -267,6 +268,30 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
             assertEquals(null, staffAttendances.first { it.employeeId == employee1Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture won't add a departure from a plan when arrival is plan's departure`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2023, 3, 11), LocalTime.of(0, 0))
+        val plannedArrival = now.atStartOfDay().minusHours(16)
+        val plannedDeparture = plannedArrival.plusHours(8)
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, plannedDeparture, BigDecimal(7.0))
+
+            employee1Fixture
+                .addStaffAttendancePlan()
+                .withTime(plannedArrival, plannedDeparture)
+                .save()
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                now.minusDays(1).withTime(LocalTime.of(20, 0)),
+                staffAttendances.first { it.employeeId == employee1Id }.departed
+            )
         }
     }
 }
