@@ -20,7 +20,8 @@ private val standardTsMapping: Map<String, String> =
         "kotlin.Double" to "number",
         "java.math.BigDecimal" to "number",
         "kotlin.Boolean" to "boolean",
-        "java.time.OffsetDateTime" to "Date"
+        "java.time.OffsetDateTime" to "Date",
+        "java.net.URI" to "string"
     )
 
 private val customClassesMapping: Map<String, TSMapping> =

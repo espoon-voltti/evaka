@@ -1345,19 +1345,34 @@ WHERE p.id = ANY(:citizenRecipients)
         .toList()
 }
 
-fun Database.Transaction.markNotificationAsSent(
+fun Database.Transaction.markEmailNotificationAsSent(
     id: MessageRecipientId,
     timestamp: HelsinkiDateTime
 ) {
     val sql =
         """
         UPDATE message_recipients
-        SET notification_sent_at = :timestamp
+        SET email_notification_sent_at = :timestamp
         WHERE id = :id
     """
             .trimIndent()
     this.createUpdate(sql).bind("id", id).bind("timestamp", timestamp).execute()
 }
+
+fun Database.Transaction.markPushNotificationAsSent(
+    recipient: MessageRecipientId,
+    timestamp: HelsinkiDateTime
+) =
+    createUpdate<Any> {
+            sql(
+                """
+UPDATE message_recipients
+SET push_notification_sent_at = ${bind(timestamp)}
+WHERE id = ${bind(recipient)}
+"""
+            )
+        }
+        .execute()
 
 fun Database.Read.getStaffCopyRecipients(
     senderId: MessageAccountId,

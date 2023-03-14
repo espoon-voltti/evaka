@@ -17,7 +17,7 @@ fun Database.Transaction.upsertPushSubscription(
 INSERT INTO mobile_device_push_subscription (device, endpoint, expires, auth_secret, ecdh_key)
 VALUES (
     ${bind(device)},
-    ${bind(subscription.endpoint)},
+    ${bind(subscription.endpoint.toString())},
     ${bind(subscription.expires)},
     ${bind(subscription.authSecret.toByteArray())},
     ${bind(subscription.ecdhKey.toByteArray())}

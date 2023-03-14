@@ -8,6 +8,7 @@ import java.math.BigInteger
 import java.security.AlgorithmParameters
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
+import java.security.SecureRandom
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
@@ -45,12 +46,12 @@ object WebPushCrypto {
         AlgorithmParameters.getInstance("EC")
             .apply { init(curveSpec) }
             .getParameterSpec(ECParameterSpec::class.java)
-    private fun keyPairGenerator(): KeyPairGenerator =
-        KeyPairGenerator.getInstance("EC").apply { initialize(curveSpec) }
+    private fun keyPairGenerator(secureRandom: SecureRandom): KeyPairGenerator =
+        KeyPairGenerator.getInstance("EC").apply { initialize(curveSpec, secureRandom) }
     private fun keyFactory(): KeyFactory = KeyFactory.getInstance("EC")
 
-    fun generateKeyPair(): WebPushKeyPair {
-        val keyPair = keyPairGenerator().generateKeyPair()
+    fun generateKeyPair(secureRandom: SecureRandom): WebPushKeyPair {
+        val keyPair = keyPairGenerator(secureRandom).generateKeyPair()
         return WebPushKeyPair(
             publicKey = keyPair.public as ECPublicKey,
             privateKey = keyPair.private as ECPrivateKey

@@ -9,17 +9,25 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.net.URI
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 data class WebPushSubscription(
-    val endpoint: String,
+    val endpoint: URI,
     val expires: HelsinkiDateTime?,
     val authSecret: List<Byte>,
     val ecdhKey: List<Byte>
-)
+) {
+    init {
+        require(authSecret.size <= 1024) {
+            "Expected auth secret to be at most 1024 bytes, got ${authSecret.size}"
+        }
+        WebPushCrypto.decodePublicKey(ecdhKey.toByteArray())
+    }
+}
 
 @RestController
 class WebPushController {

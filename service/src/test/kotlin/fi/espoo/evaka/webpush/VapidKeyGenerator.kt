@@ -4,8 +4,10 @@
 
 package fi.espoo.evaka.webpush
 
+import java.security.SecureRandom
+
 fun main() {
-    val keyPair = WebPushCrypto.generateKeyPair()
+    val keyPair = WebPushCrypto.generateKeyPair(SecureRandom())
     println("Generated key pair: $keyPair")
     println("Public key: ${keyPair.publicKeyBase64()}")
     println("Private key: ${keyPair.privateKeyBase64()}")
