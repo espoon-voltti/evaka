@@ -10,7 +10,7 @@ import { Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 // ISO local time with nanosecond precision
-const isoPattern = /^(\d{2}):(\d{2}):(\d{2}).(\d{9})$/
+const isoPattern = /^(\d{2}):(\d{2}):(\d{2})(?:.(\d{9}))?$/
 
 const hourMinutePattern = /^(\d{2}):(\d{2})$/
 
@@ -40,7 +40,9 @@ export default class LocalTime implements Ordered<LocalTime> {
     const minute = this.minute.toString().padStart(2, '0')
     const second = this.second.toString().padStart(2, '0')
     const nanosecond = this.nanosecond.toString().padStart(9, '0')
-    return `${hour}:${minute}:${second}.${nanosecond}`
+    return `${hour}:${minute}:${second}${
+      this.nanosecond > 0 ? `.${nanosecond}` : ''
+    }`
   }
 
   isBefore(other: LocalTime): boolean {
