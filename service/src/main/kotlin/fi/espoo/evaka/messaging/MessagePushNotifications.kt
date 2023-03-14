@@ -84,7 +84,10 @@ AND ma.type = 'GROUP'
         device: MobileDeviceId
     ) {
         val notification = tx.getNotification(recipient, device) ?: return
-        webPush?.send(WebPushNotification(uri = notification.endpoint, ttl = Duration.ofDays(1)))
+        webPush?.send(
+            clock,
+            WebPushNotification(uri = notification.endpoint, ttl = Duration.ofDays(1))
+        )
         tx.markPushNotificationAsSent(recipient, clock.now())
     }
 }

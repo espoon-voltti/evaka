@@ -8,10 +8,9 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
+import fi.espoo.evaka.shared.domain.EvakaClock
 import java.net.URI
 import java.time.Duration
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 data class WebPushNotification(val uri: URI, val ttl: Duration)
 
@@ -22,13 +21,13 @@ class WebPush(env: WebPushEnv) {
     val applicationServerKey: String
         get() = vapidKeyPair.publicKeyBase64()
 
-    fun send(notification: WebPushNotification) {
+    fun send(clock: EvakaClock, notification: WebPushNotification) {
         // Reference: RFC8292 (VAPID): https://datatracker.ietf.org/doc/html/rfc8292#section-2
         // 2. Application Server Self-Identification
         val jwt =
             JWT.create()
                 .withAudience(notification.uri.toString())
-                .withExpiresAt(Instant.now().plus(6, ChronoUnit.HOURS))
+                .withExpiresAt(clock.now().plusHours(6).toInstant())
                 .sign(Algorithm.ECDSA256(vapidKeyPair.privateKey))
 
         fuel
