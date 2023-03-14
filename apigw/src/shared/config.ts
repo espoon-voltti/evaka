@@ -339,6 +339,5 @@ export const titaniaConfig = titaniaUsername
 
 export const digitransitApiEnabled = ifNodeEnv(['local', 'test'], false) ?? true
 export const digitransitApiUrl =
-  ifNodeEnv(['local', 'test'], 'https://dev-api.digitransit.fi') ??
-  'https://api.digitransit.fi'
+  process.env.DIGITRANSIT_API_URL ?? 'https://api.digitransit.fi'
 export const digitransitApiKey = process.env.DIGITRANSIT_API_KEY
