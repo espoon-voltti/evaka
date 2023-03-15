@@ -70,14 +70,14 @@ object WebPushCrypto {
 
     fun decodePublicKey(base64: String) = decodePublicKey(base64Decode(base64))
     fun decodePublicKey(bytes: ByteArray): ECPublicKey {
-        val point = domainParams.curve.decodePoint(bytes)
+        val point = domainParams.validatePublicPoint(domainParams.curve.decodePoint(bytes))
         val spec = ECPublicKeySpec(EC5Util.convertPoint(point), parameterSpec)
         return keyFactory().generatePublic(spec) as ECPublicKey
     }
 
     fun decodePrivateKey(base64: String) = decodePrivateKey(base64Decode(base64))
     fun decodePrivateKey(bytes: ByteArray): ECPrivateKey {
-        val n = BigIntegers.fromUnsignedByteArray(bytes)
+        val n = domainParams.validatePrivateScalar(BigIntegers.fromUnsignedByteArray(bytes))
         return keyFactory().generatePrivate(ECPrivateKeySpec(n, parameterSpec)) as ECPrivateKey
     }
 
@@ -85,7 +85,10 @@ object WebPushCrypto {
         // Derive public key point "w" from private key value "s"
         // The standard Java API doesn't seem to have a way to do this easily, so we use Bouncy
         // Castle library utils
-        val w = EC5Util.convertPoint(domainParams.g.multiply(privateKey.s))
+        val w =
+            EC5Util.convertPoint(
+                domainParams.validatePublicPoint(domainParams.g.multiply(privateKey.s))
+            )
         return keyFactory().generatePublic(ECPublicKeySpec(w, parameterSpec)) as ECPublicKey
     }
 }
