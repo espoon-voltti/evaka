@@ -24,6 +24,11 @@ data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateK
     fun privateKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(privateKey))
     fun publicKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(publicKey))
 
+    init {
+        WebPushCrypto.validate(publicKey)
+        WebPushCrypto.validate(privateKey)
+    }
+
     companion object {
         fun fromPrivateKey(privateKey: ECPrivateKey): WebPushKeyPair =
             WebPushKeyPair(
@@ -83,6 +88,14 @@ object WebPushCrypto {
         // The standard Java API doesn't seem to have a way to do this easily, so we use Bouncy
         // Castle library utils
         domainParams.g.multiply(privateKey.s).toPublicKey()
+
+    fun validate(key: ECPublicKey) {
+        domainParams.validatePublicPoint(EC5Util.convertPoint(parameterSpec, key.w))
+    }
+
+    fun validate(key: ECPrivateKey) {
+        domainParams.validatePrivateScalar(key.s)
+    }
 
     private fun ECPoint.toPublicKey(): ECPublicKey =
         keyFactory()
