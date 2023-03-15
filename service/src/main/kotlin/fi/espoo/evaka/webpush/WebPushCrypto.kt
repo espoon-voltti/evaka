@@ -21,9 +21,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
 data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateKey) {
     fun privateKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(privateKey))
     fun publicKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(publicKey))
-    init {
-        assert(privateKey.params == publicKey.params)
-    }
 
     companion object {
         fun fromPrivateKey(privateKey: ECPrivateKey): WebPushKeyPair =
