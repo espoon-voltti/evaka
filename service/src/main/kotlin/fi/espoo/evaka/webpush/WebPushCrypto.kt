@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.webpush
 
+import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
@@ -16,6 +17,7 @@ import java.util.Base64
 import org.bouncycastle.crypto.ec.CustomNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
+import org.bouncycastle.math.ec.ECPoint
 import org.bouncycastle.util.BigIntegers
 
 data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateKey) {
@@ -69,26 +71,31 @@ object WebPushCrypto {
     fun encode(key: ECPrivateKey): ByteArray = domainParams.curve.fromBigInteger(key.s).encoded
 
     fun decodePublicKey(base64: String) = decodePublicKey(base64Decode(base64))
-    fun decodePublicKey(bytes: ByteArray): ECPublicKey {
-        val point = domainParams.validatePublicPoint(domainParams.curve.decodePoint(bytes))
-        val spec = ECPublicKeySpec(EC5Util.convertPoint(point), parameterSpec)
-        return keyFactory().generatePublic(spec) as ECPublicKey
-    }
+    fun decodePublicKey(bytes: ByteArray): ECPublicKey =
+        domainParams.curve.decodePoint(bytes).toPublicKey()
 
     fun decodePrivateKey(base64: String) = decodePrivateKey(base64Decode(base64))
-    fun decodePrivateKey(bytes: ByteArray): ECPrivateKey {
-        val n = domainParams.validatePrivateScalar(BigIntegers.fromUnsignedByteArray(bytes))
-        return keyFactory().generatePrivate(ECPrivateKeySpec(n, parameterSpec)) as ECPrivateKey
-    }
+    fun decodePrivateKey(bytes: ByteArray): ECPrivateKey =
+        BigIntegers.fromUnsignedByteArray(bytes).toPrivateKey()
 
-    fun derivePublicKey(privateKey: ECPrivateKey): ECPublicKey {
-        // Derive public key point "w" from private key value "s"
+    fun derivePublicKey(privateKey: ECPrivateKey): ECPublicKey =
+        // Derive public key point from private key value "s"
         // The standard Java API doesn't seem to have a way to do this easily, so we use Bouncy
         // Castle library utils
-        val w =
-            EC5Util.convertPoint(
-                domainParams.validatePublicPoint(domainParams.g.multiply(privateKey.s))
-            )
-        return keyFactory().generatePublic(ECPublicKeySpec(w, parameterSpec)) as ECPublicKey
-    }
+        domainParams.g.multiply(privateKey.s).toPublicKey()
+
+    private fun ECPoint.toPublicKey(): ECPublicKey =
+        keyFactory()
+            .generatePublic(
+                ECPublicKeySpec(
+                    EC5Util.convertPoint(domainParams.validatePublicPoint(this)),
+                    parameterSpec
+                )
+            ) as ECPublicKey
+
+    private fun BigInteger.toPrivateKey(): ECPrivateKey =
+        keyFactory()
+            .generatePrivate(
+                ECPrivateKeySpec(domainParams.validatePrivateScalar(this), parameterSpec)
+            ) as ECPrivateKey
 }
