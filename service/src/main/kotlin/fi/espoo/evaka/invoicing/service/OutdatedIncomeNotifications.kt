@@ -51,14 +51,14 @@ class OutdatedIncomeNotifications(
 
         val guardiansForInitialNotification =
             tx.guardiansWithOutdatedIncomeWithoutSentNotification(
-                DateRange(clock.today(), clock.today().plusDays(13)),
+                DateRange(clock.today(), clock.today().plusWeeks(4)),
                 IncomeNotificationType.INITIAL_EMAIL,
                 clock.now().toLocalDate()
             )
 
         val guardiansForReminderNotification =
             tx.guardiansWithOutdatedIncomeWithoutSentNotification(
-                    DateRange(clock.today(), clock.today().plusDays(6)),
+                    DateRange(clock.today(), clock.today().plusWeeks(2)),
                     IncomeNotificationType.REMINDER_EMAIL,
                     clock.now().toLocalDate()
                 )
@@ -227,21 +227,25 @@ WITH latest_income AS (
     person_id, valid_to
     FROM income i 
     ORDER BY person_id, valid_to DESC
-)
-SELECT g.guardian_id
-FROM placement pl 
-    JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :today
+), billable_placements_day_after_expiration AS (
+    SELECT pl.id, pl.child_id, g.guardian_id
+    FROM placement pl
+    JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> upper(:checkForExpirationRange)
     JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
-LEFT JOIN guardian g ON g.child_id = pl.child_id
-LEFT JOIN latest_income i ON i.person_id = g.guardian_id
-WHERE daterange(pl.start_date, pl.end_date, '[]') @> i.valid_to
-AND :checkForExpirationRange @> i.valid_to
-AND NOT EXISTS (
+    JOIN guardian g ON g.child_id = pl.child_id
+    JOIN latest_income i ON i.person_id = g.guardian_id
+    WHERE :checkForExpirationRange @> i.valid_to
+     AND daterange(pl.start_date, pl.end_date, '[]') @> (i.valid_to + INTERVAL '1 day')::date
+)
+SELECT pl.guardian_id
+FROM billable_placements_day_after_expiration pl 
+WHERE NOT EXISTS (
     SELECT 1 FROM income_notification 
-    WHERE receiver_id = g.guardian_id AND notification_type = :notificationType AND created > :today - INTERVAL '1 month' )
+    WHERE receiver_id = pl.guardian_id AND notification_type = :notificationType AND created > :today - INTERVAL '1 month' )
 AND NOT EXISTS (
     SELECT 1 FROM income_statement
-    WHERE person_id = g.guardian_id AND :checkForExpirationRange << daterange(start_date, end_date, '[]') AND created > :today - INTERVAL '1 month'
+    WHERE person_id = pl.guardian_id AND created > :today - INTERVAL '1 month'
+        AND (end_date IS NULL OR UPPER(:checkForExpirationRange) <= end_date)
 )    
     """
                 .trimIndent()
