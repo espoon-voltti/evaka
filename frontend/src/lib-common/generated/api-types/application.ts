@@ -175,6 +175,7 @@ export type ApplicationSortColumn =
   | 'DUE_DATE'
   | 'START_DATE'
   | 'STATUS'
+  | 'UNIT_NAME'
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationSortDirection

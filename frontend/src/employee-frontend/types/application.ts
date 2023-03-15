@@ -20,13 +20,6 @@ export interface ApplicationResponse {
   permittedActions: Set<Action.Application>
 }
 
-export type SortByApplications =
-  | 'APPLICATION_TYPE'
-  | 'CHILD_NAME'
-  | 'DUE_DATE'
-  | 'START_DATE'
-  | 'STATUS'
-
 export interface ApplicationSearchParams {
   area?: string
   units?: string

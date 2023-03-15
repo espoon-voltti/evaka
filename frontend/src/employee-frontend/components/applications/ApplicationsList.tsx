@@ -8,7 +8,10 @@ import styled from 'styled-components'
 
 import { Paged } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationSortColumn,
+  ApplicationSummary
+} from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
@@ -52,7 +55,6 @@ import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { SearchOrder } from '../../types'
-import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { hasRole, RequireRole } from '../../utils/roles'
@@ -158,8 +160,8 @@ interface Props {
   applicationsResult: Paged<ApplicationSummary>
   currentPage: number
   setPage: (page: number) => void
-  sortBy: SortByApplications
-  setSortBy: (v: SortByApplications) => void
+  sortBy: ApplicationSortColumn
+  setSortBy: (v: ApplicationSortColumn) => void
   sortDirection: SearchOrder
   setSortDirection: (v: SearchOrder) => void
   reloadApplications: () => void
@@ -194,10 +196,10 @@ const ApplicationsList = React.memo(function Applications({
   const [editedNote, setEditedNote] = useState<UUID | null>(null)
   const [editedNoteText, setEditedNoteText] = useState<string>('')
 
-  const isSorted = (column: SortByApplications) =>
+  const isSorted = (column: ApplicationSortColumn) =>
     sortBy === column ? sortDirection : undefined
 
-  const toggleSort = (column: SortByApplications) => () => {
+  const toggleSort = (column: ApplicationSortColumn) => () => {
     if (sortBy === column) {
       setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {
@@ -550,7 +552,12 @@ const ApplicationsList = React.memo(function Applications({
                 {i18n.applications.list.startDate}
               </SortableTh>
               <Th>{i18n.applications.list.basis}</Th>
-              <Th>{i18n.applications.list.unit}</Th>
+              <SortableTh
+                sorted={isSorted('UNIT_NAME')}
+                onClick={toggleSort('UNIT_NAME')}
+              >
+                {i18n.applications.list.unit}
+              </SortableTh>
               <SortableTh
                 sorted={isSorted('STATUS')}
                 onClick={toggleSort('STATUS')}
