@@ -4,19 +4,19 @@
 
 package fi.espoo.evaka.webpush
 
-import java.math.BigInteger
-import java.security.AlgorithmParameters
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
-import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import java.util.Base64
+import org.bouncycastle.crypto.ec.CustomNamedCurves
+import org.bouncycastle.crypto.params.ECDomainParameters
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
+import org.bouncycastle.util.BigIntegers
 
 data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateKey) {
     fun privateKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(privateKey))
@@ -38,13 +38,11 @@ object WebPushCrypto {
     // 3.1. Diffie-Hellman Key Agreement
     // Reference: RFC8292 (VAPID): https://datatracker.ietf.org/doc/html/rfc8292#section-2
     // 2. Application Server Self-Identification
-    private val curveSpec: ECGenParameterSpec = ECGenParameterSpec("secp256r1")
-    private val parameterSpec: ECParameterSpec =
-        AlgorithmParameters.getInstance("EC")
-            .apply { init(curveSpec) }
-            .getParameterSpec(ECParameterSpec::class.java)
+    private val domainParams = ECDomainParameters(CustomNamedCurves.getByName("P-256"))
+    private val parameterSpec: ECParameterSpec = EC5Util.convertToSpec(domainParams)
     private fun keyPairGenerator(secureRandom: SecureRandom): KeyPairGenerator =
-        KeyPairGenerator.getInstance("EC").apply { initialize(curveSpec, secureRandom) }
+        KeyPairGenerator.getInstance("EC").apply { initialize(parameterSpec, secureRandom) }
+
     private fun keyFactory(): KeyFactory = KeyFactory.getInstance("EC")
 
     fun generateKeyPair(secureRandom: SecureRandom): WebPushKeyPair {
@@ -62,33 +60,32 @@ object WebPushCrypto {
     //     2. Terminology - Base64url Encoding
     fun base64Encode(bytes: ByteArray): String =
         Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+
     fun base64Decode(base64: String): ByteArray = Base64.getUrlDecoder().decode(base64)
 
     fun encode(key: ECPublicKey): ByteArray =
         EC5Util.convertPoint(parameterSpec, key.w).getEncoded(false)
-    fun encode(key: ECPrivateKey): ByteArray = key.s.toByteArray()
+
+    fun encode(key: ECPrivateKey): ByteArray = domainParams.curve.fromBigInteger(key.s).encoded
 
     fun decodePublicKey(base64: String) = decodePublicKey(base64Decode(base64))
     fun decodePublicKey(bytes: ByteArray): ECPublicKey {
-        val spec =
-            ECPublicKeySpec(
-                EC5Util.convertPoint(EC5Util.convertSpec(parameterSpec).curve.decodePoint(bytes)),
-                parameterSpec
-            )
+        val point = domainParams.curve.decodePoint(bytes)
+        val spec = ECPublicKeySpec(EC5Util.convertPoint(point), parameterSpec)
         return keyFactory().generatePublic(spec) as ECPublicKey
     }
 
     fun decodePrivateKey(base64: String) = decodePrivateKey(base64Decode(base64))
     fun decodePrivateKey(bytes: ByteArray): ECPrivateKey {
-        val spec = ECPrivateKeySpec(BigInteger(bytes), parameterSpec)
-        return keyFactory().generatePrivate(spec) as ECPrivateKey
+        val n = BigIntegers.fromUnsignedByteArray(bytes)
+        return keyFactory().generatePrivate(ECPrivateKeySpec(n, parameterSpec)) as ECPrivateKey
     }
 
     fun derivePublicKey(privateKey: ECPrivateKey): ECPublicKey {
         // Derive public key point "w" from private key value "s"
         // The standard Java API doesn't seem to have a way to do this easily, so we use Bouncy
         // Castle library utils
-        val w = EC5Util.convertPoint(EC5Util.convertSpec(parameterSpec).g.multiply(privateKey.s))
+        val w = EC5Util.convertPoint(domainParams.g.multiply(privateKey.s))
         return keyFactory().generatePublic(ECPublicKeySpec(w, parameterSpec)) as ECPublicKey
     }
 }
