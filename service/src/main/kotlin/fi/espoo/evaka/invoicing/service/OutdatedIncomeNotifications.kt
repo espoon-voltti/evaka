@@ -164,12 +164,12 @@ AND email IS NOT NULL
                         Income(
                             id = IncomeId(UUID.randomUUID()),
                             personId = msg.guardianId,
-                            effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                            effect = IncomeEffect.INCOMPLETE,
                             updatedBy = AuthenticatedUser.SystemInternalUser.toString(),
                             validFrom = tomorrow,
                             validTo = null,
                             data = emptyMap(),
-                            notes = "Set automatically because previous income expired"
+                            notes = "Created automatically because previous income expired"
                         ),
                     updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
                 )
