@@ -477,6 +477,20 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementUnitOfChildOfFuturePlacement() =
+        rule<PlacementId> { user, now ->
+            sql(
+                """
+SELECT placement.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM placement
+JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)} AND placement.start_date > ${bind(now)}
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementUnitOfChildOfServiceNeed() =
         rule<ServiceNeedId> { user, _ ->
             sql(
