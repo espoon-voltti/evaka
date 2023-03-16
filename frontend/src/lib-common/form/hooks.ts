@@ -5,9 +5,10 @@
 /* eslint-disable  */
 /* eslint-enable react-hooks/exhaustive-deps */
 
-import { useCallback, useMemo, useState } from 'react'
 import range from 'lodash/range'
+import { useCallback, useMemo, useState } from 'react'
 
+import { boolean } from './fields'
 import {
   AnyForm,
   ErrorOf,
@@ -16,9 +17,8 @@ import {
   OutputOf,
   ShapeOf,
   StateOf,
-  ValidateOf
+  ValidationResult
 } from './types'
-import { boolean } from './fields'
 
 export type InfoStatus = 'warning' | 'success'
 
@@ -42,10 +42,14 @@ export interface BoundForm<F extends AnyForm> {
 }
 
 /** For use with components that only need the state and/or translated validation errors */
-export type BoundFormState<State> = BoundForm<Form<unknown, string, State, unknown>>
+export type BoundFormState<State> = BoundForm<
+  Form<unknown, string, State, unknown>
+>
 
 /** For use with components that only use useFormField etc. */
-export type BoundFormShape<State, Shape> = BoundForm<Form<unknown, string, State, Shape>>
+export type BoundFormShape<State, Shape> = BoundForm<
+  Form<unknown, string, State, Shape>
+>
 
 export function useForm<F extends AnyForm>(
   form: F,
@@ -63,13 +67,16 @@ export function useForm<F extends AnyForm>(
     (error: Exclude<ErrorOf<F>, ObjectFieldError>): string => errorDict[error],
     [errorDict]
   )
-  return {
-    form,
-    state,
-    update,
-    set,
-    ...validationHelpers(form.validate, state, translateError)
-  }
+  return useMemo(
+    () => ({
+      form,
+      state,
+      update,
+      set,
+      ...validationHelpers(() => state, form.validate as any, translateError)
+    }),
+    [form, set, state, translateError, update]
+  )
 }
 
 export function useFormField<F extends AnyForm, K extends keyof ShapeOf<F>>(
@@ -96,13 +103,17 @@ export function useFormField<F extends AnyForm, K extends keyof ShapeOf<F>>(
     [fieldUpdate]
   )
 
-  return {
-    form: field,
-    state: fieldState,
-    update: fieldUpdate,
-    set: fieldSet,
-    ...validationHelpers(field.validate, fieldState, translateError)
-  } as any
+  return useMemo(
+    () =>
+      ({
+        form: field,
+        state: fieldState,
+        update: fieldUpdate,
+        set: fieldSet,
+        ...validationHelpers(() => fieldState, field.validate, translateError)
+      } as any),
+    [field, fieldSet, fieldState, fieldUpdate, translateError]
+  )
 }
 
 export function useFormElem<F extends AnyForm>(
@@ -110,11 +121,10 @@ export function useFormElem<F extends AnyForm>(
   index: number
 ): ShapeOf<F> extends AnyForm
   ? StateOf<F> extends StateOf<ShapeOf<F>>[]
-    ? BoundForm<ShapeOf<F>>
+    ? BoundForm<ShapeOf<F>> | undefined
     : never
   : never {
   const elem = form.shape
-  const elemState = state[index]
   const elemUpdate = useCallback(
     (fn: (prev: StateOf<F>[number]) => StateOf<F>[number]) => {
       update((prevElemStates) =>
@@ -132,13 +142,23 @@ export function useFormElem<F extends AnyForm>(
     [elemUpdate]
   )
 
-  return {
-    form: elem,
-    state: elemState,
-    update: elemUpdate,
-    set: elemSet,
-    ...validationHelpers(elem.validate, elemState, translateError)
-  } as any
+  return useMemo(
+    () =>
+      state.length > index
+        ? ({
+            form: elem,
+            state: state[index],
+            update: elemUpdate,
+            set: elemSet,
+            ...validationHelpers(
+              () => state[index],
+              elem.validate,
+              translateError
+            )
+          } as any)
+        : undefined,
+    [elem, elemSet, elemUpdate, index, state, translateError]
+  )
 }
 
 export function useFormElems<F extends AnyForm>({
@@ -153,6 +173,7 @@ export function useFormElems<F extends AnyForm>({
   : never {
   const elem = form.shape
   const len = state.length
+
   const callbacks = useMemo(
     () =>
       range(len).map((index) => {
@@ -170,45 +191,46 @@ export function useFormElems<F extends AnyForm>({
       }),
     [len, update]
   )
-  return range(len).map((index) => ({
-    form: elem,
-    state: state[index],
-    update: callbacks[index].elemUpdate,
-    set: callbacks[index].elemSet,
-    ...validationHelpers(elem.validate, state[index], translateError)
-  })) as any
+
+  return useMemo(
+    () =>
+      range(len).map((index) => ({
+        form: elem,
+        state: state[index],
+        update: callbacks[index].elemUpdate,
+        set: callbacks[index].elemSet,
+        ...validationHelpers(() => state[index], elem.validate, translateError)
+      })) as any,
+    [callbacks, elem, len, state, translateError]
+  )
 }
 
-function validationHelpers<F extends AnyForm>(
-  validate: ValidateOf<F>,
-  state: StateOf<F>,
-  translateError: (error: Exclude<ErrorOf<F>, ObjectFieldError>) => string
-): Pick<
-  BoundForm<F>,
-  'inputInfo' | 'translateError' | 'isValid' | 'validationError' | 'value'
-> {
-  // TODO: cache the results so that they're recomputed only when state changes
+function validationHelpers<Output, Error, State>(
+  getState: () => State,
+  getValidationResult: (state: State) => ValidationResult<Output, Error>,
+  translateError: (error: Exclude<Error, ObjectFieldError>) => string
+) {
   return {
     inputInfo: (): InputInfo | undefined => {
-      const result = validate(state)
+      const result = getValidationResult(getState())
       if (result.isValid || result.validationError === ObjectFieldError) {
         return undefined
       }
       return {
         status: 'warning',
         text: translateError(
-          result.validationError as Exclude<ErrorOf<F>, ObjectFieldError>
+          result.validationError as Exclude<Error, ObjectFieldError>
         )
       }
     },
     translateError,
-    isValid: () => validate(state).isValid,
+    isValid: () => getValidationResult(getState()).isValid,
     validationError: () => {
-      const result = validate(state)
-      return result.isValid ? undefined : (result.validationError as ErrorOf<F>)
+      const result = getValidationResult(getState())
+      return result.isValid ? undefined : result.validationError
     },
     value: () => {
-      const result = validate(state)
+      const result = getValidationResult(getState())
       if (result.isValid) {
         return result.value
       } else {
