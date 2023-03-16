@@ -50,17 +50,23 @@ data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateK
 // Voluntary Application Server Identification (VAPID) for Web Push
 // Reference: https://datatracker.ietf.org/doc/html/rfc8292
 fun vapidAuthorizationHeader(keyPair: WebPushKeyPair, expiresAt: Instant, uri: URI): String {
+    fun URI.origin(): String {
+        val port = ":$port".takeIf { port != -1 } ?: ""
+        return "$scheme://$host$port"
+    }
+
     // 2. Application Server Self-Identification
     // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-2
     val jwt =
         JWT.create()
-            .withAudience(uri.toString())
+            .withAudience(uri.origin())
             .withExpiresAt(expiresAt)
+            .withSubject("")
             .sign(Algorithm.ECDSA256(keyPair.privateKey))
 
     // 3. VAPID Authentication Scheme
     // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-3
-    return "vapid t=$jwt; k=${keyPair.publicKeyBase64()}"
+    return "vapid t=$jwt, k=${keyPair.publicKeyBase64()}"
 }
 
 // HTTP Encrypted Content Encoding (ECE)
