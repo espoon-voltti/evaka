@@ -16,6 +16,7 @@ import fi.espoo.evaka.webpush.WebPush
 import fi.espoo.evaka.webpush.WebPushCrypto
 import fi.espoo.evaka.webpush.WebPushEndpoint
 import fi.espoo.evaka.webpush.WebPushNotification
+import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
 import java.time.Duration
@@ -55,14 +56,16 @@ AND ma.type = 'GROUP'
             .mapTo<AsyncJob.SendMessagePushNotification>()
             .toList()
 
-    private fun Database.Read.getEndpoint(
+    data class GroupNotification(val groupName: String, val endpoint: WebPushEndpoint)
+
+    private fun Database.Read.getNotification(
         messageRecipient: MessageRecipientId,
         device: MobileDeviceId
-    ): WebPushEndpoint? =
+    ): GroupNotification? =
         createQuery<Any> {
                 sql(
                     """
-SELECT mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
+SELECT dg.name AS group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
 JOIN daycare_group dg ON ma.daycare_group_id = dg.id
@@ -77,11 +80,14 @@ AND ma.type = 'GROUP'
                 )
             }
             .map { row ->
-                WebPushEndpoint(
-                    uri = row.mapColumn("endpoint"),
-                    ecdhPublicKey =
-                        WebPushCrypto.decodePublicKey(row.mapColumn<ByteArray>("ecdh_key")),
-                    authSecret = row.mapColumn("auth_secret")
+                GroupNotification(
+                    groupName = row.mapColumn("group_name"),
+                    WebPushEndpoint(
+                        uri = row.mapColumn("endpoint"),
+                        ecdhPublicKey =
+                            WebPushCrypto.decodePublicKey(row.mapColumn<ByteArray>("ecdh_key")),
+                        authSecret = row.mapColumn("auth_secret")
+                    )
                 )
             }
             .singleOrNull()
@@ -92,13 +98,25 @@ AND ma.type = 'GROUP'
         recipient: MessageRecipientId,
         device: MobileDeviceId
     ) {
-        val endpoint = tx.getEndpoint(recipient, device) ?: return
+        val notification = tx.getNotification(recipient, device) ?: return
         if (webPush != null) {
-            logger.info(mapOf("endpoint" to endpoint.uri)) {
+            logger.info(mapOf("endpoint" to notification.endpoint.uri)) {
                 "Sending push notification to $device"
             }
             try {
-                webPush.send(clock, WebPushNotification(endpoint, ttl = Duration.ofDays(1)))
+                webPush.send(
+                    clock,
+                    WebPushNotification(
+                        notification.endpoint,
+                        ttl = Duration.ofDays(1),
+                        payloads =
+                            listOf(
+                                WebPushPayload.NotificationV1(
+                                    title = "Uusi viesti ryhmälle ${notification.groupName}"
+                                )
+                            )
+                    )
+                )
             } catch (e: WebPush.SubscriptionExpired) {
                 logger.error("Subscription expired for device $device -> deleting", e)
                 tx.deletePushSubscription(device)
