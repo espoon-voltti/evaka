@@ -296,7 +296,7 @@ private fun generateNewValueDecisions(
                                     (child, _) ->
                                     child.dateOfBirth
                                 }
-                                .thenBy { (child, _) -> child.ssn }
+                                .thenByDescending { (child, _) -> child.ssn }
                                 .thenBy { (child, _) -> child.id }
                         )
                         .indexOfFirst { (child, _) -> child == voucherChild }
