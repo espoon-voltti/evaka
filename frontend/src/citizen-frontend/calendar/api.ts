@@ -18,11 +18,14 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import {
   AbsenceRequest,
+  DailyReservationData,
   DailyReservationRequest,
+  ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
@@ -37,14 +40,29 @@ export async function getReservations(
     })
     .then((res) => ({
       ...res.data,
-      dailyData: res.data.dailyData.map((data) => ({
-        ...data,
-        date: LocalDate.parseIso(data.date)
-      })),
-      children: res.data.children.map((child) => ({
-        ...child,
-        placements: child.placements.map((r) => FiniteDateRange.parseJson(r))
-      })),
+      dailyData: res.data.dailyData.map(
+        (data): DailyReservationData => ({
+          ...data,
+          date: LocalDate.parseIso(data.date),
+          children: data.children.map((child) => ({
+            ...child,
+            attendances: child.attendances.map((r) => ({
+              startTime: LocalTime.parseIso(r.startTime),
+              endTime: r.endTime ? LocalTime.parseIso(r.endTime) : null
+            })),
+            reservations: child.reservations.map((r) => ({
+              startTime: LocalTime.parseIso(r.startTime),
+              endTime: LocalTime.parseIso(r.endTime)
+            }))
+          }))
+        })
+      ),
+      children: res.data.children.map(
+        (child): ReservationChild => ({
+          ...child,
+          placements: child.placements.map((r) => FiniteDateRange.parseJson(r))
+        })
+      ),
       reservableDays: Object.entries(res.data.reservableDays).reduce<
         Record<string, FiniteDateRange[]>
       >((acc, [childId, ranges]) => {

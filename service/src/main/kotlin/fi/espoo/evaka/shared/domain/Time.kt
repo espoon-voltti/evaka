@@ -4,15 +4,12 @@
 
 package fi.espoo.evaka.shared.domain
 
-import com.fasterxml.jackson.annotation.JsonFormat
-import fi.espoo.evaka.ForceCodeGenType
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
-import org.jdbi.v3.core.mapper.PropagateNull
 
 fun orMax(date: LocalDate?): LocalDate = date ?: LocalDate.MAX
 
@@ -228,13 +225,4 @@ fun LocalDate.isWeekend() =
 
 fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)
 
-data class TimeRange(
-    @ForceCodeGenType(String::class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    @PropagateNull
-    val start: LocalTime,
-    @ForceCodeGenType(String::class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    @PropagateNull
-    val end: LocalTime
-)
+data class TimeRange(val start: LocalTime, val end: LocalTime)
