@@ -1110,7 +1110,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.copy(
                 id = ChildId(UUID.randomUUID()),
                 dateOfBirth = LocalDate.of(2019, 1, 1),
-                ssn = "010117A901W"
+                ssn = "010117A902X"
             )
 
         // Older
@@ -1118,7 +1118,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_2.copy(
                 id = ChildId(UUID.randomUUID()),
                 dateOfBirth = LocalDate.of(2019, 1, 1),
-                ssn = "010117A902X"
+                ssn = "010117A901W"
             )
 
         db.transaction { tx ->
