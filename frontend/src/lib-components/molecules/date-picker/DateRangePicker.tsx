@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
+import { Form } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
 import { InputInfo } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -15,7 +17,8 @@ import DatePicker, {
   nativeDatePickerEnabled
 } from './DatePicker'
 
-interface DateRangePickerProps {
+interface DateRangePickerProps
+  extends Omit<DatePickerProps, 'date' | 'onChange'> {
   start: LocalDate | null
   end: LocalDate | null
   onChange: (start: LocalDate | null, end: LocalDate | null) => void
@@ -24,13 +27,13 @@ interface DateRangePickerProps {
   'data-qa'?: string
 }
 
-export default React.memo(function DateRangePicker({
+const DateRangePicker = React.memo(function DateRangePicker({
   start,
   end,
   onChange,
   'data-qa': dataQa,
   ...datePickerProps
-}: DateRangePickerProps & Omit<DatePickerProps, 'date' | 'onChange'>) {
+}: DateRangePickerProps) {
   const i18n = useTranslations()
   const [internalStart, setInternalStart] = useState(start)
   const [internalEnd, setInternalEnd] = useState(end)
@@ -117,5 +120,42 @@ export default React.memo(function DateRangePicker({
         }
       />
     </FixedSpaceRow>
+  )
+})
+
+export default DateRangePicker
+
+export interface DateRangePickerFProps
+  extends Omit<DateRangePickerProps, 'start' | 'end' | 'onChange'> {
+  bind: BoundFormShape<
+    {
+      startDate: LocalDate | null
+      endDate: LocalDate | null
+    },
+    {
+      startDate: Form<unknown, string, LocalDate | null, unknown>
+      endDate: Form<unknown, string, LocalDate | null, unknown>
+    }
+  >
+}
+
+export const DateRangePickerF = React.memo(function DateRangePickerF({
+  bind,
+  ...props
+}: DateRangePickerFProps) {
+  const startDate = useFormField(bind, 'startDate')
+  const endDate = useFormField(bind, 'endDate')
+  return (
+    <DateRangePicker
+      {...props}
+      start={startDate.state}
+      end={endDate.state}
+      onChange={(start, end) => {
+        startDate.set(start)
+        endDate.set(end)
+      }}
+      startInfo={'startInfo' in props ? props.startInfo : startDate.inputInfo()}
+      endInfo={'endInfo' in props ? props.endInfo : endDate.inputInfo()}
+    />
   )
 })
