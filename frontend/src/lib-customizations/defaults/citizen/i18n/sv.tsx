@@ -199,7 +199,9 @@ const sv: Translations = {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>
-      `Svara på frånvaroenkäten före ${deadline}.`
+      `Svara på frånvaroenkäten före ${deadline}.`,
+    incomeExpirationCta: (expidationDate: string) =>
+      `Kom ihåg att uppdatera dina inkomstuppgifter senast den ${expidationDate}`
   },
   errorPage: {
     reload: 'Ladda om sidan',

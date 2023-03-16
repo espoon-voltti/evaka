@@ -410,6 +410,7 @@ sealed interface Action {
             READ_CHILD_CONSENT_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
+            READ_EXPIRED_INCOME_DATES(IsCitizen(allowWeakLogin = true).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
             READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS(IsCitizen(allowWeakLogin = true).self()),
             READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),

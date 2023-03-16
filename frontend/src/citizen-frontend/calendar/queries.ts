@@ -12,6 +12,7 @@ import {
   getCalendarEvents,
   getDailyServiceTimeNotifications,
   getHolidayPeriods,
+  getIncomeExpirationDates,
   getReservations,
   postAbsences,
   postFixedPeriodQuestionnaireAnswer,
@@ -32,7 +33,8 @@ const queryKeys = createQueryKeys('calendar', {
   ],
   dailyServiceTimeNotifications: () => ['dailyServiceTimeNotifications'],
   holidayPeriods: () => ['holidayPeriods'],
-  activeQuestionnaires: () => ['activeQuestionnaires']
+  activeQuestionnaires: () => ['activeQuestionnaires'],
+  incomeExpirationDates: () => ['incomeExpirationDates']
 })
 
 export const reservationsQuery = query({
@@ -79,4 +81,14 @@ export const answerFixedPeriodQuestionnaireMutation = mutation({
     activeQuestionnaireQuery.queryKey,
     queryKeys.allReservations()
   ]
+})
+
+export const incomeExpirationDatesQuery = query({
+  api: () =>
+    getIncomeExpirationDates().then((incomeExpirationDates) =>
+      incomeExpirationDates.length > 0
+        ? incomeExpirationDates.sort((l, r) => l.compareTo(r))[0]
+        : null
+    ),
+  queryKey: queryKeys.incomeExpirationDates
 })

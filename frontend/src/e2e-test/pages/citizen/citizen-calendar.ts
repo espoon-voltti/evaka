@@ -151,21 +151,37 @@ export default class CitizenCalendarPage {
     }
   }
 
-  #ctas = this.page.findAllByDataQa('holiday-period-cta')
+  #holidayCtas = this.page.findAllByDataQa('holiday-period-cta')
+  #expiringIncomeCta = this.page.findByDataQa('expiringIncomeCta')
 
   async getHolidayCtaContent(): Promise<string> {
-    return this.#ctas.nth(0).text
+    return this.#holidayCtas.nth(0).text
   }
 
   async clickHolidayCta(): Promise<void> {
-    return this.#ctas.nth(0).click()
+    return this.#holidayCtas.nth(0).click()
+  }
+
+  async getExpiringIncomeCtaContent(): Promise<string> {
+    return this.#expiringIncomeCta.text
+  }
+
+  async clickExpiringIncomeCta(): Promise<void> {
+    return this.#expiringIncomeCta.click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
     await this.page
       .find('[data-holiday-period-cta-status]')
       .assertAttributeEquals('data-holiday-period-cta-status', 'success')
-    await this.#ctas.assertCount(0)
+    await this.#holidayCtas.assertCount(0)
+  }
+
+  async assertExpiringIncomeCtaNotVisible(): Promise<void> {
+    await this.page
+      .find('[data-expiring-income-cta-status]')
+      .assertAttributeEquals('data-expiring-income-cta-status', 'success')
+    await this.#expiringIncomeCta.waitUntilHidden()
   }
 
   #dailyServiceTimeNotifications = this.page.findAllByDataQa(

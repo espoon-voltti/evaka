@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faInfo } from 'Icons'
 import React, { useContext } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
@@ -14,7 +15,11 @@ import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
 import { useCalendarModalState } from './CalendarPage'
-import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
+import {
+  activeQuestionnaireQuery,
+  holidayPeriodsQuery,
+  incomeExpirationDatesQuery
+} from './queries'
 
 type NoCta = { type: 'none' }
 type HolidayCta =
@@ -29,6 +34,23 @@ export default React.memo(function CalendarNotifications() {
 
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
 
+  const { data: incomeExpirationDate } = useQuery(incomeExpirationDatesQuery, {
+    onSuccess: (incomeExpirationDate) => {
+      if (incomeExpirationDate) {
+        addNotification(
+          {
+            icon: faInfo,
+            iconColor: colors.main.m2,
+            children: i18n.ctaToast.incomeExpirationCta(
+              incomeExpirationDate.toString()
+            ),
+            dataQa: 'expiring-income-cta'
+          },
+          'expiring-income-cta'
+        )
+      }
+    }
+  })
   const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery)
   const { data: holidayPeriods } = useQuery(holidayPeriodsQuery, {
     enabled: activeQuestionnaire !== undefined,
@@ -86,6 +108,9 @@ export default React.memo(function CalendarNotifications() {
         activeQuestionnaire !== undefined && holidayPeriods !== undefined
           ? 'success'
           : 'loading'
+      }
+      data-expiring-income-cta-status={
+        incomeExpirationDate !== undefined ? 'success' : 'loading'
       }
     />
   )

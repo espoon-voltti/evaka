@@ -193,4 +193,9 @@ function citizenCalendarTests(env: 'desktop' | 'mobile') {
 
     await dayView.close()
   })
+
+  // TODO
+  test('Citizen does not see expiring income cta if income is not expiring', async () => {
+    await calendarPage.assertExpiringIncomeCtaNotVisible()
+  })
 }

@@ -13,8 +13,6 @@ import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.shared.IncomeId
-import fi.espoo.evaka.shared.IncomeNotificationId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -24,8 +22,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -50,28 +46,31 @@ class OutdatedIncomeNotifications(
         )
 
         val guardiansForInitialNotification =
-            tx.guardiansWithOutdatedIncomeWithoutSentNotification(
-                DateRange(clock.today(), clock.today().plusWeeks(4)),
-                IncomeNotificationType.INITIAL_EMAIL,
-                clock.now().toLocalDate()
-            )
+            tx.expiringIncomeWithoutSentNotification(
+                    clock.now().toLocalDate(),
+                    DateRange(clock.today(), clock.today().plusWeeks(4)),
+                    IncomeNotificationType.INITIAL_EMAIL
+                )
+                .map { it.guardianId }
 
         val guardiansForReminderNotification =
-            tx.guardiansWithOutdatedIncomeWithoutSentNotification(
+            tx.expiringIncomeWithoutSentNotification(
+                    clock.now().toLocalDate(),
                     DateRange(clock.today(), clock.today().plusWeeks(2)),
-                    IncomeNotificationType.REMINDER_EMAIL,
-                    clock.now().toLocalDate()
+                    IncomeNotificationType.REMINDER_EMAIL
                 )
-                .filter { !guardiansForInitialNotification.contains(it) }
+                .filter { !guardiansForInitialNotification.contains(it.guardianId) }
+                .map { it.guardianId }
 
         val guardiansForExpirationNotification =
-            tx.guardiansWithOutdatedIncomeWithoutSentNotification(
+            tx.expiringIncomeWithoutSentNotification(
+                    clock.now().toLocalDate(),
                     DateRange(clock.today(), clock.today()),
-                    IncomeNotificationType.EXPIRED_EMAIL,
-                    clock.now().toLocalDate()
+                    IncomeNotificationType.EXPIRED_EMAIL
                 )
-                .filter { !guardiansForInitialNotification.contains(it) }
-                .filter { !guardiansForReminderNotification.contains(it) }
+                .filter { !guardiansForInitialNotification.contains(it.guardianId) }
+                .filter { !guardiansForReminderNotification.contains(it.guardianId) }
+                .map { it.guardianId }
 
         asyncJobRunner.plan(
             tx,
@@ -191,101 +190,3 @@ AND email IS NOT NULL
         }
     }
 }
-
-fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: LocalDate): Boolean {
-    return createQuery(
-            """
-                    SELECT 1
-                    FROM income
-                    WHERE daterange(valid_from, valid_to, '[]') @> :the_date
-                        AND person_id = :personId
-                """
-                .trimIndent()
-        )
-        .bind("personId", personId)
-        .bind("the_date", theDate)
-        .mapTo<Int>()
-        .list()
-        .isNotEmpty()
-}
-
-enum class IncomeNotificationType {
-    INITIAL_EMAIL,
-    REMINDER_EMAIL,
-    EXPIRED_EMAIL
-}
-
-fun Database.Read.guardiansWithOutdatedIncomeWithoutSentNotification(
-    checkForExpirationRange: DateRange,
-    notificationType: IncomeNotificationType,
-    today: LocalDate
-): List<PersonId> {
-    return createQuery(
-            """
-WITH latest_income AS (
-    SELECT DISTINCT ON (person_id)
-    person_id, valid_to
-    FROM income i 
-    ORDER BY person_id, valid_to DESC
-), billable_placements_day_after_expiration AS (
-    SELECT pl.id, pl.child_id, g.guardian_id
-    FROM placement pl
-    JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> upper(:checkForExpirationRange)
-    JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
-    JOIN guardian g ON g.child_id = pl.child_id
-    JOIN latest_income i ON i.person_id = g.guardian_id
-    WHERE :checkForExpirationRange @> i.valid_to
-     AND daterange(pl.start_date, pl.end_date, '[]') @> (i.valid_to + INTERVAL '1 day')::date
-)
-SELECT pl.guardian_id
-FROM billable_placements_day_after_expiration pl 
-WHERE NOT EXISTS (
-    SELECT 1 FROM income_notification 
-    WHERE receiver_id = pl.guardian_id AND notification_type = :notificationType AND created > :today - INTERVAL '1 month' )
-AND NOT EXISTS (
-    SELECT 1 FROM income_statement
-    WHERE person_id = pl.guardian_id AND created > :today - INTERVAL '1 month'
-        AND (end_date IS NULL OR UPPER(:checkForExpirationRange) <= end_date)
-)    
-    """
-                .trimIndent()
-        )
-        .bind("checkForExpirationRange", checkForExpirationRange)
-        .bind("notificationType", notificationType)
-        .bind("today", today)
-        .mapTo<PersonId>()
-        .list()
-}
-
-data class IncomeNotification(
-    val receiverId: PersonId,
-    val notificationType: IncomeNotificationType,
-    val created: HelsinkiDateTime
-)
-
-fun Database.Transaction.createIncomeNotification(
-    receiverId: PersonId,
-    notificationType: IncomeNotificationType
-): IncomeNotificationId {
-    return createUpdate(
-            """
-        INSERT INTO income_notification(receiver_id, notification_type)
-        VALUES (:receiverId, :notificationType)
-        RETURNING id
-    """
-                .trimIndent()
-        )
-        .bind("receiverId", receiverId)
-        .bind("notificationType", notificationType)
-        .executeAndReturnGeneratedKeys()
-        .mapTo<IncomeNotificationId>()
-        .one()
-}
-
-fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
-    createQuery(
-            """SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = :receiverId"""
-        )
-        .bind("receiverId", receiverId)
-        .mapTo<IncomeNotification>()
-        .list()
