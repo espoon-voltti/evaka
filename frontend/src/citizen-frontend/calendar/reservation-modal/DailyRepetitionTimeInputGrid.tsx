@@ -2,63 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
+import { BoundForm } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 
-import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
-import {
-  bindUnboundedTimeRanges,
-  emptyTimeRange,
-  getCommonTimeRanges,
-  hasReservationsForEveryChild
-} from './utils'
+import { times } from './form'
+
+export interface DailyRepetitionTimeInputGridProps {
+  bind: BoundForm<typeof times>
+  childrenInShiftCare: boolean
+  includedDays: number[]
+  showAllErrors: boolean
+}
 
 export default React.memo(function DailyRepetitionTimeInputGrid({
-  formData,
-  updateForm,
+  bind,
   showAllErrors,
   childrenInShiftCare,
-  includedDays,
-  existingReservations,
-  validationResult,
-  selectedRange
-}: RepetitionTimeInputGridProps) {
+  includedDays
+}: DailyRepetitionTimeInputGridProps) {
   const i18n = useTranslation()
-
-  useEffect(() => {
-    if (!selectedRange) return
-
-    const reservations = existingReservations.filter((reservation) =>
-      selectedRange.includes(reservation.date)
-    )
-
-    if (
-      !hasReservationsForEveryChild(reservations, formData.selectedChildren)
-    ) {
-      updateForm({ dailyTimes: emptyTimeRange })
-      return
-    }
-
-    const commonTimeRanges = getCommonTimeRanges(
-      reservations,
-      formData.selectedChildren
-    )
-
-    if (commonTimeRanges) {
-      updateForm({
-        dailyTimes: bindUnboundedTimeRanges(commonTimeRanges)
-      })
-    }
-  }, [
-    existingReservations,
-    formData.selectedChildren,
-    selectedRange,
-    updateForm
-  ])
 
   const label = (
     <Label>{`${i18n.common.datetime.weekdaysShort[includedDays[0] - 1]}-${
@@ -70,17 +37,15 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
 
   return (
     <TimeInputs
+      mode="normal"
+      bindTimes={bind}
       label={label}
-      times={formData.dailyTimes}
-      updateTimes={(dailyTimes) => updateForm({ dailyTimes })}
-      validationErrors={validationResult.errors?.dailyTimes}
       showAllErrors={showAllErrors}
       allowExtraTimeRange={childrenInShiftCare}
       dataQaPrefix="daily"
       onFocus={(ev) => {
         scrollIntoViewSoftKeyboard(ev.target)
       }}
-      showAbsences={false}
     />
   )
 })

@@ -215,18 +215,18 @@ class ReservationsModal {
   #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
   #repetitionSelect = new Select(this.page.find('[data-qa="repetition"]'))
   #dailyStartTimeInput = new TextInput(
-    this.page.find('[data-qa="daily-start-time-0"]')
+    this.page.find('[data-qa="daily-time-0-start"]')
   )
   #dailyEndTimeInput = new TextInput(
-    this.page.find('[data-qa="daily-end-time-0"]')
+    this.page.find('[data-qa="daily-time-0-end"]')
   )
   #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new TextInput(this.page.find(`[data-qa="weekly-${index}-start-time-0"]`))
+      new TextInput(this.page.find(`[data-qa="weekly-${index}-time-0-start"]`))
   )
   #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new TextInput(this.page.find(`[data-qa="weekly-${index}-end-time-0"]`))
+      new TextInput(this.page.find(`[data-qa="weekly-${index}-time-0-end"]`))
   )
   #weeklyAbsentButtons = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
@@ -236,12 +236,12 @@ class ReservationsModal {
 
   irregularStartTimeInput = (date: LocalDate) =>
     new TextInput(
-      this.page.find(`[data-qa="irregular-${date.formatIso()}-start-time-0"]`)
+      this.page.find(`[data-qa="irregular-${date.formatIso()}-time-0-start"]`)
     )
 
   irregularEndTimeInput = (date: LocalDate) =>
     new TextInput(
-      this.page.find(`[data-qa="irregular-${date.formatIso()}-end-time-0"]`)
+      this.page.find(`[data-qa="irregular-${date.formatIso()}-time-0-end"]`)
     )
 
   #childCheckbox = (childId: string) =>

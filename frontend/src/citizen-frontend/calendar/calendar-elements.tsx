@@ -164,7 +164,8 @@ const groupChildren = (
               type: 'attendance',
               text: child.attendances
                 .map(
-                  ({ startTime, endTime }) => `${startTime}–${endTime ?? ''}`
+                  ({ startTime, endTime }) =>
+                    `${startTime.format()}–${endTime?.format() ?? ''}`
                 )
                 .join(', ')
             }
@@ -182,7 +183,10 @@ const groupChildren = (
               childId: child.childId,
               type: 'reservation',
               text: child.reservations
-                .map(({ startTime, endTime }) => `${startTime}–${endTime}`)
+                .map(
+                  ({ startTime, endTime }) =>
+                    `${startTime.format()}–${endTime.format()}`
+                )
                 .join(', ')
             }
           }

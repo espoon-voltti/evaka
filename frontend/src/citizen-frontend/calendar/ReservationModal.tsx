@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isEqual from 'lodash/isEqual'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { useForm, useFormField } from 'lib-common/form/hooks'
+import { combine } from 'lib-common/form/types'
 import {
   DailyReservationData,
   ReservationChild
@@ -14,21 +17,16 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
-import {
-  Repetition,
-  ReservationFormDataForValidation,
-  validateForm
-} from 'lib-common/reservations'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import Select from 'lib-components/atoms/dropdowns/Select'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
   PlainModal
@@ -38,7 +36,6 @@ import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
@@ -50,6 +47,11 @@ import {
 } from './CalendarModal'
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
+import {
+  initialState,
+  reservationForm,
+  resetTimes
+} from './reservation-modal/form'
 import { getEarliestReservableDate, getLatestReservableDate } from './utils'
 
 interface Props {
@@ -74,54 +76,76 @@ export default React.memo(function ReservationModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const { mutateAsync: postReservations } = useMutationResult(
-    postReservationsMutation
+  const childrenInShiftCare = useMemo(
+    () =>
+      availableChildren.some(
+        ({ maxOperationalDays }) => maxOperationalDays.length == 7
+      ),
+    [availableChildren]
   )
-  const [formData, setFormData] = useState<ReservationFormDataForValidation>({
-    selectedChildren: availableChildren.map((child) => child.id),
-    startDate: initialStart,
-    endDate: initialEnd,
-    repetition: 'DAILY',
-    dailyTimes: [
-      {
-        startTime: '',
-        endTime: ''
-      }
-    ],
-    weeklyTimes: [0, 1, 2, 3, 4, 5, 6].map(() => [
-      {
-        startTime: '',
-        endTime: ''
-      }
-    ]),
-    irregularTimes: {}
-  })
 
-  const updateForm = useCallback(
-    (updated: Partial<ReservationFormDataForValidation>) => {
-      setFormData((prev) => ({
-        ...prev,
-        ...updated
-      }))
-    },
-    []
+  const form = useForm(
+    reservationForm,
+    () => initialState(availableChildren, initialStart, initialEnd, i18n),
+    i18n.validationErrors,
+    {
+      onUpdate: (prevState, nextState, form) => {
+        const prev = combine(
+          form.shape.repetition.validate(prevState.repetition),
+          form.shape.dateRange.validate(prevState.dateRange),
+          form.shape.selectedChildren.validate(prevState.selectedChildren)
+        )
+        const next = combine(
+          form.shape.repetition.validate(nextState.repetition),
+          form.shape.dateRange.validate(nextState.dateRange),
+          form.shape.selectedChildren.validate(nextState.selectedChildren)
+        )
+
+        if (!next.isValid) return nextState
+        const [repetition, selectedRange, selectedChildren] = next.value
+
+        if (!prev.isValid) {
+          return {
+            ...nextState,
+            ...resetTimes(
+              childrenInShiftCare,
+              existingReservations,
+              repetition,
+              selectedRange,
+              selectedChildren
+            )
+          }
+        }
+
+        const [prevRepetition, prevDateRange, prevSelectedChildren] = prev.value
+        if (
+          selectedRange !== undefined &&
+          (prevRepetition !== repetition ||
+            prevDateRange === undefined ||
+            !prevDateRange.isEqual(selectedRange) ||
+            !isEqual(prevSelectedChildren, selectedChildren))
+        ) {
+          return {
+            ...nextState,
+            ...resetTimes(
+              childrenInShiftCare,
+              existingReservations,
+              repetition,
+              selectedRange,
+              selectedChildren
+            )
+          }
+        }
+        return nextState
+      }
+    }
   )
+
+  const selectedChildren = useFormField(form, 'selectedChildren')
+  const repetition = useFormField(form, 'repetition')
+  const dateRange = useFormField(form, 'dateRange')
 
   const [showAllErrors, setShowAllErrors] = useState(false)
-  const validationResult = useMemo(
-    () => validateForm(reservableDays, formData),
-    [reservableDays, formData]
-  )
-
-  const isInvalidDate = useCallback(
-    (date: LocalDate) =>
-      availableChildren.some((child) =>
-        reservableDays[child.id].some((r) => r.includes(date))
-      )
-        ? null
-        : i18n.validationErrors.unselectableDate,
-    [availableChildren, reservableDays, i18n]
-  )
 
   const { minDate, maxDate } = useMemo(
     () => ({
@@ -131,21 +155,7 @@ export default React.memo(function ReservationModal({
     [availableChildren, reservableDays]
   )
 
-  const selectedRange = useMemo(() => {
-    if (!formData.startDate || !formData.endDate) {
-      return
-    }
-
-    return new FiniteDateRange(formData.startDate, formData.endDate)
-  }, [formData.startDate, formData.endDate])
-
-  const childrenInShiftCare = useMemo(
-    () =>
-      availableChildren.some(
-        ({ maxOperationalDays }) => maxOperationalDays.length == 7
-      ),
-    [availableChildren]
-  )
+  const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
 
   const includedDays = useMemo(() => {
     if (!selectedRange) return []
@@ -165,6 +175,10 @@ export default React.memo(function ReservationModal({
         )
     )
   }, [availableChildren, selectedRange])
+
+  const { mutateAsync: postReservations } = useMutationResult(
+    postReservationsMutation
+  )
 
   const [saveError, setSaveError] = useState<string | undefined>()
   const showSaveError = useCallback(
@@ -209,22 +223,13 @@ export default React.memo(function ReservationModal({
                     <SelectionChip
                       key={child.id}
                       text={formatFirstName(child)}
-                      selected={formData.selectedChildren.includes(child.id)}
+                      selected={selectedChildren.state.includes(child.id)}
                       onChange={(selected) => {
-                        if (selected) {
-                          updateForm({
-                            selectedChildren: [
-                              ...formData.selectedChildren,
-                              child.id
-                            ]
-                          })
-                        } else {
-                          updateForm({
-                            selectedChildren: formData.selectedChildren.filter(
-                              (id) => id !== child.id
-                            )
-                          })
-                        }
+                        selectedChildren.update((prev) =>
+                          selected
+                            ? [...prev, child.id]
+                            : prev.filter((id) => id !== child.id)
+                        )
                       }}
                       data-qa={`child-${child.id}`}
                     />
@@ -240,17 +245,7 @@ export default React.memo(function ReservationModal({
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
                 <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
                 <Gap size="xxs" />
-                <Select<Repetition>
-                  items={['DAILY', 'WEEKLY', 'IRREGULAR']}
-                  selectedItem={formData.repetition}
-                  onChange={(value) => {
-                    if (value) updateForm({ repetition: value })
-                  }}
-                  getItemLabel={(item) =>
-                    i18n.calendar.reservationModal.repetitions[item]
-                  }
-                  data-qa="repetition"
-                />
+                <SelectF bind={repetition} data-qa="repetition" />
                 <Gap size="s" />
 
                 <ExpandingInfo
@@ -266,43 +261,26 @@ export default React.memo(function ReservationModal({
                 >
                   <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
                 </ExpandingInfo>
-                <DateRangePicker
-                  start={formData.startDate}
-                  end={formData.endDate}
-                  onChange={(startDate, endDate) =>
-                    updateForm({ startDate, endDate })
-                  }
+                <DateRangePickerF
+                  bind={dateRange}
                   locale={lang}
-                  isInvalidDate={isInvalidDate}
+                  isInvalidDate={() => null} //TODO: isInvalidDate
                   minDate={minDate}
                   maxDate={maxDate}
                   hideErrorsBeforeTouched={!showAllErrors}
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
-                  startInfo={errorToInputInfo(
-                    validationResult.errors?.startDate,
-                    i18n.validationErrors
-                  )}
-                  endInfo={errorToInputInfo(
-                    validationResult.errors?.endDate,
-                    i18n.validationErrors
-                  )}
                 />
 
                 <Gap size="m" />
 
                 {selectedRange ? (
                   <RepetitionTimeInputGrid
-                    formData={formData}
+                    bind={form}
                     childrenInShiftCare={childrenInShiftCare}
                     includedDays={includedDays}
-                    updateForm={updateForm}
                     showAllErrors={showAllErrors}
-                    existingReservations={existingReservations}
-                    validationResult={validationResult}
-                    selectedRange={selectedRange}
-                    repetition={formData.repetition}
                   />
                 ) : (
                   <MissingDateRange>
@@ -329,20 +307,20 @@ export default React.memo(function ReservationModal({
               <AsyncButton
                 primary
                 text={i18n.common.confirm}
-                disabled={formData.selectedChildren.length === 0}
+                disabled={form.state.selectedChildren.length === 0}
                 onClick={() => {
-                  if (validationResult.errors) {
+                  if (!form.isValid()) {
                     setShowAllErrors(true)
                     return
                   } else {
-                    return postReservations(validationResult.requestPayload)
+                    return postReservations(
+                      form.value().toRequest(reservableDays)
+                    )
                   }
                 }}
                 onSuccess={() => {
                   onSuccess(
-                    !validationResult.errors
-                      ? validationResult.containsNonReservableDays
-                      : false
+                    form.value().containsNonReservableDays(reservableDays)
                   )
                 }}
                 onFailure={(reason) => {
