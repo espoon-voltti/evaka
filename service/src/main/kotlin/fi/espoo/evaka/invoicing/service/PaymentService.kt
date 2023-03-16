@@ -75,7 +75,7 @@ class PaymentService(
                 listOf(updatedPayment)
             }
 
-        val sendResult = integrationClient.send(updatedPayments)
+        val sendResult = integrationClient.send(updatedPayments, tx)
         logger.info {
             "Successfully sent ${sendResult.succeeded.size} payments: ${
             sendResult.succeeded.map { it.id }.joinToString(", ")
