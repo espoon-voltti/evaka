@@ -5,11 +5,9 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { errorToInputInfo } from 'citizen-frontend/input-info-helper'
 import { useTranslation } from 'citizen-frontend/localization'
-import { TimeRangeErrors, TimeRanges } from 'lib-common/reservations'
+import { BoundForm, BoundFormState, useFormElem } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
   ExpandingInfoBox,
@@ -17,76 +15,56 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
-import { emptyTimeRange } from './utils'
+import TimeRangeInput from '../TimeRangeInput'
 
-interface BaseTimeInputProps {
+import { emptyTimeRange, times } from './form'
+
+interface TimeInputsProps {
+  bindPresent?: BoundFormState<boolean> | undefined
+  bindTimes: BoundForm<typeof times>
+  mode: 'normal' | 'not-editable' | 'holiday' | undefined
   label: JSX.Element
-  validationErrors: TimeRangeErrors[] | undefined
   showAllErrors: boolean
   allowExtraTimeRange: boolean
   dataQaPrefix?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
-interface TimeInputWithAbsencesProps extends BaseTimeInputProps {
-  times: TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
-  updateTimes: (
-    v: TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
-  ) => void
-  showAbsences: true
-}
-
-interface TimeInputWithoutAbsencesProps extends BaseTimeInputProps {
-  times: TimeRanges | undefined
-  updateTimes: (v: TimeRanges | undefined) => void
-  showAbsences: false
-}
-
-type TimeInputProps = TimeInputWithAbsencesProps | TimeInputWithoutAbsencesProps
-
-export default React.memo(function TimeInputs(props: TimeInputProps) {
+export default React.memo(function TimeInputs({
+  mode,
+  bindPresent,
+  bindTimes,
+  label,
+  showAllErrors,
+  allowExtraTimeRange,
+  dataQaPrefix,
+  onFocus
+}: TimeInputsProps) {
   const i18n = useTranslation()
   const [infoOpen, setInfoOpen] = useState(false)
   const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
 
-  if (!props.times) {
+  const firstTimeRange = useFormElem(bindTimes, 0)
+  const secondTimeRange = useFormElem(bindTimes, 1)
+
+  if (firstTimeRange === undefined) {
+    throw new Error('BUG: at least one time range expected')
+  }
+
+  if (mode === undefined) {
     return (
       <FixedSpaceRow fullWidth>
-        <LeftCell>{props.label}</LeftCell>
+        <LeftCell>{label}</LeftCell>
         <MiddleCell />
         <RightCell />
       </FixedSpaceRow>
     )
   }
-
-  if (props.times === 'absent') {
-    return (
-      <FixedSpaceRow fullWidth>
-        <LeftCell>{props.label}</LeftCell>
-        <MiddleCell textOnly>
-          {i18n.calendar.reservationModal.absent}
-        </MiddleCell>
-        <RightCell>
-          <IconButton
-            data-qa={
-              props.dataQaPrefix
-                ? `${props.dataQaPrefix}-absent-button`
-                : undefined
-            }
-            icon={fasUserMinus}
-            onClick={() => props.updateTimes(emptyTimeRange)}
-            aria-label={i18n.calendar.absentDisable}
-          />
-        </RightCell>
-      </FixedSpaceRow>
-    )
-  }
-
-  if (props.times === 'not-editable') {
+  if (mode === 'not-editable') {
     return (
       <>
         <FixedSpaceRow fullWidth>
-          <LeftCell>{props.label}</LeftCell>
+          <LeftCell>{label}</LeftCell>
           <MiddleCell textOnly>
             {i18n.calendar.reservationModal.absent}
           </MiddleCell>
@@ -102,8 +80,8 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
           <FixedSpaceRow fullWidth>
             <ExpandingInfoBox
               data-qa={
-                props.dataQaPrefix
-                  ? `${props.dataQaPrefix}-absence-by-employee-info-box`
+                dataQaPrefix
+                  ? `${dataQaPrefix}-absence-by-employee-info-box`
                   : undefined
               }
               close={onInfoClick}
@@ -118,96 +96,66 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
     )
   }
 
-  if (props.times === 'holiday') {
+  if (mode === 'holiday') {
     return (
       <FixedSpaceRow fullWidth>
-        <LeftCell>{props.label}</LeftCell>
+        <LeftCell>{label}</LeftCell>
         <MiddleCell textOnly>{i18n.calendar.holiday}</MiddleCell>
         <RightCell />
       </FixedSpaceRow>
     )
   }
 
-  const [timeRange, extraTimeRange] = props.times
+  if (bindPresent && !bindPresent.value()) {
+    return (
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{label}</LeftCell>
+        <MiddleCell textOnly>
+          {i18n.calendar.reservationModal.absent}
+        </MiddleCell>
+        <RightCell>
+          <IconButton
+            data-qa={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
+            icon={fasUserMinus}
+            onClick={() => {
+              bindPresent.set(true)
+              bindTimes.set([emptyTimeRange])
+            }}
+            aria-label={i18n.calendar.absentDisable}
+          />
+        </RightCell>
+      </FixedSpaceRow>
+    )
+  }
+
   return (
     <FixedSpaceRow fullWidth>
-      <LeftCell>{props.label}</LeftCell>
+      <LeftCell>{label}</LeftCell>
       <MiddleCell>
-        <TimeInput
-          value={timeRange.startTime ?? ''}
-          onChange={(value) => {
-            const updatedRange = {
-              startTime: value,
-              endTime: timeRange.endTime ?? ''
-            }
-
-            props.updateTimes(
-              extraTimeRange ? [updatedRange, extraTimeRange] : [updatedRange]
-            )
-          }}
-          info={errorToInputInfo(
-            props.validationErrors?.[0]?.startTime,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!props.showAllErrors}
-          placeholder={i18n.calendar.reservationModal.start}
-          data-qa={
-            props.dataQaPrefix
-              ? `${props.dataQaPrefix}-start-time-0`
-              : undefined
-          }
-          onFocus={props.onFocus}
-        />
-        <span>–</span>
-        <TimeInput
-          value={timeRange.endTime ?? ''}
-          onChange={(value) => {
-            const updatedRange = {
-              startTime: timeRange.startTime ?? '',
-              endTime: value
-            }
-
-            props.updateTimes(
-              extraTimeRange ? [updatedRange, extraTimeRange] : [updatedRange]
-            )
-          }}
-          info={errorToInputInfo(
-            props.validationErrors?.[0]?.endTime,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!props.showAllErrors}
-          placeholder={i18n.calendar.reservationModal.end}
-          data-qa={
-            props.dataQaPrefix ? `${props.dataQaPrefix}-end-time-0` : undefined
-          }
-          onFocus={props.onFocus}
+        <TimeRangeInput
+          bind={firstTimeRange}
+          hideErrorsBeforeTouched={!showAllErrors}
+          data-qa={dataQaPrefix ? `${dataQaPrefix}-time-0` : undefined}
+          onFocus={onFocus}
         />
       </MiddleCell>
       <RightCell>
         <FixedSpaceRow>
-          {props.showAbsences && (
+          {bindPresent !== undefined ? (
             <IconButton
               data-qa={
-                props.dataQaPrefix
-                  ? `${props.dataQaPrefix}-absent-button`
-                  : undefined
+                dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
               }
               icon={faUserMinus}
-              onClick={() => props.updateTimes('absent')}
+              onClick={() => bindPresent.set(false)}
               aria-label={i18n.calendar.absentEnable}
             />
-          )}
-          {!extraTimeRange && props.allowExtraTimeRange ? (
+          ) : null}
+          {secondTimeRange === undefined && allowExtraTimeRange ? (
             <IconButton
               icon={faPlus}
               onClick={() =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: '',
-                    endTime: ''
-                  }
-                ])
+                bindTimes.update((prev) => [prev[0], emptyTimeRange])
               }
               aria-label={i18n.common.add}
             />
@@ -216,64 +164,21 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
           )}
         </FixedSpaceRow>
       </RightCell>
-      {extraTimeRange ? (
+      {secondTimeRange !== undefined ? (
         <FixedSpaceRow fullWidth>
           <LeftCell />
           <MiddleCell>
-            <TimeInput
-              value={extraTimeRange.startTime ?? ''}
-              onChange={(value) =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: value,
-                    endTime: extraTimeRange.endTime ?? ''
-                  }
-                ])
-              }
-              info={errorToInputInfo(
-                props.validationErrors?.[1]?.startTime,
-                i18n.validationErrors
-              )}
-              hideErrorsBeforeTouched={!props.showAllErrors}
-              placeholder={i18n.calendar.reservationModal.start}
-              data-qa={
-                props.dataQaPrefix
-                  ? `${props.dataQaPrefix}-start-time-1`
-                  : undefined
-              }
-              onFocus={props.onFocus}
-            />
-            <span>–</span>
-            <TimeInput
-              value={extraTimeRange.endTime ?? ''}
-              onChange={(value) =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: extraTimeRange.startTime ?? '',
-                    endTime: value
-                  }
-                ])
-              }
-              info={errorToInputInfo(
-                props.validationErrors?.[1]?.endTime,
-                i18n.validationErrors
-              )}
-              hideErrorsBeforeTouched={!props.showAllErrors}
-              placeholder={i18n.calendar.reservationModal.end}
-              data-qa={
-                props.dataQaPrefix
-                  ? `${props.dataQaPrefix}-end-time-1`
-                  : undefined
-              }
-              onFocus={props.onFocus}
+            <TimeRangeInput
+              bind={secondTimeRange}
+              hideErrorsBeforeTouched={!showAllErrors}
+              data-qa={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}
+              onFocus={onFocus}
             />
           </MiddleCell>
           <RightCell>
             <IconButton
               icon={faTrash}
-              onClick={() => props.updateTimes([timeRange])}
+              onClick={() => bindTimes.update((prev) => prev.slice(0, 1))}
               aria-label={i18n.common.delete}
             />
           </RightCell>

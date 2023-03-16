@@ -26,7 +26,7 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-const e = ['desktop', 'mobile'] as const
+const e: ('desktop' | 'mobile')[] = ['desktop', 'mobile']
 describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   let fixtures: AreaAndPersonFixtures
   const today = LocalDate.of(2022, 1, 5)

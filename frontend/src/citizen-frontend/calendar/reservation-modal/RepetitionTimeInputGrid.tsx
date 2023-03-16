@@ -4,51 +4,47 @@
 
 import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
-import {
-  Repetition,
-  ReservationFormDataForValidation,
-  ValidationResult
-} from 'lib-common/reservations'
+import { BoundForm, useFormField } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import DailyRepetitionTimeInputGrid from './DailyRepetitionTimeInputGrid'
 import IrregularRepetitionTimeInputGrid from './IrregularRepetitionTimeInputGrid'
 import WeeklyRepetitionTimeInputGrid from './WeeklyRepetitionTimeInputGrid'
+import { reservationForm } from './form'
 
 export interface RepetitionTimeInputGridProps {
-  formData: ReservationFormDataForValidation
+  bind: BoundForm<typeof reservationForm>
   childrenInShiftCare: boolean
   includedDays: number[]
-  updateForm: (updated: Partial<ReservationFormDataForValidation>) => void
   showAllErrors: boolean
-  existingReservations: DailyReservationData[]
-  validationResult: ValidationResult
-  selectedRange: FiniteDateRange
 }
 
 export default React.memo(function RepetitionTimeInputGrid({
-  repetition,
+  bind,
   ...props
-}: RepetitionTimeInputGridProps & { repetition: Repetition }) {
-  switch (repetition) {
+}: RepetitionTimeInputGridProps) {
+  const repetition = useFormField(bind, 'repetition')
+  const dailyTimes = useFormField(bind, 'dailyTimes')
+  const weeklyTimes = useFormField(bind, 'weeklyTimes')
+  const irregularTimes = useFormField(bind, 'irregularTimes')
+
+  switch (repetition.value()) {
     case 'DAILY':
       return (
         <FixedSpaceColumn>
-          <DailyRepetitionTimeInputGrid {...props} />
+          <DailyRepetitionTimeInputGrid bind={dailyTimes} {...props} />
         </FixedSpaceColumn>
       )
     case 'WEEKLY':
       return (
         <FixedSpaceColumn>
-          <WeeklyRepetitionTimeInputGrid {...props} />
+          <WeeklyRepetitionTimeInputGrid bind={weeklyTimes} {...props} />
         </FixedSpaceColumn>
       )
     case 'IRREGULAR':
       return (
         <FixedSpaceColumn>
-          <IrregularRepetitionTimeInputGrid {...props} />
+          <IrregularRepetitionTimeInputGrid bind={irregularTimes} {...props} />
         </FixedSpaceColumn>
       )
   }

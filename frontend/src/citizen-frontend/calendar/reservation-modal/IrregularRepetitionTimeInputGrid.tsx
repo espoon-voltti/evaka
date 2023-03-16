@@ -2,156 +2,96 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { useLang, useTranslation } from 'citizen-frontend/localization'
-import { TimeRanges } from 'lib-common/reservations'
+import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
-import {
-  allChildrenAreAbsent,
-  allChildrenAreAbsentMarkedByEmployee,
-  bindUnboundedTimeRanges,
-  emptyTimeRange,
-  getCommonTimeRanges,
-  hasReservationsForEveryChild
-} from './utils'
+import { irregularDay, irregularTimes } from './form'
+
+export interface IrregularRepetitionTimeInputGridProps {
+  bind: BoundForm<typeof irregularTimes>
+  childrenInShiftCare: boolean
+  includedDays: number[]
+  showAllErrors: boolean
+}
 
 export default React.memo(function IrregularRepetitionTimeInputGrid({
-  formData,
-  updateForm,
+  bind,
   showAllErrors,
   childrenInShiftCare,
-  includedDays,
-  existingReservations,
-  validationResult,
-  selectedRange
-}: RepetitionTimeInputGridProps) {
-  const i18n = useTranslation()
-  const [lang] = useLang()
-
-  useEffect(() => {
-    if (!selectedRange) return
-
-    const reservations = existingReservations.filter((reservation) =>
-      selectedRange.includes(reservation.date)
-    )
-
-    updateForm({
-      irregularTimes: Object.fromEntries(
-        [...selectedRange.dates()].map<
-          [
-            string,
-            TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
-          ]
-        >((rangeDate) => {
-          const existingTimes = reservations.find(({ date }) =>
-            rangeDate.isEqual(date)
-          )
-
-          if (!existingTimes) {
-            return [rangeDate.formatIso(), emptyTimeRange]
-          }
-
-          if (existingTimes.isHoliday && !childrenInShiftCare) {
-            return [rangeDate.formatIso(), 'holiday']
-          }
-
-          if (
-            allChildrenAreAbsentMarkedByEmployee(
-              [existingTimes],
-              formData.selectedChildren
-            )
-          ) {
-            return [rangeDate.formatIso(), 'not-editable']
-          }
-
-          if (
-            allChildrenAreAbsent([existingTimes], formData.selectedChildren)
-          ) {
-            return [rangeDate.formatIso(), 'absent']
-          }
-
-          if (
-            !hasReservationsForEveryChild(
-              [existingTimes],
-              formData.selectedChildren
-            )
-          ) {
-            return [rangeDate.formatIso(), emptyTimeRange]
-          }
-
-          const commonTimeRanges = getCommonTimeRanges(
-            [existingTimes],
-            formData.selectedChildren
-          )
-
-          if (commonTimeRanges) {
-            return [
-              rangeDate.formatIso(),
-              bindUnboundedTimeRanges(commonTimeRanges)
-            ]
-          }
-
-          return [rangeDate.formatIso(), emptyTimeRange]
-        })
-      )
-    })
-  }, [
-    existingReservations,
-    formData.selectedChildren,
-    selectedRange,
-    updateForm,
-    childrenInShiftCare
-  ])
-
+  includedDays
+}: IrregularRepetitionTimeInputGridProps) {
+  const irregularDays = useFormElems(bind)
   return (
     <>
-      {[...selectedRange.dates()].map((date, index) => (
-        <div
-          data-qa={`time-input-${date.formatIso()}`}
-          key={`shift-care-${date.formatIso()}`}
-        >
-          {index !== 0 && date.getIsoDayOfWeek() === 1 ? <Separator /> : null}
-          {index === 0 || date.getIsoDayOfWeek() === 1 ? (
-            <Week>
-              {i18n.common.datetime.week} {date.getIsoWeek()}
-            </Week>
-          ) : null}
-          {includedDays.includes(date.getIsoDayOfWeek()) && (
-            <TimeInputs
-              label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-              times={
-                formData.irregularTimes[date.formatIso()] ?? emptyTimeRange
-              }
-              updateTimes={(times) =>
-                updateForm({
-                  irregularTimes: {
-                    ...formData.irregularTimes,
-                    [date.formatIso()]: times
-                  }
-                })
-              }
-              validationErrors={
-                validationResult.errors?.irregularTimes?.[date.formatIso()]
-              }
-              showAllErrors={showAllErrors}
-              allowExtraTimeRange={childrenInShiftCare}
-              dataQaPrefix={`irregular-${date.formatIso()}`}
-              onFocus={(ev) => {
-                scrollIntoViewSoftKeyboard(ev.target)
-              }}
-              showAbsences
-            />
-          )}
-        </div>
-      ))}
+      {irregularDays.map((irregularDay, index) => {
+        const date = irregularDay.state.date
+        return (
+          <IrregularDay
+            key={`shift-care-${date.formatIso()}`}
+            bind={irregularDay}
+            index={index}
+            includedDays={includedDays}
+            showAllErrors={showAllErrors}
+            childrenInShiftCare={childrenInShiftCare}
+          />
+        )
+      })}
     </>
+  )
+})
+
+const IrregularDay = React.memo(function IrregularDay({
+  bind,
+  index,
+  includedDays,
+  showAllErrors,
+  childrenInShiftCare
+}: {
+  bind: BoundForm<typeof irregularDay>
+  index: number
+  includedDays: number[]
+  showAllErrors: boolean
+  childrenInShiftCare: boolean
+}) {
+  const i18n = useTranslation()
+  const [lang] = useLang()
+  const date = bind.state.date
+
+  const mode = useFormField(bind, 'mode')
+  const day = useFormField(bind, 'day')
+  const times = useFormField(day, 'times')
+  const present = useFormField(day, 'present')
+
+  return (
+    <div data-qa={`time-input-${date.formatIso()}`}>
+      {index !== 0 && date.getIsoDayOfWeek() === 1 ? <Separator /> : null}
+      {index === 0 || date.getIsoDayOfWeek() === 1 ? (
+        <Week>
+          {i18n.common.datetime.week} {date.getIsoWeek()}
+        </Week>
+      ) : null}
+      {includedDays.includes(date.getIsoDayOfWeek()) && (
+        <TimeInputs
+          label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
+          mode={mode.value()}
+          bindPresent={present}
+          bindTimes={times}
+          showAllErrors={showAllErrors}
+          allowExtraTimeRange={childrenInShiftCare}
+          dataQaPrefix={`irregular-${date.formatIso()}`}
+          onFocus={(ev) => {
+            scrollIntoViewSoftKeyboard(ev.target)
+          }}
+        />
+      )}
+    </div>
   )
 })
 
