@@ -43,7 +43,6 @@ export type ShapeOf<F extends AnyForm> = F extends Form<
 >
   ? Shape
   : never
-export type ValidateOf<F extends AnyForm> = F['validate']
 
 export const ObjectFieldError = 'objectFieldError'
 export type ObjectFieldError = typeof ObjectFieldError

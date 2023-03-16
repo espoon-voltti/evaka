@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import memoize from 'lodash/memoize'
+
 import {
   AnyForm,
   ErrorOf,
@@ -16,7 +18,7 @@ import {
 
 export function value<T>(): Form<T, never, T, unknown> {
   return {
-    validate: (state: T) => ValidationSuccess.of(state),
+    validate: memoize((state: T) => ValidationSuccess.of(state)),
     shape: undefined
   }
 }
@@ -41,7 +43,7 @@ export function object<Fields extends AnyObjectFields>(
   Fields
 > {
   return {
-    validate: (state: ObjectState<Fields>) => {
+    validate: memoize((state: ObjectState<Fields>) => {
       const allFields = Object.entries(fields)
       const validValues = allFields.flatMap(([k, field]) => {
         const validationResult = field.validate(state[k])
@@ -58,7 +60,7 @@ export function object<Fields extends AnyObjectFields>(
       } else {
         return ValidationError.objectFieldError
       }
-    },
+    }),
     shape: fields
   }
 }
@@ -72,7 +74,7 @@ export function array<Elem extends AnyForm>(
   Elem
 > {
   return {
-    validate: (state: StateOf<Elem>[]) => {
+    validate: memoize((state: StateOf<Elem>[]) => {
       const valid = state.flatMap((elemState) => {
         const validationResult = elem.validate(elemState)
         return validationResult.isValid
@@ -84,7 +86,7 @@ export function array<Elem extends AnyForm>(
       } else {
         return ValidationError.objectFieldError
       }
-    },
+    }),
     shape: elem
   }
 }
@@ -104,7 +106,7 @@ export function chained<
   ) => ValidationResult<VOutput, VError>
 ): Form<VOutput, Error | VError, State, Shape> {
   return {
-    validate: (state: State) => mapper(form, state),
+    validate: memoize((state: State) => mapper(form, state)),
     shape: form.shape
   }
 }
@@ -121,7 +123,7 @@ export function transformed<
   transform: (output: Output) => ValidationResult<VOutput, VError>
 ): Form<VOutput, Error | VError, State, Shape> {
   return {
-    validate: (state: State) => form.validate(state).chain(transform),
+    validate: memoize((state: State) => form.validate(state).chain(transform)),
     shape: form.shape
   }
 }
@@ -144,14 +146,15 @@ export function validated<
   validator: (output: Output) => VError | undefined
 ): Form<Output, Error | VError, State, Shape> {
   return {
-    validate: (state: State) =>
+    validate: memoize((state: State) =>
       form.validate(state).chain((value) => {
         const validationError = validator(value)
         if (validationError !== undefined) {
           return ValidationError.of(validationError)
         }
         return ValidationSuccess.of(value)
-      }),
+      })
+    ),
     shape: form.shape
   }
 }
@@ -182,10 +185,11 @@ export type OneOf<Output, Error extends string = string> = Form<
 
 export function oneOf<Output>(): OneOf<Output, never> {
   return {
-    validate: (state) =>
+    validate: memoize((state) =>
       ValidationSuccess.of(
         state.options.find((o) => o.domValue === state.domValue)?.value
-      ),
+      )
+    ),
     shape: undefined
   }
 }
