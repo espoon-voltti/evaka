@@ -79,6 +79,13 @@ WHERE id = :id
         .firstOrNull()
 }
 
+fun Database.Read.isDuplicate(id: PersonId): Boolean =
+    createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
+        .bind("id", id)
+        .mapTo<Boolean>()
+        .findOne()
+        .orElse(false)
+
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
     createQuery(
             """

@@ -285,6 +285,7 @@ export interface ApplicationsOfChild {
   applicationSummaries: CitizenApplicationSummary[]
   childId: UUID
   childName: string
+  duplicateOf: UUID | null
   permittedActions: Record<string, Action.Citizen.Application[]>
 }
 
@@ -355,6 +356,7 @@ export interface CitizenApplicationUpdate {
 */
 export interface CitizenChildren {
   dateOfBirth: LocalDate
+  duplicateOf: UUID | null
   firstName: string
   id: UUID
   lastName: string

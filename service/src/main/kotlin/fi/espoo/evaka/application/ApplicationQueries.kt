@@ -678,20 +678,21 @@ data class CitizenChildren(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
-    val socialSecurityNumber: String?
+    val socialSecurityNumber: String?,
+    val duplicateOf: PersonId?,
 )
 
 fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): List<CitizenChildren> {
     // language=sql
     val sql =
         """
-        SELECT child.id, first_name, last_name, date_of_birth, social_security_number
+        SELECT child.id, first_name, last_name, date_of_birth, social_security_number, duplicate_of
         FROM guardian LEFT JOIN person child ON guardian.child_id = child.id
         WHERE guardian_id = :citizenId
 
         UNION
 
-        SELECT child.id, first_name, last_name, date_of_birth, social_security_number
+        SELECT child.id, first_name, last_name, date_of_birth, social_security_number, duplicate_of
         FROM foster_parent JOIN person child ON foster_parent.child_id = child.id
         WHERE parent_id = :citizenId AND valid_during @> :today
         """

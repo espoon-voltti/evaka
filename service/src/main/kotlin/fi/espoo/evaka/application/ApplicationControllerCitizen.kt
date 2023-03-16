@@ -13,11 +13,13 @@ import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.decision.getSentDecision
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.isDuplicate
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -87,6 +89,7 @@ class ApplicationControllerCitizen(
                             childName = "${child.firstName} ${child.lastName}",
                             applicationSummaries = applications,
                             permittedActions = permittedActions,
+                            duplicateOf = child.duplicateOf,
                         )
                     }
                 }
@@ -188,6 +191,10 @@ class ApplicationControllerCitizen(
                     val child =
                         tx.getPersonById(body.childId)
                             ?: throw IllegalStateException("Child not found")
+
+                    if (tx.isDuplicate(child.id)) {
+                        throw IllegalStateException("Child is duplicate")
+                    }
 
                     tx.insertApplication(
                             type = body.type,
@@ -547,7 +554,8 @@ data class ApplicationsOfChild(
     val childId: ChildId,
     val childName: String,
     val applicationSummaries: List<CitizenApplicationSummary>,
-    val permittedActions: Map<ApplicationId, Set<Action.Citizen.Application>>
+    val permittedActions: Map<ApplicationId, Set<Action.Citizen.Application>>,
+    val duplicateOf: PersonId?,
 )
 
 data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType)
