@@ -18,6 +18,11 @@ import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import java.time.Instant
 import java.util.Base64
+import javax.crypto.Cipher
+import javax.crypto.KeyAgreement
+import javax.crypto.Mac
+import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import org.bouncycastle.crypto.ec.CustomNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
@@ -58,19 +63,81 @@ fun vapidAuthorizationHeader(keyPair: WebPushKeyPair, expiresAt: Instant, uri: U
     return "vapid t=$jwt; k=${keyPair.publicKeyBase64()}"
 }
 
+// HTTP Encrypted Content Encoding (ECE)
+// Reference: https://datatracker.ietf.org/doc/html/rfc8188
+fun httpEncryptedContentEncoding(
+    recordSize: UInt,
+    ikm: ByteArray,
+    keyId: ByteArray,
+    salt: ByteArray,
+    data: ByteArray
+): ByteArray {
+    check(recordSize >= 18u)
+    check(salt.size == 16)
+    check(keyId.size < 256)
+    check(data.size.toUInt() < recordSize - 17u)
+
+    fun toNetworkByteOrder(value: UInt) =
+        byteArrayOf(
+            (value shr 24).toByte(),
+            (value shr 16).toByte(),
+            (value shr 8).toByte(),
+            value.toByte()
+        )
+
+    // 2.1. Encryption Content-Encoding Header
+    // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.1
+    val header =
+        byteArrayOf(
+            *salt,
+            *toNetworkByteOrder(recordSize),
+            keyId.size.toUByte().toByte(),
+            *keyId,
+        )
+    // 2.2. Content-Encryption Key Derivation
+    // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.2
+    val prk = WebPushCrypto.hmacSha256(salt, ikm)
+    val cek =
+        WebPushCrypto.hmacSha256(
+                prk,
+                byteArrayOf(*"Content-Encoding: aes128gcm".toByteArray(), 0x00, 0x01)
+            )
+            .sliceArray(0..15)
+    // 2.3. Nonce Derivation
+    // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.3
+    val nonce =
+        WebPushCrypto.hmacSha256(
+                prk,
+                byteArrayOf(*"Content-Encoding: nonce".toByteArray(), 0x00, 0x01)
+            )
+            .sliceArray(0..11)
+
+    // 2. The "aes128gcm" HTTP Content Coding
+    // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2
+    val paddingDelimiter: Byte =
+        0x02 // we're doing a single record, so this is the "last record delimiter"
+    val cipherText =
+        Cipher.getInstance("AES/GCM/NoPadding")
+            .apply {
+                init(Cipher.ENCRYPT_MODE, SecretKeySpec(cek, "AES"), GCMParameterSpec(128, nonce))
+            }
+            .doFinal(byteArrayOf(*data, paddingDelimiter))
+    return byteArrayOf(*header, *cipherText)
+}
+
 object WebPushCrypto {
     // P-256 curve (a.k.a secp256r1, a.k.a prime256v1)
     // Used by both VAPID (server authentication), and MEWP (message encryption)
     // Reference: RFC8291 (MEWP): https://datatracker.ietf.org/doc/html/rfc8291#section-3.1
-    // 3.1. Diffie-Hellman Key Agreement
+    //   3.1. Diffie-Hellman Key Agreement
     // Reference: RFC8292 (VAPID): https://datatracker.ietf.org/doc/html/rfc8292#section-2
-    // 2. Application Server Self-Identification
+    //   2. Application Server Self-Identification
     private val domainParams = ECDomainParameters(CustomNamedCurves.getByName("P-256"))
     private val parameterSpec: ECParameterSpec = EC5Util.convertToSpec(domainParams)
     private fun keyPairGenerator(secureRandom: SecureRandom): KeyPairGenerator =
         KeyPairGenerator.getInstance("EC").apply { initialize(parameterSpec, secureRandom) }
-
     private fun keyFactory(): KeyFactory = KeyFactory.getInstance("EC")
+    private fun ecdhKeyAgreement(): KeyAgreement = KeyAgreement.getInstance("ECDH")
 
     fun generateKeyPair(secureRandom: SecureRandom): WebPushKeyPair {
         val keyPair = keyPairGenerator(secureRandom).generateKeyPair()
@@ -115,6 +182,41 @@ object WebPushCrypto {
 
     fun validate(key: ECPrivateKey) {
         domainParams.validatePrivateScalar(key.s)
+    }
+
+    private fun generateEcdhSecret(privateKey: ECPrivateKey, publicKey: ECPublicKey): ByteArray {
+        val ecdh = ecdhKeyAgreement()
+        ecdh.init(privateKey)
+        ecdh.doPhase(publicKey, true)
+        return ecdh.generateSecret()
+    }
+
+    fun hmacSha256(key: ByteArray, data: ByteArray): ByteArray {
+        val algorithm = "HmacSHA256"
+        val hmac = Mac.getInstance(algorithm)
+        hmac.init(SecretKeySpec(key, algorithm))
+        return hmac.doFinal(data)
+    }
+
+    // Reference: RFC8291 (MEWP): https://datatracker.ietf.org/doc/html/rfc8291#section-3.3
+    //   3.3. Combining Shared and Authentication Secrets
+    fun generateInputKeyingMaterial(
+        userAgentPublicKey: ECPublicKey,
+        authSecret: ByteArray,
+        applicationServerKeyPair: WebPushKeyPair,
+    ): ByteArray {
+        val ecdhSecret = generateEcdhSecret(applicationServerKeyPair.privateKey, userAgentPublicKey)
+        val prkKey = hmacSha256(authSecret, ecdhSecret)
+        return hmacSha256(
+            prkKey,
+            byteArrayOf(
+                *"WebPush: info".toByteArray(),
+                0x00,
+                *encode(userAgentPublicKey),
+                *encode(applicationServerKeyPair.publicKey),
+                0x01
+            )
+        )
     }
 
     private fun ECPoint.toPublicKey(): ECPublicKey =

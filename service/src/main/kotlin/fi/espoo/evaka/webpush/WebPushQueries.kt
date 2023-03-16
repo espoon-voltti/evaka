@@ -31,3 +31,11 @@ ON CONFLICT (device) DO UPDATE SET
             )
         }
         .execute()
+
+fun Database.Transaction.deletePushSubscription(device: MobileDeviceId) =
+    createUpdate<Any> {
+            sql("""
+DELETE FROM mobile_device_push_subscription WHERE device = ${bind(device)}
+""")
+        }
+        .execute()

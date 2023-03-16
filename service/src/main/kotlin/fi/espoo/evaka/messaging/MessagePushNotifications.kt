@@ -10,10 +10,14 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.webpush.WebPush
+import fi.espoo.evaka.webpush.WebPushCrypto
+import fi.espoo.evaka.webpush.WebPushEndpoint
 import fi.espoo.evaka.webpush.WebPushNotification
-import java.net.URI
+import fi.espoo.evaka.webpush.deletePushSubscription
+import fi.espoo.voltti.logging.loggers.info
 import java.time.Duration
 import org.springframework.stereotype.Service
 
@@ -27,8 +31,6 @@ class MessagePushNotifications(
             db.transaction { tx -> send(tx, clock, job.recipient, job.device) }
         }
     }
-
-    class Notification(val endpoint: URI, val authSecret: ByteArray, val ecdhKey: ByteArray)
 
     fun getAsyncJobs(
         tx: Database.Read,
@@ -53,10 +55,10 @@ AND ma.type = 'GROUP'
             .mapTo<AsyncJob.SendMessagePushNotification>()
             .toList()
 
-    private fun Database.Read.getNotification(
+    private fun Database.Read.getEndpoint(
         messageRecipient: MessageRecipientId,
         device: MobileDeviceId
-    ): Notification? =
+    ): WebPushEndpoint? =
         createQuery<Any> {
                 sql(
                     """
@@ -74,7 +76,14 @@ AND ma.type = 'GROUP'
        """
                 )
             }
-            .mapTo<Notification>()
+            .map { row ->
+                WebPushEndpoint(
+                    uri = row.mapColumn("endpoint"),
+                    ecdhPublicKey =
+                        WebPushCrypto.decodePublicKey(row.mapColumn<ByteArray>("ecdh_key")),
+                    authSecret = row.mapColumn("auth_secret")
+                )
+            }
             .singleOrNull()
 
     fun send(
@@ -83,11 +92,18 @@ AND ma.type = 'GROUP'
         recipient: MessageRecipientId,
         device: MobileDeviceId
     ) {
-        val notification = tx.getNotification(recipient, device) ?: return
-        webPush?.send(
-            clock,
-            WebPushNotification(uri = notification.endpoint, ttl = Duration.ofDays(1))
-        )
+        val endpoint = tx.getEndpoint(recipient, device) ?: return
+        if (webPush != null) {
+            logger.info(mapOf("endpoint" to endpoint.uri)) {
+                "Sending push notification to $device"
+            }
+            try {
+                webPush.send(clock, WebPushNotification(endpoint, ttl = Duration.ofDays(1)))
+            } catch (e: WebPush.SubscriptionExpired) {
+                logger.error("Subscription expired for device $device -> deleting", e)
+                tx.deletePushSubscription(device)
+            }
+        }
         tx.markPushNotificationAsSent(recipient, clock.now())
     }
 }
