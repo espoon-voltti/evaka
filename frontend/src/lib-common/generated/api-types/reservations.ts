@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { UUID } from '../../types'
 
@@ -53,8 +54,8 @@ export interface DailyReservationRequest {
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange
 */
 export interface OpenTimeRange {
-  endTime: string | null
-  startTime: string
+  endTime: LocalTime | null
+  startTime: LocalTime
 }
 
 /**
@@ -86,6 +87,6 @@ export interface ReservationsResponse {
 * Generated from fi.espoo.evaka.reservations.TimeRange
 */
 export interface TimeRange {
-  endTime: string
-  startTime: string
+  endTime: LocalTime
+  startTime: LocalTime
 }
