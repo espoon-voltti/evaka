@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.webpush
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import java.math.BigInteger
+import java.net.URI
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
@@ -13,6 +16,7 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
+import java.time.Instant
 import java.util.Base64
 import org.bouncycastle.crypto.ec.CustomNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
@@ -36,6 +40,22 @@ data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateK
                 privateKey,
             )
     }
+}
+
+// Voluntary Application Server Identification (VAPID) for Web Push
+// Reference: https://datatracker.ietf.org/doc/html/rfc8292
+fun vapidAuthorizationHeader(keyPair: WebPushKeyPair, expiresAt: Instant, uri: URI): String {
+    // 2. Application Server Self-Identification
+    // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-2
+    val jwt =
+        JWT.create()
+            .withAudience(uri.toString())
+            .withExpiresAt(expiresAt)
+            .sign(Algorithm.ECDSA256(keyPair.privateKey))
+
+    // 3. VAPID Authentication Scheme
+    // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-3
+    return "vapid t=$jwt; k=${keyPair.publicKeyBase64()}"
 }
 
 object WebPushCrypto {
