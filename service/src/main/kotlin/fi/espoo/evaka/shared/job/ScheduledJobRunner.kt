@@ -59,6 +59,7 @@ class ScheduledJobRunner(
             )
             .threads(SCHEDULER_THREADS)
             .pollingInterval(POLLING_INTERVAL)
+            .deleteUnresolvedAfter(Duration.ofHours(1))
             .build()
 
     private fun planAsyncJob(db: Database.Connection, job: ScheduledJob, retryCount: Int) {
