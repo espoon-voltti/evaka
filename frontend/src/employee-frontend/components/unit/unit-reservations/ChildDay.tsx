@@ -19,6 +19,7 @@ import {
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { attendanceTimeDiffers } from 'lib-common/reservations'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Light } from 'lib-components/typography'
@@ -35,7 +36,7 @@ type ReservationOrServiceTime =
   | (ServiceTimesTimeRange & { type: 'reservation' | 'service-time' })
   | undefined
 const getReservationOrServiceTimeOfDay = (
-  reservation: TimeRange | null,
+  reservation: JsonOf<TimeRange> | null,
   serviceTimeOfDay: ServiceTimesTimeRange | null
 ): ReservationOrServiceTime =>
   reservation
@@ -54,9 +55,9 @@ interface Props {
   rowIndex: number
   editState?: EditState
   deleteAbsence: (i: number, d: LocalDate) => void
-  updateReservation: (i: number, d: LocalDate, r: TimeRange) => void
+  updateReservation: (i: number, d: LocalDate, r: JsonOf<TimeRange>) => void
   saveReservation: (d: LocalDate) => void
-  updateAttendance: (i: number, d: LocalDate, r: TimeRange) => void
+  updateAttendance: (i: number, d: LocalDate, r: JsonOf<TimeRange>) => void
   saveAttendance: (d: LocalDate) => void
 }
 
@@ -205,8 +206,8 @@ export default React.memo(function ChildDay({
             <AttendanceTime
               data-qa="attendance-start"
               warning={attendanceTimeDiffers(
-                expectedTimeForThisDay?.start,
-                dailyData.attendance?.startTime
+                LocalTime.tryParse(expectedTimeForThisDay?.start ?? ''),
+                LocalTime.tryParse(dailyData.attendance?.startTime ?? '')
               )}
             >
               {renderTime(
@@ -217,8 +218,8 @@ export default React.memo(function ChildDay({
             <AttendanceTime
               data-qa="attendance-end"
               warning={attendanceTimeDiffers(
-                dailyData.attendance?.endTime,
-                expectedTimeForThisDay?.end
+                LocalTime.tryParse(dailyData.attendance?.endTime ?? ''),
+                LocalTime.tryParse(expectedTimeForThisDay?.end ?? '')
               )}
             >
               {renderTime(

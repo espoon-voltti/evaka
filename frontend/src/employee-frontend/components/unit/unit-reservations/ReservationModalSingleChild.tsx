@@ -2,35 +2,59 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useMemo, useState } from 'react'
+import classNames from 'classnames'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import { boolean, localDateRange, localTimeRange } from 'lib-common/form/fields'
 import {
-  Repetition,
-  ReservationFormData,
-  TimeRangeErrors,
-  TimeRanges,
-  validateForm
-} from 'lib-common/reservations'
+  array,
+  chained,
+  mapped,
+  object,
+  oneOf,
+  required,
+  value
+} from 'lib-common/form/form'
+import {
+  BoundForm,
+  BoundFormShape,
+  useForm,
+  useFormElem,
+  useFormElems,
+  useFormField
+} from 'lib-common/form/hooks'
+import {
+  combine,
+  Form,
+  StateOf,
+  ValidationSuccess
+} from 'lib-common/form/types'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
+import { Repetition } from 'lib-common/reservations'
+import { UUID } from 'lib-common/types'
+import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
+import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
+import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import DatePicker, {
+import {
+  DatePickerF,
   DatePickerSpacer
 } from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Translations } from 'lib-customizations/employee'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { postReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
-import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 
 interface Props {
   onClose: () => void
@@ -45,13 +69,163 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz().addYears(1)
 )
 
-type EmployeeReservationFormData = Omit<
-  ReservationFormData,
-  'weeklyTimes' | 'irregularTimes' | 'dailyTimes'
-> & {
-  dailyTimes: TimeRanges
-  weeklyTimes: Array<TimeRanges | undefined>
-  irregularTimes: Record<string, TimeRanges | undefined>
+export const times = array(required(localTimeRange))
+
+const weekDay = chained(
+  object({
+    index: value<number>(),
+    enabled: boolean(),
+    times
+  }),
+  (form, state) =>
+    state.enabled
+      ? form.shape.times.validate(state.times).map((times) => ({
+          index: state.index,
+          times
+        }))
+      : ValidationSuccess.of(undefined)
+)
+
+const irregularDay = object({
+  date: value<LocalDate>(),
+  times
+})
+
+const reservationForm = mapped(
+  object({
+    dateRange: required(localDateRange),
+    repetition: required(oneOf<Repetition>()),
+    dailyTimes: times,
+    weeklyTimes: mapped(array(weekDay), (output) =>
+      output.flatMap((value) => (value !== undefined ? [value] : []))
+    ),
+    irregularTimes: array(irregularDay)
+  }),
+  (output) =>
+    (childId: UUID): DailyReservationRequest[] => {
+      const dates = [...output.dateRange.dates()]
+      switch (output.repetition) {
+        case 'DAILY':
+          return dates.map((date) => ({
+            childId,
+            date,
+            reservations: output.dailyTimes,
+            absent: false
+          }))
+        case 'WEEKLY':
+          return dates
+            .map((date) => {
+              const weekDay = output.weeklyTimes.find(
+                (d) => d.index === date.getIsoDayOfWeek()
+              )
+              return weekDay !== undefined
+                ? {
+                    childId,
+                    date,
+                    reservations: weekDay.times,
+                    absent: false
+                  }
+                : undefined
+            })
+            .flatMap((value) => (value !== undefined ? [value] : []))
+        case 'IRREGULAR':
+          return output.irregularTimes
+            .filter((irregularDay) => {
+              return output.dateRange.includes(irregularDay.date)
+            })
+            .map((irregularDay) => ({
+              childId,
+              date: irregularDay.date,
+              reservations: irregularDay.times,
+              absent: false
+            }))
+      }
+    }
+)
+
+function repetitionOptions(i18n: Translations) {
+  return [
+    {
+      value: 'DAILY' as const,
+      domValue: 'DAILY',
+      label: i18n.unit.attendanceReservations.reservationModal.repetitions.DAILY
+    },
+    {
+      value: 'WEEKLY' as const,
+      domValue: 'WEEKLY',
+      label:
+        i18n.unit.attendanceReservations.reservationModal.repetitions.WEEKLY
+    },
+    {
+      value: 'IRREGULAR' as const,
+      domValue: 'IRREGULAR',
+      label:
+        i18n.unit.attendanceReservations.reservationModal.repetitions.IRREGULAR
+    }
+  ]
+}
+
+export function initialState(
+  initialStart: LocalDate | null,
+  initialEnd: LocalDate | null,
+  i18n: Translations
+): StateOf<typeof reservationForm> {
+  return {
+    dateRange: {
+      startDate: initialStart,
+      endDate: initialEnd
+    },
+    repetition: {
+      domValue: 'DAILY' as const,
+      options: repetitionOptions(i18n)
+    },
+    dailyTimes: [
+      {
+        startTime: '',
+        endTime: ''
+      }
+    ],
+    weeklyTimes: [],
+    irregularTimes: []
+  }
+}
+
+function resetTimes(
+  includedWeekDays: number[],
+  repetition: Repetition,
+  selectedRange: FiniteDateRange
+): {
+  dailyTimes: StateOf<typeof reservationForm['shape']['dailyTimes']>
+  weeklyTimes: StateOf<typeof reservationForm['shape']['weeklyTimes']>
+  irregularTimes: StateOf<typeof reservationForm['shape']['irregularTimes']>
+} {
+  switch (repetition) {
+    case 'DAILY':
+      return {
+        dailyTimes: [{ startTime: '', endTime: '' }],
+        weeklyTimes: [],
+        irregularTimes: []
+      }
+    case 'WEEKLY':
+      return {
+        dailyTimes: [],
+        weeklyTimes: includedWeekDays.map((dayIndex) => ({
+          index: dayIndex,
+          enabled: true,
+          times: [{ startTime: '', endTime: '' }]
+        })),
+        irregularTimes: []
+      }
+    case 'IRREGULAR':
+      return {
+        dailyTimes: [],
+        weeklyTimes: [],
+        irregularTimes: [...selectedRange.dates()].map((date) => ({
+          date,
+          times: [{ startTime: '', endTime: '' }]
+        }))
+      }
+  }
 }
 
 export default React.memo(function ReservationModalSingleChild({
@@ -63,70 +237,71 @@ export default React.memo(function ReservationModalSingleChild({
 }: Props) {
   const { i18n, lang } = useTranslation()
 
-  const [formData, setFormData] = useState<EmployeeReservationFormData>({
-    selectedChildren: [child.id],
-    startDate: LocalDate.todayInSystemTz(),
-    endDate: null,
-    repetition: 'DAILY',
-    dailyTimes: [
-      {
-        startTime: '',
-        endTime: ''
-      }
-    ],
-    weeklyTimes: [0, 1, 2, 3, 4, 5, 6].map(() => [
-      {
-        startTime: '',
-        endTime: ''
-      }
-    ]),
-    irregularTimes: {}
-  })
-
-  const updateForm = (updated: Partial<EmployeeReservationFormData>) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...updated
-    }))
-  }
-
-  const [showAllErrors, setShowAllErrors] = useState(false)
-  const validationResult = useMemo(
-    () => validateForm({ [child.id]: [reservableDates] }, formData),
-    [child.id, formData]
-  )
-
-  const shiftCareRange = useMemo(() => {
-    if (formData.repetition !== 'IRREGULAR') return
-
-    const parsedStartDate = formData.startDate
-    const parsedEndDate = formData.endDate
-
-    if (
-      !parsedStartDate ||
-      !parsedEndDate ||
-      parsedEndDate.isBefore(parsedStartDate)
-    ) {
-      return
-    }
-
-    return [...new FiniteDateRange(parsedStartDate, parsedEndDate).dates()]
-  }, [formData.repetition, formData.startDate, formData.endDate])
-
   const includedDays = useMemo(() => {
     return [1, 2, 3, 4, 5, 6, 7].filter((day) => operationalDays.includes(day))
   }, [operationalDays])
+
+  const form = useForm(
+    reservationForm,
+    () => initialState(LocalDate.todayInSystemTz(), null, i18n),
+    i18n.validationErrors,
+    {
+      onUpdate: (prevState, nextState, form) => {
+        const prev = combine(
+          form.shape.repetition.validate(prevState.repetition),
+          form.shape.dateRange.validate(prevState.dateRange)
+        )
+        const next = combine(
+          form.shape.repetition.validate(nextState.repetition),
+          form.shape.dateRange.validate(nextState.dateRange)
+        )
+        if (!next.isValid) return nextState
+        const [repetition, selectedRange] = next.value
+
+        if (!prev.isValid) {
+          return {
+            ...nextState,
+            ...resetTimes(includedDays, repetition, selectedRange)
+          }
+        }
+
+        const [prevRepetition, prevDateRange] = prev.value
+        if (
+          selectedRange !== undefined &&
+          (prevRepetition !== repetition ||
+            prevDateRange === undefined ||
+            !prevDateRange.isEqual(selectedRange))
+        ) {
+          return {
+            ...nextState,
+            ...resetTimes(includedDays, repetition, selectedRange)
+          }
+        }
+        return nextState
+      }
+    }
+  )
+
+  const repetition = useFormField(form, 'repetition')
+  const dateRange = useFormField(form, 'dateRange')
+  const startDate = useFormField(dateRange, 'startDate')
+  const endDate = useFormField(dateRange, 'endDate')
+  const dailyTimes = useFormField(form, 'dailyTimes')
+  const weeklyTimes = useFormElems(useFormField(form, 'weeklyTimes'))
+  const irregularTimes = useFormElems(useFormField(form, 'irregularTimes'))
+
+  const [showAllErrors, setShowAllErrors] = useState(false)
 
   return (
     <AsyncFormModal
       mobileFullScreen
       title={i18n.unit.attendanceReservations.reservationModal.title}
       resolveAction={() => {
-        if (validationResult.errors) {
+        if (!form.isValid()) {
           setShowAllErrors(true)
           return
         } else {
-          return postReservations(validationResult.requestPayload)
+          return postReservations(form.value()(child.id))
         }
       }}
       onSuccess={() => {
@@ -146,27 +321,16 @@ export default React.memo(function ReservationModalSingleChild({
 
       <H2>{i18n.unit.attendanceReservations.reservationModal.repetition}</H2>
       <Label>{i18n.common.select}</Label>
-      <Select<Repetition>
-        items={['DAILY', 'WEEKLY', 'IRREGULAR']}
-        selectedItem={formData.repetition}
-        onChange={(value) => {
-          if (value) updateForm({ repetition: value })
-        }}
-        getItemLabel={(item) =>
-          i18n.unit.attendanceReservations.reservationModal.repetitions[item]
-        }
-        data-qa="repetition"
-      />
+      <SelectF bind={repetition} data-qa="repetition" />
 
       <H2>{i18n.unit.attendanceReservations.reservationModal.dateRange}</H2>
       <Label>
         {i18n.unit.attendanceReservations.reservationModal.dateRangeLabel}
       </Label>
       <FixedSpaceRow>
-        <DatePicker
-          date={formData.startDate}
+        <DatePickerF
+          bind={startDate}
           data-qa="reservation-start-date"
-          onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
           isInvalidDate={(date) =>
             reservableDates.includes(date)
@@ -175,17 +339,12 @@ export default React.memo(function ReservationModalSingleChild({
           }
           minDate={reservableDates.start}
           maxDate={reservableDates.end}
-          info={errorToInputInfo(
-            validationResult.errors?.startDate,
-            i18n.validationErrors
-          )}
           hideErrorsBeforeTouched={!showAllErrors}
         />
         <DatePickerSpacer />
-        <DatePicker
-          date={formData.endDate}
+        <DatePickerF
+          bind={endDate}
           data-qa="reservation-end-date"
-          onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
           isInvalidDate={(date) =>
             reservableDates.includes(date)
@@ -194,10 +353,6 @@ export default React.memo(function ReservationModalSingleChild({
           }
           minDate={reservableDates.start}
           maxDate={reservableDates.end}
-          info={errorToInputInfo(
-            validationResult.errors?.endDate,
-            i18n.validationErrors
-          )}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={LocalDate.todayInSystemTz()}
         />
@@ -205,7 +360,7 @@ export default React.memo(function ReservationModalSingleChild({
       <Gap size="m" />
 
       <TimeInputGrid>
-        {formData.repetition === 'DAILY' && (
+        {repetition.value() === 'DAILY' ? (
           <TimeInputs
             label={
               <Label>{`${
@@ -216,103 +371,42 @@ export default React.memo(function ReservationModalSingleChild({
                 ]
               }`}</Label>
             }
-            times={formData.dailyTimes}
-            updateTimes={(dailyTimes) =>
-              updateForm({
-                dailyTimes
-              })
-            }
-            validationErrors={validationResult.errors?.dailyTimes}
+            bind={dailyTimes}
             showAllErrors={showAllErrors}
             allowExtraTimeRange={isShiftCareUnit}
           />
-        )}
-
-        {formData.repetition === 'WEEKLY' &&
-          formData.weeklyTimes.map((times, index) =>
-            includedDays.includes(index + 1) ? (
-              <TimeInputs
-                key={`day-${index}`}
-                label={
-                  <Checkbox
-                    label={i18n.common.datetime.weekdaysShort[index]}
-                    checked={!!times}
-                    onChange={(checked) =>
-                      updateForm({
-                        weeklyTimes: [
-                          ...formData.weeklyTimes.slice(0, index),
-                          checked
-                            ? [
-                                {
-                                  startTime: '',
-                                  endTime: ''
-                                }
-                              ]
-                            : undefined,
-                          ...formData.weeklyTimes.slice(index + 1)
-                        ]
-                      })
-                    }
-                  />
-                }
-                times={times}
-                updateTimes={(times) =>
-                  updateForm({
-                    weeklyTimes: [
-                      ...formData.weeklyTimes.slice(0, index),
-                      times,
-                      ...formData.weeklyTimes.slice(index + 1)
-                    ]
-                  })
-                }
-                validationErrors={validationResult.errors?.weeklyTimes?.[index]}
+        ) : repetition.value() === 'WEEKLY' ? (
+          weeklyTimes.length > 0 ? (
+            weeklyTimes.map((times, index) =>
+              includedDays.includes(index + 1) ? (
+                <WeeklyTimeInputs
+                  key={index}
+                  bind={times}
+                  index={index}
+                  showAllErrors={showAllErrors}
+                  allowExtraTimeRange={isShiftCareUnit}
+                />
+              ) : null
+            )
+          ) : (
+            <MissingDateRange>
+              {
+                i18n.unit.attendanceReservations.reservationModal
+                  .missingDateRange
+              }
+            </MissingDateRange>
+          )
+        ) : repetition.value() === 'IRREGULAR' ? (
+          irregularTimes.length > 0 ? (
+            irregularTimes.map((irregularTimesElem, index) => (
+              <IrregularTimeInputs
+                key={index}
+                bind={irregularTimesElem}
+                index={index}
+                includedDays={includedDays}
                 showAllErrors={showAllErrors}
                 allowExtraTimeRange={isShiftCareUnit}
               />
-            ) : null
-          )}
-
-        {formData.repetition === 'IRREGULAR' ? (
-          shiftCareRange ? (
-            shiftCareRange.map((date, index) => (
-              <Fragment key={`shift-care-${date.formatIso()}`}>
-                {index !== 0 && date.getIsoDayOfWeek() === 1 ? (
-                  <Separator />
-                ) : null}
-                {index === 0 || date.getIsoDayOfWeek() === 1 ? (
-                  <Week>
-                    {i18n.common.datetime.week} {date.getIsoWeek()}
-                  </Week>
-                ) : null}
-                {includedDays.includes(date.getIsoDayOfWeek()) && (
-                  <TimeInputs
-                    label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-                    times={
-                      formData.irregularTimes[date.formatIso()] ?? [
-                        {
-                          startTime: '',
-                          endTime: ''
-                        }
-                      ]
-                    }
-                    updateTimes={(times) =>
-                      updateForm({
-                        irregularTimes: {
-                          ...formData.irregularTimes,
-                          [date.formatIso()]: times
-                        }
-                      })
-                    }
-                    validationErrors={
-                      validationResult.errors?.irregularTimes?.[
-                        date.formatIso()
-                      ]
-                    }
-                    showAllErrors={showAllErrors}
-                    allowExtraTimeRange={isShiftCareUnit}
-                  />
-                )}
-              </Fragment>
             ))
           ) : (
             <MissingDateRange>
@@ -328,83 +422,113 @@ export default React.memo(function ReservationModalSingleChild({
   )
 })
 
-const TimeInputs = React.memo(function TimeInputs(props: {
-  label: JSX.Element
-  times: TimeRanges | undefined
-  updateTimes: (v: TimeRanges | undefined) => void
-  validationErrors: TimeRangeErrors[] | undefined
+const WeeklyTimeInputs = React.memo(function WeeklyTimeInputs({
+  bind,
+  index,
+  showAllErrors,
+  allowExtraTimeRange
+}: {
+  bind: BoundForm<typeof weekDay>
+  index: number
   showAllErrors: boolean
   allowExtraTimeRange: boolean
 }) {
   const { i18n } = useTranslation()
 
-  if (!props.times) {
-    return (
-      <>
-        {props.label}
-        <div />
-        <div />
-      </>
-    )
-  }
+  const enabled = useFormField(bind, 'enabled')
+  const times = useFormField(bind, 'times')
 
-  const [timeRange, extraTimeRange] = props.times
+  const enabledCheckbox = (
+    <CheckboxF
+      label={i18n.common.datetime.weekdaysShort[index]}
+      bind={enabled}
+    />
+  )
+  return enabled.value() ? (
+    <TimeInputs
+      key={`day-${index}`}
+      label={enabledCheckbox}
+      bind={times}
+      showAllErrors={showAllErrors}
+      allowExtraTimeRange={allowExtraTimeRange}
+    />
+  ) : (
+    <>
+      {enabledCheckbox}
+      <div />
+      <div />
+    </>
+  )
+})
+
+const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
+  bind,
+  index,
+  showAllErrors,
+  allowExtraTimeRange,
+  includedDays
+}: {
+  bind: BoundForm<typeof irregularDay>
+  index: number
+  showAllErrors: boolean
+  allowExtraTimeRange: boolean
+  includedDays: number[]
+}) {
+  const { i18n, lang } = useTranslation()
+
+  const date = bind.state.date
+  const times = useFormField(bind, 'times')
+
   return (
     <>
-      {props.label}
-      <FixedSpaceRow alignItems="center">
-        <TimeInput
-          data-qa="reservation-start-time"
-          value={timeRange.startTime ?? ''}
-          onChange={(value) => {
-            const updatedRange = {
-              startTime: value,
-              endTime: timeRange.endTime ?? ''
-            }
-
-            props.updateTimes(
-              extraTimeRange ? [updatedRange, extraTimeRange] : [updatedRange]
-            )
-          }}
-          info={errorToInputInfo(
-            props.validationErrors?.[0]?.startTime,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!props.showAllErrors}
+      {index !== 0 && date.getIsoDayOfWeek() === 1 ? <Separator /> : null}
+      {index === 0 || date.getIsoDayOfWeek() === 1 ? (
+        <Week>
+          {i18n.common.datetime.week} {date.getIsoWeek()}
+        </Week>
+      ) : null}
+      {includedDays.includes(date.getIsoDayOfWeek()) && (
+        <TimeInputs
+          label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
+          bind={times}
+          showAllErrors={showAllErrors}
+          allowExtraTimeRange={allowExtraTimeRange}
         />
-        <span>–</span>
-        <TimeInput
-          data-qa="reservation-end-time"
-          value={timeRange.endTime ?? ''}
-          onChange={(value) => {
-            const updatedRange = {
-              startTime: timeRange.startTime ?? '',
-              endTime: value
-            }
+      )}
+    </>
+  )
+})
 
-            props.updateTimes(
-              extraTimeRange ? [updatedRange, extraTimeRange] : [updatedRange]
-            )
-          }}
-          info={errorToInputInfo(
-            props.validationErrors?.[0]?.endTime,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!props.showAllErrors}
-        />
-      </FixedSpaceRow>
-      {!extraTimeRange && props.allowExtraTimeRange ? (
+const TimeInputs = React.memo(function TimeInputs({
+  label,
+  bind,
+  showAllErrors,
+  allowExtraTimeRange
+}: {
+  label: JSX.Element
+  bind: BoundForm<typeof times>
+  showAllErrors: boolean
+  allowExtraTimeRange: boolean
+}) {
+  const { i18n } = useTranslation()
+
+  const timeRange = useFormElem(bind, 0)
+  const extraTimeRange = useFormElem(bind, 1)
+
+  if (timeRange === undefined) {
+    throw new Error('At least one time range expected')
+  }
+
+  return (
+    <>
+      {label}
+      <TimeRangeInput bind={timeRange} showAllErrors={showAllErrors} />
+      {!extraTimeRange && allowExtraTimeRange ? (
         <IconButton
           icon={faPlus}
           data-qa="add-new-reservation-timerange"
           onClick={() =>
-            props.updateTimes([
-              timeRange,
-              {
-                startTime: '',
-                endTime: ''
-              }
-            ])
+            bind.update((prev) => [...prev, { startTime: '', endTime: '' }])
           }
           aria-label={i18n.common.addNew}
         />
@@ -414,53 +538,61 @@ const TimeInputs = React.memo(function TimeInputs(props: {
       {extraTimeRange ? (
         <>
           <div />
-          <FixedSpaceRow alignItems="center">
-            <TimeInput
-              data-qa="reservation-start-time"
-              value={extraTimeRange.startTime ?? ''}
-              onChange={(value) =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: value,
-                    endTime: extraTimeRange.endTime ?? ''
-                  }
-                ])
-              }
-              info={errorToInputInfo(
-                props.validationErrors?.[1]?.startTime,
-                i18n.validationErrors
-              )}
-              hideErrorsBeforeTouched={!props.showAllErrors}
-            />
-            <span>–</span>
-            <TimeInput
-              data-qa="reservation-end-time"
-              value={extraTimeRange.endTime ?? ''}
-              onChange={(value) =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: extraTimeRange.startTime ?? '',
-                    endTime: value
-                  }
-                ])
-              }
-              info={errorToInputInfo(
-                props.validationErrors?.[1]?.endTime,
-                i18n.validationErrors
-              )}
-              hideErrorsBeforeTouched={!props.showAllErrors}
-            />
-          </FixedSpaceRow>
+          <TimeRangeInput bind={extraTimeRange} showAllErrors={showAllErrors} />
           <IconButton
             icon={faTrash}
-            onClick={() => props.updateTimes([timeRange])}
+            onClick={() => bind.update((prev) => prev.slice(0, 1))}
             aria-label={i18n.common.remove}
           />
         </>
       ) : null}
     </>
+  )
+})
+
+const TimeRangeInput = React.memo(function TimeRangeInput({
+  bind,
+  showAllErrors
+}: {
+  bind: BoundFormShape<
+    { startTime: string; endTime: string },
+    {
+      startTime: Form<unknown, string, string, unknown>
+      endTime: Form<unknown, string, string, unknown>
+    }
+  >
+  showAllErrors: boolean
+}) {
+  const [touched, setTouched] = useState([false, false])
+  const bothTouched = touched[0] && touched[1]
+
+  const startTime = useFormField(bind, 'startTime')
+  const endTime = useFormField(bind, 'endTime')
+  const inputInfo = bind.inputInfo()
+  return (
+    <div>
+      <FixedSpaceRow alignItems="center">
+        <TimeInputF
+          data-qa="reservation-start-time"
+          bind={startTime}
+          onBlur={() => setTouched(([_, t]) => [true, t])}
+          hideErrorsBeforeTouched={!showAllErrors}
+        />
+        <span>–</span>
+        <TimeInputF
+          data-qa="reservation-end-time"
+          bind={endTime}
+          onBlur={() => setTouched(([t, _]) => [t, true])}
+          hideErrorsBeforeTouched={!showAllErrors}
+        />
+      </FixedSpaceRow>
+      {inputInfo !== undefined && (showAllErrors || bothTouched) ? (
+        <InputFieldUnderRow className={classNames(inputInfo.status)}>
+          <span>{inputInfo.text}</span>
+          <UnderRowStatusIcon status={inputInfo?.status} />
+        </InputFieldUnderRow>
+      ) : undefined}
+    </div>
   )
 })
 

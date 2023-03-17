@@ -8,6 +8,7 @@ import styled, { css } from 'styled-components'
 import { Result } from 'lib-common/api'
 import { OperationalDay } from 'lib-common/api-types/reservations'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import { JsonOf } from 'lib-common/json'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
@@ -179,7 +180,7 @@ export const TimeRangeEditor = React.memo(function TimeRangeEditor({
   save
 }: {
   timeRange: TimeRangeWithErrors
-  update: (v: TimeRange) => void
+  update: (v: JsonOf<TimeRange>) => void
   save: () => void
 }) {
   const { startTime, endTime, errors } = timeRange
