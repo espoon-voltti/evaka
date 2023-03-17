@@ -59,6 +59,7 @@ class ScheduledJobRunner(
             )
             .threads(SCHEDULER_THREADS)
             .pollingInterval(POLLING_INTERVAL)
+            .pollUsingLockAndFetch(0.5, 1.0)
             .deleteUnresolvedAfter(Duration.ofHours(1))
             .build()
 
