@@ -676,7 +676,7 @@ export const fi = {
         dateRange: 'Tuen tarve ajalle',
         capacityFactor: 'Lapsen tuen kerroin',
         capacityFactorInfo:
-          'Kapasiteetti määräytyy yleensä lapsen iän ja palvelun tarpeen mukaan. Mikäli lapsella on sellainen tuen tarve, joka lisää kapasiteettia, lisätään tuen tarpeen kerroin tähän. Tuen tarpeen ja kertoimen lisää varhaiserityiskasvatuksen koordinaattori.' as ReactNode,
+          'Kapasiteetti määräytyy yleensä lapsen iän ja palveluntarpeen mukaan. Mikäli lapsella on sellainen tuki, joka käyttää kapasiteettia enemmän, lisää tuen kerroin tähän kohtaan. Esim. erityisryhmässä tukea tarvitsevan lapsen kerroin on 2,33' as ReactNode,
         bases: 'Perusteet'
       },
       create: 'Luo uusi tuen tarpeen ajanjakso',
@@ -702,21 +702,22 @@ export const fi = {
         measureTypes: {
           SPECIAL_ASSISTANCE_DECISION: 'Erityisen tuen päätös\n',
           SPECIAL_ASSISTANCE_DECISION_INFO:
-            'Lapsella on pidennetty oppivelvollisuus.',
+            'Laita varhaiskasvatuksessa olevalle lapselle merkintä tähän kohtaan siitä päivästä lukien, kun päätös/kuuleminen on tehty. Laita esiopetuksessa olevalle lapselle merkintä, kun perusopetuslain mukainen erityisen tuen päätös on tehty.Esiopetuksessa ja liittyvässä varhaiskasvatuksessa merkintä laitetaan aina esiopetusajan päätöksen mukaan.',
           INTENSIFIED_ASSISTANCE: 'Tehostettu tuki',
           INTENSIFIED_ASSISTANCE_INFO:
-            'Lapsella on avustamispalvelu tai lapsi on pedagogisesti vahvistetussa ryhmässä. Koskee myös osaa laaja-alaisen veon tukea saavista lapsista. ',
+            'Laita varhaiskasvatuksessa olevalle lapselle merkintä tähän kohtaan siitä päivästä lukien, kun päätös on tehtyLaita esiopetuksessa tai valmistavassa opetuksessa merkintä, kun tehostetusta tuesta on sovittu. Esiopetuksessa/valmistavassa opetuksessa ja liittyvässä varhaiskasvatuksessa merkintä laitetaan aina esiopetusajan päätöksen mukaan.',
           EXTENDED_COMPULSORY_EDUCATION: 'Pidennetty oppivelvollisuus',
           EXTENDED_COMPULSORY_EDUCATION_INFO:
-            'Päätös tehdään perusopetuksessa.',
+            'Lapselle on tehty perusopetuksen toimesta pidennetyn oppivelvollisuuden päätös. Huom! Muista laittaa merkintä myös kohtaan erityisen tuen päätös sekä tukitoimiin, joita lapsella on.',
           CHILD_SERVICE: 'Lastensuojelu',
           CHILD_SERVICE_INFO:
-            'Merkitään lapselle, jolla varhaiskasvatus on lastensuojelun avohuollon tukitoimena perhe- ja sosiaalipalvelujen päätöksellä.',
+            'Lapsi on ohjattu lastensuojelun toimesta varhaiskasvatukseen. (Lapsen varhaiskasvatus on maksutonta)',
           CHILD_ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
           CHILD_ACCULTURATION_SUPPORT_INFO:
-            'Lapsen tuen tarpeen perusteella järjestäjälle myönnetty korvaus (ELY)',
+            'Pakolais-, turvapaikanhakija tmv. Taustalla oleva lapsi, jonka tuen järjestämisestä on myönnetty korvaus (ELY)',
           TRANSPORT_BENEFIT: 'Kuljetusetu',
-          TRANSPORT_BENEFIT_INFO: 'Kuljetusetu'
+          TRANSPORT_BENEFIT_INFO:
+            'Lapsella on kuljetuspäätös varhaiskasvatukseen ja/tai esiopetukseen. Päätöksen ja merkinnän tekee varhaiskasvatuksen asiantuntija (lasten tukemisen tai esiopetuksen)'
         },
         otherActionPlaceholder:
           'Voit kirjoittaa tähän lisätietoa muista tukitoimista.'
