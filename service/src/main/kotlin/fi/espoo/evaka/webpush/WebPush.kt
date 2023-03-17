@@ -4,40 +4,140 @@
 
 package fi.espoo.evaka.webpush
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.Headers
 import fi.espoo.evaka.WebPushEnv
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.domain.EvakaClock
+import java.lang.RuntimeException
 import java.net.URI
+import java.security.SecureRandom
+import java.security.interfaces.ECPublicKey
 import java.time.Duration
+import java.time.Instant
 
-data class WebPushNotification(val uri: URI, val ttl: Duration)
+data class WebPushNotification(
+    val endpoint: WebPushEndpoint,
+    val ttl: Duration,
+    val payloads: List<WebPushPayload>
+)
+
+enum class WebPushPayloadType {
+    NotificationV1,
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class WebPushPayload(val type: WebPushPayloadType) {
+    data class NotificationV1(val title: String) :
+        WebPushPayload(WebPushPayloadType.NotificationV1)
+}
+
+class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
+
+class WebPushRequest(
+    val uri: URI,
+    val headers: WebPushRequestHeaders,
+    val body: ByteArray,
+) {
+    fun withVapid(keyPair: WebPushKeyPair, expiresAt: Instant) =
+        WebPushRequest(
+            uri,
+            headers.copy(authorization = vapidAuthorizationHeader(keyPair, expiresAt, uri)),
+            body,
+        )
+    companion object {
+        // Message Encryption for Web Push (MEWP)
+        // Reference: https://datatracker.ietf.org/doc/html/rfc8291
+        fun createEncryptedPushMessage(
+            ttl: Duration,
+            endpoint: WebPushEndpoint,
+            messageKeyPair: WebPushKeyPair,
+            salt: ByteArray,
+            data: ByteArray,
+        ): WebPushRequest {
+            val ikm =
+                WebPushCrypto.generateInputKeyingMaterial(
+                    userAgentPublicKey = endpoint.ecdhPublicKey,
+                    authSecret = endpoint.authSecret,
+                    applicationServerKeyPair = messageKeyPair,
+                )
+            return WebPushRequest(
+                uri = endpoint.uri,
+                headers =
+                    WebPushRequestHeaders(
+                        ttl = ttl.toSeconds().toString(),
+                        contentEncoding = "aes128gcm"
+                    ),
+                body =
+                    httpEncryptedContentEncoding(
+                        recordSize = 4096u,
+                        ikm = ikm,
+                        keyId = WebPushCrypto.encode(messageKeyPair.publicKey),
+                        salt = salt,
+                        data = data,
+                    )
+            )
+        }
+    }
+}
+
+data class WebPushRequestHeaders(
+    val ttl: String,
+    val contentEncoding: String,
+    val authorization: String? = null,
+) {
+    fun toTypedArray(): Array<Pair<String, String>> =
+        listOfNotNull(
+                "TTL" to ttl,
+                "Content-Encoding" to contentEncoding,
+                authorization?.let { "Authorization" to it },
+            )
+            .toTypedArray()
+}
+
+data class WebPushMessage(val uri: URI)
 
 class WebPush(env: WebPushEnv) {
     private val fuel = FuelManager()
+    private val secureRandom = SecureRandom()
+    private val jsonMapper = defaultJsonMapper()
     private val vapidKeyPair: WebPushKeyPair =
         WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey.value))
     val applicationServerKey: String
         get() = vapidKeyPair.publicKeyBase64()
 
-    fun send(clock: EvakaClock, notification: WebPushNotification) {
-        // Reference: RFC8292 (VAPID): https://datatracker.ietf.org/doc/html/rfc8292#section-2
-        // 2. Application Server Self-Identification
-        val jwt =
-            JWT.create()
-                .withAudience(notification.uri.toString())
-                .withExpiresAt(clock.now().plusHours(6).toInstant())
-                .sign(Algorithm.ECDSA256(vapidKeyPair.privateKey))
+    class SubscriptionExpired(cause: Throwable) : RuntimeException("Subscription expired", cause)
 
-        fuel
-            .post(notification.uri.toString())
-            .header("TTL", notification.ttl.toSeconds())
-            // Reference: RFC8292 (VAPID): https://datatracker.ietf.org/doc/html/rfc8292#section-3
-            // 3. VAPID Authentication Scheme
-            .header("Authorization", "vapid t=$jwt; k=${vapidKeyPair.publicKeyBase64()}")
-            .response()
-            .third
-            .get()
+    fun send(clock: EvakaClock, notification: WebPushNotification): WebPushMessage {
+        val request =
+            WebPushRequest.createEncryptedPushMessage(
+                    ttl = notification.ttl,
+                    endpoint = notification.endpoint,
+                    messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
+                    salt = secureRandom.generateSeed(16),
+                    data = jsonMapper.writeValueAsBytes(notification.payloads)
+                )
+                .withVapid(keyPair = vapidKeyPair, expiresAt = clock.now().plusHours(6).toInstant())
+        try {
+            val (_, res, result) =
+                fuel
+                    .post(request.uri.toString())
+                    .header(*request.headers.toTypedArray())
+                    .body(request.body)
+                    .validate { it.statusCode == 201 } // Push server should return 201 Created
+                    .response()
+            result.get()
+            val messageUri =
+                res.header(Headers.LOCATION).firstOrNull()?.let(::URI)
+                    ?: error("No location header in response")
+            return WebPushMessage(messageUri)
+        } catch (e: FuelError) {
+            if (e.response.statusCode == 404 || e.response.statusCode == 410) {
+                throw SubscriptionExpired(e)
+            }
+            throw e
+        }
     }
 }

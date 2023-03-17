@@ -16,10 +16,24 @@ serviceWorker.addEventListener('activate', (event) => {
   event.waitUntil(serviceWorker.clients.claim())
 })
 
+async function handlePushPayloads(/** @type{Array} */ payloads) {
+  // Handle the *first* payload we know how to handle. If multiple versions
+  // are present and supported, we should handle only the latest version.
+  for (const payload of payloads) {
+    if (payload.type === 'NotificationV1') {
+      return await serviceWorker.registration.showNotification(
+        payload.title,
+        {}
+      )
+    }
+  }
+}
+
 serviceWorker.addEventListener('push', (event) => {
-  event.waitUntil(
-    serviceWorker.registration.showNotification('Uusi viesti', {})
-  )
+  const json = event.data?.json()
+  if (Array.isArray(json)) {
+    event.waitUntil(handlePushPayloads(json))
+  }
 })
 
 serviceWorker.addEventListener('notificationclick', (event) => {
