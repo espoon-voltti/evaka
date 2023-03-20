@@ -310,3 +310,4 @@ V310__koski_input_data_version.sql
 V311__income_notification.sql
 V312__mobile_device_push_subscription.sql
 V313__message_push_notifications.sql
+V314__attendance_reservation_index.sql
