@@ -5,7 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.invoicing.service.expiringIncomeWithoutSentNotification
+import fi.espoo.evaka.invoicing.service.expiringIncomes
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -35,7 +35,7 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_EXPIRED_INCOME_DATES,
                         user.id
                     )
-                    it.expiringIncomeWithoutSentNotification(
+                    it.expiringIncomes(
                             clock.today(),
                             DateRange(clock.today(), clock.today().plusWeeks(4)),
                             null,

@@ -46,7 +46,7 @@ class OutdatedIncomeNotifications(
         )
 
         val guardiansForInitialNotification =
-            tx.expiringIncomeWithoutSentNotification(
+            tx.expiringIncomes(
                     clock.now().toLocalDate(),
                     DateRange(clock.today(), clock.today().plusWeeks(4)),
                     IncomeNotificationType.INITIAL_EMAIL
@@ -54,7 +54,7 @@ class OutdatedIncomeNotifications(
                 .map { it.guardianId }
 
         val guardiansForReminderNotification =
-            tx.expiringIncomeWithoutSentNotification(
+            tx.expiringIncomes(
                     clock.now().toLocalDate(),
                     DateRange(clock.today(), clock.today().plusWeeks(2)),
                     IncomeNotificationType.REMINDER_EMAIL
@@ -63,7 +63,7 @@ class OutdatedIncomeNotifications(
                 .map { it.guardianId }
 
         val guardiansForExpirationNotification =
-            tx.expiringIncomeWithoutSentNotification(
+            tx.expiringIncomes(
                     clock.now().toLocalDate(),
                     DateRange(clock.today(), clock.today()),
                     IncomeNotificationType.EXPIRED_EMAIL

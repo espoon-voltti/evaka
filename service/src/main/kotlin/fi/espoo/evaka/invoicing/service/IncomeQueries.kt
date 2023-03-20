@@ -37,7 +37,7 @@ enum class IncomeNotificationType {
 
 data class GuardianIncomeExpirationDate(val guardianId: PersonId, val expirationDate: LocalDate)
 
-fun Database.Read.expiringIncomeWithoutSentNotification(
+fun Database.Read.expiringIncomes(
     today: LocalDate,
     checkForExpirationRange: DateRange,
     checkForExistingRecentIncomeNotificationType: IncomeNotificationType? = null,

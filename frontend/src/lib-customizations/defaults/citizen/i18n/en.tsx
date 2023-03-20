@@ -202,8 +202,8 @@ const en: Translations = {
       `Report holidays and make reservations for ${period} by ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>
       `Answer the absence questionnaire before ${deadline}.`,
-    incomeExpirationCta: (expidationDate: string) =>
-      `Please remember to update your income statement by ${expidationDate}`
+    incomeExpirationCta: (expirationDate: string) =>
+      `Please remember to update your income statement by ${expirationDate}`
   },
   errorPage: {
     reload: 'Reload page',

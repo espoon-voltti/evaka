@@ -4,6 +4,7 @@
 
 import { faInfo } from 'Icons'
 import React, { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -28,6 +29,8 @@ type HolidayCta =
   | { type: 'questionnaire'; deadline: LocalDate }
 
 export default React.memo(function CalendarNotifications() {
+  const navigate = useNavigate()
+
   const { addNotification, removeNotification } =
     useContext(NotificationsContext)
   const i18n = useTranslation()
@@ -42,8 +45,12 @@ export default React.memo(function CalendarNotifications() {
             icon: faInfo,
             iconColor: colors.main.m2,
             children: i18n.ctaToast.incomeExpirationCta(
-              incomeExpirationDate.toString()
+              incomeExpirationDate.format()
             ),
+            onClick: () => {
+              navigate('/income')
+              removeNotification('expiring-income-cta')
+            },
             dataQa: 'expiring-income-cta'
           },
           'expiring-income-cta'

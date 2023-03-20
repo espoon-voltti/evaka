@@ -152,7 +152,7 @@ export default class CitizenCalendarPage {
   }
 
   #holidayCtas = this.page.findAllByDataQa('holiday-period-cta')
-  #expiringIncomeCta = this.page.findByDataQa('expiringIncomeCta')
+  #expiringIncomeCta = this.page.findByDataQa('expiring-income-cta')
 
   async getHolidayCtaContent(): Promise<string> {
     return this.#holidayCtas.nth(0).text
@@ -167,7 +167,7 @@ export default class CitizenCalendarPage {
   }
 
   async clickExpiringIncomeCta(): Promise<void> {
-    return this.#expiringIncomeCta.click()
+    return await this.#expiringIncomeCta.click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {

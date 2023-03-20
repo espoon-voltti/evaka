@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
+
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 
@@ -87,7 +89,7 @@ export const incomeExpirationDatesQuery = query({
   api: () =>
     getIncomeExpirationDates().then((incomeExpirationDates) =>
       incomeExpirationDates.length > 0
-        ? incomeExpirationDates.sort((l, r) => l.compareTo(r))[0]
+        ? sortBy(incomeExpirationDates, (d) => d)[0]
         : null
     ),
   queryKey: queryKeys.incomeExpirationDates
