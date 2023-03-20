@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { TimeRange } from 'lib-common/api-types/child/common'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -28,6 +27,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   Coordinate,
   PilotFeature,
+  TimeRange,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'

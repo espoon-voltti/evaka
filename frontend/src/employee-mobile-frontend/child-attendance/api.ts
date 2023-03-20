@@ -5,7 +5,7 @@
 import mapValues from 'lodash/mapValues'
 
 import { Failure, Result, Success } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
+import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
@@ -212,12 +212,9 @@ function deserializeChildren(data: JsonOf<Child[]>): Child[] {
         startTime: HelsinkiDateTime.parseIso(reservation.startTime),
         endTime: HelsinkiDateTime.parseIso(reservation.endTime)
       })),
-      dailyServiceTimes: child.dailyServiceTimes && {
-        ...child.dailyServiceTimes,
-        validityPeriod: DateRange.parseJson(
-          child.dailyServiceTimes.validityPeriod
-        )
-      }
+      dailyServiceTimes: child.dailyServiceTimes
+        ? parseDailyServiceTimes(child.dailyServiceTimes)
+        : null
     }))
     .sort((a, b) => compareByProperty(a, b, 'firstName'))
 }

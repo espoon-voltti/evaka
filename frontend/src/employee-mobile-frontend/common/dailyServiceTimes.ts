@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  DailyServiceTimesValue,
   isIrregular,
   isRegular,
-  isVariableTime,
-  TimeRange
-} from 'lib-common/api-types/child/common'
+  isVariableTime
+} from 'lib-common/api-types/daily-service-times'
+import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import { mockNow } from 'lib-common/utils/helpers'
 
 const dayNames = [

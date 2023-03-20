@@ -28,6 +28,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -1636,8 +1637,8 @@ export class Fixture {
       validityPeriod: new DateRange(LocalDate.of(2020, 1, 1), null),
       type: 'REGULAR',
       regularTimes: {
-        start: '01:00',
-        end: '15:00'
+        start: LocalTime.of(1, 0),
+        end: LocalTime.of(15, 0)
       },
       childId,
       mondayTimes: null,

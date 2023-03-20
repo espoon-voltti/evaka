@@ -4,14 +4,13 @@
 
 import { UUID } from 'lib-common/types'
 
+import { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
 import {
   AbsenceType,
   ChildServiceNeedInfo
 } from '../generated/api-types/daycare'
 import { JsonOf } from '../json'
 import LocalDate from '../local-date'
-
-import { DailyServiceTimesValue } from './child/common'
 
 export interface UnitAttendanceReservations {
   unit: string

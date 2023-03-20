@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
-import DateRange from 'lib-common/date-range'
+import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import {
   DailyServiceTimesEndDate,
-  DailyServiceTimesResponse
+  DailyServiceTimesResponse,
+  DailyServiceTimesValue
 } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -27,12 +27,7 @@ export async function getChildDailyServiceTimes(
           ...response,
           dailyServiceTimes: {
             ...response.dailyServiceTimes,
-            times: {
-              ...response.dailyServiceTimes.times,
-              validityPeriod: DateRange.parseJson(
-                response.dailyServiceTimes.times.validityPeriod
-              )
-            }
+            times: parseDailyServiceTimes(response.dailyServiceTimes.times)
           }
         }))
       )
