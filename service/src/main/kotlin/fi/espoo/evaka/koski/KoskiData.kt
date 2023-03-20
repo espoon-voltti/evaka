@@ -367,41 +367,45 @@ data class KoskiActiveDataRaw(
         )
 
     fun haeLisätiedot(): Lisätiedot? {
-        // Koski has an extra validation rule for developmental disability and extended compulsory
-        // education date ranges.
-        // https://github.com/Opetushallitus/koski/blob/2b25eb7e16bb651e1eb09cce636a736e85811ad0/src/main/scala/fi/oph/koski/validation/KoskiValidator.scala#L579
-        // https://github.com/Opetushallitus/koski/pull/1860
-        // Since we don't have similar restrictions, adjust data to satisfy Koski requirements
-        val adjustedEce =
-            extendedCompulsoryEducation.let { ece ->
-                val disabilities =
-                    Timeline.of(developmentalDisability1).addAll(developmentalDisability2)
-                val overlaps = disabilities.intersection(Timeline.of(ece))
-                // Koski only accepts one range
-                overlaps.ranges().maxByOrNull { it.durationInDays() }
-            }
+        // The spanning range of all placements (= gaps are *not* considered) is used to trim all
+        // the date ranges, because some of them might extend beyond the first/last placements.
+        // Example: child changes from unit A to unit B, while having one long ECE date range. When
+        // sending the study right for unit A, we need to send the first "half" of the ECE range,
+        // and when sending for unit B, the second "half".
+        val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
+
+        // Koski only accepts one range
+        val longestEce =
+            Timeline.of(extendedCompulsoryEducation)
+                .intersection(Timeline.of(placementSpan))
+                .maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
         val longestTransportBenefit =
-            Timeline.of(transportBenefit).ranges().maxByOrNull { it.durationInDays() }
+            Timeline.of(transportBenefit)
+                .ranges()
+                .mapNotNull { it.intersection(placementSpan) }
+                .maxByOrNull { it.durationInDays() }
 
         return Lisätiedot(
                 vammainen =
                     developmentalDisability1
+                        .mapNotNull { it.intersection(placementSpan) }
                         .map { Aikajakso.from(it) }
-                        .takeIf { it.isNotEmpty() && adjustedEce != null },
+                        .takeIf { it.isNotEmpty() && longestEce != null },
                 vaikeastiVammainen =
                     developmentalDisability2
+                        .mapNotNull { it.intersection(placementSpan) }
                         .map { Aikajakso.from(it) }
-                        .takeIf { it.isNotEmpty() && adjustedEce != null },
-                pidennettyOppivelvollisuus = adjustedEce?.let { Aikajakso.from(it) },
+                        .takeIf { it.isNotEmpty() && longestEce != null },
+                pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
                 erityisenTuenPäätökset =
-                    (specialAssistanceDecisionWithGroup.map {
-                            ErityisenTuenPäätös.from(it, erityisryhmässä = true)
-                        } +
-                            specialAssistanceDecisionWithoutGroup.map {
-                                ErityisenTuenPäätös.from(it, erityisryhmässä = false)
-                            })
+                    (specialAssistanceDecisionWithGroup
+                            .mapNotNull { it.intersection(placementSpan) }
+                            .map { ErityisenTuenPäätös.from(it, erityisryhmässä = true) } +
+                            specialAssistanceDecisionWithoutGroup
+                                .mapNotNull { it.intersection(placementSpan) }
+                                .map { ErityisenTuenPäätös.from(it, erityisryhmässä = false) })
                         .takeIf { it.isNotEmpty() }
             )
             .takeIf {
