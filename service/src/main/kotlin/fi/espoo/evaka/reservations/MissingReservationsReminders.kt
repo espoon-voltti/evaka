@@ -132,18 +132,17 @@ FROM (
         WHERE a.child_id = p.child_id AND a.date = t::date
     )
 ) missing
-JOIN LATERAL (
-    SELECT guardian_id
+JOIN (
+    SELECT guardian_id, child_id, NULL AS valid_during
     FROM guardian
-    WHERE missing.child_id = guardian.child_id
-    
+
     UNION ALL
-    
-    SELECT parent_id AS guardian_id
+
+    SELECT parent_id AS guardian_id, child_id, valid_during
     FROM foster_parent
-    WHERE missing.child_id = foster_parent.child_id AND valid_during @> missing.date
-) guardian ON TRUE
-    """
-                .trimIndent()
+) guardian
+ON missing.child_id = guardian.child_id
+AND (valid_during IS NULL OR valid_during @> missing.date)
+"""
         )
     }
