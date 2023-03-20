@@ -48,7 +48,7 @@ class MissingReservationsReminders(
                     sql(
                         """
 SELECT DISTINCT missing.guardian_id
-FROM (${subquery(missingReservationsQuery(range))}) missing
+FROM (${subquery(missingReservationsQuery(range, guardian = null))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE p.email IS NOT NULL
     """
@@ -73,7 +73,7 @@ WHERE p.email IS NOT NULL
                         sql(
                             """
 SELECT email, language
-FROM (${subquery(missingReservationsQuery(msg.range))}) missing
+FROM (${subquery(missingReservationsQuery(msg.range, msg.guardian))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
 AND email IS NOT NULL
@@ -102,7 +102,7 @@ AND email IS NOT NULL
     }
 }
 
-private fun missingReservationsQuery(range: FiniteDateRange) =
+private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?) =
     QuerySql.of<PersonId> {
         sql(
             """
@@ -135,11 +135,13 @@ FROM (
 JOIN (
     SELECT guardian_id, child_id, NULL AS valid_during
     FROM guardian
+    ${if (guardian == null) "" else "WHERE guardian_id = ${bind(guardian)}"}
 
     UNION ALL
 
     SELECT parent_id AS guardian_id, child_id, valid_during
     FROM foster_parent
+    ${if (guardian == null) "" else "WHERE parent_id = ${bind(guardian)}"}
 ) guardian
 ON missing.child_id = guardian.child_id
 AND (valid_during IS NULL OR valid_during @> missing.date)
