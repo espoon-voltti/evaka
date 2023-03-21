@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
@@ -41,6 +42,10 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -87,6 +92,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -102,6 +108,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
+    @Autowired private lateinit var feeDecisionController: FeeDecisionController
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
     fun beforeEach() {
@@ -3657,6 +3665,128 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(4, decisions.size)
         val drafts = decisions.filter { it.status == FeeDecisionStatus.DRAFT }
         assertEquals(0, drafts.size)
+    }
+
+    @Test
+    fun `duplicate sent fee decision is not generated`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        assertEquals(1, decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+
+        feeDecisionController.confirmDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            RealEvakaClock(),
+            listOf(decisions.get(0).id)
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        getAllFeeDecisions().let {
+            assertEquals(1, it.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+        }
+
+        db.transaction {
+            it.createUpdate("DELETE FROM placement WHERE id=:id").bind("id", placementId).execute()
+        }
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        getAllFeeDecisions().let {
+            assertEquals(2, it.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+        }
+
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        getAllFeeDecisions().let {
+            assertEquals(1, it.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+        }
+    }
+
+    @Test
+    fun `duplicate sent fee decision is not generated if there is a draft in the past`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+        val decisions = getAllFeeDecisions()
+        assertEquals(2, decisions.size)
+        assertEquals(2, decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+
+        val firstDecision = decisions.filter { it.validDuring.end == subPeriod2.end }.first()
+
+        feeDecisionController.confirmDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            RealEvakaClock(),
+            listOf(firstDecision.id)
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        getAllFeeDecisions().let {
+            assertEquals(2, it.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+        }
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        getAllFeeDecisions().let {
+            assertEquals(2, it.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+        }
     }
 
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
