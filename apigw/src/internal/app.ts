@@ -18,6 +18,7 @@ import {
   Config,
   cookieSecret,
   enableDevApi,
+  espooBiPocPassword,
   titaniaConfig
 } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
@@ -90,7 +91,10 @@ export default function internalGwApp(
     router.all('/system/*', (_, res) => res.sendStatus(404))
 
     const integrationUsers = {
-      ...(titaniaConfig && { [titaniaConfig.username]: titaniaConfig.password })
+      ...(titaniaConfig && {
+        [titaniaConfig.username]: titaniaConfig.password
+      }),
+      ...(espooBiPocPassword && { 'espoo-bi-poc': espooBiPocPassword })
     }
     router.use('/integration', expressBasicAuth({ users: integrationUsers }))
     router.all('/integration/*', createProxy())
