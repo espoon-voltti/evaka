@@ -153,7 +153,9 @@ class VoucherValueDecisionService(
         decision: VoucherValueDecisionDetailed,
         settings: Map<SettingType, String>
     ): ByteArray {
-        val lang = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
+        val lang =
+            if (decision.placement.unit.language == "sv") DocumentLang.SV else DocumentLang.FI
+
         return pdfGenerator.generateVoucherValueDecisionPdf(
             VoucherValueDecisionPdfData(decision, settings, lang)
         )
