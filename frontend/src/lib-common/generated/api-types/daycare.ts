@@ -118,6 +118,8 @@ export interface AdditionalInformation {
   additionalInfo: string
   allergies: string
   diet: string
+  languageAtHome: string
+  languageAtHomeDetails: string
   medication: string
   preferredName: string
 }
