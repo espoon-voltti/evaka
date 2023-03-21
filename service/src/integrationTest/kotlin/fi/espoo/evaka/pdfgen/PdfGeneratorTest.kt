@@ -98,9 +98,7 @@ private val child =
         "Kuusikallionrinne 26 A 4",
         "02270",
         "Espoo",
-        "",
-        languageAtHome = "",
-        languageAtHomeDetails = "",
+        ""
     )
 private val guardian =
     PersonDTO(
@@ -119,9 +117,7 @@ private val guardian =
         "Kuusikallionrinne 26 A 4",
         "02270",
         "Espoo",
-        "",
-        languageAtHome = "",
-        languageAtHomeDetails = "",
+        ""
     )
 private val manager =
     DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")

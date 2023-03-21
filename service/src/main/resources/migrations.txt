@@ -312,3 +312,4 @@ V312__mobile_device_push_subscription.sql
 V313__message_push_notifications.sql
 V314__attendance_reservation_index.sql
 V315__drop_push_sent_at.sql
+V316__move_language_at_home.sql

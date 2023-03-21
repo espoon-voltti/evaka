@@ -1607,7 +1607,9 @@ data class DevChild(
     val allergies: String = "",
     val diet: String = "",
     val medication: String = "",
-    val additionalInfo: String = ""
+    val additionalInfo: String = "",
+    val languageAtHome: String = "",
+    val languageAtHomeDetails: String = ""
 )
 
 data class DevDaycare(
@@ -1773,8 +1775,6 @@ data class DevPerson(
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String = "",
-    val languageAtHome: String = "",
-    val languageAtHomeDetails: String = "",
     val duplicateOf: PersonId? = null
 ) {
     fun toPersonDTO() =
@@ -1802,9 +1802,7 @@ data class DevPerson(
             invoicingStreetAddress = this.invoicingStreetAddress,
             invoicingPostalCode = this.invoicingPostalCode,
             invoicingPostOffice = this.invoicingPostOffice,
-            ophPersonOid = this.ophPersonOid,
-            languageAtHome = this.languageAtHome,
-            languageAtHomeDetails = this.languageAtHomeDetails,
+            ophPersonOid = this.ophPersonOid
         )
 }
 

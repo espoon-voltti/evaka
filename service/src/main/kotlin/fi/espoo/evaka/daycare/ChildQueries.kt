@@ -19,7 +19,7 @@ fun Database.Read.getChild(id: ChildId): Child? {
 fun Database.Transaction.createChild(child: Child): Child {
     // language=SQL
     val sql =
-        "INSERT INTO child (id, allergies, diet, additionalinfo, medication) VALUES (:id, :allergies, :diet, :additionalInfo, :medication) RETURNING *"
+        "INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details) VALUES (:id, :allergies, :diet, :additionalInfo, :medication, :languageAtHome, :languageAtHomeDetails) RETURNING *"
 
     return createQuery(sql)
         .bind("id", child.id)
@@ -27,6 +27,8 @@ fun Database.Transaction.createChild(child: Child): Child {
         .bind("diet", child.additionalInformation.diet)
         .bind("additionalInfo", child.additionalInformation.additionalInfo)
         .bind("medication", child.additionalInformation.medication)
+        .bind("languageAtHome", child.additionalInformation.languageAtHome)
+        .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
         .mapTo<Child>()
         .first()
 }
@@ -50,7 +52,7 @@ fun Database.Transaction.upsertChild(child: Child) {
 fun Database.Transaction.updateChild(child: Child) {
     // language=SQL
     val sql =
-        "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication WHERE id = :id"
+        "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails WHERE id = :id"
 
     createUpdate(sql)
         .bind("id", child.id)
@@ -58,5 +60,7 @@ fun Database.Transaction.updateChild(child: Child) {
         .bind("diet", child.additionalInformation.diet)
         .bind("additionalInfo", child.additionalInformation.additionalInfo)
         .bind("medication", child.additionalInformation.medication)
+        .bind("languageAtHome", child.additionalInformation.languageAtHome)
+        .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
         .execute()
 }

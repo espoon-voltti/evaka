@@ -145,9 +145,7 @@ class VTJPersonDetailsServiceTest {
             streetAddress = "",
             postalCode = "",
             postOffice = "",
-            residenceCode = "",
-            languageAtHome = "",
-            languageAtHomeDetails = "",
+            residenceCode = ""
         )
 
     private val validPerson =
