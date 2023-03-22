@@ -10,6 +10,7 @@ import fi.espoo.evaka.assistanceneed.insertAssistanceNeed
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -27,7 +28,10 @@ import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -59,6 +63,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
 import fi.espoo.evaka.toValueDecisionServiceNeed
@@ -76,7 +81,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
-
+    @Autowired private lateinit var voucherValueDecisionController: VoucherValueDecisionController
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
@@ -1360,6 +1366,60 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     emptySet<VoucherValueDecisionDifference>()
                 )
             )
+    }
+
+    @Test
+    fun `duplicate sent voucher value decision is not generated if there is a draft in the past`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+        val decisions = getAllVoucherValueDecisions()
+        assertEquals(2, decisions.size)
+        assertEquals(2, decisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+
+        val firstDecision = decisions.filter { it.validTo == subPeriod2.end }.first()
+
+        voucherValueDecisionController.sendDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            RealEvakaClock(),
+            listOf(firstDecision.id)
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        getAllVoucherValueDecisions().let {
+            assertEquals(2, it.size)
+            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+        }
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        getAllVoucherValueDecisions().let {
+            assertEquals(2, it.size)
+            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+        }
     }
 
     private fun insertPlacement(

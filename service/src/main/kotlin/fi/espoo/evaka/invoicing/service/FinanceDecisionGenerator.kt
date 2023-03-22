@@ -352,6 +352,10 @@ internal fun <Decision : FinanceDecision<Decision>> draftIsUnnecessary(
     alreadyGeneratedDrafts: Boolean
 ): Boolean {
     return (draft.isEmpty() && sent == null) ||
+        (sent != null &&
+            draft.contentEquals(sent) &&
+            draft.validFrom == sent.validFrom &&
+            draft.validTo == draft.validTo) ||
         (!alreadyGeneratedDrafts && sent != null && draft.contentEquals(sent))
 }
 
