@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { ReactNode, useRef } from 'react'
 import styled from 'styled-components'
 
+import { BoundFormState } from 'lib-common/form/hooks'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
@@ -121,14 +122,14 @@ export const StaticCheckBox = React.memo(function StaticCheckBox({
   )
 })
 
-interface CheckboxProps extends CommonProps {
+export interface CheckboxProps extends CommonProps {
   label: ReactNode
   hiddenLabel?: boolean
   onChange?: (checked: boolean) => void
   disabled?: boolean
 }
 
-export default React.memo(function Checkbox({
+const Checkbox = React.memo(function Checkbox({
   checked,
   label,
   hiddenLabel,
@@ -169,4 +170,17 @@ export default React.memo(function Checkbox({
       )}
     </Wrapper>
   )
+})
+
+export default Checkbox
+
+interface CheckboxFProps extends Omit<CheckboxProps, 'checked' | 'onChange'> {
+  bind: BoundFormState<boolean>
+}
+
+export const CheckboxF = React.memo(function CheckboxF({
+  bind: { state, set },
+  ...props
+}: CheckboxFProps) {
+  return <Checkbox {...props} checked={state} onChange={set} />
 })

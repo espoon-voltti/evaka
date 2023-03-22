@@ -8,6 +8,7 @@ import classNames from 'classnames'
 import React, { HTMLAttributes, RefObject, useState } from 'react'
 import styled, { css } from 'styled-components'
 
+import { BoundFormState } from 'lib-common/form/hooks'
 import { faTimes } from 'lib-icons'
 
 import { tabletMin } from '../../breakpoints'
@@ -75,13 +76,13 @@ export const StyledInput = styled.input<StyledInputProps>`
   font-size: 1rem;
   color: ${(p) => p.theme.colors.grayscale.g100};
   padding: 6px 10px;
+
   ${({ icon }) =>
     icon
       ? css`
           padding-right: calc(10px + 1rem + 12px);
         `
       : ''}
-
   &::placeholder {
     color: ${(p) => p.theme.colors.grayscale.g70};
     font-family: 'Open Sans', 'Arial', sans-serif;
@@ -180,7 +181,7 @@ export type InputInfo = {
   status?: InfoStatus
 }
 
-interface InputProps extends BaseProps {
+export interface InputProps extends BaseProps {
   value: string
   onChange?: (value: string) => void
   onChangeTarget?: (target: EventTarget & HTMLInputElement) => void
@@ -233,7 +234,7 @@ export type TextInputProps =
   | DateInputProps
   | ClearableInputProps
 
-export default React.memo(function InputField({
+const InputField = React.memo(function InputField({
   value,
   onChange,
   onFocus,
@@ -338,5 +339,27 @@ export default React.memo(function InputField({
         </InputFieldUnderRow>
       )}
     </Wrapper>
+  )
+})
+
+export default InputField
+
+interface InputFieldFProps extends Omit<InputProps, 'value' | 'onChange'> {
+  bind: BoundFormState<string>
+}
+
+export const InputFieldF = React.memo(function InputFieldF({
+  bind: { state, set, inputInfo },
+  ...props
+}: InputFieldFProps) {
+  return (
+    <InputField
+      {...props}
+      value={state}
+      onChange={set}
+      info={
+        'info' in props ? props.info : props.readonly ? undefined : inputInfo()
+      }
+    />
   )
 })
