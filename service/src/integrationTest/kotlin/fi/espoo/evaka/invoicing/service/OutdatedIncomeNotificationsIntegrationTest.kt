@@ -153,20 +153,24 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
-    fun `expiring income is notified 2 weeks beforehand`() {
+    fun `expiring income is notified 4 weeks beforehand`() {
         db.transaction {
             it.insertTestIncome(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusDays(13)
+                    validTo = clock.today().plusWeeks(4)
                 )
             )
         }
 
         assertEquals(1, getEmails().size)
         assertEquals(1, getIncomeNotifications(guardianId).size)
+        assertEquals(
+            IncomeNotificationType.INITIAL_EMAIL,
+            getIncomeNotifications(guardianId)[0].notificationType
+        )
     }
 
     @Test
@@ -187,7 +191,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `expiring income is not notified if there is a new income statement`() {
-        val incomeExpirationDate = clock.today().plusDays(13)
+        val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
             it.insertTestIncome(
@@ -214,23 +218,43 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
-    fun `If there is no placement no notification is sent`() {
+    fun `If there is no placement a day after expiration no notification is sent`() {
+        val expirationDate = clock.today().plusWeeks(2)
         db.transaction {
             it.insertTestIncome(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusDays(13)
+                    validTo = expirationDate
                 )
             )
 
-            it.createUpdate("DELETE FROM placement WHERE child_id = :personId")
+            // The placement ends on the same day as the income, and there is no billable placement
+            // afterwards,
+            // so no notification should be sent
+            it.createUpdate(
+                    "UPDATE placement SET end_date = :expirationDate WHERE child_id = :personId"
+                )
+                .bind("expirationDate", expirationDate)
                 .bind("personId", childId)
                 .execute()
         }
 
         assertEquals(0, getEmails().size)
+
+        // There is a billable placement a day after the income has expired, so a notification
+        // should be sent
+        db.transaction {
+            it.createUpdate(
+                    "UPDATE placement SET end_date = :expirationDate + INTERVAL '1 day' WHERE child_id = :personId"
+                )
+                .bind("expirationDate", expirationDate)
+                .bind("personId", childId)
+                .execute()
+        }
+
+        assertEquals(1, getEmails().size)
     }
 
     @Test
@@ -261,7 +285,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusDays(13)
+                    validTo = clock.today().plusWeeks(4)
                 )
             )
         }
@@ -397,8 +421,9 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
         val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }
         assertEquals(2, incomes.size)
-        assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes[0].effect)
-        assertEquals(clock.today().plusDays(1), incomes[0].validFrom)
+        assertEquals(IncomeEffect.INCOMPLETE, incomes[0].effect)
+        val firstOfNextMonth = clock.today().plusDays(1).plusMonths(1).withDayOfMonth(1)
+        assertEquals(firstOfNextMonth, incomes[0].validFrom)
 
         val feeFecisions = db.read { it.findFeeDecisionsForHeadOfFamily(guardianId, null, null) }
         assertEquals(1, feeFecisions.size)

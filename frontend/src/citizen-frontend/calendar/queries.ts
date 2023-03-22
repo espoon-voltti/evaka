@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
+
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 
@@ -12,6 +14,7 @@ import {
   getCalendarEvents,
   getDailyServiceTimeNotifications,
   getHolidayPeriods,
+  getIncomeExpirationDates,
   getReservations,
   postAbsences,
   postFixedPeriodQuestionnaireAnswer,
@@ -32,7 +35,8 @@ const queryKeys = createQueryKeys('calendar', {
   ],
   dailyServiceTimeNotifications: () => ['dailyServiceTimeNotifications'],
   holidayPeriods: () => ['holidayPeriods'],
-  activeQuestionnaires: () => ['activeQuestionnaires']
+  activeQuestionnaires: () => ['activeQuestionnaires'],
+  incomeExpirationDates: () => ['incomeExpirationDates']
 })
 
 export const reservationsQuery = query({
@@ -79,4 +83,14 @@ export const answerFixedPeriodQuestionnaireMutation = mutation({
     activeQuestionnaireQuery.queryKey,
     queryKeys.allReservations()
   ]
+})
+
+export const incomeExpirationDatesQuery = query({
+  api: () =>
+    getIncomeExpirationDates().then((incomeExpirationDates) =>
+      incomeExpirationDates.length > 0
+        ? sortBy(incomeExpirationDates, (d) => d)[0]
+        : null
+    ),
+  queryKey: queryKeys.incomeExpirationDates
 })

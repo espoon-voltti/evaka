@@ -135,3 +135,11 @@ export async function postFixedPeriodQuestionnaireAnswer({
     .post(`/citizen/holiday-period/questionnaire/fixed-period/${id}`, body)
     .then(() => undefined)
 }
+
+export function getIncomeExpirationDates(): Promise<LocalDate[]> {
+  return client
+    .get<JsonOf<LocalDate[]>>(`/citizen/income/expiring`)
+    .then((res) =>
+      res.data.map((expirationDate) => LocalDate.parseIso(expirationDate))
+    )
+}

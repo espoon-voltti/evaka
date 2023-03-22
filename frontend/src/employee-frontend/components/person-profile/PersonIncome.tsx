@@ -20,6 +20,7 @@ import { getChildPlacementPeriods } from '../../api/child/placements'
 import {
   createIncome,
   deleteIncome,
+  getIncomeNotifications,
   getIncomes,
   updateIncome
 } from '../../api/income'
@@ -131,6 +132,10 @@ export const Incomes = React.memo(function Incomes({
     () => getIncomes(personId),
     [personId]
   )
+  const [incomeNotifications] = useApiState(
+    () => getIncomeNotifications(personId),
+    [personId]
+  )
   const [childPlacementPeriods] = useApiState(
     () => getChildPlacementPeriods(personId),
     [personId]
@@ -204,8 +209,8 @@ export const Incomes = React.memo(function Incomes({
   return (
     <>
       {renderResult(
-        combine(incomes, incomeTypeOptions),
-        ([incomes, incomeTypeOptions]) => (
+        combine(incomes, incomeTypeOptions, incomeNotifications),
+        ([incomes, incomeTypeOptions, incomeNotifications]) => (
           <>
             {permittedActions.has('CREATE_INCOME') && (
               <AddButtonRow
@@ -222,6 +227,7 @@ export const Incomes = React.memo(function Incomes({
             <IncomeList
               incomes={incomes}
               incomeTypeOptions={incomeTypeOptions}
+              incomeNotifications={incomeNotifications}
               isRowOpen={isIncomeRowOpen}
               toggleRow={toggleIncomeRow}
               editing={editing}

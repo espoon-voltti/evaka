@@ -198,7 +198,9 @@ export default {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Ilmoita lomat ja tee varaukset ${period} välille viimeistään ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>
-      `Vastaa poissaolokyselyyn ${deadline} mennessä.`
+      `Vastaa poissaolokyselyyn ${deadline} mennessä.`,
+    incomeExpirationCta: (expirationDate: string) =>
+      `Muista päivittää tulotietosi ${expirationDate} mennessä`
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',

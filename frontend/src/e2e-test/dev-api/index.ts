@@ -25,6 +25,7 @@ import {
 import {
   FeeDecision,
   FeeThresholds,
+  IncomeNotification,
   Invoice,
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'
@@ -540,6 +541,14 @@ export async function insertIncomeStatements(
 export async function insertIncome(fixture: DevIncome) {
   try {
     await devClient.post('/income', fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertIncomeNotification(fixture: IncomeNotification) {
+  try {
+    await devClient.post('/income-notifications', fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

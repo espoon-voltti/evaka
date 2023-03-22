@@ -339,6 +339,23 @@ export type IncomeEffect =
   | 'NOT_AVAILABLE'
 
 /**
+* Generated from fi.espoo.evaka.invoicing.service.IncomeNotification
+*/
+export interface IncomeNotification {
+  created: HelsinkiDateTime
+  notificationType: IncomeNotificationType
+  receiverId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.service.IncomeNotificationType
+*/
+export type IncomeNotificationType =
+  | 'INITIAL_EMAIL'
+  | 'REMINDER_EMAIL'
+  | 'EXPIRED_EMAIL'
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeType
 */
 export interface IncomeType {
