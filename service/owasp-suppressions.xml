@@ -107,4 +107,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
         <cve>CVE-2020-8908</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Waitinf for a fix in spring boot
+        ]]></notes>
+        <cve>CVE-2023-20861</cve>
+    </suppress>
 </suppressions>
