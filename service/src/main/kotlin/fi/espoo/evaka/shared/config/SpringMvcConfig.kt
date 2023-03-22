@@ -31,6 +31,7 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import org.springframework.web.servlet.function.ServerRequest
 
 /**
  * Adds support for using the following types as REST function parameters:
@@ -101,3 +102,10 @@ private const val ATTR_DB = "evaka.database"
 private fun WebRequest.getDatabase() = getAttribute(ATTR_DB, SCOPE_REQUEST) as Database?
 
 private fun WebRequest.setDatabase(db: Database) = setAttribute(ATTR_DB, db, SCOPE_REQUEST)
+
+inline fun <reified T : AuthenticatedUser?> ServerRequest.getAuthenticatedUser(): T =
+    if (null is T) {
+        servletRequest().getAuthenticatedUser() as? T ?: (null as T)
+    } else {
+        servletRequest().getAuthenticatedUser() as? T ?: throw Unauthorized("Unauthorized request")
+    }
