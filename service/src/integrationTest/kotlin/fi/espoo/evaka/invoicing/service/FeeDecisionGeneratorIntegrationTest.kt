@@ -3739,7 +3739,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
