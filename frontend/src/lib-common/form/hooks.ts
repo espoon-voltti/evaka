@@ -250,7 +250,7 @@ export interface UseBoolean {
 }
 
 export function useBoolean(initialState: boolean): [boolean, UseBoolean] {
-  const { state, update, set } = useForm(boolean, () => initialState, {})
+  const { state, update, set } = useForm(boolean(), () => initialState, {})
   return [
     state,
     {

@@ -4,6 +4,6 @@
 
 import { mapped, value } from './form'
 
-export const string = mapped(value<string>(), (s) => s.trim())
-export const boolean = value<boolean>()
-export const number = value<number>()
+export const string = () => mapped(value<string>(), (s) => s.trim())
+export const boolean = () => value<boolean>()
+export const number = () => value<number>()
