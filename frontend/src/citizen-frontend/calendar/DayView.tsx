@@ -6,6 +6,10 @@ import zip from 'lodash/zip'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import {
+  formatDuplicatedChildIdentifier,
+  toDuplicatedChildIds
+} from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, localTimeRange } from 'lib-common/form/fields'
 import { array, mapped, object, value } from 'lib-common/form/form'
@@ -193,6 +197,11 @@ export default React.memo(function DayView({
   )
 
   const childStates = useFormElems(editorState)
+
+  const duplicatedChildIds = toDuplicatedChildIds(
+    childrenWithReservations.map((reservation) => reservation.child)
+  )
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
@@ -300,6 +309,14 @@ export default React.memo(function DayView({
                                     child.lastName
                                   }`}
                                 </H2>
+                                {duplicatedChildIds.includes(child.id) && (
+                                  <H3 noMargin>
+                                    {formatDuplicatedChildIdentifier(
+                                      i18n,
+                                      child
+                                    )}
+                                  </H3>
+                                )}
                               </FixedSpaceColumn>
                             </FixedSpaceRow>
 

@@ -6,21 +6,24 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.children.Child
 */
 export interface Child {
+  duplicateOf: UUID | null
   firstName: string
   group: Group | null
   hasCurriculums: boolean
   hasPedagogicalDocuments: boolean
-  hasUpcomingPlacements: boolean
   id: UUID
   imageId: UUID | null
   lastName: string
   preferredName: string
+  unit: Unit | null
+  upcomingPlacementType: PlacementType | null
 }
 
 /**
@@ -55,6 +58,14 @@ export interface CitizenChildConsent {
 * Generated from fi.espoo.evaka.children.Group
 */
 export interface Group {
+  id: UUID
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.children.Unit
+*/
+export interface Unit {
   id: UUID
   name: string
 }

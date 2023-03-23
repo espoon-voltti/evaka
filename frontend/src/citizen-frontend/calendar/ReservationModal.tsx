@@ -6,6 +6,10 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import {
+  formatDuplicatedChildIdentifier,
+  toDuplicatedChildIds
+} from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { useForm, useFormField } from 'lib-common/form/hooks'
@@ -191,6 +195,8 @@ export default React.memo(function ReservationModal({
     [i18n, setSaveError]
   )
 
+  const duplicatedChildIds = toDuplicatedChildIds(availableChildren)
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto" data-qa="reservation-modal">
@@ -222,7 +228,11 @@ export default React.memo(function ReservationModal({
                   {availableChildren.map((child) => (
                     <SelectionChip
                       key={child.id}
-                      text={formatFirstName(child)}
+                      text={`${formatFirstName(child)}${
+                        duplicatedChildIds.includes(child.id)
+                          ? ` ${formatDuplicatedChildIdentifier(i18n, child)}`
+                          : ''
+                      }`}
                       selected={selectedChildren.state.includes(child.id)}
                       onChange={(selected) => {
                         selectedChildren.update((prev) =>

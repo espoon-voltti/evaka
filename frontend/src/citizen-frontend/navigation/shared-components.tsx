@@ -38,7 +38,8 @@ export const CircledChar = styled.div.attrs({
 const dropDownButtonStyles = css`
   display: inline-flex;
   flex-direction: row;
-  gap: ${defaultMargins.xs};
+  flex-wrap: wrap;
+  gap: ${defaultMargins.zero} ${defaultMargins.xs};
   align-items: center;
   border: none;
   background: transparent;
@@ -74,8 +75,9 @@ export const DropDownButton = styled.button<{ alignRight?: boolean }>`
   ${(p) => p.alignRight && 'float: right;'}
 `
 
-export const DropDownLink = styled(NavLink)`
+export const DropDownLink = styled(NavLink)<{ alignRight?: boolean }>`
   ${dropDownButtonStyles}
+  ${(p) => p.alignRight && 'justify-content: flex-end;'}
 `
 
 export const DropDownLocalLink = styled.a`
@@ -164,4 +166,26 @@ export const DropDown = styled.ul<{ $align: 'left' | 'right' }>`
           align-items: flex-end;
           text-align: right;
         `}
+`
+
+export const DropDownInfo = React.memo(function DropDownInfo({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <>
+      <DropDownInfoBreak />
+      <DropDownInfoContent>{children}</DropDownInfoContent>
+    </>
+  )
+})
+
+const DropDownInfoBreak = styled.span`
+  flex-basis: 100%;
+  height: 0;
+`
+
+const DropDownInfoContent = styled.span`
+  font-weight: normal;
 `

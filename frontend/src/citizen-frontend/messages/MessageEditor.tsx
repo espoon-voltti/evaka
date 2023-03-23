@@ -8,6 +8,10 @@ import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
+import {
+  formatDuplicatedChildIdentifier,
+  toDuplicatedChildIds
+} from 'citizen-frontend/utils/duplicated-child-utils'
 import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
@@ -141,41 +145,51 @@ export default React.memo(function MessageEditor({
               <>
                 <label>
                   <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
-                  {renderResult(children, (children) => (
-                    <FixedSpaceFlexWrap horizontalSpacing="xs">
-                      {children
-                        .filter((child) => childIds.includes(child.id))
-                        .map((child) => (
-                          <SelectionChip
-                            key={child.id}
-                            text={formatFirstName(child)}
-                            selected={message.children.includes(child.id)}
-                            onChange={(selected) => {
-                              const children = selected
-                                ? [...message.children, child.id]
-                                : message.children.filter(
-                                    (id) => id !== child.id
-                                  )
-                              const recipients = message.recipients.filter(
-                                (accountId) =>
-                                  children.every(
-                                    (childId) =>
-                                      receiverOptions.childrenToMessageAccounts[
-                                        childId
-                                      ]?.includes(accountId) ?? false
-                                  )
-                              )
-                              setMessage((message) => ({
-                                ...message,
-                                children,
-                                recipients
-                              }))
-                            }}
-                            data-qa={`child-${child.id}`}
-                          />
-                        ))}
-                    </FixedSpaceFlexWrap>
-                  ))}
+                  {renderResult(children, (children) => {
+                    const duplicatedChildIds = toDuplicatedChildIds(children)
+                    return (
+                      <FixedSpaceFlexWrap horizontalSpacing="xs">
+                        {children
+                          .filter((child) => childIds.includes(child.id))
+                          .map((child) => (
+                            <SelectionChip
+                              key={child.id}
+                              text={`${formatFirstName(child)}${
+                                duplicatedChildIds.includes(child.id)
+                                  ? ` ${formatDuplicatedChildIdentifier(
+                                      i18n,
+                                      child
+                                    )}`
+                                  : ''
+                              }`}
+                              selected={message.children.includes(child.id)}
+                              onChange={(selected) => {
+                                const children = selected
+                                  ? [...message.children, child.id]
+                                  : message.children.filter(
+                                      (id) => id !== child.id
+                                    )
+                                const recipients = message.recipients.filter(
+                                  (accountId) =>
+                                    children.every(
+                                      (childId) =>
+                                        receiverOptions.childrenToMessageAccounts[
+                                          childId
+                                        ]?.includes(accountId) ?? false
+                                    )
+                                )
+                                setMessage((message) => ({
+                                  ...message,
+                                  children,
+                                  recipients
+                                }))
+                              }}
+                              data-qa={`child-${child.id}`}
+                            />
+                          ))}
+                      </FixedSpaceFlexWrap>
+                    )
+                  })}
                 </label>
                 <Gap size="s" />
               </>

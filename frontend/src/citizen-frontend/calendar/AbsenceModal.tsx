@@ -5,6 +5,10 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import {
+  formatDuplicatedChildIdentifier,
+  toDuplicatedChildIds
+} from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
@@ -128,6 +132,8 @@ export default React.memo(function AbsenceModal({
     [form, firstPlannedAbsenceDate, availableChildren]
   )
 
+  const duplicatedChildIds = toDuplicatedChildIds(availableChildren)
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto">
@@ -154,7 +160,11 @@ export default React.memo(function AbsenceModal({
                   {availableChildren.map((child) => (
                     <SelectionChip
                       key={child.id}
-                      text={formatFirstName(child)}
+                      text={`${formatFirstName(child)}${
+                        duplicatedChildIds.includes(child.id)
+                          ? ` ${formatDuplicatedChildIdentifier(i18n, child)}`
+                          : ''
+                      }`}
                       selected={form.selectedChildren.includes(child.id)}
                       onChange={(checked) =>
                         updateForm({

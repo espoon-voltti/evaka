@@ -101,7 +101,19 @@ const en: Translations = {
       ]
     },
     closeModal: 'Close popup',
-    close: 'Close'
+    close: 'Close',
+    duplicatedChild: {
+      identifier: {
+        DAYCARE: {
+          short: 'ECE',
+          long: 'Early childhood education'
+        },
+        PRESCHOOL: {
+          short: 'PPE',
+          long: 'Pre-primary education'
+        }
+      }
+    }
   },
   header: {
     nav: {
