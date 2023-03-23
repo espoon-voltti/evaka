@@ -7,7 +7,6 @@ package fi.espoo.evaka.webpush
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Headers
 import fi.espoo.evaka.WebPushEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -97,8 +96,6 @@ data class WebPushRequestHeaders(
             .toTypedArray()
 }
 
-data class WebPushMessage(val uri: URI)
-
 class WebPush(env: WebPushEnv) {
     private val fuel = FuelManager()
     private val secureRandom = SecureRandom()
@@ -110,7 +107,7 @@ class WebPush(env: WebPushEnv) {
 
     class SubscriptionExpired(cause: Throwable) : RuntimeException("Subscription expired", cause)
 
-    fun send(clock: EvakaClock, notification: WebPushNotification): WebPushMessage {
+    fun send(clock: EvakaClock, notification: WebPushNotification) {
         val request =
             WebPushRequest.createEncryptedPushMessage(
                     ttl = notification.ttl,
@@ -121,18 +118,16 @@ class WebPush(env: WebPushEnv) {
                 )
                 .withVapid(keyPair = vapidKeyPair, expiresAt = clock.now().plusHours(6).toInstant())
         try {
-            val (_, res, result) =
+            val (_, _, result) =
                 fuel
                     .post(request.uri.toString())
                     .header(*request.headers.toTypedArray())
                     .body(request.body)
-                    .validate { it.statusCode == 201 } // Push server should return 201 Created
+                    // Push server should return 201 Created, but at least Mozilla returns 200 OK
+                    // instead
+                    .validate { it.statusCode == 200 || it.statusCode == 201 }
                     .response()
             result.get()
-            val messageUri =
-                res.header(Headers.LOCATION).firstOrNull()?.let(::URI)
-                    ?: error("No location header in response")
-            return WebPushMessage(messageUri)
         } catch (e: FuelError) {
             if (e.response.statusCode == 404 || e.response.statusCode == 410) {
                 throw SubscriptionExpired(e)
