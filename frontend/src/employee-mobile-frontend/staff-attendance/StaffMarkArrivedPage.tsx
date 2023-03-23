@@ -103,7 +103,7 @@ export default React.memo(function StaffMarkArrivedPage() {
   )
 
   const isValidTimeString = (time: string) =>
-    LocalTime.tryParse(time, 'HH:mm') ? true : false
+    LocalTime.tryParse(time) ? true : false
 
   useEffect(() => {
     if (
@@ -135,9 +135,7 @@ export default React.memo(function StaffMarkArrivedPage() {
       firstPlannedStartOfTheDay &&
       isValidTimeString(time) &&
       differenceInMinutes(
-        HelsinkiDateTime.now()
-          .withTime(LocalTime.parse(time, 'HH:mm'))
-          .toSystemTzDate(),
+        HelsinkiDateTime.now().withTime(LocalTime.parse(time)).toSystemTzDate(),
         firstPlannedStartOfTheDay.toSystemTzDate()
       ),
     [firstPlannedStartOfTheDay, time]
@@ -149,7 +147,7 @@ export default React.memo(function StaffMarkArrivedPage() {
       Math.abs(
         differenceInMinutes(
           HelsinkiDateTime.now()
-            .withTime(LocalTime.parse(time, 'HH:mm'))
+            .withTime(LocalTime.parse(time))
             .toSystemTzDate(),
           now
         )
@@ -178,7 +176,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     () =>
       staffMember
         .map((staff) => {
-          const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+          const parsedTime = LocalTime.tryParse(time)
           if (!parsedTime || !staff?.spanningPlan) return []
           const arrived = HelsinkiDateTime.fromLocal(
             LocalDate.todayInHelsinkiTz(),
@@ -211,7 +209,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     return postStaffArrival({
       employeeId,
       groupId: attendanceGroup,
-      time: LocalTime.parse(time, 'HH:mm'),
+      time: LocalTime.parse(time),
       pinCode: pinCode.join(''),
       type: attendanceType ?? null
     }).then((res) => {
@@ -272,7 +270,7 @@ export default React.memo(function StaffMarkArrivedPage() {
               !attendanceGroup ||
               disableConfirmBecauseOfPlan
 
-            const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+            const parsedTime = LocalTime.tryParse(time)
 
             const hasFutureCurrentDay =
               staffMember.latestCurrentDayAttendance &&

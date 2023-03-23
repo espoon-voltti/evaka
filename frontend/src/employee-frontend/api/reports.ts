@@ -643,11 +643,11 @@ export async function getAssistanceReservationReportByChild(
           date: LocalDate.parseIso(row.date),
           reservationStartTime:
             row.reservationStartTime !== null
-              ? LocalTime.parse(row.reservationStartTime, 'HH:mm')
+              ? LocalTime.parse(row.reservationStartTime)
               : null,
           reservationEndTime:
             row.reservationEndTime !== null
-              ? LocalTime.parse(row.reservationEndTime, 'HH:mm')
+              ? LocalTime.parse(row.reservationEndTime)
               : null
         }))
       )

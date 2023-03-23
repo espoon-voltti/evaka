@@ -57,7 +57,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
     () =>
       form.group
         ? postExternalStaffArrival({
-            arrived: LocalTime.parse(form.arrived, 'HH:mm'),
+            arrived: LocalTime.parse(form.arrived),
             groupId: form.group.id,
             name: form.name.trim()
           })

@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
 import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
+import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 
 import { Reservations } from '../child-attendance/Reservations'
 import { ServiceTime } from '../common/components'
@@ -36,8 +36,8 @@ export default React.memo(function AttendanceDailyServiceTimes({
         i18n.attendances.serviceTime.variableTimes
       ) : (
         i18n.attendances.serviceTime.serviceToday(
-          todaysTimes.start,
-          todaysTimes.end
+          todaysTimes.start.format(),
+          todaysTimes.end.format()
         )
       )}
     </ServiceTime>

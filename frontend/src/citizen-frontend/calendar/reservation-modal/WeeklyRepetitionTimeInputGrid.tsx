@@ -2,144 +2,75 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import groupBy from 'lodash/groupBy'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { TimeRanges } from 'lib-common/reservations'
+import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { LabelLike } from 'lib-components/typography'
 
-import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
-import {
-  allChildrenAreAbsent,
-  allChildrenAreAbsentMarkedByEmployee,
-  bindUnboundedTimeRanges,
-  emptyTimeRange,
-  getCommonTimeRanges,
-  hasReservationsForEveryChild
-} from './utils'
+import { weekDay, weeklyTimes } from './form'
+
+export interface WeeklyRepetitionTimeInputGridProps {
+  bind: BoundForm<typeof weeklyTimes>
+  childrenInShiftCare: boolean
+  includedDays: number[]
+  showAllErrors: boolean
+}
 
 export default React.memo(function WeeklyRepetitionTimeInputGrid({
-  formData,
-  updateForm,
+  bind,
   showAllErrors,
   childrenInShiftCare,
-  includedDays,
-  existingReservations,
-  validationResult,
-  selectedRange
-}: RepetitionTimeInputGridProps) {
-  const i18n = useTranslation()
-
-  useEffect(() => {
-    if (!selectedRange) return
-
-    const reservations = existingReservations.filter((reservation) =>
-      selectedRange.includes(reservation.date)
-    )
-
-    const groupedDays = groupBy(
-      [...selectedRange.dates()],
-      (date) => date.getIsoDayOfWeek() - 1
-    )
-
-    updateForm({
-      weeklyTimes: Array(7)
-        .fill(undefined)
-        .map((_, dayOfWeek) => {
-          const dayOfWeekDays = groupedDays[dayOfWeek]
-
-          if (!dayOfWeekDays) {
-            return undefined
-          }
-
-          const relevantReservations = reservations.filter(({ date }) =>
-            dayOfWeekDays.some((d) => d.isEqual(date))
-          )
-
-          if (
-            allChildrenAreAbsentMarkedByEmployee(
-              relevantReservations,
-              formData.selectedChildren
-            )
-          ) {
-            return 'not-editable'
-          }
-
-          if (
-            allChildrenAreAbsent(
-              relevantReservations,
-              formData.selectedChildren
-            )
-          ) {
-            return 'absent'
-          }
-
-          if (
-            !hasReservationsForEveryChild(
-              relevantReservations,
-              formData.selectedChildren
-            )
-          ) {
-            return emptyTimeRange
-          }
-
-          const commonTimeRanges = getCommonTimeRanges(
-            relevantReservations,
-            formData.selectedChildren
-          )
-
-          if (commonTimeRanges) {
-            return bindUnboundedTimeRanges(commonTimeRanges)
-          }
-
-          return emptyTimeRange
-        })
-    })
-  }, [
-    existingReservations,
-    formData.selectedChildren,
-    selectedRange,
-    updateForm
-  ])
-
+  includedDays
+}: WeeklyRepetitionTimeInputGridProps) {
+  const weekDays = useFormElems(bind)
   return (
     <>
-      {formData.weeklyTimes
-        .map(
-          (times, index) =>
-            [times, index] as [TimeRanges | 'absent' | undefined, number]
-        )
-        .filter(([times, index]) => times && includedDays.includes(index + 1))
-        .map(([times, index]) => (
-          <TimeInputs
+      {weekDays.map((weekDay, index) =>
+        includedDays.includes(index + 1) ? (
+          <DayInputs
             key={`day-${index}`}
-            label={
-              <LabelLike>{i18n.common.datetime.weekdaysShort[index]}</LabelLike>
-            }
-            times={times}
-            updateTimes={(times) =>
-              times !== 'holiday' &&
-              updateForm({
-                weeklyTimes: [
-                  ...formData.weeklyTimes.slice(0, index),
-                  times,
-                  ...formData.weeklyTimes.slice(index + 1)
-                ]
-              })
-            }
-            validationErrors={validationResult.errors?.weeklyTimes?.[index]}
+            bind={weekDay}
+            index={index}
             showAllErrors={showAllErrors}
-            allowExtraTimeRange={childrenInShiftCare}
-            dataQaPrefix={`weekly-${index}`}
-            onFocus={(ev) => {
-              scrollIntoViewSoftKeyboard(ev.target)
-            }}
-            showAbsences
+            childrenInShiftCare={childrenInShiftCare}
           />
-        ))}
+        ) : null
+      )}
     </>
+  )
+})
+
+const DayInputs = React.memo(function Foo({
+  bind,
+  index,
+  showAllErrors,
+  childrenInShiftCare
+}: {
+  bind: BoundForm<typeof weekDay>
+  index: number
+  showAllErrors: boolean
+  childrenInShiftCare: boolean
+}) {
+  const i18n = useTranslation()
+  const mode = useFormField(bind, 'mode')
+  const day = useFormField(bind, 'day')
+  const present = useFormField(day, 'present')
+  const times = useFormField(day, 'times')
+  return (
+    <TimeInputs
+      label={<LabelLike>{i18n.common.datetime.weekdaysShort[index]}</LabelLike>}
+      mode={mode.value()}
+      bindPresent={present}
+      bindTimes={times}
+      showAllErrors={showAllErrors}
+      allowExtraTimeRange={childrenInShiftCare}
+      dataQaPrefix={`weekly-${index}`}
+      onFocus={(ev) => {
+        scrollIntoViewSoftKeyboard(ev.target)
+      }}
+    />
   )
 })

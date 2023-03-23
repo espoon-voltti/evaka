@@ -12,6 +12,7 @@ import React, {
 import { DayModifiers } from 'react-day-picker'
 import styled from 'styled-components'
 
+import { BoundFormState } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 
 import { InputInfo } from '../../atoms/form/InputField'
@@ -159,7 +160,7 @@ const checkDateInputSupport = () => {
 
 export const nativeDatePickerEnabled = checkDateInputSupport()
 
-export default React.memo(function DatePicker({
+const DatePicker = React.memo(function DatePicker({
   date,
   onChange,
   onFocus = () => undefined,
@@ -341,6 +342,8 @@ export default React.memo(function DatePicker({
   )
 })
 
+export default DatePicker
+
 export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
   return <DateInputSpacer>–</DateInputSpacer>
 })
@@ -348,3 +351,22 @@ export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
 const DateInputSpacer = styled.div`
   padding: 6px;
 `
+
+export interface DatePickerFProps
+  extends Omit<DatePickerProps, 'date' | 'onChange'> {
+  bind: BoundFormState<LocalDate | null>
+}
+
+export const DatePickerF = React.memo(function DatePickerF({
+  bind: { state, set, inputInfo },
+  ...props
+}: DatePickerFProps) {
+  return (
+    <DatePicker
+      {...props}
+      date={state}
+      onChange={set}
+      info={'info' in props ? props.info : inputInfo()}
+    />
+  )
+})

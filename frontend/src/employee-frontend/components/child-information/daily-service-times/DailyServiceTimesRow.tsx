@@ -7,8 +7,8 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
 import { Action } from 'lib-common/generated/action'
+import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -190,7 +190,8 @@ export const DailyServiceTimesReadOnly = React.memo(
             <Gap size="xs" />
             {i18n.childInformation.dailyServiceTimes.weekdays.monday}–
             {i18n.childInformation.dailyServiceTimes.weekdays.friday}{' '}
-            {times.regularTimes.start}–{times.regularTimes.end}
+            {times.regularTimes.start.format()}–
+            {times.regularTimes.end.format()}
           </div>
         )
       case 'IRREGULAR':
@@ -203,7 +204,9 @@ export const DailyServiceTimesReadOnly = React.memo(
                 (weekday) =>
                   `${
                     i18n.childInformation.dailyServiceTimes.weekdays[weekday]
-                  } ${times[weekday]?.start ?? ''}–${times[weekday]?.end ?? ''}`
+                  } ${times[weekday]?.start.format() ?? ''}–${
+                    times[weekday]?.end.format() ?? ''
+                  }`
               )
               .join(', ')}
           </div>

@@ -69,7 +69,7 @@ export default React.memo(function MarkPresent() {
   }, [attendanceStatuses, childId])
 
   const isValidTime = useCallback(() => {
-    const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+    const parsedTime = LocalTime.tryParse(time)
     if (!parsedTime) return false
     else if (childLatestDeparture) {
       return isAfter(

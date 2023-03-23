@@ -13,14 +13,14 @@ import {
 } from 'employee-frontend/api/child/daily-service-times'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
-import {
-  DailyServiceTimesValue,
-  TimeRange
-} from 'lib-common/api-types/child/common'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
+import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -42,32 +42,19 @@ interface FormState {
   startDate: LocalDate | null
   endDate: LocalDate | null
   type?: DailyServiceTimesType
-  regularTimes: TimeRange
-  monday: TimeRange
-  tuesday: TimeRange
-  wednesday: TimeRange
-  thursday: TimeRange
-  friday: TimeRange
-  saturday: TimeRange
-  sunday: TimeRange
+  regularTimes: JsonOf<TimeRange>
+  monday: JsonOf<TimeRange>
+  tuesday: JsonOf<TimeRange>
+  wednesday: JsonOf<TimeRange>
+  thursday: JsonOf<TimeRange>
+  friday: JsonOf<TimeRange>
+  saturday: JsonOf<TimeRange>
+  sunday: JsonOf<TimeRange>
 }
 
 type ValidationResult =
-  | { type: 'valid'; data: ValidFormData }
+  | { type: 'valid'; data: DailyServiceTimesValue }
   | { type: 'error'; errors: ValidationErrors }
-
-interface ValidFormData {
-  validityPeriod: DateRange
-  type: DailyServiceTimesType
-  regularTimes: TimeRange
-  monday: TimeRange
-  tuesday: TimeRange
-  wednesday: TimeRange
-  thursday: TimeRange
-  friday: TimeRange
-  saturday: TimeRange
-  sunday: TimeRange
-}
 
 interface ValidationErrors {
   type?: ErrorKey
@@ -128,28 +115,58 @@ function validateFormData(formData: FormState): ValidationResult {
     formData.startDate !== null &&
     formData.type !== undefined
   ) {
-    return {
-      type: 'valid',
-      data: {
-        validityPeriod: new DateRange(formData.startDate, formData.endDate),
-        type: formData.type,
-        regularTimes: formData.regularTimes,
-        monday: formData.monday,
-        tuesday: formData.tuesday,
-        wednesday: formData.wednesday,
-        thursday: formData.thursday,
-        friday: formData.friday,
-        saturday: formData.saturday,
-        sunday: formData.sunday
-      }
+    const validityPeriod = new DateRange(formData.startDate, formData.endDate)
+    switch (formData.type) {
+      case 'REGULAR':
+        return {
+          type: 'valid',
+          data: {
+            validityPeriod,
+            type: 'REGULAR',
+            regularTimes: parseTimeRange(formData.regularTimes)
+          }
+        }
+      case 'IRREGULAR':
+        return {
+          type: 'valid',
+          data: {
+            validityPeriod,
+            type: 'IRREGULAR',
+            ...mapValues(pick(formData, weekdays), (tr) =>
+              !tr.start || !tr.end ? null : parseTimeRange(tr)
+            )
+          }
+        }
+      case 'VARIABLE_TIME':
+        return {
+          type: 'valid',
+          data: {
+            validityPeriod,
+            type: 'VARIABLE_TIME'
+          }
+        }
     }
   } else {
     return { type: 'error', errors: validationErrors }
   }
 }
 
+function parseTimeRange(range: JsonOf<TimeRange>): TimeRange {
+  return {
+    start: LocalTime.parse(range.start),
+    end: LocalTime.parse(range.end)
+  }
+}
+
+function formatTimeRange(range: TimeRange): JsonOf<TimeRange> {
+  return {
+    start: range.start.format(),
+    end: range.end.format()
+  }
+}
+
 function validateTimeRange(
-  { start, end }: Partial<TimeRange>,
+  { start, end }: Partial<JsonOf<TimeRange>>,
   required = false
 ): RangeValidationResult {
   if (required && !start && !end) {
@@ -180,34 +197,9 @@ function validateTimeRange(
   return errors
 }
 
-const emptyTimeRange = {
+const emptyTimeRange: JsonOf<TimeRange> = {
   start: '',
   end: ''
-}
-
-function formDataToRequest(formData: ValidFormData): DailyServiceTimesValue {
-  const validityPeriod = formData.validityPeriod
-  switch (formData.type) {
-    case 'REGULAR':
-      return {
-        validityPeriod,
-        type: 'REGULAR',
-        regularTimes: formData.regularTimes
-      }
-    case 'IRREGULAR':
-      return {
-        validityPeriod,
-        type: 'IRREGULAR',
-        ...mapValues(pick(formData, weekdays), (tr) =>
-          !tr.start || !tr.end ? null : tr
-        )
-      }
-    case 'VARIABLE_TIME':
-      return {
-        validityPeriod,
-        type: 'VARIABLE_TIME'
-      }
-  }
 }
 
 export interface CreateProps {
@@ -258,10 +250,7 @@ export const DailyServiceTimesCreationForm = React.memo(
         )
       }
 
-      return createChildDailyServiceTimes(
-        childId,
-        formDataToRequest(validationResult.data)
-      )
+      return createChildDailyServiceTimes(childId, validationResult.data)
     }, [childId, validationResult])
 
     return (
@@ -360,17 +349,31 @@ const DailyServiceTimesEditFullForm = React.memo(
       saturday: emptyTimeRange,
       sunday: emptyTimeRange,
       ...(initialData.type === 'REGULAR'
-        ? { regularTimes: initialData.regularTimes }
+        ? { regularTimes: formatTimeRange(initialData.regularTimes) }
         : {}),
       ...(initialData.type === 'IRREGULAR'
         ? {
-            monday: initialData?.monday ?? emptyTimeRange,
-            tuesday: initialData?.tuesday ?? emptyTimeRange,
-            wednesday: initialData?.wednesday ?? emptyTimeRange,
-            thursday: initialData?.thursday ?? emptyTimeRange,
-            friday: initialData?.friday ?? emptyTimeRange,
-            saturday: initialData?.saturday ?? emptyTimeRange,
-            sunday: initialData?.sunday ?? emptyTimeRange
+            monday: initialData.monday
+              ? formatTimeRange(initialData.monday)
+              : emptyTimeRange,
+            tuesday: initialData.tuesday
+              ? formatTimeRange(initialData.tuesday)
+              : emptyTimeRange,
+            wednesday: initialData.wednesday
+              ? formatTimeRange(initialData.wednesday)
+              : emptyTimeRange,
+            thursday: initialData.thursday
+              ? formatTimeRange(initialData.thursday)
+              : emptyTimeRange,
+            friday: initialData.friday
+              ? formatTimeRange(initialData.friday)
+              : emptyTimeRange,
+            saturday: initialData.saturday
+              ? formatTimeRange(initialData.saturday)
+              : emptyTimeRange,
+            sunday: initialData.sunday
+              ? formatTimeRange(initialData.sunday)
+              : emptyTimeRange
           }
         : {})
     })
@@ -401,10 +404,7 @@ const DailyServiceTimesEditFullForm = React.memo(
         )
       }
 
-      return updateChildDailyServiceTimes(
-        id,
-        formDataToRequest(validationResult.data)
-      )
+      return updateChildDailyServiceTimes(id, validationResult.data)
     }, [id, validationResult])
 
     return (
@@ -532,8 +532,8 @@ const DailyServiceTimesEditEndForm = React.memo(
 )
 
 interface TimeRangeInputProps {
-  value: TimeRange
-  onChange: (value: TimeRange) => void
+  value: JsonOf<TimeRange>
+  onChange: (value: JsonOf<TimeRange>) => void
   error: RangeValidationResult | undefined
   dataQaPrefix: string
 }

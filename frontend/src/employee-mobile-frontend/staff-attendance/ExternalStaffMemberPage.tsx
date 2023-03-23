@@ -46,7 +46,7 @@ export default React.memo(function ExternalStaffMemberPage() {
   const [time, setTime] = useState(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
-  const parsedTime = useMemo(() => LocalTime.tryParse(time, 'HH:mm'), [time])
+  const parsedTime = useMemo(() => LocalTime.tryParse(time), [time])
 
   return (
     <StaffMemberPageContainer>

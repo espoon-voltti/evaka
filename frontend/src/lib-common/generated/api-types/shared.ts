@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import LocalTime from '../../local-time'
 import { UUID } from '../../types'
 
 /**
@@ -81,6 +82,14 @@ export const pilotFeatures = [
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]
+
+/**
+* Generated from fi.espoo.evaka.shared.domain.TimeRange
+*/
+export interface TimeRange {
+  end: LocalTime
+  start: LocalTime
+}
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.Translatable

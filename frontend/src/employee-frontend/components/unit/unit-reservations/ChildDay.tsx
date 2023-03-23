@@ -9,16 +9,17 @@ import {
   getTimesOnWeekday,
   isIrregular,
   isRegular,
-  isVariableTime,
-  TimeRange as ServiceTimesTimeRange
-} from 'lib-common/api-types/child/common'
+  isVariableTime
+} from 'lib-common/api-types/daily-service-times'
 import {
   ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import { TimeRange as ServiceTimesTimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { attendanceTimeDiffers } from 'lib-common/reservations'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Light } from 'lib-components/typography'
@@ -35,13 +36,13 @@ type ReservationOrServiceTime =
   | (ServiceTimesTimeRange & { type: 'reservation' | 'service-time' })
   | undefined
 const getReservationOrServiceTimeOfDay = (
-  reservation: TimeRange | null,
+  reservation: JsonOf<TimeRange> | null,
   serviceTimeOfDay: ServiceTimesTimeRange | null
 ): ReservationOrServiceTime =>
   reservation
     ? {
-        start: reservation.startTime,
-        end: reservation.endTime,
+        start: LocalTime.parse(reservation.startTime),
+        end: LocalTime.parse(reservation.endTime),
         type: 'reservation'
       }
     : serviceTimeOfDay
@@ -54,9 +55,9 @@ interface Props {
   rowIndex: number
   editState?: EditState
   deleteAbsence: (i: number, d: LocalDate) => void
-  updateReservation: (i: number, d: LocalDate, r: TimeRange) => void
+  updateReservation: (i: number, d: LocalDate, r: JsonOf<TimeRange>) => void
   saveReservation: (d: LocalDate) => void
-  updateAttendance: (i: number, d: LocalDate, r: TimeRange) => void
+  updateAttendance: (i: number, d: LocalDate, r: JsonOf<TimeRange>) => void
   saveAttendance: (d: LocalDate) => void
 }
 
@@ -171,11 +172,11 @@ export default React.memo(function ChildDay({
           /* show actual reservation or service time if exists */
           <>
             <ReservationTime data-qa="reservation-start">
-              {expectedTimeForThisDay.start}
+              {expectedTimeForThisDay.start.format()}
               {maybeServiceTimeIndicator}
             </ReservationTime>
             <ReservationTime data-qa="reservation-end">
-              {expectedTimeForThisDay.end}
+              {expectedTimeForThisDay.end.format()}
               {maybeServiceTimeIndicator}
             </ReservationTime>
           </>
@@ -206,7 +207,7 @@ export default React.memo(function ChildDay({
               data-qa="attendance-start"
               warning={attendanceTimeDiffers(
                 expectedTimeForThisDay?.start,
-                dailyData.attendance?.startTime
+                LocalTime.tryParse(dailyData.attendance?.startTime ?? '')
               )}
             >
               {renderTime(
@@ -217,7 +218,7 @@ export default React.memo(function ChildDay({
             <AttendanceTime
               data-qa="attendance-end"
               warning={attendanceTimeDiffers(
-                dailyData.attendance?.endTime,
+                LocalTime.tryParse(dailyData.attendance?.endTime ?? ''),
                 expectedTimeForThisDay?.end
               )}
             >

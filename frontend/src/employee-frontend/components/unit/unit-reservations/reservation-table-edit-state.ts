@@ -7,9 +7,13 @@ import { useCallback, useState } from 'react'
 import { Loading, Result, Success } from 'lib-common/api'
 import { ChildDailyRecords } from 'lib-common/api-types/reservations'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationRequest,
+  TimeRange
+} from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { TimeRangeErrors, validateTimeRange } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
@@ -25,9 +29,9 @@ export interface EditState {
   absences: Record<JsonOf<LocalDate>, { type: AbsenceType } | null>[]
 }
 
-export interface TimeRangeWithErrors extends TimeRange {
+export interface TimeRangeWithErrors extends JsonOf<TimeRange> {
   errors: TimeRangeErrors
-  lastSavedState: TimeRange
+  lastSavedState: JsonOf<TimeRange>
 }
 
 let requestId = 0
@@ -140,7 +144,7 @@ export function useUnitReservationEditState(
   )
 
   const updateReservation = useCallback(
-    (index: number, date: LocalDate, times: TimeRange) => {
+    (index: number, date: LocalDate, times: JsonOf<TimeRange>) => {
       setState((previousState) =>
         previousState
           ? {
@@ -188,7 +192,15 @@ export function useUnitReservationEditState(
       }
 
       const reqId = startRequest()
-      void postReservations([body])
+
+      const reservationRequest: DailyReservationRequest = {
+        ...body,
+        reservations: body.reservations.map(({ startTime, endTime }) => ({
+          startTime: LocalTime.parse(startTime),
+          endTime: LocalTime.parse(endTime)
+        }))
+      }
+      void postReservations([reservationRequest])
         .then(updateRequestStatus(reqId))
         .then(() =>
           setState((previousState) =>
@@ -214,7 +226,7 @@ export function useUnitReservationEditState(
   )
 
   const updateAttendance = useCallback(
-    (index: number, date: LocalDate, times: TimeRange) => {
+    (index: number, date: LocalDate, times: JsonOf<TimeRange>) => {
       setState((previousState) =>
         previousState
           ? {

@@ -9,6 +9,14 @@ describe('LocalTime', () => {
     const time = LocalTime.of(1, 2, 3, 123456789)
     expect(time.formatIso()).toStrictEqual('01:02:03.123456789')
   })
+  it('can be parsed from ISO local time string without nanoseconds', () => {
+    const expected = LocalTime.of(1, 2, 3)
+    expect(LocalTime.parseIso('01:02:03').isEqual(expected)).toBeTruthy()
+  })
+  it('zero nanoseconds are omitted from ISO local time string', () => {
+    const time = LocalTime.of(1, 2, 3)
+    expect(time.formatIso()).toStrictEqual('01:02:03')
+  })
   it('can be converted to/from JSON', () => {
     const time = LocalTime.of(1, 2, 3, 123456789)
     expect(LocalTime.parseIso(time.toJSON()).isEqual(time)).toBeTruthy()

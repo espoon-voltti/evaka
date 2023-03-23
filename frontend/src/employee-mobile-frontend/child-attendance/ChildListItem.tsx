@@ -226,8 +226,8 @@ const childReservationInfo = (
         : todaysServiceTime === 'variable_times'
         ? i18n.attendances.serviceTime.variableTimesShort
         : i18n.attendances.serviceTime.serviceTodayShort(
-            todaysServiceTime.start,
-            todaysServiceTime.end
+            todaysServiceTime.start.format(),
+            todaysServiceTime.end.format()
           )}
     </em>
   )

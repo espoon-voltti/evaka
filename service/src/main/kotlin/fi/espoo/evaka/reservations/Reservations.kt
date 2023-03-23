@@ -4,11 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
@@ -41,43 +36,9 @@ data class DailyReservationRequest(
     val absent: Boolean
 )
 
-@JsonSerialize(using = TimeRangeSerializer::class)
-data class TimeRange(
-    @ForceCodeGenType(String::class) val startTime: LocalTime,
-    @ForceCodeGenType(String::class) val endTime: LocalTime
-)
+data class TimeRange(val startTime: LocalTime, val endTime: LocalTime)
 
-class TimeRangeSerializer : JsonSerializer<TimeRange>() {
-    override fun serialize(value: TimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
-        gen.writeStartObject()
-        gen.writeObjectField("startTime", value.startTime.format())
-        gen.writeObjectField("endTime", value.endTime.format())
-        gen.writeEndObject()
-    }
-}
-
-@JsonSerialize(using = OpenTimeRangeSerializer::class)
-data class OpenTimeRange(
-    @ForceCodeGenType(String::class) val startTime: LocalTime,
-    @ForceCodeGenType(String::class) val endTime: LocalTime?
-)
-
-private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
-
-private fun LocalTime.format() = "${padWithZeros(hour)}:${padWithZeros(minute)}"
-
-class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
-    override fun serialize(
-        value: OpenTimeRange,
-        gen: JsonGenerator,
-        serializers: SerializerProvider
-    ) {
-        gen.writeStartObject()
-        gen.writeObjectField("startTime", value.startTime.format())
-        gen.writeObjectField("endTime", value.endTime?.format())
-        gen.writeEndObject()
-    }
-}
+data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
 
 data class CreateReservationsResult(
     val deletedAbsences: List<AbsenceId>,

@@ -6,6 +6,7 @@ import mapValues from 'lodash/mapValues'
 
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
+import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
   ChildDailyRecords,
@@ -791,12 +792,9 @@ const toChildDayRows = (
   dailyData: json.dailyData.map((record) =>
     mapValues(record, (daily) => ({
       ...daily,
-      dailyServiceTimes: daily.dailyServiceTimes && {
-        ...daily.dailyServiceTimes,
-        validityPeriod: DateRange.parseJson(
-          daily.dailyServiceTimes.validityPeriod
-        )
-      }
+      dailyServiceTimes: daily.dailyServiceTimes
+        ? parseDailyServiceTimes(daily.dailyServiceTimes)
+        : null
     }))
   )
 })

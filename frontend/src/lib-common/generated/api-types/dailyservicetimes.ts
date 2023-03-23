@@ -5,9 +5,10 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
+import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
-import { DailyServiceTimesValue } from '../../api-types/child/common'
+import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
 /**
@@ -42,3 +43,43 @@ export interface DailyServiceTimesResponse {
   dailyServiceTimes: DailyServiceTimes
   permittedActions: Action.DailyServiceTime[]
 }
+
+export namespace DailyServiceTimesValue {
+  /**
+  * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.IrregularTimes
+  */
+  export interface IrregularTimes {
+    type: 'IRREGULAR'
+    friday: TimeRange | null
+    monday: TimeRange | null
+    saturday: TimeRange | null
+    sunday: TimeRange | null
+    thursday: TimeRange | null
+    tuesday: TimeRange | null
+    validityPeriod: DateRange
+    wednesday: TimeRange | null
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.RegularTimes
+  */
+  export interface RegularTimes {
+    type: 'REGULAR'
+    regularTimes: TimeRange
+    validityPeriod: DateRange
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.VariableTimes
+  */
+  export interface VariableTimes {
+    type: 'VARIABLE_TIME'
+    validityPeriod: DateRange
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+*/
+export type DailyServiceTimesValue = DailyServiceTimesValue.IrregularTimes | DailyServiceTimesValue.RegularTimes | DailyServiceTimesValue.VariableTimes
+

@@ -2,231 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from './finite-date-range'
 import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
-import {
-  DailyReservationRequest,
-  OpenTimeRange,
-  TimeRange
-} from './generated/api-types/reservations'
-import LocalDate from './local-date'
-import { UUID } from './types'
+import { OpenTimeRange, TimeRange } from './generated/api-types/reservations'
+import { JsonOf } from './json'
+import LocalTime from './local-time'
 
 export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
-
-export interface ReservationFormData {
-  selectedChildren: UUID[]
-  startDate: LocalDate | null
-  endDate: LocalDate | null
-  repetition: Repetition
-  dailyTimes: TimeRanges
-  weeklyTimes: Array<TimeRanges | 'absent' | 'not-editable' | undefined>
-  irregularTimes: Record<
-    string,
-    TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
-  >
-}
-
-export type TimeRanges = [TimeRange] | [TimeRange, TimeRange]
 
 export interface TimeRangeErrors {
   startTime: ErrorKey | undefined
   endTime: ErrorKey | undefined
 }
 
-type ReservationErrors = Partial<
-  Record<
-    keyof Omit<
-      ReservationFormData,
-      'dailyTimes' | 'weeklyTimes' | 'irregularTimes'
-    >,
-    ErrorKey
-  > & {
-    dailyTimes: TimeRangeErrors[]
-  } & {
-    weeklyTimes: Array<TimeRangeErrors[] | undefined>
-  } & {
-    irregularTimes: Record<string, TimeRangeErrors[] | undefined>
-  }
->
-
-export type ValidationResult =
-  | { errors: ReservationErrors }
-  | {
-      errors: undefined
-      containsNonReservableDays: boolean
-      requestPayload: DailyReservationRequest[]
-    }
-
-export type ReservationFormDataForValidation = Omit<
-  ReservationFormData,
-  'endDate' | 'startDate'
-> & { endDate: LocalDate | null; startDate: LocalDate | null }
-
-export function validateForm(
-  reservableDays: Record<string, FiniteDateRange[]>,
-  { startDate, endDate, ...formData }: ReservationFormDataForValidation
-): ValidationResult {
-  const errors: ReservationErrors = {}
-
-  if (formData.selectedChildren.length < 1) {
-    errors['selectedChildren'] = 'required'
-  }
-
-  if (startDate === null) {
-    errors['startDate'] = 'required'
-  } else if (
-    !formData.selectedChildren.some((childId) =>
-      reservableDays[childId].some((r) => r.includes(startDate))
-    )
-  ) {
-    errors['startDate'] = 'validDate'
-  }
-
-  if (endDate === null) {
-    errors['endDate'] = 'required'
-  } else if (
-    !formData.selectedChildren.some((childId) =>
-      reservableDays[childId].some((r) => r.includes(endDate))
-    )
-  ) {
-    errors['endDate'] = 'validDate'
-  } else if (startDate && endDate.isBefore(startDate)) {
-    errors['endDate'] = 'dateTooEarly'
-  }
-
-  if (formData.repetition === 'DAILY') {
-    errors['dailyTimes'] = formData.dailyTimes.map((timeRange) =>
-      validateTimeRange(timeRange)
-    )
-  }
-
-  if (formData.repetition === 'WEEKLY') {
-    errors['weeklyTimes'] = formData.weeklyTimes.map((times) =>
-      times && times !== 'absent' && times !== 'not-editable'
-        ? times.map((timeRange) => validateTimeRange(timeRange))
-        : undefined
-    )
-  }
-
-  if (formData.repetition === 'IRREGULAR') {
-    errors['irregularTimes'] = Object.fromEntries(
-      Object.entries(formData.irregularTimes).map(([date, times]) => [
-        date,
-        times &&
-        times !== 'absent' &&
-        times !== 'not-editable' &&
-        times !== 'holiday'
-          ? times.map((timeRange) => validateTimeRange(timeRange))
-          : undefined
-      ])
-    )
-  }
-
-  if (errorsExist(errors)) {
-    return { errors }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const dateRange = new FiniteDateRange(startDate!, endDate!)
-  const allDates = [...dateRange.dates()]
-
-  const containsNonReservableDays = !formData.selectedChildren.every(
-    (childId) => {
-      const childReservableDays = reservableDays[childId] ?? []
-      return allDates.every((date) =>
-        childReservableDays.some((range) => range.includes(date))
-      )
-    }
-  )
-
-  return {
-    errors: undefined,
-    containsNonReservableDays,
-    requestPayload: formData.selectedChildren
-      .flatMap((childId) => {
-        const childReservableDays = reservableDays[childId] ?? []
-        const dates = allDates.filter((date) =>
-          childReservableDays.some((range) => range.includes(date))
-        )
-        switch (formData.repetition) {
-          case 'DAILY':
-            return dates.map((date) => ({
-              childId,
-              date,
-              reservations: filterReservations(formData.dailyTimes),
-              absent: false
-            }))
-          case 'WEEKLY':
-            return dates.map((date) => ({
-              childId,
-              date,
-              reservations: filterReservations(
-                formData.weeklyTimes[date.getIsoDayOfWeek() - 1]
-              ),
-              absent:
-                formData.weeklyTimes[date.getIsoDayOfWeek() - 1] === 'absent'
-            }))
-          case 'IRREGULAR':
-            return Object.entries(formData.irregularTimes)
-              .filter(([isoDate]) => {
-                const date = LocalDate.tryParseIso(isoDate)
-                return date && dateRange.includes(date)
-              })
-              .map(([isoDate, times]) => ({
-                childId,
-                date: LocalDate.parseIso(isoDate),
-                reservations: filterReservations(times),
-                absent: times === 'absent'
-              }))
-        }
-      })
-      .filter(
-        ({ reservations, absent }) =>
-          (reservations && reservations.length > 0) || absent
-      )
-  }
-}
-
-function filterReservations(
-  times: TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
-): TimeRange[] | null {
-  if (times === 'absent' || times === 'not-editable' || times === 'holiday') {
-    return null
-  }
-
-  return times?.filter(({ startTime, endTime }) => startTime && endTime) ?? null
-}
-
-function errorsExist(errors: ReservationErrors): boolean {
-  const {
-    dailyTimes: dailyErrors,
-    weeklyTimes: weeklyErrors,
-    irregularTimes: shiftCareErrors,
-    ...otherErrors
-  } = errors
-
-  for (const error of Object.values(otherErrors)) {
-    if (error) return true
-  }
-
-  if (dailyErrors?.some((error) => error.startTime || error.endTime)) {
-    return true
-  }
-
-  for (const errors of weeklyErrors ?? []) {
-    if (errors?.some((error) => error.startTime || error.endTime)) return true
-  }
-
-  for (const errors of Object.values(shiftCareErrors ?? {})) {
-    if (errors?.some((error) => error.startTime || error.endTime)) return true
-  }
-
-  return false
-}
-
 export function validateTimeRange(
-  timeRange: TimeRange,
+  timeRange: JsonOf<TimeRange>,
   openEnd = false
 ): TimeRangeErrors {
   let startTime: ErrorKey | undefined
@@ -256,9 +45,8 @@ export function validateTimeRange(
   return { startTime, endTime }
 }
 
-function timeToMinutes(expected: string): number {
-  const [hours, minutes] = expected.split(':').map(Number)
-  return hours * 60 + minutes
+function timeToMinutes(value: LocalTime): number {
+  return value.hour * 60 + value.minute
 }
 
 /**
@@ -270,8 +58,8 @@ function timeToMinutes(expected: string): number {
  * reservations that span multiple days.
  */
 export function attendanceTimeDiffers(
-  first: string | null | undefined,
-  second: string | null | undefined,
+  first: LocalTime | null | undefined,
+  second: LocalTime | null | undefined,
   thresholdMinutes = 15
 ): boolean {
   if (!(first && second)) {

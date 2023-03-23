@@ -2,56 +2,75 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import classNames from 'classnames'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { ErrorKey } from 'lib-common/form-validation'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
+import { Form } from 'lib-common/form/types'
+import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
+import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
+import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 
-import { errorToInputInfo } from '../input-info-helper'
 import { useTranslation } from '../localization'
 
-export interface TimeRangeWithErrors {
-  startTime: string
-  endTime: string
-  errors: { startTime: ErrorKey | undefined; endTime: ErrorKey | undefined }
+export interface Props {
+  bind: BoundFormShape<
+    { startTime: string; endTime: string },
+    {
+      startTime: Form<unknown, string, string, unknown>
+      endTime: Form<unknown, string, string, unknown>
+    }
+  >
+  hideErrorsBeforeTouched?: boolean
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
+  'data-qa'?: string
 }
 
-export default React.memo(function TimeRangeInput({
-  value,
-  onChange,
+export default React.memo(function TimeRangeInputF({
+  bind,
+  hideErrorsBeforeTouched,
+  onFocus,
   'data-qa': dataQa
-}: {
-  value: TimeRangeWithErrors
-  onChange: (field: 'startTime' | 'endTime') => (value: string) => void
-  'data-qa'?: string
-}) {
+}: Props) {
   const i18n = useTranslation()
-  const { startTime, endTime, errors } = value
+  const [touched, setTouched] = useState([false, false])
+  const bothTouched = touched[0] && touched[1]
 
-  // These are actually callbacks, but they are created by the onChange function
-  // call, so useMemo works better
-  const onChangeStart = useMemo(() => onChange('startTime'), [onChange])
-  const onChangeEnd = useMemo(() => onChange('endTime'), [onChange])
+  const startTime = useFormField(bind, 'startTime')
+  const endTime = useFormField(bind, 'endTime')
+  const inputInfo = bind.inputInfo()
 
   return (
-    <TimeRangeWrapper>
-      <TimeInput
-        value={startTime}
-        onChange={onChangeStart}
-        info={errorToInputInfo(errors.startTime, i18n.validationErrors)}
-        placeholder={i18n.calendar.reservationModal.start}
-        data-qa={dataQa ? `${dataQa}-start` : undefined}
-      />
-      <span>–</span>
-      <TimeInput
-        value={endTime}
-        onChange={onChangeEnd}
-        info={errorToInputInfo(errors.endTime, i18n.validationErrors)}
-        placeholder={i18n.calendar.reservationModal.end}
-        data-qa={dataQa ? `${dataQa}-end` : undefined}
-      />
-    </TimeRangeWrapper>
+    <>
+      <TimeRangeWrapper>
+        <TimeInputF
+          bind={startTime}
+          placeholder={i18n.calendar.reservationModal.start}
+          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+          onFocus={onFocus}
+          onBlur={() => setTouched(([_, t]) => [true, t])}
+          data-qa={dataQa ? `${dataQa}-start` : undefined}
+        />
+        <span>–</span>
+        <TimeInputF
+          bind={endTime}
+          placeholder={i18n.calendar.reservationModal.end}
+          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+          onFocus={onFocus}
+          onBlur={() => setTouched(([t, _]) => [t, true])}
+          data-qa={dataQa ? `${dataQa}-end` : undefined}
+        />
+      </TimeRangeWrapper>
+      {inputInfo !== undefined && (!hideErrorsBeforeTouched || bothTouched) ? (
+        <InputFieldUnderRow className={classNames(inputInfo.status)}>
+          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+            {inputInfo.text}
+          </span>
+          <UnderRowStatusIcon status={inputInfo?.status} />
+        </InputFieldUnderRow>
+      ) : undefined}
+    </>
   )
 })
 
