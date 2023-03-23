@@ -341,6 +341,12 @@ describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '12:00')
       await modal.addNewAttendance()
       await modal.setType(1, 'TRAINING')
+
+      // Bug check: reset group if type does not require one
+      await modal.setType(1, 'PRESENT')
+      await modal.setGroup(1, groupId)
+      await modal.setType(1, 'TRAINING')
+
       await modal.setArrivalTime(1, '12:00')
       await modal.setDepartureTime(1, '13:00')
       await modal.addNewAttendance()

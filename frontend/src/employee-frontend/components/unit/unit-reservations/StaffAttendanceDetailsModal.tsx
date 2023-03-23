@@ -424,7 +424,7 @@ function StaffAttendanceDetailsModal<
                         arrived,
                         departed,
                         type: value,
-                        groupId
+                        groupId: presentInGroup(value) ? groupId : null
                       })
                     }
                     getItemLabel={(item) =>
