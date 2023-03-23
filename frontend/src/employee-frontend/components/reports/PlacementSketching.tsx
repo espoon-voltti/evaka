@@ -215,6 +215,8 @@ export default React.memo(function PlacementSketching() {
                 preparatoryEducation: row.preparatoryEducation ? 'k' : 'e',
                 siblingBasis: row.siblingBasis ? 'k' : 'e',
                 connectedDaycare: row.connectedDaycare ? 'k' : 'e',
+                applicationStatus:
+                  i18n.application.statuses[row.applicationStatus],
                 otherPreferredUnits: formatOtherPreferredUnits(row),
                 hasAdditionalInfo: row.hasAdditionalInfo ? 'k' : 'e'
               }))}
@@ -265,6 +267,10 @@ export default React.memo(function PlacementSketching() {
                 {
                   label: i18n.reports.placementSketching.connected,
                   key: 'connectedDaycare'
+                },
+                {
+                  label: i18n.reports.placementSketching.applicationStatus,
+                  key: 'applicationStatus'
                 },
                 {
                   label: i18n.reports.placementSketching.preferredStartDate,
@@ -328,6 +334,7 @@ export default React.memo(function PlacementSketching() {
                   <Th>{i18n.reports.placementSketching.connected}</Th>
                   <Th>{i18n.reports.placementSketching.sentDate}</Th>
                   <Th>{i18n.application.tabTitle}</Th>
+                  <Th>{i18n.reports.placementSketching.applicationStatus}</Th>
                   <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.placementSketching.otherPreferredUnits}</Th>
@@ -387,6 +394,7 @@ export default React.memo(function PlacementSketching() {
                         <FontAwesomeIcon icon={faFileAlt} />
                       </Link>
                     </Td>
+                    <Td>{i18n.application.statuses[row.applicationStatus]}</Td>
                     <Td>{row.preferredStartDate.format()}</Td>
                     <Td data-qa="area-name">{row.areaName}</Td>
                     <Td data-qa="other-preferred-units">

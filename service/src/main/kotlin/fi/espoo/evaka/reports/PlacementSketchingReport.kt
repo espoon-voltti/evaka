@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -98,6 +99,7 @@ SELECT
     daycare.id AS requested_unit_id,
     daycare.name AS requested_unit_name,
     application.id AS application_id,
+    application.status AS application_status,
     application.childId,
     application.childfirstname,
     application.childlastname,
@@ -170,6 +172,7 @@ data class PlacementSketchingReportRow(
     val childStreetAddr: String?,
     val childPostalCode: String?,
     val applicationId: ApplicationId,
+    val applicationStatus: ApplicationStatus,
     val currentUnitName: String?,
     val currentUnitId: DaycareId?,
     val assistanceNeeded: Boolean?,

@@ -10,6 +10,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
+import { ApplicationStatus } from './application'
 import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
 import { AssistanceMeasure } from './assistanceaction'
@@ -415,6 +416,7 @@ export interface PlacementCountReportResult {
 */
 export interface PlacementSketchingReportRow {
   applicationId: UUID
+  applicationStatus: ApplicationStatus
   areaName: string
   assistanceNeeded: boolean | null
   childCorrectedCity: string
