@@ -162,7 +162,11 @@ fun updateVardaChild(
             }
         }
     } catch (e: Exception) {
-        logger.info("VardaUpdate: failed to update child $evakaChildId: ${e.localizedMessage}", e)
+        logger.info(
+            "VardaUpdate: failed to update child, so setting it for reset: $evakaChildId ${e.localizedMessage}",
+            e
+        )
+        db.transaction { it.resetChildResetTimestamp(evakaChildId) }
     }
 }
 
