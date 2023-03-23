@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
@@ -9,6 +10,7 @@ import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Combobox,
   DatePickerDeprecated,
+  MultiSelect,
   Page,
   Select,
   StaticChip,
@@ -97,6 +99,10 @@ export class ApplicationsReport {
 export class PlacementSketchingReport {
   constructor(private page: Page) {}
 
+  #applicationStatus = new MultiSelect(
+    this.page.find('[data-qa="select-application-status"]')
+  )
+
   async assertRow(
     applicationId: string,
     requestedUnitName: string,
@@ -115,6 +121,17 @@ export class PlacementSketchingReport {
         .assertTextEquals(currentUnitName)
     }
     await element.find('[data-qa="child-name"]').assertTextEquals(childName)
+  }
+
+  async assertNotRow(applicationId: string) {
+    const element = this.page.find(`[data-qa="${applicationId}"]`)
+    await element.waitUntilHidden()
+  }
+
+  async toggleApplicationStatus(status: ApplicationStatus) {
+    await this.#applicationStatus.click() // open options menu
+    await this.#applicationStatus.selectItem(status)
+    await this.#applicationStatus.click() // close options menu
   }
 }
 
