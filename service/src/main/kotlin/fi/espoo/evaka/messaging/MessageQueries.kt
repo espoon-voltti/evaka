@@ -1359,21 +1359,6 @@ fun Database.Transaction.markEmailNotificationAsSent(
     this.createUpdate(sql).bind("id", id).bind("timestamp", timestamp).execute()
 }
 
-fun Database.Transaction.markPushNotificationAsSent(
-    recipient: MessageRecipientId,
-    timestamp: HelsinkiDateTime
-) =
-    createUpdate<Any> {
-            sql(
-                """
-UPDATE message_recipients
-SET push_notification_sent_at = ${bind(timestamp)}
-WHERE id = ${bind(recipient)}
-"""
-            )
-        }
-        .execute()
-
 fun Database.Read.getStaffCopyRecipients(
     senderId: MessageAccountId,
     recipients: Collection<MessageRecipient>

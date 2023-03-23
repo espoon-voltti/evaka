@@ -199,7 +199,9 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
     },
     optimization: {
       splitChunks: {
-        chunks: 'all',
+        // Service workers must *not* use any kind of "chunk splitting" magic,
+        // because a service worker is supposed to be contained in a single file
+        chunks: (chunk) => chunk.name !== 'service-worker',
         cacheGroups: {
           defaultVendors: false,
           vendor: {
