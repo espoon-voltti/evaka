@@ -1,0 +1,1 @@
+ALTER TABLE message_recipients DROP COLUMN push_notification_sent_at;

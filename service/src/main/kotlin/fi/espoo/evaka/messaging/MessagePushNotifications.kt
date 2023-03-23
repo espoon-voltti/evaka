@@ -47,7 +47,6 @@ JOIN daycare_group dg ON ma.daycare_group_id = dg.id
 JOIN mobile_device md ON dg.daycare_id = md.unit_id
 JOIN mobile_device_push_subscription mdps ON md.id = mdps.device
 WHERE mr.message_id = ANY(${bind(messages)})
-AND mr.push_notification_sent_at IS NULL
 AND mr.read_at IS NULL
 AND ma.type = 'GROUP'
             """
@@ -73,7 +72,6 @@ JOIN mobile_device md ON dg.daycare_id = md.unit_id
 JOIN mobile_device_push_subscription mdps ON md.id = mdps.device
 WHERE mr.id = ${bind(messageRecipient)}
 AND md.id = ${bind(device)}
-AND mr.push_notification_sent_at IS NULL
 AND mr.read_at IS NULL
 AND ma.type = 'GROUP'
        """
@@ -122,6 +120,5 @@ AND ma.type = 'GROUP'
                 tx.deletePushSubscription(device)
             }
         }
-        tx.markPushNotificationAsSent(recipient, clock.now())
     }
 }
