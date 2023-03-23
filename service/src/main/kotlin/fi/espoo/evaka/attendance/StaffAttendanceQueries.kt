@@ -587,7 +587,7 @@ fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
             """
 DELETE FROM staff_attendance_realtime
 WHERE
-    group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = :unitId) AND
+    (group_id IS NULL OR group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = :unitId)) AND
     employee_id = :employeeId AND
     tstzrange(arrived, departed) && :timeRange AND
     NOT id = ANY(:exceptIds)
