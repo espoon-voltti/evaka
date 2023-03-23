@@ -26,7 +26,15 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.config.getAuthenticatedUser
+import fi.espoo.evaka.shared.controllers.ErrorResponse
+import fi.espoo.evaka.shared.controllers.ExceptionHandler
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DevDataInitializer
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
@@ -36,6 +44,7 @@ import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import io.opentracing.Tracer
+import java.io.IOException
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
@@ -45,6 +54,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.servlet.function.ServerRequest
+import org.springframework.web.servlet.function.ServerResponse
+import org.springframework.web.servlet.function.router
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
@@ -131,9 +145,44 @@ class EspooConfig {
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
-    fun espooBiPoc(env: EspooEnv): EspooBiPoc? =
+    fun espooBiPocRouter(
+        env: EspooEnv,
+        jdbi: Jdbi,
+        tracer: Tracer,
+        exceptionHandler: ExceptionHandler
+    ) =
         if (env.espooBiPocEnabled) {
-            EspooBiPoc()
+            val espooBiPoc = EspooBiPoc()
+
+            fun error(entity: ResponseEntity<ErrorResponse>?): ServerResponse =
+                entity?.body?.let { ServerResponse.status(entity.statusCode).body(it) }
+                    ?: ServerResponse.status(entity?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR)
+                        .build()
+
+            fun route(
+                f: (db: Database, user: AuthenticatedUser.Integration) -> ServerResponse
+            ): (ServerRequest) -> ServerResponse = { req ->
+                try {
+                    f(Database(jdbi, tracer), req.getAuthenticatedUser())
+                } catch (e: BadRequest) {
+                    error(exceptionHandler.badRequest(req.servletRequest(), e))
+                } catch (e: NotFound) {
+                    error(exceptionHandler.notFound(req.servletRequest(), e))
+                } catch (e: Unauthorized) {
+                    error(exceptionHandler.unauthorized(req.servletRequest(), e))
+                } catch (e: IOException) {
+                    error(exceptionHandler.IOExceptions(req.servletRequest(), e))
+                } catch (e: Throwable) {
+                    error(exceptionHandler.unexpectedError(req.servletRequest(), e))
+                }
+            }
+
+            router {
+                path("/integration/espoo-bi-poc").nest {
+                    GET("/areas", route(espooBiPoc.getAreas))
+                    GET("/units", route(espooBiPoc.getUnits))
+                }
+            }
         } else {
             null
         }

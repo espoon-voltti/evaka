@@ -4,24 +4,14 @@
 
 package fi.espoo.evaka.espoobi
 
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.Database
-import jakarta.servlet.http.HttpServletResponse
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-
-@RequestMapping("/integration/espoo-bi-poc")
 class EspooBiPoc {
-    @GetMapping("/areas")
-    fun getAreas(db: Database, user: AuthenticatedUser.Integration, response: HttpServletResponse) =
-        csvQueryEndpoint<BiArea>(db, user, response) { sql("""
+    val getAreas = streamingCsvQuery<BiArea> { sql("""
 SELECT id, name
 FROM care_area
 """) }
 
-    @GetMapping("/units")
-    fun getUnits(db: Database, user: AuthenticatedUser.Integration, response: HttpServletResponse) =
-        csvQueryEndpoint<BiUnit>(db, user, response) {
+    val getUnits =
+        streamingCsvQuery<BiUnit> {
             sql("""
 SELECT id, care_area_id AS area, name
 FROM daycare
