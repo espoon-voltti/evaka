@@ -3,7 +3,11 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 name: Build
-on: [push]
+on:
+  pull_request:
+  push:
+    branches:
+    - master
 
 env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
