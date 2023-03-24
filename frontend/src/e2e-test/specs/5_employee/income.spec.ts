@@ -278,4 +278,22 @@ describe('Income', () => {
       .nth(1)
       .assertTextEquals('22.02.2020 06:00')
   })
+
+  it('Income notification sent title is not shown if none has been sent', async () => {
+    const incomeEndDate = placementEnd.subMonths(1)
+    await Fixture.income()
+      .with({
+        personId: personId,
+        validFrom: placementStart,
+        validTo: incomeEndDate,
+        updatedBy: financeAdminId,
+        updatedAt: placementStart.toSystemTzDate()
+      })
+      .save()
+
+    await page.reload()
+    await waitUntilEqual(() => incomesSection.incomeListItems.count(), 1)
+    await waitUntilEqual(() => incomesSection.incomeNotifications.count(), 0)
+    await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 0)
+  })
 })

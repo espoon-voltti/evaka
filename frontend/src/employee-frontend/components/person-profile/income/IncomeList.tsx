@@ -144,7 +144,7 @@ const IncomeList = React.memo(function IncomeList({
             startDeleting={() => setDeleting(item.id)}
             permittedActions={permittedActions}
           />
-          {incomeNotificationsForIncome(item) && (
+          {incomeNotificationsForIncome(item).length > 0 && (
             <IncomeNotifications
               incomeNotifications={incomeNotificationsForIncome(item)}
             />
