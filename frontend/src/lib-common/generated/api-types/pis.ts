@@ -385,8 +385,6 @@ export interface PersonJSON {
   invoicingPostalCode: string
   invoicingStreetAddress: string
   language: string | null
-  languageAtHome: string
-  languageAtHomeDetails: string
   lastName: string
   ophPersonOid: string | null
   phone: string
@@ -413,8 +411,6 @@ export interface PersonPatch {
   invoicingPostOffice: string | null
   invoicingPostalCode: string | null
   invoicingStreetAddress: string | null
-  languageAtHome: string | null
-  languageAtHomeDetails: string | null
   lastName: string | null
   ophPersonOid: string | null
   phone: string | null

@@ -451,10 +451,10 @@ fun Database.Transaction.insertTestChild(child: DevChild) =
     insertTestDataRow(
         child,
         """
-INSERT INTO child (id, allergies, diet, medication, additionalinfo)
-VALUES (:id, :allergies, :diet, :medication, :additionalInfo)
+INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details)
+VALUES (:id, :allergies, :diet, :medication, :additionalInfo, :languageAtHome, :languageAtHomeDetails)
 ON CONFLICT(id) DO UPDATE
-SET id = :id, allergies = :allergies, diet = :diet, medication = :medication, additionalInfo = :additionalInfo
+SET id = :id, allergies = :allergies, diet = :diet, medication = :medication, additionalInfo = :additionalInfo, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails
 RETURNING id
     """
     )

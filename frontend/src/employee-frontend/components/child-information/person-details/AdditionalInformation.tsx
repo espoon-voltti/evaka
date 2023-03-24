@@ -2,15 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useState } from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
@@ -40,6 +43,14 @@ const RightAlignedRow = styled.div`
   padding-top: 20px;
 `
 
+const filterLanguages = (
+  input: string,
+  items: IsoLanguage[]
+): IsoLanguage[] => {
+  const filter = input.toLowerCase()
+  return items.filter((item) => item.nameFi.includes(filter))
+}
+
 interface Props {
   id: UUID
 }
@@ -56,7 +67,9 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
     allergies: '',
     diet: '',
     preferredName: '',
-    medication: ''
+    medication: '',
+    languageAtHome: '',
+    languageAtHomeDetails: ''
   })
 
   const editing = uiMode == 'child-additional-details-editing'
@@ -68,7 +81,9 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
         allergies: additionalInformation.value.allergies,
         diet: additionalInformation.value.diet,
         preferredName: additionalInformation.value.preferredName,
-        medication: additionalInformation.value.medication
+        medication: additionalInformation.value.medication,
+        languageAtHome: additionalInformation.value.languageAtHome,
+        languageAtHomeDetails: additionalInformation.value.languageAtHomeDetails
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -84,6 +99,11 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   }, [clearUiMode, loadData])
 
   const valueWidth = '600px'
+
+  const languages = useMemo(
+    () => sortBy(Object.values(isoLanguages), ({ nameFi }) => nameFi),
+    []
+  )
 
   return (
     <div data-qa="additional-information-section">
@@ -189,6 +209,53 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                   </span>
                 ),
                 valueWidth
+              },
+              {
+                label: i18n.childInformation.personDetails.languageAtHome,
+                value: editing ? (
+                  <>
+                    <Combobox
+                      data-qa="input-language-at-home"
+                      items={languages}
+                      getItemDataQa={(item) => `language-${item.id}`}
+                      selectedItem={
+                        (form.languageAtHome
+                          ? isoLanguages[form.languageAtHome]
+                          : null) ?? null
+                      }
+                      onChange={(item) =>
+                        setForm({ ...form, languageAtHome: item?.id ?? '' })
+                      }
+                      filterItems={filterLanguages}
+                      getItemLabel={(item) => item?.nameFi}
+                      placeholder={
+                        i18n.childInformation.personDetails.placeholder
+                          .languageAtHome
+                      }
+                      clearable={true}
+                    />
+                    <TextArea
+                      data-qa="input-language-at-home-details"
+                      value={form.languageAtHomeDetails}
+                      placeholder={
+                        i18n.childInformation.personDetails.placeholder
+                          .languageAtHomeDetails
+                      }
+                      onChange={(languageAtHomeDetails) =>
+                        setForm({ ...form, languageAtHomeDetails })
+                      }
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div data-qa="person-language-at-home">
+                      {isoLanguages[data.languageAtHome]?.nameFi ?? ''}
+                    </div>
+                    <div data-qa="person-language-at-home-details">
+                      {data.languageAtHomeDetails}
+                    </div>
+                  </>
+                )
               }
             ]}
           />

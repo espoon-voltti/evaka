@@ -81,28 +81,6 @@ describe('Child Information - edit child information', () => {
     await childInformationPage.setOphPersonOid('1.2.3')
     await childInformationPage.assertOphPersonOid('1.2.3')
   })
-  test('Language at home can be edited', async () => {
-    const language = 'kreikka'
-    const languageSearchText = 'kre'
-    const languageId = 'ell'
-    const details = 'Puhuu modernia kreikkaa, ei antiikin'
-
-    await page.goto(
-      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
-    )
-    await childInformationPage.waitUntilLoaded()
-    await childInformationPage.languageAtHome.assertTextEquals('')
-    await childInformationPage.languageAtHomeDetails.assertTextEquals('')
-    await childInformationPage.clickEdit()
-    await childInformationPage.languageAtHomeCombobox.fillAndSelectItem(
-      languageSearchText,
-      `language-${languageId}`
-    )
-    await childInformationPage.languageAtHomeDetailsInput.fill(details)
-    await childInformationPage.confirmButton.click()
-    await childInformationPage.languageAtHome.assertTextEquals(language)
-    await childInformationPage.languageAtHomeDetails.assertTextEquals(details)
-  })
 })
 
 describe('Child Information - edit additional information', () => {
@@ -125,6 +103,28 @@ describe('Child Information - edit additional information', () => {
     await section.medicationInput.fill('')
     await section.confirmBtn.click()
     await section.medication.assertTextEquals('')
+  })
+  test('Language at home can be edited', async () => {
+    const language = 'kreikka'
+    const languageSearchText = 'kre'
+    const languageId = 'ell'
+    const details = 'Puhuu modernia kreikkaa, ei antiikin'
+
+    await page.goto(
+      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+    )
+    await childInformationPage.waitUntilLoaded()
+    await section.languageAtHome.assertTextEquals('')
+    await section.languageAtHomeDetails.assertTextEquals('')
+    await section.editBtn.click()
+    await section.languageAtHomeCombobox.fillAndSelectItem(
+      languageSearchText,
+      `language-${languageId}`
+    )
+    await section.languageAtHomeDetailsInput.fill(details)
+    await section.confirmBtn.click()
+    await section.languageAtHome.assertTextEquals(language)
+    await section.languageAtHomeDetails.assertTextEquals(details)
   })
 })
 

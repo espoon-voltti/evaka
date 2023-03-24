@@ -33,18 +33,6 @@ export default class ChildInformationPage {
     this.page.find('[data-qa="person-oph-person-oid"]')
   )
 
-  readonly languageAtHome = this.page.findByDataQa('person-language-at-home')
-  readonly languageAtHomeCombobox = new Combobox(
-    this.page.findByDataQa('input-language-at-home')
-  )
-
-  readonly languageAtHomeDetails = this.page.findByDataQa(
-    'person-language-at-home-details'
-  )
-  readonly languageAtHomeDetailsInput = new TextInput(
-    this.page.findByDataQa('input-language-at-home-details')
-  )
-
   readonly #editButton = this.page.find(
     '[data-qa="edit-person-settings-button"]'
   )
@@ -129,6 +117,18 @@ export class AdditionalInformationSection extends Section {
   editBtn = this.find('[data-qa="edit-child-settings-button"]')
   medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
   confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
+
+  readonly languageAtHome = this.page.findByDataQa('person-language-at-home')
+  readonly languageAtHomeCombobox = new Combobox(
+    this.page.findByDataQa('input-language-at-home')
+  )
+
+  readonly languageAtHomeDetails = this.page.findByDataQa(
+    'person-language-at-home-details'
+  )
+  readonly languageAtHomeDetailsInput = new TextInput(
+    this.page.findByDataQa('input-language-at-home-details')
+  )
 }
 
 class DailyServiceTimeSectionBaseForm extends Section {

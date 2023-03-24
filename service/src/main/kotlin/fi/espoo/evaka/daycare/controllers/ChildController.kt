@@ -138,7 +138,9 @@ fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformat
             diet = child.additionalInformation.diet,
             additionalInfo = child.additionalInformation.additionalInfo,
             preferredName = child.additionalInformation.preferredName,
-            medication = child.additionalInformation.medication
+            medication = child.additionalInformation.medication,
+            languageAtHome = child.additionalInformation.languageAtHome,
+            languageAtHomeDetails = child.additionalInformation.languageAtHomeDetails
         )
     } else {
         AdditionalInformation()
@@ -165,5 +167,7 @@ data class AdditionalInformation(
     val diet: String = "",
     val additionalInfo: String = "",
     val preferredName: String = "",
-    val medication: String = ""
+    val medication: String = "",
+    val languageAtHome: String = "",
+    val languageAtHomeDetails: String = ""
 )
