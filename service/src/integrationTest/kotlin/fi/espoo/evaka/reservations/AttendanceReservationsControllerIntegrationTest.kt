@@ -98,7 +98,7 @@ class AttendanceReservationsControllerIntegrationTest :
             it.insertServiceNeed(
                 placementId = child1PlacementId,
                 startDate = mon,
-                endDate = wed,
+                endDate = thu,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = false,
                 confirmedBy = null,
@@ -106,7 +106,7 @@ class AttendanceReservationsControllerIntegrationTest :
             )
             it.insertServiceNeed(
                 placementId = child1PlacementId,
-                startDate = thu,
+                startDate = fri,
                 endDate = fri,
                 optionId = snDaycareFullDay35.id,
                 shiftCare = false,
@@ -117,12 +117,12 @@ class AttendanceReservationsControllerIntegrationTest :
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup1.id,
                 startDate = mon,
-                endDate = wed
+                endDate = thu
             )
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup2.id,
-                startDate = thu,
+                startDate = fri,
                 endDate = fri
             )
             it.insertTestReservation(
@@ -146,6 +146,16 @@ class AttendanceReservationsControllerIntegrationTest :
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.OTHER_ABSENCE,
                 modifiedBy = EvakaUserId(employeeId.raw)
+            )
+            // Reservation with no times
+            it.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = wed,
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(employeeId.raw)
+                )
             )
 
             // No group placement -> ungrouped
@@ -257,7 +267,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             childId = testChild_1.id,
                             hasContractDays = true,
                             optionName = snDaycareContractDays15.nameFi,
-                            validDuring = FiniteDateRange(mon, wed)
+                            validDuring = FiniteDateRange(mon, thu)
                         )
                     )
             ),
@@ -278,7 +288,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     hasContractDays = false,
                     optionName = snDaycareFullDay35.nameFi,
-                    validDuring = FiniteDateRange(thu, fri)
+                    validDuring = FiniteDateRange(fri, fri)
                 )
             ),
             group2SnInfos.childInfos.sortedBy { it.validDuring.start }
@@ -300,9 +310,9 @@ class AttendanceReservationsControllerIntegrationTest :
                             mon to
                                 UnitAttendanceReservations.ChildRecordOfDay(
                                     reservation =
-                                        UnitAttendanceReservations.ReservationTimes(
-                                            "08:00",
-                                            "16:00"
+                                        Reservation.Times(
+                                            LocalTime.of(8, 0),
+                                            LocalTime.of(16, 0),
                                         ),
                                     attendance =
                                         UnitAttendanceReservations.AttendanceTimes(
@@ -327,6 +337,15 @@ class AttendanceReservationsControllerIntegrationTest :
                                     isInBackupGroup = false
                                 ),
                             wed to
+                                UnitAttendanceReservations.ChildRecordOfDay(
+                                    reservation = Reservation.NoTimes,
+                                    attendance = null,
+                                    absence = null,
+                                    dailyServiceTimes = null,
+                                    inOtherUnit = false,
+                                    isInBackupGroup = false
+                                ),
+                            thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
                                     reservation = null,
                                     attendance = null,
@@ -361,9 +380,9 @@ class AttendanceReservationsControllerIntegrationTest :
                             thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
                                     reservation =
-                                        UnitAttendanceReservations.ReservationTimes(
-                                            "09:00",
-                                            "15:00"
+                                        Reservation.Times(
+                                            LocalTime.of(9, 0),
+                                            LocalTime.of(15, 0),
                                         ),
                                     attendance = null,
                                     absence = null,
@@ -399,7 +418,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         testChild_1.preferredName,
                         testChild_1.dateOfBirth
                     ),
-                    listOf(emptyChildRecords(FiniteDateRange(thu, fri)))
+                    listOf(emptyChildRecords(FiniteDateRange(fri, fri)))
                 ),
                 UnitAttendanceReservations.ChildDailyRecords(
                     UnitAttendanceReservations.Child(
@@ -415,9 +434,9 @@ class AttendanceReservationsControllerIntegrationTest :
                             thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
                                     reservation =
-                                        UnitAttendanceReservations.ReservationTimes(
-                                            "09:00",
-                                            "15:00"
+                                        Reservation.Times(
+                                            LocalTime.of(9, 0),
+                                            LocalTime.of(15, 0),
                                         ),
                                     attendance = null,
                                     absence = null,
@@ -565,9 +584,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 mon to
                                     UnitAttendanceReservations.ChildRecordOfDay(
                                         reservation =
-                                            UnitAttendanceReservations.ReservationTimes(
-                                                "19:00",
-                                                "23:59"
+                                            Reservation.Times(
+                                                LocalTime.of(19, 0),
+                                                LocalTime.of(23, 59),
                                             ),
                                         attendance =
                                             UnitAttendanceReservations.AttendanceTimes(
@@ -582,9 +601,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 tue to
                                     UnitAttendanceReservations.ChildRecordOfDay(
                                         reservation =
-                                            UnitAttendanceReservations.ReservationTimes(
-                                                "00:00",
-                                                "08:00"
+                                            Reservation.Times(
+                                                LocalTime.of(0, 0),
+                                                LocalTime.of(8, 0),
                                             ),
                                         attendance =
                                             UnitAttendanceReservations.AttendanceTimes(
@@ -599,9 +618,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 wed to
                                     UnitAttendanceReservations.ChildRecordOfDay(
                                         reservation =
-                                            UnitAttendanceReservations.ReservationTimes(
-                                                "00:00",
-                                                "09:30"
+                                            Reservation.Times(
+                                                LocalTime.of(0, 0),
+                                                LocalTime.of(9, 30),
                                             ),
                                         attendance = null,
                                         absence = null,
@@ -617,9 +636,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 tue to
                                     UnitAttendanceReservations.ChildRecordOfDay(
                                         reservation =
-                                            UnitAttendanceReservations.ReservationTimes(
-                                                "17:30",
-                                                "23:59"
+                                            Reservation.Times(
+                                                LocalTime.of(17, 30),
+                                                LocalTime.of(23, 59),
                                             ),
                                         attendance =
                                             UnitAttendanceReservations.AttendanceTimes(

@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.reservations.getReservationSpans
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -84,7 +85,7 @@ class ChildAttendanceController(
                     val childrenBasics = tx.fetchChildrenBasics(unitId, now)
                     val dailyNotesForChildrenInUnit = tx.getChildDailyNotesInUnit(unitId, today)
                     val stickyNotesForChildrenInUnit = tx.getChildStickyNotesForUnit(unitId, today)
-                    val attendanceReservations = tx.fetchAttendanceReservations(unitId, now)
+                    val attendanceReservations = tx.getReservationSpans(unitId, today)
 
                     childrenBasics.map { child ->
                         val dailyNote =
@@ -105,9 +106,7 @@ class ChildAttendanceController(
                             dailyNote = dailyNote,
                             stickyNotes = stickyNotes,
                             imageUrl = child.imageUrl,
-                            reservations =
-                                attendanceReservations[child.id]?.sortedBy { it.startTime }
-                                    ?: listOf()
+                            reservations = (attendanceReservations[child.id] ?: listOf()).sorted()
                         )
                     }
                 }

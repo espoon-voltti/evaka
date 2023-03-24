@@ -106,6 +106,16 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `reminder is sent when all days have reservations without times`() {
+        db.transaction { tx ->
+            checkedRange.dates().forEach {
+                tx.createReservation(it, startTime = null, endTime = null)
+            }
+        }
+        assertEquals(listOf(guardianEmail), getReminderRecipients())
+    }
+
+    @Test
     fun `reminder is not sent when there are absences`() {
         db.transaction { tx ->
             checkedRange.dates().forEach {
@@ -125,13 +135,17 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(emptyList(), getReminderRecipients())
     }
 
-    private fun Database.Transaction.createReservation(date: LocalDate) =
+    private fun Database.Transaction.createReservation(
+        date: LocalDate,
+        startTime: LocalTime? = LocalTime.of(8, 0),
+        endTime: LocalTime? = LocalTime.of(16, 0)
+    ) =
         insertTestReservation(
             DevReservation(
                 childId = child,
                 date = date,
-                startTime = LocalTime.of(8, 0),
-                endTime = LocalTime.of(16, 0),
+                startTime = startTime,
+                endTime = endTime,
                 createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
             )
         )

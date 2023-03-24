@@ -4,13 +4,14 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.attendance.getChildAttendanceReservationStartDatesByRange
 import fi.espoo.evaka.attendance.getChildAttendanceStartDatesByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
+import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
@@ -195,12 +196,20 @@ private fun supplementReservationsWithDailyServiceTimes(
 
     val reservationRanges =
         reservations
-            ?.map {
-                HelsinkiDateTimeRange.of(
-                    it.date,
-                    it.startTime.withNano(0).withSecond(0),
-                    it.endTime.withNano(0).withSecond(0)
-                )
+            ?.flatMap {
+                when (it.reservation) {
+                    is Reservation.Times ->
+                        listOf(
+                            HelsinkiDateTimeRange.of(
+                                it.date,
+                                it.reservation.startTime.withNano(0).withSecond(0),
+                                it.reservation.endTime.withNano(0).withSecond(0)
+                            )
+                        )
+
+                    // Reserved but no times -> use daily service times
+                    is Reservation.NoTimes -> listOf()
+                }
             }
             ?.sortedBy { it.start }
             ?.fold(listOf<HelsinkiDateTimeRange>()) { timeRanges, timeRange ->

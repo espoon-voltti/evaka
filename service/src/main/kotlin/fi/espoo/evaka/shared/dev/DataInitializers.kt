@@ -1364,8 +1364,8 @@ data class DevReservation(
     val id: AttendanceReservationId = AttendanceReservationId(UUID.randomUUID()),
     val childId: ChildId,
     val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime,
+    val startTime: LocalTime?,
+    val endTime: LocalTime?,
     val createdBy: EvakaUserId
 )
 

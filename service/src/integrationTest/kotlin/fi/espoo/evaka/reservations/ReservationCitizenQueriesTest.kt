@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Test
 
 class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
-    val monday = LocalDate.of(2021, 8, 23)
-    val startTime = LocalTime.of(9, 0)
-    val endTime = LocalTime.of(17, 0)
-    val queryRange = FiniteDateRange(monday.minusDays(10), monday.plusDays(10))
+    private val monday = LocalDate.of(2021, 8, 23)
+    private val startTime = LocalTime.of(9, 0)
+    private val endTime: LocalTime = LocalTime.of(17, 0)
+    private val queryRange = FiniteDateRange(monday.minusDays(10), monday.plusDays(10))
 
     @BeforeEach
     fun before() {
@@ -60,13 +60,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -106,13 +106,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -153,13 +153,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -199,13 +199,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.minusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -247,13 +247,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -306,7 +306,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
@@ -383,13 +383,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        reservations = listOf(TimeRange(startTime, endTime)),
+                        reservations = listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = tuesday,
-                        reservations = listOf(TimeRange(startTime, endTime)),
+                        reservations = listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
@@ -441,13 +441,13 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -463,7 +463,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DailyReservationRequest(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(TimeRange(LocalTime.of(12, 0), endTime)),
+                        listOf(Reservation.Times(LocalTime.of(12, 0), endTime)),
                         absent = false
                     )
                 )
@@ -478,8 +478,11 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
         assertEquals(2, reservations.size)
         assertEquals(monday, reservations[0].first)
-        assertEquals(LocalTime.of(12, 0), reservations[0].second[0].startTime)
+        assertEquals(
+            LocalTime.of(12, 0),
+            (reservations[0].second[0] as Reservation.Times).startTime
+        )
         assertEquals(monday.plusDays(1), reservations[1].first)
-        assertEquals(LocalTime.of(9, 0), reservations[1].second[0].startTime)
+        assertEquals(LocalTime.of(9, 0), (reservations[1].second[0] as Reservation.Times).startTime)
     }
 }

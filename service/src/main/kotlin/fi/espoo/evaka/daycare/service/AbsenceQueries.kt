@@ -9,6 +9,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -286,8 +288,7 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
 data class ChildReservation(
     val childId: ChildId,
     val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime
+    val reservation: Reservation
 )
 
 fun Database.Read.getGroupReservations(
@@ -310,7 +311,13 @@ AND EXISTS (
         )
         .bind("groupId", groupId)
         .bind("dateRange", dateRange)
-        .mapTo<ChildReservation>()
+        .map { row ->
+            ChildReservation(
+                row.mapColumn("child_id"),
+                row.mapColumn("date"),
+                Reservation.fromLocalTimes(row.mapColumn("start_time"), row.mapColumn("end_time"))
+            )
+        }
         .toList()
 
 data class ChildAttendance(

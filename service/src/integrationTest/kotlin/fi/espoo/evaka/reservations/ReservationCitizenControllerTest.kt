@@ -93,13 +93,13 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     DailyReservationRequest(
                         child,
                         testDate,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         child,
                         testDate.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )
@@ -147,14 +147,14 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     testChild_1.id,
                     false,
                     null,
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     listOf(),
                 ),
                 ChildDailyData(
                     testChild_2.id,
                     false,
                     null,
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     listOf(),
                 )
             ),
@@ -168,14 +168,14 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     testChild_1.id,
                     false,
                     null,
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     listOf(),
                 ),
                 ChildDailyData(
                     testChild_2.id,
                     false,
                     null,
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     listOf(),
                 )
             ),
@@ -193,13 +193,13 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                 DailyReservationRequest(
                     testChild_1.id,
                     testDate,
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     absent = false
                 ),
                 DailyReservationRequest(
                     testChild_1.id,
                     testDate.plusDays(1),
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     absent = true
                 )
             )
@@ -217,7 +217,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     testChild_1.id,
                     false,
                     null,
-                    listOf(TimeRange(startTime, endTime)),
+                    listOf(Reservation.Times(startTime, endTime)),
                     listOf(),
                 )
             ),
@@ -250,13 +250,13 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     DailyReservationRequest(
                         child,
                         mockToday,
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     ),
                     DailyReservationRequest(
                         child,
                         mockToday.plusDays(1),
-                        listOf(TimeRange(startTime, endTime)),
+                        listOf(Reservation.Times(startTime, endTime)),
                         absent = false
                     )
                 )

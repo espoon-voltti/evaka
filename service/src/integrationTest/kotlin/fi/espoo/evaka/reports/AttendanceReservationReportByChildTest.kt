@@ -121,6 +121,39 @@ internal class AttendanceReservationReportByChildTest :
     }
 
     @Test
+    fun `reservation with no times is ignored`() {
+        val date = LocalDate.of(2022, 9, 2)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = null,
+                    endTime = null,
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val result = getReport(date, date)
+        assertThat(result)
+            .extracting(
+                { it.childId },
+                { it.date },
+                { it.reservationId },
+                { it.reservationStartTime },
+                { it.reservationEndTime }
+            )
+            .containsExactly(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2), null, null, null))
+    }
+
+    @Test
     fun `child without placement is not included`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->

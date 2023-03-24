@@ -262,10 +262,20 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
                 )
             )
+            // Reservation with no times
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = mondays[2],
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
+                )
+            )
             tx.insertTestAbsence(
                 id = existingAbsenceId,
                 childId = testChild_1.id,
-                date = mondays[2],
+                date = mondays[3],
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.SICKLEAVE,
                 modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
@@ -279,8 +289,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         // The absence created above is not overridden, and absences are created for "empty" mondays
         // only
         val absences = getAllAbsences()
-        assertEquals(3, absences.size)
-        assertEquals(mondays.slice(2..4), absences.map { it.date })
+        assertEquals(2, absences.size)
+        assertEquals(mondays.slice(3..4), absences.map { it.date })
         assertEquals(existingAbsenceId, absences[0].id)
     }
 

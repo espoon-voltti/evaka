@@ -688,7 +688,37 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
-    fun `reservation sums - daily service times are used to generate missing reservations when none are found`() {
+    fun `reservation sums - reservation without times are not included`() {
+        insertGroupPlacement(childId)
+        db.transaction { tx ->
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = childId,
+                    date = placementStart,
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(testUserId.raw)
+                )
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = childId,
+                    date = placementStart.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(testUserId.raw)
+                )
+            )
+        }
+
+        val result = db.read { getAbsencesInGroupByMonth(it, groupId, 2019, 8) }
+
+        // 1 operational day * 0 h + 1 operational day * 8 h
+        assertEquals(listOf(8), result.children.map { it.reservationTotalHours })
+    }
+
+    @Test
+    fun `reservation sums - daily service times are used to generate missing reservations and reservations with no times`() {
         insertGroupPlacement(childId)
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
@@ -696,6 +726,19 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
             )
         insertDailyServiceTimes(childId, dailyServiceTimes)
+
+        db.transaction { tx ->
+            // Daily service times are used because this reservation has no times
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = childId,
+                    date = placementStart.plusDays(1),
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(testUserId.raw)
+                )
+            )
+        }
 
         val result = db.read { getAbsencesInGroupByMonth(it, groupId, 2019, 8) }
         // 22 operational days * 8h

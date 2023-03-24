@@ -533,6 +533,32 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
+    fun `reservation with no times is ignored`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = null,
+                    endTime = null,
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val result = getReport(date, date)
+        val expected = createEmptyReport(date, date)
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
     fun `times are inclusive`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->

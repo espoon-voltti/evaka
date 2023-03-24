@@ -65,6 +65,16 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         createdBy = EvakaUserId(testAdult_1.id.raw)
                     )
                 )
+                // After placement ends, has no times
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = LocalDate.of(2020, 1, 2),
+                        startTime = null,
+                        endTime = null,
+                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                    )
+                )
                 // No placement at all
                 tx.insertTestReservation(
                     DevReservation(

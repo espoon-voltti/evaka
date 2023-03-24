@@ -251,7 +251,7 @@ private fun Database.Read.getAttendanceReservationReportByChild(
           COALESCE(r.end_time, (daily_service_time_for_date(c.date, c.id)).end) AS reservation_end_time
         FROM children c
         LEFT JOIN absence a ON a.child_id = c.id AND a.date = c.date
-        LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date
+        LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date AND r.start_time IS NOT NULL AND r.end_time IS NOT NULL
     """
             .trimIndent()
     return createQuery(sql)
