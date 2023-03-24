@@ -335,16 +335,15 @@ export default React.memo(function DayView({
                               <div>
                                 {attendances.length > 0
                                   ? attendances.map(
-                                      ({ startTime, endTime }) => (
-                                        <div
-                                          key={JSON.stringify([
-                                            startTime,
-                                            endTime
-                                          ])}
-                                        >
-                                          {startTime} – {endTime ?? ''}
-                                        </div>
-                                      )
+                                      ({ startTime, endTime }) => {
+                                        const start = startTime.format()
+                                        const end = endTime?.format() ?? ''
+                                        return (
+                                          <div key={`${start}-${end}`}>
+                                            {start} – {end}
+                                          </div>
+                                        )
+                                      }
                                     )
                                   : '–'}
                               </div>
