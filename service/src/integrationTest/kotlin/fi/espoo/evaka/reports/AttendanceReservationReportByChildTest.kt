@@ -4,15 +4,14 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.children.Group
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -25,6 +24,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -38,14 +38,18 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter.ISO_DATE
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 internal class AttendanceReservationReportByChildTest :
     FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired
+    private lateinit var attendanceReservationReportController:
+        AttendanceReservationReportController
+
     private val admin =
         AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
 
@@ -78,17 +82,8 @@ internal class AttendanceReservationReportByChildTest :
             }
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(startDate, endDate)
+        assertThat(result)
             .extracting({ it.childId }, { it.date })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, LocalDate.of(2022, 9, 1)), // Thu
@@ -119,17 +114,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(date, date)
+        assertThat(result)
             .extracting({ it.childId }, { it.date })
             .containsExactlyInAnyOrder(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)))
     }
@@ -149,17 +135,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).isEmpty()
+        val result = getReport(date, date)
+        assertThat(result).isEmpty()
     }
 
     @Test
@@ -183,17 +160,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).isEmpty()
+        val result = getReport(date, date)
+        assertThat(result).isEmpty()
     }
 
     @Test
@@ -248,17 +216,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(date, date)
+        assertThat(result)
             .extracting({ it.childId }, { it.date }, { it.isBackupCare })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, date, true),
@@ -299,17 +258,8 @@ internal class AttendanceReservationReportByChildTest :
                 }
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(date, date)
+        assertThat(result)
             .extracting({ it.childLastName }, { it.childFirstName }, { it.date })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.lastName, testChild_1.firstName, date),
@@ -421,21 +371,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf(
-                        "start" to date.format(ISO_DATE),
-                        "end" to date.format(ISO_DATE),
-                        "groupIds" to "${group1.id},${group2.id}"
-                    )
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(date, date, listOf(group1.id, group2.id))
+        assertThat(result)
             .extracting({ it.groupId }, { it.groupName }, { it.childId })
             .containsExactlyInAnyOrder(
                 Tuple(group1.id, group1.name, testChild_1.id),
@@ -476,17 +413,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(date, date, null)
+        assertThat(result)
             .extracting({ it.groupId }, { it.childId })
             .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
     }
@@ -512,21 +440,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf(
-                        "start" to date.format(ISO_DATE),
-                        "end" to date.format(ISO_DATE),
-                        "groupIds" to ""
-                    )
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(date, date, listOf())
+        assertThat(result)
             .extracting({ it.groupId }, { it.childId })
             .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
     }
@@ -567,17 +482,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(startDate, endDate)
+        assertThat(result)
             .extracting(
                 { it.childId },
                 { it.date },
@@ -643,17 +549,8 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
-                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get())
+        val result = getReport(startDate, endDate, null)
+        assertThat(result)
             .extracting(
                 { it.childId },
                 { it.date },
@@ -670,5 +567,21 @@ internal class AttendanceReservationReportByChildTest :
                     AbsenceType.SICKLEAVE
                 )
             )
+    }
+
+    private fun getReport(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        groupIds: List<GroupId>? = null
+    ): List<AttendanceReservationReportByChildRow> {
+        return attendanceReservationReportController.getAttendanceReservationReportByUnitAndChild(
+            dbInstance(),
+            RealEvakaClock(),
+            admin,
+            testDaycare.id,
+            startDate,
+            endDate,
+            groupIds
+        )
     }
 }

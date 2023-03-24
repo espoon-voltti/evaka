@@ -4,15 +4,14 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.LocalTimeRange
 import fi.espoo.evaka.children.Group
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -29,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -50,12 +50,16 @@ import java.time.DayOfWeek.WEDNESDAY
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter.ISO_DATE
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired
+    private lateinit var attendanceReservationReportController:
+        AttendanceReservationReportController
+
     private val admin =
         AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
 
@@ -69,36 +73,18 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         val startDate = LocalDate.of(2022, 8, 8) // Mon
         val endDate = LocalDate.of(2022, 8, 14) // Sun
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(startDate, endDate)
         val expected = createEmptyReport(startDate, endDate.minusDays(2)) // Mon-Fri
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
     fun `end date is inclusive`() {
         val date = LocalDate.of(2022, 8, 10)
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected = createEmptyReport(date, date)
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -116,18 +102,9 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected = createEmptyReport(date, date)
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -151,18 +128,9 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected = createEmptyReport(date, date)
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -186,15 +154,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -221,8 +181,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -253,15 +212,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -288,8 +239,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -323,15 +273,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(startDate, endDate)
         val expected =
             createEmptyReport(startDate, endDate).also {
                 addExpectedRow(
@@ -378,8 +320,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -412,15 +353,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -448,8 +381,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             }
 
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -489,15 +421,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -525,8 +449,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             }
 
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -550,15 +473,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val changedRows =
             LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30), Duration.ofMinutes(15)).map {
                 AttendanceReservationReportRow(
@@ -574,8 +489,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             }
         val expected =
             createEmptyReport(date, date).also { addExpectedRow(it, *(changedRows).toTypedArray()) }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -599,15 +513,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val changedRows =
             LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofMinutes(15)).map {
                 AttendanceReservationReportRow(
@@ -623,8 +529,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             }
         val expected =
             createEmptyReport(date, date).also { addExpectedRow(it, *(changedRows).toTypedArray()) }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -648,15 +553,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -683,8 +580,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -720,15 +616,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 }
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -756,8 +644,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             }
 
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -858,19 +745,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf(
-                        "start" to date.format(ISO_DATE),
-                        "end" to date.format(ISO_DATE),
-                        "groupIds" to "${group1.id},${group2.id}"
-                    )
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date, listOf(group1.id, group2.id))
         val expected =
             createEmptyReport(date, date, listOf(group1, group2)).also {
                 addExpectedRow(
@@ -918,8 +793,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             }
 
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyInAnyOrderElementsOf(expected.values)
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expected.values)
     }
 
     @Test
@@ -954,15 +828,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date, null)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -989,8 +855,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -1014,19 +879,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf(
-                        "start" to date.format(ISO_DATE),
-                        "end" to date.format(ISO_DATE),
-                        "groupIds" to ""
-                    )
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date, listOf())
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -1053,8 +906,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -1086,15 +938,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(date, date, null)
         val expected =
             createEmptyReport(date, date).also {
                 addExpectedRow(
@@ -1121,8 +965,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     )
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
     @Test
@@ -1165,15 +1008,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) =
-            http
-                .get(
-                    "/reports/attendance-reservation/${testDaycare.id}",
-                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-                )
-                .asUser(admin)
-                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
+        val result = getReport(startDate, endDate, null)
         val expected =
             createEmptyReport(startDate, endDate).also {
                 addExpectedRow(
@@ -1215,8 +1050,23 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         .toTypedArray()
                 )
             }
-        assertThat(res.statusCode).isEqualTo(200)
-        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
+    private fun getReport(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        groupIds: List<GroupId>? = null
+    ): List<AttendanceReservationReportRow> {
+        return attendanceReservationReportController.getAttendanceReservationReportByUnit(
+            dbInstance(),
+            RealEvakaClock(),
+            admin,
+            testDaycare.id,
+            startDate,
+            endDate,
+            groupIds
+        )
     }
 }
 

@@ -32,13 +32,13 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping("/reports/attendance-reservation/{unitId}")
     fun getAttendanceReservationReportByUnit(
+        db: Database,
+        clock: EvakaClock,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock
     ): List<AttendanceReservationReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -74,13 +74,13 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping("/reports/attendance-reservation/{unitId}/by-child")
     fun getAttendanceReservationReportByUnitAndChild(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @PathVariable unitId: DaycareId,
-        @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
         clock: EvakaClock,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
+        @RequestParam(required = false) groupIds: List<GroupId>?,
     ): List<AttendanceReservationReportByChildRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
