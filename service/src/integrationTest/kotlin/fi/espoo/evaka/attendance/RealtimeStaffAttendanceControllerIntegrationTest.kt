@@ -109,6 +109,58 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         }
     }
 
+    @Test
+    fun `Attendances without group can be deleted`() {
+        realtimeStaffAttendanceController.upsertDailyStaffAttendances(
+            dbInstance(),
+            unitSupervisor,
+            MockEvakaClock(now),
+            RealtimeStaffAttendanceController.StaffAttendanceBody(
+                unitId = testDaycare.id,
+                date = now.toLocalDate(),
+                employeeId = testDecisionMaker_2.id,
+                entries =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = null,
+                            groupId = null,
+                            arrived = now.minusHours(3),
+                            departed = now.minusHours(2),
+                            type = StaffAttendanceType.TRAINING
+                        )
+                    )
+            )
+        )
+
+        getAttendances(testDaycare.id).staff.first().let { attendance ->
+            assertEquals(staff.id, attendance.employeeId)
+            assertEquals(listOf(groupId1), attendance.groups)
+            assertEquals(staff.firstName, attendance.firstName)
+            assertEquals(staff.lastName, attendance.lastName)
+            assertEquals(7.0, attendance.currentOccupancyCoefficient.toDouble())
+            assertEquals(1, attendance.attendances.size)
+            assertEquals(0, attendance.plannedAttendances.size)
+            attendance.attendances.first().let { attendanceEntry ->
+                assertEquals(now.minusHours(3), attendanceEntry.arrived)
+                assertEquals(now.minusHours(2), attendanceEntry.departed)
+                assertEquals(StaffAttendanceType.TRAINING, attendanceEntry.type)
+            }
+        }
+
+        realtimeStaffAttendanceController.upsertDailyStaffAttendances(
+            dbInstance(),
+            unitSupervisor,
+            MockEvakaClock(now),
+            RealtimeStaffAttendanceController.StaffAttendanceBody(
+                unitId = testDaycare.id,
+                date = now.toLocalDate(),
+                employeeId = testDecisionMaker_2.id,
+                entries = emptyList()
+            )
+        )
+        assertEquals(0, getAttendances(testDaycare.id).staff.get(0).attendances.size)
+    }
+
     private fun getAttendances(unitId: DaycareId): StaffAttendanceResponse {
         return realtimeStaffAttendanceController.getAttendances(
             dbInstance(),
