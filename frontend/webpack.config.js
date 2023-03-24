@@ -207,7 +207,8 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
-            chunks: 'all'
+            // See above
+            chunks: (chunk) => chunk.name !== 'service-worker'
           }
         }
       }
