@@ -51,5 +51,6 @@ export const sv: typeof fi = {
     CLOSED: 'Avslutad'
   },
   lastModified: 'Senaste redigeringsdatum',
-  lastPublished: 'Senaste publicering för vårdnadshavare'
+  lastPublished: 'Senaste publicering för vårdnadshavare',
+  guardianPermissionGiven: 'Informationsdelning godkänd av'
 }
