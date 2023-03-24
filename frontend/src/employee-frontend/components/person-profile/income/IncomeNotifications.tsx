@@ -38,7 +38,7 @@ export const IncomeNotifications = React.memo(function IncomeNotifications({
   )
 
   return (
-    <IncomeNotificationsContainer>
+    <IncomeNotificationsContainer data-qa="income-notifications">
       <RoundIcon content={faExclamation} color={colors.main.m1} size="s" />
       <IncomeNotificationsListContainer>
         {i18n.personProfile.income.incomeNotifications.title}

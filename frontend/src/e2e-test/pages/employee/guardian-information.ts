@@ -305,6 +305,7 @@ export class IncomeSection extends Section {
   )
 
   incomeNotificationRows = this.findAllByDataQa('income-notification-sent-date')
+  incomeNotifications = this.findAllByDataQa('income-notifications')
 
   async assertIncomeStatementChildName(nth: number, childName: string) {
     await this.#childIncomeStatementsTitles.nth(nth).assertTextEquals(childName)
@@ -393,14 +394,14 @@ export class IncomeSection extends Section {
     await this.#cancelIncomeButton.click()
   }
 
-  #incomeListItems = this.page.findAll('[data-qa="income-list-item"]')
+  incomeListItems = this.page.findAll('[data-qa="income-list-item"]')
 
   async incomeListItemCount() {
-    return await this.#incomeListItems.count()
+    return await this.incomeListItems.count()
   }
 
   async deleteIncomeItem(nth: number) {
-    await this.#incomeListItems
+    await this.incomeListItems
       .nth(nth)
       .find('[data-qa="delete-income-item"]')
       .click()
