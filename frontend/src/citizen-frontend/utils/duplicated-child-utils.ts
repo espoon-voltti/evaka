@@ -10,8 +10,7 @@ export const toDuplicatedChildIds = (
   children: Array<Child | ReservationChild>
 ) =>
   children
-    .filter((child) => child.duplicateOf !== null)
-    .flatMap((child) => [child.id, child.duplicateOf as string])
+    .flatMap((child) => child.duplicateOf !== null ? [child.id, child.duplicateOf] : [])
 
 export const formatDuplicatedChildIdentifier = (
   t: Translations,
