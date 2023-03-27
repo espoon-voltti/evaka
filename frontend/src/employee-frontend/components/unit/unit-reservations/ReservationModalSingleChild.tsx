@@ -34,7 +34,7 @@ import {
 } from 'lib-common/form/types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { Repetition } from 'lib-common/reservations'
+import { Repetition, timeRangeToTimes } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -109,7 +109,7 @@ const reservationForm = mapped(
           return dates.map((date) => ({
             childId,
             date,
-            reservations: output.dailyTimes,
+            reservations: output.dailyTimes.map(timeRangeToTimes),
             absent: false
           }))
         case 'WEEKLY':
@@ -122,7 +122,7 @@ const reservationForm = mapped(
                 ? {
                     childId,
                     date,
-                    reservations: weekDay.times,
+                    reservations: weekDay.times.map(timeRangeToTimes),
                     absent: false
                   }
                 : undefined
@@ -136,7 +136,7 @@ const reservationForm = mapped(
             .map((irregularDay) => ({
               childId,
               date: irregularDay.date,
-              reservations: irregularDay.times,
+              reservations: irregularDay.times.map(timeRangeToTimes),
               absent: false
             }))
       }

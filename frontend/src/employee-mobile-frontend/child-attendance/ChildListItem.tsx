@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -23,7 +23,7 @@ import { farStickyNote, farUser, farUsers } from 'lib-icons'
 
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
-import { Translations, useTranslation } from '../common/i18n'
+import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
 import { ListItem } from './ChildList'
@@ -107,7 +107,6 @@ export default React.memo(function ChildListItem({
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
-  const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
 
   const { unitId, groupId } = useNonNullableParams<{
@@ -126,9 +125,11 @@ export default React.memo(function ChildListItem({
     )
     .getOrElse('')
 
-  const infoText: React.ReactNode = !type
-    ? groupName
-    : childReservationInfo(i18n, child)
+  const infoText: React.ReactNode = !type ? (
+    groupName
+  ) : (
+    <ChildReservationInfo child={child} />
+  )
 
   const maybeGroupName = type && groupId === 'all' ? groupName : undefined
   const today = LocalDate.todayInSystemTz()
@@ -207,12 +208,19 @@ export default React.memo(function ChildListItem({
   )
 })
 
-const childReservationInfo = (
-  i18n: Translations,
-  { reservations, dailyServiceTimes }: Child
-): React.ReactNode => {
-  if (reservations.length > 0) {
-    return <Reservations i18n={i18n} reservations={reservations} />
+function ChildReservationInfo(props: { child: Child }) {
+  const { reservations, dailyServiceTimes } = props.child
+  const { i18n } = useTranslation()
+
+  const reservationsWithTimes = useMemo(
+    () =>
+      reservations.flatMap((reservation) =>
+        reservation.type === 'TIMES' ? [reservation] : []
+      ),
+    [reservations]
+  )
+  if (reservationsWithTimes.length > 0) {
+    return <Reservations reservations={reservationsWithTimes} />
   }
 
   const todaysServiceTime = getTodaysServiceTimes(dailyServiceTimes)
@@ -236,6 +244,7 @@ const childReservationInfo = (
 const LeftDetailsDiv = styled.div`
   > * {
     margin-left: ${defaultMargins.xs};
+
     &:first-child {
       margin-left: 0;
     }

@@ -15,12 +15,12 @@ import {
   ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import { Reservation } from 'lib-common/generated/api-types/reservations'
 import { TimeRange as ServiceTimesTimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { attendanceTimeDiffers } from 'lib-common/reservations'
+import { attendanceTimeDiffers, TimeRange } from 'lib-common/reservations'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -36,13 +36,13 @@ type ReservationOrServiceTime =
   | (ServiceTimesTimeRange & { type: 'reservation' | 'service-time' })
   | undefined
 const getReservationOrServiceTimeOfDay = (
-  reservation: JsonOf<TimeRange> | null,
+  reservation: Reservation | null,
   serviceTimeOfDay: ServiceTimesTimeRange | null
 ): ReservationOrServiceTime =>
-  reservation
+  reservation && reservation.type === 'TIMES'
     ? {
-        start: LocalTime.parse(reservation.startTime),
-        end: LocalTime.parse(reservation.endTime),
+        start: reservation.startTime,
+        end: reservation.endTime,
         type: 'reservation'
       }
     : serviceTimeOfDay
@@ -142,9 +142,6 @@ export default React.memo(function ChildDay({
     dailyData.reservation,
     serviceTimeOfDay
   )
-  const maybeServiceTimeIndicator =
-    expectedTimeForThisDay?.type === 'service-time' &&
-    ` ${i18n.unit.attendanceReservations.serviceTimeIndicator}`
 
   const absence = editState
     ? editState.absences[rowIndex][day.date.formatIso()]
@@ -173,11 +170,15 @@ export default React.memo(function ChildDay({
           <>
             <ReservationTime data-qa="reservation-start">
               {expectedTimeForThisDay.start.format()}
-              {maybeServiceTimeIndicator}
+              {expectedTimeForThisDay.type === 'service-time'
+                ? ' ' + i18n.unit.attendanceReservations.serviceTimeIndicator
+                : null}
             </ReservationTime>
             <ReservationTime data-qa="reservation-end">
               {expectedTimeForThisDay.end.format()}
-              {maybeServiceTimeIndicator}
+              {expectedTimeForThisDay.type === 'service-time'
+                ? ' ' + i18n.unit.attendanceReservations.serviceTimeIndicator
+                : null}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
