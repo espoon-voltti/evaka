@@ -437,7 +437,7 @@ class ApplicationStateService(
             tx.getPersonById(application.guardianId) ?: throw NotFound("Guardian not found")
         val secondDecisionTo =
             personService
-                .getGuardians(tx, user, application.childId)
+                .getGuardians(tx, user, application.childId, true)
                 .firstOrNull {
                     it.id != guardian.id &&
                         !livesInSameAddress(guardian.residenceCode, it.residenceCode)
