@@ -175,6 +175,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
 
         fun hasGroupIdIfPresentInGroup() =
             staffAttendances.all { it.groupId != null || !it.type.presentInGroup() }
+
+        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
+            staffAttendances.any { it.arrived > timestamp } &&
+                externalAttendances.any { it.arrived > timestamp }
     }
 
     @PostMapping("/{unitId}/upsert")
@@ -191,6 +195,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
 
         if (!body.hasGroupIdIfPresentInGroup()) {
             throw BadRequest("Attendance must have a groupId if present in group")
+        }
+
+        if (body.anyAttendanceAfter(HelsinkiDateTime.atStartOfDay(clock.today().plusDays(1)))) {
+            throw BadRequest("Attendances cannot be in the future")
         }
 
         val objectId =
@@ -263,7 +271,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val employeeId: EmployeeId,
         val date: LocalDate,
         val entries: List<StaffAttendanceUpsert>
-    )
+    ) {
+        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
+            entries.any { it.arrived > timestamp }
+    }
 
     @PostMapping("/upsert")
     fun upsertDailyStaffAttendances(
@@ -272,6 +283,13 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestBody body: StaffAttendanceBody
     ) {
+        if (body.anyAttendanceAfter(HelsinkiDateTime.atStartOfDay(clock.today().plusDays(1)))) {
+            throw BadRequest("Attendances cannot be in the future")
+        }
+        if (body.date.isAfter(clock.today())) {
+            throw BadRequest("Date cannot be in the future")
+        }
+
         val staffAttendanceIds =
             db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -335,7 +353,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val name: String,
         val date: LocalDate,
         val entries: List<ExternalAttendanceUpsert>
-    )
+    ) {
+        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
+            entries.any { it.arrived > timestamp }
+    }
 
     @PostMapping("/upsert-external")
     fun upsertDailyExternalAttendances(
@@ -344,6 +365,13 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestBody body: ExternalAttendanceBody
     ) {
+        if (body.anyAttendanceAfter(HelsinkiDateTime.atStartOfDay(clock.today().plusDays(1)))) {
+            throw BadRequest("Attendances cannot be in the future")
+        }
+        if (body.date.isAfter(clock.today())) {
+            throw BadRequest("Date cannot be in the future")
+        }
+
         val externalAttendanceIds =
             db.connect { dbc ->
                 dbc.transaction { tx ->
