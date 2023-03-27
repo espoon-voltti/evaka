@@ -318,33 +318,34 @@ internal fun <Decision : FinanceDecision<Decision>> mergeAndFilterUnnecessaryDra
             DateRange(minDate, maxDate)
         )
         .fold(listOf<Decision>()) { decisions, period ->
-            val keptDraft =
+            val draft =
                 drafts
                     .find { DateRange(it.validFrom, it.validTo).contains(period) }
-                    ?.let { draft ->
-                        val decision =
-                            active.find { DateRange(it.validFrom, it.validTo).contains(period) }
-                        if (
-                            draftIsUnnecessary(
-                                draft,
-                                decision,
-                                alreadyGeneratedDrafts = decisions.isNotEmpty()
-                            )
-                        ) {
-                            null
-                        } else {
-                            draft.withValidity(DateRange(period.start, period.end))
-                        }
-                    }
-            if (keptDraft != null) decisions + keptDraft else decisions
+                    // Because of asDistinctPeriods(), the draft's validity must be same or larger
+                    // than the period, i.e. we only ever change draft's validity to be smaller
+                    ?.withValidity(DateRange(period.start, period.end))
+            val decision = active.find { DateRange(it.validFrom, it.validTo).contains(period) }
+            if (
+                draft == null ||
+                    draftIsUnnecessary(
+                        draft,
+                        decision,
+                        alreadyGeneratedDrafts = decisions.isNotEmpty()
+                    )
+            ) {
+                decisions
+            } else {
+                decisions + draft
+            }
         }
         .let { mergeDecisions(it) }
 }
 
 /*
  * a draft is unnecessary when:
- *   - the draft is "empty" and there is no existing sent decision that should be overridden
- *   - the draft is practically identical to an existing sent decision and no drafts have been generated before this draft
+ *   - the draft is "empty" and there exists no sent decision that should be overridden,
+ *   - or the draft is "bit-by-bit identical" to an existing sent decision,
+ *   - or the draft is "content-wise" identical to an existing sent decision and no drafts have been generated before this draft
  */
 internal fun <Decision : FinanceDecision<Decision>> draftIsUnnecessary(
     draft: Decision,
