@@ -423,7 +423,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = true
+                                    isInBackupGroup = false
                                 )
                         )
                     )

@@ -92,7 +92,8 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                                 childId = childId,
                                                 group = group,
                                                 inOtherUnit = backup?.inOtherUnit ?: false,
-                                                otherGroup = originalGroup
+                                                otherGroup = originalGroup,
+                                                isOriginalGroup = originalGroup == group
                                             ),
                                             if (backup != null && !backup.inOtherUnit)
                                                 ChildPlacementStatus(
@@ -100,7 +101,8 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                                     childId = childId,
                                                     group = originalGroup,
                                                     inOtherUnit = false,
-                                                    otherGroup = backup.group
+                                                    otherGroup = backup.group,
+                                                    isOriginalGroup = true
                                                 )
                                             else null
                                         )
@@ -260,7 +262,8 @@ private data class ChildPlacementStatus(
     val childId: ChildId,
     val group: UnitAttendanceReservations.ReservationGroup?,
     val inOtherUnit: Boolean,
-    val otherGroup: UnitAttendanceReservations.ReservationGroup?
+    val otherGroup: UnitAttendanceReservations.ReservationGroup?,
+    val isOriginalGroup: Boolean
 )
 
 private data class EffectiveGroupPlacementPeriod(
@@ -485,6 +488,7 @@ private fun dailyRecord(
         absence = childData.absences[date],
         dailyServiceTimes = serviceTimes?.find { dst -> dst.validityPeriod.includes(date) },
         inOtherUnit = inOtherUnit,
-        isInBackupGroup = placementStatus.group != placementStatus.otherGroup
+        isInBackupGroup =
+            placementStatus.isOriginalGroup && placementStatus.group != placementStatus.otherGroup
     )
 }
