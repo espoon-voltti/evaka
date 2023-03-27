@@ -14,6 +14,8 @@ import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
 
+import { useTranslation } from '../../../state/i18n'
+import { formatPersonName } from '../../../utils'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { isDateQuestion } from '../vasu-content'
 import { getLastPublished } from '../vasu-events'
@@ -55,17 +57,18 @@ function EventRow({
 interface Props {
   document: Pick<
     VasuDocument,
-    'documentState' | 'events' | 'modifiedAt' | 'type'
+    'documentState' | 'events' | 'modifiedAt' | 'type' | 'basics'
   >
   content: VasuDocument['content']
   translations: VasuTranslations
 }
 
 export function VasuEvents({
-  document: { documentState, events, modifiedAt, type },
+  document: { documentState, events, modifiedAt, type, basics },
   content,
   translations
 }: Props) {
+  const { i18n } = useTranslation()
   const lastPublished = getLastPublished(events)
 
   const trackedDates: [string, LocalDate][] = useMemo(
@@ -109,6 +112,22 @@ export function VasuEvents({
             translations={translations}
           />
         ))}
+        {basics.guardians.find(
+          ({ hasGivenPermissionToShare }) => hasGivenPermissionToShare
+        ) === undefined ? null : (
+          <>
+            <Label>{translations.guardianPermissionGiven}</Label>
+            <span>
+              {basics.guardians
+                .map((guardian) =>
+                  guardian.hasGivenPermissionToShare
+                    ? formatPersonName(guardian, i18n, true)
+                    : undefined
+                )
+                .join(', ')}
+            </span>
+          </>
+        )}
       </ListGrid>
       {events.length > 0 && (
         <>

@@ -47,5 +47,6 @@ export const fi = {
     CLOSED: 'Päättynyt'
   },
   lastModified: 'Viimeisin muokkauspäivämäärä',
-  lastPublished: 'Viimeksi julkaistu huoltajalle'
+  lastPublished: 'Viimeksi julkaistu huoltajalle',
+  guardianPermissionGiven: 'Tiedonsaajatahot hyväksynyt'
 }
