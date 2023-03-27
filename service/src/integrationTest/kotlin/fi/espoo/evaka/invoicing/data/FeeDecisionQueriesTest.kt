@@ -59,13 +59,14 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     val jsonMapper = defaultJsonMapper()
 
     private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
+    private val testPeriod2 = DateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 31))
     private val testDecisions =
         listOf(
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
                 headOfFamilyId = testAdult_1.id,
-                period = testPeriod,
+                period = testPeriod2,
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
@@ -247,7 +248,87 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `searchIgnoresAccent`() {
+    fun `findFeeDecisionsForHeadOfFamily works`() {
+        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
+
+        val both = setOf(testDecisions[0].id, testDecisions[1].id)
+        val draft = setOf(testDecisions[0].id)
+        val sent = setOf(testDecisions[1].id)
+
+        fun find(headOfFamilyId: PersonId, period: DateRange?, status: List<FeeDecisionStatus>?) =
+            db.read { tx -> tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId, period, status) }
+                .map { it.id }
+                .toSet()
+
+        assertEquals(both, find(testAdult_1.id, null, null))
+
+        // Filter by period
+        assertEquals(
+            both,
+            find(
+                testAdult_1.id,
+                DateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 15)),
+                null
+            )
+        )
+
+        assertEquals(
+            sent,
+            find(
+                testAdult_1.id,
+                DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 1)),
+                null
+            )
+        )
+
+        assertEquals(
+            emptySet(),
+            find(
+                testAdult_1.id,
+                DateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 1, 1)),
+                null
+            )
+        )
+
+        // Filter by status
+        assertEquals(
+            both,
+            find(testAdult_1.id, null, listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT))
+        )
+
+        assertEquals(sent, find(testAdult_1.id, null, listOf(FeeDecisionStatus.SENT)))
+
+        assertEquals(
+            emptySet(),
+            find(testAdult_1.id, null, listOf(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING))
+        )
+
+        // Filter by both period and status
+        assertEquals(
+            sent,
+            find(
+                testAdult_1.id,
+                DateRange(LocalDate.of(2019, 5, 10), LocalDate.of(2019, 5, 15)),
+                listOf(
+                    FeeDecisionStatus.WAITING_FOR_SENDING,
+                    FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                    FeeDecisionStatus.SENT
+                )
+            )
+        )
+
+        assertEquals(
+            emptySet(),
+            find(
+                testAdult_1.id,
+                DateRange(LocalDate.of(2018, 5, 10), LocalDate.of(2019, 5, 15)),
+                listOf(FeeDecisionStatus.ANNULLED)
+            )
+        )
+    }
+
+    @Test
+    fun `search ignores accent`() {
         db.transaction { tx ->
             tx.upsertFeeDecisions(
                 listOf(
