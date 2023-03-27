@@ -5,8 +5,8 @@
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -20,39 +20,42 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import {
-  deleteHolidayPeriod,
-  deleteQuestionnaire,
-  getHolidayPeriods,
-  getQuestionnaires
-} from './api'
+  deleteHolidayPeriodMutation,
+  deleteQuestionnaireMutation,
+  holidayPeriodsQuery,
+  questionnairesQuery
+} from './queries'
 
 export default React.memo(function HolidayPeriodsPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const [holidayPeriods, refreshPeriods] = useApiState(getHolidayPeriods, [])
-  const [questionnaires, refreshQuestionnaires] = useApiState(
-    getQuestionnaires,
-    []
-  )
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery)
+  const questionnaires = useQueryResult(questionnairesQuery)
 
   const [periodToDelete, setPeriodToDelete] = useState<UUID>()
+  const { mutateAsync: deleteHolidayPeriod } = useMutationResult(
+    deleteHolidayPeriodMutation
+  )
   const onDeletePeriod = useCallback(
     () =>
       periodToDelete ? deleteHolidayPeriod(periodToDelete) : Promise.reject(),
-    [periodToDelete]
+    [deleteHolidayPeriod, periodToDelete]
   )
   const navigateToNewHolidayPeriod = useCallback(() => {
     navigate('/holiday-periods/new')
   }, [navigate])
 
   const [questionnaireToDelete, setQuestionnaireToDelete] = useState<UUID>()
+  const { mutateAsync: deleteQuestionnaire } = useMutationResult(
+    deleteQuestionnaireMutation
+  )
   const onDeleteQuestionnaire = useCallback(
     () =>
       questionnaireToDelete
         ? deleteQuestionnaire(questionnaireToDelete)
         : Promise.reject(),
-    [questionnaireToDelete]
+    [deleteQuestionnaire, questionnaireToDelete]
   )
   const navigateToNewQuestionnaire = useCallback(() => {
     navigate('/holiday-periods/questionnaire/new')
@@ -162,7 +165,6 @@ export default React.memo(function HolidayPeriodsPage() {
             resolveLabel={i18n.common.remove}
             onSuccess={() => {
               setPeriodToDelete(undefined)
-              void refreshPeriods()
             }}
           />
         )}
@@ -178,7 +180,6 @@ export default React.memo(function HolidayPeriodsPage() {
             resolveLabel={i18n.common.remove}
             onSuccess={() => {
               setQuestionnaireToDelete(undefined)
-              void refreshQuestionnaires()
             }}
           />
         )}

@@ -12,6 +12,7 @@ import {
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -24,7 +25,10 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 
-import { createHolidayPeriod, updateHolidayPeriod } from './api'
+import {
+  createHolidayPeriodMutation,
+  updateHolidayPeriodMutation
+} from './queries'
 
 interface FormState {
   start: LocalDate | null
@@ -104,16 +108,20 @@ export default React.memo(function HolidayPeriodForm({
     return [errors, isValid, parsedStart, parsedEnd]
   }, [form])
 
+  const { mutateAsync: createHolidayPeriod } = useMutationResult(
+    createHolidayPeriodMutation
+  )
+  const { mutateAsync: updateHolidayPeriod } = useMutationResult(
+    updateHolidayPeriodMutation
+  )
+
   const onSubmit = useCallback(() => {
     const validForm = isValid && formToHolidayPeriodBody(form)
     if (!validForm) return
-
-    const apiCall = holidayPeriod
-      ? (params: HolidayPeriodBody) =>
-          updateHolidayPeriod(holidayPeriod.id, params)
-      : createHolidayPeriod
-    return apiCall(validForm)
-  }, [form, holidayPeriod, isValid])
+    return holidayPeriod
+      ? updateHolidayPeriod({ id: holidayPeriod.id, data: validForm })
+      : createHolidayPeriod(validForm)
+  }, [createHolidayPeriod, updateHolidayPeriod, form, holidayPeriod, isValid])
 
   const hideErrorsBeforeTouched = !holidayPeriod
 

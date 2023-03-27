@@ -5,27 +5,21 @@
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Success } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
 import { renderResult } from '../async-rendering'
 
 import HolidayPeriodForm from './HolidayPeriodForm'
-import { getHolidayPeriod } from './api'
+import { holidayPeriodQuery } from './queries'
 
 export default React.memo(function HolidayPeriodEditor() {
   const { id } = useNonNullableParams<{ id: string }>()
-  const holidayPeriodId = id === 'new' ? undefined : id
 
-  const [holidayPeriod] = useApiState(
-    () =>
-      holidayPeriodId
-        ? getHolidayPeriod(holidayPeriodId)
-        : Promise.resolve(Success.of(undefined)),
-    [holidayPeriodId]
-  )
+  const holidayPeriod = useQueryResult(holidayPeriodQuery(id), {
+    enabled: id !== 'new'
+  })
 
   const navigate = useNavigate()
 
@@ -37,13 +31,20 @@ export default React.memo(function HolidayPeriodEditor() {
   return (
     <Container>
       <ContentArea opaque>
-        {renderResult(holidayPeriod, (holiday) => (
+        {id === 'new' ? (
           <HolidayPeriodForm
-            holidayPeriod={holiday}
             onSuccess={navigateToList}
             onCancel={navigateToList}
           />
-        ))}
+        ) : (
+          renderResult(holidayPeriod, (holiday) => (
+            <HolidayPeriodForm
+              holidayPeriod={holiday}
+              onSuccess={navigateToList}
+              onCancel={navigateToList}
+            />
+          ))
+        )}
       </ContentArea>
     </Container>
   )
