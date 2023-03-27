@@ -167,6 +167,56 @@ describe('Unit group calendar', () => {
     )
   })
 
+  test('Reservations are shown in the backup group calendar when backup is within the same unit', async () => {
+    const groupId3 = uuidv4()
+    const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
+    const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
+    await Fixture.daycareGroup()
+      .with({
+        id: groupId3,
+        daycareId: daycare.id,
+        name: 'Varasijoitusryhmä samassa'
+      })
+      .save()
+    await Fixture.backupCare()
+      .with({
+        id: uuidv4(),
+        childId: child1Fixture.id,
+        unitId: daycare.id,
+        groupId: groupId3,
+        period: {
+          start: backupCareSameUnitStartDate.formatIso(),
+          end: backupCareSameUnitEndDate.formatIso()
+        }
+      })
+      .save()
+
+    const unitAttendancesSection = await loadUnitAttendancesSection()
+    const childReservations = unitAttendancesSection.childReservations
+
+    await calendarPage.selectMode('week')
+    reservationModal = await childReservations.openReservationModal(
+      child1Fixture.id
+    )
+    await reservationModal.selectRepetitionType('DAILY')
+
+    const startDate = backupCareSameUnitStartDate.subWeeks(1)
+    await reservationModal.setStartDate(startDate.format())
+    await reservationModal.setEndDate(
+      backupCareSameUnitStartDate.addWeeks(1).format()
+    )
+    await reservationModal.setStartTime('08:00', 0)
+    await reservationModal.setEndTime('16:00', 0)
+    await reservationModal.save()
+
+    await calendarPage.changeWeekToDate(backupCareSameUnitStartDate)
+    await unitAttendancesSection.selectGroup(groupId3)
+    await waitUntilEqual(
+      () => childReservations.childInOtherUnitCount(child1Fixture.id),
+      0
+    )
+  })
+
   test('Child in backup care for the entire week is shown', async () => {
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
