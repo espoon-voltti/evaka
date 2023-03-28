@@ -352,13 +352,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
                     listOfNotNull(
                         ongoingAttendance?.copy(departed = arrivalTime)
-                            ?: if (latestDepartureToday != null) null
-                            else
-                                createNewAttendance(
-                                    planStart,
-                                    arrivalTime,
-                                    arrival.type ?: StaffAttendanceType.PRESENT
-                                ),
+                            ?: if (arrival.type == null || latestDepartureToday != null) null
+                            else createNewAttendance(planStart, arrivalTime, arrival.type),
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT)
                     )
                 }

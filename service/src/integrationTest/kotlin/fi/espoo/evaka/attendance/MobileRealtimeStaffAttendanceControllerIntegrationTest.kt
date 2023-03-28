@@ -613,6 +613,39 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
     }
 
+    @Test
+    fun `Employee arriving 90min minutes after planned time does not produce an attendance for the preceding time`() {
+        val pinCode = "1212"
+        lateinit var employeeId: EmployeeId
+        val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
+        db.transaction { tx ->
+            FixtureBuilder(tx)
+                .addEmployee()
+                .withName("Pekka", "in both units")
+                .withGroupAccess(testDaycare.id, groupId)
+                .withScopedRole(UserRole.STAFF, testDaycare.id)
+                .withPinCode(pinCode)
+                .saveAnd {
+                    employeeId = this.employeeId
+                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
+                }
+        }
+
+        val arrivalTime = plannedStart.plusMinutes(90)
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+
+        val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
+        attendances.staff.first().let {
+            assertEquals(employeeId, it.employeeId)
+            assertEquals(groupId, it.present)
+            assertEquals(1, it.attendances.size)
+            assertEquals(arrivalTime, it.attendances.first().arrived)
+            assertEquals(null, it.attendances.first().departed)
+            assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
+        }
+    }
+
     @ParameterizedTest(
         name = "Employee departing 20 minutes before planned time can be marked departed with {0}"
     )
