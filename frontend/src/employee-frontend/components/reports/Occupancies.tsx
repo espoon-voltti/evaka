@@ -17,6 +17,7 @@ import {
   DaycareCareArea
 } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import { mockNow } from 'lib-common/utils/helpers'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -85,9 +86,9 @@ function getDisplayDates(
   type: OccupancyReportType
 ) {
   const fromDate = new Date(year, month - 1, 1)
+  const now = mockNow() ?? new Date()
   let toDate = lastDayOfMonth(fromDate)
-  if (type.includes('REALIZED') && isAfter(toDate, new Date()))
-    toDate = new Date()
+  if (type.includes('REALIZED') && isAfter(toDate, now)) toDate = now
   const dates: Date[] = []
   for (let date = fromDate; date <= toDate; date = addDays(date, 1)) {
     if (!isWeekend(date)) dates.push(date)
@@ -308,9 +309,10 @@ export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success.of([]))
   const [areas, setAreas] = useState<DaycareCareArea[]>([])
+  const now = mockNow() ?? new Date()
   const [filters, setFilters] = useState<OccupancyReportFilters>({
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
     careAreaId: null,
     type: 'UNIT_CONFIRMED',
     providerType: unitProviderTypes.find((type) => type === 'MUNICIPAL'),

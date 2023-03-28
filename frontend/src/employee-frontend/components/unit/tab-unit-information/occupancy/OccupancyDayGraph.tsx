@@ -24,6 +24,7 @@ import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { mockNow } from 'lib-common/utils/helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -401,7 +402,9 @@ function line(
 }
 
 function getCurrentMinute(): HelsinkiDateTime {
-  return HelsinkiDateTime.fromSystemTzDate(roundToNearestMinutes(new Date()))
+  return HelsinkiDateTime.fromSystemTzDate(
+    roundToNearestMinutes(mockNow() ?? new Date())
+  )
 }
 
 const GraphPlaceholder = styled.div`
