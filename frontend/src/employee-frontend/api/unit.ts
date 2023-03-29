@@ -94,6 +94,11 @@ export interface UnitResponse {
   permittedActions: Set<Action.Unit>
 }
 
+export interface AclUpdateDetails {
+  groupIds?: UUID[]
+  occupancyCoefficient?: number
+}
+
 export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
@@ -584,11 +589,11 @@ export async function removeDaycareAclStaff(
 export async function updateDaycareGroupAcl(
   unitId: UUID,
   employeeId: UUID,
-  groupIds: UUID[]
+  update: AclUpdateDetails
 ): Promise<Result<void>> {
   return client
     .put(`/daycares/${unitId}/staff/${employeeId}/groups`, {
-      groupIds
+      ...update
     })
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
@@ -598,11 +603,11 @@ export async function addDaycareFullAcl(
   unitId: UUID,
   employeeId: UUID,
   role: DaycareAclRole,
-  groupIds?: UUID[]
+  update: AclUpdateDetails
 ): Promise<Result<void>> {
   return client
     .put(`/daycares/${unitId}/full-acl/${employeeId}`, {
-      groupIds,
+      update,
       role
     })
     .then(() => Success.of(undefined))
@@ -821,3 +826,9 @@ const deserializeUnitServiceNeedInfo = (
     }))
   }
 }
+
+export const hasPositiveOccupancyCoefficient = (numberValue?: number) =>
+  numberValue !== undefined && numberValue > 0
+export const booleanToOccupancyCoefficient = (value: boolean) => (value ? 7 : 0)
+export const parseOccupancyCoefficient = (numberValue?: number) =>
+  numberValue ?? 0

@@ -8,15 +8,20 @@ import styled from 'styled-components'
 
 import {
   addDaycareFullAcl,
-  DaycareGroupSummary
+  booleanToOccupancyCoefficient,
+  DaycareGroupSummary,
+  hasPositiveOccupancyCoefficient,
+  parseOccupancyCoefficient
 } from 'employee-frontend/api/unit'
 import { Employee } from 'employee-frontend/types/employee'
 import { formatName } from 'employee-frontend/utils'
 import { Failure } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -36,6 +41,7 @@ interface EmployeeOption {
 type DaycareAclAdditionFormState = {
   selectedEmployee: EmployeeOption | null
   selectedGroups?: DaycareGroupSummary[]
+  occupancyCoefficient?: number
 }
 
 type DaycareAclAdditionModalProps = {
@@ -45,7 +51,7 @@ type DaycareAclAdditionModalProps = {
   unitId: UUID
   groups: Record<string, DaycareGroupSummary>
   employees: Employee[]
-  groupsPermitted: boolean
+  permittedActions: Set<Action.Unit>
 }
 
 export default React.memo(function DaycareAclAdditionModal({
@@ -55,31 +61,34 @@ export default React.memo(function DaycareAclAdditionModal({
   unitId,
   groups,
   employees,
-  groupsPermitted
+  permittedActions
 }: DaycareAclAdditionModalProps) {
   const { i18n } = useTranslation()
 
   const [formData, setFormData] = useState<DaycareAclAdditionFormState>({
     selectedEmployee: null,
-    selectedGroups: undefined
+    selectedGroups: undefined,
+    occupancyCoefficient: undefined
   })
 
   const submit = useCallback(async () => {
-    const requestBody = {
-      employeeId: formData.selectedEmployee?.value ?? '',
-      groupIds: formData.selectedGroups?.map((g) => g.id)
+    const employeeId = formData.selectedEmployee?.value ?? ''
+    const updateBody = {
+      groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+        ? formData.selectedGroups?.map((g) => g.id)
+        : undefined,
+      occupancyCoefficient: permittedActions.has(
+        'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+      )
+        ? parseOccupancyCoefficient(formData.occupancyCoefficient)
+        : undefined
     }
-    if (requestBody.employeeId === '' || !role) {
+    if (employeeId === '' || !role) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
     } else {
-      return addDaycareFullAcl(
-        unitId,
-        requestBody.employeeId,
-        role,
-        requestBody.groupIds
-      )
+      return addDaycareFullAcl(unitId, employeeId, role, updateBody)
     }
-  }, [formData, unitId, role])
+  }, [formData, unitId, role, permittedActions])
 
   const employeeOptions: EmployeeOption[] = useMemo(
     () =>
@@ -129,7 +138,7 @@ export default React.memo(function DaycareAclAdditionModal({
             getItemDataQa={(item) => `value-${item?.value ?? 'none'}`}
           />
         </FormControl>
-        {groupsPermitted && (
+        {permittedActions.has('UPDATE_STAFF_GROUP_ACL') && (
           <FormControl>
             <FieldLabel>
               {i18n.unit.accessControl.addDaycareAclModal.groups}
@@ -146,6 +155,22 @@ export default React.memo(function DaycareAclAdditionModal({
               placeholder={`${i18n.common.select}...`}
             />
           </FormControl>
+        )}
+
+        {permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
+          <Checkbox
+            checked={hasPositiveOccupancyCoefficient(
+              formData.occupancyCoefficient
+            )}
+            disabled={false}
+            label={i18n.unit.accessControl.hasOccupancyCoefficient}
+            onChange={(checked) => {
+              setFormData({
+                ...formData,
+                occupancyCoefficient: booleanToOccupancyCoefficient(checked)
+              })
+            }}
+          />
         )}
         <BottomRow>
           <InlineButton

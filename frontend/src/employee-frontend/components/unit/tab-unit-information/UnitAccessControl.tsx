@@ -5,15 +5,18 @@
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
-import { combine, isLoading } from 'lib-common/api'
+import { getOccupancyCoefficients } from 'employee-frontend/api/staff-occupancy'
+import { combine, isLoading, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -61,7 +64,10 @@ export interface FormattedRow {
   name: string
   email: string
   groupIds: UUID[]
+  coefficient: number
 }
+
+type DaycareAclWithCoefficientRow = DaycareAclRow & { coefficient: number }
 
 const RowButtons = styled.div`
   display: flex;
@@ -101,6 +107,7 @@ function AclRow({
   row,
   isEditable,
   isDeletable,
+  coefficientPermitted,
   onClickDelete,
   onClickEdit,
   unitGroups
@@ -108,12 +115,13 @@ function AclRow({
   row: FormattedRow
   isEditable: boolean
   isDeletable: boolean
+  coefficientPermitted: boolean
   onClickDelete: () => void
   onClickEdit: (employeeRow: FormattedRow) => void
   unitGroups: Record<UUID, DaycareGroupSummary> | undefined
 }) {
   const { i18n } = useTranslation()
-
+  const theme = useTheme()
   const buttons = (
     <RowButtons>
       {isEditable && (
@@ -144,6 +152,33 @@ function AclRow({
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
+      {coefficientPermitted && (
+        <Td data-qa="coefficient">
+          {row.coefficient > 0 && (
+            <Tooltip
+              tooltip={
+                row.coefficient > 0
+                  ? i18n.unit.attendanceReservations.affectsOccupancy
+                  : i18n.unit.attendanceReservations.doesNotAffectOccupancy
+              }
+              position="bottom"
+              width="large"
+            >
+              <RoundIcon
+                content="K"
+                active={true}
+                color={theme.colors.accents.a3emerald}
+                size="s"
+                data-qa={
+                  row.coefficient > 0
+                    ? 'icon-occupancy-coefficient-pos'
+                    : 'icon-occupancy-coefficient'
+                }
+              />
+            </Tooltip>
+          )}
+        </Td>
+      )}
       <Td>{(isEditable || isDeletable) && buttons}</Td>
     </Tr>
   )
@@ -163,7 +198,8 @@ function AclTable({
   onDeleteAclRow,
   onClickEdit,
   editPermitted,
-  deletePermitted
+  deletePermitted,
+  coefficientPermitted
 }: {
   unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
@@ -171,6 +207,7 @@ function AclTable({
   onClickEdit: (employeeRow: FormattedRow) => void
   editPermitted?: boolean
   deletePermitted: boolean
+  coefficientPermitted: boolean
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -182,6 +219,9 @@ function AclTable({
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.email}</Th>
           {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
+          {coefficientPermitted && (
+            <Th>{i18n.unit.accessControl.hasOccupancyCoefficient}</Th>
+          )}
           <ActionsTh />
         </Tr>
       </Thead>
@@ -193,6 +233,7 @@ function AclTable({
             row={row}
             isDeletable={deletePermitted && row.id !== user?.id}
             isEditable={!!(editPermitted && unitGroups)}
+            coefficientPermitted={coefficientPermitted}
             onClickDelete={() => onDeleteAclRow(row.id)}
             onClickEdit={onClickEdit}
           />
@@ -216,7 +257,7 @@ interface AdditionState {
 }
 
 function formatRowsOfRole(
-  rows: DaycareAclRow[],
+  rows: DaycareAclWithCoefficientRow[],
   role: AdRole,
   i18n: Translations
 ): FormattedRow[] {
@@ -225,6 +266,7 @@ function formatRowsOfRole(
       .filter((row) => row.role === role)
       .map((row) => ({
         id: row.employee.id,
+        coefficient: row.coefficient,
         name: formatName(row.employee.firstName, row.employee.lastName, i18n),
         email: row.employee.email ?? row.employee.id,
         groupIds: row.groupIds
@@ -264,6 +306,14 @@ export default React.memo(function UnitAccessControl({
   const { user } = useContext(UserContext)
   const [employees] = useApiState(getEmployees, [])
 
+  const [occupancyCoefficients, reloadStaffOccupancyCoefficients] = useApiState(
+    () =>
+      permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS')
+        ? getOccupancyCoefficients(unitId)
+        : Promise.resolve(Success.of([])),
+    [unitId, permittedActions]
+  )
+
   const candidateEmployees = useMemo(
     () =>
       combine(employees, daycareAclRows).map(([employees, daycareAclRows]) =>
@@ -279,37 +329,56 @@ export default React.memo(function UnitAccessControl({
     [employees, daycareAclRows, user]
   )
 
+  const aclWithCoefficientRows = useMemo(
+    () =>
+      combine(daycareAclRows, occupancyCoefficients).map(
+        ([daycareAclRows, occupancyCoefficients]) =>
+          daycareAclRows.map((aclRow) => ({
+            ...aclRow,
+            coefficient:
+              occupancyCoefficients.find(
+                (soc) => soc.employeeId === aclRow.employee.id
+              )?.coefficient ?? 0
+          }))
+      ),
+    [daycareAclRows, occupancyCoefficients]
+  )
+
   const unitSupervisors = useMemo(
     () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(daycareAclRows, 'UNIT_SUPERVISOR', i18n)
+      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
+        formatRowsOfRole(aclWithCoefficientRows, 'UNIT_SUPERVISOR', i18n)
       ),
-    [daycareAclRows, i18n]
+    [aclWithCoefficientRows, i18n]
   )
   const specialEducationTeachers = useMemo(
     () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(daycareAclRows, 'SPECIAL_EDUCATION_TEACHER', i18n)
+      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
+        formatRowsOfRole(
+          aclWithCoefficientRows,
+          'SPECIAL_EDUCATION_TEACHER',
+          i18n
+        )
       ),
-    [daycareAclRows, i18n]
+    [aclWithCoefficientRows, i18n]
   )
   const earlyChildhoodEducationSecretaries = useMemo(
     () =>
-      daycareAclRows.map((daycareAclRows) =>
+      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
         formatRowsOfRole(
-          daycareAclRows,
+          aclWithCoefficientRows,
           'EARLY_CHILDHOOD_EDUCATION_SECRETARY',
           i18n
         )
       ),
-    [daycareAclRows, i18n]
+    [aclWithCoefficientRows, i18n]
   )
   const staff = useMemo(
     () =>
-      daycareAclRows.map((daycareAclRows) =>
-        formatRowsOfRole(daycareAclRows, 'STAFF', i18n)
+      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
+        formatRowsOfRole(aclWithCoefficientRows, 'STAFF', i18n)
       ),
-    [daycareAclRows, i18n]
+    [aclWithCoefficientRows, i18n]
   )
 
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
@@ -340,10 +409,15 @@ export default React.memo(function UnitAccessControl({
     setUpdateState(undefined)
   }, [clearUiMode])
 
-  const confirmEmployeeAclRowEditModal = useCallback(() => {
+  const confirmEmployeeAclRowEditModal = useCallback(async () => {
     closeEmployeeAclRowEditModal()
+    await reloadStaffOccupancyCoefficients()
     reloadDaycareAclRows()
-  }, [closeEmployeeAclRowEditModal, reloadDaycareAclRows])
+  }, [
+    closeEmployeeAclRowEditModal,
+    reloadDaycareAclRows,
+    reloadStaffOccupancyCoefficients
+  ])
 
   // in-row removal modal generic fns
   const openRemoveModal = useCallback(
@@ -362,8 +436,15 @@ export default React.memo(function UnitAccessControl({
   const confirmRemoveModal = useCallback(async () => {
     await removeState?.removeFn(unitId, removeState.employeeId)
     closeRemoveModal()
+    await reloadStaffOccupancyCoefficients()
     reloadDaycareAclRows()
-  }, [closeRemoveModal, reloadDaycareAclRows, removeState, unitId])
+  }, [
+    closeRemoveModal,
+    reloadDaycareAclRows,
+    reloadStaffOccupancyCoefficients,
+    removeState,
+    unitId
+  ])
 
   // daycare addition modal role-based addition fns
   const openAddStaffModal = useCallback(() => {
@@ -393,13 +474,21 @@ export default React.memo(function UnitAccessControl({
     clearUiMode()
   }, [clearUiMode])
 
-  const confirmAddDaycareAclModal = useCallback(() => {
+  const confirmAddDaycareAclModal = useCallback(async () => {
     closeAddDaycareAclModal()
+    await reloadStaffOccupancyCoefficients()
     reloadDaycareAclRows()
-  }, [closeAddDaycareAclModal, reloadDaycareAclRows])
+  }, [
+    closeAddDaycareAclModal,
+    reloadDaycareAclRows,
+    reloadStaffOccupancyCoefficients
+  ])
 
   return (
-    <div data-qa="daycare-acl" data-isloading={isLoading(daycareAclRows)}>
+    <div
+      data-qa="daycare-acl"
+      data-isloading={isLoading(aclWithCoefficientRows)}
+    >
       {uiMode === `remove-daycare-acl-${unitId}` && (
         <DeleteConfirmationModal
           onClose={closeRemoveModal}
@@ -412,6 +501,7 @@ export default React.memo(function UnitAccessControl({
           onClose={closeEmployeeAclRowEditModal}
           onSuccess={confirmEmployeeAclRowEditModal}
           updatesGroupAcl={updateDaycareGroupAcl}
+          permittedActions={permittedActions}
           employeeRow={updateState?.employeeRow}
           unitId={unitId}
           groups={groups}
@@ -428,7 +518,7 @@ export default React.memo(function UnitAccessControl({
               employees={candidateEmployees}
               unitId={unitId}
               groups={groups}
-              groupsPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              permittedActions={permittedActions}
             />
           )}
         </>
@@ -447,9 +537,15 @@ export default React.memo(function UnitAccessControl({
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              editPermitted={
+                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              }
               deletePermitted={permittedActions.has(
                 'DELETE_ACL_UNIT_SUPERVISOR'
+              )}
+              coefficientPermitted={permittedActions.has(
+                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
             {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
@@ -479,9 +575,15 @@ export default React.memo(function UnitAccessControl({
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              editPermitted={
+                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              }
               deletePermitted={permittedActions.has(
                 'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+              )}
+              coefficientPermitted={permittedActions.has(
+                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
             {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
@@ -513,9 +615,15 @@ export default React.memo(function UnitAccessControl({
                 }
                 unitGroups={groups}
                 onClickEdit={openEmployeeAclRowEditModal}
-                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+                editPermitted={
+                  permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                  permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+                }
                 deletePermitted={permittedActions.has(
                   'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+                )}
+                coefficientPermitted={permittedActions.has(
+                  'READ_STAFF_OCCUPANCY_COEFFICIENTS'
                 )}
               />
               {permittedActions.has(
@@ -548,8 +656,14 @@ export default React.memo(function UnitAccessControl({
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              editPermitted={
+                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              }
               deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+              coefficientPermitted={permittedActions.has(
+                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
+              )}
             />
             {permittedActions.has('INSERT_ACL_STAFF') && (
               <>

@@ -1780,7 +1780,8 @@ export const fi = {
         editPlaceholder: 'esim. Hippiäisten kännykkä'
       },
       groups: 'Luvitukset ryhmiin',
-      noGroups: 'Ei luvituksia'
+      noGroups: 'Ei luvituksia',
+      hasOccupancyCoefficient: 'Kasvatusvastuullinen'
     },
     filters: {
       title: 'Näytä tiedot',
