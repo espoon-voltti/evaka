@@ -4,6 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
@@ -477,6 +478,7 @@ export interface VoucherProviderChildrenReportFilters {
 export interface PlacementSketchingReportFilters {
   earliestPreferredStartDate: LocalDate
   placementStartDate: LocalDate
+  applicationStatus: ApplicationStatus[]
   earliestApplicationSentDate: LocalDate | null
   latestApplicationSentDate: LocalDate | null
 }
@@ -492,6 +494,7 @@ export async function getPlacementSketchingReport(
           earliestPreferredStartDate:
             filters.earliestPreferredStartDate.formatIso(),
           placementStartDate: filters.placementStartDate.formatIso(),
+          applicationStatus: filters.applicationStatus.join(','),
           earliestApplicationSentDate:
             filters.earliestApplicationSentDate?.formatIso(),
           latestApplicationSentDate:

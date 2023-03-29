@@ -425,8 +425,8 @@ export class MultiSelect extends Element {
     await this.#input.fill(text)
   }
 
-  async selectItem(text: string, value: string) {
-    await this.find(`[data-qa="option"][data-id="id-${value}"]`).click()
+  async selectItem(value: string) {
+    await this.find(`[data-qa="option"][data-id="${value}"]`).click()
   }
 
   async close() {

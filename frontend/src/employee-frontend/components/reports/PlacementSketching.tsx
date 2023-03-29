@@ -8,12 +8,14 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -30,6 +32,11 @@ import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+
+const selectableApplicationStatuses: ApplicationStatus[] = [
+  'SENT',
+  'WAITING_PLACEMENT'
+]
 
 interface DisplayFilters {
   careArea: string
@@ -55,6 +62,7 @@ export default React.memo(function PlacementSketching() {
       8,
       1
     ),
+    applicationStatus: [],
     earliestApplicationSentDate: null,
     latestApplicationSentDate: null
   })
@@ -124,6 +132,34 @@ export default React.memo(function PlacementSketching() {
               setFilters({ ...filters, earliestPreferredStartDate })
             }
           />
+        </FilterRow>
+
+        <FilterRow>
+          <FlexRow>
+            <FilterLabel>
+              {i18n.reports.placementSketching.applicationStatus}
+            </FilterLabel>
+            <Wrapper>
+              <MultiSelect
+                options={selectableApplicationStatuses}
+                onChange={(selectedItems) =>
+                  setFilters({
+                    ...filters,
+                    applicationStatus: selectedItems.map(
+                      (selectedItem) => selectedItem
+                    )
+                  })
+                }
+                value={selectableApplicationStatuses.filter((status) =>
+                  filters.applicationStatus.includes(status)
+                )}
+                getOptionId={(status) => status}
+                getOptionLabel={(status) => i18n.application.statuses[status]}
+                placeholder=""
+                data-qa="select-application-status"
+              />
+            </Wrapper>
+          </FlexRow>
         </FilterRow>
 
         <FilterRow>
@@ -215,6 +251,8 @@ export default React.memo(function PlacementSketching() {
                 preparatoryEducation: row.preparatoryEducation ? 'k' : 'e',
                 siblingBasis: row.siblingBasis ? 'k' : 'e',
                 connectedDaycare: row.connectedDaycare ? 'k' : 'e',
+                applicationStatus:
+                  i18n.application.statuses[row.applicationStatus],
                 otherPreferredUnits: formatOtherPreferredUnits(row),
                 hasAdditionalInfo: row.hasAdditionalInfo ? 'k' : 'e'
               }))}
@@ -265,6 +303,10 @@ export default React.memo(function PlacementSketching() {
                 {
                   label: i18n.reports.placementSketching.connected,
                   key: 'connectedDaycare'
+                },
+                {
+                  label: i18n.reports.placementSketching.applicationStatus,
+                  key: 'applicationStatus'
                 },
                 {
                   label: i18n.reports.placementSketching.preferredStartDate,
@@ -328,6 +370,7 @@ export default React.memo(function PlacementSketching() {
                   <Th>{i18n.reports.placementSketching.connected}</Th>
                   <Th>{i18n.reports.placementSketching.sentDate}</Th>
                   <Th>{i18n.application.tabTitle}</Th>
+                  <Th>{i18n.reports.placementSketching.applicationStatus}</Th>
                   <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.placementSketching.otherPreferredUnits}</Th>
@@ -387,6 +430,7 @@ export default React.memo(function PlacementSketching() {
                         <FontAwesomeIcon icon={faFileAlt} />
                       </Link>
                     </Td>
+                    <Td>{i18n.application.statuses[row.applicationStatus]}</Td>
                     <Td>{row.preferredStartDate.format()}</Td>
                     <Td data-qa="area-name">{row.areaName}</Td>
                     <Td data-qa="other-preferred-units">

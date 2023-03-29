@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -14,12 +15,24 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.utils.enumSetOf
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+
+private val defaultApplicationStatuses =
+    enumSetOf(
+        ApplicationStatus.SENT,
+        ApplicationStatus.WAITING_PLACEMENT,
+        ApplicationStatus.WAITING_CONFIRMATION,
+        ApplicationStatus.WAITING_DECISION,
+        ApplicationStatus.WAITING_MAILING,
+        ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+        ApplicationStatus.ACTIVE
+    )
 
 @RestController
 class PlacementSketchingReportController(private val accessControl: AccessControl) {
@@ -34,6 +47,8 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         @RequestParam("earliestPreferredStartDate")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         earliestPreferredStartDate: LocalDate?,
+        @RequestParam("applicationStatus", required = false)
+        applicationStatus: Set<ApplicationStatus>? = null,
         @RequestParam("earliestApplicationSentDate", required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         earliestApplicationSentDate: LocalDate? = null,
@@ -53,6 +68,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                     it.getPlacementSketchingReportRows(
                         placementStartDate,
                         earliestPreferredStartDate,
+                        applicationStatus ?: emptySet(),
                         earliestApplicationSentDate,
                         latestApplicationSentDate
                     )
@@ -74,6 +90,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
 private fun Database.Read.getPlacementSketchingReportRows(
     placementStartDate: LocalDate,
     earliestPreferredStartDate: LocalDate?,
+    applicationStatuses: Set<ApplicationStatus>,
     earliestApplicationSentDate: LocalDate?,
     latestApplicationSentDate: LocalDate?
 ): List<PlacementSketchingReportRow> {
@@ -98,6 +115,7 @@ SELECT
     daycare.id AS requested_unit_id,
     daycare.name AS requested_unit_name,
     application.id AS application_id,
+    application.status AS application_status,
     application.childId,
     application.childfirstname,
     application.childlastname,
@@ -143,7 +161,7 @@ LEFT JOIN LATERAL (select (form.document -> 'child' ->> 'childMovingDate')::date
 ) as unrestricted_corrected_child_address_details on child.restricted_details_enabled IS FALSE
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
-    AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
+    AND application.status = ANY(:applicationStatuses::application_status_type[])
     AND application.type = 'PRESCHOOL'
     AND daterange(:earliestApplicationSentDate, :latestApplicationSentDate, '[]') @> application.sentdate
 ORDER BY
@@ -153,6 +171,7 @@ ORDER BY
     return createQuery(sql)
         .bind("placementStartDate", placementStartDate)
         .bind("earliestPreferredStartDate", earliestPreferredStartDate)
+        .bind("applicationStatuses", applicationStatuses.ifEmpty { defaultApplicationStatuses })
         .bind("earliestApplicationSentDate", earliestApplicationSentDate)
         .bind("latestApplicationSentDate", latestApplicationSentDate)
         .mapTo<PlacementSketchingReportRow>()
@@ -170,6 +189,7 @@ data class PlacementSketchingReportRow(
     val childStreetAddr: String?,
     val childPostalCode: String?,
     val applicationId: ApplicationId,
+    val applicationStatus: ApplicationStatus,
     val currentUnitName: String?,
     val currentUnitId: DaycareId?,
     val assistanceNeeded: Boolean?,

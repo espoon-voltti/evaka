@@ -135,4 +135,126 @@ describe('Placement sketching report', () => {
       currentUnit.name
     )
   })
+
+  test('Application status filter works', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 13)
+    const sentDate = preferredStartDate.subMonths(4)
+
+    const fixtureForStatusSent = applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'PRESCHOOL',
+      'AGREED'
+    )
+    const applicationWithStatusSent: Application = {
+      ...fixtureForStatusSent,
+      form: {
+        ...fixtureForStatusSent.form,
+        preferences: {
+          ...fixtureForStatusSent.form.preferences,
+          preferredStartDate
+        }
+      },
+      sentDate: sentDate.formatIso(),
+      status: 'SENT',
+      id: uuidv4()
+    }
+
+    const fixtureForStatusWaitingPlacement = applicationFixture(
+      fixtures.enduserChildFixtureKaarina,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'PRESCHOOL',
+      'AGREED'
+    )
+    const applicationWithStatusWaitingPlacement: Application = {
+      ...fixtureForStatusWaitingPlacement,
+      form: {
+        ...fixtureForStatusWaitingPlacement.form,
+        preferences: {
+          ...fixtureForStatusWaitingPlacement.form.preferences,
+          preferredStartDate
+        }
+      },
+      sentDate: sentDate.formatIso(),
+      status: 'WAITING_PLACEMENT',
+      id: uuidv4()
+    }
+
+    const fixtureForStatusActive = applicationFixture(
+      fixtures.enduserChildFixturePorriHatterRestricted,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'PRESCHOOL',
+      'AGREED'
+    )
+    const applicationWithStatusActive: Application = {
+      ...fixtureForStatusActive,
+      form: {
+        ...fixtureForStatusActive.form,
+        preferences: {
+          ...fixtureForStatusActive.form.preferences,
+          preferredStartDate
+        }
+      },
+      sentDate: sentDate.formatIso(),
+      status: 'ACTIVE',
+      id: uuidv4()
+    }
+
+    await insertApplications([
+      applicationWithStatusSent,
+      applicationWithStatusWaitingPlacement,
+      applicationWithStatusActive
+    ])
+
+    const report = await openPlacementSketchingReport()
+    await report.assertRow(
+      applicationWithStatusSent.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixtureJari.lastName} ${fixtures.enduserChildFixtureJari.firstName}`
+    )
+    await report.assertRow(
+      applicationWithStatusWaitingPlacement.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixtureKaarina.lastName} ${fixtures.enduserChildFixtureKaarina.firstName}`
+    )
+    await report.assertRow(
+      applicationWithStatusActive.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixturePorriHatterRestricted.lastName} ${fixtures.enduserChildFixturePorriHatterRestricted.firstName}`
+    )
+
+    await report.toggleApplicationStatus('SENT')
+    await report.assertRow(
+      applicationWithStatusSent.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixtureJari.lastName} ${fixtures.enduserChildFixtureJari.firstName}`
+    )
+    await report.assertNotRow(applicationWithStatusWaitingPlacement.id)
+    await report.assertNotRow(applicationWithStatusActive.id)
+
+    await report.toggleApplicationStatus('WAITING_PLACEMENT')
+    await report.assertRow(
+      applicationWithStatusSent.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixtureJari.lastName} ${fixtures.enduserChildFixtureJari.firstName}`
+    )
+    await report.assertRow(
+      applicationWithStatusWaitingPlacement.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixtureKaarina.lastName} ${fixtures.enduserChildFixtureKaarina.firstName}`
+    )
+    await report.assertNotRow(applicationWithStatusActive.id)
+
+    await report.toggleApplicationStatus('SENT')
+    await report.assertNotRow(applicationWithStatusSent.id)
+    await report.assertRow(
+      applicationWithStatusWaitingPlacement.id,
+      daycareFixture.name,
+      `${fixtures.enduserChildFixtureKaarina.lastName} ${fixtures.enduserChildFixtureKaarina.firstName}`
+    )
+    await report.assertNotRow(applicationWithStatusActive.id)
+  })
 })

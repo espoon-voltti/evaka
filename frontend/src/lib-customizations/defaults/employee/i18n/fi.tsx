@@ -3303,6 +3303,7 @@ export const fi = {
       preparatory: 'Valmistava',
       siblingBasis: 'Sisarusperuste',
       connected: 'Liittyvä',
+      applicationStatus: 'Hakemuksen tila',
       preferredStartDate: 'Toivottu aloituspäivä',
       sentDate: 'Lähetyspäivä',
       otherPreferredUnits: 'Muut hakutoiveet',
