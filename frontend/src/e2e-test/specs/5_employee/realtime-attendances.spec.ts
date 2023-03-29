@@ -603,7 +603,6 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.setArrivalTime('9:99')
       await addPersonModal.typeName('S')
       await addPersonModal.selectGroup(groupId)
-      await addPersonModal.save()
 
       await addPersonModal.timeErrorVisible()
       await addPersonModal.nameErrorVisible()
