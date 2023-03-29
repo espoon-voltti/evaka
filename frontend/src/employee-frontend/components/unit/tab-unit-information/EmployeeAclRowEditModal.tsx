@@ -85,7 +85,9 @@ export default React.memo(function EmployeeAclRowEditModal({
   const submit = useCallback(() => {
     const updateBody = {
       groupIds: formData.selectedGroups?.map((g) => g.id),
-      occupancyCoefficient: formData.occupancyCoefficient
+      occupancyCoefficient: permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+        ? formData.occupancyCoefficient
+        : undefined
     }
     if (!employeeRow) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
