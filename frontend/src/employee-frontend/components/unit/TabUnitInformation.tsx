@@ -15,7 +15,6 @@ import UnitInformation from '../../components/unit/tab-unit-information/UnitInfo
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 
-import { StaffOccupancyCoefficients } from './tab-unit-information/StaffOccupancyCoefficients'
 import UnitMobileDevices from './tab-unit-information/UnitMobileDevices'
 
 export default React.memo(function TabUnitInformation() {
@@ -51,15 +50,6 @@ export default React.memo(function TabUnitInformation() {
           groups={groups}
         />
       )}
-
-      {daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE') &&
-        permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
-          <StaffOccupancyCoefficients
-            allowEditing={permittedActions.has(
-              'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
-            )}
-          />
-        )}
 
       {daycare.enabledPilotFeatures.includes('MOBILE') &&
         permittedActions.has('READ_MOBILE_DEVICES') && (
