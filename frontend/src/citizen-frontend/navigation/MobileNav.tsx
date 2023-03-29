@@ -8,10 +8,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
-import {
-  formatDuplicatedChildIdentifier,
-  toDuplicatedChildIds
-} from 'citizen-frontend/utils/duplicated-child-utils'
+import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { formatFirstName } from 'lib-common/names'
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -305,7 +302,11 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
-  const duplicatedChildIds = toDuplicatedChildIds(childrenWithOwnPage)
+  const duplicateChildInfo = getDuplicateChildInfo(
+    childrenWithOwnPage,
+    t,
+    'long'
+  )
   return (
     <ModalAccessibilityWrapper>
       <MenuContainer>
@@ -328,10 +329,8 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
                 {unreadChildNotifications[child.id]}
               </CircledChar>
             ) : null}
-            {duplicatedChildIds.includes(child.id) && (
-              <DropDownInfo>
-                {formatDuplicatedChildIdentifier(t, child, 'long')}
-              </DropDownInfo>
+            {duplicateChildInfo[child.id] !== undefined && (
+              <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
             )}
           </DropDownLink>
         ))}

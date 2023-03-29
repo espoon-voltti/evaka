@@ -8,10 +8,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
-  formatDuplicatedChildIdentifier,
-  toDuplicatedChildIds
-} from 'citizen-frontend/utils/duplicated-child-utils'
+import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { formatFirstName } from 'lib-common/names'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -240,7 +237,11 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     )
   }
 
-  const duplicatedChildIds = toDuplicatedChildIds(childrenWithOwnPage)
+  const duplicateChildInfo = getDuplicateChildInfo(
+    childrenWithOwnPage,
+    t,
+    'long'
+  )
 
   return (
     <DropDownContainer ref={dropDownRef}>
@@ -298,10 +299,8 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
                   {unreadChildNotifications[child.id]}
                 </CircledChar>
               ) : null}
-              {duplicatedChildIds.includes(child.id) && (
-                <DropDownInfo>
-                  {formatDuplicatedChildIdentifier(t, child, 'long')}
-                </DropDownInfo>
+              {duplicateChildInfo[child.id] !== undefined && (
+                <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
               )}
             </DropDownLink>
           ))}

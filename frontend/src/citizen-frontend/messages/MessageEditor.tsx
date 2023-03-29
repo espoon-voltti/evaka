@@ -8,10 +8,7 @@ import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import {
-  formatDuplicatedChildIdentifier,
-  toDuplicatedChildIds
-} from 'citizen-frontend/utils/duplicated-child-utils'
+import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
@@ -146,7 +143,10 @@ export default React.memo(function MessageEditor({
                 <label>
                   <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
                   {renderResult(children, (children) => {
-                    const duplicatedChildIds = toDuplicatedChildIds(children)
+                    const duplicateChildInfo = getDuplicateChildInfo(
+                      children,
+                      i18n
+                    )
                     return (
                       <FixedSpaceFlexWrap horizontalSpacing="xs">
                         {children
@@ -155,11 +155,8 @@ export default React.memo(function MessageEditor({
                             <SelectionChip
                               key={child.id}
                               text={`${formatFirstName(child)}${
-                                duplicatedChildIds.includes(child.id)
-                                  ? ` ${formatDuplicatedChildIdentifier(
-                                      i18n,
-                                      child
-                                    )}`
+                                duplicateChildInfo[child.id] !== undefined
+                                  ? ` ${duplicateChildInfo[child.id]}`
                                   : ''
                               }`}
                               selected={message.children.includes(child.id)}
