@@ -509,56 +509,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `sent extended compulsory education date ranges are adjusted to fit Koski requirements`() {
-        // https://github.com/Opetushallitus/koski/pull/1860
-
-        insertPlacement(testChild_1)
-        val assistanceNeeds =
-            listOf(
-                Pair(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
-                Pair(testPeriod(4L to 8L), "DEVELOPMENTAL_DISABILITY_2")
-            )
-        db.transaction { tx ->
-            assistanceNeeds.forEach {
-                tx.insertTestAssistanceNeed(
-                    DevAssistanceNeed(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                        childId = testChild_1.id,
-                        startDate = it.first.start,
-                        endDate = it.first.end,
-                        bases = setOf(it.second)
-                    )
-                )
-            }
-            val assistanceActions = listOf(testPeriod(1L to 3L), testPeriod(4L to 7L))
-            assistanceActions.forEach {
-                tx.insertTestAssistanceAction(
-                    DevAssistanceAction(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                        childId = testChild_1.id,
-                        startDate = it.start,
-                        endDate = it.end,
-                        measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
-                        actions = emptySet()
-                    )
-                )
-            }
-        }
-
-        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        assertEquals(
-            Lisätiedot(
-                vammainen = listOf(Aikajakso.from(assistanceNeeds[0].first)),
-                vaikeastiVammainen = listOf(Aikajakso.from(assistanceNeeds[1].first)),
-                pidennettyOppivelvollisuus = Aikajakso.from(testPeriod(4L to 7L)),
-                kuljetusetu = null,
-                erityisenTuenPäätökset = null
-            ),
-            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
-        )
-    }
-
-    @Test
     fun `adjacent transport benefit ranges are sent as one joined range`() {
         insertPlacement(testChild_1)
         val assistanceActions =
@@ -598,8 +548,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `disability date ranges are only sent if extended compulsory education is sent`() {
-        // https://github.com/Opetushallitus/koski/pull/1860
-
         insertPlacement(testChild_1)
         val assistanceNeeds = listOf(Pair(testPeriod(0L to 6L), "DEVELOPMENTAL_DISABILITY_1"))
         db.transaction { tx ->
@@ -621,11 +569,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     startDate = actionPeriod.start,
                     endDate = actionPeriod.end,
-                    measures =
-                        setOf(
-                            AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION,
-                            AssistanceMeasure.TRANSPORT_BENEFIT
-                        ),
+                    measures = setOf(AssistanceMeasure.TRANSPORT_BENEFIT),
                     actions = emptySet()
                 )
             )
