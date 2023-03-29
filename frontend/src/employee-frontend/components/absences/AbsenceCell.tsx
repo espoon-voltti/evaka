@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useCallback, useMemo } from 'react'
+import styled, { css } from 'styled-components'
 
 import {
   AbsenceCategory,
@@ -11,28 +12,53 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { absenceColors } from 'lib-customizations/common'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
 
-interface AbsenceCellPartProps {
-  position: string
-  absenceType: CellPart['absenceType']
-  isWeekend: boolean
+const cellSize = 20
+
+const AbsenceCellPart = styled.div<{
+  $position: 'left' | 'right'
+  $absenceType: CellPart['absenceType']
+  $isWeekend: boolean
+  $isSelected: boolean
+}>`
+  position: absolute;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+  border-style: solid;
+  border-color: transparent;
+
+  ${(p) =>
+    !p.$isSelected &&
+    css`
+      border-width: ${partBorderWidth(p.$position)};
+      ${partColor(p.$position, p.$absenceType, p.$isWeekend)};
+    `};
+`
+
+function partBorderWidth(position: 'left' | 'right'): string {
+  return position === 'left'
+    ? `${cellSize}px ${cellSize}px 0 0`
+    : `0 0 ${cellSize}px ${cellSize}px`
 }
 
-function AbsenceCellPart({
-  position,
-  absenceType,
-  isWeekend
-}: AbsenceCellPartProps) {
-  const specificClass =
-    typeof absenceType !== 'undefined'
-      ? `absence-cell-${position}-${absenceType}`
+function partColor(
+  position: 'left' | 'right',
+  absenceType: CellPart['absenceType'],
+  isWeekend: boolean
+): string {
+  const pos = position === 'left' ? 'top' : 'bottom'
+  const color =
+    absenceType !== undefined
+      ? absenceColors[absenceType]
       : isWeekend
-      ? `absence-cell-${position}-weekend`
-      : `absence-cell-${position}-empty`
-  return <div className={`absence-cell-${position} ${specificClass}`} />
+      ? colors.grayscale.g15
+      : absenceColors.NO_ABSENCE
+  return `border-${pos}-color: ${color}`
 }
 
 interface AbsenceCellProps {
@@ -92,10 +118,6 @@ function getCellParts(
   })
 }
 
-export function DisabledCell() {
-  return <div className="absence-cell absence-cell-disabled" />
-}
-
 const AbsenceCellParts = React.memo(function AbsenceCellParts({
   childId,
   date,
@@ -122,21 +144,39 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
 
   const clickable = !backupCare
   return (
-    <div
-      className={`absence-cell ${isSelected ? 'absence-cell-selected' : ''}`}
+    <AbsenceCellDiv
+      $isSelected={isSelected}
       onClick={clickable ? () => toggle(parts) : undefined}
     >
       {parts.map(({ id: partId, absenceType, position }) => (
         <AbsenceCellPart
-          position={position}
-          absenceType={absenceType}
           key={partId}
-          isWeekend={date.isWeekend()}
+          $isSelected={isSelected}
+          $position={position}
+          $absenceType={absenceType}
+          $isWeekend={date.isWeekend()}
+          data-position={position}
+          data-absence-type={absenceType}
         />
       ))}
-    </div>
+    </AbsenceCellDiv>
   )
 })
+
+export const DisabledCell = styled.div`
+  position: relative;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+`
+
+const AbsenceCellDiv = styled(DisabledCell)<{ $isSelected?: boolean }>`
+  ${(p) =>
+    p.$isSelected &&
+    css`
+      border: 2px solid ${colors.main.m2};
+      border-radius: 2px;
+    `};
+`
 
 export default React.memo(function AbsenceCell({
   childId,

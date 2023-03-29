@@ -31,7 +31,7 @@ export interface CellPart {
   date: LocalDate
   absenceType?: AbsenceTypeWithBackupCare
   category: AbsenceCategory
-  position: string
+  position: 'left' | 'right'
 }
 
 export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({

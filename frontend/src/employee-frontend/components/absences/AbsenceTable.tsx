@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import classNames from 'classnames'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components'
@@ -16,6 +15,7 @@ import { Thead } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
@@ -85,8 +85,8 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     attendanceTotalHours > reservationTotalHours
 
   return (
-    <tr data-qa="absence-child-row">
-      <td className="absence-child-name hover-highlight">
+    <AbsenceTr data-qa="absence-child-row">
+      <ChildNameTd>
         <FixedSpaceRow spacing="xs" alignItems="center">
           <AgeIndicatorChip
             age={selectedDate.differenceInYears(child.dateOfBirth)}
@@ -110,16 +110,14 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
             </FixedSpaceRow>
           </Tooltip>
         </FixedSpaceRow>
-      </td>
+      </ChildNameTd>
       {dateCols.map((date) => {
         return operationDays.some((operationDay) =>
           operationDay.isEqual(date)
         ) ? (
-          <td
+          <AbsenceTd
             key={`${child.id}${date.formatIso()}`}
-            className={`${
-              date.isToday() ? 'absence-cell-today' : ''
-            } hover-highlight absence-cell-wrapper`}
+            $isToday={date.isToday()}
             data-qa={`absence-cell-${child.id}-${date.formatIso()}`}
           >
             <AbsenceCell
@@ -131,7 +129,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
               date={date}
               childId={child.id}
             />
-          </td>
+          </AbsenceTd>
         ) : (
           <td key={`${child.id}${date.formatIso()}`}>
             <DisabledCell />
@@ -173,7 +171,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           </td>
         </>
       )}
-    </tr>
+    </AbsenceTr>
   )
 })
 
@@ -212,20 +210,18 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
   const { i18n, lang } = useTranslation()
   return (
     <Thead sticky>
-      <tr>
+      <AbsenceTr>
         <th />
         {dateCols.map((item) =>
           operationDays.some((operationDay) => operationDay.isEqual(item)) ? (
-            <th
+            <AbsenceTh
               key={item.getDate()}
-              className={classNames({
-                'absence-header-today': item.isToday(),
-                'absence-header-weekend': item.isWeekend()
-              })}
+              $isToday={item.isToday()}
+              $isWeekend={item.isWeekend()}
             >
               <div>{item.format('EEEEEE', lang)}</div>
               <div>{item.getDate()}</div>
-            </th>
+            </AbsenceTh>
           ) : (
             <th key={item.getDate()} />
           )
@@ -239,7 +235,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
             <th>{i18n.absences.table.attendancesTotal}</th>
           </>
         )}
-      </tr>
+      </AbsenceTr>
     </Thead>
   )
 })
@@ -270,14 +266,8 @@ export default React.memo(function AbsenceTable({
   const dateCols = getMonthDays(selectedDate)
   const emptyCols = getEmptyCols(dateCols.length)
 
-  const renderEmptyRow = () => (
-    <tr>
-      <td className="empty-row" />
-    </tr>
-  )
-
   return (
-    <table className="table">
+    <AbsenceTableRoot>
       <AbsenceTableHead
         dateCols={dateCols}
         emptyCols={emptyCols}
@@ -299,7 +289,9 @@ export default React.memo(function AbsenceTable({
             reservationEnabled={reservationEnabled}
           />
         ))}
-        {renderEmptyRow()}
+        <EmptyRow>
+          <td />
+        </EmptyRow>
         {staffAttendanceEnabled && (
           <StaffAttendance
             groupId={groupId}
@@ -309,6 +301,93 @@ export default React.memo(function AbsenceTable({
           />
         )}
       </tbody>
-    </table>
+    </AbsenceTableRoot>
   )
 })
+
+const AbsenceTableRoot = styled.table`
+  border-collapse: collapse;
+  width: 100%;
+
+  td,
+  th {
+    padding: 5px 3px;
+    border-bottom: none;
+  }
+
+  th {
+    text-align: center;
+    text-transform: uppercase;
+    color: ${colors.grayscale.g70};
+    vertical-align: center;
+    font-weight: ${fontWeights.semibold};
+    font-size: 0.8rem;
+  }
+
+  td {
+    cursor: pointer;
+  }
+`
+
+const AbsenceTd = styled.td<{ $isToday: boolean }>`
+  ${(p: { $isToday: boolean }) =>
+    p.$isToday && `background-color: ${colors.grayscale.g4}`};
+`
+
+const ChildNameTd = styled.td`
+  white-space: nowrap;
+
+  a {
+    display: inline-block;
+    overflow: hidden;
+    width: 100px;
+    max-width: 100px;
+
+    @media screen and (min-width: 1216px) {
+      width: 176px;
+      max-width: 176px;
+    }
+  }
+`
+
+const AbsenceTr = styled.tr`
+  &:hover ${AbsenceTd}, &:hover ${ChildNameTd} {
+    background-color: ${colors.grayscale.g4};
+
+    &:first-child {
+      box-shadow: -8px 0 0 ${colors.grayscale.g4};
+    }
+
+    &:last-child {
+      box-shadow: 8px 0 0 ${colors.grayscale.g4};
+    }
+  }
+`
+
+const AbsenceTh = styled.th<{ $isToday: boolean; $isWeekend: boolean }>`
+  ${(p) =>
+    p.$isToday &&
+    css`
+      background-color: ${colors.grayscale.g4};
+
+      @media print {
+        background: none;
+        color: inherit;
+        font-weight: bolder;
+      }
+    `};
+  ${(p) =>
+    p.$isWeekend &&
+    css`
+      color: ${colors.grayscale.g100};
+    `};
+`
+
+const EmptyRow = styled.tr`
+  color: transparent;
+
+  td {
+    cursor: default;
+    height: 20px;
+  }
+`

@@ -116,11 +116,13 @@ export class AbsenceCell extends Element {
     type: AbsenceType | 'empty',
     category: AbsenceCategory
   ) {
-    await this.cell
-      .find(
-        `.absence-cell-${category === 'BILLABLE' ? 'right' : 'left'}-${type}`
-      )
-      .waitUntilVisible()
+    const position = category === 'BILLABLE' ? 'right' : 'left'
+    const positionAttr = `[data-position="${position}"]`
+    const absenceTypeAttr =
+      type === 'empty'
+        ? ':not([data-absence-type])'
+        : `[data-absence-type="${type}"]`
+    await this.cell.find(positionAttr + absenceTypeAttr).waitUntilVisible()
   }
 
   async assertNoAbsence(category: AbsenceCategory) {
