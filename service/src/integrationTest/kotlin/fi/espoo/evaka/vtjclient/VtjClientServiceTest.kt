@@ -204,7 +204,8 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             email = "integration-test@example.org",
             externalId = null,
             created = HelsinkiDateTime.now(),
-            updated = null
+            updated = null,
+            temporaryInUnitId = null
         )
 
     private fun vtjRequestType(requestType: RequestType): RequestMatcher =

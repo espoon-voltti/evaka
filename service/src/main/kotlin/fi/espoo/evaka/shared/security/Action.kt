@@ -1717,7 +1717,11 @@ sealed interface Action {
         CREATE_CALENDAR_EVENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
-        );
+        ),
+        CREATE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        UPDATE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        DELETE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
+import kotlin.jvm.optionals.getOrNull
 import org.jdbi.v3.json.Json
 
 data class NewEmployee(
@@ -25,7 +26,8 @@ data class NewEmployee(
     val email: String?,
     val externalId: ExternalId?,
     val employeeNumber: String?,
-    val roles: Set<UserRole> = setOf()
+    val roles: Set<UserRole> = setOf(),
+    val temporaryInUnitId: DaycareId?
 )
 
 data class EmployeeUser(
@@ -61,9 +63,9 @@ fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
     createUpdate(
             // language=SQL
             """
-INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[])
-RETURNING id, first_name, last_name, email, external_id, created, updated, roles
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, temporary_in_unit_id)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :employee.temporaryInUnitId)
+RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id
     """
                 .trimIndent()
         )
@@ -132,18 +134,24 @@ WHERE id = :id
         .mapTo<String>()
         .firstOrNull()
 
-private fun Database.Read.searchEmployees(id: EmployeeId? = null, externalId: ExternalId? = null) =
+private fun Database.Read.searchEmployees(
+    id: EmployeeId? = null,
+    externalId: ExternalId? = null,
+    temporaryInUnitId: DaycareId? = null
+) =
     createQuery(
             // language=SQL
             """
-SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles
+SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id
 FROM employee e
 WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.external_id = :externalId)
+  AND (:temporaryInUnitId IS NULL OR e.temporary_in_unit_id = :temporaryInUnitId)
     """
                 .trimIndent()
         )
         .bind("id", id)
         .bind("externalId", externalId)
+        .bind("temporaryInUnitId", temporaryInUnitId)
         .mapTo<Employee>()
         .asSequence()
 
@@ -163,6 +171,9 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
         .asSequence()
 
 fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
+
+fun Database.Read.getTemporaryEmployees(unitId: DaycareId): List<Employee> =
+    searchEmployees(temporaryInUnitId = unitId).toList()
 
 fun Database.Read.getFinanceDecisionHandlers(): List<Employee> =
     searchFinanceDecisionHandlers().toList()
@@ -226,6 +237,24 @@ WHERE id = :id
 
     return createQuery(sql).bind("id", id).mapTo<EmployeeWithDaycareRoles>().firstOrNull()
 }
+
+fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastName: String) =
+    createUpdate(
+            "UPDATE employee SET first_name = :firstName, last_name = :lastName WHERE id = :id"
+        )
+        .bind("id", id)
+        .bind("firstName", firstName)
+        .bind("lastName", lastName)
+        .updateExactlyOne()
+
+fun Database.Transaction.updateEmployeeTemporaryInUnitId(
+    id: EmployeeId,
+    temporaryInUnitId: DaycareId?
+) =
+    createUpdate("UPDATE employee SET temporary_in_unit_id = :temporaryInUnitId WHERE id = :id")
+        .bind("id", id)
+        .bind("temporaryInUnitId", temporaryInUnitId)
+        .updateExactlyOne()
 
 fun Database.Transaction.updateEmployee(id: EmployeeId, globalRoles: List<UserRole>) {
     // language=SQL
@@ -320,6 +349,13 @@ ON CONFLICT (user_id) DO UPDATE SET
 
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
+
+fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
+    createQuery("SELECT pin FROM employee_pin WHERE user_id = :userId")
+        .bind("userId", userId)
+        .mapTo<PinCode>()
+        .findOne()
+        .getOrNull()
 
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean =
     createQuery(
