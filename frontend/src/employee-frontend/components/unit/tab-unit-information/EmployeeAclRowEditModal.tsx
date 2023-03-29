@@ -85,7 +85,9 @@ export default React.memo(function EmployeeAclRowEditModal({
   const submit = useCallback(() => {
     const updateBody = {
       groupIds: formData.selectedGroups?.map((g) => g.id),
-      occupancyCoefficient: permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+      occupancyCoefficient: permittedActions.has(
+        'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+      )
         ? formData.occupancyCoefficient
         : undefined
     }
@@ -94,7 +96,7 @@ export default React.memo(function EmployeeAclRowEditModal({
     } else {
       return updatesGroupAcl(unitId, employeeRow.id, updateBody)
     }
-  }, [formData, unitId, employeeRow, updatesGroupAcl])
+  }, [formData, unitId, employeeRow, updatesGroupAcl, permittedActions])
 
   return (
     <PlainModal margin="auto" data-qa="employee-row-edit-person-modal">
