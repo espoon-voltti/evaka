@@ -2,11 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import groupBy from 'lodash/groupBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Child } from 'lib-common/api-types/reservations'
+import {
+  Child,
+  ChildDailyRecords,
+  ChildRecordOfDay,
+  UnitAttendanceReservations
+} from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -111,6 +117,50 @@ export default React.memo(function UnitAttendanceReservationsView({
 
   const [legendVisible, setLegendVisible] = useState(false)
 
+  const dataForAllChildren = useCallback(
+    (childData: UnitAttendanceReservations): ChildDailyRecords[] => {
+      const groupedByChild = groupBy(
+        childData.groups
+          .flatMap(({ children }) => children)
+          .concat(childData.ungrouped),
+        (cd) => cd.child.id
+      )
+
+      const containsBackupGroup = (chd: ChildDailyRecords[]) =>
+        chd.some(({ dailyData }) =>
+          dailyData.some((data) =>
+            Object.keys(data).some((key) => data[key].isInBackupGroup)
+          )
+        )
+
+      return Object.keys(groupedByChild).flatMap((childId) => {
+        const chd = groupedByChild[childId]
+        if (containsBackupGroup(chd)) {
+          const dailyData = chd
+            .map(({ dailyData }) => dailyData)
+            .reduce((acc, dailyData) => {
+              for (let i = 0; i < dailyData.length; i++) {
+                for (const key in dailyData[i]) {
+                  if (!dailyData[i][key].isInBackupGroup) {
+                    acc[key] = dailyData[i][key]
+                  }
+                }
+              }
+              return acc
+            }, {} as Record<string, ChildRecordOfDay>)
+
+          return {
+            child: chd[0].child,
+            dailyData: [dailyData]
+          }
+        } else {
+          return chd
+        }
+      })
+    },
+    []
+  )
+
   return renderResult(combinedData, ([childData, staffData]) => (
     <>
       <div
@@ -160,9 +210,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               operationalDays={childData.operationalDays}
               allDayRows={
                 selectedGroup.type === 'all-children'
-                  ? childData.groups
-                      .flatMap(({ children }) => children)
-                      .concat(childData.ungrouped)
+                  ? dataForAllChildren(childData)
                   : selectedGroup.type === 'no-group'
                   ? childData.ungrouped
                   : selectedGroup.type === 'group'
