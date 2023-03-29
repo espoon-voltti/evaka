@@ -138,6 +138,7 @@ const isoLanguages: { [id: string]: IsoLanguage } = {
   pli: { id: "pli", alpha2: "pi", nameFi: "paali" },
   pol: { id: "pol", alpha2: "pl", nameFi: "puola" },
   por: { id: "por", alpha2: "pt", nameFi: "portugali" },
+  prs: { id: "prs", alpha2: "", nameFi: "dari" },
   pus: { id: "pus", alpha2: "ps", nameFi: "paštu" },
   que: { id: "que", alpha2: "qu", nameFi: "ketšua" },
   roh: { id: "roh", alpha2: "rm", nameFi: "retoromaani" },

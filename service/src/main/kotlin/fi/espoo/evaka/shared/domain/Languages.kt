@@ -153,6 +153,7 @@ val ISO_LANGUAGES_SUBSET =
         IsoLanguage("pli", "pli", "pli", "pi", "paali"),
         IsoLanguage("pol", "pol", "pol", "pl", "puola"),
         IsoLanguage("por", "por", "por", "pt", "portugali"),
+        IsoLanguage("prs", "", "", "", "dari"),
         IsoLanguage("pus", "pus", "pus", "ps", "paštu"),
         IsoLanguage("que", "que", "que", "qu", "ketšua"),
         IsoLanguage("roh", "roh", "roh", "rm", "retoromaani"),
