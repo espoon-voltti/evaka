@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import { Decision } from 'lib-common/generated/api-types/decision'
@@ -238,11 +239,16 @@ export async function getPersonBlockedGuardians(
 }
 
 export async function getPersonGuardiansAndBlockedGuardians(
-  personId: UUID
+  personId: UUID,
+  permittedActions: Set<Action.Child | Action.Person>
 ): Promise<Result<GuardiansAndBlockedGuardians>> {
   const [guardians, blockedGuardians] = await Promise.all([
-    getPersonGuardians(personId),
-    getPersonBlockedGuardians(personId)
+    permittedActions.has('READ_GUARDIANS')
+      ? getPersonGuardians(personId)
+      : Success.of([]),
+    permittedActions.has('READ_BLOCKED_GUARDIANS')
+      ? getPersonBlockedGuardians(personId)
+      : Success.of([])
   ])
   return guardians.isSuccess && blockedGuardians.isSuccess
     ? Success.of({

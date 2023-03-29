@@ -461,6 +461,21 @@ describe('Child information - guardian information', () => {
       fixtures.familyWithTwoGuardians.guardian.id
     )
   })
+
+  test('guardian information is shown to unit supervisor', async () => {
+    const unitSupervisor: EmployeeDetail = (
+      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+    ).data
+    page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(config.employeeUrl + '/child-information/' + childId)
+    childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.waitUntilLoaded()
+    await childInformationPage.openCollapsible('guardians')
+    await section.assertGuardianExists(
+      fixtures.familyWithTwoGuardians.guardian.id
+    )
+  })
 })
 
 describe('Child information - consent', () => {
