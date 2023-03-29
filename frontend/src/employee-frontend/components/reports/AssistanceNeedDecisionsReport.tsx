@@ -158,7 +158,12 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
                 >
                   {i18n.reports.common.careAreaName}
                 </SortableTh>
-                <Th>{i18n.reports.common.unitName}</Th>
+                <SortableTh
+                  sorted={sortColumn === 'unitName' ? sortDirection : undefined}
+                  onClick={() => sortBy('unitName')}
+                >
+                  {i18n.reports.common.unitName}
+                </SortableTh>
                 <Th>{i18n.reports.assistanceNeedDecisions.decisionMade}</Th>
                 <SortableTh
                   sorted={sortColumn === 'status' ? sortDirection : undefined}
