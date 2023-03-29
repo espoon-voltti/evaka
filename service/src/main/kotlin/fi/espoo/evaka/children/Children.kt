@@ -29,10 +29,4 @@ data class Child(
     val upcomingPlacementType: PlacementType?,
     val hasPedagogicalDocuments: Boolean,
     val hasCurriculums: Boolean
-) {
-    @Deprecated(
-        message = "For UI backward compatibility",
-        replaceWith = ReplaceWith("upcomingPlacementType != null")
-    )
-    fun getHasUpcomingPlacements() = upcomingPlacementType != null
-}
+)
