@@ -153,14 +153,12 @@ function AclRow({
         </Td>
       )}
       {coefficientPermitted && (
-        <Td data-qa="coefficient">
+        <Td
+          data-qa={row.coefficient > 0 ? 'coefficient-on' : 'coefficient-off'}
+        >
           {row.coefficient > 0 && (
             <Tooltip
-              tooltip={
-                row.coefficient > 0
-                  ? i18n.unit.attendanceReservations.affectsOccupancy
-                  : i18n.unit.attendanceReservations.doesNotAffectOccupancy
-              }
+              tooltip={i18n.unit.attendanceReservations.affectsOccupancy}
               position="bottom"
               width="large"
             >
@@ -169,11 +167,6 @@ function AclRow({
                 active={true}
                 color={theme.colors.accents.a3emerald}
                 size="s"
-                data-qa={
-                  row.coefficient > 0
-                    ? 'icon-occupancy-coefficient-pos'
-                    : 'icon-occupancy-coefficient'
-                }
               />
             </Tooltip>
           )}

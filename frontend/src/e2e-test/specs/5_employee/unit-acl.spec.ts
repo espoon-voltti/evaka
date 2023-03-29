@@ -53,9 +53,27 @@ beforeEach(async () => {
 })
 
 const expectedAclRows = {
-  esko: { id: esko.id, name: 'Esko Esimies', email: 'esko@evaka.test' },
-  pete: { id: pete.id, name: 'Pete Päiväkoti', email: 'pete@evaka.test' },
-  yrjo: { id: yrjo.id, name: 'Yrjö Yksikkö', email: 'yrjo@evaka.test' }
+  esko: {
+    id: esko.id,
+    name: 'Esko Esimies',
+    email: 'esko@evaka.test',
+    groups: [],
+    occupancyCoefficient: false
+  },
+  pete: {
+    id: pete.id,
+    name: 'Pete Päiväkoti',
+    email: 'pete@evaka.test',
+    groups: [],
+    occupancyCoefficient: true
+  },
+  yrjo: {
+    id: yrjo.id,
+    name: 'Yrjö Yksikkö',
+    email: 'yrjo@evaka.test',
+    groups: [],
+    occupancyCoefficient: false
+  }
 }
 
 describe('Employee - unit ACL', () => {
@@ -65,13 +83,13 @@ describe('Employee - unit ACL', () => {
     const unitInfoPage = await unitPage.openUnitInformation()
     await unitInfoPage.supervisorAcl.assertRows([expectedAclRows.esko])
 
-    await unitInfoPage.supervisorAcl.addAcl(yrjo.email, [])
+    await unitInfoPage.supervisorAcl.addAcl(yrjo.email, [], false)
     await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.yrjo
     ])
 
-    await unitInfoPage.supervisorAcl.addAcl(pete.email, [])
+    await unitInfoPage.supervisorAcl.addAcl(pete.email, [], true)
     await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.yrjo,
@@ -96,12 +114,12 @@ describe('Employee - unit ACL', () => {
 
     await unitInfoPage.specialEducationTeacherAcl.assertRows([])
 
-    await unitInfoPage.specialEducationTeacherAcl.addAcl(pete.email, [])
+    await unitInfoPage.specialEducationTeacherAcl.addAcl(pete.email, [], true)
     await unitInfoPage.specialEducationTeacherAcl.assertRows([
       expectedAclRows.pete
     ])
 
-    await unitInfoPage.specialEducationTeacherAcl.addAcl(yrjo.email, [])
+    await unitInfoPage.specialEducationTeacherAcl.addAcl(yrjo.email, [], false)
     await unitInfoPage.specialEducationTeacherAcl.assertRows([
       expectedAclRows.pete,
       expectedAclRows.yrjo
@@ -131,7 +149,11 @@ describe('Employee - unit ACL', () => {
     await employeeLogin(page, esko)
     const unitPage = await UnitPage.openUnit(page, daycareId)
     const unitInfoPage = await unitPage.openUnitInformation()
-    await unitInfoPage.staffAcl.addAcl(expectedAclRows.pete.email, [groupId])
+    await unitInfoPage.staffAcl.addAcl(
+      expectedAclRows.pete.email,
+      [groupId],
+      true
+    )
 
     await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: ['Testailijat'] }
@@ -145,6 +167,33 @@ describe('Employee - unit ACL', () => {
     await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: ['Testailijat'] }
     ])
+  })
+
+  test('Staff member coefficient can be set on and off', async () => {
+    async function setCoefficient(page: Page, coefficientValue: boolean) {
+      const row = unitInfoPage.staffAcl.getRow(pete.id)
+      await row.edit()
+      const editModal = new EmployeeRowEditModal(
+        page.find('[data-qa="employee-row-edit-person-modal"]')
+      )
+      await editModal.setCoefficient(coefficientValue)
+      await editModal.saveButton.click()
+    }
+
+    await employeeLogin(page, esko)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+    await unitInfoPage.staffAcl.addAcl(expectedAclRows.pete.email, [], true)
+
+    await unitInfoPage.staffAcl.assertRows([expectedAclRows.pete])
+
+    await setCoefficient(page, false)
+    await unitInfoPage.staffAcl.assertRows([
+      { ...expectedAclRows.pete, occupancyCoefficient: false }
+    ])
+
+    await setCoefficient(page, true)
+    await unitInfoPage.staffAcl.assertRows([expectedAclRows.pete])
   })
 
   test('User can add a mobile device unit side', async () => {

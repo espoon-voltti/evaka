@@ -123,6 +123,7 @@ export default React.memo(function EmployeeAclRowEditModal({
 
         {permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
+            data-qa="edit-acl-modal-coeff-checkbox"
             checked={hasPositiveOccupancyCoefficient(
               formData.occupancyCoefficient
             )}

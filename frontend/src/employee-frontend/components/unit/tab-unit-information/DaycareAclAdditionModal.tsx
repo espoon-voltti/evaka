@@ -159,6 +159,7 @@ export default React.memo(function DaycareAclAdditionModal({
 
         {permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
+            data-qa="add-daycare-acl-coeff-checkbox"
             checked={hasPositiveOccupancyCoefficient(
               formData.occupancyCoefficient
             )}
