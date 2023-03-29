@@ -40,8 +40,8 @@ export default React.memo(function Guardians() {
   const [guardiansAndBlockedGuardians, reloadGuardiansAndBlockedGuardians] =
     useApiState(
       () =>
-        childId && permittedActions.has('READ_BLOCKED_GUARDIANS')
-          ? getPersonGuardiansAndBlockedGuardians(childId)
+        childId
+          ? getPersonGuardiansAndBlockedGuardians(childId, permittedActions)
           : Promise.resolve(
               Success.of<GuardiansAndBlockedGuardians>({
                 guardians: [],
