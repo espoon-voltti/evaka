@@ -9,8 +9,9 @@ import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 export const toDuplicatedChildIds = (
   children: Array<Child | ReservationChild>
 ) =>
-  children
-    .flatMap((child) => child.duplicateOf !== null ? [child.id, child.duplicateOf] : [])
+  children.flatMap((child) =>
+    child.duplicateOf !== null ? [child.id, child.duplicateOf] : []
+  )
 
 export const formatDuplicatedChildIdentifier = (
   t: Translations,
