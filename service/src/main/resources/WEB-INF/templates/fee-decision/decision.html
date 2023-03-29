@@ -214,9 +214,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <p th:text="#{text.legal.p2}"></p>
           <p th:text="#{text.legal.p3}"></p>
           <p th:text="#{text.legal.p4}"></p>
-          <p th:text="#{text.legal.p5}"></p>
+          <p th:if="${isReliefDecision}" th:text="#{text.legal.p5.RELIEF}"></p>
+          <p th:unless="${isReliefDecision}" th:text="#{text.legal.p5}"></p>
           <p th:text="#{text.legal.p6}"></p>
-          <p th:text="#{text.legal.p7}"></p>
+          <p th:if="${isReliefDecision}" th:text="#{text.legal.p7.RELIEF}"></p>
+          <p th:unless="${isReliefDecision}" th:text="#{text.legal.p7}"></p>
         </div>
 
         <div class="document-signed-details">
