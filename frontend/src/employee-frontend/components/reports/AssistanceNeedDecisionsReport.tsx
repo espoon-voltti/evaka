@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
@@ -57,6 +57,14 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
   const { i18n } = useTranslation()
   const [report] = useApiState(getAssistanceNeedDecisionsReport, [])
   const [careAreaFilter, setCareAreaFilter] = useState<string>()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const selectedCareArea = searchParams.get('careArea')
+    if (selectedCareArea) {
+      setCareAreaFilter(selectedCareArea)
+    }
+  }, [searchParams])
 
   const [sortColumn, setSortColumn] =
     useState<keyof AssistanceNeedDecisionsReportRow>('sentForDecision')
@@ -90,6 +98,16 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
 
   const navigate = useNavigate()
 
+  const changeCareArea = useCallback(
+    (option: { value: string; label: string } | null) => {
+      if (option) {
+        setCareAreaFilter(option.value)
+        setSearchParams({ careArea: option.value })
+      }
+    },
+    [setSearchParams]
+  )
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -112,7 +130,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
                   )
                   .getOrElse([])
               ]}
-              onChange={(option) => setCareAreaFilter(option?.value)}
+              onChange={changeCareArea}
               selectedItem={
                 careAreaFilter
                   ? {
