@@ -126,7 +126,10 @@ export const createApplicationMutation = mutation({
 })
 
 export const updateApplicationMutation = mutation({
-  api: updateApplication
+  api: updateApplication,
+  invalidateQueryKeys: ({ applicationId }) => [
+    applicationQuery(applicationId).queryKey
+  ]
 })
 
 export const saveApplicationDraftMutation = mutation({
@@ -139,5 +142,8 @@ export const removeUnprocessableApplicationMutation = mutation({
 })
 
 export const sendApplicationMutation = mutation({
-  api: sendApplication
+  api: sendApplication,
+  invalidateQueryKeys: (applicationId) => [
+    applicationQuery(applicationId).queryKey
+  ]
 })
