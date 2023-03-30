@@ -2677,6 +2677,7 @@ export const fi = {
       UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
       NO_ABSENCE: 'Ei poissaoloa'
     },
+    missingHolidayReservation: 'Huoltaja ei ole vahvistanut loma-ajan varausta',
     additionalLegendItems: {
       CONTRACT_DAYS: 'Sopimuspäivällinen palveluntarve'
     },

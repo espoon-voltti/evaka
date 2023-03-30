@@ -53,5 +53,8 @@ export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
         modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
       }))
     ])
+  ),
+  missingHolidayReservations: json.missingHolidayReservations.map((d) =>
+    LocalDate.parseIso(d)
   )
 })

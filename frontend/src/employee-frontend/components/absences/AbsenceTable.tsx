@@ -71,6 +71,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     placements,
     absences,
     backupCares,
+    missingHolidayReservations,
     attendanceTotalHours,
     reservationTotalHours
   } = absenceChild
@@ -122,6 +123,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           >
             <AbsenceCell
               selectedCells={selectedCells}
+              missingHolidayReservations={missingHolidayReservations}
               toggleCellSelection={toggleCellSelection}
               categories={placements[date.formatIso()]}
               absences={absences[date.formatIso()]}

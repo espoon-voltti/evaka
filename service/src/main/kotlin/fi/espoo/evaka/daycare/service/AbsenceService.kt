@@ -9,6 +9,8 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitOperationDays
+import fi.espoo.evaka.holidayperiod.HolidayPeriod
+import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
@@ -62,6 +64,16 @@ fun getAbsencesInGroupByMonth(
     val operationalDates = range.dates().filter { it.isOperationalDate(operationalDays, holidays) }
     val setOfOperationalDays = operationalDates.toSet()
 
+    val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+    val missingHolidayReservations =
+        getMissingHolidayReservations(
+            placementList.keys.map { it.id },
+            absenceList,
+            reservations,
+            setOfOperationalDays,
+            holidayPeriods
+        )
+
     val children =
         placementList.map { (child, placements) ->
             val placementDateRanges = placements.map { it.dateRange }
@@ -92,6 +104,7 @@ fun getAbsencesInGroupByMonth(
                         ?.flatMap { it.period.dates().map { date -> date to true } }
                         ?.toMap()
                         ?: mapOf(),
+                missingHolidayReservations = missingHolidayReservations[child.id] ?: listOf(),
                 reservationTotalHours =
                     sumOfHours(supplementedReservations, placementDateRanges, range),
                 attendanceTotalHours =
@@ -183,6 +196,23 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
         tx.upsertGeneratedAbsences(now, absencesToAdd)
     }
     tx.deleteOldGeneratedAbsencesInRange(now, childId, period)
+}
+
+private fun getMissingHolidayReservations(
+    childIds: List<ChildId>,
+    absences: Map<ChildId, List<AbsenceWithModifierInfo>>,
+    reservations: Map<ChildId, List<ChildReservation>>,
+    unitOperationalDates: Set<LocalDate>,
+    holidayPeriods: List<HolidayPeriod>
+): Map<ChildId, List<LocalDate>> {
+    val holidayDates =
+        holidayPeriods.flatMap { it.period.dates() }.toSet().intersect(unitOperationalDates)
+    return childIds.associateWith { childId ->
+        val reservedDates = reservations[childId]?.map { it.date } ?: listOf()
+        val absenceDates = absences[childId]?.map { it.date } ?: listOf()
+        val answeredDates = (reservedDates + absenceDates).toSet()
+        (holidayDates - answeredDates).toList()
+    }
 }
 
 private fun supplementReservationsWithDailyServiceTimes(
@@ -328,6 +358,7 @@ data class AbsenceChild(
     val actualServiceNeeds: List<ChildServiceNeedInfo>,
     val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
     val backupCares: Map<LocalDate, Boolean>,
+    val missingHolidayReservations: List<LocalDate>,
     val reservationTotalHours: Int?,
     val attendanceTotalHours: Int?
 )

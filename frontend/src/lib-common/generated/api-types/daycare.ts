@@ -51,6 +51,7 @@ export interface AbsenceChild {
   attendanceTotalHours: number | null
   backupCares: Record<string, boolean>
   child: Child
+  missingHolidayReservations: LocalDate[]
   placements: Record<string, AbsenceCategory[]>
   reservationTotalHours: number | null
 }
