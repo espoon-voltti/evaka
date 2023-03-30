@@ -83,12 +83,15 @@ sealed class ReservationSpan : Comparable<ReservationSpan> {
                 throw IllegalArgumentException("Times must be in order")
             }
 
-            val startDate = startTime.toLocalDate()
-            val endDate = endTime.toLocalDate()
-
-            if (endDate > startDate.plusDays(1)) {
-                throw IllegalArgumentException("Times can span at most one night")
-            }
+            // TODO: This broke in production, because Database.Read.getReservationSpans() can
+            // return results that span 2 nights
+            //
+            // val startDate = startTime.toLocalDate()
+            // val endDate = endTime.toLocalDate()
+            //
+            // if (endDate > startDate.plusDays(1)) {
+            //     throw IllegalArgumentException("Times can span at most one night")
+            // }
         }
     }
 
