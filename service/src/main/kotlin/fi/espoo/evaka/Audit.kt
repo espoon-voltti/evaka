@@ -177,6 +177,7 @@ enum class Audit(
     GroupNoteCreate,
     GroupNoteUpdate,
     GroupNoteDelete,
+    GroupNoteRead,
     HolidayPeriodCreate,
     HolidayPeriodRead,
     HolidayPeriodDelete,
