@@ -29,7 +29,6 @@ import {
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
-  ValueDecisionDetailsPage,
   ValueDecisionsPage
 } from '../../pages/employee/finance/finance-page'
 import { waitUntilEqual } from '../../utils'
@@ -146,22 +145,21 @@ describe('Value decisions', () => {
     await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
   })
 
-  test('Navigate to and from decision details page', async () => {
+  test('Navigate to the decision details page', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
 
     await valueDecisionsPage.openFirstValueDecision()
-    await valueDecisionsPage.navigateBackFromDetails()
   })
 
   test('Send value decision from details page', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
 
-    await valueDecisionsPage.openFirstValueDecision()
-    await new ValueDecisionDetailsPage(page).sendValueDecision()
+    const valueDecisionDetailsPage =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPage.sendValueDecision()
     await runPendingAsyncJobs(
       HelsinkiDateTime.now() // TODO: use mock clock
     )
-    await valueDecisionsPage.navigateBackFromDetails()
     await valueDecisionsPage.assertSentDecisionsCount(1)
   })
 
@@ -188,8 +186,9 @@ describe('Value decisions', () => {
     ])
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
 
-    await valueDecisionsPage.openFirstValueDecision()
-    await new ValueDecisionDetailsPage(page).assertPartnerName(
+    const valueDecisionDetailsPage =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPage.assertPartnerName(
       `${familyWithTwoGuardians.otherGuardian.firstName} ${familyWithTwoGuardians.otherGuardian.lastName}`
     )
   })
@@ -203,8 +202,9 @@ describe('Value decisions', () => {
     ])
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
 
-    await valueDecisionsPage.openFirstValueDecision()
-    await new ValueDecisionDetailsPage(page).assertPartnerNameNotShown()
+    const valueDecisionDetailsPage =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPage.assertPartnerNameNotShown()
   })
 
   test('Child income is shown', async () => {
@@ -218,7 +218,8 @@ describe('Value decisions', () => {
       DecisionIncomeFixture(54321)
     )
 
-    await valueDecisionsPage.openFirstValueDecision()
-    await new ValueDecisionDetailsPage(page).assertChildIncome(0, '543,21 €')
+    const valueDecisionDetailsPage =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPage.assertChildIncome(0, '543,21 €')
   })
 })

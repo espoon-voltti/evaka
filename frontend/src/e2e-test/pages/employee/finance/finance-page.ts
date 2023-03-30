@@ -57,9 +57,6 @@ export class FeeDecisionsPage {
   constructor(private readonly page: Page) {}
 
   #feeDecisionListPage = this.page.find('[data-qa="fee-decisions-page"]')
-  #feeDecisionDetailsPage = this.page.find(
-    '[data-qa="fee-decision-details-page"]'
-  )
   #firstFeeDecisionRow = this.page
     .findAll('[data-qa="table-fee-decision-row"]')
     .first()
@@ -80,9 +77,13 @@ export class FeeDecisionsPage {
     return this.page.findAll('[data-qa="table-fee-decision-row"]').count()
   }
 
-  async openFirstFeeDecision() {
-    await this.#firstFeeDecisionRow.click()
-    await this.#feeDecisionDetailsPage.waitUntilVisible()
+  async openFirstFeeDecision(): Promise<FeeDecisionDetailsPage> {
+    const popup = await this.page.capturePopup(async () => {
+      await this.#firstFeeDecisionRow.click()
+    })
+    const detailsPage = new FeeDecisionDetailsPage(popup)
+    await detailsPage.waitUntilVisible()
+    return detailsPage
   }
 
   async navigateBackFromDetails() {
@@ -132,17 +133,17 @@ export class FeeDecisionDetailsPage {
     await this.#headOfFamily.waitUntilVisible()
     await this.#partnerName.waitUntilHidden()
   }
+
+  async waitUntilVisible() {
+    await this.page
+      .find('[data-qa="fee-decision-details-page"]')
+      .waitUntilVisible()
+  }
 }
 
 export class ValueDecisionsPage {
   constructor(private readonly page: Page) {}
 
-  #valueDecisionListPage = this.page.find(
-    '[data-qa="voucher-value-decisions-page"]'
-  )
-  #valueDecisionDetailsPage = this.page.find(
-    '[data-qa="voucher-value-decision-page"]'
-  )
   readonly #fromDateInput = new DatePickerDeprecated(
     this.page.find('[data-qa="value-decisions-start-date"]')
   )
@@ -161,21 +162,19 @@ export class ValueDecisionsPage {
   #firstValueDecisionRow = this.page
     .findAll('[data-qa="table-value-decision-row"]')
     .first()
-  #navigateBackButton = this.page.find('[data-qa="navigate-back"]')
   #statusFilter = {
     sent: new Checkbox(
       this.page.find('[data-qa="value-decision-status-filter-SENT"]')
     )
   }
 
-  async openFirstValueDecision() {
-    await this.#firstValueDecisionRow.click()
-    await this.#valueDecisionDetailsPage.waitUntilVisible()
-  }
-
-  async navigateBackFromDetails() {
-    await this.#navigateBackButton.click()
-    await this.#valueDecisionListPage.waitUntilVisible()
+  async openFirstValueDecision(): Promise<ValueDecisionDetailsPage> {
+    const popup = await this.page.capturePopup(async () => {
+      await this.#firstValueDecisionRow.click()
+    })
+    const detailsPage = new ValueDecisionDetailsPage(popup)
+    await detailsPage.waitUntilVisible()
+    return detailsPage
   }
 
   async getValueDecisionCount() {
@@ -238,6 +237,12 @@ export class ValueDecisionDetailsPage {
     await waitUntilTrue(async () =>
       (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
     )
+  }
+
+  async waitUntilVisible() {
+    await this.page
+      .find('[data-qa="voucher-value-decision-page"]')
+      .waitUntilVisible()
   }
 }
 

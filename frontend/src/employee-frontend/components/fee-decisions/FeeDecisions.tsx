@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -27,6 +26,7 @@ import {
   SortableTh
 } from 'lib-components/layout/Table'
 
+import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
@@ -84,7 +84,6 @@ const FeeDecisions = React.memo(function FeeDecisions({
   clearChecked
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const allChecked =
     decisions
@@ -111,7 +110,13 @@ const FeeDecisions = React.memo(function FeeDecisions({
             onClick={
               item.annullingDecision
                 ? undefined
-                : () => navigate(`/finance/fee-decisions/${item.id}`)
+                : () =>
+                    window.open(
+                      `${getEmployeeUrlPrefix()}/employee/finance/fee-decisions/${
+                        item.id
+                      }`,
+                      '_blank'
+                    )
             }
             data-qa="table-fee-decision-row"
           >
