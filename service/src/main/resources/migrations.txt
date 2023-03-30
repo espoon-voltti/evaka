@@ -313,3 +313,4 @@ V313__message_push_notifications.sql
 V314__attendance_reservation_index.sql
 V315__drop_push_sent_at.sql
 V316__move_language_at_home.sql
+V317__attendance_reservation_no_times.sql

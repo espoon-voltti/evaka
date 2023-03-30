@@ -25,11 +25,15 @@ import {
 import { StateOf, ValidationSuccess } from 'lib-common/form/types'
 import {
   DailyReservationData,
-  ReservationChild,
-  TimeRange
+  DailyReservationRequest,
+  ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { Repetition } from 'lib-common/reservations'
+import {
+  Repetition,
+  TimeRange,
+  timeRangeToTimes
+} from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import { Translations } from 'lib-customizations/citizen'
 
@@ -115,7 +119,7 @@ export const reservationForm = mapped(
       }),
     toRequest: (reservableDays: Record<string, FiniteDateRange[]>) =>
       output.selectedChildren
-        .flatMap((childId) => {
+        .flatMap((childId): DailyReservationRequest[] => {
           const childReservableDays = reservableDays[childId] ?? []
           const dates = [...output.dateRange.dates()].filter((date) =>
             childReservableDays.some((range) => range.includes(date))
@@ -125,7 +129,7 @@ export const reservationForm = mapped(
               return dates.map((date) => ({
                 childId,
                 date,
-                reservations: output.dailyTimes,
+                reservations: output.dailyTimes.map(timeRangeToTimes),
                 absent: false
               }))
             case 'WEEKLY':
@@ -136,7 +140,9 @@ export const reservationForm = mapped(
                     ? {
                         childId,
                         date,
-                        reservations: weekDay.present ? weekDay.times : null,
+                        reservations: weekDay.present
+                          ? weekDay.times.map(timeRangeToTimes)
+                          : null,
                         absent: !weekDay.present
                       }
                     : undefined
@@ -154,7 +160,7 @@ export const reservationForm = mapped(
                   childId,
                   date: irregularDay.date,
                   reservations: irregularDay.day.present
-                    ? irregularDay.day.times
+                    ? irregularDay.day.times.map(timeRangeToTimes)
                     : null,
                   absent: !irregularDay.day.present
                 }))
@@ -442,7 +448,18 @@ const getCommonTimeRanges = (
       .flatMap((reservations) =>
         reservations.children
           .filter(({ childId }) => childIds.includes(childId))
-          .map((child) => child.reservations)
+          .map((child) =>
+            child.reservations.flatMap((r): TimeRange[] =>
+              r.type === 'TIMES'
+                ? [
+                    {
+                      startTime: r.startTime,
+                      endTime: r.endTime
+                    }
+                  ]
+                : []
+            )
+          )
       )
       .filter((ranges) => ranges.length > 0),
     (times) => JSON.stringify(times)

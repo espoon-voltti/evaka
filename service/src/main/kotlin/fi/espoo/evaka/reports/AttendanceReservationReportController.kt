@@ -32,13 +32,13 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping("/reports/attendance-reservation/{unitId}")
     fun getAttendanceReservationReportByUnit(
+        db: Database,
+        clock: EvakaClock,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock
     ): List<AttendanceReservationReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -74,13 +74,13 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping("/reports/attendance-reservation/{unitId}/by-child")
     fun getAttendanceReservationReportByUnitAndChild(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @PathVariable unitId: DaycareId,
-        @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
         clock: EvakaClock,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
+        @RequestParam(required = false) groupIds: List<GroupId>?,
     ): List<AttendanceReservationReportByChildRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -251,7 +251,7 @@ private fun Database.Read.getAttendanceReservationReportByChild(
           COALESCE(r.end_time, (daily_service_time_for_date(c.date, c.id)).end) AS reservation_end_time
         FROM children c
         LEFT JOIN absence a ON a.child_id = c.id AND a.date = c.date
-        LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date
+        LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date AND r.start_time IS NOT NULL AND r.end_time IS NOT NULL
     """
             .trimIndent()
     return createQuery(sql)

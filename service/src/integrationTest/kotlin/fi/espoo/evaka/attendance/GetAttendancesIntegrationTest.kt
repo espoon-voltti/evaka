@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.reservations.ReservationSpan
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -383,9 +384,26 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(
-            listOf(AttendanceReservation(reservationStart, reservationEnd)),
+            listOf(ReservationSpan.Times(reservationStart, reservationEnd)),
             child.reservations
         )
+    }
+
+    @Test
+    fun `reservations with no times for children are shown`() {
+        db.transaction {
+            it.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = now.toLocalDate(),
+                    startTime = null,
+                    endTime = null,
+                    createdBy = mobileUser2.evakaUserId
+                )
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(listOf(ReservationSpan.NoTimes(now.toLocalDate())), child.reservations)
     }
 
     @Test
@@ -413,7 +431,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
         assertEquals(
-            listOf(AttendanceReservation(reservationStart, reservationEnd)),
+            listOf(ReservationSpan.Times(reservationStart, reservationEnd)),
             childInBackup.reservations
         )
     }

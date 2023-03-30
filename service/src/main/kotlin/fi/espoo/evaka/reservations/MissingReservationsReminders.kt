@@ -119,7 +119,11 @@ FROM (
     AND NOT EXISTS (
         SELECT 1
         FROM attendance_reservation ar
-        WHERE ar.child_id = p.child_id AND ar.date = t::date
+        WHERE
+            ar.child_id = p.child_id AND
+            ar.date = t::date AND
+            ar.start_time IS NOT NULL AND
+            ar.end_time IS NOT NULL
     )
     AND NOT EXISTS (
         SELECT 1

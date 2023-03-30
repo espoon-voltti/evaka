@@ -284,6 +284,7 @@ export default {
     newReservationBtn: 'Ilmoita läsnäolo',
     noReservation: 'Ilmoitus puuttuu',
     reservation: 'Ilmoitettu aika',
+    reservationNoTimes: 'Läsnä, aikavaraus puuttuu',
     realized: 'Toteutunut aika',
     reservationsAndRealized: 'Läsnäoloaika',
     events: 'Päivän tapahtumat',

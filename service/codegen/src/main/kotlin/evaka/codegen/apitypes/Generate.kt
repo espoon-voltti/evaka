@@ -138,16 +138,24 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                             AnalyzedClass.SealedClass(
                                 name = clazz.qualifiedName ?: error("no class name"),
                                 nestedClasses =
-                                    clazz.nestedClasses.map {
-                                        analyzeDiscriminatedUnionMember(jsonTypeInfo.property, it)
-                                    }
+                                    clazz.nestedClasses
+                                        .filterNot { it.isCompanion }
+                                        .map {
+                                            analyzeDiscriminatedUnionMember(
+                                                jsonTypeInfo.property,
+                                                it
+                                            )
+                                        }
                             )
                         }
                         JsonTypeInfo.Id.DEDUCTION ->
                             // Just union
                             AnalyzedClass.SealedClass(
                                 name = clazz.qualifiedName ?: error("no class name"),
-                                nestedClasses = clazz.nestedClasses.mapNotNull { analyzeClass(it) }
+                                nestedClasses =
+                                    clazz.nestedClasses
+                                        .filterNot { it.isCompanion }
+                                        .mapNotNull { analyzeClass(it) }
                             )
                         else -> null
                     }

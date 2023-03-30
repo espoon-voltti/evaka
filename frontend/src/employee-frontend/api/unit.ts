@@ -50,6 +50,7 @@ import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { parseReservation } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 import { DaycareGroup, Unit } from '../types/unit'
@@ -792,6 +793,9 @@ const toChildDayRows = (
   dailyData: json.dailyData.map((record) =>
     mapValues(record, (daily) => ({
       ...daily,
+      reservation: daily.reservation
+        ? parseReservation(daily.reservation)
+        : daily.reservation,
       dailyServiceTimes: daily.dailyServiceTimes
         ? parseDailyServiceTimes(daily.dailyServiceTimes)
         : null

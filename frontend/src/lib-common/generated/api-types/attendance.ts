@@ -16,6 +16,7 @@ import { DailyServiceTimesValue } from './dailyservicetimes'
 import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
+import { ReservationSpan } from './reservations'
 import { UUID } from '../../types'
 
 /**
@@ -52,14 +53,6 @@ export interface Attendance {
   id: UUID
   occupancyCoefficient: number
   type: StaffAttendanceType
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.AttendanceReservation
-*/
-export interface AttendanceReservation {
-  endTime: HelsinkiDateTime
-  startTime: HelsinkiDateTime
 }
 
 /**
@@ -110,7 +103,7 @@ export interface Child {
   lastName: string
   placementType: PlacementType
   preferredName: string
-  reservations: AttendanceReservation[]
+  reservations: ReservationSpan[]
   stickyNotes: ChildStickyNote[]
 }
 

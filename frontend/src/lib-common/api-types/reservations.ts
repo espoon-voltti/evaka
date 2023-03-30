@@ -9,6 +9,7 @@ import {
   AbsenceType,
   ChildServiceNeedInfo
 } from '../generated/api-types/daycare'
+import { Reservation } from '../generated/api-types/reservations'
 import { JsonOf } from '../json'
 import LocalDate from '../local-date'
 
@@ -36,7 +37,7 @@ export interface ChildDailyRecords {
 }
 
 export interface ChildRecordOfDay {
-  reservation: { startTime: string; endTime: string } | null
+  reservation: Reservation | null
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
   dailyServiceTimes: DailyServiceTimesValue | null

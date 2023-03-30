@@ -12,6 +12,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
+import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -313,12 +314,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyReservationRequest(
                     testChild_1.id,
                     now.toLocalDate().plusDays(105),
-                    listOf(
-                        fi.espoo.evaka.reservations.TimeRange(
-                            LocalTime.of(10, 0),
-                            LocalTime.of(12, 0)
-                        )
-                    ),
+                    listOf(Reservation.Times(LocalTime.of(10, 0), LocalTime.of(12, 0))),
                     absent = false
                 )
             )

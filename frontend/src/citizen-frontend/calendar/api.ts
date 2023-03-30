@@ -26,6 +26,7 @@ import {
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { parseReservation } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
@@ -50,10 +51,7 @@ export async function getReservations(
               startTime: LocalTime.parseIso(r.startTime),
               endTime: r.endTime ? LocalTime.parseIso(r.endTime) : null
             })),
-            reservations: child.reservations.map((r) => ({
-              startTime: LocalTime.parseIso(r.startTime),
-              endTime: LocalTime.parseIso(r.endTime)
-            }))
+            reservations: child.reservations.map(parseReservation)
           }))
         })
       ),

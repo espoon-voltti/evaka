@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.reservations
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
@@ -11,20 +13,28 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 
-fun convertMidnightEndTime(timeRange: TimeRange) =
-    if (timeRange.endTime == LocalTime.of(0, 0).withNano(0).withSecond(0)) {
-        timeRange.copy(endTime = LocalTime.of(23, 59))
+fun convertMidnightEndTime(reservation: Reservation) =
+    if (
+        reservation is Reservation.Times &&
+            reservation.endTime == LocalTime.of(0, 0).withNano(0).withSecond(0)
+    ) {
+        reservation.copy(endTime = LocalTime.of(23, 59))
     } else {
-        timeRange
+        reservation
     }
 
-fun validateReservationTimeRange(timeRange: TimeRange) {
-    if (timeRange.endTime <= timeRange.startTime) {
+// TODO: Allow reservations that have no times for holiday periods, if reserving before the deadline
+fun validateReservationTimeRange(reservation: Reservation) {
+    if (reservation !is Reservation.Times) {
+        throw BadRequest("Reservation must have times")
+    }
+    if (reservation.endTime <= reservation.startTime) {
         throw BadRequest(
-            "Reservation start (${timeRange.startTime}) must be before end (${timeRange.endTime})"
+            "Reservation start (${reservation.startTime}) must be before end (${reservation.endTime})"
         )
     }
 }
@@ -32,11 +42,68 @@ fun validateReservationTimeRange(timeRange: TimeRange) {
 data class DailyReservationRequest(
     val childId: ChildId,
     val date: LocalDate,
-    val reservations: List<TimeRange>?,
+    val reservations: List<Reservation>?,
     val absent: Boolean
 )
 
-data class TimeRange(val startTime: LocalTime, val endTime: LocalTime)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class Reservation {
+    @JsonTypeName("NO_TIMES") object NoTimes : Reservation()
+
+    @JsonTypeName("TIMES")
+    data class Times(val startTime: LocalTime, val endTime: LocalTime) : Reservation() {
+        init {
+            if (endTime != LocalTime.of(0, 0) && startTime > endTime) {
+                throw IllegalArgumentException("Times must be in order")
+            }
+        }
+    }
+
+    companion object {
+        fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?) =
+            if (startTime != null && endTime != null) {
+                Times(startTime, endTime)
+            } else if (startTime == null && endTime == null) {
+                NoTimes
+            } else {
+                throw IllegalArgumentException("Both start and end times must be null or not null")
+            }
+    }
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class ReservationSpan : Comparable<ReservationSpan> {
+    @JsonTypeName("NO_TIMES") data class NoTimes(val date: LocalDate) : ReservationSpan()
+
+    @JsonTypeName("TIMES")
+    data class Times(val startTime: HelsinkiDateTime, val endTime: HelsinkiDateTime) :
+        ReservationSpan() {
+        init {
+            if (startTime > endTime) {
+                throw IllegalArgumentException("Times must be in order")
+            }
+
+            val startDate = startTime.toLocalDate()
+            val endDate = endTime.toLocalDate()
+
+            if (endDate > startDate.plusDays(1)) {
+                throw IllegalArgumentException("Times can span at most one night")
+            }
+        }
+    }
+
+    override fun compareTo(other: ReservationSpan): Int {
+        return when {
+            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
+            this is NoTimes && other is NoTimes -> this.date.compareTo(other.date)
+            this is NoTimes && other is Times ->
+                this.date.compareTo(other.startTime.toLocalDate()).let { if (it == 0) -1 else it }
+            this is Times && other is NoTimes ->
+                this.startTime.toLocalDate().compareTo(other.date).let { if (it == 0) 1 else it }
+            else -> throw IllegalStateException("Unknown reservation range type")
+        }
+    }
+}
 
 data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
 

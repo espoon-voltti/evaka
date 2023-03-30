@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
-import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import { ReservationSpan } from 'lib-common/generated/api-types/reservations'
 
 import { Reservations } from '../child-attendance/Reservations'
 import { ServiceTime } from '../common/components'
@@ -14,7 +14,7 @@ import { useTranslation } from '../common/i18n'
 
 interface Props {
   times: DailyServiceTimesValue | null
-  reservations: AttendanceReservation[]
+  reservations: ReservationSpan[]
 }
 
 export default React.memo(function AttendanceDailyServiceTimes({
@@ -22,12 +22,19 @@ export default React.memo(function AttendanceDailyServiceTimes({
   reservations
 }: Props) {
   const { i18n } = useTranslation()
+  const reservationsWithTimes = useMemo(
+    () =>
+      reservations.flatMap((reservation) =>
+        reservation.type === 'TIMES' ? [reservation] : []
+      ),
+    [reservations]
+  )
 
   const todaysTimes = getTodaysServiceTimes(times)
   return (
     <ServiceTime>
-      {reservations.length > 0 ? (
-        <Reservations i18n={i18n} reservations={reservations} />
+      {reservationsWithTimes.length > 0 ? (
+        <Reservations reservations={reservationsWithTimes} />
       ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (

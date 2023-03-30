@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
@@ -28,7 +29,7 @@ export interface ChildDailyData {
   attendances: OpenTimeRange[]
   childId: UUID
   markedByEmployee: boolean
-  reservations: TimeRange[]
+  reservations: Reservation[]
 }
 
 /**
@@ -47,7 +48,7 @@ export interface DailyReservationRequest {
   absent: boolean
   childId: UUID
   date: LocalDate
-  reservations: TimeRange[] | null
+  reservations: Reservation[] | null
 }
 
 /**
@@ -57,6 +58,30 @@ export interface OpenTimeRange {
   endTime: LocalTime | null
   startTime: LocalTime
 }
+
+export namespace Reservation {
+  /**
+  * Generated from fi.espoo.evaka.reservations.Reservation.NoTimes
+  */
+  export interface NoTimes {
+    type: 'NO_TIMES'
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.Reservation.Times
+  */
+  export interface Times {
+    type: 'TIMES'
+    endTime: LocalTime
+    startTime: LocalTime
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.Reservation
+*/
+export type Reservation = Reservation.NoTimes | Reservation.Times
+
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationChild
@@ -73,6 +98,31 @@ export interface ReservationChild {
   preferredName: string
 }
 
+export namespace ReservationSpan {
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservationSpan.NoTimes
+  */
+  export interface NoTimes {
+    type: 'NO_TIMES'
+    date: LocalDate
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservationSpan.Times
+  */
+  export interface Times {
+    type: 'TIMES'
+    endTime: HelsinkiDateTime
+    startTime: HelsinkiDateTime
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ReservationSpan
+*/
+export type ReservationSpan = ReservationSpan.NoTimes | ReservationSpan.Times
+
+
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationsResponse
 */
@@ -81,12 +131,4 @@ export interface ReservationsResponse {
   dailyData: DailyReservationData[]
   includesWeekends: boolean
   reservableDays: Record<string, FiniteDateRange[]>
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.TimeRange
-*/
-export interface TimeRange {
-  endTime: LocalTime
-  startTime: LocalTime
 }

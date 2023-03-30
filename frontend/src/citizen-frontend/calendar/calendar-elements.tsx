@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import groupBy from 'lodash/groupBy'
+import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -12,7 +13,10 @@ import {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
+import {
+  reservationHasTimes,
+  reservationsAndAttendancesDiffer
+} from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import {
@@ -27,6 +31,7 @@ import RoundChildImages, { ChildImageData } from './RoundChildImages'
 
 type DailyChildGroupElementType =
   | 'attendance'
+  | 'reservation-no-times'
   | 'reservation'
   | 'absent'
   | 'missing-reservation'
@@ -88,7 +93,9 @@ export const Reservations = React.memo(function Reservations({
               className={group.type}
               data-qa="reservation-text"
             >
-              {group.type === 'missing-reservation'
+              {group.type === 'reservation-no-times'
+                ? i18n.calendar.reservationNoTimes
+                : group.type === 'missing-reservation'
                 ? i18n.calendar.noReservation
                 : group.type === 'absent'
                 ? i18n.calendar.absent
@@ -121,7 +128,8 @@ const NoReservationNote = styled.span`
 const GroupedElementText = styled.div`
   word-break: break-word;
 
-  &.missing-reservation {
+  &.missing-reservation,
+  &.reservation-no-times {
     color: ${(p) => p.theme.colors.accents.a2orangeDark};
   }
 `
@@ -179,10 +187,23 @@ const groupChildren = (
           }
 
           if (child.reservations.length > 0) {
+            const [withTimes, withoutTimes] = partition(
+              child.reservations,
+              reservationHasTimes
+            )
+
+            if (withoutTimes.length > 0) {
+              // In theory, we could have reservations with and without times, but in practice this shouldn't happen
+              return {
+                childId: child.childId,
+                type: 'reservation-no-times'
+              }
+            }
+
             return {
               childId: child.childId,
               type: 'reservation',
-              text: child.reservations
+              text: withTimes
                 .map(
                   ({ startTime, endTime }) =>
                     `${startTime.format()}–${endTime.format()}`

@@ -7,14 +7,15 @@ import { useCallback, useState } from 'react'
 import { Loading, Result, Success } from 'lib-common/api'
 import { ChildDailyRecords } from 'lib-common/api-types/reservations'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import {
-  DailyReservationRequest,
-  TimeRange
-} from 'lib-common/generated/api-types/reservations'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { TimeRangeErrors, validateTimeRange } from 'lib-common/reservations'
+import {
+  TimeRange,
+  TimeRangeErrors,
+  validateTimeRange
+} from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 import { deleteChildAbsences } from '../../../api/absences'
@@ -82,7 +83,13 @@ export function useUnitReservationEditState(
         reservations: childData.map((row) =>
           Object.fromEntries(
             Object.entries(row).map(([date, { reservation }]) => {
-              const initial = reservation ?? { startTime: '', endTime: '' }
+              const initial =
+                reservation && reservation.type === 'TIMES'
+                  ? {
+                      startTime: reservation.startTime.format(),
+                      endTime: reservation.endTime.format()
+                    }
+                  : { startTime: '', endTime: '' }
               return [
                 date,
                 {
@@ -196,6 +203,7 @@ export function useUnitReservationEditState(
       const reservationRequest: DailyReservationRequest = {
         ...body,
         reservations: body.reservations.map(({ startTime, endTime }) => ({
+          type: 'TIMES',
           startTime: LocalTime.parse(startTime),
           endTime: LocalTime.parse(endTime)
         }))

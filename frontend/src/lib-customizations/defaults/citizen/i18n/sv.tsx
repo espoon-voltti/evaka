@@ -284,6 +284,7 @@ const sv: Translations = {
     newReservationBtn: 'Anmäl närvaro',
     noReservation: 'Ingen närvaro',
     reservation: 'Närvarande',
+    reservationNoTimes: 'Närvarande, tid saknas',
     realized: 'Förverkligad',
     reservationsAndRealized: 'Närvaroperiod',
     events: 'Dagens händelser',

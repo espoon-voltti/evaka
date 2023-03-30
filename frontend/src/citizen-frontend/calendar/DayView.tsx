@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import partition from 'lodash/partition'
 import zip from 'lodash/zip'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -26,14 +27,17 @@ import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   DailyReservationRequest,
   OpenTimeRange,
+  Reservation,
   ReservationChild,
-  ReservationsResponse,
-  TimeRange
+  ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutation } from 'lib-common/query'
-import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
+import {
+  reservationHasTimes,
+  reservationsAndAttendancesDiffer
+} from 'lib-common/reservations'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -80,7 +84,7 @@ interface Props {
 interface ChildWithReservations {
   child: ReservationChild
   absence: AbsenceType | undefined
-  reservations: TimeRange[]
+  reservations: Reservation[]
   attendances: OpenTimeRange[]
   reservationEditable: boolean
   markedByEmployee: boolean
@@ -472,11 +476,12 @@ function childFormState({
   reservations,
   absence
 }: ChildWithReservations): StateOf<typeof childForm> {
+  const withTimes = reservations.filter(reservationHasTimes)
   return {
     child,
     reservations:
-      reservations.length > 0
-        ? reservations.map((reservation) => ({
+      withTimes.length > 0
+        ? withTimes.map((reservation) => ({
             startTime: reservation.startTime.format(),
             endTime: reservation.endTime.format()
           }))
@@ -494,7 +499,15 @@ const editorForm = mapped(
         childId: child.id,
         date,
         reservations: reservations.flatMap((reservation) =>
-          reservation ? [reservation] : []
+          reservation
+            ? [
+                {
+                  type: 'TIMES',
+                  startTime: reservation.startTime,
+                  endTime: reservation.endTime
+                }
+              ]
+            : []
         ),
         absent
       }))
@@ -729,20 +742,24 @@ const Absence = React.memo(function Absence({
 const Reservations = React.memo(function Reservations({
   reservations
 }: {
-  reservations: TimeRange[]
+  reservations: Reservation[]
 }) {
   const i18n = useTranslation()
 
-  const hasReservations = useMemo(
-    () =>
-      reservations.length > 0 &&
-      reservations.some(({ startTime }) => !!startTime),
+  const [withTimes, withoutTimes] = useMemo(
+    () => partition(reservations, reservationHasTimes),
+
     [reservations]
   )
 
-  return hasReservations ? (
+  return withoutTimes.length > 0 ? (
+    // In theory, we could have reservations with and without times, but this shouldn't happen in practice
+    <ReservationStatus data-qa="reservations-no-times">
+      {i18n.calendar.reservationNoTimes}
+    </ReservationStatus>
+  ) : withTimes.length > 0 ? (
     <span data-qa="reservations">
-      {reservations
+      {withTimes
         .map(
           ({ startTime, endTime }) =>
             `${startTime.format()} – ${endTime.format()}`
@@ -750,9 +767,9 @@ const Reservations = React.memo(function Reservations({
         .join(', ')}
     </span>
   ) : (
-    <NoReservation data-qa="no-reservations">
+    <ReservationStatus data-qa="no-reservations">
       {i18n.calendar.noReservation}
-    </NoReservation>
+    </ReservationStatus>
   )
 })
 
@@ -804,7 +821,7 @@ const Colspan2 = styled.div`
   grid-column: 1 / span 2;
 `
 
-const NoReservation = styled.span`
+const ReservationStatus = styled.span`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
 `
 

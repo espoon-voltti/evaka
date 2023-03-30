@@ -3,11 +3,28 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
-import { OpenTimeRange, TimeRange } from './generated/api-types/reservations'
+import { OpenTimeRange, Reservation } from './generated/api-types/reservations'
 import { JsonOf } from './json'
 import LocalTime from './local-time'
 
+export function reservationHasTimes(
+  reservation: Reservation
+): reservation is Reservation.Times {
+  return reservation.type === 'TIMES'
+}
+
+export function reservationHasNoTimes(
+  reservation: Reservation
+): reservation is Reservation.Times {
+  return reservation.type === 'NO_TIMES'
+}
+
 export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
+
+export interface TimeRange {
+  startTime: LocalTime
+  endTime: LocalTime
+}
 
 export interface TimeRangeErrors {
   startTime: ErrorKey | undefined
@@ -45,6 +62,28 @@ export function validateTimeRange(
   return { startTime, endTime }
 }
 
+export function timeRangeToTimes(timeRange: TimeRange): Reservation.Times {
+  return {
+    type: 'TIMES' as const,
+    startTime: timeRange.startTime,
+    endTime: timeRange.endTime
+  }
+}
+
+export function parseReservation(
+  reservation: JsonOf<Reservation>
+): Reservation {
+  if (reservation.type === 'TIMES') {
+    return {
+      ...reservation,
+      startTime: LocalTime.parseIso(reservation.startTime),
+      endTime: LocalTime.parseIso(reservation.endTime)
+    }
+  } else {
+    return reservation
+  }
+}
+
 function timeToMinutes(value: LocalTime): number {
   return value.hour * 60 + value.minute
 }
@@ -69,10 +108,12 @@ export function attendanceTimeDiffers(
 }
 
 export function reservationsAndAttendancesDiffer(
-  reservations: TimeRange[],
+  reservations: Reservation[],
   attendances: OpenTimeRange[]
 ): boolean {
   return reservations.some((reservation) => {
+    if (reservation.type === 'NO_TIMES') return false
+
     const matchingAttendance = attendances.find(
       (attendance) =>
         attendance.startTime <= reservation.endTime &&

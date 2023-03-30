@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -442,61 +441,4 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
         .executeAndReturnGeneratedKeys()
         .mapTo<AbsenceId>()
         .toList()
-}
-
-fun Database.Read.fetchAttendanceReservations(
-    unitId: DaycareId,
-    now: HelsinkiDateTime
-): Map<ChildId, List<AttendanceReservation>> =
-    createQuery(
-            """
-    WITH placed_children AS (
-        SELECT child_id FROM placement WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
-        UNION
-        SELECT child_id FROM backup_care WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
-    )
-    SELECT
-        child.id AS child_id,
-        coalesce(real_start.date, res.date) AS start_date,
-        coalesce(real_start.start_time, res.start_time) AS start_time,
-        coalesce(real_end.date, res.date) AS end_date,
-        coalesce(real_end.end_time, res.end_time) AS end_time
-    FROM placed_children pc
-    JOIN attendance_reservation res ON res.child_id = pc.child_id AND res.date = :date
-    JOIN person child ON res.child_id = child.id
-    LEFT JOIN attendance_reservation real_start ON res.start_time = '00:00'::time AND res.child_id = real_start.child_id AND real_start.end_time = '23:59'::time AND res.date = real_start.date + 1
-    LEFT JOIN attendance_reservation real_end ON res.end_time = '23:59'::time AND res.child_id = real_end.child_id AND real_end.start_time = '00:00'::time AND res.date = real_end.date - 1
-    """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("date", now.toLocalDate())
-        .bind("time", now.toLocalTime())
-        .map { ctx ->
-            ctx.mapColumn<ChildId>("child_id") to
-                AttendanceReservation(
-                    HelsinkiDateTime.of(ctx.mapColumn("start_date"), ctx.mapColumn("start_time")),
-                    HelsinkiDateTime.of(ctx.mapColumn("end_date"), ctx.mapColumn("end_time"))
-                )
-        }
-        .groupBy { (childId, _) -> childId }
-        .mapValues { it.value.map { (_, reservation) -> reservation } }
-
-fun Database.Read.getChildAttendanceReservationStartDatesByRange(
-    childId: ChildId,
-    period: DateRange
-): List<LocalDate> {
-    return createQuery(
-            """
-        SELECT date
-        FROM attendance_reservation
-        WHERE between_start_and_end(:period, date)
-        AND child_id = :childId
-        AND start_time != '00:00'::time  -- filter out overnight reservations
-        """
-        )
-        .bind("period", period)
-        .bind("childId", childId)
-        .mapTo<LocalDate>()
-        .list()
 }

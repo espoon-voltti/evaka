@@ -287,6 +287,7 @@ const en: Translations = {
     newReservationBtn: 'Register attendance',
     noReservation: 'No attendance',
     reservation: 'Registered attendance',
+    reservationNoTimes: 'Present, missing times',
     realized: 'Realized',
     reservationsAndRealized: 'Period of attendance',
     events: 'Events of the day',

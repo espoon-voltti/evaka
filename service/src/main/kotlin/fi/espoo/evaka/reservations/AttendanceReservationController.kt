@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.lang.Integer.max
 import java.time.LocalDate
+import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.format.annotation.DateTimeFormat
@@ -203,19 +204,25 @@ data class UnitAttendanceReservations(
 
     data class ChildDailyRecords(
         val child: Child,
+
+        // TODO: Refactor this data model
+        //
+        // Currently, each child has 0 or more ChildRecordOfDay objects for each day. It would be
+        // more realistic if each child had 0 or 1 ChildRecordOfDay object for each day instead, and
+        // the fields in ChildRecordOfDay that can have multiple values (e.g. attendance times)
+        // would be lists.
+        //
         val dailyData: List<Map<LocalDate, ChildRecordOfDay>>
     )
 
     data class ChildRecordOfDay(
-        val reservation: ReservationTimes?,
+        val reservation: Reservation?,
         val attendance: AttendanceTimes?,
         val absence: Absence?,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val inOtherUnit: Boolean,
         val isInBackupGroup: Boolean
     )
-
-    data class ReservationTimes(val startTime: String, val endTime: String)
 
     data class AttendanceTimes(val startTime: String, val endTime: String?)
 
@@ -337,17 +344,21 @@ WHERE
 
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
-    val reservations: Map<LocalDate, List<UnitAttendanceReservations.ReservationTimes>>,
+    val reservations: Map<LocalDate, List<Reservation>>,
     val attendances: Map<LocalDate, List<UnitAttendanceReservations.AttendanceTimes>>,
     val absences: Map<LocalDate, UnitAttendanceReservations.Absence>
 )
 
 private data class ReservationTimesForDate(
     val date: LocalDate,
-    val startTime: String,
-    val endTime: String
+    val startTime: LocalTime?,
+    val endTime: LocalTime?
 ) {
-    fun toReservationTimes() = UnitAttendanceReservations.ReservationTimes(startTime, endTime)
+    fun toReservationTimes() =
+        when {
+            startTime == null || endTime == null -> Reservation.NoTimes
+            else -> Reservation.Times(startTime, endTime)
+        }
 }
 
 private data class AttendanceTimesForDate(

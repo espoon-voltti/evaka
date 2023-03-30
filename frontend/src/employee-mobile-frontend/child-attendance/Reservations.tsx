@@ -5,21 +5,21 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
+import { ReservationSpan } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
-import { Translations } from '../common/i18n'
+import { Translations, useTranslation } from '../common/i18n'
 
 interface Props {
-  i18n: Translations
-  reservations: AttendanceReservation[]
+  reservations: ReservationSpan.Times[]
 }
 
 export const Reservations = React.memo(function Reservations({
-  i18n,
   reservations
 }: Props) {
+  const { i18n } = useTranslation()
+
   if (reservations.length === 0) {
     return null
   }
