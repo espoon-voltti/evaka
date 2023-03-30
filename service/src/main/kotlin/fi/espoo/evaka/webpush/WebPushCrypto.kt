@@ -61,7 +61,7 @@ fun vapidAuthorizationHeader(keyPair: WebPushKeyPair, expiresAt: Instant, uri: U
         JWT.create()
             .withAudience(uri.origin())
             .withExpiresAt(expiresAt)
-            .withSubject("")
+            .withSubject("https://github.com/espoon-voltti/evaka")
             .sign(Algorithm.ECDSA256(keyPair.privateKey))
 
     // 3. VAPID Authentication Scheme

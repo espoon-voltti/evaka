@@ -10,12 +10,14 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.voltti.logging.loggers.error
 import java.lang.RuntimeException
 import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
 import java.time.Instant
+import mu.KotlinLogging
 
 data class WebPushNotification(
     val endpoint: WebPushEndpoint,
@@ -105,10 +107,12 @@ class WebPush(env: WebPushEnv) {
     val applicationServerKey: String
         get() = vapidKeyPair.publicKeyBase64()
 
+    private val logger = KotlinLogging.logger {}
+
     class SubscriptionExpired(cause: Throwable) : RuntimeException("Subscription expired", cause)
 
     fun send(clock: EvakaClock, notification: WebPushNotification) {
-        val request =
+        val webPushRequest =
             WebPushRequest.createEncryptedPushMessage(
                     ttl = notification.ttl,
                     endpoint = notification.endpoint,
@@ -117,18 +121,25 @@ class WebPush(env: WebPushEnv) {
                     data = jsonMapper.writeValueAsBytes(notification.payloads)
                 )
                 .withVapid(keyPair = vapidKeyPair, expiresAt = clock.now().plusHours(6).toInstant())
+        val (request, _, result) =
+            fuel
+                .post(webPushRequest.uri.toString())
+                .header(*webPushRequest.headers.toTypedArray())
+                .body(webPushRequest.body)
+                // Push server should return 201 Created, but at least Mozilla returns 200 OK
+                // instead
+                .validate { it.statusCode == 200 || it.statusCode == 201 }
+                .response()
         try {
-            val (_, _, result) =
-                fuel
-                    .post(request.uri.toString())
-                    .header(*request.headers.toTypedArray())
-                    .body(request.body)
-                    // Push server should return 201 Created, but at least Mozilla returns 200 OK
-                    // instead
-                    .validate { it.statusCode == 200 || it.statusCode == 201 }
-                    .response()
             result.get()
         } catch (e: FuelError) {
+            val meta =
+                mapOf(
+                    "method" to request.method,
+                    "url" to request.url,
+                    "body" to request.body.asString(contentType = null),
+                )
+            logger.error(e, meta) { "Web push failed, status ${e.response.statusCode}" }
             if (e.response.statusCode == 404 || e.response.statusCode == 410) {
                 throw SubscriptionExpired(e)
             }
