@@ -10,6 +10,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
+import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 /**
@@ -87,6 +88,7 @@ export type Reservation = Reservation.NoTimes | Reservation.Times
 * Generated from fi.espoo.evaka.reservations.ReservationChild
 */
 export interface ReservationChild {
+  duplicateOf: UUID | null
   firstName: string
   hasContractDays: boolean
   id: UUID
@@ -96,6 +98,7 @@ export interface ReservationChild {
   maxOperationalDays: number[]
   placements: FiniteDateRange[]
   preferredName: string
+  upcomingPlacementType: PlacementType | null
 }
 
 export namespace ReservationSpan {

@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { formatFirstName } from 'lib-common/names'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -17,12 +18,12 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faLockAlt,
-  faSignIn,
+  farBars,
+  farSignOut,
+  farXmark,
   fasChevronDown,
   fasChevronUp,
-  farBars,
-  farXmark,
-  farSignOut
+  faSignIn
 } from 'lib-icons'
 
 import { AuthContext, User } from '../auth/state'
@@ -32,13 +33,14 @@ import AttentionIndicator from './AttentionIndicator'
 import { getLogoutUri } from './const'
 import {
   CircledChar,
-  DropDownButton,
-  DropDownLink,
   DropDown,
+  DropDownButton,
   DropDownContainer,
   DropDownIcon,
-  LanguageMenu,
-  DropDownLocalLink
+  DropDownInfo,
+  DropDownLink,
+  DropDownLocalLink,
+  LanguageMenu
 } from './shared-components'
 import { useChildrenWithOwnPage, useUnreadChildNotifications } from './utils'
 
@@ -235,6 +237,12 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     )
   }
 
+  const duplicateChildInfo = getDuplicateChildInfo(
+    childrenWithOwnPage,
+    t,
+    'long'
+  )
+
   return (
     <DropDownContainer ref={dropDownRef}>
       <DropDownButton
@@ -278,7 +286,9 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
               }}
               data-qa={`children-menu-${child.id}`}
             >
-              {formatFirstName(child)} {child.lastName}
+              <span>
+                {formatFirstName(child)} {child.lastName}
+              </span>
               {unreadChildNotifications[child.id] ? (
                 <CircledChar
                   aria-label={`${unreadChildNotifications[child.id]} ${
@@ -289,6 +299,9 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
                   {unreadChildNotifications[child.id]}
                 </CircledChar>
               ) : null}
+              {duplicateChildInfo[child.id] !== undefined && (
+                <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
+              )}
             </DropDownLink>
           ))}
         </DropDown>

@@ -99,7 +99,19 @@ const sv: Translations = {
       ]
     },
     closeModal: 'Stäng popup',
-    close: 'Stäng'
+    close: 'Stäng',
+    duplicatedChild: {
+      identifier: {
+        DAYCARE: {
+          short: 'VAKA (sv)',
+          long: 'Småbarnspedagogik'
+        },
+        PRESCHOOL: {
+          short: 'EO (sv)',
+          long: 'Förskola'
+        }
+      }
+    }
   },
   header: {
     nav: {

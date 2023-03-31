@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodDeadlines
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -225,8 +226,10 @@ data class ReservationChild(
     val firstName: String,
     val lastName: String,
     val preferredName: String,
+    val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
     val placements: List<FiniteDateRange>,
+    val upcomingPlacementType: PlacementType?,
     val maxOperationalDays: Set<Int>,
     val inShiftCareUnit: Boolean,
     val hasContractDays: Boolean
@@ -338,8 +341,10 @@ SELECT
     ch.first_name,
     ch.last_name,
     ch.preferred_name,
+    ch.duplicate_of,
     ci.id AS image_id,
     p.placements,
+    upcoming_pl.type AS upcoming_placement_type,
     p.max_operational_days,
     p.in_shift_care_unit,
     p.has_contract_days
@@ -371,8 +376,15 @@ LEFT JOIN (
     ) p
     GROUP BY p.child_id
 ) p ON p.child_id = c.child_id
+LEFT JOIN LATERAL (
+  SELECT child_id, type
+  FROM placement
+  WHERE child_id = ch.id AND :today <= end_date
+  ORDER BY start_date
+  LIMIT 1
+) upcoming_pl ON true
 WHERE p.placements IS NOT NULL
-ORDER BY ch.date_of_birth
+ORDER BY ch.date_of_birth, ch.duplicate_of
         """
                 .trimIndent()
         )

@@ -98,7 +98,19 @@ export default {
       ]
     },
     closeModal: 'Sulje ponnahdusikkuna',
-    close: 'Sulje'
+    close: 'Sulje',
+    duplicatedChild: {
+      identifier: {
+        DAYCARE: {
+          short: 'VAKA',
+          long: 'Varhaiskasvatus'
+        },
+        PRESCHOOL: {
+          short: 'EO',
+          long: 'Esiopetus'
+        }
+      }
+    }
   },
   header: {
     nav: {

@@ -34,7 +34,7 @@ const ChildHeaderContainer = styled.div`
 `
 
 export default React.memo(function ChildHeader({
-  child: { firstName, imageId, group, lastName }
+  child: { firstName, imageId, group, unit, lastName }
 }: {
   child: Child
 }) {
@@ -55,6 +55,8 @@ export default React.memo(function ChildHeader({
           {`${firstName} ${lastName}`}
         </H1>
         {group && <Title>{group.name}</Title>}
+        <br />
+        {unit && <span>{unit.name}</span>}
       </div>
     </ChildHeaderContainer>
   )

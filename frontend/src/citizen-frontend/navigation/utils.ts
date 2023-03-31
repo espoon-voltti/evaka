@@ -64,7 +64,7 @@ export function useChildrenWithOwnPage(): Child[] {
     if (!data) return []
     return data.filter(
       (child) =>
-        child.hasUpcomingPlacements ||
+        child.upcomingPlacementType !== null ||
         child.hasPedagogicalDocuments ||
         child.hasCurriculums
     )

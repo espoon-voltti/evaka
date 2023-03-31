@@ -6,6 +6,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useLang, useTranslation } from 'citizen-frontend/localization'
+import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   FixedPeriodQuestionnaire,
@@ -81,6 +82,8 @@ export default React.memo(function FixedPeriodSelectionModal({
     [answerFixedPeriodQuestionnaire, fixedPeriods, questionnaire.id]
   )
 
+  const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
+
   return (
     <ModalAccessibilityWrapper>
       <AsyncFormModal
@@ -107,7 +110,12 @@ export default React.memo(function FixedPeriodSelectionModal({
               key={child.id}
               data-qa={`holiday-section-${child.id}`}
             >
-              <H2>{formatFirstName(child)}</H2>
+              <H2>
+                {formatFirstName(child)}
+                {duplicateChildInfo[child.id] !== undefined
+                  ? ` ${duplicateChildInfo[child.id]}`
+                  : ''}
+              </H2>
               {eligibleChildren.includes(child.id) ? (
                 <PeriodSelector
                   label={questionnaire.periodOptionLabel[lang]}
