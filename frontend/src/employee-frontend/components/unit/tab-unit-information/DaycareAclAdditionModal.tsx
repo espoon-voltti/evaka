@@ -8,13 +8,11 @@ import styled from 'styled-components'
 
 import {
   addDaycareFullAcl,
-  booleanToOccupancyCoefficient,
-  DaycareGroupSummary,
-  hasPositiveOccupancyCoefficient,
-  parseOccupancyCoefficient
+  DaycareGroupSummary
 } from 'employee-frontend/api/unit'
 import { Employee } from 'employee-frontend/types/employee'
 import { formatName } from 'employee-frontend/utils'
+import { StaffOccupancyCoefficientUtil } from 'employee-frontend/utils/StaffOccupancyCoefficientUtil'
 import { Failure } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import LocalDate from 'lib-common/local-date'
@@ -80,7 +78,9 @@ export default React.memo(function DaycareAclAdditionModal({
       occupancyCoefficient: permittedActions.has(
         'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
       )
-        ? parseOccupancyCoefficient(formData.occupancyCoefficient)
+        ? StaffOccupancyCoefficientUtil.parseNumberValue(
+            formData.occupancyCoefficient
+          )
         : undefined
     }
     if (employeeId === '' || !role) {
@@ -160,7 +160,7 @@ export default React.memo(function DaycareAclAdditionModal({
         {permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="add-daycare-acl-coeff-checkbox"
-            checked={hasPositiveOccupancyCoefficient(
+            checked={StaffOccupancyCoefficientUtil.parseToBoolean(
               formData.occupancyCoefficient
             )}
             disabled={false}
@@ -168,7 +168,8 @@ export default React.memo(function DaycareAclAdditionModal({
             onChange={(checked) => {
               setFormData({
                 ...formData,
-                occupancyCoefficient: booleanToOccupancyCoefficient(checked)
+                occupancyCoefficient:
+                  StaffOccupancyCoefficientUtil.parseToNumber(checked)
               })
             }}
           />

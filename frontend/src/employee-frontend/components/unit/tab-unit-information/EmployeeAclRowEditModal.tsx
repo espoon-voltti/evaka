@@ -8,10 +8,9 @@ import styled from 'styled-components'
 
 import {
   AclUpdateDetails,
-  booleanToOccupancyCoefficient,
-  DaycareGroupSummary,
-  hasPositiveOccupancyCoefficient
+  DaycareGroupSummary
 } from 'employee-frontend/api/unit'
+import { StaffOccupancyCoefficientUtil } from 'employee-frontend/utils/StaffOccupancyCoefficientUtil'
 import { Failure, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import LocalDate from 'lib-common/local-date'
@@ -128,7 +127,7 @@ export default React.memo(function EmployeeAclRowEditModal({
         {permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="edit-acl-modal-coeff-checkbox"
-            checked={hasPositiveOccupancyCoefficient(
+            checked={StaffOccupancyCoefficientUtil.parseToBoolean(
               formData.occupancyCoefficient
             )}
             disabled={
@@ -138,7 +137,8 @@ export default React.memo(function EmployeeAclRowEditModal({
             onChange={(checked) => {
               setFormData({
                 ...formData,
-                occupancyCoefficient: booleanToOccupancyCoefficient(checked)
+                occupancyCoefficient:
+                  StaffOccupancyCoefficientUtil.parseToNumber(checked)
               })
             }}
           />

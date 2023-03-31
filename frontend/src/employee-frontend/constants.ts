@@ -12,6 +12,8 @@ export const ENTER_PRESS = 13
 
 export const CHILD_AGE = 18
 
+export const STAFF_OCCUPANCY_COEFFICIENT = 7
+
 export function getEmployeeUrlPrefix(): string {
   const isLocalMultiPortEnv = window.location.host.includes(':9093')
   return isLocalMultiPortEnv ? 'http://localhost:9093' : ''

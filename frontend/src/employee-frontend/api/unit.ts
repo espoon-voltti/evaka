@@ -826,9 +826,3 @@ const deserializeUnitServiceNeedInfo = (
     }))
   }
 }
-
-export const hasPositiveOccupancyCoefficient = (numberValue?: number) =>
-  numberValue !== undefined && numberValue > 0
-export const booleanToOccupancyCoefficient = (value: boolean) => (value ? 7 : 0)
-export const parseOccupancyCoefficient = (numberValue?: number) =>
-  numberValue ?? 0
