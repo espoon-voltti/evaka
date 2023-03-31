@@ -472,6 +472,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   openDetails
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
+  const today = LocalDate.todayInHelsinkiTz()
 
   return (
     <DayTr data-qa={`attendance-row-${rowIndex}`}>
@@ -513,7 +514,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
             date,
             plannedAttendancesForToday,
             attendancesForToday: matchingAttendances,
-            hasHiddenAttendances
+            hasHiddenAttendances,
+            allowDetailsModal: date.isEqualOrBefore(today)
           }
         })
         .map(
@@ -521,7 +523,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
             date,
             attendancesForToday,
             hasHiddenAttendances,
-            plannedAttendancesForToday
+            plannedAttendancesForToday,
+            allowDetailsModal
           }) => (
             <DayTd
               key={date.formatIso()}
@@ -573,14 +576,16 @@ const AttendanceRow = React.memo(function AttendanceRow({
                     </AttendanceCell>
                   )}
                 </AttendanceTimes>
-                <DetailsToggle showAlways={hasHiddenAttendances}>
-                  <IconButton
-                    icon={faCircleEllipsis}
-                    onClick={() => openDetails(date)}
-                    data-qa="open-details"
-                    aria-label={i18n.common.open}
-                  />
-                </DetailsToggle>
+                {allowDetailsModal && (
+                  <DetailsToggle showAlways={hasHiddenAttendances}>
+                    <IconButton
+                      icon={faCircleEllipsis}
+                      onClick={() => openDetails(date)}
+                      data-qa="open-details"
+                      aria-label={i18n.common.open}
+                    />
+                  </DetailsToggle>
+                )}
               </DayCell>
             </DayTd>
           )

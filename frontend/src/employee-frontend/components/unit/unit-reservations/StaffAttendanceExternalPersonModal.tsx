@@ -49,7 +49,9 @@ type ExternalPersonModalProps = {
 }
 
 const externalPersonForm = object({
-  date: required(localDate),
+  date: validated(required(localDate), (value) =>
+    value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
+  ),
   arrivalTime: required(localTime),
   departureTime: localTime,
   name: validated(string(), (value) =>
