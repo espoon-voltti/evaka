@@ -2058,6 +2058,7 @@ export const fi = {
         }
       },
       dayOff: 'Vapaapäivä',
+      missingHolidayReservation: 'Lomavaraus puuttuu',
       missingServiceTime: 'Sop.aika puuttuu',
       serviceTimeIndicator: '(s)',
       legend: {

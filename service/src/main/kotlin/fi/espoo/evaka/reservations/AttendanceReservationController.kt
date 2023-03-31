@@ -8,9 +8,12 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
+import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
+import fi.espoo.evaka.holidayperiod.HolidayPeriod
+import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -23,6 +26,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.lang.Integer.max
@@ -62,9 +66,19 @@ class AttendanceReservationController(private val ac: AccessControl) {
                         Action.Unit.READ_ATTENDANCE_RESERVATIONS,
                         unitId
                     )
-                    val unitName =
-                        tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
-                    val operationalDays = tx.getUnitOperationalDays(unitId, period)
+                    val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+                    val unitName = unit.name
+
+                    val holidays = tx.getHolidays(period)
+                    val holidayPeriods = tx.getHolidayPeriodsInRange(period)
+                    val operationalDays =
+                        getUnitOperationalDays(
+                            clock.today(),
+                            period,
+                            unit,
+                            holidays,
+                            holidayPeriods
+                        )
 
                     val effectiveGroupPlacements =
                         tx.getEffectiveGroupPlacementsInRange(unitId, period)
@@ -193,7 +207,11 @@ data class UnitAttendanceReservations(
     val ungrouped: List<ChildDailyRecords>,
     val unitServiceNeedInfo: UnitServiceNeedInfo
 ) {
-    data class OperationalDay(val date: LocalDate, val isHoliday: Boolean)
+    data class OperationalDay(
+        val date: LocalDate,
+        val isHoliday: Boolean,
+        val isInHolidayPeriodWithFutureDeadline: Boolean
+    )
 
     data class GroupAttendanceReservations(
         val group: ReservationGroup,
@@ -248,21 +266,31 @@ data class UnitAttendanceReservations(
     )
 }
 
-private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: FiniteDateRange) =
-    createQuery(
-            """
-    SELECT t::date AS date, holiday.date IS NOT NULL AS is_holiday
-    FROM generate_series(:start, :end, '1 day') t
-    JOIN daycare ON daycare.id = :unitId AND date_part('isodow', t) = ANY(daycare.operation_days)
-    LEFT JOIN holiday ON t = holiday.date AND NOT round_the_clock
-    """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("start", dateRange.start)
-        .bind("end", dateRange.end)
-        .mapTo<UnitAttendanceReservations.OperationalDay>()
+private fun getUnitOperationalDays(
+    today: LocalDate,
+    period: FiniteDateRange,
+    unit: Daycare,
+    holidays: Set<LocalDate>,
+    holidayPeriods: List<HolidayPeriod>
+): List<UnitAttendanceReservations.OperationalDay> {
+    val holidayPeriodDates =
+        holidayPeriods
+            .filter { it.reservationDeadline != null && it.reservationDeadline >= today }
+            .flatMap { it.period.dates() }
+            .toSet()
+    val isRoundTheClockUnit = unit.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    return period
+        .dates()
+        .filter { isRoundTheClockUnit || unit.operationDays.contains(it.dayOfWeek.value) }
+        .map {
+            UnitAttendanceReservations.OperationalDay(
+                it,
+                isHoliday = !isRoundTheClockUnit && holidays.contains(it),
+                isInHolidayPeriodWithFutureDeadline = holidayPeriodDates.contains(it)
+            )
+        }
         .toList()
+}
 
 private data class ChildPlacementStatus(
     val date: LocalDate,

@@ -25,6 +25,7 @@ import {
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -109,7 +110,8 @@ import {
   insertCalendarEventAttendee,
   insertStaffRealtimeAttendance,
   insertHoliday,
-  insertIncomeNotification
+  insertIncomeNotification,
+  insertReservationFixtures
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1744,6 +1746,15 @@ export class Fixture {
       childId: null
     })
   }
+
+  static attendanceReservation(): AttendanceReservationBuilder {
+    return new AttendanceReservationBuilder({
+      childId: 'not set',
+      date: LocalDate.of(2020, 1, 1),
+      absent: false,
+      reservations: []
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2307,5 +2318,16 @@ export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendanc
 
   copy() {
     return new StaffAttendancePlanBuilder({ ...this.data })
+  }
+}
+
+export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservationRequest> {
+  async save() {
+    await insertReservationFixtures([this.data])
+    return this
+  }
+
+  copy() {
+    return new AttendanceReservationBuilder({ ...this.data })
   }
 }

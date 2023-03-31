@@ -311,16 +311,32 @@ export class UnitChildReservationsTable extends Element {
     this.findByDataQa(`ellipsis-menu-${childId}`)
   #editInline = this.findByDataQa('menu-item-edit-row')
 
-  async childRowCount(childId: UUID): Promise<number> {
-    return await this.findAllByDataQa(
-      `reservation-row-child-${childId}`
-    ).count()
+  childRows(childId: UUID) {
+    return this.findAllByDataQa(`reservation-row-child-${childId}`)
   }
 
-  async childInOtherUnitCount(childId: UUID): Promise<number> {
-    return await this.findAllByDataQa(`reservation-row-child-${childId}`)
-      .findAllByDataQa('in-other-unit')
-      .count()
+  childInOtherUnit(childId: UUID) {
+    return this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).findAllByDataQa('in-other-unit')
+  }
+
+  childInOtherGroup(childId: UUID) {
+    return this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).findAllByDataQa('in-other-group')
+  }
+
+  missingReservations(childId: UUID) {
+    return this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).findAllByDataQa('reservation-missing')
+  }
+
+  missingHolidayReservations(childId: UUID) {
+    return this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).findAllByDataQa('holiday-reservation-missing')
   }
 
   getReservation(date: LocalDate, row: number): Promise<[string, string]> {

@@ -24,6 +24,7 @@ export interface UnitAttendanceReservations {
 export interface OperationalDay {
   date: LocalDate
   isHoliday: boolean
+  isInHolidayPeriodWithFutureDeadline: boolean
 }
 
 interface GroupAttendanceReservations {

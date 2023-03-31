@@ -21,7 +21,6 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { attendanceTimeDiffers, TimeRange } from 'lib-common/reservations'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -32,22 +31,19 @@ import AbsenceDay from './AbsenceDay'
 import { TimeRangeEditor } from './attendance-elements'
 import { EditState } from './reservation-table-edit-state'
 
-type ReservationOrServiceTime =
-  | (ServiceTimesTimeRange & { type: 'reservation' | 'service-time' })
-  | undefined
-const getReservationOrServiceTimeOfDay = (
+function getExpectedAttendanceTime(
   reservation: Reservation | null,
   serviceTimeOfDay: ServiceTimesTimeRange | null
-): ReservationOrServiceTime =>
-  reservation && reservation.type === 'TIMES'
+): TimeRange | undefined {
+  return reservation && reservation.type === 'TIMES'
     ? {
-        start: reservation.startTime,
-        end: reservation.endTime,
-        type: 'reservation'
+        startTime: reservation.startTime,
+        endTime: reservation.endTime
       }
     : serviceTimeOfDay
-    ? { ...serviceTimeOfDay, type: 'service-time' }
+    ? { startTime: serviceTimeOfDay.start, endTime: serviceTimeOfDay.end }
     : undefined
+}
 
 interface Props {
   day: OperationalDay
@@ -109,23 +105,8 @@ export default React.memo(function ChildDay({
   if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
     return null
 
-  if (dailyData.inOtherUnit || dailyData.isInBackupGroup) {
-    return (
-      <FixedSpaceRow
-        alignItems="center"
-        justifyContent="center"
-        data-qa="in-other-unit"
-      >
-        <Light>
-          {dailyData.isInBackupGroup
-            ? i18n.unit.attendanceReservations.inOtherGroup
-            : i18n.unit.attendanceReservations.inOtherUnit}
-        </Light>
-      </FixedSpaceRow>
-    )
-  }
-
-  const { dailyServiceTimes } = dailyData
+  const { reservation, dailyServiceTimes, inOtherUnit, isInBackupGroup } =
+    dailyData
 
   const serviceTimesAvailable =
     dailyServiceTimes !== null && !isVariableTime(dailyServiceTimes)
@@ -138,19 +119,27 @@ export default React.memo(function ChildDay({
       ? getTimesOnWeekday(dailyServiceTimes, day.date.getIsoDayOfWeek())
       : null
 
-  const expectedTimeForThisDay = getReservationOrServiceTimeOfDay(
-    dailyData.reservation,
-    serviceTimeOfDay
-  )
-
   const absence = editState
     ? editState.absences[rowIndex][day.date.formatIso()]
     : dailyData.absence
 
+  const expectedAttendanceTime = getExpectedAttendanceTime(
+    reservation,
+    serviceTimeOfDay
+  )
+
   return (
     <DateCell>
       <TimesRow data-qa={`reservation-${day.date.formatIso()}-${rowIndex}`}>
-        {absence ? (
+        {inOtherUnit ? (
+          <TimeCell data-qa="in-other-unit">
+            <Light>{i18n.unit.attendanceReservations.inOtherUnit}</Light>
+          </TimeCell>
+        ) : isInBackupGroup ? (
+          <TimeCell data-qa="in-other-group">
+            <Light>{i18n.unit.attendanceReservations.inOtherGroup}</Light>
+          </TimeCell>
+        ) : absence ? (
           <AbsenceDay
             type={absence.type}
             onDelete={
@@ -165,72 +154,86 @@ export default React.memo(function ChildDay({
             }
             save={() => saveReservation(day.date)}
           />
-        ) : expectedTimeForThisDay ? (
-          /* show actual reservation or service time if exists */
+        ) : reservation && reservation.type === 'TIMES' ? (
+          // a reservation exists for this day
           <>
             <ReservationTime data-qa="reservation-start">
-              {expectedTimeForThisDay.start.format()}
-              {expectedTimeForThisDay.type === 'service-time'
-                ? ' ' + i18n.unit.attendanceReservations.serviceTimeIndicator
-                : null}
+              {reservation.startTime.format()}
             </ReservationTime>
             <ReservationTime data-qa="reservation-end">
-              {expectedTimeForThisDay.end.format()}
-              {expectedTimeForThisDay.type === 'service-time'
-                ? ' ' + i18n.unit.attendanceReservations.serviceTimeIndicator
-                : null}
+              {reservation.endTime.format()}
+            </ReservationTime>
+          </>
+        ) : day.isInHolidayPeriodWithFutureDeadline && reservation == null ? (
+          // holiday period with upcoming deadline, no reservation yet
+          <ReservationTime warning data-qa="holiday-reservation-missing">
+            {i18n.unit.attendanceReservations.missingHolidayReservation}
+          </ReservationTime>
+        ) : serviceTimeOfDay ? (
+          // daily service times
+          <>
+            <ReservationTime data-qa="reservation-start">
+              {serviceTimeOfDay.start.format()}{' '}
+              {i18n.unit.attendanceReservations.serviceTimeIndicator}
+            </ReservationTime>
+            <ReservationTime data-qa="reservation-end">
+              {serviceTimeOfDay.end.format()}{' '}
+              {i18n.unit.attendanceReservations.serviceTimeIndicator}
             </ReservationTime>
           </>
         ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
-          /* else if daily service times are known but there is none for this day of week, show day off */
+          // daily service times are known but there is none for this day of week, show day off
           <ReservationTime data-qa="reservation-day-off">
             {i18n.unit.attendanceReservations.dayOff}
           </ReservationTime>
         ) : (
-          /* else show missing service time */
+          // otherwise show missing service time indicator
           <ReservationTime warning data-qa="reservation-missing">
             {i18n.unit.attendanceReservations.missingServiceTime}
           </ReservationTime>
         )}
       </TimesRow>
-      <TimesRow data-qa={`attendance-${day.date.formatIso()}-${rowIndex}`}>
-        {editState && day.date.isEqualOrBefore(LocalDate.todayInSystemTz()) ? (
-          <TimeRangeEditor
-            timeRange={editState.attendances[rowIndex][day.date.formatIso()]}
-            update={(timeRange) =>
-              updateAttendance(rowIndex, day.date, timeRange)
-            }
-            save={() => saveAttendance(day.date)}
-          />
-        ) : (
-          <>
-            <AttendanceTime
-              data-qa="attendance-start"
-              warning={attendanceTimeDiffers(
-                expectedTimeForThisDay?.start,
-                LocalTime.tryParse(dailyData.attendance?.startTime ?? '')
-              )}
-            >
-              {renderTime(
-                dailyData.attendance?.startTime,
-                !attendanceStartsOnPrevDay
-              )}
-            </AttendanceTime>
-            <AttendanceTime
-              data-qa="attendance-end"
-              warning={attendanceTimeDiffers(
-                LocalTime.tryParse(dailyData.attendance?.endTime ?? ''),
-                expectedTimeForThisDay?.end
-              )}
-            >
-              {renderTime(
-                dailyData.attendance?.endTime,
-                !attendanceEndsOnNextDay
-              )}
-            </AttendanceTime>
-          </>
-        )}
-      </TimesRow>
+      {!inOtherUnit && !isInBackupGroup ? (
+        <TimesRow data-qa={`attendance-${day.date.formatIso()}-${rowIndex}`}>
+          {editState &&
+          day.date.isEqualOrBefore(LocalDate.todayInSystemTz()) ? (
+            <TimeRangeEditor
+              timeRange={editState.attendances[rowIndex][day.date.formatIso()]}
+              update={(timeRange) =>
+                updateAttendance(rowIndex, day.date, timeRange)
+              }
+              save={() => saveAttendance(day.date)}
+            />
+          ) : (
+            <>
+              <AttendanceTime
+                data-qa="attendance-start"
+                warning={attendanceTimeDiffers(
+                  expectedAttendanceTime?.startTime,
+                  LocalTime.tryParse(dailyData.attendance?.startTime ?? '')
+                )}
+              >
+                {renderTime(
+                  dailyData.attendance?.startTime,
+                  !attendanceStartsOnPrevDay
+                )}
+              </AttendanceTime>
+              <AttendanceTime
+                data-qa="attendance-end"
+                warning={attendanceTimeDiffers(
+                  LocalTime.tryParse(dailyData.attendance?.endTime ?? ''),
+                  expectedAttendanceTime?.endTime
+                )}
+              >
+                {renderTime(
+                  dailyData.attendance?.endTime,
+                  !attendanceEndsOnNextDay
+                )}
+              </AttendanceTime>
+            </>
+          )}
+        </TimesRow>
+      ) : null}
     </DateCell>
   )
 })

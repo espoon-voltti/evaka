@@ -128,12 +128,12 @@ describe('Unit group calendar', () => {
       .childReservations
     await calendarPage.selectMode('week')
     await waitUntilEqual(
-      () => childReservations.childRowCount(child1Fixture.id),
+      () => childReservations.childRows(child1Fixture.id).count(),
       1
     )
   })
 
-  test('Child in backup care part of the week is shown', async () => {
+  test('Child in backup care in other group for part of the week is shown', async () => {
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
@@ -162,7 +162,7 @@ describe('Unit group calendar', () => {
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(backupCareSameUnitStartDate)
     await waitUntilEqual(
-      () => childReservations.childInOtherUnitCount(child1Fixture.id),
+      () => childReservations.childInOtherGroup(child1Fixture.id).count(),
       4
     )
   })
@@ -212,7 +212,7 @@ describe('Unit group calendar', () => {
     await calendarPage.changeWeekToDate(backupCareSameUnitStartDate)
     await unitAttendancesSection.selectGroup(groupId3)
     await waitUntilEqual(
-      () => childReservations.childInOtherUnitCount(child1Fixture.id),
+      () => childReservations.childInOtherUnit(child1Fixture.id).count(),
       0
     )
   })
@@ -223,7 +223,7 @@ describe('Unit group calendar', () => {
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(backupCareStartDate)
     await waitUntilEqual(
-      () => childReservations.childInOtherUnitCount(child1Fixture.id),
+      () => childReservations.childInOtherUnit(child1Fixture.id).count(),
       7
     )
   })
@@ -234,8 +234,79 @@ describe('Unit group calendar', () => {
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(backupCareEndDate)
     await waitUntilEqual(
-      () => childReservations.childInOtherUnitCount(child1Fixture.id),
+      () => childReservations.childInOtherUnit(child1Fixture.id).count(),
       2
+    )
+  })
+
+  test('Missing holiday reservations are shown', async () => {
+    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
+    const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+        reservationDeadline: LocalDate.of(2023, 3, 1)
+      })
+      .save()
+
+    // Reservation on the second day
+    await Fixture.attendanceReservation()
+      .with({
+        childId: child1Fixture.id,
+        date: holidayPeriodStart.addDays(1),
+        reservations: [
+          {
+            type: 'TIMES',
+            startTime: LocalTime.of(8, 0),
+            endTime: LocalTime.of(14, 0)
+          }
+        ]
+      })
+      .save()
+    // Absence on the third day
+    await Fixture.attendanceReservation()
+      .with({
+        childId: child1Fixture.id,
+        date: holidayPeriodStart.addDays(2),
+        absent: true
+      })
+      .save()
+
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(holidayPeriodStart)
+
+    await waitUntilEqual(
+      () =>
+        childReservations.missingHolidayReservations(child1Fixture.id).count(),
+      5
+    )
+  })
+
+  test('Missing holiday reservations are not shown if reservation deadline has passed', async () => {
+    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
+    const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+        reservationDeadline: mockedToday.subDays(1)
+      })
+      .save()
+
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(holidayPeriodStart)
+
+    await waitUntilEqual(
+      () => childReservations.missingReservations(child1Fixture.id).count(),
+      7
+    )
+    await waitUntilEqual(
+      () =>
+        childReservations.missingHolidayReservations(child1Fixture.id).count(),
+      0
     )
   })
 
@@ -286,29 +357,31 @@ describe('Unit group calendar', () => {
       [LocalTime.of(13, 0), LocalTime.of(14, 30)],
       [LocalTime.of(15, 0), LocalTime.of(16, 0)]
     ]
-    attendances.forEach(async ([arrival, departure]) => {
-      await Fixture.childAttendances()
-        .with({
-          childId: child1Fixture.id,
-          unitId: daycare2Fixture.id,
-          arrived: HelsinkiDateTime.fromLocal(
-            mockedToday,
-            arrival
-          ).toSystemTzDate(),
-          departed: HelsinkiDateTime.fromLocal(
-            mockedToday,
-            departure
-          ).toSystemTzDate()
-        })
-        .save()
-    })
+    await Promise.all(
+      attendances.map(async ([arrival, departure]) => {
+        await Fixture.childAttendances()
+          .with({
+            childId: child1Fixture.id,
+            unitId: daycare2Fixture.id,
+            arrived: HelsinkiDateTime.fromLocal(
+              mockedToday,
+              arrival
+            ).toSystemTzDate(),
+            departed: HelsinkiDateTime.fromLocal(
+              mockedToday,
+              departure
+            ).toSystemTzDate()
+          })
+          .save()
+      })
+    )
 
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
 
     await waitUntilEqual(
-      () => childReservations.childRowCount(child1Fixture.id),
+      () => childReservations.childRows(child1Fixture.id).count(),
       attendances.length
     )
   })
@@ -339,7 +412,7 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.save()
 
     await waitUntilEqual(
-      () => childReservations.childRowCount(child1Fixture.id),
+      () => childReservations.childRows(child1Fixture.id).count(),
       2
     )
   })
@@ -396,7 +469,7 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.save()
 
     await waitUntilEqual(
-      () => childReservations.childRowCount(child1Fixture.id),
+      () => childReservations.childRows(child1Fixture.id).count(),
       2
     )
 
