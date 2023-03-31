@@ -86,13 +86,7 @@ const ChildHeading = styled(H2)`
 `
 
 export default React.memo(function ChildApplicationsBlock({
-  data: {
-    childId,
-    childName,
-    applicationSummaries,
-    permittedActions,
-    duplicateOf
-  }
+  data: { childId, childName, applicationSummaries, permittedActions }
 }: ChildApplicationsBlockProps) {
   const navigate = useNavigate()
   const t = useTranslation()
@@ -174,13 +168,11 @@ export default React.memo(function ChildApplicationsBlock({
         <ChildHeading data-qa={`title-applications-child-name-${childId}`}>
           {childName}
         </ChildHeading>
-        {duplicateOf === null && (
-          <AddButton
-            text={t.applicationsList.newApplicationLink}
-            onClick={() => navigate(`/applications/new/${childId}`)}
-            data-qa={`new-application-${childId}`}
-          />
-        )}
+        <AddButton
+          text={t.applicationsList.newApplicationLink}
+          onClick={() => navigate(`/applications/new/${childId}`)}
+          data-qa={`new-application-${childId}`}
+        />
       </TitleContainer>
 
       {applicationSummaries.length > 0 &&
