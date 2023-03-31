@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pis.TemporaryEmployee
+import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -155,8 +156,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun temporaryEmployeeCrud() {
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 3, 29), LocalTime.of(8, 37)))
+        val dateTime = HelsinkiDateTime.of(LocalDate.of(2023, 3, 29), LocalTime.of(8, 37))
+        val clock = MockEvakaClock(dateTime)
         assertThat(getTemporaryEmployees(clock, testDaycare.id)).isEmpty()
         assertThat(getTemporaryEmployees(clock, testDaycare2.id)).isEmpty()
 
@@ -184,6 +185,11 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
             .isEqualTo(createdTemporary)
         assertThrows<NotFound> { getTemporaryEmployee(clock, testDaycare2.id, temporaryEmployeeId) }
+        dbInstance().connect { dbc ->
+            dbc.transaction { tx -> tx.clearRolesForInactiveEmployees(dateTime.plusMonths(1)) }
+        }
+        assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
+            .isEqualTo(createdTemporary)
 
         // update
         val updatedTemporary =
@@ -215,6 +221,11 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertThat(getTemporaryEmployees(clock, testDaycare.id))
             .extracting({ it.id }, { it.firstName }, { it.lastName }, { it.temporaryInUnitId })
             .containsExactly(Tuple(temporaryEmployeeId, "Etu2", "Suku2", testDaycare.id))
+        assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
+            .isEqualTo(updatedTemporary)
+        dbInstance().connect { dbc ->
+            dbc.transaction { tx -> tx.clearRolesForInactiveEmployees(dateTime.plusMonths(1)) }
+        }
         assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
             .isEqualTo(updatedTemporary)
 
