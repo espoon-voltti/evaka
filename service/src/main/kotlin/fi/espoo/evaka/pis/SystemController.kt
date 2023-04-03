@@ -254,7 +254,8 @@ class SystemController(
                 lastName = lastName,
                 email = email,
                 externalId = externalId,
-                employeeNumber = employeeNumber
+                employeeNumber = employeeNumber,
+                temporaryInUnitId = null
             )
     }
 

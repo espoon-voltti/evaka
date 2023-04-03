@@ -10,6 +10,25 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffOccupancyCoefficientId
 import fi.espoo.evaka.shared.db.Database
 import java.math.BigDecimal
+import kotlin.jvm.optionals.getOrNull
+
+fun Database.Read.getOccupancyCoefficientForEmployeeInUnit(
+    employeeId: EmployeeId,
+    unitId: DaycareId
+): BigDecimal? =
+    createQuery(
+            """
+SELECT coefficient
+FROM staff_occupancy_coefficient
+WHERE daycare_id = :unitId AND employee_id = :employeeId
+        """
+                .trimIndent()
+        )
+        .bind("unitId", unitId)
+        .bind("employeeId", employeeId)
+        .mapTo<BigDecimal>()
+        .findOne()
+        .getOrNull()
 
 fun Database.Read.getOccupancyCoefficientForEmployee(
     employeeId: EmployeeId,

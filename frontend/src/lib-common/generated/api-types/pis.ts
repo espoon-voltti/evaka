@@ -81,6 +81,7 @@ export interface Employee {
   id: UUID
   lastName: string
   preferredFirstName: string | null
+  temporaryInUnitId: UUID | null
   updated: HelsinkiDateTime | null
 }
 
@@ -271,6 +272,7 @@ export interface NewEmployee {
   firstName: string
   lastName: string
   roles: UserRole[]
+  temporaryInUnitId: UUID | null
 }
 
 /**
@@ -504,4 +506,15 @@ export interface SearchPersonBody {
   orderBy: string
   searchTerm: string
   sortDirection: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.TemporaryEmployee
+*/
+export interface TemporaryEmployee {
+  firstName: string
+  groupIds: UUID[]
+  lastName: string
+  occupancyCoefficient: number
+  pinCode: PinCode | null
 }

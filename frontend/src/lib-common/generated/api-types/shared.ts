@@ -34,6 +34,7 @@ export interface DaycareAclRowEmployee {
   firstName: string
   id: UUID
   lastName: string
+  temporary: boolean
 }
 
 /**

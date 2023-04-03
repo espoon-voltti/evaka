@@ -20,14 +20,15 @@ data class DaycareAclRowEmployee(
     val id: EmployeeId,
     val firstName: String,
     val lastName: String,
-    val email: String?
+    val email: String?,
+    val temporary: Boolean
 )
 
 fun Database.Read.getDaycareAclRows(daycareId: DaycareId): List<DaycareAclRow> =
     createQuery(
             // language=SQL
             """
-SELECT id, first_name, last_name, email, role, coalesce(group_ids, array[]::uuid[]) AS group_ids
+SELECT id, first_name, last_name, email, role, coalesce(group_ids, array[]::uuid[]) AS group_ids, temporary_in_unit_id IS NOT NULL AS temporary
 FROM daycare_acl
 JOIN employee e on daycare_acl.employee_id = e.id
 LEFT JOIN (
