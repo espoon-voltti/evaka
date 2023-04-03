@@ -47,7 +47,7 @@ export interface EvakaSamlConfig {
 }
 
 export const gatewayRoles = ['enduser', 'internal'] as const
-export type NodeEnv = typeof nodeEnvs[number]
+export type NodeEnv = (typeof nodeEnvs)[number]
 export const nodeEnvs = ['local', 'test', 'production'] as const
 
 function ifNodeEnv<T>(envs: NodeEnv[], value: T): T | undefined {
