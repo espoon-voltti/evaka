@@ -285,12 +285,9 @@ LEFT JOIN LATERAL (
             CASE WHEN ar.start_time IS NULL OR ar.end_time IS NULL THEN
                 jsonb_build_object('type', 'NO_TIMES')
             ELSE
-                jsonb_build_object(
-                    'type', 'TIMES',
-                    'startTime', to_char(ar.start_time, 'HH24:MI'),
-                    'endTime', to_char(ar.end_time, 'HH24:MI')
-                )
-            END ORDER BY ar.start_time
+                jsonb_build_object('type', 'TIMES', 'startTime', ar.start_time, 'endTime', ar.end_time)
+            END
+            ORDER BY ar.start_time
         ) AS reservations
     FROM attendance_reservation ar WHERE ar.child_id = c.child_id AND ar.date = t::date
 ) ar ON true

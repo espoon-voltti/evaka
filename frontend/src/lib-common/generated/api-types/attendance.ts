@@ -16,7 +16,7 @@ import { DailyServiceTimesValue } from './dailyservicetimes'
 import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
-import { ReservationSpan } from './reservations'
+import { Reservation } from './reservations'
 import { UUID } from '../../types'
 
 /**
@@ -103,7 +103,7 @@ export interface Child {
   lastName: string
   placementType: PlacementType
   preferredName: string
-  reservations: ReservationSpan[]
+  reservations: Reservation[]
   stickyNotes: ChildStickyNote[]
 }
 

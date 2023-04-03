@@ -6,7 +6,6 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
@@ -100,31 +99,6 @@ export interface ReservationChild {
   preferredName: string
   upcomingPlacementType: PlacementType | null
 }
-
-export namespace ReservationSpan {
-  /**
-  * Generated from fi.espoo.evaka.reservations.ReservationSpan.NoTimes
-  */
-  export interface NoTimes {
-    type: 'NO_TIMES'
-    date: LocalDate
-  }
-  
-  /**
-  * Generated from fi.espoo.evaka.reservations.ReservationSpan.Times
-  */
-  export interface Times {
-    type: 'TIMES'
-    endTime: HelsinkiDateTime
-    startTime: HelsinkiDateTime
-  }
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.ReservationSpan
-*/
-export type ReservationSpan = ReservationSpan.NoTimes | ReservationSpan.Times
-
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationsResponse

@@ -5,14 +5,12 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import { ReservationSpan } from 'lib-common/generated/api-types/reservations'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
+import { Reservation } from 'lib-common/generated/api-types/reservations'
 
-import { Translations, useTranslation } from '../common/i18n'
+import { useTranslation } from '../common/i18n'
 
 interface Props {
-  reservations: ReservationSpan.Times[]
+  reservations: Reservation.Times[]
 }
 
 export const Reservations = React.memo(function Reservations({
@@ -33,52 +31,17 @@ export const Reservations = React.memo(function Reservations({
     <>
       <span>{label}:</span>
       <Whitespace />
-      {reservations.map(({ startTime, endTime }, index) => {
-        const startDatePart = datePart(startTime, i18n)
-        const endDatePart = datePart(endTime, i18n)
-
-        return (
-          <Fragment key={startTime.formatIso()}>
-            {index !== 0 && <Separator />}
-            <span>{startTime.toLocalTime().format()}</span>
-            {!!startDatePart && (
-              <>
-                <Whitespace />
-                <DatePart>{startDatePart}</DatePart>
-              </>
-            )}
-            <Dash />
-            <span>{endTime.toLocalTime().format()}</span>
-            {!!endDatePart && (
-              <>
-                <Whitespace />
-                <DatePart>{endDatePart}</DatePart>
-              </>
-            )}
-          </Fragment>
-        )
-      })}
+      {reservations.map(({ startTime, endTime }, index) => (
+        <Fragment key={startTime.formatIso()}>
+          {index !== 0 && <Separator />}
+          <span>{startTime.format()}</span>
+          <Dash />
+          <span>{endTime.format()}</span>
+        </Fragment>
+      ))}
     </>
   )
 })
-
-function datePart(
-  dateTime: HelsinkiDateTime,
-  i18n: Translations
-): string | undefined {
-  const localDate = dateTime.toLocalDate()
-  if (localDate.isToday()) {
-    return undefined
-  }
-
-  const datePart = localDate.isEqual(LocalDate.todayInSystemTz().addDays(1))
-    ? i18n.attendances.serviceTime.tomorrow
-    : localDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
-    ? i18n.attendances.serviceTime.yesterday
-    : localDate.format('d.M.')
-
-  return `(${datePart})`
-}
 
 const Dash = React.memo(function Dash() {
   return (
@@ -95,10 +58,6 @@ const Separator = React.memo(function Separator() {
     </>
   )
 })
-
-const DatePart = styled.span`
-  color: ${({ theme }) => theme.colors.grayscale.g35};
-`
 
 const Whitespace = styled.span`
   ::before {
