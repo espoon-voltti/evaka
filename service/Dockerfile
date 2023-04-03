@@ -73,7 +73,7 @@ ARG DD_JAVA_AGENT_SHA256="85ccbbf73f867d10ab867ae02ad34f381d65e1f4523636a0b41d3a
 RUN curl -sSfo /opt/dd-java-agent.jar "https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_JAVA_AGENT_VERSION}/dd-java-agent-${DD_JAVA_AGENT_VERSION}.jar" \
  && echo "${DD_JAVA_AGENT_SHA256}  /opt/dd-java-agent.jar" | sha256sum -c -
 
-ADD ./service/dd-jmxfetch/ /etc/jmxfetch/
+COPY ./service/dd-jmxfetch/ /etc/jmxfetch/
 
 COPY ./service/entrypoint.sh entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
