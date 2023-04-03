@@ -389,7 +389,15 @@ export default React.memo(function ApplicationEditView({
                           partTime: false
                         })
                       )
-                    : setApplication(set('form.preferences.serviceNeed', null))
+                    : setApplication(
+                        flow(
+                          set('form.preferences.serviceNeed', null),
+                          set(
+                            'form.preferences.connectedDaycarePreferredStartDate',
+                            null
+                          )
+                        )
+                      )
                 }
                 data-qa="checkbox-service-need-connected"
               />
