@@ -26,7 +26,6 @@ import {
 import { PersonDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
-  FeeDecisionDetailsPage,
   FeeDecisionsPage,
   FinancePage
 } from '../../pages/employee/finance/finance-page'
@@ -86,13 +85,12 @@ describe('Fee decisions', () => {
     await waitUntilEqual(() => feeDecisionsPage.getFeeDecisionCount(), 1)
   })
 
-  test('Navigate to and from decision details page', async () => {
+  test('Navigate to the from decision details page', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
       enduserGuardianFixture,
       enduserChildFixtureKaarina
     )
     await feeDecisionsPage.openFirstFeeDecision()
-    await feeDecisionsPage.navigateBackFromDetails()
   })
 
   test('Fee decisions are toggled and sent', async () => {
@@ -121,8 +119,8 @@ describe('Fee decisions', () => {
       familyWithTwoGuardians.children[0],
       partner
     )
-    await feeDecisionsPage.openFirstFeeDecision()
-    await new FeeDecisionDetailsPage(page).assertPartnerName(
+    const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
+    await feeDecisionDetailsPage.assertPartnerName(
       `${partner.firstName} ${partner.lastName}`
     )
   })
@@ -140,8 +138,8 @@ describe('Fee decisions', () => {
       familyWithTwoGuardians.children[0],
       partner
     )
-    await feeDecisionsPage.openFirstFeeDecision()
-    await new FeeDecisionDetailsPage(page).assertPartnerNameNotShown()
+    const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
+    await feeDecisionDetailsPage.assertPartnerNameNotShown()
   })
 
   test('Child income is shown', async () => {
@@ -159,7 +157,7 @@ describe('Fee decisions', () => {
       partner,
       DecisionIncomeFixture(54321)
     )
-    await feeDecisionsPage.openFirstFeeDecision()
-    await new FeeDecisionDetailsPage(page).assertChildIncome(0, '543,21 €')
+    const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
+    await feeDecisionDetailsPage.assertChildIncome(0, '543,21 €')
   })
 })

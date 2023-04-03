@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -26,6 +25,7 @@ import {
 } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
 
+import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import ChildrenCell from '../common/ChildrenCell'
@@ -80,7 +80,6 @@ export default React.memo(function VoucherValueDecisions({
   clearChecked
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const allChecked =
     decisions
@@ -107,7 +106,13 @@ export default React.memo(function VoucherValueDecisions({
             onClick={
               item.annullingDecision
                 ? undefined
-                : () => navigate(`/finance/value-decisions/${item.id}`)
+                : () =>
+                    window.open(
+                      `${getEmployeeUrlPrefix()}/employee/finance/value-decisions/${
+                        item.id
+                      }`,
+                      '_blank'
+                    )
             }
             data-qa="table-value-decision-row"
           >
