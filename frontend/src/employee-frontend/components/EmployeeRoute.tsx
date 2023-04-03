@@ -21,9 +21,7 @@ export default React.memo(function EmployeeRoute({
 }: Props) {
   const { setTitle } = useContext<TitleState>(TitleContext)
 
-  useEffect(() => {
-    if (title) setTitle(title)
-  }, [setTitle, title])
+  useEffect(() => setTitle(title ?? ''), [setTitle, title])
 
   return requireAuth ? <RequireAuth element={children} /> : <>{children}</>
 })
