@@ -140,7 +140,7 @@ export default function App() {
                     <Route
                       path="/settings"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.settings.title}>
                           <SettingsPage />
                         </EmployeeRoute>
                       }
@@ -148,7 +148,7 @@ export default function App() {
                     <Route
                       path="/unit-features"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.unitFeatures.title}>
                           <UnitFeaturesPage />
                         </EmployeeRoute>
                       }
@@ -188,7 +188,7 @@ export default function App() {
                     <Route
                       path="/units/:unitId/groups/:groupId/caretakers"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.groupCaretakers.title}>
                           <GroupCaretakers />
                         </EmployeeRoute>
                       }
@@ -212,7 +212,7 @@ export default function App() {
                     <Route
                       path="/profile/:id"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.personProfile.title}>
                           <PersonProfile />
                         </EmployeeRoute>
                       }
@@ -220,7 +220,7 @@ export default function App() {
                     <Route
                       path="/profile/:personId/income-statement/:incomeStatementId"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.incomeStatement.title}>
                           <IncomeStatementPage />
                         </EmployeeRoute>
                       }
@@ -228,7 +228,7 @@ export default function App() {
                     <Route
                       path="/child-information/:id"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.childInformation.title}>
                           <ChildInformation />
                         </EmployeeRoute>
                       }
@@ -288,7 +288,7 @@ export default function App() {
                     <Route
                       path="/finance/basics"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.financeBasics.title}>
                           <FinanceBasicsPage />
                         </EmployeeRoute>
                       }
@@ -464,7 +464,7 @@ export default function App() {
                     <Route
                       path="/reports/sextet"
                       element={
-                        <EmployeeRoute>
+                        <EmployeeRoute title={i18n.titles.reports}>
                           <ReportSextet />
                         </EmployeeRoute>
                       }
