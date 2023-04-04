@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.getApplicationType
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.assistanceneed.insertAssistanceBasisOptionRefs
 import fi.espoo.evaka.attendance.StaffAttendanceType
@@ -79,7 +78,6 @@ import java.util.UUID
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.json.Json
-import org.postgresql.util.PGobject
 import org.springframework.core.io.ClassPathResource
 
 private val logger = KotlinLogging.logger {}
@@ -400,13 +398,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
         )
         .bind("applicationId", applicationId)
         .bind("revision", revision)
-        .bind(
-            "document",
-            PGobject().apply {
-                type = "jsonb"
-                value = jsonMapper().writeValueAsString(document)
-            }
-        )
+        .bindJson("document", document)
         .execute()
 }
 
@@ -437,13 +429,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
         )
         .bind("applicationId", applicationId)
         .bind("revision", revision)
-        .bind(
-            "document",
-            PGobject().apply {
-                type = "jsonb"
-                value = jsonMapper().writeValueAsString(document)
-            }
-        )
+        .bindJson("document", document)
         .execute()
 }
 
@@ -1161,7 +1147,7 @@ WHERE application_id = :applicationId AND revision < :revision
         .bind("created", applicationForm.createdDate)
         .bind("revision", applicationForm.revision)
         .bind("updated", applicationForm.updated)
-        .bind("document", jsonMapper().writeValueAsString(applicationForm.document))
+        .bindJson("document", applicationForm.document)
         .execute()
 
     return id

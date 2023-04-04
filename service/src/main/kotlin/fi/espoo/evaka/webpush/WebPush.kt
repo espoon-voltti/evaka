@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.voltti.logging.loggers.error
 import java.lang.RuntimeException
@@ -101,7 +101,7 @@ data class WebPushRequestHeaders(
 class WebPush(env: WebPushEnv) {
     private val fuel = FuelManager()
     private val secureRandom = SecureRandom()
-    private val jsonMapper = defaultJsonMapper()
+    private val jsonMapper = defaultJsonMapperBuilder().build()
     private val vapidKeyPair: WebPushKeyPair =
         WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey.value))
     val applicationServerKey: String

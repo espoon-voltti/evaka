@@ -4,12 +4,8 @@
 
 package fi.espoo.evaka.shared.db
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.lang.reflect.Type
 import java.time.LocalDate
@@ -70,12 +66,7 @@ private inline fun <reified T> Jdbi.register(
 }
 
 fun configureJdbi(jdbi: Jdbi): Jdbi {
-    val jsonMapper =
-        JsonMapper()
-            .registerModule(JavaTimeModule())
-            .registerModule(Jdk8Module())
-            .registerModule(ParameterNamesModule())
-            .registerModule(KotlinModule.Builder().build())
+    val jsonMapper = defaultJsonMapperBuilder().build()
     jdbi
         .installPlugin(KotlinPlugin())
         .installPlugin(PostgresPlugin())

@@ -11,7 +11,7 @@ import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.requests.DefaultBody
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.VardaEnv
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.io.ByteArrayInputStream
 import java.net.URL
 import kotlin.test.assertTrue
@@ -32,7 +32,7 @@ class MockVardaTokenProvider : VardaTokenProvider {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VardaClientTest {
-    private val jsonMapper: JsonMapper = defaultJsonMapper()
+    private val jsonMapper: JsonMapper = defaultJsonMapperBuilder().build()
     private lateinit var mockTokenProvider: VardaTokenProvider
 
     @BeforeAll

@@ -13,7 +13,6 @@ import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCA
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_ONLY
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
@@ -39,7 +38,6 @@ import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
 import org.jdbi.v3.core.result.RowView
-import org.postgresql.util.PGobject
 
 private val logger = KotlinLogging.logger {}
 
@@ -984,16 +982,7 @@ VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM o
         """
             .trimIndent()
 
-    createUpdate(sql)
-        .bind("applicationId", id)
-        .bind(
-            "document",
-            PGobject().apply {
-                type = "jsonb"
-                value = jsonMapper().writeValueAsString(transformedForm)
-            }
-        )
-        .execute()
+    createUpdate(sql).bind("applicationId", id).bindJson("document", transformedForm).execute()
 }
 
 fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
