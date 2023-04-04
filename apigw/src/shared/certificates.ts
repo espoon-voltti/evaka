@@ -16,7 +16,7 @@ const names = [
   'tamperead-internal-prod.pem'
 ] as const
 
-export type TrustedCertificates = typeof names[number]
+export type TrustedCertificates = (typeof names)[number]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const certificates: Record<TrustedCertificates, string> = {} as any
