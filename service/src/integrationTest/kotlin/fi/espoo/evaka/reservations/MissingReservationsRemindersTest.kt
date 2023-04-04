@@ -4,9 +4,10 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.*
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
@@ -14,12 +15,26 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.*
+import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestGuardian
+import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.upsertCitizenUser
+import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -55,14 +70,15 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             tx.upsertCitizenUser(guardian)
             child = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardian, childId = child))
-            val placementId = tx.insertTestPlacement(
-                DevPlacement(
-                    childId = child,
-                    unitId = testDaycare.id,
-                    startDate = checkedRange.start,
-                    endDate = checkedRange.end
+            val placementId =
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = child,
+                        unitId = testDaycare.id,
+                        startDate = checkedRange.start,
+                        endDate = checkedRange.end
+                    )
                 )
-            )
             tx.insertTestServiceNeed(
                 confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 placementId = placementId,

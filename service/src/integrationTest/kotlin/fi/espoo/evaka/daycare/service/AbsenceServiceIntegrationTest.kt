@@ -1316,15 +1316,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = placementPeriod.start,
                 endDate = placementPeriod.end
             )
-            serviceNeedOption?.let { tx.insertServiceNeed(
-                placementId = daycarePlacementId,
-                startDate = placementPeriod.start,
-                endDate = placementPeriod.end,
-                optionId = it.id,
-                shiftCare = false,
-                confirmedBy = null,
-                confirmedAt = null
-            ) }
+            serviceNeedOption?.let {
+                tx.insertServiceNeed(
+                    placementId = daycarePlacementId,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                    optionId = it.id,
+                    shiftCare = false,
+                    confirmedBy = null,
+                    confirmedAt = null
+                )
+            }
         }
     }
 

@@ -214,7 +214,8 @@ private fun getMissingHolidayReservations(
         val absenceDates = absences[childId]?.map { it.date } ?: listOf()
         val answeredDates = (reservedDates + absenceDates).toSet()
 
-        val datesWithServiceNeed = serviceNeeds[childId]?.flatMap { it.validDuring.dates() }?.toSet() ?: emptySet()
+        val datesWithServiceNeed =
+            serviceNeeds[childId]?.flatMap { it.validDuring.dates() }?.toSet() ?: emptySet()
         val datesRequiringAnswer = holidayDates.intersect(datesWithServiceNeed)
 
         (datesRequiringAnswer - answeredDates).toList()
