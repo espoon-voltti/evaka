@@ -50,12 +50,13 @@ export default React.memo(function Applications() {
       {renderResult(guardianApplications, (guardianApplications) => (
         <>
           {sortBy(guardianApplications, (a) => a.childName).map(
-            (childApplications) => (
-              <Fragment key={childApplications.childId}>
-                <ChildApplicationsBlock data={childApplications} />
-                <Gap size="s" />
-              </Fragment>
-            )
+            (childApplications) =>
+              childApplications.duplicateOf === null && (
+                <Fragment key={childApplications.childId}>
+                  <ChildApplicationsBlock data={childApplications} />
+                  <Gap size="s" />
+                </Fragment>
+              )
           )}
         </>
       ))}
