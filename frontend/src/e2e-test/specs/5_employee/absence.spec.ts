@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
@@ -18,7 +20,7 @@ let fixtures: AreaAndPersonFixtures
 let page: Page
 let unitPage: UnitPage
 
-const today = LocalDate.todayInSystemTz()
+const today = LocalDate.of(2023, 3, 1)
 
 beforeEach(async () => {
   await resetDatabase()
@@ -52,7 +54,9 @@ beforeEach(async () => {
     fixtures.daycareFixture.id
   ).save()
 
-  page = await Page.open()
+  page = await Page.open({
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)).toSystemTzDate()
+  })
   await employeeLogin(page, unitSupervisor.data)
   unitPage = new UnitPage(page)
 })
@@ -222,5 +226,59 @@ describe('Employee - Absences', () => {
     await groupSection.openDiary()
 
     await diaryPage.assertStaffAttendance(0, 3)
+  })
+
+  describe('Holiday period reservations', () => {
+    const holidayStart = today.addMonths(1).addDays(2) // Monday
+    const holidayEnd = holidayStart.addDays(4) // Friday
+    const holidayRange = new FiniteDateRange(holidayStart, holidayEnd)
+
+    test('Missing holiday reservations are shown for holiday period dates that have no reservation or absence', async () => {
+      await Fixture.holidayPeriod()
+        .with({
+          period: holidayRange,
+          reservationDeadline: today.addWeeks(2)
+        })
+        .save()
+
+      await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+      const groupsPage = await unitPage.openGroupsPage()
+      const groupSection = await groupsPage.openGroupCollapsible(
+        daycareGroupFixture.id
+      )
+      const diaryPage = await groupSection.openDiary()
+
+      // Today is not in a holiday period
+      await diaryPage
+        .absenceCell(fixtures.enduserChildFixtureKaarina.id, today)
+        .waitUntilVisible()
+      await diaryPage
+        .absenceCell(fixtures.enduserChildFixtureKaarina.id, today)
+        .missingHolidayReservation.waitUntilHidden()
+
+      // Missing holiday reservation is shown for holiday period dates
+      await diaryPage.nextWeekButton.click()
+      let date = holidayStart
+      while (date <= holidayEnd) {
+        await diaryPage
+          .absenceCell(fixtures.enduserChildFixtureKaarina.id, date)
+          .missingHolidayReservation.waitUntilVisible()
+        date = date.addDays(1)
+      }
+
+      // Adding an absence hides the missing holiday reservation marker
+      await diaryPage.addAbsenceToChild(
+        fixtures.enduserChildFixtureKaarina.id,
+        holidayStart,
+        'UNKNOWN_ABSENCE',
+        ['NONBILLABLE']
+      )
+      await diaryPage
+        .absenceCell(fixtures.enduserChildFixtureKaarina.id, holidayStart)
+        .waitUntilVisible()
+      await diaryPage
+        .absenceCell(fixtures.enduserChildFixtureKaarina.id, holidayStart)
+        .missingHolidayReservation.waitUntilHidden()
+    })
   })
 })

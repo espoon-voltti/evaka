@@ -6,12 +6,23 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Read.getHolidayPeriodDeadlines(): List<HolidayPeriodDeadline> =
     this.createQuery(
             "SELECT id, period, reservation_deadline FROM holiday_period WHERE reservation_deadline IS NOT NULL"
         )
         .mapTo<HolidayPeriodDeadline>()
+        .list()
+
+fun Database.Read.getHolidayPeriodsInRange(
+    range: FiniteDateRange,
+): List<HolidayPeriod> =
+    this.createQuery(
+            "SELECT id, period, reservation_deadline FROM holiday_period h WHERE h.period && :range"
+        )
+        .bind("range", range)
+        .mapTo<HolidayPeriod>()
         .list()
 
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =

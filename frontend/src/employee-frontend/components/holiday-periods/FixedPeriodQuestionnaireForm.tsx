@@ -18,6 +18,7 @@ import {
   FixedPeriodQuestionnaireBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -35,9 +36,9 @@ import { useTranslation } from '../../state/i18n'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 
 import {
-  createFixedPeriodQuestionnaire,
-  updateFixedPeriodQuestionnaire
-} from './api'
+  createFixedPeriodQuestionnaireMutation,
+  updateFixedPeriodQuestionnaireMutation
+} from './queries'
 
 interface FormState {
   requiresStrongAuth: boolean
@@ -273,14 +274,26 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     ]
   }, [form])
 
+  const { mutateAsync: createFixedPeriodQuestionnaire } = useMutationResult(
+    createFixedPeriodQuestionnaireMutation
+  )
+  const { mutateAsync: updateFixedPeriodQuestionnaire } = useMutationResult(
+    updateFixedPeriodQuestionnaireMutation
+  )
+
   const onSubmit = useCallback(() => {
     const body = isValid && formToQuestionnaireBody(form)
     if (!body) return
-
     return questionnaire
-      ? updateFixedPeriodQuestionnaire(questionnaire.id, body)
+      ? updateFixedPeriodQuestionnaire({ id: questionnaire.id, data: body })
       : createFixedPeriodQuestionnaire(body)
-  }, [form, questionnaire, isValid])
+  }, [
+    createFixedPeriodQuestionnaire,
+    updateFixedPeriodQuestionnaire,
+    form,
+    questionnaire,
+    isValid
+  ])
 
   const hideErrorsBeforeTouched = !questionnaire
 

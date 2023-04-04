@@ -765,9 +765,9 @@ export async function getUnitAttendanceReservations(
     .then(({ data }) =>
       Success.of({
         unit: data.unit,
-        operationalDays: data.operationalDays.map(({ date, isHoliday }) => ({
-          date: LocalDate.parseIso(date),
-          isHoliday
+        operationalDays: data.operationalDays.map((operationalDay) => ({
+          ...operationalDay,
+          date: LocalDate.parseIso(operationalDay.date)
         })),
         groups: data.groups.map(({ group, children }) => ({
           group,

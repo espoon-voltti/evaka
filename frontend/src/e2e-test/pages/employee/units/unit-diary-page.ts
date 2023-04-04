@@ -27,10 +27,12 @@ export class UnitDiaryPage {
   #groupSelector = new Select(
     this.page.find('[data-qa="attendances-group-select"]')
   )
-  #absenceCell = (childId: UUID, date: LocalDate) =>
+  absenceCell = (childId: UUID, date: LocalDate) =>
     new AbsenceCell(
       this.page.findByDataQa(`absence-cell-${childId}-${date.formatIso()}`)
     )
+
+  nextWeekButton = this.page.findByDataQa('next-week')
 
   #staffAttendanceCells = this.page.findAll('[data-qa="staff-attendance-cell"]')
   #addAbsencesButton = this.page.find('[data-qa="add-absences-button"]')
@@ -49,7 +51,7 @@ export class UnitDiaryPage {
     type: AbsenceType | 'NO_ABSENCE',
     categories: AbsenceCategory[] = []
   ) {
-    await this.#absenceCell(childId, date).select()
+    await this.absenceCell(childId, date).select()
     await this.#addAbsencesButton.click()
 
     const modal = new AbsenceModal(this.page.find('[data-qa="absence-modal"]'))
@@ -66,7 +68,7 @@ export class UnitDiaryPage {
     type: AbsenceType,
     category: AbsenceCategory
   ) {
-    await this.#absenceCell(childId, date).assertAbsenceType(type, category)
+    await this.absenceCell(childId, date).assertAbsenceType(type, category)
   }
 
   async assertTooltipContains(
@@ -74,7 +76,7 @@ export class UnitDiaryPage {
     date: LocalDate,
     expectedTexts: string[]
   ) {
-    const tooltipText = await this.#absenceCell(
+    const tooltipText = await this.absenceCell(
       childId,
       date
     ).hoverAndGetTooltip()
@@ -86,7 +88,7 @@ export class UnitDiaryPage {
     date: LocalDate,
     category: AbsenceCategory
   ) {
-    await this.#absenceCell(childId, date).assertNoAbsence(category)
+    await this.absenceCell(childId, date).assertNoAbsence(category)
   }
 
   async fillStaffAttendance(n: number, staffCount: number) {
@@ -108,6 +110,8 @@ export class AbsenceCell extends Element {
     super(cell)
   }
 
+  missingHolidayReservation = this.findByDataQa('missing-holiday-reservation')
+
   async select() {
     await this.locator.click()
   }
@@ -116,11 +120,13 @@ export class AbsenceCell extends Element {
     type: AbsenceType | 'empty',
     category: AbsenceCategory
   ) {
-    await this.cell
-      .find(
-        `.absence-cell-${category === 'BILLABLE' ? 'right' : 'left'}-${type}`
-      )
-      .waitUntilVisible()
+    const position = category === 'BILLABLE' ? 'right' : 'left'
+    const positionAttr = `[data-position="${position}"]`
+    const absenceTypeAttr =
+      type === 'empty'
+        ? ':not([data-absence-type])'
+        : `[data-absence-type="${type}"]`
+    await this.cell.find(positionAttr + absenceTypeAttr).waitUntilVisible()
   }
 
   async assertNoAbsence(category: AbsenceCategory) {

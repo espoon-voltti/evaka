@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -47,7 +46,7 @@ data class DailyReservationRequest(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class Reservation {
+sealed class Reservation : Comparable<Reservation> {
     @JsonTypeName("NO_TIMES") object NoTimes : Reservation()
 
     @JsonTypeName("TIMES")
@@ -56,6 +55,16 @@ sealed class Reservation {
             if (endTime != LocalTime.of(0, 0) && startTime > endTime) {
                 throw IllegalArgumentException("Times must be in order")
             }
+        }
+    }
+
+    override fun compareTo(other: Reservation): Int {
+        return when {
+            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
+            this is NoTimes && other is NoTimes -> 0
+            this is NoTimes && other is Times -> -1
+            this is Times && other is NoTimes -> 1
+            else -> throw IllegalStateException("Unknown reservation type")
         }
     }
 
@@ -68,43 +77,6 @@ sealed class Reservation {
             } else {
                 throw IllegalArgumentException("Both start and end times must be null or not null")
             }
-    }
-}
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class ReservationSpan : Comparable<ReservationSpan> {
-    @JsonTypeName("NO_TIMES") data class NoTimes(val date: LocalDate) : ReservationSpan()
-
-    @JsonTypeName("TIMES")
-    data class Times(val startTime: HelsinkiDateTime, val endTime: HelsinkiDateTime) :
-        ReservationSpan() {
-        init {
-            if (startTime > endTime) {
-                throw IllegalArgumentException("Times must be in order")
-            }
-
-            // TODO: This broke in production, because Database.Read.getReservationSpans() can
-            // return results that span 2 nights
-            //
-            // val startDate = startTime.toLocalDate()
-            // val endDate = endTime.toLocalDate()
-            //
-            // if (endDate > startDate.plusDays(1)) {
-            //     throw IllegalArgumentException("Times can span at most one night")
-            // }
-        }
-    }
-
-    override fun compareTo(other: ReservationSpan): Int {
-        return when {
-            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
-            this is NoTimes && other is NoTimes -> this.date.compareTo(other.date)
-            this is NoTimes && other is Times ->
-                this.date.compareTo(other.startTime.toLocalDate()).let { if (it == 0) -1 else it }
-            this is Times && other is NoTimes ->
-                this.startTime.toLocalDate().compareTo(other.date).let { if (it == 0) 1 else it }
-            else -> throw IllegalStateException("Unknown reservation range type")
-        }
     }
 }
 

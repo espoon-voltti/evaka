@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useCallback, useMemo } from 'react'
+import styled, { css } from 'styled-components'
 
 import {
   AbsenceCategory,
@@ -11,38 +12,53 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { absenceColors } from 'lib-customizations/common'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
 
-interface AbsenceCellPartProps {
-  position: string
-  absenceType: CellPart['absenceType']
+const cellSize = 20
+
+const AbsenceCellPart = styled.div<{
+  $position: 'left' | 'right'
+  $absenceType: CellPart['absenceType']
+  $isWeekend: boolean
+  $isSelected: boolean
+}>`
+  position: absolute;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+  border-style: solid;
+  border-color: transparent;
+
+  ${(p) =>
+    !p.$isSelected &&
+    css`
+      border-width: ${partBorderWidth(p.$position)};
+      ${partColor(p.$position, p.$absenceType, p.$isWeekend)};
+    `};
+`
+
+function partBorderWidth(position: 'left' | 'right'): string {
+  return position === 'left'
+    ? `${cellSize}px ${cellSize}px 0 0`
+    : `0 0 ${cellSize}px ${cellSize}px`
+}
+
+function partColor(
+  position: 'left' | 'right',
+  absenceType: CellPart['absenceType'],
   isWeekend: boolean
-}
-
-function AbsenceCellPart({
-  position,
-  absenceType,
-  isWeekend
-}: AbsenceCellPartProps) {
-  const specificClass =
-    typeof absenceType !== 'undefined'
-      ? `absence-cell-${position}-${absenceType}`
+): string {
+  const pos = position === 'left' ? 'top' : 'bottom'
+  const color =
+    absenceType !== undefined
+      ? absenceColors[absenceType]
       : isWeekend
-      ? `absence-cell-${position}-weekend`
-      : `absence-cell-${position}-empty`
-  return <div className={`absence-cell-${position} ${specificClass}`} />
-}
-
-interface AbsenceCellProps {
-  childId: UUID
-  selectedCells: Cell[]
-  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
-  date: LocalDate
-  categories: AbsenceCategory[] | undefined
-  absences: AbsenceWithModifierInfo[] | undefined
-  backupCare: boolean
+      ? colors.grayscale.g15
+      : absenceColors.NO_ABSENCE
+  return `border-${pos}-color: ${color}`
 }
 
 const getCellId = (childId: UUID, date: LocalDate) =>
@@ -92,8 +108,16 @@ function getCellParts(
   })
 }
 
-export function DisabledCell() {
-  return <div className="absence-cell absence-cell-disabled" />
+interface AbsenceCellPartsProps {
+  id: UUID
+  childId: UUID
+  date: LocalDate
+  categories: AbsenceCategory[] | undefined
+  absences: AbsenceWithModifierInfo[] | undefined
+  backupCare: boolean
+  isSelected: boolean
+  isMissingHolidayReservation: boolean
+  toggle: (parts: CellPart[]) => void
 }
 
 const AbsenceCellParts = React.memo(function AbsenceCellParts({
@@ -103,12 +127,9 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   absences,
   backupCare,
   isSelected,
+  isMissingHolidayReservation,
   toggle
-}: AbsenceCellProps & {
-  id: UUID
-  isSelected: boolean
-  toggle: (parts: CellPart[]) => void
-}) {
+}: AbsenceCellPartsProps) {
   const parts = useMemo(
     () =>
       categories
@@ -122,34 +143,78 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
 
   const clickable = !backupCare
   return (
-    <div
-      className={`absence-cell ${isSelected ? 'absence-cell-selected' : ''}`}
+    <AbsenceCellDiv
+      $isSelected={isSelected}
       onClick={clickable ? () => toggle(parts) : undefined}
     >
       {parts.map(({ id: partId, absenceType, position }) => (
         <AbsenceCellPart
-          position={position}
-          absenceType={absenceType}
           key={partId}
-          isWeekend={date.isWeekend()}
+          $isSelected={isSelected}
+          $position={position}
+          $absenceType={absenceType}
+          $isWeekend={date.isWeekend()}
+          data-position={position}
+          data-absence-type={absenceType}
         />
       ))}
-    </div>
+      {!isSelected && isMissingHolidayReservation ? (
+        <MissingHolidayReservationMarker data-qa="missing-holiday-reservation" />
+      ) : null}
+    </AbsenceCellDiv>
   )
 })
+
+export const DisabledCell = styled.div`
+  position: relative;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+`
+
+const AbsenceCellDiv = styled(DisabledCell)<{ $isSelected: boolean }>`
+  ${(p) =>
+    p.$isSelected &&
+    css`
+      border: 2px solid ${colors.main.m2};
+      border-radius: 2px;
+    `};
+`
+
+const MissingHolidayReservationMarker = styled.div`
+  position: absolute;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+  border: 2px solid ${colors.status.warning};
+`
+
+interface AbsenceCellProps {
+  childId: UUID
+  selectedCells: Cell[]
+  missingHolidayReservations: LocalDate[]
+  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
+  date: LocalDate
+  categories: AbsenceCategory[] | undefined
+  absences: AbsenceWithModifierInfo[] | undefined
+  backupCare: boolean
+}
 
 export default React.memo(function AbsenceCell({
   childId,
   selectedCells,
+  missingHolidayReservations,
   toggleCellSelection,
   date,
   categories,
-  absences,
+  absences = [],
   backupCare
 }: AbsenceCellProps) {
   const { i18n } = useTranslation()
 
   const id = useMemo(() => getCellId(childId, date), [childId, date])
+  const isMissingHolidayReservation = useMemo(
+    () => missingHolidayReservations.some((d) => d.isEqual(date)),
+    [date, missingHolidayReservations]
+  )
   const isSelected = useMemo(
     () => selectedCells.some(({ id: selectedId }) => selectedId === id),
     [id, selectedCells]
@@ -159,7 +224,8 @@ export default React.memo(function AbsenceCell({
     () =>
       backupCare
         ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
-        : absences?.map(
+        : absences.length > 0
+        ? absences.map(
             ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
               <Fragment key={index}>
                 {index !== 0 && <br />}
@@ -170,8 +236,11 @@ export default React.memo(function AbsenceCell({
                 }`}
               </Fragment>
             )
-          ),
-    [absences, backupCare, i18n]
+          )
+        : isMissingHolidayReservation
+        ? i18n.absences.missingHolidayReservation
+        : undefined,
+    [absences, backupCare, i18n, isMissingHolidayReservation]
   )
 
   const toggle = useCallback(
@@ -189,13 +258,12 @@ export default React.memo(function AbsenceCell({
       <AbsenceCellParts
         id={id}
         childId={childId}
-        selectedCells={selectedCells}
-        toggleCellSelection={toggleCellSelection}
         date={date}
         categories={categories}
         absences={absences}
         backupCare={backupCare}
         isSelected={isSelected}
+        isMissingHolidayReservation={isMissingHolidayReservation}
         toggle={toggle}
       />
     </Tooltip>

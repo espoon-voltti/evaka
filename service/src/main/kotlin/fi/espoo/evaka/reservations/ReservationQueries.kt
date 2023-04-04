@@ -12,10 +12,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.lang.Exception
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -193,10 +190,16 @@ fun Database.Transaction.insertValidReservations(
     return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
 }
 
-fun Database.Read.getReservationSpans(
+private data class ReservationRow(
+    val childId: ChildId,
+    val startTime: LocalTime?,
+    val endTime: LocalTime?
+)
+
+fun Database.Read.getUnitReservations(
     unitId: DaycareId,
     date: LocalDate
-): Map<ChildId, List<ReservationSpan>> =
+): Map<ChildId, List<Reservation>> =
     createQuery(
             """
     WITH placed_children AS (
@@ -205,45 +208,21 @@ fun Database.Read.getReservationSpans(
         SELECT child_id FROM backup_care WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
     )
     SELECT
-        child.id AS child_id,
-        coalesce(real_start.date, res.date) AS start_date,
-        coalesce(real_start.start_time, res.start_time) AS start_time,
-        coalesce(real_end.date, res.date) AS end_date,
-        coalesce(real_end.end_time, res.end_time) AS end_time
+        pc.child_id,
+        ar.start_time,
+        ar.end_time
     FROM placed_children pc
-    JOIN attendance_reservation res ON res.child_id = pc.child_id AND res.date = :date
-    JOIN person child ON res.child_id = child.id
-    LEFT JOIN attendance_reservation real_start ON res.start_time = '00:00'::time AND res.child_id = real_start.child_id AND real_start.end_time = '23:59'::time AND res.date = real_start.date + 1
-    LEFT JOIN attendance_reservation real_end ON res.end_time = '23:59'::time AND res.child_id = real_end.child_id AND real_end.start_time = '00:00'::time AND res.date = real_end.date - 1
+    JOIN attendance_reservation ar ON ar.child_id = pc.child_id 
+    WHERE ar.date = :date
     """
                 .trimIndent()
         )
         .bind("unitId", unitId)
         .bind("date", date)
-        .map { ctx ->
-            val childId = ctx.mapColumn<ChildId>("child_id")
-            val startDate = ctx.mapColumn<LocalDate>("start_date")
-            val startTime = ctx.mapColumn<LocalTime?>("start_time")
-            val endDate = ctx.mapColumn<LocalDate>("end_date")
-            val endTime = ctx.mapColumn<LocalTime?>("end_time")
-
-            childId to
-                if (startTime != null && endTime != null) {
-                    ReservationSpan.Times(
-                        HelsinkiDateTime.of(startDate, startTime),
-                        HelsinkiDateTime.of(endDate, endTime)
-                    )
-                } else {
-                    if (startDate != endDate) {
-                        throw Exception(
-                            "BUG: Found adjacent reservations for a reservation with no times"
-                        )
-                    }
-                    ReservationSpan.NoTimes(startDate)
-                }
-        }
-        .groupBy { (childId, _) -> childId }
-        .mapValues { it.value.map { (_, reservation) -> reservation } }
+        .mapTo<ReservationRow>()
+        .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
+        .groupBy({ it.first }, { it.second })
+        .mapValues { (_, value) -> value.sorted() }
 
 fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,

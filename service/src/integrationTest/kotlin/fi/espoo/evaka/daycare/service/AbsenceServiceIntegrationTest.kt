@@ -7,6 +7,8 @@ package fi.espoo.evaka.daycare.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
+import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
+import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -1219,6 +1221,63 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
             result.children.find { it.child.id == childId }?.actualServiceNeeds!!
         )
+    }
+
+    @Test
+    fun `missing holiday reservations are shown correctly`() {
+        val today = LocalDate.of(2019, 9, 1)
+        val holidayStart = LocalDate.of(2019, 9, 9)
+        val holidayEnd = LocalDate.of(2019, 9, 15)
+        db.transaction { tx ->
+            tx.createHolidayPeriod(HolidayPeriodBody(FiniteDateRange(holidayStart, holidayEnd)))
+        }
+
+        insertGroupPlacement(childId)
+
+        db.transaction { tx ->
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = childId,
+                    date = holidayStart.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(testUserId.raw)
+                )
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = childId,
+                    date = holidayStart.plusDays(2),
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(testUserId.raw)
+                )
+            )
+
+            tx.upsertAbsences(
+                now,
+                EvakaUserId(testUserId.raw),
+                listOf(
+                    createAbsence(
+                        childId,
+                        AbsenceCategory.BILLABLE,
+                        AbsenceType.UNKNOWN_ABSENCE,
+                        holidayStart.plusDays(3),
+                    )
+                )
+            )
+        }
+
+        val result =
+            db.read { getAbsencesInGroupByMonth(it, groupId, today.year, today.monthValue) }
+
+        assertEquals(1, result.children.size)
+        result.children.first().let { child ->
+            assertEquals(
+                listOf(holidayStart, holidayStart.plusDays(4)),
+                child.missingHolidayReservations.sorted()
+            )
+        }
     }
 
     private fun insertChildAndGroupPlacement(

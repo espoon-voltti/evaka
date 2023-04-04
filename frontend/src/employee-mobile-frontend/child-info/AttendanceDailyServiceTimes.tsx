@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { ReservationSpan } from 'lib-common/generated/api-types/reservations'
+import { Reservation } from 'lib-common/generated/api-types/reservations'
 
 import { Reservations } from '../child-attendance/Reservations'
 import { ServiceTime } from '../common/components'
@@ -14,7 +14,7 @@ import { useTranslation } from '../common/i18n'
 
 interface Props {
   times: DailyServiceTimesValue | null
-  reservations: ReservationSpan[]
+  reservations: Reservation[]
 }
 
 export default React.memo(function AttendanceDailyServiceTimes({

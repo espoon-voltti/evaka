@@ -10,6 +10,8 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
+import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
+import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.EmployeeId
@@ -30,9 +32,10 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
@@ -55,7 +58,6 @@ class AttendanceReservationsControllerIntegrationTest :
     @Autowired lateinit var attendanceReservationController: AttendanceReservationController
 
     private val employeeId = EmployeeId(UUID.randomUUID())
-    private val clock = RealEvakaClock()
 
     private val mon = LocalDate.of(2021, 3, 1)
     private val tue = LocalDate.of(2021, 3, 2)
@@ -64,10 +66,19 @@ class AttendanceReservationsControllerIntegrationTest :
     private val fri = LocalDate.of(2021, 3, 5)
     private val monFri = FiniteDateRange(mon, fri)
 
+    private val now = HelsinkiDateTime.of(mon, LocalTime.of(10, 0))
+    private val clock = MockEvakaClock(now)
+
     private val unitOperationalDays =
         monFri
             .dates()
-            .map { UnitAttendanceReservations.OperationalDay(it, isHoliday = false) }
+            .map {
+                UnitAttendanceReservations.OperationalDay(
+                    it,
+                    isHoliday = false,
+                    isInHolidayPeriodWithFutureDeadline = false
+                )
+            }
             .toList()
 
     private val testGroup1 = DevDaycareGroup(daycareId = testDaycare.id, name = "Test group 1")
@@ -660,6 +671,63 @@ class AttendanceReservationsControllerIntegrationTest :
         assertEquals(emptyList(), attendanceReservations.ungrouped)
     }
 
+    @Test
+    fun `operational days for holiday period with upcoming deadline`() {
+        db.transaction { tx ->
+            tx.createHolidayPeriod(
+                HolidayPeriodBody(
+                    period = monFri,
+                    reservationDeadline = mon,
+                )
+            )
+        }
+
+        val result = getAttendanceReservations()
+        assertEquals(
+            monFri
+                .dates()
+                .map {
+                    UnitAttendanceReservations.OperationalDay(
+                        it,
+                        isHoliday = false,
+                        isInHolidayPeriodWithFutureDeadline = true
+                    )
+                }
+                .toList(),
+            result.operationalDays,
+        )
+    }
+
+    @Test
+    fun `operational days for holiday period with past deadline`() {
+        db.transaction { tx ->
+            tx.createHolidayPeriod(
+                HolidayPeriodBody(
+                    period = monFri,
+                    reservationDeadline = mon,
+                )
+            )
+        }
+
+        val result =
+            getAttendanceReservations(
+                clock = MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(10, 0)))
+            )
+        assertEquals(
+            monFri
+                .dates()
+                .map {
+                    UnitAttendanceReservations.OperationalDay(
+                        it,
+                        isHoliday = false,
+                        isInHolidayPeriodWithFutureDeadline = false
+                    )
+                }
+                .toList(),
+            result.operationalDays,
+        )
+    }
+
     private fun emptyChildRecords(
         period: FiniteDateRange
     ): Map<LocalDate, UnitAttendanceReservations.ChildRecordOfDay> =
@@ -678,7 +746,9 @@ class AttendanceReservationsControllerIntegrationTest :
             }
             .toMap()
 
-    private fun getAttendanceReservations(): UnitAttendanceReservations =
+    private fun getAttendanceReservations(
+        clock: EvakaClock = this.clock
+    ): UnitAttendanceReservations =
         attendanceReservationController.getAttendanceReservations(
             dbInstance(),
             AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),

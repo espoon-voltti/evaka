@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializeFixedPeriodQuestionnaire,
   deserializeHolidayPeriod
@@ -18,90 +17,72 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../../api/client'
 
-export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {
+export function getHolidayPeriods(): Promise<HolidayPeriod[]> {
   return client
     .get<JsonOf<HolidayPeriod[]>>('/holiday-period')
-    .then((res) => Success.of(res.data.map(deserializeHolidayPeriod)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data.map(deserializeHolidayPeriod))
 }
 
-export function getHolidayPeriod(id: UUID): Promise<Result<HolidayPeriod>> {
+export function getHolidayPeriod(id: UUID): Promise<HolidayPeriod> {
   return client
     .get<JsonOf<HolidayPeriod>>(`/holiday-period/${id}`)
-    .then((res) => Success.of(deserializeHolidayPeriod(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => deserializeHolidayPeriod(res.data))
 }
 
-export function createHolidayPeriod(
+export function createHolidayPeriod(data: HolidayPeriodBody): Promise<void> {
+  return client.post('/holiday-period', data).then(() => undefined)
+}
+
+export function updateHolidayPeriod({
+  id,
+  data
+}: {
+  id: UUID
   data: HolidayPeriodBody
-): Promise<Result<void>> {
-  return client
-    .post('/holiday-period', data)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+}): Promise<void> {
+  return client.put(`/holiday-period/${id}`, data).then(() => undefined)
 }
 
-export function updateHolidayPeriod(
-  id: UUID,
-  data: HolidayPeriodBody
-): Promise<Result<void>> {
-  return client
-    .put(`/holiday-period/${id}`, data)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+export function deleteHolidayPeriod(id: UUID): Promise<void> {
+  return client.delete(`/holiday-period/${id}`).then(() => undefined)
 }
 
-export function deleteHolidayPeriod(id: UUID): Promise<Result<void>> {
-  return client
-    .delete(`/holiday-period/${id}`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export function getQuestionnaires(): Promise<
-  Result<FixedPeriodQuestionnaire[]>
-> {
+export function getQuestionnaires(): Promise<FixedPeriodQuestionnaire[]> {
   return client
     .get<JsonOf<FixedPeriodQuestionnaire[]>>('/holiday-period/questionnaire')
     .then((res) => res.data.map(deserializeFixedPeriodQuestionnaire))
-    .then((val) => Success.of(val))
-    .catch((e) => Failure.fromError(e))
 }
 
-export function getQuestionnaire(
-  id: UUID
-): Promise<Result<FixedPeriodQuestionnaire>> {
+export function getQuestionnaire(id: UUID): Promise<FixedPeriodQuestionnaire> {
   return client
     .get<JsonOf<FixedPeriodQuestionnaire>>(
       `/holiday-period/questionnaire/${id}`
     )
     .then((res) => deserializeFixedPeriodQuestionnaire(res.data))
-    .then((val) => Success.of(val))
-    .catch((e) => Failure.fromError(e))
 }
 
 export function createFixedPeriodQuestionnaire(
   data: FixedPeriodQuestionnaireBody
-): Promise<Result<void>> {
+): Promise<void> {
   return client
     .post(`/holiday-period/questionnaire`, data)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
-export function updateFixedPeriodQuestionnaire(
-  id: UUID,
+export function updateFixedPeriodQuestionnaire({
+  id,
+  data
+}: {
+  id: UUID
   data: FixedPeriodQuestionnaireBody
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
     .put(`/holiday-period/questionnaire/${id}`, data)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
-export function deleteQuestionnaire(id: UUID): Promise<Result<void>> {
+export function deleteQuestionnaire(id: UUID): Promise<void> {
   return client
     .delete(`/holiday-period/questionnaire/${id}`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }

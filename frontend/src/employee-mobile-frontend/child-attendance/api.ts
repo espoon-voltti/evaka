@@ -13,10 +13,10 @@ import {
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { ReservationSpan } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { parseReservation } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
@@ -209,26 +209,12 @@ function deserializeChildren(data: JsonOf<Child[]>): Child[] {
         modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
         expires: LocalDate.parseIso(note.expires)
       })),
-      reservations: child.reservations.map(deserializeReservationSpan),
+      reservations: child.reservations.map(parseReservation),
       dailyServiceTimes: child.dailyServiceTimes
         ? parseDailyServiceTimes(child.dailyServiceTimes)
         : null
     }))
     .sort((a, b) => compareByProperty(a, b, 'firstName'))
-}
-
-function deserializeReservationSpan(
-  data: JsonOf<ReservationSpan>
-): ReservationSpan {
-  if (data.type === 'NO_TIMES') {
-    return { ...data, date: LocalDate.parseIso(data.date) }
-  } else {
-    return {
-      ...data,
-      startTime: HelsinkiDateTime.parseIso(data.startTime),
-      endTime: HelsinkiDateTime.parseIso(data.endTime)
-    }
-  }
 }
 
 function deserializeChildAttendanceStatusResponse(

@@ -21,6 +21,7 @@ import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
+import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
@@ -105,14 +106,14 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
     operationDays.some((operationDay) => operationDay.isEqual(date))
 
   return (
-    <Tr className="staff-attendance-row">
-      <Td>{i18n.absences.table.staffRow}</Td>
+    <StaffAttendanceTr>
+      <StaffAttendanceTd>{i18n.absences.table.staffRow}</StaffAttendanceTd>
       {daysOfMonth.map((date) => {
         const staffCount = groupAttendances
           .map(({ attendances }) => attendances.get(date.toString()))
           .map((attendance) => attendance?.count)
         return (
-          <Td key={date.toString()}>
+          <StaffAttendanceTd key={date.toString()}>
             {!isOperational(date) ||
             !staffCount.isSuccess ||
             isLoading(staffCount) ? (
@@ -126,7 +127,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
                 updateAttendance={updateAttendance}
               />
             )}
-          </Td>
+          </StaffAttendanceTd>
         )
       })}
       {emptyCols.map((item) => (
@@ -134,9 +135,18 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
           <DisabledCell />
         </Td>
       ))}
-    </Tr>
+    </StaffAttendanceTr>
   )
 })
+
+const StaffAttendanceTr = styled(Tr)`
+  font-weight: ${fontWeights.semibold};
+`
+
+const StaffAttendanceTd = styled(Td)`
+  cursor: default;
+  vertical-align: middle;
+`
 
 const DisabledStaffIcon = styled(FontAwesomeIcon)`
   font-size: 15px;
@@ -146,16 +156,22 @@ const DisabledStaffIcon = styled(FontAwesomeIcon)`
 const InactiveCell = React.memo(function InactiveCell() {
   const { i18n } = useTranslation()
   return (
-    <div className="absence-cell disabled-staff-cell-container">
+    <InactiveCellContainer>
       <Tooltip
         tooltip={i18n.absences.table.disabledStaffCellTooltip}
         position="top"
       >
         <DisabledStaffIcon icon={faTimes} />
       </Tooltip>
-    </div>
+    </InactiveCellContainer>
   )
 })
+
+const InactiveCellContainer = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+`
 
 interface StaffAttendanceCellProps {
   date: LocalDate
@@ -205,13 +221,9 @@ const StaffAttendanceCell = React.memo(function StaffAttendanceCell({
   )
 
   return (
-    <div
-      className="field staff-attendance-cell"
-      data-qa="staff-attendance-cell"
-      data-state={state}
-    >
-      <div className="control">
-        <input
+    <div data-qa="staff-attendance-cell" data-state={state}>
+      <div>
+        <StaffAttendanceInput
           className="input"
           value={value}
           onChange={handleChange}
@@ -221,3 +233,33 @@ const StaffAttendanceCell = React.memo(function StaffAttendanceCell({
     </div>
   )
 })
+
+const StaffAttendanceInput = styled.input`
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  /* disable spin buttons Firefox */
+  -moz-appearance: textfield;
+  text-align: center;
+  margin: 0 auto;
+  padding: 0;
+  font-weight: ${fontWeights.semibold};
+  font-size: 0.8rem;
+  height: 20px;
+  width: 20px;
+  border-color: ${colors.grayscale.g35};
+  color: ${colors.grayscale.g100};
+  display: block;
+  box-shadow: none;
+  max-width: 100%;
+  min-height: 2.5em;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  background-color: transparent;
+
+  @media print {
+    border: none;
+  }
+`
