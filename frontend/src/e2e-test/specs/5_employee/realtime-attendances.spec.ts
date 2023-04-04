@@ -424,12 +424,12 @@ describe('Realtime staff attendances', () => {
     })
     test('Departure time is required when editing days that are not today', async () => {
       await prepareTest({
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+        arrived: mockedToday.subDays(2).toHelsinkiDateTime(LocalTime.of(7, 0))
       })
 
       const modal = await staffAttendances.openDetails(
         1,
-        mockedToday.addDays(1)
+        mockedToday.subDays(1)
       )
       await modal.setArrivalTime(0, '08:00')
       await waitUntilEqual(() => modal.departureTimeInfo(0), 'Pakollinen tieto')
