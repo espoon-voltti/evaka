@@ -68,6 +68,7 @@ fun getAbsencesInGroupByMonth(
     val missingHolidayReservations =
         getMissingHolidayReservations(
             placementList.keys.map { it.id },
+            actualServiceNeeds,
             absenceList,
             reservations,
             setOfOperationalDays,
@@ -200,6 +201,7 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
 
 private fun getMissingHolidayReservations(
     childIds: List<ChildId>,
+    serviceNeeds: Map<ChildId, List<ChildServiceNeedInfo>>,
     absences: Map<ChildId, List<AbsenceWithModifierInfo>>,
     reservations: Map<ChildId, List<ChildReservation>>,
     unitOperationalDates: Set<LocalDate>,
@@ -211,7 +213,11 @@ private fun getMissingHolidayReservations(
         val reservedDates = reservations[childId]?.map { it.date } ?: listOf()
         val absenceDates = absences[childId]?.map { it.date } ?: listOf()
         val answeredDates = (reservedDates + absenceDates).toSet()
-        (holidayDates - answeredDates).toList()
+
+        val datesWithServiceNeed = serviceNeeds[childId]?.flatMap { it.validDuring.dates() }?.toSet() ?: emptySet()
+        val datesRequiringAnswer = holidayDates.intersect(datesWithServiceNeed)
+
+        (datesRequiringAnswer - answeredDates).toList()
     }
 }
 

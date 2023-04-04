@@ -11,6 +11,7 @@ import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
 import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -1232,7 +1233,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.createHolidayPeriod(HolidayPeriodBody(FiniteDateRange(holidayStart, holidayEnd)))
         }
 
-        insertGroupPlacement(childId)
+        insertGroupPlacement(childId, serviceNeedOption = snDaycareFullDay35)
 
         db.transaction { tx ->
             tx.insertTestReservation(
@@ -1295,11 +1296,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun insertGroupPlacement(
         childId: ChildId,
         placementType: PlacementType = PlacementType.DAYCARE,
-        placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd)
+        placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd),
+        serviceNeedOption: ServiceNeedOption? = null
     ) {
-        db.transaction {
+        db.transaction { tx ->
             val daycarePlacementId =
-                it.insertTestPlacement(
+                tx.insertTestPlacement(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
@@ -1308,12 +1310,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         endDate = placementPeriod.end
                     )
                 )
-            it.insertTestDaycareGroupPlacement(
+            tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
                 startDate = placementPeriod.start,
                 endDate = placementPeriod.end
             )
+            serviceNeedOption?.let { tx.insertServiceNeed(
+                placementId = daycarePlacementId,
+                startDate = placementPeriod.start,
+                endDate = placementPeriod.end,
+                optionId = it.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            ) }
         }
     }
 
