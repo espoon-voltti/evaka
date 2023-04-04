@@ -89,6 +89,56 @@ export function useForm<F extends AnyForm>(
   )
 }
 
+export function useFormFields<F extends AnyForm>({
+  form,
+  state,
+  update,
+  translateError
+}: BoundForm<F>): { [K in keyof ShapeOf<F>]: BoundForm<ShapeOf<F>[K]> } {
+  const fieldShapes = useMemo(() => Object.entries(form.shape), [form.shape])
+
+  const fieldCallbacks = useMemo(
+    () =>
+      Object.fromEntries(
+        fieldShapes.map(([key]) => {
+          const fieldUpdate = (
+            fn: (prev: StateOf<F>) => StateOf<F>[number]
+          ) => {
+            update((prevState) => ({
+              ...prevState,
+              [key]: fn(prevState[key])
+            }))
+          }
+          const fieldSet = (value: StateOf<F>[number]) =>
+            fieldUpdate(() => value)
+          return [key, { fieldUpdate, fieldSet }]
+        })
+      ),
+    [fieldShapes, update]
+  )
+
+  return useMemo(
+    () =>
+      Object.fromEntries(
+        fieldShapes.map(([key, field]) => [
+          key,
+          {
+            form: field,
+            state: state[key],
+            update: fieldCallbacks[key].fieldUpdate,
+            set: fieldCallbacks[key].fieldSet,
+            ...validationHelpers(
+              () => state[key],
+              form.shape[key].validate,
+              translateError
+            )
+          }
+        ])
+      ) as any,
+    [fieldCallbacks, fieldShapes, form.shape, state, translateError]
+  )
+}
+
 export function useFormField<F extends AnyForm, K extends keyof ShapeOf<F>>(
   { form, state, update, translateError }: BoundForm<F>,
   key: K

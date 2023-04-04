@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { useForm, useFormField } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
 import {
   DailyReservationData,
@@ -142,9 +142,7 @@ export default React.memo(function ReservationModal({
     }
   )
 
-  const selectedChildren = useFormField(form, 'selectedChildren')
-  const repetition = useFormField(form, 'repetition')
-  const dateRange = useFormField(form, 'dateRange')
+  const { selectedChildren, repetition, dateRange } = useFormFields(form)
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
