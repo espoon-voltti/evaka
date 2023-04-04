@@ -55,7 +55,6 @@ internal val vardaPlacementTypes =
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
         PlacementType.PRESCHOOL_DAYCARE,
-        PlacementType.PRESCHOOL_CLUB,
         PlacementType.PREPARATORY_DAYCARE
     )
 internal val vardaTemporaryPlacementTypes =
