@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -36,7 +37,7 @@ let unitSupervisor: EmployeeDetail
 let nonGroupStaff: EmployeeDetail
 let groupStaff: EmployeeDetail
 
-const mockedToday = LocalDate.of(2022, 3, 28)
+const mockedToday = LocalDate.of(2022, 3, 30)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId = uuidv4()
@@ -119,7 +120,7 @@ beforeEach(async () => {
   page = await Page.open({
     viewport: { width: 1440, height: 720 },
     mockedTime: mockedToday
-      .toHelsinkiDateTime(LocalTime.of(12, 0))
+      .toHelsinkiDateTime(LocalTime.of(18, 0))
       .toSystemTzDate()
   })
 
@@ -177,10 +178,10 @@ describe('Realtime staff attendances', () => {
           employeeId: nonGroupStaff.id,
           groupId,
           arrived: mockedToday
-            .subDays(1)
+            .subDays(3)
             .toHelsinkiDateTime(LocalTime.of(7, 0)),
           departed: mockedToday
-            .subDays(1)
+            .subDays(3)
             .toHelsinkiDateTime(LocalTime.of(15, 0))
         })
         .save()
@@ -221,6 +222,7 @@ describe('Realtime staff attendances', () => {
 
       await staffAttendances.assertTableRow({
         rowIx: 0,
+        nth: 2,
         name: staffName(groupStaff),
         plannedAttendances: [['07:00', '15:00']],
         attendances: [['07:03', '–']]
@@ -230,7 +232,7 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => modal.summary(), {
         plan: '07:00 – 15:00',
         realized: '07:03 –',
-        hours: '4:57 (-3:03)'
+        hours: '10:57 (+2:57)'
       })
     })
 
@@ -250,6 +252,7 @@ describe('Realtime staff attendances', () => {
 
       await staffAttendances.assertTableRow({
         rowIx: 0,
+        nth: 2,
         name: staffName(nonGroupStaff),
         attendances: [['07:00', '12:15']]
       })
@@ -258,28 +261,32 @@ describe('Realtime staff attendances', () => {
   describe('Details modal', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
-    beforeEach(async () => {
+    async function prepareTest({ arrived }: { arrived: HelsinkiDateTime }) {
       await Fixture.realtimeStaffAttendance()
         .with({
           employeeId: groupStaff.id,
           groupId,
-          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          arrived,
           departed: null
         })
         .save()
-
       attendancesSection = await openAttendancesSection()
       await attendancesSection.selectGroup('staff')
       staffAttendances = attendancesSection.staffAttendances
-    })
+    }
+
     test('An existing entry can be edited', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
       let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 0,
+        nth: 2,
         attendances: [['07:00', '15:00']]
       })
 
@@ -291,22 +298,26 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('An existing overnight entry can be edited', async () => {
-      let modal = await staffAttendances.openDetails(1, mockedToday.addDays(1))
+      await prepareTest({
+        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
+      let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '16:00')
       await modal.save()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 0,
+        nth: 1,
         attendances: [['07:00', '→']]
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 1,
+        nth: 2,
         attendances: [['→', '16:00']]
       })
 
-      modal = await staffAttendances.openDetails(1, mockedToday.addDays(1))
+      modal = await staffAttendances.openDetails(1, mockedToday)
       await waitUntilEqual(() => modal.summary(), {
         plan: '–',
         realized: '→ – 16:00',
@@ -314,18 +325,22 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('If departure is earlier than arrival, departure is on the next day', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
       let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '06:00')
       await modal.save()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 0,
+        nth: 2,
         attendances: [['07:00', '→']]
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 1,
+        nth: 3,
         attendances: [['→', '06:00']]
       })
 
@@ -337,6 +352,10 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('Multiple new entries can be added', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
       let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '12:00')
       await modal.addNewAttendance()
@@ -362,7 +381,7 @@ describe('Realtime staff attendances', () => {
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 0,
+        nth: 2,
         attendances: [
           ['07:00', '12:00'],
           ['13:00', '14:30']
@@ -377,6 +396,10 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('Gaps in attendances are warned about', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '12:00')
       await modal.addNewAttendance()
@@ -400,6 +423,10 @@ describe('Realtime staff attendances', () => {
       )
     })
     test('Departure time is required when editing days that are not today', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
       const modal = await staffAttendances.openDetails(
         1,
         mockedToday.addDays(1)
@@ -408,6 +435,10 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => modal.departureTimeInfo(0), 'Pakollinen tieto')
     })
     test('Departure time is NOT required when editing today', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      })
+
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setArrivalTime(0, '')
       await waitUntilEqual(() => modal.arrivalTimeInfo(0), 'Pakollinen tieto')
@@ -459,12 +490,12 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
 
       await attendancesSection.selectGroup(groupId)
-      await waitUntilEqual(() => staffAttendances.personCountSum(0), '2 hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(1), '– hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(2), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(1), '1 hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(2), '2 hlö')
       await waitUntilEqual(() => staffAttendances.personCountSum(3), '– hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(4), '1 hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(5), '1 hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(4), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(5), '– hlö')
     })
   })
   describe('External staff members', () => {
@@ -485,6 +516,7 @@ describe('Realtime staff attendances', () => {
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
+        nth: 2,
         name: 'Sijainen Saija',
         attendances: [['11:00', '–']]
       })
@@ -496,6 +528,7 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => staffAttendances.rowCount, 2)
       await staffAttendances.assertTableRow({
         rowIx: 1,
+        nth: 2,
         name: 'Sijainen Saija',
         attendances: [['11:00', '13:00']]
       })
@@ -509,20 +542,20 @@ describe('Realtime staff attendances', () => {
 
     test('Can an add multiple entries to an external', async () => {
       const addPersonModal = await attendancesSection.clickAddPersonButton()
-      await addPersonModal.setArrivalDate(mockedToday.format())
+      await addPersonModal.setArrivalDate(mockedToday.subDays(2).format())
       await addPersonModal.setArrivalTime('11:00')
       await addPersonModal.setDepartureTime('13:00')
       await addPersonModal.typeName('Sijainen Saija')
       await addPersonModal.selectGroup(groupId)
       await addPersonModal.save()
 
-      let modal = await staffAttendances.openDetails(1, mockedToday.addDays(1))
+      let modal = await staffAttendances.openDetails(1, mockedToday.subDays(1))
       await modal.addNewAttendance()
       await modal.setArrivalTime(0, '08:00')
       await modal.setDepartureTime(0, '12:30')
       await modal.save()
 
-      modal = await staffAttendances.openDetails(1, mockedToday.addDays(2))
+      modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.addNewAttendance()
       await modal.setArrivalTime(0, '09:00')
       await modal.setDepartureTime(0, '17:30')
@@ -558,6 +591,7 @@ describe('Realtime staff attendances', () => {
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
+        nth: 2,
         name: 'Sijainen Saija',
         attendances: [['11:00', '16:00']]
       })
@@ -569,7 +603,6 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.setArrivalTime('9:99')
       await addPersonModal.typeName('S')
       await addPersonModal.selectGroup(groupId)
-      await addPersonModal.save()
 
       await addPersonModal.timeErrorVisible()
       await addPersonModal.nameErrorVisible()

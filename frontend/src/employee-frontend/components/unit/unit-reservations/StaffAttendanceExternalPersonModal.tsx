@@ -4,12 +4,14 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
+import { localDate, localTime, string } from 'lib-common/form/fields'
+import { object, oneOf, required, validated } from 'lib-common/form/form'
+import { useForm, useFormField } from 'lib-common/form/hooks'
+import { StateOf } from 'lib-common/form/types'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -18,17 +20,18 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
-import InputField, {
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import {
+  InputFieldF,
   InputFieldUnderRow
 } from 'lib-components/atoms/form/InputField'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -36,73 +39,6 @@ import { faPlus } from 'lib-icons'
 
 import { postStaffAndExternalAttendances } from '../../../api/staff-attendance'
 import { useTranslation } from '../../../state/i18n'
-import { isTimeValid } from '../../../utils/validation/validations'
-
-type FormState = {
-  date: LocalDate | null
-  arrivalTime: string
-  departureTime: string
-  name: string
-  groupId: UUID
-}
-
-const initialFormState = (groupId: UUID): FormState => ({
-  date: LocalDate.todayInHelsinkiTz(),
-  arrivalTime: LocalTime.nowInHelsinkiTz().format(),
-  departureTime: '',
-  name: '',
-  groupId
-})
-
-const validateForm = (
-  attendanceId: UUID | null,
-  formState: FormState
-):
-  | [UpsertStaffAndExternalAttendanceRequest]
-  | [undefined, ErrorsOf<FormState>] => {
-  const errors: ErrorsOf<FormState> = {
-    date: !formState.date ? 'required' : undefined,
-    arrivalTime: !formState.arrivalTime
-      ? 'timeRequired'
-      : isTimeValid(formState.arrivalTime)
-      ? undefined
-      : 'timeFormat',
-    departureTime: !formState.departureTime
-      ? undefined
-      : isTimeValid(formState.departureTime)
-      ? undefined
-      : 'timeFormat',
-    name: formState.name.length < 3 ? 'required' : undefined,
-    groupId: !formState.groupId ? 'required' : undefined
-  }
-
-  if (getErrorCount(errors) > 0 || !formState.date) {
-    return [undefined, errors]
-  }
-
-  return [
-    {
-      externalAttendances: [
-        {
-          attendanceId,
-          arrived: HelsinkiDateTime.fromLocal(
-            formState.date,
-            LocalTime.parse(formState.arrivalTime)
-          ),
-          departed: formState.departureTime
-            ? HelsinkiDateTime.fromLocal(
-                formState.date,
-                LocalTime.parse(formState.departureTime)
-              )
-            : null,
-          name: formState.name,
-          groupId: formState.groupId
-        }
-      ],
-      staffAttendances: []
-    }
-  ]
-}
 
 type ExternalPersonModalProps = {
   onClose: () => void
@@ -110,6 +46,40 @@ type ExternalPersonModalProps = {
   unitId: UUID
   groups: DaycareGroup[]
   defaultGroupId: UUID
+}
+
+const externalPersonForm = object({
+  date: validated(required(localDate), (value) =>
+    value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
+  ),
+  arrivalTime: required(localTime),
+  departureTime: localTime,
+  name: validated(string(), (value) =>
+    value.length < 3 ? 'required' : undefined
+  ),
+  group: required(oneOf<UUID>())
+})
+
+function initialFormState(
+  groups: DaycareGroup[],
+  defaultGroupId: UUID
+): StateOf<typeof externalPersonForm> {
+  const groupOptions = groups.filter(isGroupOpen).map((group) => ({
+    value: group.id,
+    label: group.name,
+    domValue: group.id
+  }))
+
+  return {
+    date: LocalDate.todayInHelsinkiTz(),
+    arrivalTime: LocalTime.nowInHelsinkiTz().format(),
+    departureTime: '',
+    name: '',
+    group: {
+      options: groupOptions,
+      domValue: defaultGroupId
+    }
+  }
 }
 
 export default React.memo(function StaffAttendanceExternalPersonModal({
@@ -121,22 +91,43 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
 }: ExternalPersonModalProps) {
   const { i18n, lang } = useTranslation()
 
-  const [formData, setFormData] = useState<FormState>(
-    initialFormState(defaultGroupId)
-  )
-
-  const [requestBody, errors] = useMemo(
-    () => validateForm(null, formData),
-    [formData]
+  const form = useForm(
+    externalPersonForm,
+    () => initialFormState(groups, defaultGroupId),
+    i18n.validationErrors
   )
 
   const submit = useCallback(() => {
-    if (requestBody === undefined)
-      return Promise.reject(Failure.of({ message: 'validation error' }))
+    const formValue = form.value()
+    const requestBody: UpsertStaffAndExternalAttendanceRequest = {
+      externalAttendances: [
+        {
+          attendanceId: null,
+          arrived: HelsinkiDateTime.fromLocal(
+            formValue.date,
+            formValue.arrivalTime
+          ),
+          departed: formValue.departureTime
+            ? HelsinkiDateTime.fromLocal(
+                formValue.date,
+                formValue.departureTime
+              )
+            : null,
+          name: formValue.name,
+          groupId: formValue.group
+        }
+      ],
+      staffAttendances: []
+    }
     return postStaffAndExternalAttendances(unitId, requestBody)
-  }, [requestBody, unitId])
+  }, [form, unitId])
 
-  const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
+  const date = useFormField(form, 'date')
+  const arrivalTime = useFormField(form, 'arrivalTime')
+  const departureTime = useFormField(form, 'departureTime')
+  const name = useFormField(form, 'name')
+  const group = useFormField(form, 'group')
+  const groupError = group.validationError()
 
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-add-person-modal">
@@ -154,56 +145,19 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
             {i18n.unit.staffAttendance.addPersonModal.arrival}
           </FieldLabel>
           <FixedSpaceRow>
-            <DatePicker
-              date={formData.date}
+            <DatePickerF
+              bind={date}
               locale={lang}
-              onChange={(date) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date: date
-                }))
-              }
               data-qa="add-person-arrival-date-picker"
-              required
-              info={
-                errors?.date && {
-                  text: i18n.validationErrors[errors.date],
-                  status: 'warning'
-                }
-              }
             />
-            <TimeInput
-              value={formData.arrivalTime}
-              onChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  arrivalTime: value
-                }))
-              }
+            <TimeInputF
+              bind={arrivalTime}
               data-qa="add-person-arrival-time-input"
-              info={
-                errors?.arrivalTime && {
-                  text: i18n.validationErrors[errors.arrivalTime],
-                  status: 'warning'
-                }
-              }
             />
             {' – '}
-            <TimeInput
-              value={formData.departureTime}
-              onChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  departureTime: value
-                }))
-              }
+            <TimeInputF
+              bind={departureTime}
               data-qa="add-person-departure-time-input"
-              info={
-                errors?.departureTime && {
-                  text: i18n.validationErrors[errors.departureTime],
-                  status: 'warning'
-                }
-              }
             />
           </FixedSpaceRow>
         </div>
@@ -211,20 +165,12 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           <FieldLabel>
             {i18n.unit.staffAttendance.addPersonModal.name}
           </FieldLabel>
-          <InputField
-            value={formData.name}
+          <InputFieldF
+            bind={name}
             placeholder={
               i18n.unit.staffAttendance.addPersonModal.namePlaceholder
             }
-            onChange={(val) => setFormData((prev) => ({ ...prev, name: val }))}
             data-qa="add-person-name-input"
-            required
-            info={
-              errors?.name && {
-                text: i18n.validationErrors[errors.name],
-                status: 'warning'
-              }
-            }
           />
         </div>
 
@@ -232,24 +178,14 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           <FieldLabel>
             {i18n.unit.staffAttendance.addPersonModal.group}
           </FieldLabel>
-          <Select
-            items={openGroups}
-            selectedItem={
-              openGroups.find(({ id }) => id === formData.groupId) ?? null
-            }
-            onChange={(group) => {
-              if (group !== null) {
-                setFormData((prev) => ({ ...prev, groupId: group.id }))
-              }
-            }}
-            getItemValue={({ id }) => id}
-            getItemLabel={({ name }) => name}
+          <SelectF
+            bind={group}
             placeholder={i18n.common.select}
             data-qa="add-person-group-select"
           />
-          {errors?.groupId && (
+          {groupError && (
             <InputFieldUnderRow className={classNames('warning')}>
-              <span>{i18n.validationErrors[errors.groupId]}</span>
+              <span>{group.translateError(groupError)}</span>
               <StatusIcon status="warning" />
             </InputFieldUnderRow>
           )}
@@ -265,6 +201,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           <InlineAsyncButton
             text={i18n.unit.staffAttendance.addPerson}
             data-qa="add-person-save-btn"
+            disabled={!form.isValid()}
             onClick={submit}
             onSuccess={onSave}
           />
