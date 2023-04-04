@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -112,6 +112,7 @@ FROM (
     FROM generate_series(${bind(range.start)}, ${bind(range.end)}, '1 day') t
     JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> t::date
     JOIN daycare d ON p.unit_id = d.id
+    JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
     LEFT JOIN holiday h ON t::date = h.date AND NOT d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
     WHERE date_part('isodow', t::date) = ANY(d.operation_days)
     AND h.date IS NULL
