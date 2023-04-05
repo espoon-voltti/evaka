@@ -12,11 +12,13 @@ import {
   DaycareBuilder,
   daycareFixture,
   daycareGroupFixture,
+  EmployeeBuilder,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
   Fixture,
-  PersonBuilder
+  PersonBuilder,
+  ServiceNeedOptionBuilder
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -32,6 +34,8 @@ const period = new FiniteDateRange(
 const child = enduserChildFixtureJari
 const mockedDate = LocalDate.of(2035, 12, 1)
 let daycare: DaycareBuilder
+let unitSupervisor: EmployeeBuilder
+let serviceNeedOption: ServiceNeedOptionBuilder
 let guardian: PersonBuilder
 
 const holidayQuestionnaireFixture = () =>
@@ -101,16 +105,30 @@ beforeEach(async () => {
     .save()
   await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
 
+  serviceNeedOption = await Fixture.serviceNeedOption()
+    .with({ validPlacementType: 'DAYCARE' })
+    .save()
+  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.data.id).save()
+
   guardian = await Fixture.person().with(enduserGuardianFixture).save()
   const child1 = await Fixture.person().with(child).save()
   await Fixture.child(child1.data.id).save()
   await Fixture.guardian(child1, guardian).save()
-  await Fixture.placement()
+  const placement = await Fixture.placement()
     .child(child1)
     .daycare(daycare)
     .with({
       startDate: LocalDate.of(2022, 1, 1).formatIso(),
       endDate: LocalDate.of(2036, 6, 30).formatIso()
+    })
+    .save()
+  await Fixture.serviceNeed()
+    .with({
+      placementId: placement.data.id,
+      startDate: placement.data.startDate,
+      endDate: placement.data.endDate,
+      optionId: serviceNeedOption.data.id,
+      confirmedBy: unitSupervisor.data.id
     })
     .save()
 })
@@ -122,12 +140,21 @@ async function setupAnotherChild(
   const child2 = await Fixture.person().with(enduserChildFixtureKaarina).save()
   await Fixture.child(child2.data.id).save()
   await Fixture.guardian(child2, guardian).save()
-  await Fixture.placement()
+  const placement = await Fixture.placement()
     .child(child2)
     .daycare(daycare)
     .with({
       startDate: startDate.formatIso(),
       endDate: endDate.formatIso()
+    })
+    .save()
+  await Fixture.serviceNeed()
+    .with({
+      placementId: placement.data.id,
+      startDate: placement.data.startDate,
+      endDate: placement.data.endDate,
+      optionId: serviceNeedOption.data.id,
+      confirmedBy: unitSupervisor.data.id
     })
     .save()
 

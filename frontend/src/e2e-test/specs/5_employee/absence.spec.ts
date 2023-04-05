@@ -28,6 +28,10 @@ beforeEach(async () => {
   await insertDefaultServiceNeedOptions()
   const group = await Fixture.daycareGroup().with(daycareGroupFixture).save()
 
+  const unitSupervisor = await Fixture.employeeUnitSupervisor(
+    fixtures.daycareFixture.id
+  ).save()
+
   await Fixture.placement()
     .with({
       childId: fixtures.enduserChildFixtureJari.id,
@@ -45,14 +49,22 @@ beforeEach(async () => {
       endDate: today.addYears(1).formatIso()
     })
     .save()
+  const serviceNeedOption = await Fixture.serviceNeedOption()
+    .with({ validPlacementType: kaarinaPlacement.data.type })
+    .save()
+  await Fixture.serviceNeed()
+    .with({
+      placementId: kaarinaPlacement.data.id,
+      startDate: kaarinaPlacement.data.startDate,
+      endDate: kaarinaPlacement.data.endDate,
+      optionId: serviceNeedOption.data.id,
+      confirmedBy: unitSupervisor.data.id
+    })
+    .save()
   await Fixture.groupPlacement()
     .withPlacement(kaarinaPlacement)
     .withGroup(group)
     .save()
-
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.daycareFixture.id
-  ).save()
 
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)).toSystemTzDate()
