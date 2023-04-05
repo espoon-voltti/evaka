@@ -214,6 +214,37 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `addMissingStaffAttendanceDeparture adds departure at 2000 for JUSTIFIED_CHANGE arrival with a planned departure in the past`() {
+        val startOfToday = HelsinkiDateTime.now().atStartOfDay()
+        val arrival = startOfToday.minusDays(1).plusHours(8) // Yesterday 0800
+        val plannedDeparture = arrival.plusHours(8)
+        val expectedAddedDepartureTime = startOfToday.minusDays(1).plusHours(20)
+
+        db.transaction { tx ->
+            val id = tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
+
+            tx.createUpdate(
+                    "UPDATE staff_attendance_realtime a SET type = 'JUSTIFIED_CHANGE' WHERE id = :id"
+                )
+                .bind("id", id)
+                .execute()
+        }
+
+        db.transaction { tx ->
+            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+
+            tx.addMissingStaffAttendanceDepartures(startOfToday)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                expectedAddedDepartureTime,
+                staffAttendances.first { it.employeeId == employee1Id }.departed
+            )
+        }
+    }
+
+    @Test
     fun `addMissingStaffAttendanceDeparture adds a departure for overnight planned attendance`() {
         val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
         val arrival = now.atStartOfDay().minusHours(4)
