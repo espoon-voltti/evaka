@@ -113,7 +113,7 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
           mkdir -p frontend/espoo-customizations/ frontend/vendor/fortawesome/
-          cp -r customizations/espoo/* frontend/espoo-customizations/
+          cp -rp customizations/espoo/* frontend/espoo-customizations/
           aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" frontend/vendor/fortawesome/
 
       - name: Unset AWS creds env vars
@@ -166,7 +166,7 @@ jobs:
             ICONS=pro
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           cache_from_images: |
-            ${{ steps.build.outputs.image }}
+            ${{ steps.build.outputs.image_name }}
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -326,7 +326,7 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
           cache_from_images: |
-            ${{ steps.build.outputs.image }}
+            ${{ steps.build.outputs.image_name }}
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -364,7 +364,7 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             BASE_IMAGE=${{ needs.service.outputs.builder_image }}
           cache_from_images: |
-            ${{ needs.service.outputs.builder_image }}
+            ${{ needs.service.outputs.builder_image_name }}
 
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
