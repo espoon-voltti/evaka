@@ -265,6 +265,113 @@ export function useFormElems<F extends AnyForm>({
   )
 }
 
+export function useFormUnion<F extends AnyForm>({
+  form,
+  state,
+  update,
+  translateError
+}: BoundForm<F>): StateOf<F> extends { branch: any }
+  ? StateOf<F>['branch'] extends infer K
+    ? K extends string // trigger distributive conditional type
+      ? ShapeOf<F> extends { [KK in K]: AnyForm }
+        ? { branch: K; form: BoundForm<ShapeOf<F>[K]> }
+        : never
+      : never
+    : never
+  : never {
+  const branchCallbacks = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.keys(form.shape).map((branch) => {
+          const elemUpdate = (
+            fn: (prev: StateOf<F>['state']) => StateOf<F>['state']
+          ) => {
+            update(
+              (prevState) =>
+                (prevState.branch === branch
+                  ? { branch, state: fn(prevState.state) }
+                  : prevState) as StateOf<F>
+            )
+          }
+          const elemSet = (value: any) => elemUpdate(() => value)
+          return [branch, { elemUpdate, elemSet }]
+        })
+      ),
+    [form.shape, update]
+  )
+  return useMemo(
+    () =>
+      ({
+        branch: state.branch,
+        form: {
+          form: form.shape[state.branch],
+          state: state.state,
+          update: branchCallbacks[state.branch].elemUpdate,
+          set: branchCallbacks[state.branch].elemSet,
+          ...validationHelpers(
+            () => state.state,
+            form.shape[state.branch].validate,
+            translateError
+          )
+        }
+      } as any),
+    [branchCallbacks, form.shape, state.branch, state.state, translateError]
+  )
+}
+
+export function useFormUnionBranch<
+  F extends AnyForm,
+  K extends keyof ShapeOf<F>
+>(
+  { form, state, update, translateError }: BoundForm<F>,
+  branch: K
+): StateOf<F> extends { branch: any }
+  ? K extends StateOf<F>['branch']
+    ? BoundForm<ShapeOf<F>[K]> | undefined
+    : never
+  : never {
+  const field = form.shape[branch]
+
+  const matches = state.branch === branch
+  const fieldState = state.state
+
+  const fieldUpdate = useCallback(
+    (fn: (state: StateOf<F>['state']) => StateOf<F>['state']) => {
+      update((prev) =>
+        prev.branch === branch
+          ? ({ branch, state: fn(prev.state) } as StateOf<F>)
+          : prev
+      )
+    },
+    [branch, update]
+  )
+
+  const fieldSet = useCallback(
+    (value: StateOf<F>['state']) => {
+      fieldUpdate(() => value)
+    },
+    [fieldUpdate]
+  )
+
+  return useMemo(
+    () =>
+      matches
+        ? ({
+            form: field,
+            state: fieldState,
+            update: fieldUpdate,
+            set: fieldSet,
+            ...validationHelpers(
+              () => fieldState,
+              field.validate,
+              translateError
+            )
+          } as any)
+        : undefined,
+    [field, fieldSet, fieldState, fieldUpdate, matches, translateError]
+  )
+}
+
 function validationHelpers<Output, Error, State>(
   getState: () => State,
   getValidationResult: (state: State) => ValidationResult<Output, Error>,
