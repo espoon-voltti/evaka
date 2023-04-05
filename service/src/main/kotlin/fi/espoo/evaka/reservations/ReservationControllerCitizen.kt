@@ -229,6 +229,7 @@ data class ReservationChild(
     val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
     val placements: List<FiniteDateRange>,
+    val serviceNeeds: List<FiniteDateRange>,
     val upcomingPlacementType: PlacementType?,
     val maxOperationalDays: Set<Int>,
     val inShiftCareUnit: Boolean,
@@ -341,6 +342,7 @@ SELECT
     ch.duplicate_of,
     ci.id AS image_id,
     p.placements,
+    coalesce(sn.service_needs, '{}') as service_needs,
     upcoming_pl.type AS upcoming_placement_type,
     p.max_operational_days,
     p.in_shift_care_unit,
@@ -380,6 +382,12 @@ LEFT JOIN LATERAL (
   ORDER BY start_date
   LIMIT 1
 ) upcoming_pl ON true
+LEFT JOIN (
+  SELECT p2.child_id, array_agg(DISTINCT daterange(sn.start_date, sn.end_date, '[]')) as service_needs
+  FROM service_need sn
+  JOIN placement p2 on sn.placement_id = p2.id
+  GROUP BY p2.child_id
+) sn ON sn.child_id = c.child_id
 WHERE p.placements IS NOT NULL
 ORDER BY ch.date_of_birth, ch.duplicate_of
         """

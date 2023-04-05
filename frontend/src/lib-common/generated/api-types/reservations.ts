@@ -97,6 +97,7 @@ export interface ReservationChild {
   maxOperationalDays: number[]
   placements: FiniteDateRange[]
   preferredName: string
+  serviceNeeds: FiniteDateRange[]
   upcomingPlacementType: PlacementType | null
 }
 

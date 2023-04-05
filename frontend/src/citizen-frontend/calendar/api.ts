@@ -58,7 +58,10 @@ export async function getReservations(
       children: res.data.children.map(
         (child): ReservationChild => ({
           ...child,
-          placements: child.placements.map((r) => FiniteDateRange.parseJson(r))
+          placements: child.placements.map((r) => FiniteDateRange.parseJson(r)),
+          serviceNeeds: child.serviceNeeds.map((r) =>
+            FiniteDateRange.parseJson(r)
+          )
         })
       ),
       reservableDays: Object.entries(res.data.reservableDays).reduce<
