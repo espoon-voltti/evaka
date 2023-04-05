@@ -49,7 +49,8 @@ export const times = array(
     endTime.hour === 0 && endTime.minute === 0 ? 'timeFormat' : undefined
   )
 )
-export const day = chained(
+
+export const writableDay = chained(
   object({
     present: boolean(),
     times
@@ -63,36 +64,30 @@ export const day = chained(
       : ValidationSuccess.of({ present: false, times: [] })
 )
 
+export const day = mapped(
+  union({
+    readOnly: value<'not-editable' | 'holiday' | undefined>(),
+    writable: writableDay
+  }),
+  (value) => (value.branch === 'writable' ? value.value : undefined)
+)
+
 const emptyDay: StateOf<typeof day> = {
-  present: true,
-  times: [emptyTimeRange]
+  branch: 'writable',
+  state: {
+    present: true,
+    times: [emptyTimeRange]
+  }
 }
 
-export const weekDay = chained(
-  object({
-    mode: value<'normal' | 'not-editable' | undefined>(),
-    day
-  }),
-  (form, state) =>
-    state.mode !== 'normal'
-      ? ValidationSuccess.of(undefined)
-      : form.shape.day.validate(state.day)
-)
-export const weeklyTimes = array(weekDay)
+export const weeklyTimes = array(day)
 
-export const irregularDay = chained(
+export const irregularDay = mapped(
   object({
     date: value<LocalDate>(),
-    mode: value<'normal' | 'not-editable' | 'holiday'>(),
     day
   }),
-  (form, state) =>
-    state.mode === 'normal'
-      ? form.shape.day.validate(state.day).map((day) => ({
-          date: state.date,
-          day
-        }))
-      : ValidationSuccess.of(undefined)
+  ({ date, day }) => (day !== undefined ? { date, day } : undefined)
 )
 
 export const irregularTimes = array(irregularDay)
@@ -265,10 +260,10 @@ export function resetTimes(
     )
 
     const weeklyTimes = Array.from({ length: 7 }).map(
-      (_, dayOfWeek): StateOf<typeof weekDay> => {
+      (_, dayOfWeek): StateOf<typeof day> => {
         const dayOfWeekDays = groupedDays[dayOfWeek]
         if (!dayOfWeekDays) {
-          return { mode: undefined, day: emptyDay }
+          return { branch: 'readOnly', state: undefined }
         }
 
         const relevantReservations = reservations.filter(({ date }) =>
@@ -281,20 +276,20 @@ export function resetTimes(
             selectedChildren
           )
         ) {
-          return { mode: 'not-editable' as const, day: emptyDay }
+          return { branch: 'readOnly', state: 'not-editable' }
         }
 
         if (allChildrenAreAbsent(relevantReservations, selectedChildren)) {
           return {
-            mode: 'normal' as const,
-            day: { present: false, times: [emptyTimeRange] }
+            branch: 'writable',
+            state: { present: false, times: [emptyTimeRange] }
           }
         }
 
         if (
           !hasReservationsForEveryChild(relevantReservations, selectedChildren)
         ) {
-          return { mode: 'normal' as const, day: emptyDay }
+          return emptyDay
         }
 
         const commonTimeRanges = getCommonTimeRanges(
@@ -304,15 +299,15 @@ export function resetTimes(
 
         if (commonTimeRanges) {
           return {
-            mode: 'normal' as const,
-            day: {
+            branch: 'writable',
+            state: {
               present: true,
               times: bindUnboundedTimeRanges(commonTimeRanges)
             }
           }
         }
 
-        return { mode: 'normal' as const, day: emptyDay }
+        return emptyDay
       }
     )
     return {
@@ -327,11 +322,17 @@ export function resetTimes(
         )
 
         if (!existingTimes) {
-          return { date: rangeDate, mode: 'normal' as const, day: emptyDay }
+          return {
+            date: rangeDate,
+            day: emptyDay
+          }
         }
 
         if (existingTimes.isHoliday && !childrenInShiftCare) {
-          return { date: rangeDate, mode: 'holiday' as const, day: emptyDay }
+          return {
+            date: rangeDate,
+            day: { branch: 'readOnly', state: 'holiday' }
+          }
         }
 
         if (
@@ -342,21 +343,28 @@ export function resetTimes(
         ) {
           return {
             date: rangeDate,
-            mode: 'not-editable' as const,
-            day: emptyDay
+            day: {
+              branch: 'readOnly',
+              state: 'not-editable'
+            }
           }
         }
 
         if (allChildrenAreAbsent([existingTimes], selectedChildren)) {
           return {
             date: rangeDate,
-            mode: 'normal' as const,
-            day: { present: false, times: [emptyTimeRange] }
+            day: {
+              branch: 'writable',
+              state: { present: false, times: [emptyTimeRange] }
+            }
           }
         }
 
         if (!hasReservationsForEveryChild([existingTimes], selectedChildren)) {
-          return { date: rangeDate, mode: 'normal' as const, day: emptyDay }
+          return {
+            date: rangeDate,
+            day: emptyDay
+          }
         }
 
         const commonTimeRanges = getCommonTimeRanges(
@@ -367,15 +375,17 @@ export function resetTimes(
         if (commonTimeRanges) {
           return {
             date: rangeDate,
-            mode: 'normal' as const,
             day: {
-              present: true,
-              times: bindUnboundedTimeRanges(commonTimeRanges)
+              branch: 'writable',
+              state: {
+                present: true,
+                times: bindUnboundedTimeRanges(commonTimeRanges)
+              }
             }
           }
         }
 
-        return { date: rangeDate, mode: 'normal' as const, day: emptyDay }
+        return { date: rangeDate, day: emptyDay }
       }
     )
     return {
