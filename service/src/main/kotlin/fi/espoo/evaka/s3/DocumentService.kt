@@ -7,6 +7,7 @@ package fi.espoo.evaka.s3
 import com.github.kittinunf.fuel.core.Response
 import fi.espoo.evaka.shared.domain.NotFound
 import java.net.URL
+import java.nio.charset.StandardCharsets
 import java.time.Duration
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpStatus
@@ -54,7 +55,7 @@ class DocumentService(
         return ContentDisposition.builder(type.header)
             .apply {
                 if (fileName != null) {
-                    this.filename(fileName)
+                    this.filename(fileName, StandardCharsets.UTF_8)
                 }
             }
             .build()
