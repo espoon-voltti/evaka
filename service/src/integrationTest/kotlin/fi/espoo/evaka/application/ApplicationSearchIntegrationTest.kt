@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolClub45
@@ -30,6 +32,7 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testChild_7
+import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
@@ -41,22 +44,29 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
+class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
+
+    private val now =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
 
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
+    lateinit var applicationId_1: ApplicationId
+    lateinit var applicationId_2: ApplicationId
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
-        createApplication(child = testChild_1, guardian = testAdult_1)
-        createApplication(
-            child = testChild_2,
-            guardian = testAdult_1,
-            extendedCare = true,
-            attachment = true
-        )
+        applicationId_1 = createApplication(child = testChild_1, guardian = testAdult_1)
+        applicationId_2 =
+            createApplication(
+                child = testChild_2,
+                guardian = testAdult_1,
+                extendedCare = true,
+                attachment = true
+            )
         createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
         createApplication(
             testChild_4,
@@ -150,9 +160,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
                 applicationControllerV2.getChildApplicationSummaries(
                     dbInstance(),
                     serviceWorker,
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))
-                    ),
+                    now,
                     testChild_1.id
                 )
             )
@@ -166,9 +174,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
                 applicationControllerV2.getChildApplicationSummaries(
                     dbInstance(),
                     serviceWorker,
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))
-                    ),
+                    now,
                     testChild_7.id
                 )
             )
@@ -181,13 +187,51 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
                 applicationControllerV2.getChildApplicationSummaries(
                     dbInstance(),
                     serviceWorker,
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))
-                    ),
+                    now,
                     ChildId(UUID.randomUUID())
                 )
             )
             .isEmpty()
+    }
+
+    @Test
+    fun `application summary can be be filtered by children with existing club placement`() {
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testClub.id,
+                type = PlacementType.CLUB,
+                startDate = now.today().minusMonths(12),
+                endDate = now.today().minusMonths(6)
+            )
+
+            it.insertTestPlacement(
+                childId = testChild_2.id,
+                unitId = testClub.id,
+                type = PlacementType.CLUB,
+                startDate = now.today().minusMonths(12),
+                endDate = now.today().plusMonths(6)
+            )
+
+            // Should not show because club placement is in the future
+            it.insertTestPlacement(
+                childId = testChild_3.id,
+                unitId = testClub.id,
+                type = PlacementType.CLUB,
+                startDate = now.today().plusMonths(1),
+                endDate = now.today().plusMonths(6)
+            )
+        }
+
+        val summary =
+            getApplicationSummaries(
+                type = ApplicationTypeToggle.ALL,
+                status = setOf(ApplicationStatusOption.SENT),
+                basis = setOf(ApplicationBasis.CLUB_CARE)
+            )
+        assertEquals(2, summary.total)
+        assertEquals(applicationId_2, summary.data[0].id)
+        assertEquals(applicationId_1, summary.data[1].id)
     }
 
     private fun getApplicationSummaries(
@@ -212,7 +256,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
         applicationControllerV2.getApplicationSummaries(
             dbInstance(),
             serviceWorker,
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))),
+            now,
             SearchApplicationRequest(
                 page = page,
                 pageSize = pageSize,
@@ -243,7 +287,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
         extendedCare: Boolean = false,
         connectedDaycare: Boolean = false,
         serviceNeedOption: ServiceNeedOption? = null
-    ) {
+    ): ApplicationId {
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(childId = child.id, guardianId = guardian.id, type = type)
@@ -270,6 +314,8 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
                 AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
             )
         }
+
+        return applicationId
     }
 }
 

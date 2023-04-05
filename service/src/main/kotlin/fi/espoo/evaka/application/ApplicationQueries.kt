@@ -229,8 +229,7 @@ fun Database.Read.fetchApplicationSummaries(
                             "(f.document -> 'apply' ->> 'siblingBasis')::boolean = true"
                         ApplicationBasis.ASSISTANCE_NEED ->
                             "(f.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
-                        ApplicationBasis.CLUB_CARE ->
-                            "(f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean = true"
+                        ApplicationBasis.CLUB_CARE -> "was_on_club_care"
                         ApplicationBasis.DAYCARE ->
                             "(f.document ->> 'wasOnDaycare')::boolean = true"
                         ApplicationBasis.EXTENDED_CARE ->
@@ -396,7 +395,7 @@ fun Database.Read.fetchApplicationSummaries(
             ) as additionalInfo,
             (f.document -> 'apply' ->> 'siblingBasis')::boolean as siblingBasis,
             COALESCE(f.document -> 'careDetails' ->> 'assistanceNeeded', f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
-            (f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as wasOnClubCare,
+            club_care.was_on_club_care AS was_on_club_care,
             (f.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
             COALESCE((f.document ->> 'urgent')::boolean, false) as urgent,
             (SELECT COALESCE(array_length(attachments.attachment_ids, 1), 0)) AS attachmentCount,
@@ -447,6 +446,11 @@ fun Database.Read.fetchApplicationSummaries(
             WHERE application_id IS NOT NULL
             GROUP by application_id
         ) attachments ON a.id = attachments.application_id
+        LEFT JOIN LATERAL (
+            SELECT EXISTS( SELECT 1 
+            FROM placement p 
+            WHERE p.child_id = a.child_id AND p.type = 'CLUB'::placement_type AND p.start_date <= :today) AS was_on_club_care
+        ) club_care ON true
         LEFT JOIN LATERAL (
             SELECT daycare.id, daycare.name
             FROM daycare
@@ -518,7 +522,7 @@ fun Database.Read.fetchApplicationSummaries(
                         if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
                     siblingBasis = row.mapColumn("siblingBasis"),
                     assistanceNeed = row.mapColumn("assistanceNeed"),
-                    wasOnClubCare = row.mapColumn("wasOnClubCare"),
+                    wasOnClubCare = row.mapColumn("was_on_club_care"),
                     wasOnDaycare = row.mapColumn("wasOnDaycare"),
                     extendedCare = row.mapColumn("extendedCare"),
                     duplicateApplication = row.mapColumn("has_duplicates"),
