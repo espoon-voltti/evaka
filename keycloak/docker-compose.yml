@@ -37,7 +37,7 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
-      #KC_LOG_LEVEL: "debug"
+      # KC_LOG_LEVEL: "debug"
     entrypoint: /configuration/entrypoint.sh
     command: ["start", "--optimized", "--log-console-output=json"]
     volumes:
