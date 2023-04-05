@@ -46,7 +46,7 @@ fun Database.Read.expiringIncomes(
     val existingRecentIncomeNotificationQuery =
         """
     SELECT 1 FROM income_notification 
-    WHERE receiver_id = pl.guardian_id AND notification_type = :notificationType 
+    WHERE receiver_id = expiring_income.person_id AND notification_type = :notificationType 
         AND created > :today - INTERVAL '1 month'
     """
             .trimIndent()
@@ -55,11 +55,11 @@ fun Database.Read.expiringIncomes(
             """
 WITH latest_income AS (
     SELECT DISTINCT ON (person_id)
-    person_id, valid_to
+    id, person_id, valid_to
     FROM income i 
     ORDER BY person_id, valid_to DESC
-), billable_placements_day_after_expiration AS (
-    SELECT pl.id, pl.child_id, g.guardian_id, i.valid_to
+), expiring_income_with_billable_placement_day_after_expiration AS (
+    SELECT DISTINCT i.person_id, i.valid_to
     FROM placement pl
     JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> upper(:checkForExpirationRange)
     JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
@@ -68,15 +68,15 @@ WITH latest_income AS (
     WHERE :checkForExpirationRange @> i.valid_to
      AND daterange(pl.start_date, pl.end_date, '[]') @> (i.valid_to + INTERVAL '1 day')::date
 )
-SELECT guardian_id, valid_to AS expiration_date
-FROM billable_placements_day_after_expiration pl 
+SELECT person_id AS guardian_id, valid_to AS expiration_date
+FROM expiring_income_with_billable_placement_day_after_expiration expiring_income 
 WHERE NOT EXISTS (
     SELECT 1 FROM income_statement
-    WHERE person_id = pl.guardian_id AND created > :today - INTERVAL '1 month'
+    WHERE person_id = expiring_income.person_id AND created > :today - INTERVAL '1 month'
         AND (end_date IS NULL OR UPPER(:checkForExpirationRange) <= end_date)
 ) 
 ${if (checkForExistingRecentIncomeNotificationType != null) " AND NOT EXISTS ($existingRecentIncomeNotificationQuery)" else ""}                
-${if (guardianId != null) " AND guardian_id = :guardianId" else ""}
+${if (guardianId != null) " AND person_id = :guardianId" else ""}
     """
                 .trimIndent()
         )
