@@ -108,7 +108,7 @@ export default React.memo(function ReservationModal({
         if (!prev.isValid) {
           return {
             ...nextState,
-            ...resetTimes(
+            times: resetTimes(
               childrenInShiftCare,
               existingReservations,
               repetition,
@@ -128,7 +128,7 @@ export default React.memo(function ReservationModal({
         ) {
           return {
             ...nextState,
-            ...resetTimes(
+            times: resetTimes(
               childrenInShiftCare,
               existingReservations,
               repetition,
@@ -142,7 +142,7 @@ export default React.memo(function ReservationModal({
     }
   )
 
-  const { selectedChildren, repetition, dateRange } = useFormFields(form)
+  const { selectedChildren, repetition, dateRange, times } = useFormFields(form)
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
@@ -282,7 +282,7 @@ export default React.memo(function ReservationModal({
 
                 {selectedRange ? (
                   <RepetitionTimeInputGrid
-                    bind={form}
+                    bind={times}
                     childrenInShiftCare={childrenInShiftCare}
                     includedDays={includedDays}
                     showAllErrors={showAllErrors}

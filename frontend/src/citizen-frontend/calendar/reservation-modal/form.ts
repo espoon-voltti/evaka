@@ -19,6 +19,7 @@ import {
   object,
   oneOf,
   required,
+  union,
   validated,
   value
 } from 'lib-common/form/form'
@@ -96,6 +97,12 @@ export const irregularDay = chained(
 
 export const irregularTimes = array(irregularDay)
 
+export const timesUnion = union({
+  dailyTimes: times,
+  weeklyTimes,
+  irregularTimes
+})
+
 export const reservationForm = mapped(
   object({
     selectedChildren: validated(array(string()), (value) =>
@@ -103,9 +110,7 @@ export const reservationForm = mapped(
     ),
     dateRange: required(localDateRange),
     repetition: required(oneOf<Repetition>()),
-    dailyTimes: times,
-    weeklyTimes,
-    irregularTimes
+    times: timesUnion
   }),
   (output) => ({
     containsNonReservableDays: (
@@ -124,18 +129,21 @@ export const reservationForm = mapped(
           const dates = [...output.dateRange.dates()].filter((date) =>
             childReservableDays.some((range) => range.includes(date))
           )
-          switch (output.repetition) {
-            case 'DAILY':
+          switch (output.times.branch) {
+            case 'dailyTimes': {
+              const timesValue = output.times.value
               return dates.map((date) => ({
                 childId,
                 date,
-                reservations: output.dailyTimes.map(timeRangeToTimes),
+                reservations: timesValue.map(timeRangeToTimes),
                 absent: false
               }))
-            case 'WEEKLY':
+            }
+            case 'weeklyTimes': {
+              const timesValue = output.times.value
               return dates
                 .map((date) => {
-                  const weekDay = output.weeklyTimes[date.getIsoDayOfWeek() - 1]
+                  const weekDay = timesValue[date.getIsoDayOfWeek() - 1]
                   return weekDay
                     ? {
                         childId,
@@ -148,8 +156,9 @@ export const reservationForm = mapped(
                     : undefined
                 })
                 .flatMap((day) => (day ? [day] : []))
-            case 'IRREGULAR':
-              return output.irregularTimes
+            }
+            case 'irregularTimes': {
+              return output.times.value
                 .flatMap((irregularDay) =>
                   irregularDay !== undefined ? [irregularDay] : []
                 )
@@ -164,6 +173,7 @@ export const reservationForm = mapped(
                     : null,
                   absent: !irregularDay.day.present
                 }))
+            }
           }
         })
         .filter(
@@ -209,14 +219,10 @@ export function initialState(
       domValue: 'DAILY' as const,
       options: repetitionOptions(i18n)
     },
-    dailyTimes: [
-      {
-        startTime: '',
-        endTime: ''
-      }
-    ],
-    weeklyTimes: [],
-    irregularTimes: []
+    times: {
+      branch: 'dailyTimes',
+      state: [emptyTimeRange]
+    }
   }
 }
 
@@ -226,11 +232,7 @@ export function resetTimes(
   repetition: Repetition,
   selectedRange: FiniteDateRange,
   selectedChildren: UUID[]
-): {
-  dailyTimes: StateOf<typeof times>
-  weeklyTimes: StateOf<typeof weeklyTimes>
-  irregularTimes: StateOf<typeof irregularTimes>
-} {
+): StateOf<typeof reservationForm>['times'] {
   const reservations = existingReservations.filter((reservation) =>
     selectedRange.includes(reservation.date)
   )
@@ -238,9 +240,8 @@ export function resetTimes(
   if (repetition === 'DAILY') {
     if (!hasReservationsForEveryChild(reservations, selectedChildren)) {
       return {
-        dailyTimes: [emptyTimeRange],
-        weeklyTimes: [],
-        irregularTimes: []
+        branch: 'dailyTimes',
+        state: [emptyTimeRange]
       }
     }
 
@@ -248,16 +249,14 @@ export function resetTimes(
 
     if (commonTimeRanges) {
       return {
-        dailyTimes: bindUnboundedTimeRanges(commonTimeRanges),
-        weeklyTimes: [],
-        irregularTimes: []
+        branch: 'dailyTimes',
+        state: bindUnboundedTimeRanges(commonTimeRanges)
       }
     }
 
     return {
-      dailyTimes: [emptyTimeRange],
-      weeklyTimes: [],
-      irregularTimes: []
+      branch: 'dailyTimes',
+      state: [emptyTimeRange]
     }
   } else if (repetition === 'WEEKLY') {
     const groupedDays = groupBy(
@@ -265,59 +264,60 @@ export function resetTimes(
       (date) => date.getIsoDayOfWeek() - 1
     )
 
-    const weeklyTimes = Array.from({ length: 7 }).map((_, dayOfWeek) => {
-      const dayOfWeekDays = groupedDays[dayOfWeek]
-      if (!dayOfWeekDays) {
-        return { mode: undefined, day: emptyDay }
-      }
+    const weeklyTimes = Array.from({ length: 7 }).map(
+      (_, dayOfWeek): StateOf<typeof weekDay> => {
+        const dayOfWeekDays = groupedDays[dayOfWeek]
+        if (!dayOfWeekDays) {
+          return { mode: undefined, day: emptyDay }
+        }
 
-      const relevantReservations = reservations.filter(({ date }) =>
-        dayOfWeekDays.some((d) => d.isEqual(date))
-      )
+        const relevantReservations = reservations.filter(({ date }) =>
+          dayOfWeekDays.some((d) => d.isEqual(date))
+        )
 
-      if (
-        allChildrenAreAbsentMarkedByEmployee(
+        if (
+          allChildrenAreAbsentMarkedByEmployee(
+            relevantReservations,
+            selectedChildren
+          )
+        ) {
+          return { mode: 'not-editable' as const, day: emptyDay }
+        }
+
+        if (allChildrenAreAbsent(relevantReservations, selectedChildren)) {
+          return {
+            mode: 'normal' as const,
+            day: { present: false, times: [emptyTimeRange] }
+          }
+        }
+
+        if (
+          !hasReservationsForEveryChild(relevantReservations, selectedChildren)
+        ) {
+          return { mode: 'normal' as const, day: emptyDay }
+        }
+
+        const commonTimeRanges = getCommonTimeRanges(
           relevantReservations,
           selectedChildren
         )
-      ) {
-        return { mode: 'not-editable' as const, day: emptyDay }
-      }
 
-      if (allChildrenAreAbsent(relevantReservations, selectedChildren)) {
-        return {
-          mode: 'normal' as const,
-          day: { present: false, times: [emptyTimeRange] }
-        }
-      }
-
-      if (
-        !hasReservationsForEveryChild(relevantReservations, selectedChildren)
-      ) {
-        return { mode: 'normal' as const, day: emptyDay }
-      }
-
-      const commonTimeRanges = getCommonTimeRanges(
-        relevantReservations,
-        selectedChildren
-      )
-
-      if (commonTimeRanges) {
-        return {
-          mode: 'normal' as const,
-          day: {
-            present: true,
-            times: bindUnboundedTimeRanges(commonTimeRanges)
+        if (commonTimeRanges) {
+          return {
+            mode: 'normal' as const,
+            day: {
+              present: true,
+              times: bindUnboundedTimeRanges(commonTimeRanges)
+            }
           }
         }
-      }
 
-      return { mode: 'normal' as const, day: emptyDay }
-    })
+        return { mode: 'normal' as const, day: emptyDay }
+      }
+    )
     return {
-      dailyTimes: [],
-      weeklyTimes,
-      irregularTimes: []
+      branch: 'weeklyTimes',
+      state: weeklyTimes
     }
   } else if (repetition === 'IRREGULAR') {
     const irregularTimes = [...selectedRange.dates()].map(
@@ -379,9 +379,8 @@ export function resetTimes(
       }
     )
     return {
-      dailyTimes: [],
-      weeklyTimes: [],
-      irregularTimes
+      branch: 'irregularTimes',
+      state: irregularTimes
     }
   } else {
     throw new Error('Not reached')

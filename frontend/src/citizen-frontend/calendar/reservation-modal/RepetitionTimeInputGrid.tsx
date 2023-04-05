@@ -4,16 +4,16 @@
 
 import React from 'react'
 
-import { BoundForm, useFormField } from 'lib-common/form/hooks'
+import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import DailyRepetitionTimeInputGrid from './DailyRepetitionTimeInputGrid'
 import IrregularRepetitionTimeInputGrid from './IrregularRepetitionTimeInputGrid'
 import WeeklyRepetitionTimeInputGrid from './WeeklyRepetitionTimeInputGrid'
-import { reservationForm } from './form'
+import { timesUnion } from './form'
 
 export interface RepetitionTimeInputGridProps {
-  bind: BoundForm<typeof reservationForm>
+  bind: BoundForm<typeof timesUnion>
   childrenInShiftCare: boolean
   includedDays: number[]
   showAllErrors: boolean
@@ -23,28 +23,24 @@ export default React.memo(function RepetitionTimeInputGrid({
   bind,
   ...props
 }: RepetitionTimeInputGridProps) {
-  const repetition = useFormField(bind, 'repetition')
-  const dailyTimes = useFormField(bind, 'dailyTimes')
-  const weeklyTimes = useFormField(bind, 'weeklyTimes')
-  const irregularTimes = useFormField(bind, 'irregularTimes')
-
-  switch (repetition.value()) {
-    case 'DAILY':
+  const { branch, form } = useFormUnion(bind)
+  switch (branch) {
+    case 'dailyTimes':
       return (
         <FixedSpaceColumn>
-          <DailyRepetitionTimeInputGrid bind={dailyTimes} {...props} />
+          <DailyRepetitionTimeInputGrid bind={form} {...props} />
         </FixedSpaceColumn>
       )
-    case 'WEEKLY':
+    case 'weeklyTimes':
       return (
         <FixedSpaceColumn>
-          <WeeklyRepetitionTimeInputGrid bind={weeklyTimes} {...props} />
+          <WeeklyRepetitionTimeInputGrid bind={form} {...props} />
         </FixedSpaceColumn>
       )
-    case 'IRREGULAR':
+    case 'irregularTimes':
       return (
         <FixedSpaceColumn>
-          <IrregularRepetitionTimeInputGrid bind={irregularTimes} {...props} />
+          <IrregularRepetitionTimeInputGrid bind={form} {...props} />
         </FixedSpaceColumn>
       )
   }
