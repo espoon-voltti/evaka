@@ -116,6 +116,11 @@ FROM (
     WHERE date_part('isodow', t::date) = ANY(d.operation_days)
     AND h.date IS NULL
     AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+    AND EXISTS (
+        SELECT 1
+        FROM service_need sn
+        WHERE sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
+    )
     AND NOT EXISTS (
         SELECT 1
         FROM attendance_reservation ar
