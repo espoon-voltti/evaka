@@ -1642,7 +1642,8 @@ const sv: Translations = {
     confirmationLinkInstructions:
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
     confirmationLink: 'Gå vidare för att svara',
-    newApplicationLink: 'Ny ansökan'
+    newApplicationLink: 'Ny ansökan',
+    namelessChild: 'Namnlöst barn'
   },
   fileUpload: {
     loading: 'Uppladdas...',

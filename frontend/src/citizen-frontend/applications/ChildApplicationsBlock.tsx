@@ -166,7 +166,7 @@ export default React.memo(function ChildApplicationsBlock({
     <ContentArea opaque paddingVertical="L" data-qa={`child-${childId}`}>
       <TitleContainer>
         <ChildHeading data-qa={`title-applications-child-name-${childId}`}>
-          {childName}
+          {childName?.trim() ? childName : t.applicationsList.namelessChild}
         </ChildHeading>
         <AddButton
           text={t.applicationsList.newApplicationLink}

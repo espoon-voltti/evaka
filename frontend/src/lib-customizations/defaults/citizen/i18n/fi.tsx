@@ -1635,7 +1635,8 @@ export default {
     confirmationLinkInstructions:
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
     confirmationLink: 'Siirry vahvistamaan',
-    newApplicationLink: 'Uusi hakemus'
+    newApplicationLink: 'Uusi hakemus',
+    namelessChild: 'Nimetön lapsi'
   },
   fileUpload: {
     loading: 'Ladataan...',

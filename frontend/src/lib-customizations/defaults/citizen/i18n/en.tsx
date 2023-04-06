@@ -1548,7 +1548,8 @@ const en: Translations = {
     confirmationLinkInstructions:
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',
-    newApplicationLink: 'New application'
+    newApplicationLink: 'New application',
+    namelessChild: 'Nameless child'
   },
   fileUpload: {
     loading: 'Loading',
