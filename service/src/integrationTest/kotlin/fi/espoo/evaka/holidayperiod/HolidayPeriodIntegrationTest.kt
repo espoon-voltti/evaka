@@ -5,7 +5,6 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import kotlin.test.assertContains
@@ -17,36 +16,45 @@ import org.junit.jupiter.api.assertThrows
 class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val christmasRange =
-        FiniteDateRange(start = LocalDate.of(2021, 12, 18), end = LocalDate.of(2022, 1, 6))
-    private val christmasPeriod = summerPeriod.copy(period = christmasRange)
+        FiniteDateRange(LocalDate.of(2021, 12, 18), LocalDate.of(2022, 1, 6))
+    private val christmasDeadline = christmasRange.start.minusWeeks(4)
 
     @Test
     fun `holiday periods can be created, updated and deleted`() {
-        val summer = createHolidayPeriod(summerPeriod)
-        val christmas = createHolidayPeriod(christmasPeriod)
+        val summer = db.transaction { it.createHolidayPeriod(summerRange, summerDeadline) }
+        val christmas = db.transaction { it.createHolidayPeriod(christmasRange, christmasDeadline) }
 
-        assertEquals(summer, getHolidayPeriod(summer.id))
+        assertEquals(summer, db.read { it.getHolidayPeriod(summer.id) })
 
-        assertEquals(listOf(summer.id, christmas.id), getHolidayPeriods().map { p -> p.id })
-
-        updateHolidayPeriod(christmas.id, christmasPeriod.copy(reservationDeadline = null))
         assertEquals(
-            listOf(summer.reservationDeadline, null),
-            getHolidayPeriods().map { p -> p.reservationDeadline }
+            listOf(summer.id, christmas.id),
+            db.read { it.getHolidayPeriods() }.map { p -> p.id }
         )
 
-        deleteHolidayPeriod(summer.id)
-        assertEquals(listOf(christmas.id), getHolidayPeriods().map { p -> p.id })
+        val newDeadline = christmasDeadline.minusWeeks(1)
+        db.transaction { it.updateHolidayPeriod(christmas.id, christmasRange, newDeadline) }
+        assertEquals(
+            listOf(summer.reservationDeadline, newDeadline),
+            db.read { it.getHolidayPeriods() }.map { p -> p.reservationDeadline }
+        )
+
+        db.transaction { it.deleteHolidayPeriod(summer.id) }
+        assertEquals(listOf(christmas.id), db.read { it.getHolidayPeriods() }.map { p -> p.id })
     }
 
     @Test
     fun `cannot create overlapping holiday periods`() {
-        val summer = createHolidayPeriod(summerPeriod)
-        createHolidayPeriod(christmasPeriod)
+        val summer =
+            db.transaction {
+                it.createHolidayPeriod(christmasRange, christmasDeadline)
+                it.createHolidayPeriod(summerRange, summerDeadline)
+            }
 
-        assertConstraintViolation { createHolidayPeriod(summerPeriod) }
         assertConstraintViolation {
-            updateHolidayPeriod(summer.id, summerPeriod.copy(period = christmasRange))
+            db.transaction { it.createHolidayPeriod(summerRange, summerDeadline) }
+        }
+        assertConstraintViolation {
+            db.transaction { it.updateHolidayPeriod(summer.id, christmasRange, summerDeadline) }
         }
     }
 
@@ -54,13 +62,4 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertThrows<UnableToExecuteStatementException> { executable() }
             .also { assertContains(it.message ?: "", "violates exclusion constraint") }
     }
-
-    private fun getHolidayPeriod(id: HolidayPeriodId) = db.read { it.getHolidayPeriod(id) }
-    private fun getHolidayPeriods(): List<HolidayPeriod> = db.read { it.getHolidayPeriods() }
-    private fun createHolidayPeriod(period: HolidayPeriodBody) =
-        db.transaction { it.createHolidayPeriod(period) }
-    private fun updateHolidayPeriod(id: HolidayPeriodId, period: HolidayPeriodBody) =
-        db.transaction { it.updateHolidayPeriod(id, period) }
-    private fun deleteHolidayPeriod(id: HolidayPeriodId) =
-        db.transaction { it.deleteHolidayPeriod(id) }
 }

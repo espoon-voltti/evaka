@@ -18,9 +18,7 @@ export const deserializeHolidayPeriod = ({
   ...rest
 }: JsonOf<HolidayPeriod>): HolidayPeriod => ({
   ...rest,
-  reservationDeadline: reservationDeadline
-    ? LocalDate.parseIso(reservationDeadline)
-    : null,
+  reservationDeadline: LocalDate.parseIso(reservationDeadline),
   period: FiniteDateRange.parseJson(period)
 })
 

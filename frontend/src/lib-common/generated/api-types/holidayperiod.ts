@@ -65,7 +65,7 @@ export interface FixedPeriodsBody {
 export interface HolidayPeriod {
   id: UUID
   period: FiniteDateRange
-  reservationDeadline: LocalDate | null
+  reservationDeadline: LocalDate
 }
 
 /**
@@ -73,7 +73,7 @@ export interface HolidayPeriod {
 */
 export interface HolidayPeriodBody {
   period: FiniteDateRange
-  reservationDeadline: LocalDate | null
+  reservationDeadline: LocalDate
 }
 
 /**

@@ -315,3 +315,4 @@ V315__drop_push_sent_at.sql
 V316__move_language_at_home.sql
 V317__attendance_reservation_no_times.sql
 V318__employee_temporary_in_unit_id.sql
+V319__holiday_period_reservation_deadline_notnull.sql

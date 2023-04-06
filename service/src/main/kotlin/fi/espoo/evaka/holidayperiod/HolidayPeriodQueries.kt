@@ -7,13 +7,7 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-
-fun Database.Read.getHolidayPeriodDeadlines(): List<HolidayPeriodDeadline> =
-    this.createQuery(
-            "SELECT id, period, reservation_deadline FROM holiday_period WHERE reservation_deadline IS NOT NULL"
-        )
-        .mapTo<HolidayPeriodDeadline>()
-        .list()
+import java.time.LocalDate
 
 fun Database.Read.getHolidayPeriodsInRange(
     range: FiniteDateRange,
@@ -36,7 +30,10 @@ fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
         .mapTo<HolidayPeriod>()
         .firstOrNull()
 
-fun Database.Transaction.createHolidayPeriod(data: HolidayPeriodBody): HolidayPeriod =
+fun Database.Transaction.createHolidayPeriod(
+    period: FiniteDateRange,
+    reservationDeadline: LocalDate
+): HolidayPeriod =
     this.createQuery(
             """
 INSERT INTO holiday_period (period, reservation_deadline)
@@ -45,11 +42,16 @@ RETURNING *
         """
                 .trimIndent()
         )
-        .bindKotlin(data)
+        .bind("period", period)
+        .bind("reservationDeadline", reservationDeadline)
         .mapTo<HolidayPeriod>()
         .one()
 
-fun Database.Transaction.updateHolidayPeriod(id: HolidayPeriodId, data: HolidayPeriodBody) =
+fun Database.Transaction.updateHolidayPeriod(
+    id: HolidayPeriodId,
+    period: FiniteDateRange,
+    reservationDeadline: LocalDate
+) =
     this.createUpdate(
             """
 UPDATE holiday_period
@@ -59,7 +61,8 @@ WHERE id = :id
         """
                 .trimIndent()
         )
-        .bindKotlin(data)
+        .bind("period", period)
+        .bind("reservationDeadline", reservationDeadline)
         .bind("id", id)
         .updateExactlyOne()
 
