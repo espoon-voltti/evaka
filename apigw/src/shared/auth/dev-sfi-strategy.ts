@@ -4,10 +4,10 @@
 
 import { Strategy } from 'passport'
 import { Request } from 'express'
-import { SamlUser } from '../routes/auth/saml/types'
 import { assertStringProp } from '../express'
+import { EvakaUserFields } from '../routes/auth/saml/types'
 
-type ProfileGetter = (userId: string) => Promise<SamlUser>
+type ProfileGetter = (userId: string) => Promise<EvakaUserFields>
 
 export default class DevSfiStrategy extends Strategy {
   constructor(private profileGetter: ProfileGetter) {

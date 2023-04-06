@@ -4,6 +4,7 @@
 
 import certificates, { TrustedCertificates } from './certificates'
 import type redis from 'redis'
+import { ValidateInResponseTo } from '@node-saml/node-saml'
 
 export interface Config {
   ad: {
@@ -43,7 +44,7 @@ export interface EvakaSamlConfig {
   issuer: string
   publicCert: string | TrustedCertificates[]
   privateCert: string
-  validateInResponseTo: boolean
+  validateInResponseTo: ValidateInResponseTo
 }
 
 export const gatewayRoles = ['enduser', 'internal'] as const
@@ -145,7 +146,7 @@ export function configFromEnv(): Config {
               envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
             ),
             privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
-            validateInResponseTo: true
+            validateInResponseTo: ValidateInResponseTo.always
           }
         : undefined
   }
@@ -166,7 +167,7 @@ export function configFromEnv(): Config {
               envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
             ),
             privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
-            validateInResponseTo: true
+            validateInResponseTo: ValidateInResponseTo.always
           }
         : undefined
   }
@@ -291,7 +292,7 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
         process.env.EVAKA_SAML_PRIVATE_CERT ??
           ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
       ),
-      validateInResponseTo: true
+      validateInResponseTo: ValidateInResponseTo.always
     }
   : undefined
 
@@ -325,7 +326,7 @@ export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
           process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
             ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
         ),
-        validateInResponseTo: true
+        validateInResponseTo: ValidateInResponseTo.always
       }
     : undefined
 

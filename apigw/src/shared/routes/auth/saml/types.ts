@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Profile, SamlConfig } from 'passport-saml'
-import passportSaml from 'passport-saml'
+import type { SamlConfig } from '@node-saml/passport-saml'
+import passportSaml from '@node-saml/passport-saml'
 import type { SessionType } from '../../../session'
 import type { UserType } from '../../../service-client'
 import passport from 'passport'
@@ -44,7 +44,7 @@ export interface StatusObject {
   }
 }
 
-export interface SamlUser extends Profile {
+export interface EvakaUserFields {
   // eVaka id
   id?: string | undefined
   userType?: UserType | undefined

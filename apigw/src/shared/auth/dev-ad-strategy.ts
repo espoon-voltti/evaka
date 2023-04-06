@@ -4,10 +4,10 @@
 
 import { Strategy } from 'passport'
 import { Request } from 'express'
-import { SamlUser } from '../routes/auth/saml/types'
 import { assertStringProp } from '../express'
+import { EvakaUserFields } from '../routes/auth/saml/types'
 
-type ProfileGetter = (userId: string) => Promise<SamlUser>
+type ProfileGetter = (userId: string) => Promise<EvakaUserFields>
 
 type ProfileUpserter = (
   userId: string,
@@ -15,7 +15,7 @@ type ProfileUpserter = (
   firstName: string,
   lastName: string,
   email: string
-) => Promise<SamlUser>
+) => Promise<EvakaUserFields>
 
 export default class DevAdStrategy extends Strategy {
   constructor(

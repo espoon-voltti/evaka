@@ -7,9 +7,8 @@ import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy,
   VerifiedCallback
-} from 'passport-saml'
+} from '@node-saml/passport-saml'
 import DevAdStrategy from './dev-ad-strategy'
-import { SamlUser } from '../routes/auth/saml/types'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { getEmployeeByExternalId, upsertEmployee } from '../dev-api'
@@ -17,6 +16,7 @@ import { employeeLogin, UserRole } from '../service-client'
 import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { Config } from '../config'
+import { EvakaUserFields } from '../routes/auth/saml/types'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
@@ -30,7 +30,7 @@ const AD_EMPLOYEE_NUMBER_KEY =
 async function verifyProfile(
   config: Config['ad'],
   profile: passportSaml.Profile
-): Promise<SamlUser> {
+): Promise<passportSaml.Profile & EvakaUserFields> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
@@ -48,6 +48,7 @@ async function verifyProfile(
     userType: 'EMPLOYEE',
     globalRoles: person.globalRoles,
     allScopedRoles: person.allScopedRoles,
+    issuer: profile.issuer,
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,
@@ -60,7 +61,7 @@ export function createSamlConfig(
   config: Config['ad'],
   redisClient?: RedisClient
 ): SamlConfig {
-  if (config.mock) return { cert: 'mock-certificate' }
+  if (config.mock) return { cert: 'mock-certificate', issuer: 'mock' }
   if (!config.saml) throw Error('Missing AD SAML configuration')
 
   const privateCert = readFileSync(config.saml.privateCert, {
@@ -107,6 +108,8 @@ export default function createAdStrategy(
       )
       return verifyProfile(config, {
         nameID: 'dummyid',
+        nameIDFormat: 'mock',
+        issuer: 'mock',
         [config.userIdKey]: userId,
         [AD_GIVEN_NAME_KEY]: employee.firstName,
         [AD_FAMILY_NAME_KEY]: employee.lastName,
@@ -131,6 +134,8 @@ export default function createAdStrategy(
       })
       return verifyProfile(config, {
         nameID: 'dummyid',
+        nameIDFormat: 'mock',
+        issuer: 'mock',
         [config.userIdKey]: userId,
         [AD_GIVEN_NAME_KEY]: firstName,
         [AD_FAMILY_NAME_KEY]: lastName,
@@ -142,7 +147,7 @@ export default function createAdStrategy(
   } else {
     return new SamlStrategy(
       samlConfig,
-      (profile: Profile | null | undefined, done: VerifiedCallback) => {
+      (profile: Profile | null, done: VerifiedCallback) => {
         if (!profile) {
           done(new Error('No SAML profile'))
         } else {
@@ -150,7 +155,8 @@ export default function createAdStrategy(
             .then((user) => done(null, user))
             .catch(done)
         }
-      }
+      },
+      (profile, done) => done(null)
     )
   }
 }

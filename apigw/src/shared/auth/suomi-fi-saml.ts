@@ -8,11 +8,11 @@ import passportSaml, {
   SamlConfig,
   Strategy,
   VerifiedCallback
-} from 'passport-saml'
+} from '@node-saml/passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
 import { Config } from '../config'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaUserFields } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { getCitizenBySsn } from '../dev-api'
@@ -25,7 +25,9 @@ const SUOMI_FI_SSN_KEY = 'urn:oid:1.2.246.21'
 const SUOMI_FI_GIVEN_NAME_KEY = 'urn:oid:2.5.4.42'
 const SUOMI_FI_SURNAME_KEY = 'urn:oid:2.5.4.4'
 
-async function verifyProfile(profile: passportSaml.Profile): Promise<SamlUser> {
+async function verifyProfile(
+  profile: passportSaml.Profile
+): Promise<passportSaml.Profile & EvakaUserFields> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
@@ -41,6 +43,7 @@ async function verifyProfile(profile: passportSaml.Profile): Promise<SamlUser> {
     userType: 'ENDUSER',
     globalRoles: ['END_USER'],
     allScopedRoles: [],
+    issuer: profile.issuer,
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,
@@ -53,7 +56,7 @@ export function createSamlConfig(
   config: Config['sfi'],
   redisClient?: RedisClient
 ): SamlConfig {
-  if (config.mock) return { cert: 'mock-certificate' }
+  if (config.mock) return { cert: 'mock-certificate', issuer: 'mock' }
   if (!config.saml) throw new Error('Missing Suomi.fi SAML configuration')
   const publicCert = Array.isArray(config.saml.publicCert)
     ? config.saml.publicCert.map(
@@ -94,7 +97,9 @@ export default function createSuomiFiStrategy(
     const getter = async (ssn: string) => {
       const citizen = await getCitizenBySsn(ssn)
       return verifyProfile({
+        issuer: 'mock',
         nameID: 'dummyid',
+        nameIDFormat: 'dummyformat',
         [SUOMI_FI_SSN_KEY]: citizen.ssn,
         [SUOMI_FI_GIVEN_NAME_KEY]: citizen.firstName,
         [SUOMI_FI_SURNAME_KEY]: citizen.lastName
@@ -105,7 +110,7 @@ export default function createSuomiFiStrategy(
   } else {
     return new Strategy(
       samlConfig,
-      (profile: Profile | null | undefined, done: VerifiedCallback) => {
+      (profile: Profile | null, done: VerifiedCallback) => {
         if (!profile) {
           done(new Error('No SAML profile'))
         } else {
@@ -113,7 +118,8 @@ export default function createSuomiFiStrategy(
             .then((user) => done(null, user))
             .catch(done)
         }
-      }
+      },
+      (profile, done) => done(null)
     )
   }
 }

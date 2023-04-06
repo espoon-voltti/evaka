@@ -7,8 +7,8 @@ import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
-import { SamlUser } from '../routes/auth/saml/types'
-import { Profile, SAML } from 'passport-saml'
+import { EvakaUserFields } from '../routes/auth/saml/types'
+import { Profile, SAML } from '@node-saml/passport-saml'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -32,7 +32,7 @@ export function requireAuthentication(
   return next()
 }
 
-function createJwtToken(user: SamlUser): string {
+function createJwtToken(user: EvakaUserFields): string {
   const type =
     user.userType ?? (gatewayRole === 'enduser' ? 'ENDUSER' : 'EMPLOYEE')
 
@@ -74,7 +74,7 @@ function createJwtToken(user: SamlUser): string {
   }
 }
 
-export function createAuthHeader(user: SamlUser): string {
+export function createAuthHeader(user: EvakaUserFields): string {
   return `Bearer ${createJwtToken(user)}`
 }
 

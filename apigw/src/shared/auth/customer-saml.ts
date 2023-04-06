@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fs from 'fs'
-import {
+import passportSaml, {
   Profile,
   SamlConfig,
   Strategy as SamlStrategy,
   VerifiedCallback
-} from 'passport-saml'
+} from '@node-saml/passport-saml'
 import { RedisClient } from 'redis'
 import { evakaCustomerSamlConfig } from '../config'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaUserFields } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 
@@ -51,38 +51,33 @@ export default function createKeycloakSamlStrategy(
 ): SamlStrategy {
   return new SamlStrategy(
     config,
-    (profile: Profile | null | undefined, done: VerifiedCallback) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      verifyKeycloakProfile(profile as any as KeycloakProfile)
-        .then((user) => done(null, user))
-        .catch(done)
-    }
+    (profile: Profile | null, done: VerifiedCallback) => {
+      if (!profile) {
+        done(new Error('No SAML profile'))
+      } else {
+        verifyKeycloakProfile(profile)
+          .then((user) => done(null, user))
+          .catch(done)
+      }
+    },
+    (profile, done) => done(null)
   )
 }
 
-interface KeycloakProfile {
-  id?: string
-  socialSecurityNumber: string
-  email: string
-  firstName: string
-  lastName: string
-  nameID?: string
-  nameIDFormat?: string
-  nameQualifier?: string
-  spNameQualifier?: string
-  sessionIndex?: string
-}
-
 async function verifyKeycloakProfile(
-  profile: KeycloakProfile
-): Promise<SamlUser> {
-  if (!profile.socialSecurityNumber)
+  profile: passportSaml.Profile
+): Promise<passportSaml.Profile & EvakaUserFields> {
+  const asString = (value: unknown) =>
+    value == null ? undefined : String(value)
+
+  const socialSecurityNumber = asString(profile['socialSecurityNumber'])
+  if (!socialSecurityNumber)
     throw Error('No socialSecurityNumber in evaka IDP SAML data')
 
   const person = await citizenLogin({
-    socialSecurityNumber: profile.socialSecurityNumber,
-    firstName: profile.firstName,
-    lastName: profile.lastName
+    socialSecurityNumber: socialSecurityNumber,
+    firstName: asString(profile['firstName']) ?? '',
+    lastName: asString(profile['lastName']) ?? ''
   })
 
   return {
@@ -90,6 +85,7 @@ async function verifyKeycloakProfile(
     userType: 'CITIZEN_WEAK',
     globalRoles: ['CITIZEN_WEAK'],
     allScopedRoles: [],
+    issuer: profile.issuer,
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,

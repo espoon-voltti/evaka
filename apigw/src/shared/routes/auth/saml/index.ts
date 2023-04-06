@@ -6,7 +6,7 @@ import express, { Router, urlencoded } from 'express'
 import _ from 'lodash'
 import passport from 'passport'
 import path from 'path'
-import { AuthenticateOptions, SAML } from 'passport-saml'
+import passportSaml, { SAML } from '@node-saml/passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
 import { Config, evakaBaseUrl, gatewayRole, nodeEnv } from '../../../config'
 import { getCitizens, getEmployees } from '../../../dev-api'
@@ -15,8 +15,11 @@ import { logAuditEvent, logDebug, logError } from '../../../logging'
 import { fromCallback } from '../../../promise-utils'
 import { logoutExpress, saveLogoutToken, saveSession } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
-import { SamlEndpointConfig, SamlUser } from './types'
-import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
+import { SamlEndpointConfig } from './types'
+import type {
+  AuthenticateOptions,
+  RequestWithUser
+} from '@node-saml/passport-saml/lib/types'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -75,7 +78,7 @@ function createLoginHandler({
       strategyName,
       options,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (err: any, user: SamlUser | undefined) => {
+      (err: any, user: Express.User | undefined) => {
         if (err || !user) {
           const description =
             parseDescriptionFromSamlError(err, req) ||
@@ -109,13 +112,14 @@ function createLoginHandler({
             'User logged in successfully'
           )
 
-          if (!user.nameID) {
+          const profile = user as passportSaml.Profile
+          if (!profile.nameID) {
             throw new Error('User unexpectedly missing nameID property')
           }
           await saveLogoutToken(
             req,
             strategyName,
-            createLogoutToken(user.nameID, user.sessionIndex)
+            createLogoutToken(profile.nameID, profile.sessionIndex)
           )
           const redirectUrl = getRedirectUrl(req)
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })

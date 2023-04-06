@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import passportSaml, {
   Profile,
   SamlConfig,
   Strategy as SamlStrategy,
   VerifiedCallback
-} from 'passport-saml'
-import { SamlUser } from '../routes/auth/saml/types'
+} from '@node-saml/passport-saml'
+import { EvakaUserFields } from '../routes/auth/saml/types'
 import { employeeLogin } from '../service-client'
 import { evakaSamlConfig } from '../config'
 import fs from 'fs'
@@ -49,42 +49,40 @@ export default function createKeycloakSamlStrategy(
 ): SamlStrategy {
   return new SamlStrategy(
     config,
-    (profile: Profile | null | undefined, done: VerifiedCallback) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      verifyKeycloakProfile(profile as KeycloakProfile)
-        .then((user) => done(null, user))
-        .catch(done)
-    }
+    (profile: Profile | null, done: VerifiedCallback) => {
+      if (!profile) {
+        done(new Error('No SAML profile'))
+      } else {
+        verifyKeycloakProfile(profile)
+          .then((user) => done(null, user))
+          .catch(done)
+      }
+    },
+    (profile, done) => done(null)
   )
 }
 
-interface KeycloakProfile {
-  id?: string
-  email?: string
-  firstName?: string
-  lastName?: string
-  nameID?: string
-  nameIDFormat?: string
-  nameQualifier?: string
-  spNameQualifier?: string
-  sessionIndex?: string
-}
-
 async function verifyKeycloakProfile(
-  profile: KeycloakProfile
-): Promise<SamlUser> {
-  if (!profile.id) throw Error('No user ID in evaka IDP SAML data')
+  profile: passportSaml.Profile
+): Promise<passportSaml.Profile & EvakaUserFields> {
+  const asString = (value: unknown) =>
+    value == null ? undefined : String(value)
+
+  const id = asString(profile['id'])
+
+  if (!id) throw Error('No user ID in evaka IDP SAML data')
   const person = await employeeLogin({
-    externalId: `evaka:${profile.id}`,
-    firstName: profile.firstName ?? '',
-    lastName: profile.lastName ?? '',
-    email: profile.email
+    externalId: `evaka:${id}`,
+    firstName: asString(profile.firstName) ?? '',
+    lastName: asString(profile.lastName) ?? '',
+    email: asString(profile.email)
   })
   return {
     id: person.id,
     userType: 'EMPLOYEE',
     globalRoles: person.globalRoles,
     allScopedRoles: person.allScopedRoles,
+    issuer: profile.issuer,
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,
