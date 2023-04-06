@@ -164,7 +164,7 @@ export default React.memo(function ChildDay({
               {reservation.endTime.format()}
             </ReservationTime>
           </>
-        ) : day.isInHolidayPeriodWithFutureDeadline && reservation == null ? (
+        ) : day.isInOpenHolidayPeriod && reservation == null ? (
           // holiday period with upcoming deadline, no reservation yet
           <ReservationTime warning data-qa="holiday-reservation-missing">
             {i18n.unit.attendanceReservations.missingHolidayReservation}

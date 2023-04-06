@@ -210,7 +210,7 @@ data class UnitAttendanceReservations(
     data class OperationalDay(
         val date: LocalDate,
         val isHoliday: Boolean,
-        val isInHolidayPeriodWithFutureDeadline: Boolean
+        val isInOpenHolidayPeriod: Boolean
     )
 
     data class GroupAttendanceReservations(
@@ -286,7 +286,7 @@ private fun getUnitOperationalDays(
             UnitAttendanceReservations.OperationalDay(
                 it,
                 isHoliday = !isRoundTheClockUnit && holidays.contains(it),
-                isInHolidayPeriodWithFutureDeadline = holidayPeriodDates.contains(it)
+                isInOpenHolidayPeriod = holidayPeriodDates.contains(it)
             )
         }
         .toList()
