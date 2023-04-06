@@ -129,11 +129,6 @@ export default function internalGwApp(
     )
 
     if (enableDevApi) {
-      router.post(
-        '/dev-api/pedagogical-document-attachment/:id',
-        createProxy({ multipart: true })
-      )
-
       router.use(
         '/dev-api',
         createProxy({ path: ({ path }) => `/dev-api${path}` })
@@ -168,28 +163,6 @@ export default function internalGwApp(
       '/auth/pin-logout',
       express.json(),
       pinLogoutRequestHandler(new AsyncRedisClient(redisClient))
-    )
-    router.post(
-      '/attachments/applications/:applicationId',
-      createProxy({ multipart: true })
-    )
-    router.post(
-      '/attachments/income-statements/:incomeStatementId',
-      createProxy({ multipart: true })
-    )
-    router.post(
-      '/attachments/messages/:draftId',
-      createProxy({ multipart: true })
-    )
-    router.post(
-      '/attachments/pedagogical-documents/:documentId',
-      createProxy({ multipart: true })
-    )
-    router.put('/children/:childId/image', createProxy({ multipart: true }))
-
-    router.post(
-      '/attachments/income/:incomeId?',
-      createProxy({ multipart: true })
     )
 
     router.use(createProxy())

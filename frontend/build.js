@@ -240,15 +240,15 @@ function serve(projects) {
   app.use(
     '/api/internal',
     proxy(process.env.API_PROXY_URL ?? 'http://localhost:3020', {
-      proxyReqPathResolver: ({ originalUrl }) => originalUrl,
-      limit: '100mb'
+      parseReqBody: false,
+      proxyReqPathResolver: ({ originalUrl }) => originalUrl
     })
   )
   app.use(
     '/api/application',
     proxy(process.env.API_PROXY_URL ?? 'http://localhost:3010', {
-      proxyReqPathResolver: ({ originalUrl }) => originalUrl,
-      limit: '10mb'
+      parseReqBody: false,
+      proxyReqPathResolver: ({ originalUrl }) => originalUrl
     })
   )
   for (const project of projects) {
