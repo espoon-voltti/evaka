@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -16,24 +17,29 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
+import fi.espoo.evaka.snDefaultDaycare
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -76,15 +82,24 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
                     )
                 )
+            val unitSupervisor = tx.insertTestEmployee(DevEmployee())
+            tx.insertServiceNeedOption(snDefaultDaycare)
             child = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardian, childId = child))
-            tx.insertTestPlacement(
-                DevPlacement(
-                    childId = child,
-                    unitId = daycareId,
-                    startDate = checkedRange.start,
-                    endDate = checkedRange.end
+            val placementId =
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = child,
+                        unitId = daycareId,
+                        startDate = checkedRange.start,
+                        endDate = checkedRange.end
+                    )
                 )
+            tx.insertTestServiceNeed(
+                confirmedBy = EvakaUserId(unitSupervisor.raw),
+                placementId = placementId,
+                period = checkedRange,
+                optionId = snDefaultDaycare.id
             )
         }
     }
@@ -132,6 +147,12 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `reminder is not sent when reservations are missing only from non-operational days`() {
         db.transaction { tx -> checkedRange.dates().take(5).forEach { tx.createReservation(it) } }
+        assertEquals(emptyList(), getReminderRecipients())
+    }
+
+    @Test
+    fun `reminder is not sent when child has no service need`() {
+        db.transaction { tx -> tx.createUpdate("TRUNCATE service_need").execute() }
         assertEquals(emptyList(), getReminderRecipients())
     }
 
