@@ -9,7 +9,6 @@ import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
 import fi.espoo.evaka.attendance.getOccupancyCoefficientForEmployeeInUnit
 import fi.espoo.evaka.attendance.upsertOccupancyCoefficient
-import fi.espoo.evaka.daycare.getDaycareAclRows
 import fi.espoo.evaka.daycare.removeDaycareAclForRole
 import fi.espoo.evaka.daycare.service.getDaycareIdByGroup
 import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
@@ -54,6 +53,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class UnitAclController(private val accessControl: AccessControl) {
+
+    val coefficientPositiveValue = BigDecimal("7.00")
+    val coefficientNegativeValue = BigDecimal("0.00")
+
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
         db: Database,
@@ -63,20 +66,38 @@ class UnitAclController(private val accessControl: AccessControl) {
     ): DaycareAclResponse {
         return DaycareAclResponse(
             db.connect { dbc ->
-                    dbc.read {
-                        accessControl.requirePermissionFor(
-                            it,
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ACL,
+                        daycareId
+                    )
+                    val hasOccupancyPermission =
+                        accessControl.hasPermissionFor(
+                            tx,
                             user,
                             clock,
-                            Action.Unit.READ_ACL,
+                            Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
                             daycareId
                         )
+
+                    val aclRows = tx.getDaycareAclRows(daycareId, hasOccupancyPermission)
+
+                    Audit.UnitAclRead.log(
+                        targetId = daycareId,
+                        meta = mapOf("count" to aclRows.size)
+                    )
+                    if (hasOccupancyPermission) {
+                        Audit.StaffOccupancyCoefficientRead.log(
+                            targetId = daycareId,
+                            meta = mapOf("count" to aclRows.size)
+                        )
                     }
-                    getDaycareAclRows(dbc, daycareId)
+                    aclRows
                 }
-                .also {
-                    Audit.UnitAclRead.log(targetId = daycareId, meta = mapOf("count" to it.size))
-                }
+            }
         )
     }
 
@@ -195,7 +216,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable employeeId: EmployeeId,
         @RequestBody update: AclUpdate
     ) {
-        if (update.groupIds == null && update.occupancyCoefficient == null) {
+        if (update.groupIds == null && update.hasStaffOccupancyEffect == null) {
             throw BadRequest("Request is missing all update content")
         }
         val occupancyCoefficientId =
@@ -215,7 +236,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     }
 
                     val occupancyCoefficientId =
-                        update.occupancyCoefficient?.let {
+                        update.hasStaffOccupancyEffect?.let {
                             accessControl.requirePermissionFor(
                                 tx,
                                 user,
@@ -227,7 +248,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 OccupancyCoefficientUpsert(
                                     unitId = daycareId,
                                     employeeId = employeeId,
-                                    coefficient = update.occupancyCoefficient
+                                    coefficient = parseCoefficientValue(it)
                                 )
                             )
                         }
@@ -238,7 +259,7 @@ class UnitAclController(private val accessControl: AccessControl) {
             Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
         }
 
-        if (update.occupancyCoefficient != null) {
+        if (update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
                 targetId = listOf(daycareId, employeeId),
                 objectId = occupancyCoefficientId
@@ -275,7 +296,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         tx.insertDaycareGroupAcl(daycareId, employeeId, it)
                     }
                     val occupancyCoefficientId =
-                        aclInfo.update.occupancyCoefficient?.let {
+                        aclInfo.update.hasStaffOccupancyEffect?.let {
                             accessControl.requirePermissionFor(
                                 tx,
                                 user,
@@ -287,7 +308,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 OccupancyCoefficientUpsert(
                                     unitId = daycareId,
                                     employeeId = employeeId,
-                                    coefficient = it
+                                    coefficient = parseCoefficientValue(it)
                                 )
                             )
                         }
@@ -298,7 +319,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         if (aclInfo.update.groupIds != null) {
             Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
         }
-        if (aclInfo.update.occupancyCoefficient != null) {
+        if (aclInfo.update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
                 targetId = listOf(daycareId, employeeId),
                 objectId = occupancyCoefficientId
@@ -307,9 +328,8 @@ class UnitAclController(private val accessControl: AccessControl) {
     }
 
     @ExcludeCodeGen data class FullAclInfo(val role: UserRole, val update: AclUpdate)
-    @ExcludeCodeGen
-    data class AclUpdate(val groupIds: List<GroupId>?, val occupancyCoefficient: BigDecimal?)
-    data class DaycareAclResponse(val rows: List<DaycareAclRow>)
+    data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
+    data class DaycareAclResponse(val aclRows: List<DaycareAclRow>)
 
     fun getRoleAddAction(role: UserRole): Action.Unit =
         when (role) {
@@ -395,7 +415,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     unitId
                 )
                 val groupIds =
-                    tx.getDaycareAclRows(daycareId = unitId)
+                    tx.getDaycareAclRows(daycareId = unitId, false)
                         .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
                         .flatMap { it.groupIds }
                         .toSet()
@@ -544,4 +564,7 @@ class UnitAclController(private val accessControl: AccessControl) {
             tx.deactivateEmployeeMessageAccount(employee.id)
         }
     }
+
+    fun parseCoefficientValue(bool: Boolean) =
+        if (bool) coefficientPositiveValue else coefficientNegativeValue
 }

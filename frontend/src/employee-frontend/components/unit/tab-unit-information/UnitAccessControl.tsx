@@ -7,11 +7,10 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { getOccupancyCoefficients } from 'employee-frontend/api/staff-occupancy'
-import { combine, isLoading, Success } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
-import { UserRole } from 'lib-common/generated/api-types/shared'
+import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
@@ -28,7 +27,6 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
-  DaycareAclRow,
   DaycareGroupSummary,
   removeDaycareAclEarlyChildhoodEducationSecretary,
   removeDaycareAclSpecialEducationTeacher,
@@ -64,10 +62,8 @@ export interface FormattedRow {
   name: string
   email: string
   groupIds: UUID[]
-  coefficient: number
+  hasStaffOccupancyEffect: boolean
 }
-
-type DaycareAclWithCoefficientRow = DaycareAclRow & { coefficient: number }
 
 const RowButtons = styled.div`
   display: flex;
@@ -154,9 +150,11 @@ function AclRow({
       )}
       {coefficientPermitted && (
         <Td
-          data-qa={row.coefficient > 0 ? 'coefficient-on' : 'coefficient-off'}
+          data-qa={
+            row.hasStaffOccupancyEffect ? 'coefficient-on' : 'coefficient-off'
+          }
         >
-          {row.coefficient > 0 && (
+          {row.hasStaffOccupancyEffect && (
             <Tooltip
               tooltip={i18n.unit.attendanceReservations.affectsOccupancy}
               position="bottom"
@@ -250,7 +248,7 @@ interface AdditionState {
 }
 
 function formatRowsOfRole(
-  rows: DaycareAclWithCoefficientRow[],
+  rows: DaycareAclRow[],
   role: AdRole,
   i18n: Translations
 ): FormattedRow[] {
@@ -259,7 +257,7 @@ function formatRowsOfRole(
       .filter((row) => row.role === role)
       .map((row) => ({
         id: row.employee.id,
-        coefficient: row.coefficient,
+        hasStaffOccupancyEffect: row.employee.hasStaffOccupancyEffect ?? false,
         name: formatName(row.employee.firstName, row.employee.lastName, i18n),
         email: row.employee.email ?? row.employee.id,
         groupIds: row.groupIds
@@ -299,14 +297,6 @@ export default React.memo(function UnitAccessControl({
   const { user } = useContext(UserContext)
   const [employees] = useApiState(getEmployees, [])
 
-  const [occupancyCoefficients, reloadStaffOccupancyCoefficients] = useApiState(
-    () =>
-      permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS')
-        ? getOccupancyCoefficients(unitId)
-        : Promise.resolve(Success.of([])),
-    [unitId, permittedActions]
-  )
-
   const candidateEmployees = useMemo(
     () =>
       combine(employees, daycareAclRows).map(([employees, daycareAclRows]) =>
@@ -322,56 +312,37 @@ export default React.memo(function UnitAccessControl({
     [employees, daycareAclRows, user]
   )
 
-  const aclWithCoefficientRows = useMemo(
-    () =>
-      combine(daycareAclRows, occupancyCoefficients).map(
-        ([daycareAclRows, occupancyCoefficients]) =>
-          daycareAclRows.map((aclRow) => ({
-            ...aclRow,
-            coefficient:
-              occupancyCoefficients.find(
-                (soc) => soc.employeeId === aclRow.employee.id
-              )?.coefficient ?? 0
-          }))
-      ),
-    [daycareAclRows, occupancyCoefficients]
-  )
-
   const unitSupervisors = useMemo(
     () =>
-      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
-        formatRowsOfRole(aclWithCoefficientRows, 'UNIT_SUPERVISOR', i18n)
+      daycareAclRows.map((daycareAclRows) =>
+        formatRowsOfRole(daycareAclRows, 'UNIT_SUPERVISOR', i18n)
       ),
-    [aclWithCoefficientRows, i18n]
+    [daycareAclRows, i18n]
   )
   const specialEducationTeachers = useMemo(
     () =>
-      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
-        formatRowsOfRole(
-          aclWithCoefficientRows,
-          'SPECIAL_EDUCATION_TEACHER',
-          i18n
-        )
+      daycareAclRows.map((daycareAclRows) =>
+        formatRowsOfRole(daycareAclRows, 'SPECIAL_EDUCATION_TEACHER', i18n)
       ),
-    [aclWithCoefficientRows, i18n]
+    [daycareAclRows, i18n]
   )
   const earlyChildhoodEducationSecretaries = useMemo(
     () =>
-      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
+      daycareAclRows.map((daycareAclRows) =>
         formatRowsOfRole(
-          aclWithCoefficientRows,
+          daycareAclRows,
           'EARLY_CHILDHOOD_EDUCATION_SECRETARY',
           i18n
         )
       ),
-    [aclWithCoefficientRows, i18n]
+    [daycareAclRows, i18n]
   )
   const staff = useMemo(
     () =>
-      aclWithCoefficientRows.map((aclWithCoefficientRows) =>
-        formatRowsOfRole(aclWithCoefficientRows, 'STAFF', i18n)
+      daycareAclRows.map((daycareAclRows) =>
+        formatRowsOfRole(daycareAclRows, 'STAFF', i18n)
       ),
-    [aclWithCoefficientRows, i18n]
+    [daycareAclRows, i18n]
   )
 
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
@@ -402,15 +373,10 @@ export default React.memo(function UnitAccessControl({
     setUpdateState(undefined)
   }, [clearUiMode])
 
-  const confirmEmployeeAclRowEditModal = useCallback(async () => {
+  const confirmEmployeeAclRowEditModal = useCallback(() => {
     closeEmployeeAclRowEditModal()
-    await reloadStaffOccupancyCoefficients()
     reloadDaycareAclRows()
-  }, [
-    closeEmployeeAclRowEditModal,
-    reloadDaycareAclRows,
-    reloadStaffOccupancyCoefficients
-  ])
+  }, [closeEmployeeAclRowEditModal, reloadDaycareAclRows])
 
   // in-row removal modal generic fns
   const openRemoveModal = useCallback(
@@ -429,15 +395,8 @@ export default React.memo(function UnitAccessControl({
   const confirmRemoveModal = useCallback(async () => {
     await removeState?.removeFn(unitId, removeState.employeeId)
     closeRemoveModal()
-    await reloadStaffOccupancyCoefficients()
     reloadDaycareAclRows()
-  }, [
-    closeRemoveModal,
-    reloadDaycareAclRows,
-    reloadStaffOccupancyCoefficients,
-    removeState,
-    unitId
-  ])
+  }, [closeRemoveModal, reloadDaycareAclRows, removeState, unitId])
 
   // daycare addition modal role-based addition fns
   const openAddStaffModal = useCallback(() => {
@@ -467,21 +426,13 @@ export default React.memo(function UnitAccessControl({
     clearUiMode()
   }, [clearUiMode])
 
-  const confirmAddDaycareAclModal = useCallback(async () => {
+  const confirmAddDaycareAclModal = useCallback(() => {
     closeAddDaycareAclModal()
-    await reloadStaffOccupancyCoefficients()
     reloadDaycareAclRows()
-  }, [
-    closeAddDaycareAclModal,
-    reloadDaycareAclRows,
-    reloadStaffOccupancyCoefficients
-  ])
+  }, [closeAddDaycareAclModal, reloadDaycareAclRows])
 
   return (
-    <div
-      data-qa="daycare-acl"
-      data-isloading={isLoading(aclWithCoefficientRows)}
-    >
+    <div data-qa="daycare-acl" data-isloading={isLoading(daycareAclRows)}>
       {uiMode === `remove-daycare-acl-${unitId}` && (
         <DeleteConfirmationModal
           onClose={closeRemoveModal}

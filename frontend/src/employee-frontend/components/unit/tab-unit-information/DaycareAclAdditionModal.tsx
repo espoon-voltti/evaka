@@ -12,9 +12,9 @@ import {
 } from 'employee-frontend/api/unit'
 import { Employee } from 'employee-frontend/types/employee'
 import { formatName } from 'employee-frontend/utils'
-import { StaffOccupancyCoefficientUtil } from 'employee-frontend/utils/StaffOccupancyCoefficientUtil'
 import { Failure } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -38,8 +38,8 @@ interface EmployeeOption {
 
 type DaycareAclAdditionFormState = {
   selectedEmployee: EmployeeOption | null
-  selectedGroups?: DaycareGroupSummary[]
-  occupancyCoefficient?: number
+  selectedGroups: DaycareGroupSummary[] | null
+  hasStaffOccupancyEffect: boolean | null
 }
 
 type DaycareAclAdditionModalProps = {
@@ -65,23 +65,23 @@ export default React.memo(function DaycareAclAdditionModal({
 
   const [formData, setFormData] = useState<DaycareAclAdditionFormState>({
     selectedEmployee: null,
-    selectedGroups: undefined,
-    occupancyCoefficient: undefined
+    selectedGroups: null,
+    hasStaffOccupancyEffect: null
   })
 
   const submit = useCallback(async () => {
     const employeeId = formData.selectedEmployee?.value ?? ''
-    const updateBody = {
+    const updateBody: AclUpdate = {
       groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
-        ? formData.selectedGroups?.map((g) => g.id)
-        : undefined,
-      occupancyCoefficient: permittedActions.has(
+        ? formData.selectedGroups
+          ? formData.selectedGroups.map((g) => g.id)
+          : null
+        : null,
+      hasStaffOccupancyEffect: permittedActions.has(
         'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
       )
-        ? StaffOccupancyCoefficientUtil.parseNumberValue(
-            formData.occupancyCoefficient
-          )
-        : undefined
+        ? formData.hasStaffOccupancyEffect
+        : null
     }
     if (employeeId === '' || !role) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
@@ -160,16 +160,13 @@ export default React.memo(function DaycareAclAdditionModal({
         {permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="add-daycare-acl-coeff-checkbox"
-            checked={StaffOccupancyCoefficientUtil.parseToBoolean(
-              formData.occupancyCoefficient
-            )}
+            checked={formData.hasStaffOccupancyEffect === true}
             disabled={false}
             label={i18n.unit.accessControl.hasOccupancyCoefficient}
             onChange={(checked) => {
               setFormData({
                 ...formData,
-                occupancyCoefficient:
-                  StaffOccupancyCoefficientUtil.parseToNumber(checked)
+                hasStaffOccupancyEffect: checked
               })
             }}
           />

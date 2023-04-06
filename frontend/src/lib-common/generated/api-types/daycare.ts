@@ -111,6 +111,14 @@ export interface AbsenceWithModifierInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.AclUpdate
+*/
+export interface AclUpdate {
+  groupIds: UUID[] | null
+  hasStaffOccupancyEffect: boolean | null
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.AdditionalInformation
 */
 export interface AdditionalInformation {
@@ -292,7 +300,7 @@ export interface Daycare {
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.DaycareAclResponse
 */
 export interface DaycareAclResponse {
-  rows: DaycareAclRow[]
+  aclRows: DaycareAclRow[]
 }
 
 /**

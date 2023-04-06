@@ -6,13 +6,10 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  AclUpdateDetails,
-  DaycareGroupSummary
-} from 'employee-frontend/api/unit'
-import { StaffOccupancyCoefficientUtil } from 'employee-frontend/utils/StaffOccupancyCoefficientUtil'
+import { DaycareGroupSummary } from 'employee-frontend/api/unit'
 import { Failure, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -29,8 +26,8 @@ import { useTranslation } from '../../../state/i18n'
 import { FormattedRow } from './UnitAccessControl'
 
 type EmployeeRowEditFormState = {
-  selectedGroups?: DaycareGroupSummary[]
-  occupancyCoefficient?: number
+  selectedGroups: DaycareGroupSummary[] | null
+  hasStaffOccupancyEffect: boolean | null
 }
 
 type EmployeeRowEditModalProps = {
@@ -39,7 +36,7 @@ type EmployeeRowEditModalProps = {
   updatesGroupAcl: (
     unitId: UUID,
     employeeId: UUID,
-    update: AclUpdateDetails
+    update: AclUpdate
   ) => Promise<Result<unknown>>
   permittedActions: Set<Action.Unit>
   unitId: UUID
@@ -73,22 +70,28 @@ export default React.memo(function EmployeeAclRowEditModal({
   const initSelectedGroups = (groupIds: UUID[]) => {
     return permittedActions.has('UPDATE_STAFF_GROUP_ACL')
       ? groupOptions.filter((option) => groupIds.includes(option.id))
-      : undefined
+      : null
   }
 
   const [formData, setFormData] = useState<EmployeeRowEditFormState>({
     selectedGroups: initSelectedGroups(employeeRow?.groupIds ?? []),
-    occupancyCoefficient: employeeRow?.coefficient
+    hasStaffOccupancyEffect: employeeRow
+      ? employeeRow.hasStaffOccupancyEffect
+      : null
   })
 
   const submit = useCallback(() => {
-    const updateBody = {
-      groupIds: formData.selectedGroups?.map((g) => g.id),
-      occupancyCoefficient: permittedActions.has(
+    const updateBody: AclUpdate = {
+      groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+        ? formData.selectedGroups
+          ? formData.selectedGroups.map((g) => g.id)
+          : null
+        : null,
+      hasStaffOccupancyEffect: permittedActions.has(
         'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
       )
-        ? formData.occupancyCoefficient
-        : undefined
+        ? formData.hasStaffOccupancyEffect
+        : null
     }
     if (!employeeRow) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
@@ -127,9 +130,7 @@ export default React.memo(function EmployeeAclRowEditModal({
         {permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="edit-acl-modal-coeff-checkbox"
-            checked={StaffOccupancyCoefficientUtil.parseToBoolean(
-              formData.occupancyCoefficient
-            )}
+            checked={formData.hasStaffOccupancyEffect === true}
             disabled={
               !permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
             }
@@ -137,8 +138,7 @@ export default React.memo(function EmployeeAclRowEditModal({
             onChange={(checked) => {
               setFormData({
                 ...formData,
-                occupancyCoefficient:
-                  StaffOccupancyCoefficientUtil.parseToNumber(checked)
+                hasStaffOccupancyEffect: checked
               })
             }}
           />

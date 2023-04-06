@@ -32,6 +32,7 @@ export interface DaycareAclRow {
 export interface DaycareAclRowEmployee {
   email: string | null
   firstName: string
+  hasStaffOccupancyEffect: boolean | null
   id: UUID
   lastName: string
   temporary: boolean
