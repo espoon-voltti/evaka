@@ -20,7 +20,7 @@ export function createProxy({
 }: ProxyOptions = {}) {
   return expressHttpProxy(url, {
     limit: multipart ? '10mb' : '1mb',
-    parseReqBody: !multipart,
+    parseReqBody: false,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
       const headers = createServiceRequestHeaders(srcReq)
