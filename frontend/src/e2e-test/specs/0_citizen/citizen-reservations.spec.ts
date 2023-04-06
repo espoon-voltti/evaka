@@ -222,6 +222,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     )
 
     const absencesModal = await calendarPage.openAbsencesModal()
+    await absencesModal.toggleChildren(children)
     await absencesModal.markAbsence(
       children[0],
       children.length,

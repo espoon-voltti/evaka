@@ -152,8 +152,15 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       snContractDaysPerMonth10
     )
 
+    const childIds = [
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserChildFixtureKaarina,
+      fixtures.enduserChildFixturePorriHatterRestricted
+    ]
+
     const calendarPage = await openCalendarPage()
     const absencesModal = await calendarPage.openAbsencesModal()
+    await absencesModal.toggleChildren(childIds)
     await absencesModal.selectDates(
       new FiniteDateRange(firstReservationDay, firstReservationDay)
     )
