@@ -552,6 +552,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         language: Language,
         checkedRange: FiniteDateRange
     ): EmailContent {
+        val messageUrl = "${baseUrl(language)}/calendar"
         val start =
             checkedRange.start.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale("fi", "FI"))
@@ -561,24 +562,24 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 "Läsnäolovarauksia puuttuu / Det finns några närvarobokningar som saknas / There are missing attendance reservations",
             text =
                 """
-Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian.
+Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian: $messageUrl
 
 -----
 
-Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt.
+Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt: $messageUrl
 
 ----
 
-There are missing attendance reservations for the week starting $start. Please mark them as soon as possible.
+There are missing attendance reservations for the week starting $start. Please mark them as soon as possible: $messageUrl
                 """
                     .trimIndent(),
             html =
                 """
-<p>Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian.</p>
+<p>Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian: <a href="$messageUrl">$messageUrl</a></p>
 <hr>
-<p>Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt.</p>
+<p>Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt: <a href="$messageUrl">$messageUrl</a></p>
 <hr>
-<p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible.</p>
+<p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible: <a href="$messageUrl">$messageUrl</a></p>
             """
                     .trimIndent()
         )
