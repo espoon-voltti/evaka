@@ -15,6 +15,7 @@ const router = Router()
 
 function createDigitransitProxy(path: string) {
   return expressHttpProxy(digitransitApiUrl, {
+    parseReqBody: false,
     proxyReqPathResolver: (req) => {
       const query = req.url.split('?')[1]
       return path + (query ? '?' + query : '')
