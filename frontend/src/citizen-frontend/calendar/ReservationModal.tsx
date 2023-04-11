@@ -49,6 +49,7 @@ import {
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import {
+  HolidayPeriodInfo,
   initialState,
   reservationForm,
   resetTimes
@@ -63,6 +64,7 @@ interface Props {
   initialStart: LocalDate | null
   initialEnd: LocalDate | null
   existingReservations: DailyReservationData[]
+  upcomingHolidayPeriods: HolidayPeriodInfo[]
 }
 
 export default React.memo(function ReservationModal({
@@ -72,7 +74,8 @@ export default React.memo(function ReservationModal({
   reservableDays,
   initialStart,
   initialEnd,
-  existingReservations
+  existingReservations,
+  upcomingHolidayPeriods
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -87,7 +90,16 @@ export default React.memo(function ReservationModal({
 
   const form = useForm(
     reservationForm,
-    () => initialState(availableChildren, initialStart, initialEnd, i18n),
+    () =>
+      initialState(
+        availableChildren,
+        initialStart,
+        initialEnd,
+        childrenInShiftCare,
+        existingReservations,
+        upcomingHolidayPeriods,
+        i18n
+      ),
     i18n.validationErrors,
     {
       onUpdate: (prevState, nextState, form) => {
@@ -113,7 +125,8 @@ export default React.memo(function ReservationModal({
               existingReservations,
               repetition,
               selectedRange,
-              selectedChildren
+              selectedChildren,
+              upcomingHolidayPeriods
             )
           }
         }
@@ -133,7 +146,8 @@ export default React.memo(function ReservationModal({
               existingReservations,
               repetition,
               selectedRange,
-              selectedChildren
+              selectedChildren,
+              upcomingHolidayPeriods
             )
           }
         }

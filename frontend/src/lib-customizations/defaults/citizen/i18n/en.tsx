@@ -327,6 +327,7 @@ const en: Translations = {
       },
       start: 'Start',
       end: 'End',
+      present: 'Present',
       absent: 'Absent',
       saveErrors: {
         failure: 'Could not save',

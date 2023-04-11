@@ -10,7 +10,6 @@ import {
   BoundForm,
   BoundFormState,
   useFormElem,
-  useFormFields,
   useFormUnion
 } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -24,7 +23,7 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, times, writableDay } from './form'
+import { day, emptyTimeRange, times } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
@@ -45,30 +44,33 @@ export const Day = React.memo(function Day({
 }: DayProps) {
   const { branch, form } = useFormUnion(bind)
 
-  if (branch === 'readOnly') {
-    return (
-      <ReadOnlyDay
-        mode={form.state}
-        label={label}
-        dataQaPrefix={dataQaPrefix}
-      />
-    )
-  } else {
-    return (
-      <WritableDay
-        bind={form}
-        label={label}
-        showAllErrors={showAllErrors}
-        allowExtraTimeRange={allowExtraTimeRange}
-        dataQaPrefix={dataQaPrefix}
-        onFocus={onFocus}
-      />
-    )
+  switch (branch) {
+    case 'readOnly':
+      return (
+        <ReadOnlyDay
+          mode={form.state}
+          label={label}
+          dataQaPrefix={dataQaPrefix}
+        />
+      )
+    case 'reservation':
+      return (
+        <ReservationTimes
+          bind={form}
+          label={label}
+          showAllErrors={showAllErrors}
+          allowExtraTimeRange={allowExtraTimeRange}
+          dataQaPrefix={dataQaPrefix}
+          onFocus={onFocus}
+        />
+      )
+    case 'holidayReservation':
+      return <HolidayReservation bind={form} label={label} />
   }
 })
 
-interface WritableDayProps {
-  bind: BoundForm<typeof writableDay>
+interface ReservationTimesProps {
+  bind: BoundForm<typeof times>
   label: React.ReactNode
   showAllErrors: boolean
   allowExtraTimeRange: boolean
@@ -76,18 +78,19 @@ interface WritableDayProps {
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
-const WritableDay = React.memo(function WritableDay({
+const ReservationTimes = React.memo(function ReservationTimes({
   bind,
   label,
   showAllErrors,
   allowExtraTimeRange,
   dataQaPrefix,
   onFocus
-}: WritableDayProps) {
+}: ReservationTimesProps) {
   const i18n = useTranslation()
-  const { present, times } = useFormFields(bind)
+  const { set, state } = bind
 
-  return !present.state ? (
+  // Empty reservations array => absent
+  return state.length === 0 ? (
     <FixedSpaceRow fullWidth>
       <LeftCell>{label}</LeftCell>
       <MiddleCell textOnly>{i18n.calendar.reservationModal.absent}</MiddleCell>
@@ -96,8 +99,7 @@ const WritableDay = React.memo(function WritableDay({
           data-qa={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
           icon={fasUserMinus}
           onClick={() => {
-            present.set(true)
-            times.set([emptyTimeRange])
+            set([emptyTimeRange])
           }}
           aria-label={i18n.calendar.absentDisable}
         />
@@ -105,10 +107,10 @@ const WritableDay = React.memo(function WritableDay({
     </FixedSpaceRow>
   ) : (
     <Times
-      bind={times}
-      onAbsent={() => present.set(false)}
+      bind={bind}
       label={label}
       showAllErrors={showAllErrors}
+      allowAbsence
       allowExtraTimeRange={allowExtraTimeRange}
       dataQaPrefix={dataQaPrefix}
       onFocus={onFocus}
@@ -187,9 +189,9 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
 
 interface TimesProps {
   bind: BoundForm<typeof times>
-  onAbsent?: () => void
   label: React.ReactNode
   showAllErrors: boolean
+  allowAbsence?: boolean
   allowExtraTimeRange: boolean
   dataQaPrefix?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
@@ -197,9 +199,9 @@ interface TimesProps {
 
 export const Times = React.memo(function Times({
   bind,
-  onAbsent,
   label,
   showAllErrors,
+  allowAbsence = false,
   allowExtraTimeRange,
   dataQaPrefix,
   onFocus
@@ -226,13 +228,13 @@ export const Times = React.memo(function Times({
         </MiddleCell>
         <RightCell>
           <FixedSpaceRow>
-            {onAbsent !== undefined ? (
+            {allowAbsence ? (
               <IconButton
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
                 }
                 icon={faUserMinus}
-                onClick={onAbsent}
+                onClick={() => bind.set([])}
                 aria-label={i18n.calendar.absentEnable}
               />
             ) : null}
@@ -272,30 +274,31 @@ export const Times = React.memo(function Times({
   )
 })
 
-export function HolidayReservationInputs({
+export function HolidayReservation({
   bind,
   label
 }: {
-  bind: BoundFormState<boolean>
+  bind: BoundFormState<'present' | 'absent'>
   label: React.ReactNode
 }) {
+  const i18n = useTranslation()
   return (
     <FixedSpaceRow fullWidth>
       <LeftCell>{label}</LeftCell>
       <MiddleCell>
         <Radio
-          checked={bind.state}
-          onChange={() => bind.set(true)}
-          label="Paikalla"
-          ariaLabel="Paikalla"
+          checked={bind.state === 'present'}
+          onChange={() => bind.set('present')}
+          label={i18n.calendar.reservationModal.present}
+          ariaLabel={i18n.calendar.reservationModal.present}
         />
       </MiddleCell>
       <RightCell>
         <Radio
-          checked={!bind.state}
-          onChange={() => bind.set(false)}
-          label="Poissa"
-          ariaLabel="Poissa"
+          checked={bind.state === 'absent'}
+          onChange={() => bind.set('absent')}
+          label={i18n.calendar.reservationModal.absent}
+          ariaLabel={i18n.calendar.reservationModal.absent}
         />
       </RightCell>
     </FixedSpaceRow>

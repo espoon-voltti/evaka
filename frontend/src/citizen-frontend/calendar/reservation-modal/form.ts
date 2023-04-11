@@ -6,15 +6,9 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  boolean,
-  localDateRange,
-  localTimeRange,
-  string
-} from 'lib-common/form/fields'
+import { localDateRange, localTimeRange, string } from 'lib-common/form/fields'
 import {
   array,
-  chained,
   mapped,
   object,
   oneOf,
@@ -23,10 +17,11 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import { StateOf, ValidationSuccess } from 'lib-common/form/types'
+import { StateOf } from 'lib-common/form/types'
 import {
   DailyReservationData,
   DailyReservationRequest,
+  Reservation,
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -50,35 +45,39 @@ export const times = array(
   )
 )
 
-export const writableDay = chained(
-  object({
-    present: boolean(),
-    times
-  }),
-  (form, state) =>
-    state.present
-      ? form.shape.times.validate(state.times).map((times) => ({
-          present: true,
-          times
-        }))
-      : ValidationSuccess.of({ present: false, times: [] })
-)
-
 export const day = mapped(
   union({
     readOnly: value<'not-editable' | 'holiday' | undefined>(),
-    writable: writableDay
+    reservation: times,
+    holidayReservation: value<'present' | 'absent'>()
   }),
-  (value) => (value.branch === 'writable' ? value.value : undefined)
+  ({ branch, value }): Reservation[] | undefined =>
+    branch === 'reservation'
+      ? value.map(timeRangeToTimes)
+      : branch === 'holidayReservation'
+      ? value === 'present'
+        ? [{ type: 'NO_TIMES' }]
+        : [] // absent
+      : undefined // readOnly
 )
 
 const emptyDay: StateOf<typeof day> = {
-  branch: 'writable',
-  state: {
-    present: true,
-    times: [emptyTimeRange]
-  }
+  branch: 'reservation',
+  state: [emptyTimeRange]
 }
+
+export const dailyTimes = mapped(
+  union({
+    times,
+    holidayReservation: value<'present' | 'absent'>()
+  }),
+  ({ branch, value }): Reservation[] =>
+    branch === 'times'
+      ? value.map(timeRangeToTimes)
+      : value === 'present'
+      ? [{ type: 'NO_TIMES' }]
+      : [] // absent
+)
 
 export const weeklyTimes = array(day)
 
@@ -93,7 +92,7 @@ export const irregularDay = mapped(
 export const irregularTimes = array(irregularDay)
 
 export const timesUnion = union({
-  dailyTimes: times,
+  dailyTimes,
   weeklyTimes,
   irregularTimes
 })
@@ -117,7 +116,9 @@ export const reservationForm = mapped(
           childReservableDays.some((range) => range.includes(date))
         )
       }),
-    toRequest: (reservableDays: Record<string, FiniteDateRange[]>) =>
+    toRequest: (
+      reservableDays: Record<string, FiniteDateRange[]>
+    ): DailyReservationRequest[] =>
       output.selectedChildren
         .flatMap((childId): DailyReservationRequest[] => {
           const childReservableDays = reservableDays[childId] ?? []
@@ -126,12 +127,12 @@ export const reservationForm = mapped(
           )
           switch (output.times.branch) {
             case 'dailyTimes': {
-              const timesValue = output.times.value
+              const reservations = output.times.value
               return dates.map((date) => ({
                 childId,
                 date,
-                reservations: timesValue.map(timeRangeToTimes),
-                absent: false
+                reservations: reservations.length > 0 ? reservations : null,
+                absent: reservations.length === 0
               }))
             }
             case 'weeklyTimes': {
@@ -143,10 +144,8 @@ export const reservationForm = mapped(
                     ? {
                         childId,
                         date,
-                        reservations: weekDay.present
-                          ? weekDay.times.map(timeRangeToTimes)
-                          : null,
-                        absent: !weekDay.present
+                        reservations: weekDay.length > 0 ? weekDay : null,
+                        absent: weekDay.length === 0
                       }
                     : undefined
                 })
@@ -163,10 +162,9 @@ export const reservationForm = mapped(
                 .map((irregularDay) => ({
                   childId,
                   date: irregularDay.date,
-                  reservations: irregularDay.day.present
-                    ? irregularDay.day.times.map(timeRangeToTimes)
-                    : null,
-                  absent: !irregularDay.day.present
+                  reservations:
+                    irregularDay.day.length > 0 ? irregularDay.day : null,
+                  absent: irregularDay.day.length === 0
                 }))
             }
           }
@@ -198,14 +196,23 @@ function repetitionOptions(i18n: Translations) {
   ]
 }
 
+export interface HolidayPeriodInfo {
+  period: FiniteDateRange
+  isOpen: boolean
+}
+
 export function initialState(
   availableChildren: ReservationChild[],
   initialStart: LocalDate | null,
   initialEnd: LocalDate | null,
+  childrenInShiftCare: boolean,
+  existingReservations: DailyReservationData[],
+  holidayPeriods: HolidayPeriodInfo[],
   i18n: Translations
 ): StateOf<typeof reservationForm> {
+  const selectedChildren = availableChildren.map((child) => child.id)
   return {
-    selectedChildren: availableChildren.map((child) => child.id),
+    selectedChildren,
     dateRange: {
       startDate: initialStart,
       endDate: initialEnd
@@ -214,10 +221,20 @@ export function initialState(
       domValue: 'DAILY' as const,
       options: repetitionOptions(i18n)
     },
-    times: {
-      branch: 'dailyTimes',
-      state: [emptyTimeRange]
-    }
+    times:
+      initialStart !== null && initialEnd !== null
+        ? resetTimes(
+            childrenInShiftCare,
+            existingReservations,
+            'DAILY',
+            new FiniteDateRange(initialStart, initialEnd),
+            selectedChildren,
+            holidayPeriods
+          )
+        : {
+            branch: 'dailyTimes',
+            state: { branch: 'times', state: [emptyTimeRange] }
+          }
   }
 }
 
@@ -226,17 +243,29 @@ export function resetTimes(
   existingReservations: DailyReservationData[],
   repetition: Repetition,
   selectedRange: FiniteDateRange,
-  selectedChildren: UUID[]
+  selectedChildren: UUID[],
+  holidayPeriods: HolidayPeriodInfo[]
 ): StateOf<typeof reservationForm>['times'] {
   const reservations = existingReservations.filter((reservation) =>
     selectedRange.includes(reservation.date)
   )
 
   if (repetition === 'DAILY') {
+    if (
+      holidayPeriods.some(
+        (period) => period.isOpen && period.period.contains(selectedRange)
+      )
+    ) {
+      return {
+        branch: 'dailyTimes',
+        state: { branch: 'holidayReservation', state: 'absent' }
+      }
+    }
+
     if (!hasReservationsForEveryChild(reservations, selectedChildren)) {
       return {
         branch: 'dailyTimes',
-        state: [emptyTimeRange]
+        state: { branch: 'times', state: [emptyTimeRange] }
       }
     }
 
@@ -245,13 +274,16 @@ export function resetTimes(
     if (commonTimeRanges) {
       return {
         branch: 'dailyTimes',
-        state: bindUnboundedTimeRanges(commonTimeRanges)
+        state: {
+          branch: 'times',
+          state: bindUnboundedTimeRanges(commonTimeRanges)
+        }
       }
     }
 
     return {
       branch: 'dailyTimes',
-      state: [emptyTimeRange]
+      state: { branch: 'times', state: [emptyTimeRange] }
     }
   } else if (repetition === 'WEEKLY') {
     const groupedDays = groupBy(
@@ -259,11 +291,20 @@ export function resetTimes(
       (date) => date.getIsoDayOfWeek() - 1
     )
 
+    const isOpenHolidayPeriod = holidayPeriods.some(
+      (holidayPeriod) =>
+        holidayPeriod.isOpen && holidayPeriod.period.contains(selectedRange)
+    )
+
     const weeklyTimes = Array.from({ length: 7 }).map(
       (_, dayOfWeek): StateOf<typeof day> => {
         const dayOfWeekDays = groupedDays[dayOfWeek]
         if (!dayOfWeekDays) {
           return { branch: 'readOnly', state: undefined }
+        }
+
+        if (isOpenHolidayPeriod) {
+          return { branch: 'holidayReservation', state: 'absent' }
         }
 
         const relevantReservations = reservations.filter(({ date }) =>
@@ -281,8 +322,8 @@ export function resetTimes(
 
         if (allChildrenAreAbsent(relevantReservations, selectedChildren)) {
           return {
-            branch: 'writable',
-            state: { present: false, times: [emptyTimeRange] }
+            branch: 'reservation',
+            state: [emptyTimeRange]
           }
         }
 
@@ -299,11 +340,8 @@ export function resetTimes(
 
         if (commonTimeRanges) {
           return {
-            branch: 'writable',
-            state: {
-              present: true,
-              times: bindUnboundedTimeRanges(commonTimeRanges)
-            }
+            branch: 'reservation',
+            state: bindUnboundedTimeRanges(commonTimeRanges)
           }
         }
 
@@ -317,6 +355,18 @@ export function resetTimes(
   } else if (repetition === 'IRREGULAR') {
     const irregularTimes = [...selectedRange.dates()].map(
       (rangeDate): StateOf<typeof irregularDay> => {
+        if (
+          holidayPeriods.some(
+            (holidayPeriod) =>
+              holidayPeriod.isOpen && holidayPeriod.period.includes(rangeDate)
+          )
+        ) {
+          return {
+            date: rangeDate,
+            day: { branch: 'holidayReservation', state: 'absent' }
+          }
+        }
+
         const existingTimes = reservations.find(({ date }) =>
           rangeDate.isEqual(date)
         )
@@ -354,8 +404,8 @@ export function resetTimes(
           return {
             date: rangeDate,
             day: {
-              branch: 'writable',
-              state: { present: false, times: [emptyTimeRange] }
+              branch: 'reservation',
+              state: [emptyTimeRange]
             }
           }
         }
@@ -376,11 +426,8 @@ export function resetTimes(
           return {
             date: rangeDate,
             day: {
-              branch: 'writable',
-              state: {
-                present: true,
-                times: bindUnboundedTimeRanges(commonTimeRanges)
-              }
+              branch: 'reservation',
+              state: bindUnboundedTimeRanges(commonTimeRanges)
             }
           }
         }

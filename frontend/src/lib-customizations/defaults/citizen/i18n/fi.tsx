@@ -324,6 +324,7 @@ export default {
       },
       start: 'Alkaa',
       end: 'Päättyy',
+      present: 'Läsnä',
       absent: 'Poissa',
       saveErrors: {
         failure: 'Tallennus epäonnistui',

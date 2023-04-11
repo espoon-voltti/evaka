@@ -324,6 +324,7 @@ const sv: Translations = {
       },
       start: 'Börjar',
       end: 'Slutar',
+      present: 'Närvarande',
       absent: 'Frånvarande',
       saveErrors: {
         failure: 'Kunde inte spara',
