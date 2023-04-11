@@ -10,7 +10,6 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
-import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
 import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -673,14 +672,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @Test
     fun `operational days for holiday period with upcoming deadline`() {
-        db.transaction { tx ->
-            tx.createHolidayPeriod(
-                HolidayPeriodBody(
-                    period = monFri,
-                    reservationDeadline = mon,
-                )
-            )
-        }
+        db.transaction { tx -> tx.createHolidayPeriod(monFri, mon) }
 
         val result = getAttendanceReservations()
         assertEquals(
@@ -700,14 +692,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @Test
     fun `operational days for holiday period with past deadline`() {
-        db.transaction { tx ->
-            tx.createHolidayPeriod(
-                HolidayPeriodBody(
-                    period = monFri,
-                    reservationDeadline = mon,
-                )
-            )
-        }
+        db.transaction { tx -> tx.createHolidayPeriod(monFri, mon) }
 
         val result =
             getAttendanceReservations(

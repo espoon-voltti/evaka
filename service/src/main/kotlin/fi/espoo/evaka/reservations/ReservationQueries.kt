@@ -129,9 +129,10 @@ fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
     requests: List<DailyReservationRequest>
 ): List<AttendanceReservationId> {
-    val batch =
-        prepareBatch(
-            """
+    return requests.flatMap { request ->
+        (request.reservations ?: listOf()).mapNotNull { res ->
+            createQuery(
+                    """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
         SELECT :childId, :date, :start, :end, :userId
         FROM realized_placement_all(:date) rp
@@ -144,26 +145,22 @@ fun Database.Transaction.insertValidReservations(
         ON CONFLICT DO NOTHING
         RETURNING id
         """
-                .trimIndent()
-        )
-
-    requests.forEach { request ->
-        request.reservations?.forEach { res ->
-            if (res !is Reservation.Times) {
-                throw IllegalArgumentException("Only reservations with times are supported")
-            }
-            batch
+                )
                 .bind("userId", userId)
                 .bind("childId", request.childId)
                 .bind("date", request.date)
-                .bind("start", res.startTime)
-                .bind("end", res.endTime)
-                .bind("date", request.date)
-                .add()
+                .let {
+                    when (res) {
+                        is Reservation.Times ->
+                            it.bind("start", res.startTime).bind("end", res.endTime)
+                        is Reservation.NoTimes ->
+                            it.bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
+                    }
+                }
+                .mapTo<AttendanceReservationId>()
+                .singleOrNull()
         }
     }
-
-    return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
 }
 
 private data class ReservationRow(

@@ -7,12 +7,15 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
+import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -26,24 +29,18 @@ fun convertMidnightEndTime(reservation: Reservation) =
         reservation
     }
 
-// TODO: Allow reservations that have no times for holiday periods, if reserving before the deadline
-fun validateReservationTimeRange(reservation: Reservation) {
-    if (reservation !is Reservation.Times) {
-        throw BadRequest("Reservation must have times")
-    }
-    if (reservation.endTime <= reservation.startTime) {
-        throw BadRequest(
-            "Reservation start (${reservation.startTime}) must be before end (${reservation.endTime})"
-        )
-    }
-}
-
 data class DailyReservationRequest(
     val childId: ChildId,
     val date: LocalDate,
     val reservations: List<Reservation>?,
     val absent: Boolean
 )
+
+fun reservationRequestRange(body: List<DailyReservationRequest>): FiniteDateRange {
+    val minDate = body.minOfOrNull { it.date } ?: throw BadRequest("No requests")
+    val maxDate = body.maxOfOrNull { it.date } ?: throw BadRequest("No requests")
+    return FiniteDateRange(minDate, maxDate)
+}
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class Reservation : Comparable<Reservation> {
@@ -91,27 +88,79 @@ data class CreateReservationsResult(
 
 fun createReservationsAndAbsences(
     tx: Database.Transaction,
-    userId: EvakaUserId,
-    reservationRequests: List<DailyReservationRequest>
+    today: LocalDate,
+    user: AuthenticatedUser,
+    requests: List<DailyReservationRequest>
 ): CreateReservationsResult {
-    val reservations =
-        reservationRequests.map {
-            it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
+    val (userId, isCitizen) =
+        when (user) {
+            is AuthenticatedUser.Citizen -> Pair(user.evakaUserId, true)
+            is AuthenticatedUser.Employee -> Pair(user.evakaUserId, false)
+            else -> throw BadRequest("Invalid user type")
         }
-    reservations.forEach { it.reservations?.forEach(::validateReservationTimeRange) }
+
+    val reservationsRange = reservationRequestRange(requests)
+    val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
+    val childAbsenceDates =
+        tx.getAbsenceDatesForChildrenInRange(requests.map { it.childId }.toSet(), reservationsRange)
+
+    val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
+    val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
+    val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
+
+    val validated =
+        requests
+            .mapNotNull { request ->
+                val isOpenHolidayPeriod = openHolidayPeriodDates.contains(request.date)
+                val isClosedHolidayPeriod = closedHolidayPeriodDates.contains(request.date)
+                val reservations = request.reservations ?: listOf()
+
+                if (isOpenHolidayPeriod) {
+                    // Everything is allowed on open holiday periods
+                    request
+                } else if (isClosedHolidayPeriod) {
+                    // Only reservations with times are allowed on closed holiday periods
+                    if (reservations.any { it is Reservation.NoTimes }) {
+                        throw BadRequest("Reservations in closed holiday periods must have times")
+                    }
+                    if (isCitizen) {
+                        // Citizens cannot override absences on closed holiday periods. They're just
+                        // filtered out
+                        // here because they cannot be reliably filtered out in the UI.
+                        val hasAbsence =
+                            (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
+                        if (reservations.isNotEmpty() && hasAbsence) {
+                            null
+                        } else {
+                            request
+                        }
+                    } else {
+                        request
+                    }
+                } else {
+                    // Not a holiday period - only reservations with times are allowed
+                    if (reservations.any { it is Reservation.NoTimes }) {
+                        throw BadRequest("Reservations outside holiday periods must have times")
+                    }
+                    request
+                }
+            }
+            .map { request ->
+                request.copy(
+                    reservations = request.reservations?.map { convertMidnightEndTime(it) }
+                )
+            }
 
     val deletedAbsences =
         tx.clearOldCitizenEditableAbsences(
-            reservations
-                .filter { it.reservations != null || it.absent }
-                .map { it.childId to it.date }
+            validated.filter { it.reservations != null || it.absent }.map { it.childId to it.date }
         )
-    val deletedReservations = tx.clearOldReservations(reservations.map { it.childId to it.date })
+    val deletedReservations = tx.clearOldReservations(validated.map { it.childId to it.date })
     val upsertedReservations =
-        tx.insertValidReservations(userId, reservations.filterNot { it.absent })
+        tx.insertValidReservations(user.evakaUserId, validated.filterNot { it.absent })
 
     val absences =
-        reservations
+        validated
             .filter { it.absent }
             .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
     val upsertedAbsences =

@@ -935,7 +935,7 @@ RETURNING id
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.createHolidayPeriod(body).let {
+                tx.createHolidayPeriod(body.period, body.reservationDeadline).let {
                     tx.createUpdate("UPDATE holiday_period SET id = :id WHERE id = :prevId")
                         .bind("id", id)
                         .bind("prevId", it.id)
@@ -982,11 +982,15 @@ RETURNING id
     }
 
     @PostMapping("/reservations")
-    fun postReservations(db: Database, @RequestBody body: List<DailyReservationRequest>) {
+    fun postReservations(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: List<DailyReservationRequest>
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                createReservationsAndAbsences(tx, fakeAdmin.evakaUserId, body)
+                createReservationsAndAbsences(tx, clock.today(), fakeAdmin, body)
             }
         }
     }
