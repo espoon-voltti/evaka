@@ -57,7 +57,8 @@ function initialForm(
   initialDate: LocalDate | undefined,
   availableChildren: ReservationChild[]
 ): Form {
-  const selectedChildren = availableChildren.map((child) => child.id)
+  const selectedChildren =
+    availableChildren.length == 1 ? [availableChildren[0].id] : []
   if (initialDate) {
     return {
       startDate: initialDate,
