@@ -92,7 +92,7 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3",
     "xml-crypto": "2.1.5",
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.5.0"
   },
   "resolutions": {
     "@types/node": "^18.15.11"
