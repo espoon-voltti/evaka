@@ -109,7 +109,7 @@ private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?
 SELECT guardian_id
 FROM (
     SELECT p.child_id, t::date AS date
-    FROM generate_series(${bind(range.start)}, ${bind(range.end)}, '1 day') t
+    FROM unnest(${bind(range.dates().toList())}) t
     JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> t::date
     JOIN daycare d ON p.unit_id = d.id
     LEFT JOIN holiday h ON t::date = h.date AND NOT d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
