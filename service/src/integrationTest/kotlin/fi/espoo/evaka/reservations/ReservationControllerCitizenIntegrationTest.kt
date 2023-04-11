@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -17,30 +15,34 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
-class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
+class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
+
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
 
@@ -265,7 +267,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
             }
-        postReservations(request, 400)
+
+        assertThrows<BadRequest> { postReservations(request) }
     }
 
     @Test
@@ -332,7 +335,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             listOf(LocalDate.of(2021, 11, 15) to 2, LocalDate.of(2021, 11, 16) to 2)
         )
 
-        // DAYCARE generates one absences per day
+        // DAYCARE generates one absence per day
         assertAbsenceCounts(
             testChild_2.id,
             listOf(LocalDate.of(2021, 11, 15) to 1, LocalDate.of(2021, 11, 16) to 1)
@@ -393,48 +396,32 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertAbsenceCounts(testChild_2.id, listOf(testDate to 1, testDate.plusDays(1) to 1))
     }
 
-    private fun postReservations(
-        request: List<DailyReservationRequest>,
-        expectedStatus: Int? = 200
-    ) {
-        val (_, res, _) =
-            http
-                .post("/citizen/reservations")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
-                .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
-                .response()
-
-        assertEquals(expectedStatus, res.statusCode)
+    private fun postReservations(request: List<DailyReservationRequest>) {
+        reservationControllerCitizen.postReservations(
+            dbInstance(),
+            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0))),
+            request
+        )
     }
 
     private fun postAbsences(request: AbsenceRequest) {
-        val (_, res, _) =
-            http
-                .post("/citizen/absences")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
-                .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
-                .response()
-
-        assertEquals(200, res.statusCode)
+        reservationControllerCitizen.postAbsences(
+            dbInstance(),
+            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0))),
+            request,
+        )
     }
 
     private fun getReservations(range: FiniteDateRange): ReservationsResponse {
-        val (_, res, result) =
-            http
-                .get(
-                    "/citizen/reservations?from=${range.start.format(DateTimeFormatter.ISO_DATE)}&to=${
-            range.end.format(
-                DateTimeFormatter.ISO_DATE
-            )
-            }"
-                )
-                .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
-                .responseObject<ReservationsResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
+        return reservationControllerCitizen.getReservations(
+            dbInstance(),
+            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+            RealEvakaClock(),
+            range.start,
+            range.end,
+        )
     }
 
     private fun assertAbsenceCounts(childId: ChildId, counts: List<Pair<LocalDate, Int>>) {
