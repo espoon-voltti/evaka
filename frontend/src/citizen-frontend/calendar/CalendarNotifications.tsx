@@ -8,6 +8,11 @@ import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  DailyReservationData,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
@@ -28,7 +33,15 @@ type HolidayCta =
   | { type: 'holiday'; period: FiniteDateRange; deadline: LocalDate }
   | { type: 'questionnaire'; deadline: LocalDate }
 
-export default React.memo(function CalendarNotifications() {
+interface Props {
+  reservationChildren: ReservationChild[]
+  dailyData: DailyReservationData[]
+}
+
+export default React.memo(function CalendarNotifications({
+  reservationChildren,
+  dailyData
+}: Props) {
   const navigate = useNavigate()
 
   const { addNotification, removeNotification } =
@@ -71,15 +84,21 @@ export default React.memo(function CalendarNotifications() {
       } else {
         const today = LocalDate.todayInSystemTz()
         const activeHolidayPeriod = periods.find((p) =>
-          p.reservationDeadline?.isEqualOrAfter(today)
+          p.reservationDeadline.isEqualOrAfter(today)
         )
-        cta = activeHolidayPeriod?.reservationDeadline
-          ? {
-              type: 'holiday',
-              deadline: activeHolidayPeriod.reservationDeadline,
-              period: activeHolidayPeriod.period
-            }
-          : { type: 'none' }
+        cta =
+          activeHolidayPeriod !== undefined &&
+          !hasReservationsForHolidayPeriod(
+            reservationChildren,
+            dailyData,
+            activeHolidayPeriod
+          )
+            ? {
+                type: 'holiday',
+                deadline: activeHolidayPeriod.reservationDeadline,
+                period: activeHolidayPeriod.period
+              }
+            : { type: 'none' }
       }
 
       if (cta.type === 'none') {
@@ -96,6 +115,7 @@ export default React.memo(function CalendarNotifications() {
                   break
                 case 'holiday':
                   openReservationModal(cta.period)
+                  removeNotification('holiday-period-cta')
                   break
               }
               return 'close'
@@ -136,4 +156,25 @@ function getHolidayCtaText(
     case 'questionnaire':
       return i18n.ctaToast.fixedPeriodCta(cta.deadline.format())
   }
+}
+
+function hasReservationsForHolidayPeriod(
+  children: ReservationChild[],
+  dailyData: DailyReservationData[],
+  holidayPeriod: HolidayPeriod
+) {
+  return [...holidayPeriod.period.dates()].every((date) => {
+    const day = dailyData.find((d) => d.date.isEqual(date))
+    if (day === undefined) return false
+
+    return children
+      .filter((child) => child.placements.some((p) => p.includes(date)))
+      .every((child) =>
+        day.children.some(
+          (c) =>
+            c.childId === child.id &&
+            (c.reservations.length > 0 || c.absence !== null)
+        )
+      )
+  })
 }

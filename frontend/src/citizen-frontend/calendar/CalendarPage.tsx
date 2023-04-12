@@ -161,7 +161,10 @@ const CalendarPage = React.memo(function CalendarPage() {
         combine(data, events, upcomingHolidayPeriods),
         ([response, events, upcomingHolidayPeriods]) => (
           <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-            <CalendarNotifications />
+            <CalendarNotifications
+              reservationChildren={response.children}
+              dailyData={response.dailyData}
+            />
             <MobileAndTablet>
               <ContentArea
                 opaque
