@@ -73,9 +73,7 @@ fi
 mkdir -p ${CACHE_PATH}
 
 if [ "$ACTION" = "download" ]; then
-    certificate_download "qat.integraatiopalvelu.fi.2022-2023" # Valid to 2023-03-12
     certificate_download "qat.integraatiopalvelu.fi_entrust_2023" # Valid from 2023-03-02 to 2024-02-29
-    certificate_download "pr0.integraatiopalvelu.fi.2022-2023" # Valid to 2023-03-12
     certificate_download "pr0.integraatiopalvelu.fi_entrust_2023" # Valid from 2023-03-09 to 2024-02-29
 elif [ "$ACTION" = "truststore" ]; then
     if test -z "$TRUSTSTORE_PASSWORD"; then
@@ -87,11 +85,9 @@ elif [ "$ACTION" = "truststore" ]; then
     fi
     mkdir -p truststore
     qa_filename="truststore/qa.p12"
-    certificate_add "qat.integraatiopalvelu.fi.2022-2023" "$qa_filename" # Valid to 2023-03-12
     certificate_add "qat.integraatiopalvelu.fi_entrust_2023" "$qa_filename" # Valid from 2023-03-02 to 2024-02-29
 
     production_filename="truststore/production.p12"
-    certificate_add "pr0.integraatiopalvelu.fi.2022-2023" "$production_filename" # Valid to 2023-03-12
     certificate_add "pr0.integraatiopalvelu.fi_entrust_2023" "$production_filename" # Valid from 2023-03-09 to 2024-02-29
 else
     echo "Usage: $0 download|truststore"
