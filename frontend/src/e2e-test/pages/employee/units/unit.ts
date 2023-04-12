@@ -105,7 +105,7 @@ export class UnitInfoPage {
     this.page,
     this.page.find('[data-qa="daycare-acl-set"]')
   )
-  staffAcl = new StaffAclSection(
+  staffAcl = new AclSection(
     this.page,
     this.page.find('[data-qa="daycare-acl-staff"]')
   )
@@ -343,6 +343,9 @@ class DaycareAclAdditionModal extends Modal {
   )
   groupSelect = this.find('[data-qa="add-daycare-acl-group-select"]')
   submitButton = this.find('[data-qa="add-daycare-acl-save-btn"]')
+  coefficientCheckbox = new Checkbox(
+    this.find('[data-qa="add-daycare-acl-coeff-checkbox"]')
+  )
 
   async toggleGroups(groupIds: UUID[]) {
     await this.groupSelect.find('> div').click()
@@ -358,6 +361,9 @@ class DaycareAclAdditionModal extends Modal {
 export class EmployeeRowEditModal extends Modal {
   groupSelect = this.find('[data-qa="group-select"]')
   saveButton = this.find('[data-qa="edit-acl-row-save-btn"]')
+  coefficientCheckbox = new Checkbox(
+    this.find('[data-qa="edit-acl-modal-coeff-checkbox"]')
+  )
 
   async toggleGroups(groupIds: UUID[]) {
     await this.groupSelect.find('> div').click()
@@ -367,6 +373,14 @@ export class EmployeeRowEditModal extends Modal {
         .click()
     }
     await this.groupSelect.find('> div').click()
+  }
+
+  async setCoefficient(value: boolean) {
+    if (value) {
+      await this.coefficientCheckbox.check()
+    } else {
+      await this.coefficientCheckbox.uncheck()
+    }
   }
 }
 
@@ -381,7 +395,7 @@ class AclSection extends Element {
 
   #addButton = this.find('[data-qa="open-add-daycare-acl-modal"]')
 
-  async addAcl(email: string, groupIds: UUID[]) {
+  async addAcl(email: string, groupIds: UUID[], occupancyCoefficient: boolean) {
     await this.#addButton.click()
     const addModal = new DaycareAclAdditionModal(
       this.page.find('[data-qa="add-daycare-acl-modal"]')
@@ -389,6 +403,9 @@ class AclSection extends Element {
     await addModal.personCombobox.fillAndSelectFirst(email)
     if (groupIds.length > 0) {
       await addModal.toggleGroups(groupIds)
+    }
+    if (occupancyCoefficient) {
+      await addModal.coefficientCheckbox.check()
     }
     await addModal.submitButton.click()
     await this.#table.waitUntilVisible()
@@ -401,31 +418,21 @@ class AclSection extends Element {
     ).submit()
   }
 
-  async assertRowFields(fields: { id: UUID; name: string; email: string }) {
-    const row = this.#tableRow(fields.id)
-    await row.find('[data-qa="name"]').assertTextEquals(fields.name)
-    await row.find('[data-qa="email"]').assertTextEquals(fields.email)
-  }
-
-  async assertRows(rows: { id: UUID; name: string; email: string }[]) {
-    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
-    await Promise.all(rows.map((fields) => this.assertRowFields(fields)))
-  }
-}
-
-class StaffAclSection extends AclSection {
-  #table = this.find('[data-qa="acl-table"]')
-  #tableRow = (id: UUID) => this.#table.find(`[data-qa="acl-row-${id}"]`)
-
   async assertRowFields(fields: {
     id: UUID
     name: string
     email: string
     groups: string[]
+    occupancyCoefficient: boolean
   }) {
     const row = this.#tableRow(fields.id)
     await row.find('[data-qa="name"]').assertTextEquals(fields.name)
     await row.find('[data-qa="email"]').assertTextEquals(fields.email)
+    await row
+      .find(
+        `[data-qa="coefficient-${fields.occupancyCoefficient ? 'on' : 'off'}"]`
+      )
+      .waitUntilVisible()
     await waitUntilEqual(
       () => row.find('[data-qa="groups"] > div').findAll('div').allInnerTexts(),
       fields.groups
@@ -433,13 +440,20 @@ class StaffAclSection extends AclSection {
   }
 
   async assertRows(
-    rows: { id: UUID; name: string; email: string; groups: string[] }[]
+    rows: {
+      id: UUID
+      name: string
+      email: string
+      groups: string[]
+      occupancyCoefficient: boolean
+    }[]
   ) {
+    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
     await Promise.all(rows.map((fields) => this.assertRowFields(fields)))
   }
 
   getRow(id: UUID) {
-    return new StaffAclRow(this.#table.find(`[data-qa="acl-row-${id}"]`))
+    return new AclRow(this.#table.find(`[data-qa="acl-row-${id}"]`))
   }
 }
 
@@ -487,7 +501,7 @@ class MobileDevicesSection extends Element {
   }
 }
 
-class StaffAclRow extends Element {
+class AclRow extends Element {
   readonly #editButton = this.find('[data-qa="edit"]')
 
   async edit() {

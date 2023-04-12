@@ -5,15 +5,17 @@
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
-import { UserRole } from 'lib-common/generated/api-types/shared'
+import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -25,7 +27,6 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
-  DaycareAclRow,
   DaycareGroupSummary,
   removeDaycareAclEarlyChildhoodEducationSecretary,
   removeDaycareAclSpecialEducationTeacher,
@@ -61,6 +62,7 @@ export interface FormattedRow {
   name: string
   email: string
   groupIds: UUID[]
+  hasStaffOccupancyEffect: boolean
 }
 
 const RowButtons = styled.div`
@@ -101,6 +103,7 @@ function AclRow({
   row,
   isEditable,
   isDeletable,
+  coefficientPermitted,
   onClickDelete,
   onClickEdit,
   unitGroups
@@ -108,12 +111,13 @@ function AclRow({
   row: FormattedRow
   isEditable: boolean
   isDeletable: boolean
+  coefficientPermitted: boolean
   onClickDelete: () => void
   onClickEdit: (employeeRow: FormattedRow) => void
   unitGroups: Record<UUID, DaycareGroupSummary> | undefined
 }) {
   const { i18n } = useTranslation()
-
+  const theme = useTheme()
   const buttons = (
     <RowButtons>
       {isEditable && (
@@ -144,6 +148,28 @@ function AclRow({
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
+      {coefficientPermitted && (
+        <Td
+          data-qa={
+            row.hasStaffOccupancyEffect ? 'coefficient-on' : 'coefficient-off'
+          }
+        >
+          {row.hasStaffOccupancyEffect && (
+            <Tooltip
+              tooltip={i18n.unit.attendanceReservations.affectsOccupancy}
+              position="bottom"
+              width="large"
+            >
+              <RoundIcon
+                content="K"
+                active={true}
+                color={theme.colors.accents.a3emerald}
+                size="s"
+              />
+            </Tooltip>
+          )}
+        </Td>
+      )}
       <Td>{(isEditable || isDeletable) && buttons}</Td>
     </Tr>
   )
@@ -163,7 +189,8 @@ function AclTable({
   onDeleteAclRow,
   onClickEdit,
   editPermitted,
-  deletePermitted
+  deletePermitted,
+  coefficientPermitted
 }: {
   unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
@@ -171,6 +198,7 @@ function AclTable({
   onClickEdit: (employeeRow: FormattedRow) => void
   editPermitted?: boolean
   deletePermitted: boolean
+  coefficientPermitted: boolean
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -182,6 +210,9 @@ function AclTable({
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.email}</Th>
           {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
+          {coefficientPermitted && (
+            <Th>{i18n.unit.accessControl.hasOccupancyCoefficient}</Th>
+          )}
           <ActionsTh />
         </Tr>
       </Thead>
@@ -193,6 +224,7 @@ function AclTable({
             row={row}
             isDeletable={deletePermitted && row.id !== user?.id}
             isEditable={!!(editPermitted && unitGroups)}
+            coefficientPermitted={coefficientPermitted}
             onClickDelete={() => onDeleteAclRow(row.id)}
             onClickEdit={onClickEdit}
           />
@@ -225,6 +257,7 @@ function formatRowsOfRole(
       .filter((row) => row.role === role)
       .map((row) => ({
         id: row.employee.id,
+        hasStaffOccupancyEffect: row.employee.hasStaffOccupancyEffect ?? false,
         name: formatName(row.employee.firstName, row.employee.lastName, i18n),
         email: row.employee.email ?? row.employee.id,
         groupIds: row.groupIds
@@ -412,6 +445,7 @@ export default React.memo(function UnitAccessControl({
           onClose={closeEmployeeAclRowEditModal}
           onSuccess={confirmEmployeeAclRowEditModal}
           updatesGroupAcl={updateDaycareGroupAcl}
+          permittedActions={permittedActions}
           employeeRow={updateState?.employeeRow}
           unitId={unitId}
           groups={groups}
@@ -428,7 +462,7 @@ export default React.memo(function UnitAccessControl({
               employees={candidateEmployees}
               unitId={unitId}
               groups={groups}
-              groupsPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              permittedActions={permittedActions}
             />
           )}
         </>
@@ -447,9 +481,15 @@ export default React.memo(function UnitAccessControl({
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              editPermitted={
+                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              }
               deletePermitted={permittedActions.has(
                 'DELETE_ACL_UNIT_SUPERVISOR'
+              )}
+              coefficientPermitted={permittedActions.has(
+                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
             {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
@@ -479,9 +519,15 @@ export default React.memo(function UnitAccessControl({
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              editPermitted={
+                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              }
               deletePermitted={permittedActions.has(
                 'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
+              )}
+              coefficientPermitted={permittedActions.has(
+                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
             {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
@@ -513,9 +559,15 @@ export default React.memo(function UnitAccessControl({
                 }
                 unitGroups={groups}
                 onClickEdit={openEmployeeAclRowEditModal}
-                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+                editPermitted={
+                  permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                  permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+                }
                 deletePermitted={permittedActions.has(
                   'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+                )}
+                coefficientPermitted={permittedActions.has(
+                  'READ_STAFF_OCCUPANCY_COEFFICIENTS'
                 )}
               />
               {permittedActions.has(
@@ -548,8 +600,14 @@ export default React.memo(function UnitAccessControl({
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+              editPermitted={
+                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              }
               deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+              coefficientPermitted={permittedActions.has(
+                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
+              )}
             />
             {permittedActions.has('INSERT_ACL_STAFF') && (
               <>

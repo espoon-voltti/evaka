@@ -22,7 +22,6 @@ import { TerminatedPlacement } from './placement'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
-import { UserRole } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.Absence
@@ -110,6 +109,14 @@ export interface AbsenceWithModifierInfo {
   id: UUID
   modifiedAt: HelsinkiDateTime
   modifiedByType: EvakaUserType
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.AclUpdate
+*/
+export interface AclUpdate {
+  groupIds: UUID[] | null
+  hasStaffOccupancyEffect: boolean | null
 }
 
 /**
@@ -294,7 +301,7 @@ export interface Daycare {
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.DaycareAclResponse
 */
 export interface DaycareAclResponse {
-  rows: DaycareAclRow[]
+  aclRows: DaycareAclRow[]
 }
 
 /**
@@ -401,21 +408,6 @@ export interface FinanceDecisionHandler {
   firstName: string
   id: UUID
   lastName: string
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.FullAclUpdate
-*/
-export interface FullAclUpdate {
-  groupIds: UUID[] | null
-  role: UserRole
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.GroupAclUpdate
-*/
-export interface GroupAclUpdate {
-  groupIds: UUID[]
 }
 
 /**

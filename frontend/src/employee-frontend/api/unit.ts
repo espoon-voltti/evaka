@@ -7,7 +7,6 @@ import mapValues from 'lodash/mapValues'
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
 import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
-import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
   ChildDailyRecords,
   UnitAttendanceReservations,
@@ -23,7 +22,9 @@ import {
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
+  AclUpdate,
   CreateDaycareResponse,
+  DaycareAclResponse,
   DaycareFields,
   GroupOccupancies,
   UnitGroupDetails,
@@ -47,6 +48,7 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -515,29 +517,12 @@ export async function getSpeculatedOccupancyRates(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface DaycareAclRow {
-  employee: DaycareAclRowEmployee
-  role: AdRole
-  groupIds: UUID[]
-}
-
-export interface DaycareAclRowEmployee {
-  id: UUID
-  firstName: string
-  lastName: string
-  email: string | null
-}
-
-interface DaycareAclResponse {
-  rows: DaycareAclRow[]
-}
-
 export async function getDaycareAclRows(
   unitId: UUID
 ): Promise<Result<DaycareAclRow[]>> {
   return client
     .get<JsonOf<DaycareAclResponse>>(`/daycares/${unitId}/acl`)
-    .then(({ data }) => Success.of(data.rows))
+    .then(({ data }) => Success.of(data.aclRows))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -584,11 +569,11 @@ export async function removeDaycareAclStaff(
 export async function updateDaycareGroupAcl(
   unitId: UUID,
   employeeId: UUID,
-  groupIds: UUID[]
+  update: AclUpdate
 ): Promise<Result<void>> {
   return client
     .put(`/daycares/${unitId}/staff/${employeeId}/groups`, {
-      groupIds
+      ...update
     })
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
@@ -598,11 +583,11 @@ export async function addDaycareFullAcl(
   unitId: UUID,
   employeeId: UUID,
   role: DaycareAclRole,
-  groupIds?: UUID[]
+  update: AclUpdate
 ): Promise<Result<void>> {
   return client
     .put(`/daycares/${unitId}/full-acl/${employeeId}`, {
-      groupIds,
+      update,
       role
     })
     .then(() => Success.of(undefined))

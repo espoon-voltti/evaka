@@ -13,10 +13,13 @@ import {
 import { Employee } from 'employee-frontend/types/employee'
 import { formatName } from 'employee-frontend/utils'
 import { Failure } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
+import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -35,7 +38,8 @@ interface EmployeeOption {
 
 type DaycareAclAdditionFormState = {
   selectedEmployee: EmployeeOption | null
-  selectedGroups?: DaycareGroupSummary[]
+  selectedGroups: DaycareGroupSummary[] | null
+  hasStaffOccupancyEffect: boolean | null
 }
 
 type DaycareAclAdditionModalProps = {
@@ -45,7 +49,7 @@ type DaycareAclAdditionModalProps = {
   unitId: UUID
   groups: Record<string, DaycareGroupSummary>
   employees: Employee[]
-  groupsPermitted: boolean
+  permittedActions: Set<Action.Unit>
 }
 
 export default React.memo(function DaycareAclAdditionModal({
@@ -55,31 +59,36 @@ export default React.memo(function DaycareAclAdditionModal({
   unitId,
   groups,
   employees,
-  groupsPermitted
+  permittedActions
 }: DaycareAclAdditionModalProps) {
   const { i18n } = useTranslation()
 
   const [formData, setFormData] = useState<DaycareAclAdditionFormState>({
     selectedEmployee: null,
-    selectedGroups: undefined
+    selectedGroups: null,
+    hasStaffOccupancyEffect: null
   })
 
   const submit = useCallback(async () => {
-    const requestBody = {
-      employeeId: formData.selectedEmployee?.value ?? '',
-      groupIds: formData.selectedGroups?.map((g) => g.id)
+    const employeeId = formData.selectedEmployee?.value ?? ''
+    const updateBody: AclUpdate = {
+      groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+        ? formData.selectedGroups
+          ? formData.selectedGroups.map((g) => g.id)
+          : null
+        : null,
+      hasStaffOccupancyEffect: permittedActions.has(
+        'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+      )
+        ? formData.hasStaffOccupancyEffect
+        : null
     }
-    if (requestBody.employeeId === '' || !role) {
+    if (employeeId === '' || !role) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
     } else {
-      return addDaycareFullAcl(
-        unitId,
-        requestBody.employeeId,
-        role,
-        requestBody.groupIds
-      )
+      return addDaycareFullAcl(unitId, employeeId, role, updateBody)
     }
-  }, [formData, unitId, role])
+  }, [formData, unitId, role, permittedActions])
 
   const employeeOptions: EmployeeOption[] = useMemo(
     () =>
@@ -129,7 +138,7 @@ export default React.memo(function DaycareAclAdditionModal({
             getItemDataQa={(item) => `value-${item?.value ?? 'none'}`}
           />
         </FormControl>
-        {groupsPermitted && (
+        {permittedActions.has('UPDATE_STAFF_GROUP_ACL') && (
           <FormControl>
             <FieldLabel>
               {i18n.unit.accessControl.addDaycareAclModal.groups}
@@ -146,6 +155,21 @@ export default React.memo(function DaycareAclAdditionModal({
               placeholder={`${i18n.common.select}...`}
             />
           </FormControl>
+        )}
+
+        {permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
+          <Checkbox
+            data-qa="add-daycare-acl-coeff-checkbox"
+            checked={formData.hasStaffOccupancyEffect === true}
+            disabled={false}
+            label={i18n.unit.accessControl.hasOccupancyCoefficient}
+            onChange={(checked) => {
+              setFormData({
+                ...formData,
+                hasStaffOccupancyEffect: checked
+              })
+            }}
+          />
         )}
         <BottomRow>
           <InlineButton

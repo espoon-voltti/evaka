@@ -5,14 +5,11 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
 import fi.espoo.evaka.attendance.getOccupancyCoefficientForEmployeeInUnit
 import fi.espoo.evaka.attendance.upsertOccupancyCoefficient
-import fi.espoo.evaka.daycare.getDaycareAclRows
-import fi.espoo.evaka.daycare.removeEarlyChildhoodEducationSecretary
-import fi.espoo.evaka.daycare.removeSpecialEducationTeacher
-import fi.espoo.evaka.daycare.removeStaffMember
-import fi.espoo.evaka.daycare.removeUnitSupervisor
+import fi.espoo.evaka.daycare.removeDaycareAclForRole
 import fi.espoo.evaka.daycare.service.getDaycareIdByGroup
 import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
@@ -56,6 +53,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class UnitAclController(private val accessControl: AccessControl) {
+
+    val coefficientPositiveValue = BigDecimal("7.00")
+    val coefficientNegativeValue = BigDecimal("0.00")
+
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
         db: Database,
@@ -65,20 +66,38 @@ class UnitAclController(private val accessControl: AccessControl) {
     ): DaycareAclResponse {
         return DaycareAclResponse(
             db.connect { dbc ->
-                    dbc.read {
-                        accessControl.requirePermissionFor(
-                            it,
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ACL,
+                        daycareId
+                    )
+                    val hasOccupancyPermission =
+                        accessControl.hasPermissionFor(
+                            tx,
                             user,
                             clock,
-                            Action.Unit.READ_ACL,
+                            Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
                             daycareId
                         )
+
+                    val aclRows = tx.getDaycareAclRows(daycareId, hasOccupancyPermission)
+
+                    Audit.UnitAclRead.log(
+                        targetId = daycareId,
+                        meta = mapOf("count" to aclRows.size)
+                    )
+                    if (hasOccupancyPermission) {
+                        Audit.StaffOccupancyCoefficientRead.log(
+                            targetId = daycareId,
+                            meta = mapOf("count" to aclRows.size)
+                        )
                     }
-                    getDaycareAclRows(dbc, daycareId)
+                    aclRows
                 }
-                .also {
-                    Audit.UnitAclRead.log(targetId = daycareId, meta = mapOf("count" to it.size))
-                }
+            }
         )
     }
 
@@ -91,7 +110,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable employeeId: EmployeeId
     ) {
         db.connect { dbc ->
-            dbc.read {
+            dbc.transaction {
                 accessControl.requirePermissionFor(
                     it,
                     user,
@@ -100,8 +119,8 @@ class UnitAclController(private val accessControl: AccessControl) {
                     daycareId
                 )
                 validateIsPermanentEmployee(it, employeeId)
+                removeDaycareAclForRole(it, daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
             }
-            removeUnitSupervisor(dbc, daycareId, employeeId)
         }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
@@ -115,7 +134,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable employeeId: EmployeeId
     ) {
         db.connect { dbc ->
-            dbc.read {
+            dbc.transaction {
                 accessControl.requirePermissionFor(
                     it,
                     user,
@@ -124,8 +143,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                     daycareId
                 )
                 validateIsPermanentEmployee(it, employeeId)
+                removeDaycareAclForRole(
+                    it,
+                    daycareId,
+                    employeeId,
+                    UserRole.SPECIAL_EDUCATION_TEACHER
+                )
             }
-            removeSpecialEducationTeacher(dbc, daycareId, employeeId)
         }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
@@ -139,7 +163,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable employeeId: EmployeeId
     ) {
         db.connect { dbc ->
-            dbc.read {
+            dbc.transaction {
                 accessControl.requirePermissionFor(
                     it,
                     user,
@@ -148,8 +172,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                     daycareId
                 )
                 validateIsPermanentEmployee(it, employeeId)
+                removeDaycareAclForRole(
+                    it,
+                    daycareId,
+                    employeeId,
+                    UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
             }
-            removeEarlyChildhoodEducationSecretary(dbc, daycareId, employeeId)
         }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
@@ -163,7 +192,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable employeeId: EmployeeId
     ) {
         db.connect { dbc ->
-            dbc.read {
+            dbc.transaction {
                 accessControl.requirePermissionFor(
                     it,
                     user,
@@ -172,78 +201,135 @@ class UnitAclController(private val accessControl: AccessControl) {
                     daycareId
                 )
                 validateIsPermanentEmployee(it, employeeId)
+                removeDaycareAclForRole(it, daycareId, employeeId, UserRole.STAFF)
             }
-            removeStaffMember(dbc, daycareId, employeeId)
         }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")
-    fun updateStaffGroupAcl(
+    fun updateGroupAclWithOccupancyCoefficient(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-        @RequestBody update: GroupAclUpdate
+        @RequestBody update: AclUpdate
     ) {
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_STAFF_GROUP_ACL,
-                    daycareId
-                )
-                validateIsPermanentEmployee(it, employeeId)
-                it.clearDaycareGroupAcl(daycareId, employeeId)
-                it.insertDaycareGroupAcl(daycareId, employeeId, update.groupIds)
-            }
+        if (update.groupIds == null && update.hasStaffOccupancyEffect == null) {
+            throw BadRequest("Request is missing all update content")
         }
-        Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
-    }
+        val occupancyCoefficientId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    update.groupIds?.let {
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                            daycareId
+                        )
+                        validateIsPermanentEmployee(tx, employeeId)
+                        tx.clearDaycareGroupAcl(daycareId, employeeId)
+                        tx.insertDaycareGroupAcl(daycareId, employeeId, it)
+                    }
 
-    data class GroupAclUpdate(val groupIds: List<GroupId>)
-
-    @PutMapping("/daycares/{daycareId}/full-acl/{employeeId}")
-    fun addDaycareAclWithGroupsForRole(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable daycareId: DaycareId,
-        @PathVariable employeeId: EmployeeId,
-        @RequestBody aclUpdate: FullAclUpdate
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                val roleAction = getRoleAddAction(aclUpdate.role)
-                accessControl.requirePermissionFor(tx, user, clock, roleAction, daycareId)
-                validateIsPermanentEmployee(tx, employeeId)
-                tx.clearDaycareGroupAcl(daycareId, employeeId)
-                tx.insertDaycareAclRow(daycareId, employeeId, aclUpdate.role)
-                tx.upsertEmployeeMessageAccount(employeeId)
-                aclUpdate.groupIds?.let {
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.UPDATE_STAFF_GROUP_ACL,
-                        daycareId
-                    )
-                    tx.insertDaycareGroupAcl(daycareId, employeeId, it)
+                    val occupancyCoefficientId =
+                        update.hasStaffOccupancyEffect?.let {
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
+                                daycareId
+                            )
+                            tx.upsertOccupancyCoefficient(
+                                OccupancyCoefficientUpsert(
+                                    unitId = daycareId,
+                                    employeeId = employeeId,
+                                    coefficient = parseCoefficientValue(it)
+                                )
+                            )
+                        }
+                    occupancyCoefficientId
                 }
             }
-        }
-        Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
-        if (aclUpdate.groupIds != null) {
+        if (update.groupIds != null) {
             Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
+        }
+
+        if (update.hasStaffOccupancyEffect != null) {
+            Audit.StaffOccupancyCoefficientUpsert.log(
+                targetId = listOf(daycareId, employeeId),
+                objectId = occupancyCoefficientId
+            )
         }
     }
 
-    data class FullAclUpdate(val groupIds: List<GroupId>?, val role: UserRole)
+    @PutMapping("/daycares/{daycareId}/full-acl/{employeeId}")
+    fun addFullAclForRole(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable employeeId: EmployeeId,
+        @RequestBody aclInfo: FullAclInfo
+    ) {
+        val occupancyCoefficientId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val roleAction = getRoleAddAction(aclInfo.role)
+                    accessControl.requirePermissionFor(tx, user, clock, roleAction, daycareId)
+                    validateIsPermanentEmployee(tx, employeeId)
+                    tx.clearDaycareGroupAcl(daycareId, employeeId)
+                    tx.insertDaycareAclRow(daycareId, employeeId, aclInfo.role)
+                    tx.upsertEmployeeMessageAccount(employeeId)
+                    aclInfo.update.groupIds?.let {
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                            daycareId
+                        )
+                        tx.insertDaycareGroupAcl(daycareId, employeeId, it)
+                    }
+                    val occupancyCoefficientId =
+                        aclInfo.update.hasStaffOccupancyEffect?.let {
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
+                                daycareId
+                            )
+                            tx.upsertOccupancyCoefficient(
+                                OccupancyCoefficientUpsert(
+                                    unitId = daycareId,
+                                    employeeId = employeeId,
+                                    coefficient = parseCoefficientValue(it)
+                                )
+                            )
+                        }
+                    occupancyCoefficientId
+                }
+            }
+        Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
+        if (aclInfo.update.groupIds != null) {
+            Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
+        }
+        if (aclInfo.update.hasStaffOccupancyEffect != null) {
+            Audit.StaffOccupancyCoefficientUpsert.log(
+                targetId = listOf(daycareId, employeeId),
+                objectId = occupancyCoefficientId
+            )
+        }
+    }
 
-    data class DaycareAclResponse(val rows: List<DaycareAclRow>)
+    @ExcludeCodeGen data class FullAclInfo(val role: UserRole, val update: AclUpdate)
+    data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
+    data class DaycareAclResponse(val aclRows: List<DaycareAclRow>)
 
     fun getRoleAddAction(role: UserRole): Action.Unit =
         when (role) {
@@ -329,7 +415,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     unitId
                 )
                 val groupIds =
-                    tx.getDaycareAclRows(daycareId = unitId)
+                    tx.getDaycareAclRows(daycareId = unitId, false)
                         .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
                         .flatMap { it.groupIds }
                         .toSet()
@@ -478,4 +564,7 @@ class UnitAclController(private val accessControl: AccessControl) {
             tx.deactivateEmployeeMessageAccount(employee.id)
         }
     }
+
+    fun parseCoefficientValue(bool: Boolean) =
+        if (bool) coefficientPositiveValue else coefficientNegativeValue
 }

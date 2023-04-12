@@ -8,9 +8,12 @@ import styled from 'styled-components'
 
 import { DaycareGroupSummary } from 'employee-frontend/api/unit'
 import { Failure, Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
+import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -23,7 +26,8 @@ import { useTranslation } from '../../../state/i18n'
 import { FormattedRow } from './UnitAccessControl'
 
 type EmployeeRowEditFormState = {
-  selectedGroups: DaycareGroupSummary[]
+  selectedGroups: DaycareGroupSummary[] | null
+  hasStaffOccupancyEffect: boolean | null
 }
 
 type EmployeeRowEditModalProps = {
@@ -32,8 +36,9 @@ type EmployeeRowEditModalProps = {
   updatesGroupAcl: (
     unitId: UUID,
     employeeId: UUID,
-    groupIds: UUID[]
+    update: AclUpdate
   ) => Promise<Result<unknown>>
+  permittedActions: Set<Action.Unit>
   unitId: UUID
   groups: Record<string, DaycareGroupSummary>
   employeeRow?: FormattedRow
@@ -43,6 +48,7 @@ export default React.memo(function EmployeeAclRowEditModal({
   onClose,
   onSuccess,
   updatesGroupAcl,
+  permittedActions,
   unitId,
   groups,
   employeeRow
@@ -62,24 +68,37 @@ export default React.memo(function EmployeeAclRowEditModal({
   )
 
   const initSelectedGroups = (groupIds: UUID[]) => {
-    return groupOptions.filter((option) => groupIds.includes(option.id))
+    return permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+      ? groupOptions.filter((option) => groupIds.includes(option.id))
+      : null
   }
 
   const [formData, setFormData] = useState<EmployeeRowEditFormState>({
-    selectedGroups: initSelectedGroups(employeeRow?.groupIds ?? [])
+    selectedGroups: initSelectedGroups(employeeRow?.groupIds ?? []),
+    hasStaffOccupancyEffect: employeeRow
+      ? employeeRow.hasStaffOccupancyEffect
+      : null
   })
 
   const submit = useCallback(() => {
+    const updateBody: AclUpdate = {
+      groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+        ? formData.selectedGroups
+          ? formData.selectedGroups.map((g) => g.id)
+          : null
+        : null,
+      hasStaffOccupancyEffect: permittedActions.has(
+        'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+      )
+        ? formData.hasStaffOccupancyEffect
+        : null
+    }
     if (!employeeRow) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
     } else {
-      return updatesGroupAcl(
-        unitId,
-        employeeRow.id,
-        formData.selectedGroups.map((item) => item.id)
-      )
+      return updatesGroupAcl(unitId, employeeRow.id, updateBody)
     }
-  }, [formData, unitId, employeeRow, updatesGroupAcl])
+  }, [formData, unitId, employeeRow, updatesGroupAcl, permittedActions])
 
   return (
     <PlainModal margin="auto" data-qa="employee-row-edit-person-modal">
@@ -89,23 +108,41 @@ export default React.memo(function EmployeeAclRowEditModal({
 
           <H2 noMargin>{employeeRow?.name ?? ''}</H2>
         </Centered>
-        <FormControl>
-          <FieldLabel>
-            {i18n.unit.accessControl.addDaycareAclModal.groups}
-          </FieldLabel>
-          <MultiSelect
-            data-qa="group-select"
-            value={formData.selectedGroups}
-            options={groupOptions}
-            getOptionId={(item) => item.id}
-            getOptionLabel={(item) => item.name}
-            onChange={(values) =>
-              setFormData({ ...formData, selectedGroups: values })
-            }
-            placeholder={`${i18n.common.select}...`}
-          />
-        </FormControl>
+        {permittedActions.has('UPDATE_STAFF_GROUP_ACL') && (
+          <FormControl>
+            <FieldLabel>
+              {i18n.unit.accessControl.addDaycareAclModal.groups}
+            </FieldLabel>
+            <MultiSelect
+              data-qa="group-select"
+              value={formData.selectedGroups ?? []}
+              options={groupOptions}
+              getOptionId={(item) => item.id}
+              getOptionLabel={(item) => item.name}
+              onChange={(values) =>
+                setFormData({ ...formData, selectedGroups: values })
+              }
+              placeholder={`${i18n.common.select}...`}
+            />
+          </FormControl>
+        )}
 
+        {permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
+          <Checkbox
+            data-qa="edit-acl-modal-coeff-checkbox"
+            checked={formData.hasStaffOccupancyEffect === true}
+            disabled={
+              !permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+            }
+            label={i18n.unit.accessControl.hasOccupancyCoefficient}
+            onChange={(checked) => {
+              setFormData({
+                ...formData,
+                hasStaffOccupancyEffect: checked
+              })
+            }}
+          />
+        )}
         <BottomRow>
           <InlineButton
             className="left-button"
@@ -152,9 +189,10 @@ const Content = styled.div`
   padding: ${defaultMargins.XL};
   display: flex;
   flex-direction: column;
-  gap: ${defaultMargins.s};
+  gap: ${defaultMargins.m};
   position: relative;
   min-height: 80vh;
+  max-height: 800px;
 `
 const Centered = styled(FixedSpaceColumn)`
   align-self: center;

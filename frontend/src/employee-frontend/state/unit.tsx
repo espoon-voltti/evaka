@@ -12,12 +12,12 @@ import React, {
 
 import { Loading, Result, Success } from 'lib-common/api'
 import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
+import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import {
-  DaycareAclRow,
   getDaycare,
   getDaycareAclRows,
   getUnitNotifications,
