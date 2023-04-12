@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -139,7 +138,7 @@ class AbsenceController(private val accessControl: AccessControl) {
 
     data class DeleteChildAbsenceBody(val date: LocalDate)
 
-    @DeleteMapping("/by-child/{childId}")
+    @PostMapping("/by-child/{childId}/delete")
     fun deleteAbsence(
         db: Database,
         user: AuthenticatedUser,
