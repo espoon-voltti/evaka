@@ -69,7 +69,9 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz().addYears(1)
 )
 
-export const times = array(required(localTimeRange))
+export const times = mapped(array(required(localTimeRange)), (output) =>
+  output.map(timeRangeToTimes)
+)
 
 const weekDay = chained(
   object({
@@ -107,10 +109,11 @@ const reservationForm = mapped(
       switch (output.repetition) {
         case 'DAILY':
           return dates.map((date) => ({
+            type: 'RESERVATIONS',
             childId,
             date,
-            reservations: output.dailyTimes.map(timeRangeToTimes),
-            absent: false
+            reservation: output.dailyTimes[0],
+            secondReservation: output.dailyTimes[1] ?? null
           }))
         case 'WEEKLY':
           return dates
@@ -120,10 +123,11 @@ const reservationForm = mapped(
               )
               return weekDay !== undefined
                 ? {
+                    type: 'RESERVATIONS' as const,
                     childId,
                     date,
-                    reservations: weekDay.times.map(timeRangeToTimes),
-                    absent: false
+                    reservation: weekDay.times[0],
+                    secondReservation: weekDay.times[1] ?? null
                   }
                 : undefined
             })
@@ -134,10 +138,11 @@ const reservationForm = mapped(
               return output.dateRange.includes(irregularDay.date)
             })
             .map((irregularDay) => ({
+              type: 'RESERVATIONS' as const,
               childId,
               date: irregularDay.date,
-              reservations: irregularDay.times.map(timeRangeToTimes),
-              absent: false
+              reservation: irregularDay.times[0],
+              secondReservation: irregularDay.times[1] ?? null
             }))
       }
     }

@@ -519,12 +519,25 @@ const editorForm = mapped(
               ]
             : []
         )
-        return {
-          childId: child.id,
-          date,
-          reservations: res,
-          absent: res.length === 0 ? absent : false
-        }
+        return res.length === 0 && absent
+          ? {
+              type: 'ABSENCE',
+              childId: child.id,
+              date
+            }
+          : res.length === 0
+          ? {
+              type: 'NOTHING',
+              childId: child.id,
+              date
+            }
+          : {
+              type: 'RESERVATIONS',
+              childId: child.id,
+              date,
+              reservation: res[0],
+              secondReservation: res[1] ?? null
+            }
       })
 )
 

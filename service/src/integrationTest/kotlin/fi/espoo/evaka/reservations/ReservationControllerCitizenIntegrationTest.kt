@@ -92,17 +92,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         postReservations(
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         child,
                         testDate,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         child,
                         testDate.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             }
@@ -196,17 +194,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     fun `adding a reservation and an absence works`() {
         postReservations(
             listOf(
-                DailyReservationRequest(
+                DailyReservationRequest.Reservations(
                     testChild_1.id,
                     testDate,
-                    listOf(Reservation.Times(startTime, endTime)),
-                    absent = false
+                    Reservation.Times(startTime, endTime),
                 ),
-                DailyReservationRequest(
+                DailyReservationRequest.Absence(
                     testChild_1.id,
                     testDate.plusDays(1),
-                    listOf(Reservation.Times(startTime, endTime)),
-                    absent = true
                 )
             )
         )
@@ -253,17 +248,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val request =
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         child,
                         mockToday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         child,
                         mockToday.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             }

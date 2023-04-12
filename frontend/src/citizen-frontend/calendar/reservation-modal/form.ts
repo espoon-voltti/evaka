@@ -49,7 +49,7 @@ export const day = mapped(
   union({
     readOnly: value<'not-editable' | 'holiday' | undefined>(),
     reservation: times,
-    holidayReservation: value<'present' | 'absent'>()
+    holidayReservation: value<'present' | 'absent' | 'not-set'>()
   }),
   ({ branch, value }): Reservation[] | undefined =>
     branch === 'reservation'
@@ -57,7 +57,9 @@ export const day = mapped(
       : branch === 'holidayReservation'
       ? value === 'present'
         ? [{ type: 'NO_TIMES' }]
-        : [] // absent
+        : value === 'absent'
+        ? []
+        : undefined // not-set
       : undefined // readOnly
 )
 
@@ -69,25 +71,24 @@ const emptyDay: StateOf<typeof day> = {
 export const dailyTimes = mapped(
   union({
     times,
-    holidayReservation: value<'present' | 'absent'>()
+    holidayReservation: value<'present' | 'absent' | 'not-set'>()
   }),
-  ({ branch, value }): Reservation[] =>
+  ({ branch, value }): Reservation[] | undefined =>
     branch === 'times'
       ? value.map(timeRangeToTimes)
       : value === 'present'
       ? [{ type: 'NO_TIMES' }]
-      : [] // absent
+      : value === 'absent'
+      ? []
+      : undefined // not-set
 )
 
 export const weeklyTimes = array(day)
 
-export const irregularDay = mapped(
-  object({
-    date: value<LocalDate>(),
-    day
-  }),
-  ({ date, day }) => (day !== undefined ? { date, day } : undefined)
-)
+export const irregularDay = object({
+  date: value<LocalDate>(),
+  day
+})
 
 export const irregularTimes = array(irregularDay)
 
@@ -96,6 +97,32 @@ export const timesUnion = union({
   weeklyTimes,
   irregularTimes
 })
+
+function toDailyReservationRequest(
+  childId: UUID,
+  date: LocalDate,
+  reservations: Reservation[] | undefined
+): DailyReservationRequest {
+  return reservations === undefined
+    ? {
+        type: 'NOTHING',
+        childId,
+        date
+      }
+    : reservations.length === 0
+    ? {
+        type: 'ABSENCE',
+        childId,
+        date
+      }
+    : {
+        type: 'RESERVATIONS',
+        childId,
+        date,
+        reservation: reservations[0],
+        secondReservation: reservations[1] ?? null
+      }
+}
 
 export const reservationForm = mapped(
   object({
@@ -119,60 +146,35 @@ export const reservationForm = mapped(
     toRequest: (
       reservableDays: Record<string, FiniteDateRange[]>
     ): DailyReservationRequest[] =>
-      output.selectedChildren
-        .flatMap((childId): DailyReservationRequest[] => {
-          const childReservableDays = reservableDays[childId] ?? []
-          const dates = [...output.dateRange.dates()].filter((date) =>
-            childReservableDays.some((range) => range.includes(date))
-          )
-          switch (output.times.branch) {
-            case 'dailyTimes': {
-              const reservations = output.times.value
-              return dates.map((date) => ({
-                childId,
-                date,
-                reservations: reservations.length > 0 ? reservations : null,
-                absent: reservations.length === 0
-              }))
-            }
-            case 'weeklyTimes': {
-              const timesValue = output.times.value
-              return dates
-                .map((date) => {
-                  const weekDay = timesValue[date.getIsoDayOfWeek() - 1]
-                  return weekDay
-                    ? {
-                        childId,
-                        date,
-                        reservations: weekDay.length > 0 ? weekDay : null,
-                        absent: weekDay.length === 0
-                      }
-                    : undefined
-                })
-                .flatMap((day) => (day ? [day] : []))
-            }
-            case 'irregularTimes': {
-              return output.times.value
-                .flatMap((irregularDay) =>
-                  irregularDay !== undefined ? [irregularDay] : []
-                )
-                .filter((irregularDay) => {
-                  return output.dateRange.includes(irregularDay.date)
-                })
-                .map((irregularDay) => ({
-                  childId,
-                  date: irregularDay.date,
-                  reservations:
-                    irregularDay.day.length > 0 ? irregularDay.day : null,
-                  absent: irregularDay.day.length === 0
-                }))
-            }
-          }
-        })
-        .filter(
-          ({ reservations, absent }) =>
-            (reservations && reservations.length > 0) || absent
+      output.selectedChildren.flatMap((childId): DailyReservationRequest[] => {
+        const childReservableDays = reservableDays[childId] ?? []
+        const dates = [...output.dateRange.dates()].filter((date) =>
+          childReservableDays.some((range) => range.includes(date))
         )
+        switch (output.times.branch) {
+          case 'dailyTimes': {
+            const reservations = output.times.value
+            return dates.map((date) =>
+              toDailyReservationRequest(childId, date, reservations)
+            )
+          }
+          case 'weeklyTimes': {
+            const timesValue = output.times.value
+            return dates.map((date) => {
+              const weekDay = timesValue[date.getIsoDayOfWeek() - 1]
+              return toDailyReservationRequest(childId, date, weekDay)
+            })
+          }
+          case 'irregularTimes':
+            return output.times.value
+              .filter((irregularDay) => {
+                return output.dateRange.includes(irregularDay.date)
+              })
+              .map(({ date, day }) =>
+                toDailyReservationRequest(childId, date, day)
+              )
+        }
+      })
   })
 )
 
@@ -258,7 +260,7 @@ export function resetTimes(
     ) {
       return {
         branch: 'dailyTimes',
-        state: { branch: 'holidayReservation', state: 'absent' }
+        state: { branch: 'holidayReservation', state: 'not-set' }
       }
     }
 
@@ -304,7 +306,7 @@ export function resetTimes(
         }
 
         if (isOpenHolidayPeriod) {
-          return { branch: 'holidayReservation', state: 'absent' }
+          return { branch: 'holidayReservation', state: 'not-set' }
         }
 
         const relevantReservations = reservations.filter(({ date }) =>
@@ -363,7 +365,7 @@ export function resetTimes(
         ) {
           return {
             date: rangeDate,
-            day: { branch: 'holidayReservation', state: 'absent' }
+            day: { branch: 'holidayReservation', state: 'not-set' }
           }
         }
 

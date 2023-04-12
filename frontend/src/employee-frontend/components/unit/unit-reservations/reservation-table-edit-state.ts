@@ -7,7 +7,10 @@ import { useCallback, useState } from 'react'
 import { Loading, Result, Success } from 'lib-common/api'
 import { ChildDailyRecords } from 'lib-common/api-types/reservations'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationRequest,
+  Reservation
+} from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -186,28 +189,33 @@ export function useUnitReservationEditState(
       if (reservations.some(({ errors }) => errors.startTime || errors.endTime))
         return
 
-      const body = {
-        childId: state.childId,
-        date,
-        reservations: reservations
-          .filter(({ startTime, endTime }) => startTime && endTime)
-          .map(({ startTime, endTime }) => ({
-            startTime,
-            endTime
-          })),
-        absent: false
-      }
+      const filtered = reservations
+        .filter(({ startTime, endTime }) => startTime && endTime)
+        .map(
+          ({ startTime, endTime }): Reservation => ({
+            type: 'TIMES',
+            startTime: LocalTime.parse(startTime),
+            endTime: LocalTime.parse(endTime)
+          })
+        )
+
+      const reservationRequest: DailyReservationRequest =
+        filtered.length === 0
+          ? {
+              type: 'NOTHING',
+              childId: state.childId,
+              date
+            }
+          : {
+              type: 'RESERVATIONS',
+              childId: state.childId,
+              date,
+              reservation: filtered[0],
+              secondReservation: filtered[1] ?? null
+            }
 
       const reqId = startRequest()
 
-      const reservationRequest: DailyReservationRequest = {
-        ...body,
-        reservations: body.reservations.map(({ startTime, endTime }) => ({
-          type: 'TIMES',
-          startTime: LocalTime.parse(startTime),
-          endTime: LocalTime.parse(endTime)
-        }))
-      }
       void postReservations([reservationRequest])
         .then(updateRequestStatus(reqId))
         .then(() =>

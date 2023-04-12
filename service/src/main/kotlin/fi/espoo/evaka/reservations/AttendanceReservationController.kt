@@ -166,7 +166,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
     ) {
         val children = body.map { it.childId }.toSet()
 
-        if (body.any { it.absent }) {
+        if (body.any { it is DailyReservationRequest.Absence }) {
             throw BadRequest("Absences are not allowed", "ABSENCES_NOT_ALLOWED")
         }
 

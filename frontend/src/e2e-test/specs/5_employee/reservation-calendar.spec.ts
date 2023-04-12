@@ -250,27 +250,23 @@ describe('Unit group calendar', () => {
       .save()
 
     // Reservation on the second day
-    await Fixture.attendanceReservation()
-      .with({
-        childId: child1Fixture.id,
-        date: holidayPeriodStart.addDays(1),
-        reservations: [
-          {
-            type: 'TIMES',
-            startTime: LocalTime.of(8, 0),
-            endTime: LocalTime.of(14, 0)
-          }
-        ]
-      })
-      .save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.addDays(1),
+      reservation: {
+        type: 'TIMES',
+        startTime: LocalTime.of(8, 0),
+        endTime: LocalTime.of(14, 0)
+      },
+      secondReservation: null
+    }).save()
     // Absence on the third day
-    await Fixture.attendanceReservation()
-      .with({
-        childId: child1Fixture.id,
-        date: holidayPeriodStart.addDays(2),
-        absent: true
-      })
-      .save()
+    await Fixture.attendanceReservation({
+      type: 'ABSENCE',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.addDays(2)
+    }).save()
 
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations

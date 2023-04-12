@@ -311,11 +311,10 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `adding a new daily service time creates a modal notification when reservations exist during the new period`() {
         this.postReservations(
             listOf(
-                DailyReservationRequest(
+                DailyReservationRequest.Reservations(
                     testChild_1.id,
                     now.toLocalDate().plusDays(105),
-                    listOf(Reservation.Times(LocalTime.of(10, 0), LocalTime.of(12, 0))),
-                    absent = false
+                    Reservation.Times(LocalTime.of(10, 0), LocalTime.of(12, 0)),
                 )
             )
         )
@@ -515,7 +514,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val (_, res, _) =
             http
                 .post("/citizen/reservations")
-                .jsonBody(jsonMapper.writeValueAsString(request))
+                .jsonBody(jsonMapper.writeValueAsString(request.toTypedArray()))
                 .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
                 .withMockedTime(now)
                 .response()

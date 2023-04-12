@@ -69,17 +69,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -116,17 +114,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -164,17 +160,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -211,17 +205,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.minusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -260,17 +252,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -320,18 +310,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
-                        childId = testChild_1.id,
-                        date = monday.plusDays(1),
-                        reservations = null,
-                        absent = false
-                    )
                 )
             )
         }
@@ -354,6 +337,67 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             }
         assertEquals(1, absences.size)
         assertEquals(monday.plusDays(1), absences.first().date)
+    }
+
+    @Test
+    fun `absences and reservations are removed from days with no absence or reservation`() {
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = monday,
+                endDate = monday.plusDays(1)
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+            it.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = monday.plusDays(1),
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                monday,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Nothing(
+                        childId = testChild_1.id,
+                        date = monday,
+                    ),
+                    DailyReservationRequest.Nothing(
+                        childId = testChild_1.id,
+                        date = monday.plusDays(1),
+                    )
+                )
+            )
+        }
+
+        // then no reservations exist
+        val reservations =
+            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+                .flatMap { dailyData -> dailyData.children.flatMap { it.reservations } }
+        assertEquals(listOf(), reservations)
+
+        // and no absences exist
+        val absences =
+            db.read {
+                it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, monday.plusDays(1)))
+            }
+        assertEquals(listOf(), absences)
     }
 
     @Test
@@ -398,23 +442,19 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        reservations = listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = tuesday,
-                        reservations = listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Nothing(
                         childId = testChild_1.id,
                         date = wednesday,
-                        reservations = null,
-                        absent = false
                     )
                 )
             )
@@ -457,17 +497,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     ),
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.plusDays(1),
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -480,11 +518,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        listOf(Reservation.Times(LocalTime.of(12, 0), endTime)),
-                        absent = false
+                        Reservation.Times(LocalTime.of(12, 0), endTime),
                     )
                 )
             )
@@ -531,11 +568,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        listOf(Reservation.NoTimes),
-                        absent = false
+                        Reservation.NoTimes,
                     )
                 )
             )
@@ -581,11 +617,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     monday,
                     citizenUser,
                     listOf(
-                        DailyReservationRequest(
+                        DailyReservationRequest.Reservations(
                             childId = testChild_1.id,
                             date = holidayPeriodStart,
-                            listOf(Reservation.NoTimes),
-                            absent = false
+                            Reservation.NoTimes,
                         )
                     )
                 )
@@ -600,11 +635,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     monday,
                     citizenUser,
                     listOf(
-                        DailyReservationRequest(
+                        DailyReservationRequest.Reservations(
                             childId = testChild_1.id,
                             date = holidayPeriodEnd.plusDays(1),
-                            listOf(Reservation.NoTimes),
-                            absent = false
+                            Reservation.NoTimes,
                         )
                     )
                 )
@@ -647,11 +681,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -709,11 +742,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 employeeUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )
@@ -775,11 +807,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 employeeUser,
                 listOf(
-                    DailyReservationRequest(
+                    DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        listOf(Reservation.Times(startTime, endTime)),
-                        absent = false
+                        Reservation.Times(startTime, endTime),
                     )
                 )
             )

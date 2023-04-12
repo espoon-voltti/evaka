@@ -127,10 +127,10 @@ fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: Date
 
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
-    requests: List<DailyReservationRequest>
+    requests: List<DailyReservationRequest.Reservations>
 ): List<AttendanceReservationId> {
     return requests.flatMap { request ->
-        (request.reservations ?: listOf()).mapNotNull { res ->
+        listOfNotNull(request.reservation, request.secondReservation).mapNotNull { res ->
             createQuery(
                     """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
