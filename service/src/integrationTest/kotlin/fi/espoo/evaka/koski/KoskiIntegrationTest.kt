@@ -1040,6 +1040,29 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `preschool club placement is delivered`() {
+        insertPlacement(
+            child = testChild_1,
+            daycareId = testDaycare.id,
+            period = preschoolTerm2019,
+            type = PlacementType.PRESCHOOL_CLUB
+        )
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        val studyRights = koskiServer.getStudyRights()
+        assertEquals(1, studyRights.size)
+        val studyRight = studyRights.values.first()
+
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start),
+                Opiskeluoikeusjakso.valmistunut(preschoolTerm2019.end)
+            ),
+            studyRight.opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+    }
+
     private fun insertPlacement(
         child: DevPerson = testChild_1,
         daycareId: DaycareId = testDaycare.id,

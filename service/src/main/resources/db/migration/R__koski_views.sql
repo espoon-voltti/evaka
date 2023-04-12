@@ -23,12 +23,13 @@ TABLE (
             (CASE placement.type
                 WHEN 'PRESCHOOL' THEN 'PRESCHOOL'
                 WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'
+                WHEN 'PRESCHOOL_CLUB' THEN 'PRESCHOOL'
                 WHEN 'PREPARATORY' THEN 'PREPARATORY'
                 WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'
             END)::koski_study_right_type AS type
         FROM placement
         WHERE start_date <= today
-        AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PREPARATORY', 'PREPARATORY_DAYCARE')
+        AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB', 'PREPARATORY', 'PREPARATORY_DAYCARE')
         WINDOW child AS (PARTITION BY child_id)
     ) p
     GROUP BY child_id, unit_id, type
