@@ -18,7 +18,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -44,7 +44,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
     private val generator: InvoiceGenerator = InvoiceGenerator(draftInvoiceGenerator)
     private val invoiceService =
         InvoiceService(
-            InvoiceIntegrationClient.MockClient(defaultJsonMapper()),
+            InvoiceIntegrationClient.MockClient(defaultJsonMapperBuilder().build()),
             TestInvoiceProductProvider(),
             featureConfig
         )

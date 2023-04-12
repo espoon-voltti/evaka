@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val mapper = defaultJsonMapper()
+    private val mapper = defaultJsonMapperBuilder().build()
     private val incomeTypesProvider = EspooIncomeTypesProvider()
 
     @BeforeEach

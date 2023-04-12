@@ -5,7 +5,7 @@
 package fi.espoo.evaka.shared.domain
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDate
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class HelsinkiDateTimeTest {
-    private val jsonMapper = defaultJsonMapper()
+    private val jsonMapper = defaultJsonMapperBuilder().build()
     private val summerValue =
         HelsinkiDateTime.from(
             ZonedDateTime.of(LocalDate.of(2021, 4, 14), LocalTime.of(16, 2), europeHelsinki)

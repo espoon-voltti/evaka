@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vtjclient.service.persondetails
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -47,7 +47,7 @@ class MockPersonDetailsService : IPersonDetailsService {
                 ClassPathResource("mock-vtj-data.json").inputStream.use {
                     it.bufferedReader().readText()
                 }
-            return defaultJsonMapper().readValue(content)
+            return defaultJsonMapperBuilder().build().readValue(content)
         }
 
         fun upsertPerson(person: VtjPerson) {

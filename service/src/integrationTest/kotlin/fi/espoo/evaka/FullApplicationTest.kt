@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
@@ -15,7 +16,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -43,7 +44,10 @@ import org.springframework.core.env.Environment
 abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @LocalServerPort protected var httpPort: Int = 0
 
-    protected val jsonMapper: JsonMapper = defaultJsonMapper()
+    protected val jsonMapper: JsonMapper =
+        defaultJsonMapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build()
 
     private lateinit var jdbi: Jdbi
 

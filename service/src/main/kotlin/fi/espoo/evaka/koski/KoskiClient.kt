@@ -5,12 +5,7 @@
 package fi.espoo.evaka.koski
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
@@ -23,6 +18,7 @@ import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.error
 import java.time.LocalDate
@@ -40,10 +36,8 @@ class KoskiClient(
     // global defaults change.
     // This is important, because our payload diffing mechanism relies on the serialization format
     private val jsonMapper =
-        jacksonMapperBuilder()
-            .addModules(JavaTimeModule(), Jdk8Module(), ParameterNamesModule())
+        defaultJsonMapperBuilder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .build()
 
     init {

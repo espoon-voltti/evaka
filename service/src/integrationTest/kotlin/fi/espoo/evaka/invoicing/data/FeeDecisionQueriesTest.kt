@@ -20,7 +20,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.domain.DateRange
@@ -56,7 +56,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    val jsonMapper = defaultJsonMapper()
+    val jsonMapper = defaultJsonMapperBuilder().build()
 
     private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
     private val testPeriod2 = DateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 31))

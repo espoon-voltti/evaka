@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.varda
 
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class VardaUnitModelTest {
-    private val mapper = defaultJsonMapper()
+    private val mapper = defaultJsonMapperBuilder().build()
 
     @Test
     fun `data output is in correct form`() {

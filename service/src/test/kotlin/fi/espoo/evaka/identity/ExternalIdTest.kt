@@ -5,12 +5,12 @@
 package fi.espoo.evaka.identity
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class ExternalIdTest {
-    private val jsonMapper = defaultJsonMapper()
+    private val jsonMapper = defaultJsonMapperBuilder().build()
 
     @Test
     fun `external ids can serialized to and from json`() {

@@ -7,7 +7,7 @@ package fi.espoo.evaka.koski
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.google.common.collect.Multimaps
 import com.google.common.collect.SetMultimap
-import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.post
 import io.javalin.apibuilder.ApiBuilder.put
@@ -181,7 +181,7 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
     companion object {
         const val UNIT_OID_THAT_TRIGGERS_400 = "SIMULATE_BAD_REQUEST"
         fun start(): MockKoskiServer {
-            return MockKoskiServer(defaultJsonMapper(), port = 0)
+            return MockKoskiServer(defaultJsonMapperBuilder().build(), port = 0)
         }
     }
 }
