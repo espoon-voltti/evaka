@@ -7,8 +7,11 @@ import LocalDate from 'lib-common/local-date'
 
 import {
   insertAbsence,
+  insertChildFixtures,
   insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
+  insertGuardianFixtures,
+  insertPersonFixture,
   resetDatabase
 } from '../../dev-api'
 import {
@@ -18,7 +21,9 @@ import {
 import {
   careArea2Fixture,
   createDaycarePlacementFixture,
+  createPreschoolDaycarePlacementFixture,
   daycare2Fixture,
+  enduserGuardianFixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -33,6 +38,7 @@ import { enduserLogin } from '../../utils/user'
 
 const e: EnvType[] = ['desktop', 'mobile']
 const today = LocalDate.of(2022, 1, 5)
+let page: Page
 
 async function openCalendarPage(envType: EnvType) {
   const viewport =
@@ -40,7 +46,7 @@ async function openCalendarPage(envType: EnvType) {
       ? { width: 375, height: 812 }
       : { width: 1920, height: 1080 }
 
-  const page = await Page.open({
+  page = await Page.open({
     viewport,
     screen: viewport,
     mockedTime: today.toSystemTzDate()
@@ -50,6 +56,7 @@ async function openCalendarPage(envType: EnvType) {
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, envType)
 }
+
 describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   let children: PersonDetail[]
   let fixtures: AreaAndPersonFixtures
@@ -124,26 +131,41 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   })
 
   test('Citizen creates a reservation for all children, but some days are not reservable', async () => {
-    // Holiday period overlaps with the reservations
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(today.addDays(15), today.addDays(16)),
-        reservationDeadline: today.subDays(1)
-      })
-      .save()
-
     const calendarPage = await openCalendarPage(env)
 
+    // Add a child whose placement ends in the middle of the reservations. This has to be done after the calendar page
+    // is opened because login creates the family from VTJ.
+    const childId = uuidv4()
     const firstReservationDay = today.addDays(14)
+    const lastReservationDay = firstReservationDay.addDays(6)
+
+    const childFixture = { ...fixtures.enduserNonSsnChildFixture, id: childId }
+    await insertPersonFixture(childFixture)
+    await insertChildFixtures([childFixture])
+    await insertGuardianFixtures([
+      { childId, guardianId: enduserGuardianFixture.id }
+    ])
+    await insertDaycarePlacementFixtures([
+      createPreschoolDaycarePlacementFixture(
+        uuidv4(),
+        childFixture.id,
+        fixtures.daycareFixture.id,
+        today.formatIso(),
+        lastReservationDay.subDays(1).formatIso()
+      )
+    ])
+
+    await page.reload()
+
     const reservation = {
       startTime: '08:00',
       endTime: '16:00',
-      childIds: children.map(({ id }) => id)
+      childIds: [...children.map(({ id }) => id), childId]
     }
 
     const reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      new FiniteDateRange(firstReservationDay, lastReservationDay),
       reservation.startTime,
       reservation.endTime
     )
