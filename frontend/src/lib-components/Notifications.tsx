@@ -249,17 +249,13 @@ const ReloadNotification = React.memo(function ReloadNotification({
   title: string
   buttonText: string
 }) {
+  const reload = () => window.location.reload()
+
   return (
-    <FixedSpaceColumn spacing="xs">
+    <FixedSpaceColumn spacing="xs" onClick={reload}>
       <div>{title}</div>
       <div>
-        <ReloadButton
-          icon={faRedo}
-          text={buttonText}
-          onClick={() => {
-            window.location.reload()
-          }}
-        />
+        <ReloadButton icon={faRedo} text={buttonText} onClick={reload} />
       </div>
     </FixedSpaceColumn>
   )
