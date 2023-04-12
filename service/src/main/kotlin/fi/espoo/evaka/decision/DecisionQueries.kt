@@ -163,7 +163,12 @@ fun Database.Read.getDecisionsByGuardian(
                 Predicate {
                     where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
                 },
-            application = Predicate { where("$it.guardian_id = ${bind(guardianId)}") }
+            application =
+                Predicate {
+                    where(
+                        "$it.guardian_id = ${bind(guardianId)} OR $it.other_guardian_id = ${bind(guardianId)}"
+                    )
+                }
         )
         .map(::decisionFromResultSet)
         .toList()

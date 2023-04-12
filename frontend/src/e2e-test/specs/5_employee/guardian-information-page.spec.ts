@@ -24,7 +24,9 @@ import {
   daycareGroupFixture,
   decisionFixture,
   enduserChildFixtureJari,
+  enduserChildFixtureKaarina,
   enduserGuardianFixture,
+  familyWithTwoGuardians,
   Fixture,
   invoiceFixture,
   uuidv4
@@ -53,13 +55,27 @@ beforeEach(async () => {
     enduserGuardianFixture
   )
 
+  const application2 = {
+    ...applicationFixture(
+      enduserChildFixtureKaarina,
+      familyWithTwoGuardians.guardian,
+      enduserGuardianFixture
+    ),
+    id: uuidv4()
+  }
+
   const startDate = '2021-08-16'
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  await insertApplications([application])
+  await insertApplications([application, application2])
   await insertDecisionFixtures([
     {
       ...decisionFixture(application.id, startDate, startDate),
       employeeId: admin.data.id
+    },
+    {
+      ...decisionFixture(application2.id, startDate, startDate),
+      employeeId: admin.data.id,
+      id: uuidv4()
     }
   ])
 
@@ -96,10 +112,17 @@ describe('Employee - Guardian Information', () => {
     )
 
     const decisionsSection = await guardianPage.openCollapsible('decisions')
-    await decisionsSection.assertDecisionCount(1)
+    await decisionsSection.assertDecisionCount(2)
     await decisionsSection.assertDecision(
       0,
       expectedChildName,
+      daycareFixture.name,
+      'Odottaa vastausta'
+    )
+
+    await decisionsSection.assertDecision(
+      1,
+      `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName}`,
       daycareFixture.name,
       'Odottaa vastausta'
     )
