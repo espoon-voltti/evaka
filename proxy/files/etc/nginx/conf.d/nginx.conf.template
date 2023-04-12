@@ -305,6 +305,11 @@ server {
     include     proxy_params;
     proxy_pass  $enduserUrl;
 
+    location /api/application/citizen/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
+
     location /api/application/attachments {
       client_max_body_size 100m;
       proxy_pass  $enduserUrl;
