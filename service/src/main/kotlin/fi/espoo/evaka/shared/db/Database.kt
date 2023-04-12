@@ -18,6 +18,7 @@ import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.ResultIterable
+import org.jdbi.v3.json.Json
 
 // What does it mean when a function accepts a Database/Database.* parameter?
 //
@@ -242,8 +243,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         inline fun <reified T> bind(
             name: String,
             value: T,
-            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()
-        ): This = bindByType(name, value, createQualifiedType(*qualifiers))
+        ): This = bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
 
         inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): This =
             registerColumnMapper(createQualifiedType(), mapper)
@@ -271,6 +271,13 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             }
             return self()
         }
+
+        fun bindJson(name: String, value: Any): This =
+            bindByType(
+                name,
+                value,
+                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
+            )
 
         fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): This {
             raw.bindByType(name, value, type)
@@ -397,10 +404,16 @@ value class PredicateSqlString(@Language("sql", prefix = "WHERE ") private val s
 open class SqlBuilder {
     protected var bindings: List<ValueBinding<out Any?>> = listOf()
 
-    inline fun <reified T> bind(
-        value: T,
-        qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()
-    ): Binding = bind(ValueBinding.of(value, qualifiers))
+    inline fun <reified T> bind(value: T): Binding =
+        bind(ValueBinding.of(value, defaultQualifiers<T>()))
+
+    fun bindJson(value: Any): Binding =
+        bind(
+            ValueBinding(
+                value,
+                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
+            )
+        )
 
     fun <T> bind(binding: ValueBinding<T>): Binding {
         this.bindings += binding

@@ -28,11 +28,7 @@ RETURNING id
         .bind("retryCount", jobParams.retryCount)
         .bind("retryInterval", jobParams.retryInterval)
         .bind("runAt", jobParams.runAt)
-        .bindByType(
-            "payload",
-            jobParams.payload,
-            QualifiedType.of(jobParams.payload.javaClass).with(Json::class.java)
-        )
+        .bindJson("payload", jobParams.payload)
         .executeAndReturnGeneratedKeys()
         .mapTo<UUID>()
         .one()
