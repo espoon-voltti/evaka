@@ -507,10 +507,8 @@ const editorForm = mapped(
   // The output value is a function that creates an array DailyReservationRequest given the date
   (output) =>
     (date: LocalDate): DailyReservationRequest[] =>
-      output.map(({ child, reservations, absent }) => ({
-        childId: child.id,
-        date,
-        reservations: reservations.flatMap((reservation) =>
+      output.map(({ child, reservations, absent }) => {
+        const res: Reservation[] = reservations.flatMap((reservation) =>
           reservation
             ? [
                 {
@@ -520,9 +518,14 @@ const editorForm = mapped(
                 }
               ]
             : []
-        ),
-        absent
-      }))
+        )
+        return {
+          childId: child.id,
+          date,
+          reservations: res,
+          absent: res.length === 0 ? absent : false
+        }
+      })
 )
 
 function editorFormState(
