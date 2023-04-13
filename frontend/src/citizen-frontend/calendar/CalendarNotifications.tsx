@@ -149,12 +149,9 @@ function getHolidayCtaText(
 ) {
   switch (cta.type) {
     case 'holiday':
-      return i18n.ctaToast.holidayPeriodCta(
-        cta.period.formatCompact(''),
-        cta.deadline.format()
-      )
+      return i18n.ctaToast.holidayPeriodCta(cta.period, cta.deadline)
     case 'questionnaire':
-      return i18n.ctaToast.fixedPeriodCta(cta.deadline.format())
+      return i18n.ctaToast.fixedPeriodCta(cta.deadline)
   }
 }
 

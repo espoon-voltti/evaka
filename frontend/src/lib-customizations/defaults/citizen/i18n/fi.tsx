@@ -9,6 +9,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -207,10 +208,16 @@ export default {
     }
   },
   ctaToast: {
-    holidayPeriodCta: (period: string, deadline: string) =>
-      `Ilmoita lomat ja tee varaukset ${period} välille viimeistään ${deadline}.`,
-    fixedPeriodCta: (deadline: string) =>
-      `Vastaa poissaolokyselyyn ${deadline} mennessä.`,
+    holidayPeriodCta: (period: FiniteDateRange, deadline: LocalDate) => (
+      <>
+        <InlineButton text="Ilmoita tästä" onClick={() => undefined} /> läsnä-
+        ja poissaolot välille {period.start.format('dd.MM.')}-
+        {period.end.format()} viimeistään {deadline.format()}. Läsnäolojen
+        tarkat kellonajat voi merkitä tämän jälkeenkin.
+      </>
+    ),
+    fixedPeriodCta: (deadline: LocalDate) =>
+      `Vastaa poissaolokyselyyn ${deadline.format()} mennessä.`,
     incomeExpirationCta: (expirationDate: string) =>
       `Muista päivittää tulotietosi ${expirationDate} mennessä`
   },
