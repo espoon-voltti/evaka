@@ -26,7 +26,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -262,6 +262,11 @@ export default React.memo(function ReservationModal({
                 <HorizontalLine slim dashed hiddenOnMobile />
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
+
+                <HolidayPeriodInfoBox
+                  upcomingHolidayPeriods={upcomingHolidayPeriods}
+                />
+
                 <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
                 <Gap size="xxs" />
                 <SelectF bind={repetition} data-qa="repetition" />
@@ -358,6 +363,24 @@ export default React.memo(function ReservationModal({
       </PlainModal>
     </ModalAccessibilityWrapper>
   )
+})
+
+const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
+  upcomingHolidayPeriods
+}: {
+  upcomingHolidayPeriods: HolidayPeriodInfo[]
+}) {
+  const i18n = useTranslation()
+  const openHolidayPeriod = upcomingHolidayPeriods.find(({ isOpen }) => isOpen)
+
+  return openHolidayPeriod ? (
+    <InfoBox
+      wide
+      message={i18n.calendar.reservationModal.holidayPeriod(
+        openHolidayPeriod.period
+      )}
+    />
+  ) : null
 })
 
 const MissingDateRange = styled(Light)`

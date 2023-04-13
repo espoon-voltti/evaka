@@ -308,6 +308,10 @@ export default {
       title: 'Ilmoita läsnäolo',
       selectChildren: 'Lapset, joiden läsnäolo ilmoitetaan',
       selectChildrenLabel: 'Valitse lapset',
+      holidayPeriod: (period: FiniteDateRange) =>
+        `Loma-aika: ${period.start.format('dd.MM.')}-${period.end.format(
+          'dd.MM.'
+        )}`,
       dateRange: 'Läsnäoloaika',
       dateRangeLabel: 'Ilmoita läsnäolo päiville',
       dateRangeInfo: (date: LocalDate) =>

@@ -308,6 +308,10 @@ const sv: Translations = {
       title: 'Anmäl närvaro',
       selectChildren: 'Barn, vars närvaro anmäls',
       selectChildrenLabel: 'Välj barn',
+      holidayPeriod: (period: FiniteDateRange) =>
+        `Semesterperioden: ${period.start.format('dd.MM.')}-${period.end.format(
+          'dd.MM.'
+        )}`,
       dateRange: 'Närvarotid',
       dateRangeLabel: 'Anmäl närvaro för perioden',
       dateRangeInfo: (date: LocalDate) =>

@@ -312,6 +312,10 @@ const en: Translations = {
       title: 'Register attendance',
       selectChildren: 'Children whose attendance you wish to register',
       selectChildrenLabel: 'Select children',
+      holidayPeriod: (period: FiniteDateRange) =>
+        `Holiday period: ${period.start.format('dd.MM.')}-${period.end.format(
+          'dd.MM.'
+        )}`,
       dateRange: 'Validity',
       dateRangeLabel: 'Enter period of attendance',
       dateRangeInfo: (date: LocalDate) =>
