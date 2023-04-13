@@ -22,7 +22,11 @@ import DecisionResponse from '../../components/application-page/DecisionResponse
 import { useTranslation } from '../../state/i18n'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
-  decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'
+  decision.status === 'PENDING' &&
+  !(
+    applicationStatus === 'WAITING_MAILING' ||
+    applicationStatus === 'WAITING_UNIT_CONFIRMATION'
+  )
 
 const isBlocked = (decisions: Decision[], decision: Decision) =>
   ['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'].includes(decision.type) &&

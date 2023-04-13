@@ -100,6 +100,11 @@ export default class ApplicationReadView {
     await submit.waitUntilHidden()
   }
 
+  async assertDecisionDisabled(type: DecisionType) {
+    const decision = this.page.findByDataQa(`application-decision-${type}`)
+    await decision.findByDataQa('decision-send-answer-button').waitUntilHidden()
+  }
+
   async assertApplicationStatus(text: string) {
     await this.#applicationStatus.findText(text).waitUntilVisible()
   }
