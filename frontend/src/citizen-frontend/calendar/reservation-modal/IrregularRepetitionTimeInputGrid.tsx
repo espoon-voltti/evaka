@@ -17,15 +17,13 @@ import { irregularDay, irregularTimes } from './form'
 export interface IrregularRepetitionTimeInputGridProps {
   bind: BoundForm<typeof irregularTimes>
   childrenInShiftCare: boolean
-  includedDays: number[]
   showAllErrors: boolean
 }
 
 export default React.memo(function IrregularRepetitionTimeInputGrid({
   bind,
   showAllErrors,
-  childrenInShiftCare,
-  includedDays
+  childrenInShiftCare
 }: IrregularRepetitionTimeInputGridProps) {
   const irregularDays = useFormElems(bind)
   return (
@@ -37,7 +35,6 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
             key={`shift-care-${date.formatIso()}`}
             bind={irregularDay}
             index={index}
-            includedDays={includedDays}
             showAllErrors={showAllErrors}
             childrenInShiftCare={childrenInShiftCare}
           />
@@ -50,13 +47,11 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
 const IrregularDay = React.memo(function IrregularDay({
   bind,
   index,
-  includedDays,
   showAllErrors,
   childrenInShiftCare
 }: {
   bind: BoundForm<typeof irregularDay>
   index: number
-  includedDays: number[]
   showAllErrors: boolean
   childrenInShiftCare: boolean
 }) {
@@ -74,18 +69,16 @@ const IrregularDay = React.memo(function IrregularDay({
           {i18n.common.datetime.week} {date.getIsoWeek()}
         </Week>
       ) : null}
-      {includedDays.includes(date.getIsoDayOfWeek()) && (
-        <Day
-          bind={day}
-          label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-          showAllErrors={showAllErrors}
-          allowExtraTimeRange={childrenInShiftCare}
-          dataQaPrefix={`irregular-${date.formatIso()}`}
-          onFocus={(ev) => {
-            scrollIntoViewSoftKeyboard(ev.target)
-          }}
-        />
-      )}
+      <Day
+        bind={day}
+        label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
+        showAllErrors={showAllErrors}
+        allowExtraTimeRange={childrenInShiftCare}
+        dataQaPrefix={`irregular-${date.formatIso()}`}
+        onFocus={(ev) => {
+          scrollIntoViewSoftKeyboard(ev.target)
+        }}
+      />
     </div>
   )
 })
