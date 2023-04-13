@@ -10,5 +10,4 @@ import java.time.LocalDate
 
 val emptyTranslatable = Translatable("", "", "")
 val summerRange = FiniteDateRange(start = LocalDate.of(2021, 6, 1), end = LocalDate.of(2021, 8, 31))
-val summerPeriod =
-    HolidayPeriodBody(period = summerRange, reservationDeadline = summerRange.start.minusWeeks(3))
+val summerDeadline: LocalDate = summerRange.start.minusWeeks(3)

@@ -263,6 +263,27 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
     return createQuery(sql).bind("childId", childId).bind("range", range).mapTo<Absence>().list()
 }
 
+data class ChildAbsenceDateRow(val childId: ChildId, val date: LocalDate)
+
+fun Database.Read.getAbsenceDatesForChildrenInRange(
+    childIds: Set<ChildId>,
+    range: FiniteDateRange
+): Map<ChildId, Set<LocalDate>> {
+    return createQuery(
+            """
+            SELECT a.child_id, a.date
+            FROM absence a
+            WHERE between_start_and_end(:range, date)
+            AND a.child_id = ANY(:childIds)
+            """
+        )
+        .bind("childIds", childIds)
+        .bind("range", range)
+        .mapTo<ChildAbsenceDateRow>()
+        .groupBy({ it.childId }, { it.date })
+        .mapValues { (_, dates) -> dates.toSet() }
+}
+
 fun Database.Read.getBackupCaresAffectingGroup(
     groupId: GroupId,
     period: FiniteDateRange

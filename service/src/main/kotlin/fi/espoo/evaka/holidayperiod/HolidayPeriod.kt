@@ -11,16 +11,7 @@ import java.time.LocalDate
 data class HolidayPeriod(
     val id: HolidayPeriodId,
     val period: FiniteDateRange,
-    val reservationDeadline: LocalDate?
-)
-
-data class HolidayPeriodBody(
-    val period: FiniteDateRange,
-    val reservationDeadline: LocalDate? = null
-)
-
-data class HolidayPeriodDeadline(
-    val id: HolidayPeriodId,
-    val period: FiniteDateRange,
     val reservationDeadline: LocalDate
 )
+
+data class HolidayPeriodBody(val period: FiniteDateRange, val reservationDeadline: LocalDate)

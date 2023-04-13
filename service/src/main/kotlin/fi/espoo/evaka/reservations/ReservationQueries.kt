@@ -23,28 +23,6 @@ data class AbsenceInsert(
     val questionnaireId: HolidayQuestionnaireId? = null
 )
 
-// language=sql
-val notDayOffCheck =
-    """
-    (
-        SELECT (
-            CASE date_part('isodow', :date)
-                WHEN 1 THEN monday_times IS NULL
-                WHEN 2 THEN tuesday_times IS NULL
-                WHEN 3 THEN wednesday_times IS NULL
-                WHEN 4 THEN thursday_times IS NULL
-                WHEN 5 THEN friday_times IS NULL
-                WHEN 6 THEN saturday_times IS NULL
-                WHEN 7 THEN sunday_times IS NULL
-            END
-        )
-        FROM daily_service_time dst
-        WHERE dst.child_id = :childId AND dst.validity_period @> :date AND dst.type = 'IRREGULAR'
-        LIMIT 1
-    ) IS NOT TRUE
-"""
-        .trimIndent()
-
 fun Database.Transaction.insertAbsences(
     userId: EvakaUserId,
     absenceInserts: List<AbsenceInsert>
@@ -65,7 +43,6 @@ fun Database.Transaction.insertAbsences(
             FROM placement
             WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
         ) care_type
-        WHERE $notDayOffCheck
         ON CONFLICT DO NOTHING
         RETURNING id
         """
@@ -150,11 +127,12 @@ fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: Date
 
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
-    requests: List<DailyReservationRequest>
+    requests: List<DailyReservationRequest.Reservations>
 ): List<AttendanceReservationId> {
-    val batch =
-        prepareBatch(
-            """
+    return requests.flatMap { request ->
+        listOfNotNull(request.reservation, request.secondReservation).mapNotNull { res ->
+            createQuery(
+                    """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
         SELECT :childId, :date, :start, :end, :userId
         FROM realized_placement_all(:date) rp
@@ -163,31 +141,26 @@ fun Database.Transaction.insertValidReservations(
             rp.child_id = :childId AND
             extract(isodow FROM :date) = ANY(d.operation_days) AND
             (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
-            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date) AND
-            $notDayOffCheck
+            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
         ON CONFLICT DO NOTHING
         RETURNING id
         """
-                .trimIndent()
-        )
-
-    requests.forEach { request ->
-        request.reservations?.forEach { res ->
-            if (res !is Reservation.Times) {
-                throw IllegalArgumentException("Only reservations with times are supported")
-            }
-            batch
+                )
                 .bind("userId", userId)
                 .bind("childId", request.childId)
                 .bind("date", request.date)
-                .bind("start", res.startTime)
-                .bind("end", res.endTime)
-                .bind("date", request.date)
-                .add()
+                .let {
+                    when (res) {
+                        is Reservation.Times ->
+                            it.bind("start", res.startTime).bind("end", res.endTime)
+                        is Reservation.NoTimes ->
+                            it.bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
+                    }
+                }
+                .mapTo<AttendanceReservationId>()
+                .singleOrNull()
         }
     }
-
-    return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
 }
 
 private data class ReservationRow(

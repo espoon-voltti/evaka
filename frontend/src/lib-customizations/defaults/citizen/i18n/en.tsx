@@ -9,6 +9,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
@@ -210,10 +211,16 @@ const en: Translations = {
     }
   },
   ctaToast: {
-    holidayPeriodCta: (period: string, deadline: string) =>
-      `Report holidays and make reservations for ${period} by ${deadline}.`,
-    fixedPeriodCta: (deadline: string) =>
-      `Answer the absence questionnaire before ${deadline}.`,
+    holidayPeriodCta: (period: FiniteDateRange, deadline: LocalDate) => (
+      <>
+        <InlineButton text="Register" onClick={() => undefined} /> attendances
+        and absences between {period.start.format('dd.MM.')}-
+        {period.end.format()} no later than {deadline.format()}. The exact times
+        of attendance can be marked even after this.
+      </>
+    ),
+    fixedPeriodCta: (deadline: LocalDate) =>
+      `Answer the absence questionnaire before ${deadline.format()}.`,
     incomeExpirationCta: (expirationDate: string) =>
       `Please remember to update your income statement by ${expirationDate}`
   },
@@ -312,6 +319,10 @@ const en: Translations = {
       title: 'Register attendance',
       selectChildren: 'Children whose attendance you wish to register',
       selectChildrenLabel: 'Select children',
+      holidayPeriod: (period: FiniteDateRange) =>
+        `Holiday period: ${period.start.format('dd.MM.')}-${period.end.format(
+          'dd.MM.'
+        )}`,
       dateRange: 'Validity',
       dateRangeLabel: 'Enter period of attendance',
       dateRangeInfo: (date: LocalDate) =>
@@ -327,6 +338,7 @@ const en: Translations = {
       },
       start: 'Start',
       end: 'End',
+      present: 'Present',
       absent: 'Absent',
       saveErrors: {
         failure: 'Could not save',

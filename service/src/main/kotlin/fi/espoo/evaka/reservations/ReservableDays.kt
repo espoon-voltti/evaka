@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.holidayperiod.HolidayPeriodDeadline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -22,11 +21,10 @@ fun getNextReservableMonday(
         getNextReservableMonday(now, thresholdHours, nextMonday.plusWeeks(1))
     }
 
-fun getReservableDays(
+fun getReservableRange(
     now: HelsinkiDateTime,
     thresholdHours: Long,
-    holidays: List<HolidayPeriodDeadline>
-): List<FiniteDateRange> {
+): FiniteDateRange {
     val today = now.toLocalDate()
     val nextReservableMonday = getNextReservableMonday(now, thresholdHours, getNextMonday(today))
 
@@ -38,7 +36,5 @@ fun getReservableDays(
             firstOfJuly.plusYears(1).plusMonths(1).withDayOfMonth(31)
         }
 
-    val nonReservableHolidays = holidays.filter { it.reservationDeadline < today }.map { it.period }
     return FiniteDateRange(nextReservableMonday, lastReservableDay)
-        .complement(nonReservableHolidays)
 }

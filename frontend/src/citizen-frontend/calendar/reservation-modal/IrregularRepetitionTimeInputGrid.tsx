@@ -11,7 +11,7 @@ import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import TimeInputs from './TimeInputs'
+import { Day } from './TimeInputs'
 import { irregularDay, irregularTimes } from './form'
 
 export interface IrregularRepetitionTimeInputGridProps {
@@ -64,10 +64,7 @@ const IrregularDay = React.memo(function IrregularDay({
   const [lang] = useLang()
   const date = bind.state.date
 
-  const mode = useFormField(bind, 'mode')
   const day = useFormField(bind, 'day')
-  const times = useFormField(day, 'times')
-  const present = useFormField(day, 'present')
 
   return (
     <div data-qa={`time-input-${date.formatIso()}`}>
@@ -78,11 +75,9 @@ const IrregularDay = React.memo(function IrregularDay({
         </Week>
       ) : null}
       {includedDays.includes(date.getIsoDayOfWeek()) && (
-        <TimeInputs
+        <Day
+          bind={day}
           label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-          mode={mode.value()}
-          bindPresent={present}
-          bindTimes={times}
           showAllErrors={showAllErrors}
           allowExtraTimeRange={childrenInShiftCare}
           dataQaPrefix={`irregular-${date.formatIso()}`}

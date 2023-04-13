@@ -7,43 +7,58 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
+import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
 
-fun convertMidnightEndTime(reservation: Reservation) =
-    if (
-        reservation is Reservation.Times &&
-            reservation.endTime == LocalTime.of(0, 0).withNano(0).withSecond(0)
-    ) {
-        reservation.copy(endTime = LocalTime.of(23, 59))
-    } else {
-        reservation
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed interface DailyReservationRequest {
+    val childId: ChildId
+    val date: LocalDate
+
+    @JsonTypeName("RESERVATIONS")
+    data class Reservations(
+        override val childId: ChildId,
+        override val date: LocalDate,
+        val reservation: Reservation,
+        val secondReservation: Reservation? = null
+    ) : DailyReservationRequest {
+        fun hasTimes() =
+            reservation is Reservation.Times &&
+                (secondReservation == null || secondReservation is Reservation.Times)
+        fun convertMidnightEndTime() =
+            this.copy(
+                reservation = reservation.convertMidnightEndTime(),
+                secondReservation = secondReservation?.convertMidnightEndTime()
+            )
     }
 
-// TODO: Allow reservations that have no times for holiday periods, if reserving before the deadline
-fun validateReservationTimeRange(reservation: Reservation) {
-    if (reservation !is Reservation.Times) {
-        throw BadRequest("Reservation must have times")
-    }
-    if (reservation.endTime <= reservation.startTime) {
-        throw BadRequest(
-            "Reservation start (${reservation.startTime}) must be before end (${reservation.endTime})"
-        )
-    }
+    @JsonTypeName("ABSENCE")
+    data class Absence(
+        override val childId: ChildId,
+        override val date: LocalDate,
+    ) : DailyReservationRequest
+
+    @JsonTypeName("NOTHING")
+    data class Nothing(
+        override val childId: ChildId,
+        override val date: LocalDate,
+    ) : DailyReservationRequest
 }
 
-data class DailyReservationRequest(
-    val childId: ChildId,
-    val date: LocalDate,
-    val reservations: List<Reservation>?,
-    val absent: Boolean
-)
+fun reservationRequestRange(body: List<DailyReservationRequest>): FiniteDateRange {
+    val minDate = body.minOfOrNull { it.date } ?: throw BadRequest("No requests")
+    val maxDate = body.maxOfOrNull { it.date } ?: throw BadRequest("No requests")
+    return FiniteDateRange(minDate, maxDate)
+}
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class Reservation : Comparable<Reservation> {
@@ -78,6 +93,13 @@ sealed class Reservation : Comparable<Reservation> {
                 throw IllegalArgumentException("Both start and end times must be null or not null")
             }
     }
+
+    fun convertMidnightEndTime() =
+        if (this is Times && this.endTime == LocalTime.of(0, 0)) {
+            this.copy(endTime = LocalTime.of(23, 59))
+        } else {
+            this
+        }
 }
 
 data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
@@ -91,29 +113,83 @@ data class CreateReservationsResult(
 
 fun createReservationsAndAbsences(
     tx: Database.Transaction,
-    userId: EvakaUserId,
-    reservationRequests: List<DailyReservationRequest>
+    today: LocalDate,
+    user: AuthenticatedUser,
+    requests: List<DailyReservationRequest>
 ): CreateReservationsResult {
-    val reservations =
-        reservationRequests.map {
-            it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
+    val (userId, isCitizen) =
+        when (user) {
+            is AuthenticatedUser.Citizen -> Pair(user.evakaUserId, true)
+            is AuthenticatedUser.Employee -> Pair(user.evakaUserId, false)
+            else -> throw BadRequest("Invalid user type")
         }
-    reservations.forEach { it.reservations?.forEach(::validateReservationTimeRange) }
+
+    val reservationsRange = reservationRequestRange(requests)
+    val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
+    val childAbsenceDates =
+        tx.getAbsenceDatesForChildrenInRange(requests.map { it.childId }.toSet(), reservationsRange)
+
+    val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
+    val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
+    val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
+
+    val validated =
+        requests
+            .mapNotNull { request ->
+                val isOpenHolidayPeriod = openHolidayPeriodDates.contains(request.date)
+                val isClosedHolidayPeriod = closedHolidayPeriodDates.contains(request.date)
+
+                if (isOpenHolidayPeriod) {
+                    // Everything is allowed on open holiday periods
+                    request
+                } else if (isClosedHolidayPeriod) {
+                    // Only reservations with times are allowed on closed holiday periods
+                    if (request is DailyReservationRequest.Reservations && !request.hasTimes()) {
+                        throw BadRequest("Reservations in closed holiday periods must have times")
+                    }
+                    if (isCitizen) {
+                        // Citizens cannot override absences on closed holiday periods. They're just
+                        // filtered out
+                        // here because they cannot be reliably filtered out in the UI.
+                        val hasAbsence =
+                            (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
+                        if (request is DailyReservationRequest.Reservations && hasAbsence) {
+                            null
+                        } else {
+                            request
+                        }
+                    } else {
+                        request
+                    }
+                } else {
+                    // Not a holiday period - only reservations with times are allowed
+                    if (request is DailyReservationRequest.Reservations && !request.hasTimes()) {
+                        throw BadRequest("Reservations outside holiday periods must have times")
+                    }
+                    request
+                }
+            }
+            .map { request ->
+                if (request is DailyReservationRequest.Reservations) {
+                    request.convertMidnightEndTime()
+                } else {
+                    request
+                }
+            }
 
     val deletedAbsences =
-        tx.clearOldCitizenEditableAbsences(
-            reservations
-                .filter { it.reservations != null || it.absent }
-                .map { it.childId to it.date }
-        )
-    val deletedReservations = tx.clearOldReservations(reservations.map { it.childId to it.date })
+        tx.clearOldCitizenEditableAbsences(validated.map { it.childId to it.date })
+    val deletedReservations = tx.clearOldReservations(validated.map { it.childId to it.date })
     val upsertedReservations =
-        tx.insertValidReservations(userId, reservations.filterNot { it.absent })
+        tx.insertValidReservations(
+            user.evakaUserId,
+            validated.filterIsInstance<DailyReservationRequest.Reservations>()
+        )
 
     val absences =
-        reservations
-            .filter { it.absent }
-            .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
+        validated.filterIsInstance<DailyReservationRequest.Absence>().map {
+            AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE)
+        }
     val upsertedAbsences =
         if (absences.isNotEmpty()) {
             tx.insertAbsences(userId, absences)

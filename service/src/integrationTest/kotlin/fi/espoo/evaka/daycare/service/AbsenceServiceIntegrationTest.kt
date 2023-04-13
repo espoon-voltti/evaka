@@ -7,7 +7,6 @@ package fi.espoo.evaka.daycare.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
-import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
 import fi.espoo.evaka.holidayperiod.createHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
@@ -1229,7 +1228,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val holidayStart = LocalDate.of(2019, 9, 9)
         val holidayEnd = LocalDate.of(2019, 9, 15)
         db.transaction { tx ->
-            tx.createHolidayPeriod(HolidayPeriodBody(FiniteDateRange(holidayStart, holidayEnd)))
+            tx.createHolidayPeriod(FiniteDateRange(holidayStart, holidayEnd), today)
         }
 
         insertGroupPlacement(childId)

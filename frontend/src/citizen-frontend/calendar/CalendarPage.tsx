@@ -15,6 +15,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
+import { mockToday } from 'lib-common/utils/helpers'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -107,6 +108,18 @@ const CalendarPage = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
+  const upcomingHolidayPeriods = useMemo(() => {
+    const today = mockToday() ?? LocalDate.todayInSystemTz()
+    return holidayPeriods.map((periods) =>
+      periods
+        .filter((p) => p.period.end.isEqualOrAfter(today))
+        .map((p) => ({
+          period: p.period,
+          isOpen: p.reservationDeadline.isEqualOrAfter(today)
+        }))
+    )
+  }, [holidayPeriods])
+
   const { data: questionnaire } = useQuery(activeQuestionnaireQuery)
 
   const firstReservableDate = useMemo(() => {
@@ -144,107 +157,118 @@ const CalendarPage = React.memo(function CalendarPage() {
     <>
       <DailyServiceTimeNotifications />
 
-      {renderResult(combine(data, events), ([response, events]) => (
-        <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-          <CalendarNotifications />
-          <MobileAndTablet>
-            <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
-              <CalendarListView
+      {renderResult(
+        combine(data, events, upcomingHolidayPeriods),
+        ([response, events, upcomingHolidayPeriods]) => (
+          <div data-qa="calendar-page" data-isloading={isLoading(data)}>
+            <CalendarNotifications
+              reservationChildren={response.children}
+              dailyData={response.dailyData}
+            />
+            <MobileAndTablet>
+              <ContentArea
+                opaque
+                paddingVertical="zero"
+                paddingHorizontal="zero"
+              >
+                <CalendarListView
+                  childData={response.children}
+                  dailyData={response.dailyData}
+                  onHoverButtonClick={openPickActionModal}
+                  selectDate={openDayModal}
+                  dayIsReservable={dayIsReservable}
+                  dayIsHolidayPeriod={dayIsHolidayPeriod}
+                  events={events}
+                />
+              </ContentArea>
+            </MobileAndTablet>
+            <DesktopOnly>
+              <CalendarGridView
                 childData={response.children}
                 dailyData={response.dailyData}
-                onHoverButtonClick={openPickActionModal}
+                onCreateReservationClicked={
+                  openReservationModalWithoutInitialRange
+                }
+                onCreateAbsencesClicked={openAbsenceModal}
+                onReportHolidaysClicked={openHolidayModal}
+                selectedDate={
+                  modalState?.type === 'day' ? modalState.date : undefined
+                }
                 selectDate={openDayModal}
+                includeWeekends={response.includesWeekends}
                 dayIsReservable={dayIsReservable}
-                dayIsHolidayPeriod={dayIsHolidayPeriod}
                 events={events}
               />
-            </ContentArea>
-          </MobileAndTablet>
-          <DesktopOnly>
-            <CalendarGridView
-              childData={response.children}
-              dailyData={response.dailyData}
-              onCreateReservationClicked={
-                openReservationModalWithoutInitialRange
-              }
-              onCreateAbsencesClicked={openAbsenceModal}
-              onReportHolidaysClicked={openHolidayModal}
-              selectedDate={
-                modalState?.type === 'day' ? modalState.date : undefined
-              }
-              selectDate={openDayModal}
-              includeWeekends={response.includesWeekends}
-              dayIsReservable={dayIsReservable}
-              events={events}
-            />
-          </DesktopOnly>
-          {modalState?.type === 'day' && (
-            <DayView
-              date={modalState.date}
-              reservationsResponse={response}
-              selectDate={openDayModal}
-              close={closeModal}
-              openAbsenceModal={openAbsenceModal}
-              events={events}
-            />
-          )}
-          {modalState?.type === 'pickAction' && (
-            <ActionPickerModal
-              close={closeModal}
-              openReservations={openReservationModalWithoutInitialRange}
-              openAbsences={openAbsenceModal}
-              openHolidays={openHolidayModal}
-            />
-          )}
-          {modalState?.type === 'reservations' && (
-            <ReservationModal
-              onClose={closeModal}
-              availableChildren={response.children}
-              onSuccess={(containsNonReservableDays: boolean) => {
-                if (containsNonReservableDays) {
-                  openNonReservableDaysWarningModal()
-                } else {
-                  closeModal()
-                }
-              }}
-              reservableDays={response.reservableDays}
-              initialStart={
-                modalState.initialRange?.start ?? firstReservableDate
-              }
-              initialEnd={modalState.initialRange?.end ?? null}
-              existingReservations={response.dailyData}
-            />
-          )}
-          {modalState?.type === 'absences' && (
-            <AbsenceModal
-              close={closeModal}
-              initialDate={modalState.initialDate}
-              availableChildren={response.children}
-              firstPlannedAbsenceDate={firstPlannedAbsenceDate}
-            />
-          )}
-          {modalState?.type === 'holidays' && questionnaire && (
-            <RequireAuth
-              strength={
-                questionnaire.questionnaire.requiresStrongAuth
-                  ? 'STRONG'
-                  : 'WEAK'
-              }
-            >
-              <FixedPeriodSelectionModal
+            </DesktopOnly>
+            {modalState?.type === 'day' && (
+              <DayView
+                date={modalState.date}
+                reservationsResponse={response}
+                selectDate={openDayModal}
                 close={closeModal}
-                questionnaire={questionnaire.questionnaire}
-                availableChildren={response.children}
-                eligibleChildren={questionnaire.eligibleChildren}
-                previousAnswers={questionnaire.previousAnswers}
+                openAbsenceModal={openAbsenceModal}
+                events={events}
               />
-            </RequireAuth>
-          )}
-          {modalState?.type === 'nonReservableDaysWarning' && (
-            <NonReservableDaysWarningModal onClose={closeModal} />
-          )}
-        </div>
-      ))}
+            )}
+            {modalState?.type === 'pickAction' && (
+              <ActionPickerModal
+                close={closeModal}
+                openReservations={openReservationModalWithoutInitialRange}
+                openAbsences={openAbsenceModal}
+                openHolidays={openHolidayModal}
+              />
+            )}
+            {modalState?.type === 'reservations' && (
+              <ReservationModal
+                onClose={closeModal}
+                availableChildren={response.children}
+                onSuccess={(containsNonReservableDays: boolean) => {
+                  if (containsNonReservableDays) {
+                    openNonReservableDaysWarningModal()
+                  } else {
+                    closeModal()
+                  }
+                }}
+                reservableDays={response.reservableDays}
+                initialStart={
+                  modalState.initialRange?.start ?? firstReservableDate
+                }
+                initialEnd={modalState.initialRange?.end ?? null}
+                existingReservations={response.dailyData}
+                upcomingHolidayPeriods={upcomingHolidayPeriods}
+              />
+            )}
+            {modalState?.type === 'absences' && (
+              <AbsenceModal
+                close={closeModal}
+                initialDate={modalState.initialDate}
+                availableChildren={response.children}
+                firstPlannedAbsenceDate={firstPlannedAbsenceDate}
+              />
+            )}
+            {modalState?.type === 'holidays' && questionnaire && (
+              <RequireAuth
+                strength={
+                  questionnaire.questionnaire.requiresStrongAuth
+                    ? 'STRONG'
+                    : 'WEAK'
+                }
+              >
+                <FixedPeriodSelectionModal
+                  close={closeModal}
+                  questionnaire={questionnaire.questionnaire}
+                  availableChildren={response.children}
+                  eligibleChildren={questionnaire.eligibleChildren}
+                  previousAnswers={questionnaire.previousAnswers}
+                />
+              </RequireAuth>
+            )}
+            {modalState?.type === 'nonReservableDaysWarning' && (
+              <NonReservableDaysWarningModal onClose={closeModal} />
+            )}
+          </div>
+        )
+      )}
     </>
   )
 })

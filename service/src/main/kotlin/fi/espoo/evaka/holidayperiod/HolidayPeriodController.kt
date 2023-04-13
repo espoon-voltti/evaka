@@ -83,7 +83,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         Action.Global.CREATE_HOLIDAY_PERIOD
                     )
                     try {
-                        it.createHolidayPeriod(body)
+                        it.createHolidayPeriod(body.period, body.reservationDeadline)
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
                     }
@@ -109,7 +109,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     Action.Global.UPDATE_HOLIDAY_PERIOD
                 )
                 try {
-                    it.updateHolidayPeriod(id, body)
+                    it.updateHolidayPeriod(id, body.period, body.reservationDeadline)
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }

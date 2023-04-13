@@ -9,6 +9,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
@@ -208,10 +209,16 @@ const sv: Translations = {
     }
   },
   ctaToast: {
-    holidayPeriodCta: (period: string, deadline: string) =>
-      `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`,
-    fixedPeriodCta: (deadline: string) =>
-      `Svara på frånvaroenkäten före ${deadline}.`,
+    holidayPeriodCta: (period: FiniteDateRange, deadline: LocalDate) => (
+      <>
+        <InlineButton text="Anmäl" onClick={() => undefined} /> närvaro och
+        frånvaro mellan {period.start.format('dd.MM.')}-{period.end.format()}{' '}
+        senast {deadline.format()}. Exakta tider för närvaro kan markeras även
+        efter detta.
+      </>
+    ),
+    fixedPeriodCta: (deadline: LocalDate) =>
+      `Svara på frånvaroenkäten före ${deadline.format()}.`,
     incomeExpirationCta: (expirationDate: string) =>
       `Kom ihåg att uppdatera dina inkomstuppgifter senast den ${expirationDate}`
   },
@@ -308,6 +315,10 @@ const sv: Translations = {
       title: 'Anmäl närvaro',
       selectChildren: 'Barn, vars närvaro anmäls',
       selectChildrenLabel: 'Välj barn',
+      holidayPeriod: (period: FiniteDateRange) =>
+        `Semesterperioden: ${period.start.format('dd.MM.')}-${period.end.format(
+          'dd.MM.'
+        )}`,
       dateRange: 'Närvarotid',
       dateRangeLabel: 'Anmäl närvaro för perioden',
       dateRangeInfo: (date: LocalDate) =>
@@ -324,6 +335,7 @@ const sv: Translations = {
       },
       start: 'Börjar',
       end: 'Slutar',
+      present: 'Närvarande',
       absent: 'Frånvarande',
       saveErrors: {
         failure: 'Kunde inte spara',

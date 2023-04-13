@@ -5,15 +5,15 @@
 import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { BoundForm } from 'lib-common/form/hooks'
+import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 
-import TimeInputs from './TimeInputs'
-import { times } from './form'
+import { HolidayReservation, Times } from './TimeInputs'
+import { dailyTimes } from './form'
 
 export interface DailyRepetitionTimeInputGridProps {
-  bind: BoundForm<typeof times>
+  bind: BoundForm<typeof dailyTimes>
   childrenInShiftCare: boolean
   includedDays: number[]
   showAllErrors: boolean
@@ -27,6 +27,8 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
 }: DailyRepetitionTimeInputGridProps) {
   const i18n = useTranslation()
 
+  const { branch, form } = useFormUnion(bind)
+
   const label = (
     <Label>{`${i18n.common.datetime.weekdaysShort[includedDays[0] - 1]}-${
       i18n.common.datetime.weekdaysShort[
@@ -35,17 +37,21 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
     }`}</Label>
   )
 
-  return (
-    <TimeInputs
-      mode="normal"
-      bindTimes={bind}
-      label={label}
-      showAllErrors={showAllErrors}
-      allowExtraTimeRange={childrenInShiftCare}
-      dataQaPrefix="daily"
-      onFocus={(ev) => {
-        scrollIntoViewSoftKeyboard(ev.target)
-      }}
-    />
-  )
+  switch (branch) {
+    case 'times':
+      return (
+        <Times
+          bind={form}
+          label={label}
+          showAllErrors={showAllErrors}
+          allowExtraTimeRange={childrenInShiftCare}
+          dataQaPrefix="daily"
+          onFocus={(ev) => {
+            scrollIntoViewSoftKeyboard(ev.target)
+          }}
+        />
+      )
+    case 'holidayReservation':
+      return <HolidayReservation bind={form} label={label} />
+  }
 })

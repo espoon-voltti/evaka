@@ -70,15 +70,12 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     val unitName = unit.name
 
                     val holidays = tx.getHolidays(period)
-                    val holidayPeriods = tx.getHolidayPeriodsInRange(period)
+                    val openHolidayPeriods =
+                        tx.getHolidayPeriodsInRange(period).filter {
+                            it.reservationDeadline >= clock.today()
+                        }
                     val operationalDays =
-                        getUnitOperationalDays(
-                            clock.today(),
-                            period,
-                            unit,
-                            holidays,
-                            holidayPeriods
-                        )
+                        getUnitOperationalDays(period, unit, holidays, openHolidayPeriods)
 
                     val effectiveGroupPlacements =
                         tx.getEffectiveGroupPlacementsInRange(unitId, period)
@@ -169,7 +166,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
     ) {
         val children = body.map { it.childId }.toSet()
 
-        if (body.any { it.absent }) {
+        if (body.any { it is DailyReservationRequest.Absence }) {
             throw BadRequest("Absences are not allowed", "ABSENCES_NOT_ALLOWED")
         }
 
@@ -183,7 +180,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
                         Action.Child.CREATE_ATTENDANCE_RESERVATION,
                         children
                     )
-                    createReservationsAndAbsences(it, user.evakaUserId, body)
+                    createReservationsAndAbsences(it, clock.today(), user, body)
                 }
             }
         Audit.AttendanceReservationEmployeeCreate.log(
@@ -210,7 +207,7 @@ data class UnitAttendanceReservations(
     data class OperationalDay(
         val date: LocalDate,
         val isHoliday: Boolean,
-        val isInHolidayPeriodWithFutureDeadline: Boolean
+        val isInOpenHolidayPeriod: Boolean
     )
 
     data class GroupAttendanceReservations(
@@ -267,17 +264,12 @@ data class UnitAttendanceReservations(
 }
 
 private fun getUnitOperationalDays(
-    today: LocalDate,
     period: FiniteDateRange,
     unit: Daycare,
     holidays: Set<LocalDate>,
-    holidayPeriods: List<HolidayPeriod>
+    openHolidayPeriods: List<HolidayPeriod>
 ): List<UnitAttendanceReservations.OperationalDay> {
-    val holidayPeriodDates =
-        holidayPeriods
-            .filter { it.reservationDeadline != null && it.reservationDeadline >= today }
-            .flatMap { it.period.dates() }
-            .toSet()
+    val holidayPeriodDates = openHolidayPeriods.flatMap { it.period.dates() }.toSet()
     val isRoundTheClockUnit = unit.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
     return period
         .dates()
@@ -286,7 +278,7 @@ private fun getUnitOperationalDays(
             UnitAttendanceReservations.OperationalDay(
                 it,
                 isHoliday = !isRoundTheClockUnit && holidays.contains(it),
-                isInHolidayPeriodWithFutureDeadline = holidayPeriodDates.contains(it)
+                isInOpenHolidayPeriod = holidayPeriodDates.contains(it)
             )
         }
         .toList()

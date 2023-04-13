@@ -41,15 +41,42 @@ export interface DailyReservationData {
   isHoliday: boolean
 }
 
+export namespace DailyReservationRequest {
+  /**
+  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absence
+  */
+  export interface Absence {
+    type: 'ABSENCE'
+    childId: UUID
+    date: LocalDate
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Nothing
+  */
+  export interface Nothing {
+    type: 'NOTHING'
+    childId: UUID
+    date: LocalDate
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Reservations
+  */
+  export interface Reservations {
+    type: 'RESERVATIONS'
+    childId: UUID
+    date: LocalDate
+    reservation: Reservation
+    secondReservation: Reservation | null
+  }
+}
+
 /**
 * Generated from fi.espoo.evaka.reservations.DailyReservationRequest
 */
-export interface DailyReservationRequest {
-  absent: boolean
-  childId: UUID
-  date: LocalDate
-  reservations: Reservation[] | null
-}
+export type DailyReservationRequest = DailyReservationRequest.Absence | DailyReservationRequest.Nothing | DailyReservationRequest.Reservations
+
 
 /**
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange

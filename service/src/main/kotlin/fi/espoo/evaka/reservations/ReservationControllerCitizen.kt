@@ -9,7 +9,6 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
-import fi.espoo.evaka.holidayperiod.getHolidayPeriodDeadlines
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -67,21 +66,17 @@ class ReservationControllerCitizen(
                         }
                     val reservations =
                         tx.getReservationsCitizen(clock.today(), user.id, range, includeWeekends)
-                    val deadlines = tx.getHolidayPeriodDeadlines()
-                    val reservableDayRanges =
-                        getReservableDays(
+                    val reservableRange =
+                        getReservableRange(
                             clock.now(),
                             featureConfig.citizenReservationThresholdHours,
-                            deadlines
                         )
                     val reservableDays =
                         children.associate { child ->
                             Pair(
                                 child.id,
-                                child.placements.flatMap { placement ->
-                                    reservableDayRanges.flatMap { range ->
-                                        listOfNotNull(range.intersection(placement))
-                                    }
+                                child.placements.mapNotNull { placement ->
+                                    reservableRange.intersection(placement)
                                 }
                             )
                         }
@@ -120,19 +115,16 @@ class ReservationControllerCitizen(
                         Action.Citizen.Child.CREATE_RESERVATION,
                         children
                     )
-                    val deadlines = tx.getHolidayPeriodDeadlines()
-                    val reservableRanges =
-                        getReservableDays(
+
+                    val reservableRange =
+                        getReservableRange(
                             clock.now(),
                             featureConfig.citizenReservationThresholdHours,
-                            deadlines
                         )
-                    if (
-                        !body.all { request -> reservableRanges.any { it.includes(request.date) } }
-                    ) {
+                    if (!body.all { request -> reservableRange.includes(request.date) }) {
                         throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
                     }
-                    createReservationsAndAbsences(tx, user.evakaUserId, body)
+                    createReservationsAndAbsences(tx, clock.today(), user, body)
                 }
             }
         Audit.AttendanceReservationCitizenCreate.log(

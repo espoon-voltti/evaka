@@ -90,6 +90,56 @@ export function array<Elem extends AnyForm>(
   }
 }
 
+type UnionOutput<
+  Fields extends AnyObjectFields,
+  K extends keyof Fields
+> = K extends unknown // trigger distributive conditional types
+  ? {
+      branch: K
+      value: OutputOf<Fields[K]>
+    }
+  : never
+
+type UnionError<Fields extends AnyObjectFields> =
+  | ErrorOf<Fields[keyof Fields]>
+  | ObjectFieldError
+
+type UnionState<
+  Fields extends AnyObjectFields,
+  K extends keyof Fields
+> = K extends unknown // trigger distributive conditional types
+  ? {
+      branch: K
+      state: StateOf<Fields[K]>
+    }
+  : never
+
+export function union<Fields extends AnyObjectFields>(
+  fields: Fields
+): Form<
+  UnionOutput<Fields, keyof Fields>,
+  UnionError<Fields>,
+  UnionState<Fields, keyof Fields>,
+  Fields
+> {
+  return {
+    validate: memoizeLast((state: UnionState<Fields, keyof Fields>) => {
+      const activeBranch = fields[state.branch as keyof Fields]
+      const validationResult = activeBranch.validate(state.state)
+      if (validationResult.isValid) {
+        return ValidationSuccess.of({
+          branch: state.branch,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          value: validationResult.value
+        } as UnionOutput<Fields, keyof Fields>)
+      } else {
+        return ValidationError.objectFieldError
+      }
+    }),
+    shape: fields
+  }
+}
+
 export function chained<
   Output,
   Error extends string,

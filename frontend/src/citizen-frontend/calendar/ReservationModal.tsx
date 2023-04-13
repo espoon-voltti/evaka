@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { useForm, useFormField } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
 import {
   DailyReservationData,
@@ -26,7 +26,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -49,6 +49,7 @@ import {
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import {
+  HolidayPeriodInfo,
   initialState,
   reservationForm,
   resetTimes
@@ -63,6 +64,7 @@ interface Props {
   initialStart: LocalDate | null
   initialEnd: LocalDate | null
   existingReservations: DailyReservationData[]
+  upcomingHolidayPeriods: HolidayPeriodInfo[]
 }
 
 export default React.memo(function ReservationModal({
@@ -72,7 +74,8 @@ export default React.memo(function ReservationModal({
   reservableDays,
   initialStart,
   initialEnd,
-  existingReservations
+  existingReservations,
+  upcomingHolidayPeriods
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -87,7 +90,16 @@ export default React.memo(function ReservationModal({
 
   const form = useForm(
     reservationForm,
-    () => initialState(availableChildren, initialStart, initialEnd, i18n),
+    () =>
+      initialState(
+        availableChildren,
+        initialStart,
+        initialEnd,
+        childrenInShiftCare,
+        existingReservations,
+        upcomingHolidayPeriods,
+        i18n
+      ),
     i18n.validationErrors,
     {
       onUpdate: (prevState, nextState, form) => {
@@ -108,12 +120,13 @@ export default React.memo(function ReservationModal({
         if (!prev.isValid) {
           return {
             ...nextState,
-            ...resetTimes(
+            times: resetTimes(
               childrenInShiftCare,
               existingReservations,
               repetition,
               selectedRange,
-              selectedChildren
+              selectedChildren,
+              upcomingHolidayPeriods
             )
           }
         }
@@ -128,12 +141,13 @@ export default React.memo(function ReservationModal({
         ) {
           return {
             ...nextState,
-            ...resetTimes(
+            times: resetTimes(
               childrenInShiftCare,
               existingReservations,
               repetition,
               selectedRange,
-              selectedChildren
+              selectedChildren,
+              upcomingHolidayPeriods
             )
           }
         }
@@ -142,9 +156,7 @@ export default React.memo(function ReservationModal({
     }
   )
 
-  const selectedChildren = useFormField(form, 'selectedChildren')
-  const repetition = useFormField(form, 'repetition')
-  const dateRange = useFormField(form, 'dateRange')
+  const { selectedChildren, repetition, dateRange, times } = useFormFields(form)
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
@@ -250,6 +262,11 @@ export default React.memo(function ReservationModal({
                 <HorizontalLine slim dashed hiddenOnMobile />
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
+
+                <HolidayPeriodInfoBox
+                  upcomingHolidayPeriods={upcomingHolidayPeriods}
+                />
+
                 <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
                 <Gap size="xxs" />
                 <SelectF bind={repetition} data-qa="repetition" />
@@ -284,7 +301,7 @@ export default React.memo(function ReservationModal({
 
                 {selectedRange ? (
                   <RepetitionTimeInputGrid
-                    bind={form}
+                    bind={times}
                     childrenInShiftCare={childrenInShiftCare}
                     includedDays={includedDays}
                     showAllErrors={showAllErrors}
@@ -346,6 +363,24 @@ export default React.memo(function ReservationModal({
       </PlainModal>
     </ModalAccessibilityWrapper>
   )
+})
+
+const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
+  upcomingHolidayPeriods
+}: {
+  upcomingHolidayPeriods: HolidayPeriodInfo[]
+}) {
+  const i18n = useTranslation()
+  const openHolidayPeriod = upcomingHolidayPeriods.find(({ isOpen }) => isOpen)
+
+  return openHolidayPeriod ? (
+    <InfoBox
+      wide
+      message={i18n.calendar.reservationModal.holidayPeriod(
+        openHolidayPeriod.period
+      )}
+    />
+  ) : null
 })
 
 const MissingDateRange = styled(Light)`

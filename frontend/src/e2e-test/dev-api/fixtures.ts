@@ -1747,13 +1747,10 @@ export class Fixture {
     })
   }
 
-  static attendanceReservation(): AttendanceReservationBuilder {
-    return new AttendanceReservationBuilder({
-      childId: 'not set',
-      date: LocalDate.of(2020, 1, 1),
-      absent: false,
-      reservations: []
-    })
+  static attendanceReservation(
+    data: DailyReservationRequest
+  ): AttendanceReservationBuilder {
+    return new AttendanceReservationBuilder(data)
   }
 }
 
