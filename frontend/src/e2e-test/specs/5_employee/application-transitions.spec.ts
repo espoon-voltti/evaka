@@ -78,7 +78,7 @@ describe('Application transitions', () => {
         'create-default-placement-plan',
         'send-decisions-without-proposal'
       ],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -107,7 +107,7 @@ describe('Application transitions', () => {
         'create-default-placement-plan',
         'send-decisions-without-proposal'
       ],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -136,7 +136,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['move-to-waiting-placement', 'create-default-placement-plan'],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -167,7 +167,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['move-to-waiting-placement', 'create-default-placement-plan'],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -244,7 +244,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['move-to-waiting-placement'],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -295,7 +295,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['move-to-waiting-placement'],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -463,7 +463,7 @@ describe('Application transitions', () => {
         'create-default-placement-plan',
         'send-placement-proposal'
       ],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
     await execSimpleApplicationActions(
       applicationId2,
@@ -472,7 +472,7 @@ describe('Application transitions', () => {
         'create-default-placement-plan',
         'send-placement-proposal'
       ],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     const page2 = await Page.open()
@@ -518,7 +518,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['confirm-decision-mailed'],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
@@ -539,7 +539,7 @@ describe('Application transitions', () => {
 
     await insertApplications([fixture1])
 
-    const now = HelsinkiDateTime.now() // TODO: use mock clock
+    const now = mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     await execSimpleApplicationActions(
       applicationId,
       [
