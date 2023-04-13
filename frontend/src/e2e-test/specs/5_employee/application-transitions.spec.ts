@@ -582,6 +582,36 @@ describe('Application transitions', () => {
     )
   })
 
+  test('Decision cannot be accepted on behalf of guardian if application is in placement proposal state', async () => {
+    const fixture1 = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.familyWithTwoGuardians.guardian
+      ),
+      status: 'SENT' as const
+    }
+    applicationId = fixture1.id
+
+    await insertApplications([fixture1])
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-placement-proposal'
+      ],
+      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    )
+
+    const unitSupervisor = (
+      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+    ).data
+    await employeeLogin(page, unitSupervisor)
+    await applicationReadView.navigateToApplication(applicationId)
+    await applicationReadView.waitUntilLoaded()
+    await applicationReadView.assertDecisionDisabled('DAYCARE')
+  })
+
   test('Supervisor can download decision PDF only after it has been generated', async () => {
     const application = {
       ...applicationFixture(
