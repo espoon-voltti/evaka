@@ -84,7 +84,7 @@ const StyledButton = styled.button`
     }
   }
 
-  ${(p) => defaultButtonTextStyle(p.theme)}
+  ${defaultButtonTextStyle};
 `
 
 export interface AddButtonProps extends BaseProps {

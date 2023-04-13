@@ -27,7 +27,7 @@ const SkipToContentLink = styled.a`
   cursor: pointer;
 
   text-decoration: none;
-  ${(p) => defaultButtonTextStyle(p.theme)}
+  ${defaultButtonTextStyle};
   letter-spacing: 0.2px;
 
   &:focus {

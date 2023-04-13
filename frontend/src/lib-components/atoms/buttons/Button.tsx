@@ -75,7 +75,7 @@ export const StyledButton = styled.button`
     width: fit-content;
   }
 
-  ${(p) => defaultButtonTextStyle(p.theme)}
+  ${defaultButtonTextStyle};
   letter-spacing: 0.2px;
 `
 

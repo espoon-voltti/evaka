@@ -54,7 +54,7 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
     font-size: 1.25em;
   }
 
-  ${(p) => defaultButtonTextStyle(p.theme)}
+  ${defaultButtonTextStyle};
   color: ${(p) => p.color ?? p.theme.colors.main.m2};
 `
 
