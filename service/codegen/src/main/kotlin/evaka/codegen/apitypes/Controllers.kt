@@ -47,19 +47,20 @@ fun getApiClasses(packageName: String): Set<KClass<*>> {
             else -> error("Unsupported case $this")
         }
 
-    val endpoints =
-        StaticWebApplicationContext().use { ctx ->
-            val scanner = ClassPathBeanDefinitionScanner(ctx)
-            scanner.scan(packageName)
-            ctx.getEndpointMetadata()
-        }
-
+    val endpoints = scanEndpoints(packageName)
     return (endpoints.flatMap { endpoint -> endpoint.types().flatMap { it.collectTypes() } } +
             sequenceOf(VoucherValueDecision::class) // only used for dev API
         )
         .filter { it.qualifiedName?.startsWith("$packageName.") ?: false }
         .toSet()
 }
+
+fun scanEndpoints(packageName: String): List<EndpointMetadata> =
+    StaticWebApplicationContext().use { ctx ->
+        val scanner = ClassPathBeanDefinitionScanner(ctx)
+        scanner.scan(packageName)
+        ctx.getEndpointMetadata()
+    }
 
 fun ApplicationContext.getEndpointMetadata(): List<EndpointMetadata> =
     RequestMappingHandlerMapping()
@@ -82,6 +83,28 @@ data class EndpointMetadata(
         pathVariables.asSequence().map { it.type } +
             requestParameters.asSequence().map { it.type } +
             listOfNotNull(requestBodyType, responseBodyType)
+
+    fun validate() {
+        fun fail(reason: String): Nothing =
+            error("Invalid $method endpoint $path in $controllerClass: $reason")
+        when (method) {
+            RequestMethod.GET,
+            RequestMethod.HEAD,
+            RequestMethod.DELETE, -> {
+                if (method == RequestMethod.GET && responseBodyType == null) {
+                    fail("It should have a response body")
+                }
+                if (requestBodyType != null) {
+                    fail("It should not use a request body")
+                }
+            }
+            RequestMethod.POST,
+            RequestMethod.PUT,
+            RequestMethod.PATCH -> {}
+            RequestMethod.TRACE,
+            RequestMethod.OPTIONS -> fail("Method not supported")
+        }
+    }
 }
 
 data class NamedParameter(val name: String, val type: KType)

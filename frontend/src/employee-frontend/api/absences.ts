@@ -79,7 +79,7 @@ export async function deleteChildAbsences(
   date: LocalDate
 ): Promise<Result<void>> {
   return client
-    .delete<void>(`/absences/by-child/${childId}`, { data: { date } })
+    .post<void>(`/absences/by-child/${childId}/delete`, { date })
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
