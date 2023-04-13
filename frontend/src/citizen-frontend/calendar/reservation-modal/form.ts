@@ -220,7 +220,10 @@ export function initialState(
       endDate: initialEnd
     },
     repetition: {
-      domValue: 'DAILY' as const,
+      domValue:
+        initialStart !== null && initialEnd !== null
+          ? ('IRREGULAR' as const)
+          : ('DAILY' as const),
       options: repetitionOptions(i18n)
     },
     times:
@@ -228,7 +231,7 @@ export function initialState(
         ? resetTimes(
             childrenInShiftCare,
             existingReservations,
-            'DAILY',
+            'IRREGULAR',
             new FiniteDateRange(initialStart, initialEnd),
             selectedChildren,
             holidayPeriods
