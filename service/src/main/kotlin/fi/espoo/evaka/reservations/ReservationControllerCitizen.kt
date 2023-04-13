@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
+import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId

@@ -7,6 +7,7 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.shared.AbsenceId

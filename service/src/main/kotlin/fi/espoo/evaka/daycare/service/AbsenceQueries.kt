@@ -150,6 +150,46 @@ RETURNING id
         .mapTo<AbsenceId>()
         .toList()
 
+/**
+ * A citizen is allowed to edit:
+ * - absences added by a citizen
+ * - other than FREE_ABSENCE
+ */
+fun Database.Transaction.clearOldCitizenEditableAbsences(
+    childDatePairs: List<Pair<ChildId, LocalDate>>
+): List<AbsenceId> {
+    val batch =
+        prepareBatch(
+            """
+DELETE FROM absence
+WHERE child_id = :childId
+AND date = :date
+AND absence_type <> 'FREE_ABSENCE'::absence_type
+AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
+RETURNING id
+"""
+        )
+
+    childDatePairs.forEach { (childId, date) ->
+        batch.bind("childId", childId).bind("date", date).add()
+    }
+
+    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+}
+
+fun Database.Transaction.deleteAllCitizenEditableAbsencesInRange(range: FiniteDateRange) {
+    createUpdate(
+            """
+DELETE FROM absence
+WHERE between_start_and_end(:range, date)
+AND absence_type <> 'FREE_ABSENCE'::absence_type
+AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
+"""
+        )
+        .bind("range", range)
+        .execute()
+}
+
 fun Database.Read.getGroupName(groupId: GroupId): String? {
     val sql =
         """

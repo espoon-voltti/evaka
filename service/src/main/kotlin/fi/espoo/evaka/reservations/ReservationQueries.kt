@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -74,33 +75,6 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
         .execute()
 }
 
-/**
- * A citizen is allowed to edit:
- * - absences added by a citizen
- * - other than FREE_ABSENCE
- */
-fun Database.Transaction.clearOldCitizenEditableAbsences(
-    childDatePairs: List<Pair<ChildId, LocalDate>>
-): List<AbsenceId> {
-    val batch =
-        prepareBatch(
-            """
-DELETE FROM absence 
-WHERE child_id = :childId
-AND date = :date
-AND absence_type <> 'FREE_ABSENCE'::absence_type
-AND (SELECT evaka_user.type = 'CITIZEN' FROM evaka_user WHERE evaka_user.id = absence.modified_by)
-RETURNING id
-"""
-        )
-
-    childDatePairs.forEach { (childId, date) ->
-        batch.bind("childId", childId).bind("date", date).add()
-    }
-
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
-}
-
 fun Database.Transaction.clearOldReservations(
     reservations: List<Pair<ChildId, LocalDate>>
 ): List<AttendanceReservationId> {
@@ -121,6 +95,14 @@ fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: Date
             "DELETE FROM attendance_reservation WHERE child_id = :childId AND between_start_and_end(:range, date)"
         )
         .bind("childId", childId)
+        .bind("range", range)
+        .execute()
+}
+
+fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRange) {
+    this.createUpdate(
+            "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(:range, date)"
+        )
         .bind("range", range)
         .execute()
 }
