@@ -1007,7 +1007,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 endDate = endDate
             )
 
-            // Reservation for 8:15-8:16 on the first day only
+            // Reservation for 8:00-8:15 on the first day only
             tx.insertTestReservation(
                 DevReservation(
                     childId = testChild_1.id,
@@ -1091,7 +1091,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             testDaycare.id,
             startDate,
             endDate,
-            groupIds
+            groupIds,
+            v2 = true
         )
     }
 }

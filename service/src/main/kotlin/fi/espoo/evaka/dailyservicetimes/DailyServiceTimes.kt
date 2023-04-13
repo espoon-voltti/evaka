@@ -36,6 +36,8 @@ sealed class DailyServiceTimesValue(
     abstract fun asUpdateRow(): DailyServiceTimeUpdateRow
     abstract fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean
 
+    abstract fun getTimesOnDate(date: LocalDate): TimeRange?
+
     @JsonTypeName("REGULAR")
     data class RegularTimes(override val validityPeriod: DateRange, val regularTimes: TimeRange) :
         DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.REGULAR) {
@@ -55,6 +57,12 @@ sealed class DailyServiceTimesValue(
 
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
             other is RegularTimes && regularTimes == other.regularTimes
+
+        override fun getTimesOnDate(date: LocalDate): TimeRange? {
+            if (!validityPeriod.includes(date)) return null
+
+            return regularTimes
+        }
     }
 
     @JsonTypeName("IRREGULAR")
@@ -111,6 +119,12 @@ sealed class DailyServiceTimesValue(
                 friday == null &&
                 saturday == null &&
                 sunday == null
+
+        override fun getTimesOnDate(date: LocalDate): TimeRange? {
+            if (!validityPeriod.includes(date)) return null
+
+            return timesForDayOfWeek(date.dayOfWeek)
+        }
     }
 
     @JsonTypeName("VARIABLE_TIME")
@@ -132,6 +146,10 @@ sealed class DailyServiceTimesValue(
 
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
             other is VariableTimes
+
+        override fun getTimesOnDate(date: LocalDate): TimeRange? {
+            return null
+        }
     }
 
     fun withId(id: DailyServiceTimesId, childId: ChildId) = DailyServiceTimes(id, childId, this)

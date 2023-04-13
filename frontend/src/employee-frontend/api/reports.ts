@@ -600,7 +600,8 @@ export interface AttendanceReservationReportFilters {
 
 export async function getAssistanceReservationReport(
   unitId: string,
-  filters: AttendanceReservationReportFilters
+  filters: AttendanceReservationReportFilters,
+  v2: boolean
 ): Promise<Result<AttendanceReservationReportRow[]>> {
   return client
     .get<JsonOf<AttendanceReservationReportRow[]>>(
@@ -609,7 +610,8 @@ export async function getAssistanceReservationReport(
         params: {
           start: filters.range.start.formatIso(),
           end: filters.range.end.formatIso(),
-          groupIds: filters.groupIds.join(',')
+          groupIds: filters.groupIds.join(','),
+          v2
         }
       }
     )
