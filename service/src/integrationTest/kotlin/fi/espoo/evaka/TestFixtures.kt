@@ -446,6 +446,34 @@ val testChildWithNamelessGuardian =
         restrictedDetailsEnabled = false
     )
 
+val testChildDuplicated =
+    DevPerson(
+        id = ChildId(UUID.randomUUID()),
+        dateOfBirth = LocalDate.of(2018, 12, 31),
+        ssn = "311218A999X",
+        firstName = "Monika",
+        lastName = "Monistettu",
+        streetAddress = "Testikatu 1",
+        postalCode = "00340",
+        postOffice = "Espoo",
+        restrictedDetailsEnabled = false
+    )
+
+val testChildDuplicateOf =
+    DevPerson(
+        id = ChildId(UUID.randomUUID()),
+        dateOfBirth = LocalDate.of(2018, 12, 31),
+        ssn = null,
+        ophPersonOid = "1.2.246.562.10.735773577357",
+        firstName = "Monika",
+        lastName = "Monistettu",
+        streetAddress = "Testikatu 1",
+        postalCode = "00340",
+        postOffice = "Espoo",
+        restrictedDetailsEnabled = false,
+        duplicateOf = testChildDuplicated.id
+    )
+
 val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2, testDecisionMaker_3)
 val allAdults =
     setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
@@ -459,7 +487,9 @@ val allChildren =
         testChild_6,
         testChild_7,
         testChild_8,
-        testChildWithNamelessGuardian
+        testChildWithNamelessGuardian,
+        testChildDuplicated,
+        testChildDuplicateOf
     )
 val allDaycares = setOf(testDaycare, testDaycare2)
 
@@ -544,7 +574,9 @@ fun Database.Transaction.insertGeneralTestFixtures() {
                 lastName = it.lastName,
                 streetAddress = it.streetAddress,
                 postalCode = it.postalCode,
-                postOffice = it.postOffice
+                postOffice = it.postOffice,
+                duplicateOf = it.duplicateOf,
+                ophPersonOid = it.ophPersonOid
             )
         )
         insertTestChild(DevChild(id = it.id))
