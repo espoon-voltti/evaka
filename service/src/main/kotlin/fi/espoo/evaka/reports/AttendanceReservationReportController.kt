@@ -6,6 +6,9 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.shared.AbsenceId
@@ -16,11 +19,15 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Period
+import kotlin.math.roundToInt
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -39,6 +46,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @RequestParam(required = false) groupIds: List<GroupId>?,
+        @RequestParam(required = false) v2: Boolean?
     ): List<AttendanceReservationReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -50,12 +58,22 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         unitId
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    tx.getAttendanceReservationReport(
-                        start,
-                        end,
-                        unitId,
-                        groupIds?.ifEmpty { null }
-                    )
+                    if (v2 == true) {
+                        getAttendanceReservationReportV2(
+                            tx,
+                            start,
+                            end,
+                            unitId,
+                            groupIds?.ifEmpty { null }
+                        )
+                    } else {
+                        tx.getAttendanceReservationReport(
+                            start,
+                            end,
+                            unitId,
+                            groupIds?.ifEmpty { null }
+                        )
+                    }
                 }
             }
             .also {
@@ -113,6 +131,330 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                 )
             }
     }
+}
+
+private data class PlacementInfoRow(
+    val date: LocalDate,
+    val childId: ChildId,
+    val groupId: GroupId?,
+    val groupName: String?,
+    val occupancyCoefficientUnder: Double,
+    val occupancyCoefficientOver: Double
+)
+
+private fun Database.Read.getPlacementInfo(
+    start: LocalDate,
+    end: LocalDate,
+    unitId: DaycareId,
+    groupIds: List<GroupId>?
+): List<PlacementInfoRow> {
+    val dates = generateSequence(start) { if (it < end) it.plusDays(1) else null }.toList()
+    val sql =
+        """
+WITH dates AS (
+    SELECT unnest(:dates::date[]) AS date
+)
+SELECT 
+    dates.date, 
+    pl.child_id, 
+    dgp.daycare_group_id as group_id,
+    dg.name as group_name,
+    default_sno.occupancy_coefficient AS occupancy_coefficient_over, 
+    default_sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under
+FROM dates
+JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date
+LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> dates.date
+LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
+LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+WHERE pl.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupIds))
+AND NOT EXISTS(
+    SELECT 1
+    FROM backup_care bc
+    WHERE bc.child_id = pl.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> dates.date
+)
+UNION
+SELECT 
+    dates.date, 
+    bc.child_id,
+    bc.group_id, 
+    dg.name as group_name,
+    default_sno.occupancy_coefficient AS occupancy_coefficient_over, 
+    default_sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under
+FROM dates
+JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> dates.date
+JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date
+LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
+LEFT JOIN daycare_group dg ON dg.id = bc.group_id
+WHERE bc.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupIds));
+    """
+            .trimIndent()
+
+    return createQuery(sql)
+        .bind("dates", dates.toTypedArray())
+        .bind("unitId", unitId)
+        .bind("groupIds", groupIds)
+        .mapTo<PlacementInfoRow>()
+        .toList()
+}
+
+private data class ChildRow(val childId: ChildId, val dateOfBirth: LocalDate)
+
+private fun Database.Read.getChildInfo(
+    children: List<ChildId>,
+): List<ChildRow> {
+    val sql =
+        """
+SELECT p.id as child_id, p.date_of_birth
+FROM person p
+WHERE p.id = ANY(:children);
+    """
+            .trimIndent()
+
+    return createQuery(sql).bind("children", children.toTypedArray()).mapTo<ChildRow>().toList()
+}
+
+private data class ServiceNeedRow(
+    val range: FiniteDateRange,
+    val childId: ChildId,
+    val occupancyCoefficientUnder: Double,
+    val occupancyCoefficientOver: Double
+)
+
+private fun Database.Read.getServiceNeeds(
+    start: LocalDate,
+    end: LocalDate,
+    children: List<ChildId>,
+): List<ServiceNeedRow> {
+    val sql =
+        """
+SELECT
+    pl.child_id,
+    daterange(sn.start_date, sn.end_date, '[]') * daterange(:start, :end, '[]') as range,
+    sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under,
+    sno.occupancy_coefficient AS occupancy_coefficient_over
+FROM service_need sn
+JOIN placement pl on pl.id = sn.placement_id
+LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+WHERE pl.child_id = ANY(:children) AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:start, :end, '[]');
+    """
+            .trimIndent()
+
+    return createQuery(sql)
+        .bind("start", start)
+        .bind("end", end)
+        .bind("children", children.toTypedArray())
+        .mapTo<ServiceNeedRow>()
+        .toList()
+}
+
+private data class AssistanceNeedRow(
+    val range: FiniteDateRange,
+    val childId: ChildId,
+    val capacityFactor: Double
+)
+
+private fun Database.Read.getAssistanceNeeds(
+    start: LocalDate,
+    end: LocalDate,
+    children: List<ChildId>,
+): List<AssistanceNeedRow> {
+    val sql =
+        """
+SELECT
+    an.child_id,
+    daterange(an.start_date, an.end_date, '[]') * daterange(:start, :end, '[]') as range,
+    an.capacity_factor
+FROM assistance_need an
+WHERE an.child_id = ANY(:children) AND daterange(an.start_date, an.end_date, '[]') && daterange(:start, :end, '[]');
+    """
+            .trimIndent()
+
+    return createQuery(sql)
+        .bind("start", start)
+        .bind("end", end)
+        .bind("children", children.toTypedArray())
+        .mapTo<AssistanceNeedRow>()
+        .toList()
+}
+
+private data class ReservationRow(
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+    val childId: ChildId
+)
+
+private fun Database.Read.getReservations(
+    start: LocalDate,
+    end: LocalDate,
+    children: List<ChildId>,
+): Map<ChildId, List<HelsinkiDateTimeRange>> {
+    val sql =
+        """
+SELECT pl.child_id, ar.date, ar.start_time, ar.end_time
+FROM attendance_reservation ar
+JOIN placement pl on ar.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
+WHERE pl.child_id = ANY(:children) AND daterange(:start, :end, '[]') @> ar.date
+AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL;
+    """
+            .trimIndent()
+
+    return createQuery(sql)
+        .bind("start", start)
+        .bind("end", end)
+        .bind("children", children.toTypedArray())
+        .mapTo<ReservationRow>()
+        .groupBy(
+            keySelector = { it.childId },
+            valueTransform = {
+                HelsinkiDateTimeRange(
+                    start = HelsinkiDateTime.of(it.date, it.startTime),
+                    end = HelsinkiDateTime.of(it.date, it.endTime)
+                )
+            }
+        )
+}
+
+private data class AbsenceRow(val date: LocalDate, val childId: ChildId)
+
+private fun Database.Read.getAbsences(
+    start: LocalDate,
+    end: LocalDate,
+    children: List<ChildId>,
+): Map<ChildId, List<LocalDate>> {
+    val sql =
+        """
+SELECT ab.child_id, ab.date
+FROM absence ab
+WHERE ab.child_id = ANY(:children) AND daterange(:start, :end, '[]') @> ab.date;
+    """
+            .trimIndent()
+
+    return createQuery(sql)
+        .bind("start", start)
+        .bind("end", end)
+        .bind("children", children.toTypedArray())
+        .mapTo<AbsenceRow>()
+        .groupBy(keySelector = { it.childId }, valueTransform = { it.date })
+}
+
+data class DailyChildData(
+    val date: LocalDate,
+    val childId: ChildId,
+    val groupId: GroupId?,
+    val groupName: String?,
+    val age: Int,
+    val capacityFactor: Double,
+    val serviceTimes: HelsinkiDateTimeRange?,
+    val reservations: List<HelsinkiDateTimeRange>,
+    val absent: Boolean
+) {
+    fun isPresentPessimistic(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): Boolean {
+        if (absent) return false
+        if (reservations.isNotEmpty()) {
+            return reservations.any {
+                it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
+            }
+        } else if (serviceTimes != null) {
+            return serviceTimes
+                .copy(end = serviceTimes.end.plusMinutes(bufferMinutes))
+                .overlaps(during)
+        }
+        return false
+    }
+}
+
+private data class Group(val id: GroupId?, val name: String?)
+
+private fun getAttendanceReservationReportV2(
+    db: Database.Read,
+    start: LocalDate,
+    end: LocalDate,
+    unitId: DaycareId,
+    groupIds: List<GroupId>?
+): List<AttendanceReservationReportRow> {
+    val daycare = db.getDaycare(unitId)!!
+    val placementStuff = db.getPlacementInfo(start, end, unitId, groupIds)
+    val allChildren = placementStuff.map { it.childId }.distinct()
+    val childInfoMap = db.getChildInfo(allChildren).associateBy { it.childId }
+    val serviceNeedsMap = db.getServiceNeeds(start, end, allChildren).groupBy { it.childId }
+    val assistanceNeedsMap = db.getAssistanceNeeds(start, end, allChildren).groupBy { it.childId }
+    val reservationsMap = db.getReservations(start, end, allChildren)
+    val absencesMap = db.getAbsences(start, end, allChildren)
+    val serviceTimesMap = db.getDailyServiceTimesForChildren(allChildren.toSet())
+
+    val dailyChildData =
+        placementStuff.map { placementInfo ->
+            val date = placementInfo.date
+            val childId = placementInfo.childId
+
+            val serviceNeed = serviceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }
+            val childAgeYears = Period.between(childInfoMap[childId]!!.dateOfBirth, date).years
+            val serviceNeedFactor =
+                when {
+                    daycare.type.any {
+                        listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
+                    } -> familyUnitPlacementCoefficient.toDouble()
+                    childAgeYears < 3 -> serviceNeed?.occupancyCoefficientUnder
+                            ?: placementInfo.occupancyCoefficientUnder
+                    else -> serviceNeed?.occupancyCoefficientOver
+                            ?: placementInfo.occupancyCoefficientOver
+                }
+            val assistanceNeedFactor =
+                assistanceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }?.capacityFactor
+                    ?: 1.0
+            val capacityFactor = serviceNeedFactor * assistanceNeedFactor
+            val reservations =
+                reservationsMap[childId]?.filter { it.start.toLocalDate() == date } ?: emptyList()
+            val absent = absencesMap[childId]?.contains(date) ?: false
+            val serviceTimes =
+                serviceTimesMap[childId]
+                    ?.firstOrNull { it.validityPeriod.includes(date) }
+                    ?.getTimesOnDate(date)
+
+            DailyChildData(
+                childId = childId,
+                date = date,
+                groupId = placementInfo.groupId,
+                groupName = placementInfo.groupName,
+                age = childAgeYears,
+                capacityFactor = capacityFactor,
+                serviceTimes =
+                    serviceTimes?.let { HelsinkiDateTimeRange.of(date, it.start, it.end) },
+                reservations = reservations,
+                absent = absent
+            )
+        }
+
+    val seqEnd = HelsinkiDateTime.atStartOfDay(end).plusDays(1).minusMinutes(15)
+    return dailyChildData
+        .groupBy { if (groupIds != null) Group(it.groupId, it.groupName) else Group(null, null) }
+        .let { it.ifEmpty { mapOf(Group(null, null) to emptyList()) } }
+        .flatMap { (group, childrenInGroup) ->
+            generateSequence(HelsinkiDateTime.atStartOfDay(start)) {
+                    if (it < seqEnd) it.plusMinutes(15) else null
+                }
+                .filter { daycare.operationDays.contains(it.dayOfWeek.value) }
+                .map { intervalStart ->
+                    val interval =
+                        HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
+                    val childrenPresent =
+                        childrenInGroup.filter { it.isPresentPessimistic(interval) }
+
+                    val staffCountRequired = childrenPresent.sumOf { it.capacityFactor } / 7
+                    AttendanceReservationReportRow(
+                        groupId = group.id,
+                        groupName = group.name,
+                        dateTime = intervalStart,
+                        childCountUnder3 = childrenPresent.count { it.age < 3 },
+                        childCountOver3 = childrenPresent.count { it.age >= 3 },
+                        childCount = childrenPresent.count(),
+                        capacityFactor = childrenPresent.sumOf { it.capacityFactor },
+                        staffCountRequired = (10 * staffCountRequired).roundToInt().toDouble() / 10
+                    )
+                }
+                .toList()
+        }
 }
 
 private fun Database.Read.getAttendanceReservationReport(

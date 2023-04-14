@@ -20,6 +20,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -65,6 +66,7 @@ export default React.memo(function AttendanceReservation() {
       }
     }
   )
+  const [v2, setV2] = useState(false)
 
   const [units] = useApiState(getDaycares, [])
   const [groups] = useApiState(
@@ -77,9 +79,9 @@ export default React.memo(function AttendanceReservation() {
   const [report] = useApiState(
     () =>
       unitId !== null
-        ? getAssistanceReservationReport(unitId, filters)
+        ? getAssistanceReservationReport(unitId, filters, v2)
         : Promise.resolve(Loading.of<AttendanceReservationReportRow[]>()),
-    [unitId, filters]
+    [unitId, filters, v2]
   )
 
   const autoScrollRef = useRef<HTMLTableRowElement>(null)
@@ -229,6 +231,9 @@ export default React.memo(function AttendanceReservation() {
             />
           </div>
         </FilterRow>
+        <div style={{ display: 'none' }}>
+          <Checkbox label="v2" checked={v2} onChange={setV2} />
+        </div>
 
         {unitId !== null && report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
