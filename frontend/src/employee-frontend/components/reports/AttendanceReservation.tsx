@@ -6,7 +6,7 @@ import React, { RefObject, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
-import { Loading } from 'lib-common/api'
+import { Failure, Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
@@ -66,6 +66,10 @@ export default React.memo(function AttendanceReservation() {
     }
   )
 
+  const tooLongRange = filters.range.end.isAfter(
+    filters.range.start.addMonths(2)
+  )
+
   const [units] = useApiState(getDaycares, [])
   const [groups] = useApiState(
     () =>
@@ -76,10 +80,16 @@ export default React.memo(function AttendanceReservation() {
   )
   const [report] = useApiState(
     () =>
-      unitId !== null
-        ? getAssistanceReservationReport(unitId, filters)
-        : Promise.resolve(Loading.of<AttendanceReservationReportRow[]>()),
-    [unitId, filters]
+      tooLongRange
+        ? Promise.resolve(
+            Failure.of<AttendanceReservationReportRow[]>({
+              message: 'Too long range'
+            })
+          )
+        : unitId == null
+        ? Promise.resolve(Loading.of<AttendanceReservationReportRow[]>())
+        : getAssistanceReservationReport(unitId, filters),
+    [unitId, filters, tooLongRange]
   )
 
   const autoScrollRef = useRef<HTMLTableRowElement>(null)
@@ -231,7 +241,10 @@ export default React.memo(function AttendanceReservation() {
         </FilterRow>
 
         {unitId !== null && report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {report.isFailure && <div>{i18n.common.loadingFailed}</div>}
+        {tooLongRange && (
+          <div>{i18n.reports.attendanceReservation.tooLongRange}</div>
+        )}
         {report.isSuccess && (
           <>
             <ReportDownload

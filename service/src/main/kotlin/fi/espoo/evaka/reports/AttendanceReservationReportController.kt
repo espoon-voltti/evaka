@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -25,6 +26,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
@@ -33,7 +35,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.math.RoundingMode
 
 @RestController
 class AttendanceReservationReportController(private val accessControl: AccessControl) {
@@ -48,6 +49,9 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @RequestParam(required = false) groupIds: List<GroupId>?
     ): List<AttendanceReservationReportRow> {
+        if (start.isAfter(end)) throw BadRequest("Inverted time range")
+        if (end.isAfter(start.plusMonths(2))) throw BadRequest("Too long time range")
+
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
