@@ -121,6 +121,7 @@ export default React.memo(function ReservationModal({
           return {
             ...nextState,
             times: resetTimes(
+              availableChildren,
               childrenInShiftCare,
               existingReservations,
               repetition,
@@ -142,6 +143,7 @@ export default React.memo(function ReservationModal({
           return {
             ...nextState,
             times: resetTimes(
+              availableChildren,
               childrenInShiftCare,
               existingReservations,
               repetition,
@@ -169,25 +171,6 @@ export default React.memo(function ReservationModal({
   )
 
   const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
-
-  const includedDays = useMemo(() => {
-    if (!selectedRange) return []
-
-    const combinedOperationDays = availableChildren.reduce<number[]>(
-      (totalOperationDays, child) => [
-        ...new Set([...totalOperationDays, ...child.maxOperationalDays])
-      ],
-      []
-    )
-
-    return [1, 2, 3, 4, 5, 6, 7].filter(
-      (day) =>
-        combinedOperationDays.includes(day) &&
-        [...selectedRange.dates()].some(
-          (date) => date.getIsoDayOfWeek() === day
-        )
-    )
-  }, [availableChildren, selectedRange])
 
   const { mutateAsync: postReservations } = useMutationResult(
     postReservationsMutation
@@ -303,7 +286,6 @@ export default React.memo(function ReservationModal({
                   <RepetitionTimeInputGrid
                     bind={times}
                     childrenInShiftCare={childrenInShiftCare}
-                    includedDays={includedDays}
                     showAllErrors={showAllErrors}
                   />
                 ) : (

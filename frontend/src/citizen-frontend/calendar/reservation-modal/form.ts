@@ -69,16 +69,19 @@ const emptyDay: StateOf<typeof day> = {
 }
 
 export const dailyTimes = mapped(
-  union({
-    times,
-    holidayReservation: value<'present' | 'absent' | 'not-set'>()
+  object({
+    weekDayRange: value<[number, number]>(),
+    reservation: union({
+      times,
+      holidayReservation: value<'present' | 'absent' | 'not-set'>()
+    })
   }),
-  ({ branch, value }): Reservation[] | undefined =>
-    branch === 'times'
-      ? value.map(timeRangeToTimes)
-      : value === 'present'
+  (output): Reservation[] | undefined =>
+    output.reservation.branch === 'times'
+      ? output.reservation.value.map(timeRangeToTimes)
+      : output.reservation.value === 'present'
       ? [{ type: 'NO_TIMES' }]
-      : value === 'absent'
+      : output.reservation.value === 'absent'
       ? []
       : undefined // not-set
 )
@@ -229,6 +232,7 @@ export function initialState(
     times:
       initialStart !== null && initialEnd !== null
         ? resetTimes(
+            availableChildren,
             childrenInShiftCare,
             existingReservations,
             'IRREGULAR',
@@ -238,12 +242,19 @@ export function initialState(
           )
         : {
             branch: 'dailyTimes',
-            state: { branch: 'times', state: [emptyTimeRange] }
+            state: {
+              weekDayRange: [1, 7],
+              reservation: {
+                branch: 'times',
+                state: [emptyTimeRange]
+              }
+            }
           }
   }
 }
 
 export function resetTimes(
+  availableChildren: ReservationChild[],
   childrenInShiftCare: boolean,
   existingReservations: DailyReservationData[],
   repetition: Repetition,
@@ -254,6 +265,19 @@ export function resetTimes(
   const reservations = existingReservations.filter((reservation) =>
     selectedRange.includes(reservation.date)
   )
+  const selectedRangeDates = [...selectedRange.dates()]
+  const combinedOperationDays = new Set(
+    availableChildren.flatMap((child) => child.maxOperationalDays)
+  )
+  const includedWeekDays = [1, 2, 3, 4, 5, 6, 7].filter(
+    (day) =>
+      combinedOperationDays.has(day) &&
+      selectedRangeDates.some((date) => date.getIsoDayOfWeek() === day)
+  )
+  const weekDayRange: [number, number] = [
+    includedWeekDays[0],
+    includedWeekDays[includedWeekDays.length - 1]
+  ]
 
   if (repetition === 'DAILY') {
     if (
@@ -263,14 +287,20 @@ export function resetTimes(
     ) {
       return {
         branch: 'dailyTimes',
-        state: { branch: 'holidayReservation', state: 'not-set' }
+        state: {
+          weekDayRange,
+          reservation: { branch: 'holidayReservation', state: 'not-set' }
+        }
       }
     }
 
     if (!hasReservationsForEveryChild(reservations, selectedChildren)) {
       return {
         branch: 'dailyTimes',
-        state: { branch: 'times', state: [emptyTimeRange] }
+        state: {
+          weekDayRange,
+          reservation: { branch: 'times', state: [emptyTimeRange] }
+        }
       }
     }
 
@@ -280,20 +310,25 @@ export function resetTimes(
       return {
         branch: 'dailyTimes',
         state: {
-          branch: 'times',
-          state: bindUnboundedTimeRanges(commonTimeRanges)
+          weekDayRange,
+          reservation: {
+            branch: 'times',
+            state: bindUnboundedTimeRanges(commonTimeRanges)
+          }
         }
       }
     }
 
     return {
       branch: 'dailyTimes',
-      state: { branch: 'times', state: [emptyTimeRange] }
+      state: {
+        weekDayRange,
+        reservation: { branch: 'times', state: [emptyTimeRange] }
+      }
     }
   } else if (repetition === 'WEEKLY') {
-    const groupedDays = groupBy(
-      [...selectedRange.dates()],
-      (date) => date.getIsoDayOfWeek() - 1
+    const groupedDays = groupBy(selectedRangeDates, (date) =>
+      date.getIsoDayOfWeek()
     )
 
     const isOpenHolidayPeriod = holidayPeriods.some(
@@ -301,8 +336,8 @@ export function resetTimes(
         holidayPeriod.isOpen && holidayPeriod.period.contains(selectedRange)
     )
 
-    const weeklyTimes = Array.from({ length: 7 }).map(
-      (_, dayOfWeek): StateOf<typeof day> => {
+    const weeklyTimes = includedWeekDays.map(
+      (dayOfWeek): StateOf<typeof day> => {
         const dayOfWeekDays = groupedDays[dayOfWeek]
         if (!dayOfWeekDays) {
           return { branch: 'readOnly', state: undefined }
@@ -358,8 +393,9 @@ export function resetTimes(
       state: weeklyTimes
     }
   } else if (repetition === 'IRREGULAR') {
-    const irregularTimes = [...selectedRange.dates()].map(
-      (rangeDate): StateOf<typeof irregularDay> => {
+    const irregularTimes = selectedRangeDates
+      .filter((date) => includedWeekDays.includes(date.getIsoDayOfWeek()))
+      .map((rangeDate): StateOf<typeof irregularDay> => {
         if (
           holidayPeriods.some(
             (holidayPeriod) =>
@@ -438,8 +474,7 @@ export function resetTimes(
         }
 
         return { date: rangeDate, day: emptyDay }
-      }
-    )
+      })
     return {
       branch: 'irregularTimes',
       state: irregularTimes

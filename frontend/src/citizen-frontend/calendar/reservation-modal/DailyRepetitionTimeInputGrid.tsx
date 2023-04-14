@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
+import { BoundForm, useFormFields, useFormUnion } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 
@@ -15,25 +15,23 @@ import { dailyTimes } from './form'
 export interface DailyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof dailyTimes>
   childrenInShiftCare: boolean
-  includedDays: number[]
   showAllErrors: boolean
 }
 
 export default React.memo(function DailyRepetitionTimeInputGrid({
   bind,
   showAllErrors,
-  childrenInShiftCare,
-  includedDays
+  childrenInShiftCare
 }: DailyRepetitionTimeInputGridProps) {
   const i18n = useTranslation()
 
-  const { branch, form } = useFormUnion(bind)
+  const { weekDayRange, reservation } = useFormFields(bind)
+  const [firstWeekDay, lastWeekDay] = weekDayRange.state
+  const { branch, form } = useFormUnion(reservation)
 
   const label = (
-    <Label>{`${i18n.common.datetime.weekdaysShort[includedDays[0] - 1]}-${
-      i18n.common.datetime.weekdaysShort[
-        includedDays[includedDays.length - 1] - 1
-      ]
+    <Label>{`${i18n.common.datetime.weekdaysShort[firstWeekDay - 1]}-${
+      i18n.common.datetime.weekdaysShort[lastWeekDay - 1]
     }`}</Label>
   )
 
