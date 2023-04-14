@@ -11,10 +11,12 @@ import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.Period
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -85,6 +87,13 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         Action.Global.CREATE_HOLIDAY_PERIOD
                     )
                     try {
+                        if (body.period.start.isBefore(clock.today().plusWeeks(4))) {
+                            throw BadRequest("Holiday period must start at least 4 weeks from now")
+                        }
+                        if (Period.between(body.period.start, body.period.end).days > 8 * 7) {
+                            throw BadRequest("Holiday period must be at most 8 weeks long")
+                        }
+
                         it.deleteAllCitizenReservationsInRange(body.period)
                         it.deleteAllCitizenEditableAbsencesInRange(body.period)
                         it.createHolidayPeriod(body.period, body.reservationDeadline)

@@ -1,14 +1,19 @@
 // SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+import classNames from 'classnames'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
-import { InputInfo } from 'lib-components/atoms/form/InputField'
+import {
+  InputFieldUnderRow,
+  InputInfo
+} from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
+import UnderRowStatusIcon from '../../atoms/StatusIcon'
 import { useTranslations } from '../../i18n'
 
 import DatePicker, {
@@ -143,19 +148,29 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
   bind,
   ...props
 }: DateRangePickerFProps) {
+  const info = bind.inputInfo()
   const startDate = useFormField(bind, 'startDate')
   const endDate = useFormField(bind, 'endDate')
   return (
-    <DateRangePicker
-      {...props}
-      start={startDate.state}
-      end={endDate.state}
-      onChange={(start, end) => {
-        startDate.set(start)
-        endDate.set(end)
-      }}
-      startInfo={'startInfo' in props ? props.startInfo : startDate.inputInfo()}
-      endInfo={'endInfo' in props ? props.endInfo : endDate.inputInfo()}
-    />
+    <div>
+      <DateRangePicker
+        {...props}
+        start={startDate.state}
+        end={endDate.state}
+        onChange={(start, end) => {
+          startDate.set(start)
+          endDate.set(end)
+        }}
+        startInfo={
+          'startInfo' in props ? props.startInfo : startDate.inputInfo()
+        }
+        endInfo={'endInfo' in props ? props.endInfo : endDate.inputInfo()}
+      />
+      {info !== undefined ? (
+        <InputFieldUnderRow className={classNames(info.status)}>
+          <span>{info.text}</span> <UnderRowStatusIcon status={info.status} />
+        </InputFieldUnderRow>
+      ) : null}
+    </div>
   )
 })

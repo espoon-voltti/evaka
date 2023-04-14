@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
+
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
@@ -17,7 +19,9 @@ let holidayPeriodsPage: HolidayPeriodsPage
 beforeEach(async () => {
   await resetDatabase()
   const admin = await Fixture.employeeAdmin().save()
-  page = await Page.open()
+  page = await Page.open({
+    mockedTime: LocalDate.of(2021, 11, 1).toSystemTzDate()
+  })
   await employeeLogin(page, admin.data)
   await page.goto(config.employeeUrl)
   holidayPeriodsPage = new HolidayPeriodsPage(page)
@@ -35,6 +39,7 @@ describe('Holiday periods page', () => {
       end: '31.12.2021',
       reservationDeadline: '7.12.2021'
     })
+    await holidayPeriodsPage.confirmCheckbox.check()
     await holidayPeriodsPage.submit()
     await waitUntilEqual(
       () => holidayPeriodsPage.visiblePeriods,
@@ -47,6 +52,7 @@ describe('Holiday periods page', () => {
       end: '7.2.2022',
       reservationDeadline: '15.1.2022'
     })
+    await holidayPeriodsPage.confirmCheckbox.check()
     await holidayPeriodsPage.submit()
     await waitUntilEqual(
       () => holidayPeriodsPage.visiblePeriods,
@@ -75,6 +81,7 @@ describe('Holiday periods page', () => {
       end: '31.12.2021',
       reservationDeadline: '7.12.2021'
     })
+    await holidayPeriodsPage.confirmCheckbox.check()
     await holidayPeriodsPage.submit()
 
     await holidayPeriodsPage.clickAddQuestionnaireButton()

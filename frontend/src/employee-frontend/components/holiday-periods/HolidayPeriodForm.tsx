@@ -6,10 +6,12 @@ import React, { useCallback } from 'react'
 
 import { boolean, localDate, localDateRange } from 'lib-common/form/fields'
 import { object, required, validated } from 'lib-common/form/form'
-import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { useForm, useFormField, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
+import { mockToday } from 'lib-common/utils/helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -18,6 +20,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -28,8 +31,19 @@ import {
   updateHolidayPeriodMutation
 } from './queries'
 
+const minStartDate = (mockToday() ?? LocalDate.todayInSystemTz()).addWeeks(4)
+const maxPeriod = 8 * 7 * 24 * 60 * 60 * 1000 // 8 weeks
+
 const holidayPeriodForm = object({
-  period: required(localDateRange),
+  period: validated(required(localDateRange), (output) =>
+    output.start.isBefore(minStartDate)
+      ? 'tooSoon'
+      : output.end.toSystemTzDate().valueOf() -
+          output.start.toSystemTzDate().valueOf() >
+        maxPeriod
+      ? 'tooLong'
+      : undefined
+  ),
   reservationDeadline: required(localDate),
   confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
 })
@@ -73,7 +87,10 @@ export default React.memo(function HolidayPeriodForm({
       holidayPeriod !== undefined
         ? initialFormState(holidayPeriod)
         : emptyFormState,
-    i18n.validationErrors
+    {
+      ...i18n.validationErrors,
+      ...i18n.holidayPeriods.validationErrors
+    }
   )
 
   const { mutateAsync: createHolidayPeriod } = useMutationResult(
@@ -92,7 +109,7 @@ export default React.memo(function HolidayPeriodForm({
   const hideErrorsBeforeTouched = holidayPeriod === undefined
 
   const { period, reservationDeadline, confirm } = useFormFields(form)
-  const { startDate, endDate } = useFormFields(period)
+  const startDate = useFormField(period, 'startDate')
 
   return (
     <>
@@ -100,23 +117,7 @@ export default React.memo(function HolidayPeriodForm({
       <ListGrid>
         <Label>{i18n.holidayPeriods.period} *</Label>
         <FixedSpaceRow alignItems="center">
-          <DatePickerF
-            bind={startDate}
-            locale={lang}
-            required
-            maxDate={endDate.state ?? undefined}
-            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-            data-qa="input-start"
-          />
-          <span>-</span>
-          <DatePickerF
-            bind={endDate}
-            locale={lang}
-            required
-            minDate={startDate.state ?? undefined}
-            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-            data-qa="input-end"
-          />
+          <DateRangePickerF bind={period} locale={lang} data-qa="period" />
         </FixedSpaceRow>
 
         <Label>{i18n.holidayPeriods.reservationDeadline} *</Label>
@@ -131,10 +132,11 @@ export default React.memo(function HolidayPeriodForm({
 
       {holidayPeriod === undefined ? (
         <>
-          <AlertBox message="Kuntalaisten jo tekemät varaukset pyyhitään valitulta aikaväliltä" />
+          <AlertBox message={i18n.holidayPeriods.clearingAlert} />
           <CheckboxF
-            label="Ymmärrän, että tehdyt varaukset poistetaan välittömästi, eikä tätä voi enää perua."
+            label={i18n.holidayPeriods.confirmLabel}
             bind={confirm}
+            data-qa="confirm-checkbox"
           />
         </>
       ) : null}
