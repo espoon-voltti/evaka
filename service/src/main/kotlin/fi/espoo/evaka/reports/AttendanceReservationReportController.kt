@@ -24,15 +24,16 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
-import kotlin.math.roundToInt
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.RoundingMode
 
 @RestController
 class AttendanceReservationReportController(private val accessControl: AccessControl) {
@@ -441,7 +442,6 @@ private fun getAttendanceReservationReportV2(
                     val childrenPresent =
                         childrenInGroup.filter { it.isPresentPessimistic(interval) }
 
-                    val staffCountRequired = childrenPresent.sumOf { it.capacityFactor } / 7
                     AttendanceReservationReportRow(
                         groupId = group.id,
                         groupName = group.name,
@@ -449,8 +449,14 @@ private fun getAttendanceReservationReportV2(
                         childCountUnder3 = childrenPresent.count { it.age < 3 },
                         childCountOver3 = childrenPresent.count { it.age >= 3 },
                         childCount = childrenPresent.count(),
-                        capacityFactor = childrenPresent.sumOf { it.capacityFactor },
-                        staffCountRequired = (10 * staffCountRequired).roundToInt().toDouble() / 10
+                        capacityFactor =
+                            BigDecimal(childrenPresent.sumOf { it.capacityFactor })
+                                .setScale(2, RoundingMode.HALF_UP)
+                                .toDouble(),
+                        staffCountRequired =
+                            BigDecimal(childrenPresent.sumOf { it.capacityFactor } / 7)
+                                .setScale(1, RoundingMode.HALF_UP)
+                                .toDouble()
                     )
                 }
                 .toList()
