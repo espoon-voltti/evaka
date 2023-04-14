@@ -182,7 +182,7 @@ SELECT
     default_sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under
 FROM dates
 JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> dates.date
-JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date
+JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date AND pl.child_id = bc.child_id
 LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
 LEFT JOIN daycare_group dg ON dg.id = bc.group_id
 WHERE bc.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupIds));
