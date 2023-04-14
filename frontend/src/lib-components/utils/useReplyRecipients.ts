@@ -20,8 +20,7 @@ function getInitialRecipients(
     ...(firstMessage.sender.id !== accountId
       ? [
           {
-            id: firstMessage.sender.id,
-            name: firstMessage.sender.name,
+            ...firstMessage.sender,
             toggleable: false,
             selected: true
           }

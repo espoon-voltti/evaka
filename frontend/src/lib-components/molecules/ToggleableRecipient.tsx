@@ -14,8 +14,9 @@ import { defaultMargins } from '../white-space'
 
 import { SelectableAccount } from './MessageReplyEditor'
 
-interface ToggleableRecipientProps extends SelectableAccount {
+interface ToggleableRecipientProps {
   'data-qa'?: string
+  recipient: SelectableAccount
   onToggleRecipient: (id: UUID, selected: boolean) => void
   labelAdd: string
 }
@@ -40,12 +41,9 @@ const Recipient = styled.button<{ selected: boolean; toggleable: boolean }>`
 
 export function ToggleableRecipient({
   'data-qa': dataQa,
-  id,
+  recipient: { id, name, selected, toggleable },
   labelAdd,
-  name,
-  onToggleRecipient,
-  selected,
-  toggleable
+  onToggleRecipient
 }: ToggleableRecipientProps) {
   const onClick = toggleable
     ? () => onToggleRecipient(id, !selected)

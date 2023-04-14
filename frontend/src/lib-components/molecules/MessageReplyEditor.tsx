@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { AccountType } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { faTrash } from 'lib-icons'
 
@@ -38,6 +39,7 @@ export interface SelectableAccount {
   name: string
   selected: boolean
   toggleable: boolean
+  type: AccountType
 }
 
 interface Labels {
@@ -57,6 +59,7 @@ interface Props {
   onDiscard: () => void
   onUpdateContent: (content: string) => void
   replyContent: string
+  sendEnabled: boolean
   i18n: Labels
 }
 
@@ -67,9 +70,9 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
   onUpdateContent,
   onToggleRecipient,
   recipients,
-  replyContent
+  replyContent,
+  sendEnabled
 }: Props) {
-  const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
   return (
     <>
       <EditorRow>
@@ -77,9 +80,9 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
         {recipients.map((recipient) => (
           <ToggleableRecipient
             key={recipient.id}
+            recipient={recipient}
             onToggleRecipient={onToggleRecipient}
             labelAdd={i18n.add}
-            {...recipient}
           />
         ))}
       </EditorRow>
