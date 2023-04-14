@@ -3846,7 +3846,15 @@ export const fi = {
     createTitle: 'Luo uusi loma-aika',
     editTitle: 'Muokkaa loma-aikaa',
     period: 'Aikaväli',
-    reservationDeadline: 'Varausten takaraja'
+    reservationDeadline: 'Varausten takaraja',
+    clearingAlert:
+      'Kuntalaisten jo tekemät varaukset pyyhitään valitulta aikaväliltä',
+    confirmLabel:
+      'Ymmärrän, että tehdyt varaukset poistetaan välittömästi, eikä tätä voi enää perua.',
+    validationErrors: {
+      tooSoon: 'Loma-ajan voi luoda aikaisintaan 4 viikon päähän',
+      tooLong: 'Loma-aika voi olla enintään 8 viikkoa pitkä'
+    }
   },
   holidayQuestionnaires: {
     confirmDelete: 'Haluatko varmasti poistaa kyselyn?',

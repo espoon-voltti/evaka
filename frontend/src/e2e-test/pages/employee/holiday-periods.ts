@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DatePicker, Page, Radio, TextInput } from '../../utils/page'
+import { Checkbox, DatePicker, Page, Radio, TextInput } from '../../utils/page'
 
 export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}
@@ -34,8 +34,12 @@ export class HolidayPeriodsPage {
   }
 
   #periodInputs = {
-    start: new DatePicker(this.page.findByDataQa('input-start')),
-    end: new DatePicker(this.page.findByDataQa('input-end')),
+    start: new DatePicker(
+      this.page.findByDataQa('period').findAll('input').first()
+    ),
+    end: new DatePicker(
+      this.page.findByDataQa('period').findAll('input').last()
+    ),
     reservationDeadline: new DatePicker(
       this.page.findByDataQa('input-reservation-deadline')
     )
@@ -52,6 +56,8 @@ export class HolidayPeriodsPage {
       }
     }
   }
+
+  confirmCheckbox = new Checkbox(this.page.findByDataQa('confirm-checkbox'))
 
   #questionnaireInputs = {
     activeStart: new DatePicker(this.page.findByDataQa('input-start')),

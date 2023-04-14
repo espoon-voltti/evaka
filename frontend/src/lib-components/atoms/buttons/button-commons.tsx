@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DefaultTheme } from 'styled-components'
+import { css } from 'styled-components'
 
 import { fontWeights } from '../../typography'
 
-export const defaultButtonTextStyle = ({ colors }: DefaultTheme) => `
-  color: ${colors.main.m2};
+export const defaultButtonTextStyle = css`
+  color: ${(p) => p.theme.colors.main.m2};
   font-family: 'Open Sans', sans-serif;
   font-size: 1em;
   line-height: normal;

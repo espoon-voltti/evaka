@@ -5,8 +5,8 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.reservations.AbsenceInsert
-import fi.espoo.evaka.reservations.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
 import fi.espoo.evaka.reservations.insertAbsences

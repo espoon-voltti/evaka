@@ -101,6 +101,10 @@ export class ElementCollection {
     return new Element(this.locator.first())
   }
 
+  last() {
+    return new Element(this.locator.last())
+  }
+
   /**
    * @param n Zero-based index
    */
