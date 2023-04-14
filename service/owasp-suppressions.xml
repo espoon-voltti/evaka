@@ -125,4 +125,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2023-28708</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Waiting for a fix in spring boot
+        ]]></notes>
+        <cve>CVE-2023-20863</cve>
+    </suppress>
 </suppressions>
