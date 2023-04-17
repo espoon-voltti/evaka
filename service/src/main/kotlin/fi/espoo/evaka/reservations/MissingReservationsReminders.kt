@@ -112,10 +112,12 @@ FROM (
     FROM unnest(${bind(range.dates().toList())}) t
     JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> t::date
     JOIN daycare d ON p.unit_id = d.id
-    LEFT JOIN holiday h ON t::date = h.date AND NOT d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
-    WHERE date_part('isodow', t::date) = ANY(d.operation_days)
-    AND h.date IS NULL
-    AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+    WHERE date_part('isodow', t::date) = ANY(d.operation_days) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+    AND (d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR NOT EXISTS (
+        SELECT 1
+        FROM holiday h
+        WHERE t::date = h.date
+    ))
     AND EXISTS (
         SELECT 1
         FROM service_need sn
