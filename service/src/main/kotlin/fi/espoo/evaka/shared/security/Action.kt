@@ -464,7 +464,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             IsCitizen(allowWeakLogin = false).ownerOfApplication()
         ),
-        CANCEL(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        CANCEL(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            IsCitizen(allowWeakLogin = false).ownerOfApplication()
+        ),
         MOVE_TO_WAITING_PLACEMENT(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         RETURN_TO_SENT(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         VERIFY(HasGlobalRole(ADMIN, SERVICE_WORKER)),
