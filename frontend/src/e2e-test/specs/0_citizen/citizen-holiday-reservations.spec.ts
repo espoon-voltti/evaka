@@ -148,7 +148,7 @@ describe('Holiday periods', () => {
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       expect(await calendar.getHolidayCtaContent()).toEqual(
-        'Ilmoita tästä läsnä- ja poissaolot välille 18.12.-08.01.2036 viimeistään 06.12.2035. Läsnäolojen tarkat kellonajat voi merkitä tämän jälkeenkin.'
+        'Ilmoita tästä läsnä- ja poissaolot välille 18.12.-08.01.2036 viimeistään 06.12.2035. Läsnäolojen tarkat kellonajat merkitään, kun kysely on päättynyt.'
       )
 
       await calendar.clickHolidayCta()

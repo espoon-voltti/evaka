@@ -213,7 +213,7 @@ export default {
         <InlineButton text="Ilmoita tästä" onClick={() => undefined} /> läsnä-
         ja poissaolot välille {period.start.format('dd.MM.')}-
         {period.end.format()} viimeistään {deadline.format()}. Läsnäolojen
-        tarkat kellonajat voi merkitä tämän jälkeenkin.
+        tarkat kellonajat merkitään, kun kysely on päättynyt.
       </>
     ),
     fixedPeriodCta: (deadline: LocalDate) =>
@@ -303,7 +303,7 @@ export default {
     newReservationBtn: 'Ilmoita läsnäolo',
     noReservation: 'Ilmoitus puuttuu',
     reservation: 'Ilmoitettu aika',
-    reservationNoTimes: 'Läsnä, aikavaraus puuttuu',
+    reservationNoTimes: 'Läsnä',
     realized: 'Toteutunut aika',
     reservationsAndRealized: 'Läsnäoloaika',
     events: 'Päivän tapahtumat',

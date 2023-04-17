@@ -216,7 +216,7 @@ const en: Translations = {
         <InlineButton text="Register" onClick={() => undefined} /> attendances
         and absences between {period.start.format('dd.MM.')}-
         {period.end.format()} no later than {deadline.format()}. The exact times
-        of attendance can be marked even after this.
+        of attendances will be marked after the questionnaire has closed.
       </>
     ),
     fixedPeriodCta: (deadline: LocalDate) =>
@@ -306,7 +306,7 @@ const en: Translations = {
     newReservationBtn: 'Register attendance',
     noReservation: 'No attendance',
     reservation: 'Registered attendance',
-    reservationNoTimes: 'Present, missing times',
+    reservationNoTimes: 'Present',
     realized: 'Realized',
     reservationsAndRealized: 'Period of attendance',
     events: 'Events of the day',

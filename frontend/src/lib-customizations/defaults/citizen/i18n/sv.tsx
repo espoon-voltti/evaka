@@ -213,8 +213,8 @@ const sv: Translations = {
       <>
         <InlineButton text="Anmäl" onClick={() => undefined} /> närvaro och
         frånvaro mellan {period.start.format('dd.MM.')}-{period.end.format()}{' '}
-        senast {deadline.format()}. Exakta tider för närvaro kan markeras även
-        efter detta.
+        senast {deadline.format()}. De exakta tiderna för närvaro kommer att
+        markeras efter frågeformuläret har stängts.
       </>
     ),
     fixedPeriodCta: (deadline: LocalDate) =>
@@ -303,7 +303,7 @@ const sv: Translations = {
     newReservationBtn: 'Anmäl närvaro',
     noReservation: 'Ingen närvaro',
     reservation: 'Närvarande',
-    reservationNoTimes: 'Närvarande, tid saknas',
+    reservationNoTimes: 'Närvarande',
     realized: 'Förverkligad',
     reservationsAndRealized: 'Närvaroperiod',
     events: 'Dagens händelser',
