@@ -50,7 +50,7 @@ export interface SearchParams {
 }
 
 export interface FeeDecisionSearchParams extends SearchParams {
-  status?: FeeDecisionStatus[]
+  status: FeeDecisionStatus[]
   distinctions?: DistinctiveParams[]
   startDate?: LocalDate
   endDate?: LocalDate

@@ -19,14 +19,14 @@ const ErrorMessage = styled.div`
 `
 
 type Props = {
-  status: FeeDecisionStatus
+  statuses: FeeDecisionStatus[]
   checkedIds: string[]
   clearChecked: () => void
   loadDecisions: () => void
 }
 
 const Actions = React.memo(function Actions({
-  status,
+  statuses,
   checkedIds,
   clearChecked,
   loadDecisions
@@ -34,7 +34,7 @@ const Actions = React.memo(function Actions({
   const { i18n } = useTranslation()
   const [error, setError] = useState<string>()
 
-  return status === 'DRAFT' ? (
+  return statuses.length === 1 && statuses[0] === 'DRAFT' ? (
     <StickyActionBar align="right">
       {error ? <ErrorMessage>{error}</ErrorMessage> : null}
       {checkedIds.length > 0 ? (

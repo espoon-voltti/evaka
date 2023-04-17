@@ -41,7 +41,7 @@ export interface Checked {
 interface FeeDecisionSearchFilters {
   area: string[]
   unit?: UUID
-  status: FeeDecisionStatus
+  statuses: FeeDecisionStatus[]
   distinctiveDetails: DistinctiveParams[]
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
@@ -160,7 +160,7 @@ const defaultState: UiState = {
   feeDecisions: {
     searchFilters: {
       distinctiveDetails: [],
-      status: 'DRAFT',
+      statuses: ['DRAFT'],
       area: [],
       startDate: undefined,
       endDate: LocalDate.todayInSystemTz(),

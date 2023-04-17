@@ -115,11 +115,16 @@ function FeeDecisionFilters() {
         })
   }
 
-  const toggleStatus = (id: FeeDecisionStatus) => () => {
-    setSearchFilters({
-      ...searchFilters,
-      status: id
-    })
+  const toggleStatus = (status: FeeDecisionStatus) => () => {
+    searchFilters.statuses.includes(status)
+      ? setSearchFilters({
+          ...searchFilters,
+          statuses: searchFilters.statuses.filter((v) => v !== status)
+        })
+      : setSearchFilters({
+          ...searchFilters,
+          statuses: [...searchFilters.statuses, status]
+        })
   }
 
   const toggleServiceNeed = (id: DistinctiveParams) => () => {
@@ -209,7 +214,7 @@ function FeeDecisionFilters() {
       column3={
         <Fragment>
           <FeeDecisionStatusFilter
-            toggled={searchFilters.status}
+            toggled={searchFilters.statuses}
             toggle={toggleStatus}
           />
           <Gap size="L" />
