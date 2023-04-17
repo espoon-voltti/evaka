@@ -1091,8 +1091,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             testDaycare.id,
             startDate,
             endDate,
-            groupIds,
-            v2 = true
+            groupIds
         )
     }
 }

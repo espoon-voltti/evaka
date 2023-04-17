@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,16 +18,18 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
-import kotlin.math.roundToInt
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -45,9 +47,11 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @RequestParam(required = false) groupIds: List<GroupId>?,
-        @RequestParam(required = false) v2: Boolean?
+        @RequestParam(required = false) groupIds: List<GroupId>?
     ): List<AttendanceReservationReportRow> {
+        if (start.isAfter(end)) throw BadRequest("Inverted time range")
+        if (end.isAfter(start.plusMonths(2))) throw BadRequest("Too long time range")
+
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -58,22 +62,13 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         unitId
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    if (v2 == true) {
-                        getAttendanceReservationReportV2(
-                            tx,
-                            start,
-                            end,
-                            unitId,
-                            groupIds?.ifEmpty { null }
-                        )
-                    } else {
-                        tx.getAttendanceReservationReport(
-                            start,
-                            end,
-                            unitId,
-                            groupIds?.ifEmpty { null }
-                        )
-                    }
+                    getAttendanceReservationReport(
+                        tx,
+                        start,
+                        end,
+                        unitId,
+                        groupIds?.ifEmpty { null }
+                    )
                 }
             }
             .also {
@@ -366,7 +361,18 @@ data class DailyChildData(
 
 private data class Group(val id: GroupId?, val name: String?)
 
-private fun getAttendanceReservationReportV2(
+data class AttendanceReservationReportRow(
+    val groupId: GroupId?,
+    val groupName: String?,
+    val dateTime: HelsinkiDateTime,
+    val childCountUnder3: Int,
+    val childCountOver3: Int,
+    val childCount: Int,
+    val capacityFactor: Double,
+    val staffCountRequired: Double
+)
+
+private fun getAttendanceReservationReport(
     db: Database.Read,
     start: LocalDate,
     end: LocalDate,
@@ -441,7 +447,6 @@ private fun getAttendanceReservationReportV2(
                     val childrenPresent =
                         childrenInGroup.filter { it.isPresentPessimistic(interval) }
 
-                    val staffCountRequired = childrenPresent.sumOf { it.capacityFactor } / 7
                     AttendanceReservationReportRow(
                         groupId = group.id,
                         groupName = group.name,
@@ -449,110 +454,19 @@ private fun getAttendanceReservationReportV2(
                         childCountUnder3 = childrenPresent.count { it.age < 3 },
                         childCountOver3 = childrenPresent.count { it.age >= 3 },
                         childCount = childrenPresent.count(),
-                        capacityFactor = childrenPresent.sumOf { it.capacityFactor },
-                        staffCountRequired = (10 * staffCountRequired).roundToInt().toDouble() / 10
+                        capacityFactor =
+                            BigDecimal(childrenPresent.sumOf { it.capacityFactor })
+                                .setScale(2, RoundingMode.HALF_UP)
+                                .toDouble(),
+                        staffCountRequired =
+                            BigDecimal(childrenPresent.sumOf { it.capacityFactor } / 7)
+                                .setScale(1, RoundingMode.HALF_UP)
+                                .toDouble()
                     )
                 }
                 .toList()
         }
 }
-
-private fun Database.Read.getAttendanceReservationReport(
-    start: LocalDate,
-    end: LocalDate,
-    unitId: DaycareId,
-    groupIds: List<GroupId>?
-): List<AttendanceReservationReportRow> {
-    val sql =
-        """
-        WITH dates AS (SELECT generate_series::date AS date FROM generate_series(:start, :end, interval '1 day')),
-        reservation_times AS (
-            SELECT 
-                dates.date,
-                pl.child_id,
-                COALESCE(start_time, (daily_service_time_for_date(dates.date, pl.child_id)).start) AS start_time,
-                COALESCE(end_time, (daily_service_time_for_date(dates.date, pl.child_id)).end) AS end_time
-            FROM dates
-                CROSS JOIN person p 
-                JOIN realized_placement_one(dates.date) pl ON pl.child_id = p.id
-                LEFT JOIN attendance_reservation ar ON ar.date = dates.date AND ar.child_id = p.id
-                WHERE pl.unit_id = :unitId
-        ),
-        reservations AS (
-          SELECT
-            CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
-            ar.child_id,
-            ar.date,
-            ar.start_time,
-            ar.end_time,
-            extract(years FROM age(ar.date, p.date_of_birth)) AS age,
-            CASE
-              WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
-              WHEN extract(years FROM age(ar.date, p.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
-              ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
-            END AS service_need_factor,
-            coalesce(an.capacity_factor, 1) AS assistance_need_factor
-          FROM reservation_times ar
-          JOIN person p ON p.id = ar.child_id
-          JOIN placement pl ON pl.child_id = p.id AND ar.date BETWEEN pl.start_date AND pl.end_date
-          LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND ar.date BETWEEN dgp.start_date AND dgp.end_date
-          LEFT JOIN backup_care bc ON bc.child_id = p.id AND ar.date BETWEEN bc.start_date AND bc.end_date
-          JOIN daycare u ON u.id = coalesce(bc.unit_id, pl.unit_id)
-          LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ar.date
-          LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-          LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
-          LEFT JOIN assistance_need an ON an.child_id = p.id AND ar.date BETWEEN an.start_date AND an.end_date
-          WHERE u.id = :unitId AND ar.date BETWEEN :start AND :end
-            AND (:groupIds::uuid[] IS NULL OR coalesce(bc.group_id, dgp.daycare_group_id) = ANY(:groupIds))
-        ), groups AS (
-          SELECT dg.id, dg.name, d.operation_days
-          FROM daycare_group dg
-          JOIN daycare d ON d.id = dg.daycare_id
-          WHERE d.id = :unitId
-          UNION
-          SELECT NULL, NULL, operation_days
-          FROM daycare WHERE id = :unitId
-        )
-        SELECT
-          ${if (groupIds != null) "g.id AS group_id, g.name AS group_name" else "NULL AS group_id, NULL as group_name"},
-          dateTime AT TIME ZONE 'Europe/Helsinki' AS dateTime,
-          count(*) FILTER (WHERE r.age < 3) AS child_count_under_3,
-          count(*) FILTER (WHERE r.age >= 3) AS child_count_over_3,
-          count(*) FILTER (WHERE r.age IS NOT NULL) AS child_count,
-          coalesce(sum(r.service_need_factor * r.assistance_need_factor), 0) AS capacity_factor,
-          coalesce(round(sum(r.service_need_factor * r.assistance_need_factor) / 7, 1), 0) AS staff_count_required
-        FROM generate_series(:start, :end + interval '1 day' - interval '1 second', interval '15 minutes') dateTime
-        CROSS JOIN groups g
-        LEFT JOIN reservations r ON
-          (r.group_id IS NULL AND g.id IS NULL OR r.group_id = g.id)
-          AND dateTime > r.date + r.start_time - interval '15 minutes'
-          AND dateTime < r.date + r.end_time + interval '15 minutes'
-        WHERE extract(isodow FROM dateTime) = ANY(g.operation_days)
-          AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
-          AND NOT EXISTS(SELECT 1 FROM absence WHERE absence.child_id = r.child_id AND absence.date = r.date)  
-        GROUP BY 1, 2, 3
-        ORDER BY 2, 3
-    """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("start", start)
-        .bind("end", end)
-        .bind("unitId", unitId)
-        .bind("groupIds", groupIds)
-        .mapTo<AttendanceReservationReportRow>()
-        .toList()
-}
-
-data class AttendanceReservationReportRow(
-    val groupId: GroupId?,
-    val groupName: String?,
-    val dateTime: HelsinkiDateTime,
-    val childCountUnder3: Int,
-    val childCountOver3: Int,
-    val childCount: Int,
-    val capacityFactor: Double,
-    val staffCountRequired: Double
-)
 
 private fun Database.Read.getAttendanceReservationReportByChild(
     start: LocalDate,
