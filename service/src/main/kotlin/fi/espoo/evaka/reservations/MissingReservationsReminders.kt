@@ -112,36 +112,37 @@ FROM (
     FROM unnest(${bind(range.dates().toList())}) t
     JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> t::date
     JOIN daycare d ON p.unit_id = d.id
-    WHERE date_part('isodow', t::date) = ANY(d.operation_days) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-    AND (d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR NOT EXISTS (
-        SELECT 1
-        FROM holiday h
-        WHERE t::date = h.date
-    ))
-    AND EXISTS (
-        SELECT 1
-        FROM service_need sn
-        WHERE sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM attendance_reservation ar
-        WHERE
-            ar.child_id = p.child_id AND
-            ar.date = t::date AND
-            ar.start_time IS NOT NULL AND
-            ar.end_time IS NOT NULL
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM child_attendance a
-        WHERE a.child_id = p.child_id AND a.date = t::date
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM absence a
-        WHERE a.child_id = p.child_id AND a.date = t::date
-    )
+    WHERE date_part('isodow', t::date) = ANY(d.operation_days) 
+        AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+        AND (d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR NOT EXISTS (
+            SELECT 1
+            FROM holiday h
+            WHERE t::date = h.date
+        ))
+        AND EXISTS (
+            SELECT 1
+            FROM service_need sn
+            WHERE sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM attendance_reservation ar
+            WHERE
+                ar.child_id = p.child_id AND
+                ar.date = t::date AND
+                ar.start_time IS NOT NULL AND
+                ar.end_time IS NOT NULL
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM child_attendance a
+            WHERE a.child_id = p.child_id AND a.date = t::date
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM absence a
+            WHERE a.child_id = p.child_id AND a.date = t::date
+        )
 ) missing
 JOIN (
     SELECT guardian_id, child_id, NULL AS valid_during
