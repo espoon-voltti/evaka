@@ -15,9 +15,8 @@ on:
         default: false
 
 env:
-  ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
-  ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
   AWS_REGION: eu-west-1
+  ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -51,7 +50,8 @@ jobs:
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -59,26 +59,25 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          ecr_registry: ${{ env.ECR_REGISTRY }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
 
       - name: Build proxy image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/proxy
           path: ./proxy
           push: true
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -90,7 +89,8 @@ jobs:
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -98,26 +98,25 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          ecr_registry: ${{ env.ECR_REGISTRY }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
 
       - name: Build keycloak image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/keycloak
           path: ./keycloak
           push: true
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -131,11 +130,12 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
           cd frontend
-          cp ../espoo-customizations . -rp
+          cp -rp ../espoo-customizations .
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -144,7 +144,7 @@ jobs:
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
           registry: ghcr.io/espoon-voltti
@@ -155,11 +155,11 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build frontend image builder
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: builder
         with:
           registry: ghcr.io/espoon-voltti
@@ -172,11 +172,11 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -204,12 +204,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
           mask-aws-account-id: false
+          role-duration-seconds: 1200
 
       - name: Copy customizations
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
           mkdir -p frontend/espoo-customizations/ frontend/vendor/fortawesome/
-          cp -r customizations/espoo/* frontend/espoo-customizations/
+          cp -rp customizations/espoo/* frontend/espoo-customizations/
           aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" frontend/vendor/fortawesome/
 
       - name: Unset AWS creds env vars
@@ -221,7 +222,8 @@ jobs:
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -229,15 +231,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          ecr_registry: ${{ env.ECR_REGISTRY }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/frontend
           path: ./frontend
           build-args: |
@@ -246,11 +247,11 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=pro
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -264,20 +265,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Copy customizations
+      - name: Login to GitHub Container Registry
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        run: |
-          cd frontend
-          cp ../espoo-customizations . -rp
-
-      - name: Setup Docker building
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        uses: docker/login-action@v2
         with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS: false
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lint
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -300,7 +294,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
   api-gateway:
     runs-on: ubuntu-latest
@@ -309,7 +303,8 @@ jobs:
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -317,15 +312,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          ecr_registry: ${{ env.ECR_REGISTRY }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
 
       - name: Build and run API-gateway tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: test
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/api-gateway-test
           path: ./apigw
           push: false
@@ -334,21 +328,21 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build API-gateway image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/api-gateway
           path: ./apigw
           push: true
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build docker tests and image on fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
@@ -373,7 +367,8 @@ jobs:
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -381,15 +376,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          ecr_registry: ${{ env.ECR_REGISTRY }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
 
       - name: Build Evaka Service image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/service
           path: .
           dockerfile: service/Dockerfile
@@ -397,14 +391,14 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build Evaka Service builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: builder
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/service-builder
           target: builder
           cache_from: ${{ steps.build.outputs.image_cache }}
@@ -414,11 +408,11 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -435,7 +429,8 @@ jobs:
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-setup@feat/registry-cache
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -443,15 +438,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          ecr_registry: ${{ env.ECR_REGISTRY }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
 
       - name: Build and run Evaka Service tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
-          registry: ${{ env.ECR_REGISTRY }}
+          registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/service-test
           path: .
           dockerfile: service/test.Dockerfile
@@ -461,7 +455,7 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             BASE_IMAGE=${{ needs.service.outputs.builder_image }}
-          no_sha: ${{ inputs.no_sha }}
+          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -478,7 +472,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/registry-cache
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
   service-integration-test:
     needs:
@@ -512,11 +506,10 @@ jobs:
           role-to-assume: ${{ secrets.AWS_REGISTRY_ROLE }}
           role-duration-seconds: 1200
 
-      - name: Login to ECR
+      - name: Login to Amazon ECR
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Pull compose images
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -591,17 +584,19 @@ jobs:
           role-to-assume: ${{ secrets.AWS_REGISTRY_ROLE }}
           role-duration-seconds: 1200
 
-      - name: Login to ECR
+      - name: Login to Amazon ECR
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Login to public ECR
+      - name: Login to Amazon ECR Public
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_PUBLIC_REGISTRY }}
+        id: ecr-public
+        uses: aws-actions/amazon-ecr-login@v1
+        env:
+          AWS_REGION: "us-east-1"
+        with:
+          registry-type: public
 
       - name: Prepare e2e tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -683,6 +678,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 1200
 
       - name: Write AWS config
         shell: bash
