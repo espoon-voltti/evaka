@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fs from 'fs'
-import {
+import passportSaml, {
   Profile,
   SamlConfig,
   Strategy as SamlStrategy,
@@ -52,37 +52,31 @@ export default function createKeycloakSamlStrategy(
   return new SamlStrategy(
     config,
     (profile: Profile | null | undefined, done: VerifiedCallback) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      verifyKeycloakProfile(profile as any as KeycloakProfile)
-        .then((user) => done(null, user))
-        .catch(done)
+      if (!profile) {
+        done(new Error('No SAML profile'))
+      } else {
+        verifyKeycloakProfile(profile)
+          .then((user) => done(null, user))
+          .catch(done)
+      }
     }
   )
 }
 
-interface KeycloakProfile {
-  id?: string
-  socialSecurityNumber: string
-  email: string
-  firstName: string
-  lastName: string
-  nameID?: string
-  nameIDFormat?: string
-  nameQualifier?: string
-  spNameQualifier?: string
-  sessionIndex?: string
-}
-
 async function verifyKeycloakProfile(
-  profile: KeycloakProfile
+  profile: passportSaml.Profile
 ): Promise<SamlUser> {
-  if (!profile.socialSecurityNumber)
+  const asString = (value: unknown) =>
+    value == null ? undefined : String(value)
+
+  const socialSecurityNumber = asString(profile['socialSecurityNumber'])
+  if (!socialSecurityNumber)
     throw Error('No socialSecurityNumber in evaka IDP SAML data')
 
   const person = await citizenLogin({
-    socialSecurityNumber: profile.socialSecurityNumber,
-    firstName: profile.firstName,
-    lastName: profile.lastName
+    socialSecurityNumber,
+    firstName: asString(profile['firstName']) ?? '',
+    lastName: asString(profile['lastName']) ?? ''
   })
 
   return {
