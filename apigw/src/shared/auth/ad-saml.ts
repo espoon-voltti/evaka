@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { z } from 'zod'
 import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
@@ -139,9 +140,16 @@ export default function createAdStrategy(
 
     return new DevAdStrategy(getter, upserter)
   } else {
+    const Profile = z.object({
+      [config.userIdKey]: z.string(),
+      [AD_GIVEN_NAME_KEY]: z.string(),
+      [AD_FAMILY_NAME_KEY]: z.string(),
+      [AD_EMAIL_KEY]: z.string().optional(),
+      [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
+    })
     return new SamlStrategy(
       samlConfig,
-      toSamlVerifyFunction((profile) => verifyProfile(config, profile))
+      toSamlVerifyFunction(Profile, (profile) => verifyProfile(config, profile))
     )
   }
 }

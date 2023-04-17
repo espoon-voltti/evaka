@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { z } from 'zod'
 import fs from 'fs'
 import passportSaml, {
   SamlConfig,
@@ -48,8 +49,17 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
 export default function createKeycloakSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
-  return new SamlStrategy(config, toSamlVerifyFunction(verifyKeycloakProfile))
+  return new SamlStrategy(
+    config,
+    toSamlVerifyFunction(Profile, verifyKeycloakProfile)
+  )
 }
+
+const Profile = z.object({
+  socialSecurityNumber: z.string(),
+  firstName: z.string(),
+  lastName: z.string()
+})
 
 async function verifyKeycloakProfile(
   profile: passportSaml.Profile

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { z } from 'zod'
 import fs from 'fs'
 import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
 import { RedisClient } from 'redis'
@@ -82,6 +83,12 @@ export function createSamlConfig(
   }
 }
 
+const Profile = z.object({
+  [SUOMI_FI_SSN_KEY]: z.string(),
+  [SUOMI_FI_GIVEN_NAME_KEY]: z.string(),
+  [SUOMI_FI_SURNAME_KEY]: z.string()
+})
+
 export default function createSuomiFiStrategy(
   config: Config['sfi'],
   samlConfig: SamlConfig
@@ -99,6 +106,9 @@ export default function createSuomiFiStrategy(
 
     return new DevSfiStrategy(getter)
   } else {
-    return new Strategy(samlConfig, toSamlVerifyFunction(verifyProfile))
+    return new Strategy(
+      samlConfig,
+      toSamlVerifyFunction(Profile, verifyProfile)
+    )
   }
 }

@@ -13,6 +13,7 @@ import fs from 'fs'
 import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { toSamlVerifyFunction } from './saml'
+import { z } from 'zod'
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
@@ -43,10 +44,20 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   }
 }
 
+const Profile = z.object({
+  id: z.string(),
+  email: z.string(),
+  firstName: z.string(),
+  lastName: z.string()
+})
+
 export default function createKeycloakSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
-  return new SamlStrategy(config, toSamlVerifyFunction(verifyKeycloakProfile))
+  return new SamlStrategy(
+    config,
+    toSamlVerifyFunction(Profile, verifyKeycloakProfile)
+  )
 }
 
 async function verifyKeycloakProfile(
