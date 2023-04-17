@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -87,6 +88,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     private lateinit var childId: ChildId
     private lateinit var employeeId: EmployeeId
     private lateinit var employeeEvakaUserId: EvakaUserId
+    private lateinit var daycareId: DaycareId
 
     @BeforeEach
     fun beforeEach() {
@@ -94,7 +96,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             guardianId = tx.insertTestPerson(DevPerson(email = guardianEmail))
             tx.upsertCitizenUser(guardianId)
             val areaId = tx.insertTestCareArea(DevCareArea())
-            val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             childId =
                 tx.insertTestPerson(testChild).also { tx.insertTestChild(DevChild(testChild.id)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
@@ -427,6 +429,63 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
         val feeFecisions = db.read { it.findFeeDecisionsForHeadOfFamily(guardianId, null, null) }
         assertEquals(1, feeFecisions.size)
+    }
+
+    @Test
+    fun `If guardian has more than 1 child expiring income is notified 4 weeks beforehand only once`() {
+        db.transaction { tx ->
+            val testChild2 =
+                DevPerson(
+                    id = ChildId(UUID.randomUUID()),
+                    dateOfBirth = LocalDate.of(2016, 3, 1),
+                    ssn = "010316A1235",
+                    firstName = "Rachel",
+                    lastName = "Doe",
+                    streetAddress = "Kamreerintie 2",
+                    postalCode = "02770",
+                    postOffice = "Espoo",
+                    restrictedDetailsEnabled = false
+                )
+
+            tx.insertTestPerson(testChild2).also { tx.insertTestChild(DevChild(testChild2.id)) }
+            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = testChild2.id))
+            val placementStart = clock.today().minusMonths(2)
+            val placementEnd = clock.today().plusMonths(2)
+            val placementId =
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = testChild2.id,
+                        unitId = daycareId,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = placementStart,
+                endDate = placementEnd,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+
+            tx.insertTestIncome(
+                DevIncome(
+                    personId = guardianId,
+                    updatedBy = employeeEvakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().plusWeeks(4)
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(guardianId).size)
+        assertEquals(
+            IncomeNotificationType.INITIAL_EMAIL,
+            getIncomeNotifications(guardianId)[0].notificationType
+        )
     }
 
     private fun getEmails(): List<MockEmail> {
