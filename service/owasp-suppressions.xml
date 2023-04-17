@@ -125,4 +125,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2023-28708</cve>
     </suppress>
+        <suppress>
+        <notes><![CDATA[
+        In spring framework versions prior to 5.2.24 release+ ,5.3.27+ and 6.0.8+ , it is possible for a user to provide a specially crafted SpEL expression that may cause a denial-of-service (DoS) condition.
+        ]]></notes>
+        <cve>CVE-2023-20863</cve>
+    </suppress>
 </suppressions>
