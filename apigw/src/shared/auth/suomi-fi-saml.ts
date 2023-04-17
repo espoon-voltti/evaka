@@ -3,12 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fs from 'fs'
-import passportSaml, {
-  Profile,
-  SamlConfig,
-  Strategy,
-  VerifiedCallback
-} from 'passport-saml'
+import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
 import { Config } from '../config'
@@ -17,6 +12,7 @@ import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { getCitizenBySsn } from '../dev-api'
 import DevSfiStrategy from './dev-sfi-strategy'
+import { toSamlVerifyFunction } from './saml'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -103,17 +99,6 @@ export default function createSuomiFiStrategy(
 
     return new DevSfiStrategy(getter)
   } else {
-    return new Strategy(
-      samlConfig,
-      (profile: Profile | null | undefined, done: VerifiedCallback) => {
-        if (!profile) {
-          done(new Error('No SAML profile'))
-        } else {
-          verifyProfile(profile)
-            .then((user) => done(null, user))
-            .catch(done)
-        }
-      }
-    )
+    return new Strategy(samlConfig, toSamlVerifyFunction(verifyProfile))
   }
 }

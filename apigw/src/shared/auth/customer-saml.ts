@@ -4,16 +4,15 @@
 
 import fs from 'fs'
 import passportSaml, {
-  Profile,
   SamlConfig,
-  Strategy as SamlStrategy,
-  VerifiedCallback
+  Strategy as SamlStrategy
 } from 'passport-saml'
 import { RedisClient } from 'redis'
 import { evakaCustomerSamlConfig } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
+import { toSamlVerifyFunction } from './saml'
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (!evakaCustomerSamlConfig)
@@ -49,18 +48,7 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
 export default function createKeycloakSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
-  return new SamlStrategy(
-    config,
-    (profile: Profile | null | undefined, done: VerifiedCallback) => {
-      if (!profile) {
-        done(new Error('No SAML profile'))
-      } else {
-        verifyKeycloakProfile(profile)
-          .then((user) => done(null, user))
-          .catch(done)
-      }
-    }
-  )
+  return new SamlStrategy(config, toSamlVerifyFunction(verifyKeycloakProfile))
 }
 
 async function verifyKeycloakProfile(

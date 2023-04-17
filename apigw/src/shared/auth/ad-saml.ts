@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import passportSaml, {
-  Profile,
   SamlConfig,
-  Strategy as SamlStrategy,
-  VerifiedCallback
+  Strategy as SamlStrategy
 } from 'passport-saml'
 import DevAdStrategy from './dev-ad-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
@@ -17,6 +15,7 @@ import { employeeLogin, UserRole } from '../service-client'
 import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { Config } from '../config'
+import { toSamlVerifyFunction } from './saml'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
@@ -142,15 +141,7 @@ export default function createAdStrategy(
   } else {
     return new SamlStrategy(
       samlConfig,
-      (profile: Profile | null | undefined, done: VerifiedCallback) => {
-        if (!profile) {
-          done(new Error('No SAML profile'))
-        } else {
-          verifyProfile(config, profile)
-            .then((user) => done(null, user))
-            .catch(done)
-        }
-      }
+      toSamlVerifyFunction((profile) => verifyProfile(config, profile))
     )
   }
 }
