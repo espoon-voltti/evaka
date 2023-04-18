@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import certificates, { TrustedCertificates } from './certificates'
 import type redis from 'redis'
 
 export interface Config {
@@ -42,7 +41,7 @@ export interface EvakaSamlConfig {
   entryPoint: string
   logoutUrl: string
   issuer: string
-  publicCert: string | TrustedCertificates[]
+  publicCert: string | string[]
   privateCert: string
   validateInResponseTo: boolean
   decryptAssertions: boolean
@@ -141,7 +140,7 @@ export function configFromEnv(): Config {
             logoutUrl: required(process.env.AD_SAML_LOGOUT_URL),
             issuer: required(process.env.AD_SAML_ISSUER),
             publicCert: required(
-              envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+              envArray('AD_SAML_PUBLIC_CERT', (value) => value)
             ),
             privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
             validateInResponseTo: true,
@@ -164,7 +163,7 @@ export function configFromEnv(): Config {
           logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
           issuer: required(process.env.SFI_SAML_ISSUER),
           publicCert: required(
-            envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+            envArray('SFI_SAML_PUBLIC_CERT', (value) => value)
           ),
           privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
           validateInResponseTo: true,
@@ -203,10 +202,10 @@ export function configFromEnv(): Config {
               ifNodeEnv(['local', 'test'], 'evaka')
           ),
           publicCert: required(
-            process.env.EVAKA_SAML_PUBLIC_CERT ??
+            envArray('EVAKA_SAML_PUBLIC_CERT', (value) => value) ??
               ifNodeEnv(
                 ['local', 'test'],
-                'config/test-cert/keycloak-local.pem'
+                ['config/test-cert/keycloak-local.pem']
               )
           ),
           privateCert: required(
@@ -248,10 +247,10 @@ export function configFromEnv(): Config {
               ifNodeEnv(['local', 'test'], 'evaka-customer')
           ),
           publicCert: required(
-            process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??
+            envArray('EVAKA_CUSTOMER_SAML_PUBLIC_CERT', (value) => value) ??
               ifNodeEnv(
                 ['local', 'test'],
-                'config/test-cert/keycloak-local.pem'
+                ['config/test-cert/keycloak-local.pem']
               )
           ),
           privateCert: required(
@@ -337,10 +336,6 @@ export const enableDevApi =
   env('ENABLE_DEV_API', parseBoolean) ??
   ifNodeEnv(['local', 'test'], true) ??
   false
-
-const certificateNames = Object.keys(
-  certificates
-) as ReadonlyArray<TrustedCertificates>
 
 const titaniaUsername = process.env.EVAKA_TITANIA_USERNAME
 export const titaniaConfig = titaniaUsername
