@@ -113,12 +113,12 @@ export default function internalGwApp(
         redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
       )
       router.use(
+        '/auth/saml',
         createSamlRouter({
           strategyName: 'ead',
           strategy: createAdSamlStrategy(config.ad, adSamlConfig),
           samlConfig: adSamlConfig,
-          sessionType: 'employee',
-          pathIdentifier: 'saml'
+          sessionType: 'employee'
         })
       )
     }
@@ -130,12 +130,12 @@ export default function internalGwApp(
       redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
     )
     router.use(
+      '/auth/evaka',
       createSamlRouter({
         strategyName: 'evaka',
         strategy: createEvakaSamlStrategy(keycloakEmployeeConfig),
         samlConfig: keycloakEmployeeConfig,
-        sessionType: 'employee',
-        pathIdentifier: 'evaka'
+        sessionType: 'employee'
       })
     )
 

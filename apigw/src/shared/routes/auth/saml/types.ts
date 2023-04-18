@@ -5,16 +5,12 @@
 import type { SamlConfig } from 'passport-saml'
 import passportSaml from 'passport-saml'
 import type { SessionType } from '../../../session'
-import passport from 'passport'
 
 export interface SamlEndpointConfig {
   strategyName: string
-  strategy: passport.Strategy & {
-    logout: passportSaml.Strategy['logout']
-  }
+  strategy: passportSaml.Strategy
   samlConfig: SamlConfig
   sessionType: SessionType
-  pathIdentifier: string
 }
 
 export interface PassportSamlError extends Error {

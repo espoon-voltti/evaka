@@ -165,7 +165,7 @@ function createLogoutHandler({
 export default function createSamlRouter(
   endpointConfig: SamlEndpointConfig
 ): Router {
-  const { strategyName, strategy, samlConfig, pathIdentifier } = endpointConfig
+  const { strategyName, strategy, samlConfig } = endpointConfig
   // For parsing SAML messages outside the strategy
   const saml = new SAML(samlConfig)
 
@@ -192,18 +192,14 @@ export default function createSamlRouter(
 
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
-  router.get(`/auth/${pathIdentifier}/login`, loginHandler)
+  router.get(`/login`, loginHandler)
   // The IDP makes the browser POST to this callback during login flow, and
   // a SAML LoginResponse is included in the request.
-  router.post(
-    `/auth/${pathIdentifier}/login/callback`,
-    urlencodedParser,
-    loginHandler
-  )
+  router.post(`/login/callback`, urlencodedParser, loginHandler)
 
   // Our application directs the browser to one of these endpoints to start
   // the logout flow. We generate a LogoutRequest.
-  router.get(`/auth/${pathIdentifier}/logout`, logoutHandler)
+  router.get(`/logout`, logoutHandler)
   // The IDP makes the browser either GET or POST one of these endpoints in two
   // separate logout flows.
   // 1. SP-initiated logout. In this case the logout flow started from us
@@ -213,13 +209,13 @@ export default function createSamlRouter(
   //   flow started from the IDP, and a SAML LogoutRequest is included in the
   //   request.
   router.get(
-    `/auth/${pathIdentifier}/logout/callback`,
+    `/logout/callback`,
     logoutCallback,
     passport.authenticate(strategyName),
     (req, res) => res.redirect(getRedirectUrl(req))
   )
   router.post(
-    `/auth/${pathIdentifier}/logout/callback`,
+    `/logout/callback`,
     urlencodedParser,
     logoutCallback,
     passport.authenticate(strategyName),

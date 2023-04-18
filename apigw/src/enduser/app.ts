@@ -79,12 +79,12 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
         redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
       )
       router.use(
+        '/auth/saml',
         createSamlRouter({
           strategyName: 'suomifi',
           strategy: createSuomiFiStrategy(suomifiSamlConfig),
           samlConfig: suomifiSamlConfig,
-          sessionType: 'enduser',
-          pathIdentifier: 'saml'
+          sessionType: 'enduser'
         })
       )
     }
@@ -96,12 +96,12 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
       redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
     )
     router.use(
+      '/auth/evaka-customer',
       createSamlRouter({
         strategyName: 'evaka-customer',
         strategy: createEvakaCustomerSamlStrategy(keycloakCitizenConfig),
         samlConfig: keycloakCitizenConfig,
-        sessionType: 'enduser',
-        pathIdentifier: 'evaka-customer'
+        sessionType: 'enduser'
       })
     )
     router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
