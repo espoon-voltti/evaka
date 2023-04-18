@@ -60,7 +60,7 @@ export interface FeeDecisionSearchParams extends SearchParams {
 }
 
 export interface VoucherValueDecisionSearchParams extends SearchParams {
-  status?: VoucherValueDecisionStatus
+  statuses: VoucherValueDecisionStatus[]
   financeDecisionHandlerId?: UUID
   startDate?: LocalDate
   endDate?: LocalDate

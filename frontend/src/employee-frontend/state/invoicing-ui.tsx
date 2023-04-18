@@ -62,7 +62,7 @@ interface FeeDecisionSearchFilterState {
 interface ValueDecisionSearchFilters {
   area: string[]
   unit?: UUID
-  status: VoucherValueDecisionStatus
+  statuses: VoucherValueDecisionStatus[]
   distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
   financeDecisionHandlerId?: UUID
   difference: VoucherValueDecisionDifference[]
@@ -177,7 +177,7 @@ const defaultState: UiState = {
   valueDecisions: {
     searchFilters: {
       distinctiveDetails: [],
-      status: 'DRAFT',
+      statuses: ['DRAFT'],
       area: [],
       difference: [],
       startDate: undefined,

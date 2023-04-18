@@ -761,7 +761,7 @@ export interface SearchVoucherValueDecisionRequest {
   sortBy: VoucherValueDecisionSortParam | null
   sortDirection: SortDirection | null
   startDate: LocalDate | null
-  status: VoucherValueDecisionStatus
+  status: VoucherValueDecisionStatus[]
   unit: UUID | null
 }
 
