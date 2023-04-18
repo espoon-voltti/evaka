@@ -84,7 +84,7 @@ export default function BackupCareForm({
   const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
 
   useEffect(() => {
-    void getUnits([], 'DAYCARE').then(setUnits)
+    void getUnits([], 'DAYCARE', LocalDate.todayInHelsinkiTz()).then(setUnits)
   }, [])
 
   const initialFormState: FormState = {

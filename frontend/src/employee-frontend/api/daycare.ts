@@ -4,10 +4,10 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
 import {
   DaycareCareArea,
-  PublicUnit
+  PublicUnit,
+  UnitTypeFilter
 } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { JsonOf } from 'lib-common/json'
@@ -22,14 +22,17 @@ export interface Unit {
 
 export async function getUnits(
   areas: string[],
-  type: ApplicationTypeToggle
+  type: UnitTypeFilter,
+  date?: LocalDate
 ): Promise<Result<Unit[]>> {
   return client
-    .get<JsonOf<Unit[]>>(
-      `/filters/units?type=${type}${
-        areas.length > 0 ? `&area=${areas.join(',')}` : ''
-      }`
-    )
+    .get<JsonOf<Unit[]>>('/filters/units', {
+      params: {
+        type,
+        ...(areas.length > 0 ? { area: areas.join(',') } : {}),
+        date: date?.toJSON()
+      }
+    })
     .then((res) =>
       Success.of(
         res.data.sort((unitA, unitB) =>
