@@ -13,32 +13,20 @@ import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.reservations.AbsenceInfo
+*/
+export interface AbsenceInfo {
+  markedByEmployee: boolean
+  type: AbsenceType
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.AbsenceRequest
 */
 export interface AbsenceRequest {
   absenceType: AbsenceType
   childIds: UUID[]
   dateRange: FiniteDateRange
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.ChildDailyData
-*/
-export interface ChildDailyData {
-  absence: AbsenceType | null
-  attendances: OpenTimeRange[]
-  childId: UUID
-  markedByEmployee: boolean
-  reservations: Reservation[]
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.DailyReservationData
-*/
-export interface DailyReservationData {
-  children: ChildDailyData[]
-  date: LocalDate
-  isHoliday: boolean
 }
 
 export namespace DailyReservationRequest {
@@ -116,15 +104,32 @@ export type Reservation = Reservation.NoTimes | Reservation.Times
 export interface ReservationChild {
   duplicateOf: UUID | null
   firstName: string
-  hasContractDays: boolean
   id: UUID
   imageId: UUID | null
-  inShiftCareUnit: boolean
   lastName: string
-  maxOperationalDays: number[]
-  placements: FiniteDateRange[]
   preferredName: string
   upcomingPlacementType: PlacementType | null
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ReservationResponseDay
+*/
+export interface ReservationResponseDay {
+  children: ReservationResponseDayChild[]
+  date: LocalDate
+  holiday: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ReservationResponseDayChild
+*/
+export interface ReservationResponseDayChild {
+  absence: AbsenceInfo | null
+  attendances: OpenTimeRange[]
+  childId: UUID
+  contractDays: boolean
+  reservations: Reservation[]
+  shiftCare: boolean
 }
 
 /**
@@ -132,7 +137,7 @@ export interface ReservationChild {
 */
 export interface ReservationsResponse {
   children: ReservationChild[]
-  dailyData: DailyReservationData[]
+  days: ReservationResponseDay[]
   includesWeekends: boolean
-  reservableDays: Record<string, FiniteDateRange[]>
+  reservableRange: FiniteDateRange
 }

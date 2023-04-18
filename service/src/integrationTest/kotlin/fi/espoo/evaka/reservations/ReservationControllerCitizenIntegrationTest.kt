@@ -11,26 +11,31 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testRoundTheClockDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -47,7 +52,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
 
     // Also Monday
-    private val testDate = LocalDate.of(2021, 11, 15)
+    private val sunday = LocalDate.of(2021, 11, 14)
+    private val monday = sunday.plusDays(1)
+    private val tuesday = monday.plusDays(1)
+    private val wednesday = monday.plusDays(2)
+
     private val startTime = LocalTime.of(9, 0)
     private val endTime = LocalTime.of(17, 0)
 
@@ -61,21 +70,21 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = testDate,
-                endDate = testDate.plusDays(1)
+                startDate = monday,
+                endDate = tuesday
             )
             it.insertTestPlacement(
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     type = PlacementType.DAYCARE,
-                    startDate = testDate,
-                    endDate = testDate.plusDays(1)
+                    startDate = monday,
+                    endDate = tuesday
                 )
                 .let { placementId ->
                     it.insertTestServiceNeed(
                         confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         placementId = placementId,
-                        period = FiniteDateRange(testDate, testDate.plusDays(1)),
+                        period = FiniteDateRange(monday, tuesday),
                         optionId = snDaycareContractDays10.id,
                         shiftCare = false
                     )
@@ -88,29 +97,199 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
+    fun `get reservations returns correct children every day in range`() {
+        db.transaction { tx -> tx.insertTestHoliday(tuesday) }
+
+        val res = getReservations(FiniteDateRange(sunday, wednesday))
+
+        assertEquals(
+            ReservationsResponse(
+                reservableRange =
+                    FiniteDateRange(
+                        LocalDate.of(2021, 11, 8), // Next week's monday
+                        LocalDate.of(2022, 8, 31),
+                    ),
+                includesWeekends = false,
+                children =
+                    // Sorted by date of birth, oldest child first
+                    listOf(
+                        ReservationChild(
+                            id = testChild_2.id,
+                            firstName = testChild_2.firstName,
+                            lastName = testChild_2.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.DAYCARE,
+                        ),
+                        ReservationChild(
+                            id = testChild_1.id,
+                            firstName = testChild_1.firstName,
+                            lastName = testChild_1.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                        ),
+                    ),
+                days =
+                    listOf(
+                        // sunday is not included because it's not a weekday
+
+                        ReservationResponseDay(
+                            date = monday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                        dayChild(testChild_1.id),
+                                        dayChild(testChild_2.id, contractDays = true)
+                                    )
+                                    .sortedBy { it.childId }
+                        ),
+                        ReservationResponseDay(
+                            date = tuesday,
+                            holiday = true,
+                            children = emptyList() // Holiday, no children eligible for daycare
+                        ),
+                        ReservationResponseDay(
+                            date = wednesday,
+                            holiday = false,
+                            children = emptyList()
+                        )
+                    )
+            ),
+            res
+        )
+    }
+
+    @Test
+    fun `get reservations returns correct children every day in range with a child in shift care`() {
+        val roundTheClockDaycare =
+            testRoundTheClockDaycare.copy(
+                id = DaycareId(UUID.randomUUID()),
+                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+            )
+
+        db.transaction { tx ->
+            tx.insertTestHoliday(tuesday)
+
+            tx.insertTestDaycare(roundTheClockDaycare)
+            tx.insertTestPlacement(
+                childId = testChild_3.id,
+                unitId = roundTheClockDaycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = sunday,
+                endDate = tuesday
+            )
+            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
+        }
+
+        val res = getReservations(FiniteDateRange(sunday, wednesday))
+
+        assertEquals(
+            ReservationsResponse(
+                reservableRange =
+                    FiniteDateRange(
+                        LocalDate.of(2021, 11, 8), // Next week's monday
+                        LocalDate.of(2022, 8, 31),
+                    ),
+                includesWeekends = true,
+                children =
+                    // Sorted by date of birth, oldest child first
+                    listOf(
+                        ReservationChild(
+                            id = testChild_2.id,
+                            firstName = testChild_2.firstName,
+                            lastName = testChild_2.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.DAYCARE,
+                        ),
+                        ReservationChild(
+                            id = testChild_1.id,
+                            firstName = testChild_1.firstName,
+                            lastName = testChild_1.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                        ),
+                        ReservationChild(
+                            id = testChild_3.id,
+                            firstName = testChild_3.firstName,
+                            lastName = testChild_3.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.DAYCARE,
+                        ),
+                    ),
+                days =
+                    listOf(
+                        ReservationResponseDay(
+                            date = sunday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                    // sunday, only shift care is eligible
+                                    dayChild(testChild_3.id, shiftCare = true),
+                                )
+                        ),
+                        ReservationResponseDay(
+                            date = monday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                        dayChild(testChild_1.id),
+                                        dayChild(testChild_2.id, contractDays = true),
+                                        dayChild(testChild_3.id, shiftCare = true),
+                                    )
+                                    .sortedBy { it.childId }
+                        ),
+                        ReservationResponseDay(
+                            date = tuesday,
+                            holiday = true,
+                            children =
+                                listOf(
+                                    // holiday, only shift care is eligible
+                                    dayChild(testChild_3.id, shiftCare = true),
+                                )
+                        ),
+                        ReservationResponseDay(
+                            date = wednesday,
+                            holiday = false,
+                            children = emptyList()
+                        )
+                    )
+            ),
+            res
+        )
+    }
+
+    @Test
     fun `adding reservations works in a basic case`() {
         postReservations(
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
                     DailyReservationRequest.Reservations(
                         child,
-                        testDate,
+                        monday,
                         Reservation.Times(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         child,
-                        testDate.plusDays(1),
+                        tuesday,
                         Reservation.Times(startTime, endTime),
                     )
                 )
             }
         )
 
-        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(2)))
+        val res = getReservations(FiniteDateRange(monday, wednesday))
 
         assertEquals(
             listOf(
-                // Sorted by date of birth, oldest child first
                 ReservationChild(
                     id = testChild_2.id,
                     firstName = testChild_2.firstName,
@@ -118,11 +297,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     preferredName = "",
                     duplicateOf = null,
                     imageId = null,
-                    placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
-                    upcomingPlacementType = null,
-                    maxOperationalDays = setOf(1, 2, 3, 4, 5),
-                    inShiftCareUnit = false,
-                    hasContractDays = true
+                    upcomingPlacementType = PlacementType.DAYCARE,
                 ),
                 ReservationChild(
                     id = testChild_1.id,
@@ -131,63 +306,56 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     preferredName = "",
                     duplicateOf = null,
                     imageId = null,
-                    placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
-                    upcomingPlacementType = null,
-                    maxOperationalDays = setOf(1, 2, 3, 4, 5),
-                    inShiftCareUnit = false,
-                    hasContractDays = false
+                    upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                 )
             ),
             res.children
         )
 
-        val dailyData = res.dailyData
-        assertEquals(3, dailyData.size)
+        assertEquals(3, res.days.size)
 
-        assertEquals(testDate, dailyData[0].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    testChild_1.id,
-                    false,
-                    null,
-                    listOf(Reservation.Times(startTime, endTime)),
-                    listOf(),
-                ),
-                ChildDailyData(
-                    testChild_2.id,
-                    false,
-                    null,
-                    listOf(Reservation.Times(startTime, endTime)),
-                    listOf(),
-                )
-            ),
-            dailyData[0].children.toSet()
-        )
+        res.days[0].let { day ->
+            assertEquals(monday, day.date)
+            assertEquals(
+                listOf(
+                        dayChild(
+                            testChild_1.id,
+                            reservations = listOf(Reservation.Times(startTime, endTime))
+                        ),
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            reservations = listOf(Reservation.Times(startTime, endTime)),
+                        )
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(testDate.plusDays(1), dailyData[1].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    testChild_1.id,
-                    false,
-                    null,
-                    listOf(Reservation.Times(startTime, endTime)),
-                    listOf(),
-                ),
-                ChildDailyData(
-                    testChild_2.id,
-                    false,
-                    null,
-                    listOf(Reservation.Times(startTime, endTime)),
-                    listOf(),
-                )
-            ),
-            dailyData[1].children.toSet()
-        )
+        res.days[1].let { day ->
+            assertEquals(tuesday, day.date)
+            assertEquals(
+                listOf(
+                        dayChild(
+                            testChild_1.id,
+                            reservations = listOf(Reservation.Times(startTime, endTime))
+                        ),
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            reservations = listOf(Reservation.Times(startTime, endTime)),
+                        )
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(testDate.plusDays(2), dailyData[2].date)
-        assertEquals(0, dailyData[2].children.size)
+        res.days[2].let { day ->
+            assertEquals(wednesday, day.date)
+            assertEquals(emptyList(), day.children)
+        }
     }
 
     @Test
@@ -196,51 +364,58 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             listOf(
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
-                    testDate,
+                    monday,
                     Reservation.Times(startTime, endTime),
                 ),
                 DailyReservationRequest.Absence(
                     testChild_1.id,
-                    testDate.plusDays(1),
+                    tuesday,
                 )
             )
         )
 
-        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(2)))
+        val res = getReservations(FiniteDateRange(monday, wednesday))
 
-        val dailyData = res.dailyData
-        assertEquals(3, dailyData.size)
+        assertEquals(3, res.days.size)
 
-        assertEquals(testDate, dailyData[0].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    testChild_1.id,
-                    false,
-                    null,
-                    listOf(Reservation.Times(startTime, endTime)),
-                    listOf(),
-                )
-            ),
-            dailyData[0].children.toSet()
-        )
+        res.days[0].let { day ->
+            assertEquals(monday, day.date)
+            assertEquals(
+                listOf(
+                        dayChild(
+                            testChild_1.id,
+                            reservations = listOf(Reservation.Times(startTime, endTime))
+                        ),
+                        dayChild(testChild_2.id, contractDays = true)
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(testDate.plusDays(1), dailyData[1].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    testChild_1.id,
-                    false,
-                    AbsenceType.OTHER_ABSENCE,
-                    emptyList(),
-                    listOf(),
-                )
-            ),
-            dailyData[1].children.toSet()
-        )
+        res.days[1].let { day ->
+            assertEquals(tuesday, day.date)
+            assertEquals(
+                listOf(
+                        dayChild(
+                            testChild_1.id,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.OTHER_ABSENCE,
+                                    markedByEmployee = false
+                                )
+                        ),
+                        dayChild(testChild_2.id, contractDays = true)
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(testDate.plusDays(2), dailyData[2].date)
-        assertEquals(0, dailyData[2].children.size)
+        res.days[2].let { day ->
+            assertEquals(wednesday, day.date)
+            assertEquals(emptyList(), day.children)
+        }
     }
 
     @Test
@@ -269,58 +444,72 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val request =
             AbsenceRequest(
                 childIds = setOf(testChild_1.id, testChild_2.id),
-                dateRange = FiniteDateRange(testDate, testDate.plusDays(2)),
+                dateRange = FiniteDateRange(monday, wednesday),
                 absenceType = AbsenceType.OTHER_ABSENCE
             )
         postAbsences(request)
 
-        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(2)))
-        assertEquals(3, res.dailyData.size)
+        val res = getReservations(FiniteDateRange(monday, wednesday))
+        assertEquals(3, res.days.size)
 
-        assertEquals(LocalDate.of(2021, 11, 15), res.dailyData[0].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    childId = testChild_1.id,
-                    markedByEmployee = false,
-                    absence = AbsenceType.OTHER_ABSENCE,
-                    reservations = listOf(),
-                    attendances = listOf(),
-                ),
-                ChildDailyData(
-                    childId = testChild_2.id,
-                    markedByEmployee = false,
-                    absence = AbsenceType.OTHER_ABSENCE,
-                    reservations = listOf(),
-                    attendances = listOf(),
-                )
-            ),
-            res.dailyData[0].children.toSet()
-        )
+        res.days[0].let { day ->
+            assertEquals(LocalDate.of(2021, 11, 15), day.date)
+            assertEquals(
+                listOf(
+                        dayChild(
+                            testChild_1.id,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.OTHER_ABSENCE,
+                                    markedByEmployee = false
+                                )
+                        ),
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.OTHER_ABSENCE,
+                                    markedByEmployee = false
+                                )
+                        )
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(LocalDate.of(2021, 11, 16), res.dailyData[1].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    childId = testChild_1.id,
-                    markedByEmployee = false,
-                    absence = AbsenceType.OTHER_ABSENCE,
-                    reservations = listOf(),
-                    attendances = listOf(),
-                ),
-                ChildDailyData(
-                    childId = testChild_2.id,
-                    markedByEmployee = false,
-                    absence = AbsenceType.OTHER_ABSENCE,
-                    reservations = listOf(),
-                    attendances = listOf(),
-                )
-            ),
-            res.dailyData[1].children.toSet()
-        )
+        res.days[1].let { day ->
+            assertEquals(LocalDate.of(2021, 11, 16), day.date)
+            assertEquals(
+                listOf(
+                        dayChild(
+                            testChild_1.id,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.OTHER_ABSENCE,
+                                    markedByEmployee = false
+                                )
+                        ),
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.OTHER_ABSENCE,
+                                    markedByEmployee = false
+                                ),
+                        )
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(LocalDate.of(2021, 11, 17), res.dailyData[2].date)
-        assertEquals(listOf(), res.dailyData[2].children)
+        res.days[2].let { day ->
+            assertEquals(LocalDate.of(2021, 11, 17), day.date)
+            assertEquals(emptyList(), day.children)
+        }
 
         // PRESCHOOL_DAYCARE generates two absences per day (nonbillable and billable)
         assertAbsenceCounts(
@@ -340,7 +529,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insertTestAbsence(
                 childId = testChild_2.id,
-                date = testDate,
+                date = monday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 modifiedBy = EvakaUserId(testStaffId.raw)
@@ -350,44 +539,73 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val request =
             AbsenceRequest(
                 childIds = setOf(testChild_2.id),
-                dateRange = FiniteDateRange(testDate, testDate.plusDays(1)),
+                dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.OTHER_ABSENCE
             )
         postAbsences(request)
 
-        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(1)))
-        assertEquals(2, res.dailyData.size)
+        val res = getReservations(FiniteDateRange(monday, tuesday))
+        assertEquals(2, res.days.size)
 
-        assertEquals(testDate, res.dailyData[0].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    childId = testChild_2.id,
-                    markedByEmployee = true,
-                    absence = AbsenceType.PLANNED_ABSENCE,
-                    reservations = listOf(),
-                    attendances = listOf(),
-                )
-            ),
-            res.dailyData[0].children.toSet()
-        )
+        res.days[0].let { day ->
+            assertEquals(monday, day.date)
+            assertEquals(
+                listOf(
+                        dayChild(testChild_1.id),
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.PLANNED_ABSENCE,
+                                    markedByEmployee = true
+                                )
+                        ),
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertEquals(testDate.plusDays(1), res.dailyData[1].date)
-        assertEquals(
-            setOf(
-                ChildDailyData(
-                    childId = testChild_2.id,
-                    markedByEmployee = false,
-                    absence = AbsenceType.OTHER_ABSENCE,
-                    reservations = listOf(),
-                    attendances = listOf(),
-                )
-            ),
-            res.dailyData[1].children.toSet()
-        )
+        res.days[1].let { day ->
+            assertEquals(tuesday, day.date)
+            assertEquals(
+                listOf(
+                        dayChild(testChild_1.id),
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            absence =
+                                AbsenceInfo(
+                                    type = AbsenceType.OTHER_ABSENCE,
+                                    markedByEmployee = false
+                                )
+                        )
+                    )
+                    .sortedBy { it.childId },
+                day.children
+            )
+        }
 
-        assertAbsenceCounts(testChild_2.id, listOf(testDate to 1, testDate.plusDays(1) to 1))
+        assertAbsenceCounts(testChild_2.id, listOf(monday to 1, tuesday to 1))
     }
+
+    private fun dayChild(
+        childId: ChildId,
+        shiftCare: Boolean = false,
+        contractDays: Boolean = false,
+        absence: AbsenceInfo? = null,
+        reservations: List<Reservation> = emptyList(),
+        attendances: List<OpenTimeRange> = emptyList()
+    ) =
+        ReservationResponseDayChild(
+            childId,
+            shiftCare,
+            contractDays,
+            absence,
+            reservations,
+            attendances
+        )
 
     private fun postReservations(request: List<DailyReservationRequest>) {
         reservationControllerCitizen.postReservations(
@@ -402,7 +620,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         reservationControllerCitizen.postAbsences(
             dbInstance(),
             AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0))),
+            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
             request,
         )
     }
@@ -411,7 +629,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         return reservationControllerCitizen.getReservations(
             dbInstance(),
             AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-            RealEvakaClock(),
+            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
             range.start,
             range.end,
         )
@@ -425,9 +643,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db.read {
                 it.createQuery(
                         """
-                SELECT date, COUNT(category) as count 
-                FROM absence WHERE 
-                child_id = :childId 
+                SELECT date, COUNT(category) as count
+                FROM absence WHERE
+                child_id = :childId
                 GROUP BY date
                 ORDER BY date
             """

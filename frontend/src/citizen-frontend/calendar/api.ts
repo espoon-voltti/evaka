@@ -18,9 +18,8 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import {
   AbsenceRequest,
-  DailyReservationData,
   DailyReservationRequest,
-  ReservationChild,
+  ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
@@ -41,11 +40,11 @@ export async function getReservations(
     })
     .then((res) => ({
       ...res.data,
-      dailyData: res.data.dailyData.map(
-        (data): DailyReservationData => ({
-          ...data,
-          date: LocalDate.parseIso(data.date),
-          children: data.children.map((child) => ({
+      days: res.data.days.map(
+        (day): ReservationResponseDay => ({
+          ...day,
+          date: LocalDate.parseIso(day.date),
+          children: day.children.map((child) => ({
             ...child,
             attendances: child.attendances.map((r) => ({
               startTime: LocalTime.parseIso(r.startTime),
@@ -55,18 +54,7 @@ export async function getReservations(
           }))
         })
       ),
-      children: res.data.children.map(
-        (child): ReservationChild => ({
-          ...child,
-          placements: child.placements.map((r) => FiniteDateRange.parseJson(r))
-        })
-      ),
-      reservableDays: Object.entries(res.data.reservableDays).reduce<
-        Record<string, FiniteDateRange[]>
-      >((acc, [childId, ranges]) => {
-        acc[childId] = ranges.map((r) => FiniteDateRange.parseJson(r))
-        return acc
-      }, {})
+      reservableRange: FiniteDateRange.parseJson(res.data.reservableRange)
     }))
 }
 

@@ -8,11 +8,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import {
-  DailyReservationData,
-  ReservationChild
-} from 'lib-common/generated/api-types/reservations'
+import { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
@@ -34,13 +30,11 @@ type HolidayCta =
   | { type: 'questionnaire'; deadline: LocalDate }
 
 interface Props {
-  reservationChildren: ReservationChild[]
-  dailyData: DailyReservationData[]
+  calendarDays: ReservationResponseDay[]
 }
 
 export default React.memo(function CalendarNotifications({
-  reservationChildren,
-  dailyData
+  calendarDays
 }: Props) {
   const navigate = useNavigate()
 
@@ -88,11 +82,7 @@ export default React.memo(function CalendarNotifications({
         )
         cta =
           activeHolidayPeriod !== undefined &&
-          !hasReservationsForHolidayPeriod(
-            reservationChildren,
-            dailyData,
-            activeHolidayPeriod
-          )
+          !reservationsExistForPeriod(activeHolidayPeriod.period, calendarDays)
             ? {
                 type: 'holiday',
                 deadline: activeHolidayPeriod.reservationDeadline,
@@ -155,23 +145,17 @@ function getHolidayCtaText(
   }
 }
 
-function hasReservationsForHolidayPeriod(
-  children: ReservationChild[],
-  dailyData: DailyReservationData[],
-  holidayPeriod: HolidayPeriod
+function reservationsExistForPeriod(
+  period: FiniteDateRange,
+  calendarDays: ReservationResponseDay[]
 ) {
-  return [...holidayPeriod.period.dates()].every((date) => {
-    const day = dailyData.find((d) => d.date.isEqual(date))
-    if (day === undefined) return false
-
-    return children
-      .filter((child) => child.placements.some((p) => p.includes(date)))
-      .every((child) =>
-        day.children.some(
-          (c) =>
-            c.childId === child.id &&
-            (c.reservations.length > 0 || c.absence !== null)
-        )
-      )
+  return calendarDays.every((day) => {
+    if (period.includes(day.date)) {
+      return day.children.every((child) => {
+        return child.reservations.length > 0 || child.absence !== null
+      })
+    } else {
+      return true
+    }
   })
 }

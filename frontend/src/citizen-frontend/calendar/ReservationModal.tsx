@@ -3,18 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import isEqual from 'lodash/isEqual'
+import maxBy from 'lodash/maxBy'
+import minBy from 'lodash/minBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Failure } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
-import {
-  DailyReservationData,
-  ReservationChild
-} from 'lib-common/generated/api-types/reservations'
+import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
@@ -49,54 +47,53 @@ import {
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import {
+  DayProperties,
   HolidayPeriodInfo,
   initialState,
   reservationForm,
   resetTimes
 } from './reservation-modal/form'
-import { getEarliestReservableDate, getLatestReservableDate } from './utils'
 
 interface Props {
   onClose: () => void
   onSuccess: (containsNonReservableDays: boolean) => void
-  availableChildren: ReservationChild[]
-  reservableDays: Record<string, FiniteDateRange[]>
+  reservationsResponse: ReservationsResponse
   initialStart: LocalDate | null
   initialEnd: LocalDate | null
-  existingReservations: DailyReservationData[]
   upcomingHolidayPeriods: HolidayPeriodInfo[]
 }
 
 export default React.memo(function ReservationModal({
   onClose,
   onSuccess,
-  availableChildren,
-  reservableDays,
+  reservationsResponse,
   initialStart,
   initialEnd,
-  existingReservations,
   upcomingHolidayPeriods
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const childrenInShiftCare = useMemo(
-    () =>
-      availableChildren.some(
-        ({ maxOperationalDays }) => maxOperationalDays.length == 7
-      ),
-    [availableChildren]
-  )
+  const {
+    children: availableChildren,
+    days: calendarDays,
+    includesWeekends,
+    reservableRange
+  } = reservationsResponse
 
+  const dayProperties = useMemo(
+    () => new DayProperties(calendarDays, includesWeekends),
+    [calendarDays, includesWeekends]
+  )
   const form = useForm(
     reservationForm,
     () =>
       initialState(
+        dayProperties,
         availableChildren,
+        calendarDays,
         initialStart,
         initialEnd,
-        childrenInShiftCare,
-        existingReservations,
         upcomingHolidayPeriods,
         i18n
       ),
@@ -121,9 +118,9 @@ export default React.memo(function ReservationModal({
           return {
             ...nextState,
             times: resetTimes(
+              dayProperties,
               availableChildren,
-              childrenInShiftCare,
-              existingReservations,
+              calendarDays,
               repetition,
               selectedRange,
               selectedChildren,
@@ -143,9 +140,9 @@ export default React.memo(function ReservationModal({
           return {
             ...nextState,
             times: resetTimes(
+              dayProperties,
               availableChildren,
-              childrenInShiftCare,
-              existingReservations,
+              calendarDays,
               repetition,
               selectedRange,
               selectedChildren,
@@ -162,13 +159,15 @@ export default React.memo(function ReservationModal({
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
-  const { minDate, maxDate } = useMemo(
-    () => ({
-      minDate: getEarliestReservableDate(availableChildren, reservableDays),
-      maxDate: getLatestReservableDate(availableChildren, reservableDays)
-    }),
-    [availableChildren, reservableDays]
-  )
+  const { minDate, maxDate } = useMemo(() => {
+    const dates = calendarDays.filter(
+      (day) => reservableRange.includes(day.date) && day.children.length > 0
+    )
+    return {
+      minDate: minBy(dates, (d) => d.date.valueOf())?.date,
+      maxDate: maxBy(dates, (d) => d.date.valueOf())?.date
+    }
+  }, [calendarDays, reservableRange])
 
   const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
 
@@ -259,7 +258,7 @@ export default React.memo(function ReservationModal({
                   width="auto"
                   ariaLabel={i18n.common.openExpandingInfo}
                   info={
-                    Object.keys(reservableDays).length > 0
+                    maxDate !== undefined
                       ? i18n.calendar.reservationModal.dateRangeInfo(maxDate)
                       : i18n.calendar.reservationModal.noReservableDays
                   }
@@ -285,7 +284,7 @@ export default React.memo(function ReservationModal({
                 {selectedRange ? (
                   <RepetitionTimeInputGrid
                     bind={times}
-                    childrenInShiftCare={childrenInShiftCare}
+                    anyChildInShiftCare={dayProperties.anyChildInShiftCare}
                     showAllErrors={showAllErrors}
                   />
                 ) : (
@@ -320,13 +319,13 @@ export default React.memo(function ReservationModal({
                     return
                   } else {
                     return postReservations(
-                      form.value().toRequest(reservableDays)
+                      form.value().toRequest(dayProperties)
                     )
                   }
                 }}
                 onSuccess={() => {
                   onSuccess(
-                    form.value().containsNonReservableDays(reservableDays)
+                    form.value().containsNonReservableDays(dayProperties)
                   )
                 }}
                 onFailure={(reason) => {

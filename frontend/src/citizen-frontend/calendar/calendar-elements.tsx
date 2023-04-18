@@ -8,11 +8,9 @@ import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import {
-  ChildDailyData,
-  DailyReservationData,
-  ReservationChild
+  ReservationResponseDay,
+  ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
@@ -52,12 +50,10 @@ interface GroupedDailyChildren {
 
 export const Reservations = React.memo(function Reservations({
   data,
-  allChildren,
   childImages,
   isReservable
 }: {
-  data: DailyReservationData
-  allChildren: ReservationChild[]
+  data: ReservationResponseDay
   childImages: ChildImageData[]
   isReservable: boolean
 }) {
@@ -68,11 +64,11 @@ export const Reservations = React.memo(function Reservations({
   )
 
   const groupedChildren = useMemo(
-    () => groupChildren(allChildren, data.children, data.date, data.isHoliday),
-    [data.children, allChildren, data.date, data.isHoliday]
+    () => groupChildren(data.children),
+    [data.children]
   )
 
-  return data.children.length === 0 && data.isHoliday && !isReservable ? (
+  return data.children.length === 0 && data.holiday && !isReservable ? (
     <Holiday />
   ) : (
     <div>
@@ -116,15 +112,6 @@ export const Holiday = React.memo(function Holiday() {
   return <Light>{i18n.calendar.holiday}</Light>
 })
 
-export const NoReservation = React.memo(function NoReservation() {
-  const i18n = useTranslation()
-  return <NoReservationNote>{i18n.calendar.noReservation}</NoReservationNote>
-})
-
-const NoReservationNote = styled.span`
-  color: ${(p) => p.theme.colors.accents.a2orangeDark};
-`
-
 const GroupedElementText = styled.div`
   word-break: break-word;
 
@@ -134,94 +121,69 @@ const GroupedElementText = styled.div`
   }
 `
 
-const groupChildren = (
-  allChildren: ReservationChild[],
-  reservedChildren: ChildDailyData[],
-  date: LocalDate,
-  isHoliday: boolean
-) =>
+const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
   Object.entries(
     groupBy(
-      allChildren
-        .filter((childInfo) =>
-          childInfo.placements.some((placement) =>
-            date.isBetween(placement.start, placement.end)
+      relevantChildren.map((child): DailyChildGroupElement => {
+        if (child.attendances.length > 0) {
+          return {
+            childId: child.childId,
+            type: 'attendance',
+            text: child.attendances
+              .map(
+                ({ startTime, endTime }) =>
+                  `${startTime.format()}–${endTime?.format() ?? ''}`
+              )
+              .join(', ')
+          }
+        }
+
+        if (child.absence) {
+          return {
+            childId: child.childId,
+            type:
+              child.absence.type === 'FREE_ABSENCE' ? 'absent-free' : 'absent'
+          }
+        }
+
+        if (child.reservations.length > 0) {
+          const [withTimes, withoutTimes] = partition(
+            child.reservations,
+            reservationHasTimes
           )
-        )
-        .filter((childInfo) =>
-          childInfo.maxOperationalDays.includes(date.getIsoDayOfWeek())
-        )
-        .filter(
-          (childInfo) => !isHoliday || childInfo.maxOperationalDays.length == 7
-        )
-        .map<DailyChildGroupElement>((childInfo) => {
-          const child = reservedChildren.find(
-            ({ childId }) => childId === childInfo.id
-          )
 
-          if (!child) {
-            return {
-              childId: childInfo.id,
-              type: 'missing-reservation'
-            }
-          }
-
-          if (child.attendances.length > 0) {
+          if (withoutTimes.length > 0) {
+            // In theory, we could have reservations with and without times, but in practice this shouldn't happen
             return {
               childId: child.childId,
-              type: 'attendance',
-              text: child.attendances
-                .map(
-                  ({ startTime, endTime }) =>
-                    `${startTime.format()}–${endTime?.format() ?? ''}`
-                )
-                .join(', ')
-            }
-          }
-
-          if (child.absence) {
-            return {
-              childId: child.childId,
-              type: child.absence === 'FREE_ABSENCE' ? 'absent-free' : 'absent'
-            }
-          }
-
-          if (child.reservations.length > 0) {
-            const [withTimes, withoutTimes] = partition(
-              child.reservations,
-              reservationHasTimes
-            )
-
-            if (withoutTimes.length > 0) {
-              // In theory, we could have reservations with and without times, but in practice this shouldn't happen
-              return {
-                childId: child.childId,
-                type: 'reservation-no-times'
-              }
-            }
-
-            return {
-              childId: child.childId,
-              type: 'reservation',
-              text: withTimes
-                .map(
-                  ({ startTime, endTime }) =>
-                    `${startTime.format()}–${endTime.format()}`
-                )
-                .join(', ')
+              type: 'reservation-no-times'
             }
           }
 
           return {
             childId: child.childId,
-            type: 'missing-reservation'
+            type: 'reservation',
+            text: withTimes
+              .map(
+                ({ startTime, endTime }) =>
+                  `${startTime.format()}–${endTime.format()}`
+              )
+              .join(', ')
           }
-        }),
-      ({ type, text }) => JSON.stringify([type, text])
+        }
+
+        return {
+          childId: child.childId,
+          type: 'missing-reservation'
+        }
+      }),
+      ({ type, text }) => `${type},${text ?? ''}`
     )
-  ).map<GroupedDailyChildren>(([key, children]) => ({
-    type: children[0].type,
-    text: children[0].text,
-    childIds: children.map(({ childId }) => childId),
-    key
-  }))
+  ).map(
+    ([key, children]): GroupedDailyChildren => ({
+      type: children[0].type,
+      text: children[0].text,
+      childIds: children.map(({ childId }) => childId),
+      key
+    })
+  )
