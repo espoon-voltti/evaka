@@ -13,7 +13,7 @@ import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { toSamlVerifyFunction } from './saml'
 import { z } from 'zod'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from './index'
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')

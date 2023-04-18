@@ -4,8 +4,8 @@
 
 import { z } from 'zod'
 import { Profile, VerifiedCallback, VerifyWithoutRequest } from 'passport-saml'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { logWarn } from '../logging'
+import { EvakaSessionUser } from './index'
 
 export function toSamlVerifyFunction(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

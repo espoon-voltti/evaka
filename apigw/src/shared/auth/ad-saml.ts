@@ -8,7 +8,6 @@ import passportSaml, {
   Strategy as SamlStrategy
 } from 'passport-saml'
 import DevAdStrategy from './dev-ad-strategy'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { getEmployeeByExternalId, upsertEmployee } from '../dev-api'
@@ -17,6 +16,7 @@ import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { Config } from '../config'
 import { toSamlVerifyFunction } from './saml'
+import { EvakaSessionUser } from './index'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'

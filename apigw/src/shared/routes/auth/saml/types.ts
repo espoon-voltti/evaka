@@ -5,7 +5,6 @@
 import type { SamlConfig } from 'passport-saml'
 import passportSaml from 'passport-saml'
 import type { SessionType } from '../../../session'
-import type { UserType } from '../../../service-client'
 import passport from 'passport'
 
 export interface SamlEndpointConfig {
@@ -42,15 +41,4 @@ export interface StatusObject {
     }
     StatusMessage: string
   }
-}
-
-export interface EvakaSessionUser {
-  // eVaka id
-  id?: string | undefined
-  userType?: UserType | undefined
-  // all are optional because of legacy sessions
-  roles?: string[] | undefined
-  globalRoles?: string[] | undefined
-  allScopedRoles?: string[] | undefined
-  mobileEmployeeId?: string | undefined
 }

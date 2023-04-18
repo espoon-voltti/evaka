@@ -7,8 +7,8 @@ import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { Profile, SAML } from 'passport-saml'
+import { UserType } from '../service-client'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -30,6 +30,17 @@ export function requireAuthentication(
     return
   }
   return next()
+}
+
+export interface EvakaSessionUser {
+  // eVaka id
+  id?: string | undefined
+  userType?: UserType | undefined
+  // all are optional because of legacy sessions
+  roles?: string[] | undefined
+  globalRoles?: string[] | undefined
+  allScopedRoles?: string[] | undefined
+  mobileEmployeeId?: string | undefined
 }
 
 function createJwtToken(user: EvakaSessionUser): string {

@@ -13,7 +13,7 @@ import redisCacheProvider from './passport-saml-cache-redis'
 import { getCitizenBySsn } from '../dev-api'
 import DevSfiStrategy from './dev-sfi-strategy'
 import { toSamlVerifyFunction } from './saml'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from './index'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en

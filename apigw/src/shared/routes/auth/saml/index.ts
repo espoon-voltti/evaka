@@ -7,7 +7,11 @@ import _ from 'lodash'
 import passport from 'passport'
 import path from 'path'
 import passportSaml, { AuthenticateOptions, SAML } from 'passport-saml'
-import { createLogoutToken, tryParseProfile } from '../../../auth'
+import {
+  createLogoutToken,
+  EvakaSessionUser,
+  tryParseProfile
+} from '../../../auth'
 import { Config, evakaBaseUrl, gatewayRole, nodeEnv } from '../../../config'
 import { getCitizens, getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
@@ -15,7 +19,7 @@ import { logAuditEvent, logDebug, logError } from '../../../logging'
 import { fromCallback } from '../../../promise-utils'
 import { logoutExpress, saveLogoutToken, saveSession } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
-import { EvakaSessionUser, SamlEndpointConfig } from './types'
+import { SamlEndpointConfig } from './types'
 import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
 
 const urlencodedParser = urlencoded({ extended: false })

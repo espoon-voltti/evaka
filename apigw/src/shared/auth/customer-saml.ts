@@ -10,10 +10,10 @@ import passportSaml, {
 } from 'passport-saml'
 import { RedisClient } from 'redis'
 import { evakaCustomerSamlConfig } from '../config'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { toSamlVerifyFunction } from './saml'
+import { EvakaSessionUser } from './index'
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (!evakaCustomerSamlConfig)

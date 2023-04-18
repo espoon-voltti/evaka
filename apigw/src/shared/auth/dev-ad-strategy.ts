@@ -4,8 +4,8 @@
 
 import { Strategy } from 'passport'
 import { Request } from 'express'
-import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { assertStringProp } from '../express'
+import { EvakaSessionUser } from './index'
 
 type ProfileGetter = (userId: string) => Promise<EvakaSessionUser>
 

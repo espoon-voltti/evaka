@@ -5,8 +5,11 @@
 import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config'
-import { createAuthHeader, createIntegrationAuthHeader } from './auth'
-import { EvakaSessionUser } from './routes/auth/saml/types'
+import {
+  createAuthHeader,
+  createIntegrationAuthHeader,
+  EvakaSessionUser
+} from './auth'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
