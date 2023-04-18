@@ -10,8 +10,6 @@ export interface Config {
     mock: boolean
     externalIdPrefix: string
     userIdKey: string
-    nameIdFormat: string
-    decryptAssertions: boolean
     saml: EvakaSamlConfig | undefined
   }
   sfi: {
@@ -44,6 +42,8 @@ export interface EvakaSamlConfig {
   publicCert: string | TrustedCertificates[]
   privateCert: string
   validateInResponseTo: boolean
+  decryptAssertions: boolean
+  nameIdFormat?: string | undefined
 }
 
 export const gatewayRoles = ['enduser', 'internal'] as const
@@ -126,14 +126,10 @@ export function configFromEnv(): Config {
   const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
   const defaultUserIdKey =
     'http://schemas.microsoft.com/identity/claims/objectidentifier'
-  const defaultNameIdFormat =
-    'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
   const ad: Config['ad'] = {
     mock: adMock,
     externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
     userIdKey: process.env.AD_USER_ID_KEY ?? defaultUserIdKey,
-    nameIdFormat: process.env.AD_NAME_ID_FORMAT ?? defaultNameIdFormat,
-    decryptAssertions: env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
     saml:
       adCallbackUrl && !adMock
         ? {
@@ -145,7 +141,10 @@ export function configFromEnv(): Config {
               envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
             ),
             privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
-            validateInResponseTo: true
+            validateInResponseTo: true,
+            decryptAssertions:
+              env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
+            nameIdFormat: process.env.AD_NAME_ID_FORMAT
           }
         : undefined
   }
@@ -166,7 +165,8 @@ export function configFromEnv(): Config {
               envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
             ),
             privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
-            validateInResponseTo: true
+            validateInResponseTo: true,
+            decryptAssertions: true
           }
         : undefined
   }
@@ -291,7 +291,8 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
         process.env.EVAKA_SAML_PRIVATE_CERT ??
           ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
       ),
-      validateInResponseTo: true
+      validateInResponseTo: true,
+      decryptAssertions: true
     }
   : undefined
 
@@ -325,7 +326,8 @@ export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
           process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
             ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
         ),
-        validateInResponseTo: true
+        validateInResponseTo: true,
+        decryptAssertions: true
       }
     : undefined
 

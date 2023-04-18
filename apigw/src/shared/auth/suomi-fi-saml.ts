@@ -3,13 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
-import fs from 'fs'
 import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
-import { RedisClient } from 'redis'
-import certificates from '../certificates'
 import { Config } from '../config'
 import { citizenLogin } from '../service-client'
-import redisCacheProvider from './passport-saml-cache-redis'
 import { getCitizenBySsn } from '../dev-api'
 import DevSfiStrategy from './dev-sfi-strategy'
 import { toSamlVerifyFunction } from './saml'
@@ -40,43 +36,6 @@ async function verifyProfile(
     userType: 'ENDUSER',
     globalRoles: ['END_USER'],
     allScopedRoles: []
-  }
-}
-
-export function createSamlConfig(
-  config: Config['sfi'],
-  redisClient?: RedisClient
-): SamlConfig {
-  if (config.mock) return { cert: 'mock-certificate' }
-  if (!config.saml) throw new Error('Missing Suomi.fi SAML configuration')
-  const publicCert = Array.isArray(config.saml.publicCert)
-    ? config.saml.publicCert.map(
-        (certificateName) => certificates[certificateName]
-      )
-    : fs.readFileSync(config.saml.publicCert, {
-        encoding: 'utf8'
-      })
-  const privateCert = fs.readFileSync(config.saml.privateCert, {
-    encoding: 'utf8'
-  })
-
-  return {
-    acceptedClockSkewMs: 0,
-    audience: config.saml.issuer,
-    cacheProvider: redisClient
-      ? redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
-      : undefined,
-    callbackUrl: config.saml.callbackUrl,
-    cert: publicCert,
-    decryptionPvk: privateCert,
-    disableRequestedAuthnContext: true,
-    entryPoint: config.saml.entryPoint,
-    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-    issuer: config.saml.issuer,
-    logoutUrl: config.saml.logoutUrl,
-    privateKey: privateCert,
-    signatureAlgorithm: 'sha256',
-    validateInResponseTo: config.saml.validateInResponseTo
   }
 }
 

@@ -7,18 +7,15 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createAdSamlStrategy, {
-  createSamlConfig as createAdSamlConfig
-} from '../shared/auth/ad-saml'
-import createEvakaSamlStrategy, {
-  createSamlConfig as createEvakaSamlconfig
-} from '../shared/auth/keycloak-saml'
+import createAdSamlStrategy from '../shared/auth/ad-saml'
+import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
 import {
   appCommit,
   Config,
   cookieSecret,
   enableDevApi,
   espooBiPocPassword,
+  evakaSamlConfig,
   titaniaConfig
 } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
@@ -45,6 +42,9 @@ import AsyncRedisClient from '../shared/async-redis-client'
 import expressBasicAuth from 'express-basic-auth'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
+import { createSamlConfig } from '../shared/auth/saml'
+import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
+import { SamlConfig } from 'passport-saml'
 
 export default function internalGwApp(
   config: Config,
@@ -106,7 +106,16 @@ export default function internalGwApp(
       next()
     })
 
-    const adSamlConfig = createAdSamlConfig(config.ad, redisClient)
+    let adSamlConfig: SamlConfig
+    if (config.ad.mock) {
+      adSamlConfig = { cert: 'mock-certificate' }
+    } else {
+      if (!config.ad.saml) throw Error('Missing AD SAML configuration')
+      adSamlConfig = createSamlConfig(
+        config.ad.saml,
+        redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+      )
+    }
     router.use(
       createSamlRouter(config, {
         strategyName: 'ead',
@@ -117,12 +126,16 @@ export default function internalGwApp(
       })
     )
 
-    const evakaSamlConfig = createEvakaSamlconfig(redisClient)
+    if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
+    const keycloakEmployeeConfig = createSamlConfig(
+      evakaSamlConfig,
+      redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+    )
     router.use(
       createSamlRouter(config, {
         strategyName: 'evaka',
-        strategy: createEvakaSamlStrategy(evakaSamlConfig),
-        samlConfig: evakaSamlConfig,
+        strategy: createEvakaSamlStrategy(keycloakEmployeeConfig),
+        samlConfig: keycloakEmployeeConfig,
         sessionType: 'employee',
         pathIdentifier: 'evaka'
       })

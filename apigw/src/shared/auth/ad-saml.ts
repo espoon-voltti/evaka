@@ -8,12 +8,8 @@ import passportSaml, {
   Strategy as SamlStrategy
 } from 'passport-saml'
 import DevAdStrategy from './dev-ad-strategy'
-import certificates from '../certificates'
-import { readFileSync } from 'fs'
 import { getEmployeeByExternalId, upsertEmployee } from '../dev-api'
 import { employeeLogin, UserRole } from '../service-client'
-import { RedisClient } from 'redis'
-import redisCacheProvider from './passport-saml-cache-redis'
 import { Config } from '../config'
 import { toSamlVerifyFunction } from './saml'
 import { EvakaSessionUser } from './index'
@@ -49,46 +45,6 @@ async function verifyProfile(
     globalRoles: person.globalRoles,
     allScopedRoles: person.allScopedRoles
   }
-}
-
-export function createSamlConfig(
-  config: Config['ad'],
-  redisClient?: RedisClient
-): SamlConfig {
-  if (config.mock) return { cert: 'mock-certificate' }
-  if (!config.saml) throw Error('Missing AD SAML configuration')
-
-  const privateCert = readFileSync(config.saml.privateCert, {
-    encoding: 'utf8'
-  })
-
-  const samlConfig: SamlConfig = {
-    acceptedClockSkewMs: 0,
-    audience: config.saml.issuer,
-    cacheProvider: redisClient
-      ? redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-      : undefined,
-    callbackUrl: config.saml.callbackUrl,
-    cert: Array.isArray(config.saml.publicCert)
-      ? config.saml.publicCert.map(
-          (certificateName) => certificates[certificateName]
-        )
-      : config.saml.publicCert,
-    disableRequestedAuthnContext: true,
-    entryPoint: config.saml.entryPoint,
-    identifierFormat: config.nameIdFormat,
-    issuer: config.saml.issuer,
-    logoutUrl: config.saml.logoutUrl,
-    privateKey: privateCert,
-    signatureAlgorithm: 'sha256',
-    validateInResponseTo: config.saml.validateInResponseTo
-  }
-
-  if (config.decryptAssertions) {
-    samlConfig.decryptionPvk = privateCert
-  }
-
-  return samlConfig
 }
 
 export default function createAdStrategy(

@@ -3,9 +3,55 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
-import { Profile, VerifiedCallback, VerifyWithoutRequest } from 'passport-saml'
+import {
+  CacheProvider,
+  Profile,
+  SamlConfig,
+  VerifiedCallback,
+  VerifyWithoutRequest
+} from 'passport-saml'
 import { logWarn } from '../logging'
 import { EvakaSessionUser } from './index'
+import { EvakaSamlConfig } from '../config'
+import { readFileSync } from 'fs'
+import certificates, { TrustedCertificates } from '../certificates'
+
+export function createSamlConfig(
+  config: EvakaSamlConfig,
+  cacheProvider?: CacheProvider
+): SamlConfig {
+  const privateCert = readFileSync(config.privateCert, {
+    encoding: 'utf8'
+  })
+  const lookupPublicCert = (cert: string) =>
+    cert in certificates
+      ? certificates[cert as TrustedCertificates]
+      : readFileSync(cert, {
+          encoding: 'utf8'
+        })
+  const publicCert = Array.isArray(config.publicCert)
+    ? config.publicCert.map(lookupPublicCert)
+    : lookupPublicCert(config.publicCert)
+
+  return {
+    acceptedClockSkewMs: 0,
+    audience: config.issuer,
+    cacheProvider,
+    callbackUrl: config.callbackUrl,
+    cert: publicCert,
+    disableRequestedAuthnContext: true,
+    decryptionPvk: config.decryptAssertions ? privateCert : undefined,
+    entryPoint: config.entryPoint,
+    identifierFormat:
+      config.nameIdFormat ??
+      'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    issuer: config.issuer,
+    logoutUrl: config.logoutUrl,
+    privateKey: privateCert,
+    signatureAlgorithm: 'sha256',
+    validateInResponseTo: config.validateInResponseTo
+  }
+}
 
 export function toSamlVerifyFunction(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

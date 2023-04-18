@@ -76,7 +76,8 @@ describe('SAML Single Logout', () => {
           issuer: SP_ISSUER,
           publicCert: 'config/test-cert/slo-test-idp-cert.pem',
           privateCert: 'config/test-cert/saml-private.pem',
-          validateInResponseTo: false
+          validateInResponseTo: false,
+          decryptAssertions: false
         }
       }
     }

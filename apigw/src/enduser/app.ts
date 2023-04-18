@@ -7,12 +7,8 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createEvakaCustomerSamlStrategy, {
-  createSamlConfig as createEvakaCustomerSamlConfig
-} from '../shared/auth/customer-saml'
-import createSuomiFiStrategy, {
-  createSamlConfig as createSuomiFiSamlConfig
-} from '../shared/auth/suomi-fi-saml'
+import createEvakaCustomerSamlStrategy from '../shared/auth/customer-saml'
+import createSuomiFiStrategy from '../shared/auth/suomi-fi-saml'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -29,7 +25,10 @@ import mapRoutes from './mapRoutes'
 import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
-import { Config } from '../shared/config'
+import { Config, evakaCustomerSamlConfig } from '../shared/config'
+import { SamlConfig } from 'passport-saml'
+import { createSamlConfig } from '../shared/auth/saml'
+import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
 
 export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
@@ -71,7 +70,18 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
 
     router.use(publicRoutes)
     router.use(mapRoutes)
-    const suomifiSamlConfig = createSuomiFiSamlConfig(config.sfi, redisClient)
+
+    let suomifiSamlConfig: SamlConfig
+    if (config.sfi.mock) {
+      suomifiSamlConfig = { cert: 'mock-certificate' }
+    } else {
+      if (!config.sfi.saml)
+        throw new Error('Missing Suomi.fi SAML configuration')
+      suomifiSamlConfig = createSamlConfig(
+        config.sfi.saml,
+        redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+      )
+    }
     router.use(
       createSamlRouter(config, {
         strategyName: 'suomifi',
@@ -81,12 +91,18 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
         pathIdentifier: 'saml'
       })
     )
-    const evakaCustomerSamlConfig = createEvakaCustomerSamlConfig(redisClient)
+
+    if (!evakaCustomerSamlConfig)
+      throw new Error('Missing Keycloak SAML configuration')
+    const keycloakCitizenConfig = createSamlConfig(
+      evakaCustomerSamlConfig,
+      redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
+    )
     router.use(
       createSamlRouter(config, {
         strategyName: 'evaka-customer',
-        strategy: createEvakaCustomerSamlStrategy(evakaCustomerSamlConfig),
-        samlConfig: evakaCustomerSamlConfig,
+        strategy: createEvakaCustomerSamlStrategy(keycloakCitizenConfig),
+        samlConfig: keycloakCitizenConfig,
         sessionType: 'enduser',
         pathIdentifier: 'evaka-customer'
       })
