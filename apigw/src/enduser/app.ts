@@ -25,7 +25,7 @@ import mapRoutes from './mapRoutes'
 import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
-import { Config, evakaCustomerSamlConfig } from '../shared/config'
+import { Config } from '../shared/config'
 import { SamlConfig } from 'passport-saml'
 import { createSamlConfig } from '../shared/auth/saml'
 import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
@@ -92,10 +92,10 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
       })
     )
 
-    if (!evakaCustomerSamlConfig)
-      throw new Error('Missing Keycloak SAML configuration')
+    if (!config.keycloakCitizen)
+      throw new Error('Missing Keycloak SAML configuration (citizen)')
     const keycloakCitizenConfig = createSamlConfig(
-      evakaCustomerSamlConfig,
+      config.keycloakCitizen,
       redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
     )
     router.use(

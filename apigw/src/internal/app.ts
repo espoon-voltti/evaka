@@ -15,7 +15,6 @@ import {
   cookieSecret,
   enableDevApi,
   espooBiPocPassword,
-  evakaSamlConfig,
   titaniaConfig
 } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
@@ -126,9 +125,10 @@ export default function internalGwApp(
       })
     )
 
-    if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
+    if (!config.keycloakEmployee)
+      throw new Error('Missing Keycloak SAML configuration (employee)')
     const keycloakEmployeeConfig = createSamlConfig(
-      evakaSamlConfig,
+      config.keycloakEmployee,
       redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
     )
     router.use(
