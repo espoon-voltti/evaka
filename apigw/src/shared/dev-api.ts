@@ -2,35 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { client, UserRole, UUID } from './service-client'
-
-interface DevEmployee {
-  firstName: string
-  lastName: string
-  email: string
-  externalId: string
-  roles: UserRole[]
-}
-
-export async function upsertEmployee(employee: DevEmployee): Promise<UUID> {
-  const { data } = await client.post(
-    `/dev-api/employee/external-id/${employee.externalId}`,
-    employee
-  )
-  return data
-}
-
-export async function getEmployeeByExternalId(externalId: string) {
-  const { data } = await client.get<Employee>(
-    `/dev-api/employee/external-id/${externalId}`
-  )
-  return data
-}
-
-export async function getCitizenBySsn(ssn: string): Promise<DevCitizen> {
-  const { data } = await client.get<DevCitizen>(`/dev-api/citizen/ssn/${ssn}`)
-  return data
-}
+import { client, UUID } from './service-client'
 
 export async function getCitizens(): Promise<DevCitizen[]> {
   const { data } = await client.get(`/dev-api/citizen`)

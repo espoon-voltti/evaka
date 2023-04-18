@@ -224,11 +224,6 @@ export async function getUserDetails(req: express.Request, personId: string) {
   return data
 }
 
-export interface EmployeePinLoginRequest {
-  employeeId: UUID
-  pin: string
-}
-
 export interface EmployeePinLoginResponse {
   status: string
   employee?: Pick<EmployeeUser, 'firstName' | 'lastName'>
