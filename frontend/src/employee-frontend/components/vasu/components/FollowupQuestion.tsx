@@ -164,9 +164,14 @@ export default React.memo(function FollowupQuestion({
             {value
               .filter((entry) => entry.text.trim() !== '')
               .map((entry, ix) => (
-                <li key={ix} data-qa="follow-up-entry">
-                  {entry.date.format()}: {entry.text}
-                </li>
+                <ReadOnlyEntry key={ix} data-qa="follow-up-entry">
+                  <div>
+                    <Label data-qa="follow-up-entry-date">
+                      {entry.date.format()}:
+                    </Label>
+                    <div data-qa="follow-up-entry-text">{entry.text}</div>
+                  </div>
+                </ReadOnlyEntry>
               ))}
           </ul>
         )}
@@ -187,4 +192,17 @@ const FollowupQuestionContainer = styled.div<{ editable: boolean }>`
       position: relative;
       left: -${defaultMargins.L};
     `}
+`
+
+const ReadOnlyEntry = styled.li`
+  > div {
+    display: flex;
+    flex-direction: row;
+
+    > div {
+      margin-left: ${defaultMargins.xs};
+      white-space: pre-line;
+    }
+  }
+  margin-bottom: ${defaultMargins.xs};
 `

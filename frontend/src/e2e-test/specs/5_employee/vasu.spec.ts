@@ -557,14 +557,14 @@ describe('Vasu document page', () => {
 
         await refreshedVasuEditPage.waitUntilSaved()
         const vasuPage = await openDocument()
-        await waitUntilEqual(
-          () => vasuPage.followupEntry(0, 0),
-          '01.04.2020: This is a followup'
-        )
-        await waitUntilEqual(
-          () => vasuPage.followupEntry(0, 1),
-          '09.10.2021: A second one'
-        )
+        await waitUntilEqual(() => vasuPage.followupEntry(0, 0), {
+          date: '01.04.2020:',
+          text: 'This is a followup'
+        })
+        await waitUntilEqual(() => vasuPage.followupEntry(0, 1), {
+          date: '09.10.2021:',
+          text: 'A second one'
+        })
       })
 
       test('Followup comments are editable', async () => {
@@ -596,14 +596,14 @@ describe('Vasu document page', () => {
 
         await refreshedVasuEditPage.waitUntilSaved()
         const vasuPage = await openDocument()
-        await waitUntilEqual(
-          () => vasuPage.followupEntry(0, 0),
-          '01.04.2020: This will be edited'
-        )
-        await waitUntilEqual(
-          () => vasuPage.followupEntry(0, 1),
-          '01.08.2021: Edited with date too'
-        )
+        await waitUntilEqual(() => vasuPage.followupEntry(0, 0), {
+          date: '01.04.2020:',
+          text: 'This will be edited'
+        })
+        await waitUntilEqual(() => vasuPage.followupEntry(0, 1), {
+          date: '01.08.2021:',
+          text: 'Edited with date too'
+        })
       })
     })
   })

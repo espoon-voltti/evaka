@@ -214,12 +214,17 @@ export class VasuPage extends VasuPageCommon {
     await this.#editButton.click()
   }
 
-  followupEntry(sectionNth: number, entryNth: number) {
-    return this.page
+  async followupEntry(sectionNth: number, entryNth: number) {
+    const entry = this.page
       .findAllByDataQa('vasu-followup-question')
       .nth(sectionNth)
       .findAllByDataQa('follow-up-entry')
-      .nth(entryNth).text
+      .nth(entryNth)
+
+    return {
+      date: await entry.findByDataQa('follow-up-entry-date').text,
+      text: await entry.findByDataQa('follow-up-entry-text').text
+    }
   }
 }
 
