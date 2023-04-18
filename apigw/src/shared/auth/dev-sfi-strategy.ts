@@ -16,11 +16,11 @@ export default class DevSfiStrategy extends Strategy {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   authenticate(req: Request, _options?: any): any {
-    const shouldRedirect = !req.url.startsWith('/auth/saml/login/callback')
+    const shouldRedirect = !req.url.startsWith('/login/callback')
 
     if (shouldRedirect) {
       return this.redirect(
-        `${req.baseUrl}/dev-sfi-auth/login?RelayState=${req.query.RelayState}`
+        `${req.baseUrl}/login?RelayState=${req.query.RelayState}`
       )
     }
 

@@ -4,7 +4,6 @@
 
 import { z } from 'zod'
 import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
-import { Config } from '../config'
 import { citizenLogin } from '../service-client'
 import { getCitizenBySsn } from '../dev-api'
 import DevSfiStrategy from './dev-sfi-strategy'
@@ -45,26 +44,20 @@ const Profile = z.object({
   [SUOMI_FI_SURNAME_KEY]: z.string()
 })
 
-export default function createSuomiFiStrategy(
-  config: Config['sfi'],
-  samlConfig: SamlConfig
-): Strategy | DevSfiStrategy {
-  if (config.mock) {
-    const getter = async (ssn: string) => {
-      const citizen = await getCitizenBySsn(ssn)
-      return verifyProfile({
-        nameID: 'dummyid',
-        [SUOMI_FI_SSN_KEY]: citizen.ssn,
-        [SUOMI_FI_GIVEN_NAME_KEY]: citizen.firstName,
-        [SUOMI_FI_SURNAME_KEY]: citizen.lastName
-      })
-    }
+export function createDevSuomiFiStrategy(): DevSfiStrategy {
+  return new DevSfiStrategy(async (ssn: string) => {
+    const citizen = await getCitizenBySsn(ssn)
+    return verifyProfile({
+      nameID: 'dummyid',
+      [SUOMI_FI_SSN_KEY]: citizen.ssn,
+      [SUOMI_FI_GIVEN_NAME_KEY]: citizen.firstName,
+      [SUOMI_FI_SURNAME_KEY]: citizen.lastName
+    })
+  })
+}
 
-    return new DevSfiStrategy(getter)
-  } else {
-    return new Strategy(
-      samlConfig,
-      toSamlVerifyFunction(Profile, verifyProfile)
-    )
-  }
+export default function createSuomiFiStrategy(
+  samlConfig: SamlConfig
+): Strategy {
+  return new Strategy(samlConfig, toSamlVerifyFunction(Profile, verifyProfile))
 }

@@ -28,6 +28,7 @@ import { RedisClient } from 'redis'
 import { Config } from '../shared/config'
 import { createSamlConfig } from '../shared/auth/saml'
 import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
+import { createDevSfiRouter } from './dev-sfi-login'
 
 export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
@@ -70,21 +71,23 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
     router.use(publicRoutes)
     router.use(mapRoutes)
 
-    const suomifiSamlConfig = config.sfi.mock
-      ? { cert: 'mock-certificate' }
-      : createSamlConfig(
-          config.sfi.saml,
-          redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
-        )
-    router.use(
-      createSamlRouter(config, {
-        strategyName: 'suomifi',
-        strategy: createSuomiFiStrategy(config.sfi, suomifiSamlConfig),
-        samlConfig: suomifiSamlConfig,
-        sessionType: 'enduser',
-        pathIdentifier: 'saml'
-      })
-    )
+    if (config.sfi.mock) {
+      router.use('/auth/saml', createDevSfiRouter())
+    } else {
+      const suomifiSamlConfig = createSamlConfig(
+        config.sfi.saml,
+        redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+      )
+      router.use(
+        createSamlRouter(config, {
+          strategyName: 'suomifi',
+          strategy: createSuomiFiStrategy(suomifiSamlConfig),
+          samlConfig: suomifiSamlConfig,
+          sessionType: 'enduser',
+          pathIdentifier: 'saml'
+        })
+      )
+    }
 
     if (!config.keycloakCitizen)
       throw new Error('Missing Keycloak SAML configuration (citizen)')

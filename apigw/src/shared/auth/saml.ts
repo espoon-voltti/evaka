@@ -10,11 +10,13 @@ import {
   VerifiedCallback,
   VerifyWithoutRequest
 } from 'passport-saml'
-import { logWarn } from '../logging'
+import { logError, logWarn } from '../logging'
 import { EvakaSessionUser } from './index'
-import { EvakaSamlConfig } from '../config'
+import { evakaBaseUrl, EvakaSamlConfig } from '../config'
 import { readFileSync } from 'fs'
 import certificates, { TrustedCertificates } from '../certificates'
+import express from 'express'
+import path from 'path'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -92,4 +94,24 @@ export function toSamlVerifyFunction(
         .catch(done)
     }
   }
+}
+
+export function parseRelayState(req: express.Request): string | undefined {
+  const relayState = req.body?.RelayState || req.query.RelayState
+
+  if (typeof relayState === 'string' && path.isAbsolute(relayState)) {
+    if (evakaBaseUrl === 'local') {
+      return relayState
+    } else {
+      const baseUrl = evakaBaseUrl.replace(/\/$/, '')
+      const redirect = new URL(relayState, baseUrl)
+      if (redirect.origin == baseUrl) {
+        return redirect.href
+      }
+    }
+  }
+
+  if (relayState) logError('Invalid RelayState in request', req)
+
+  return undefined
 }
