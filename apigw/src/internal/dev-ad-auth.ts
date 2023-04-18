@@ -2,17 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { v4 as uuidv4 } from 'uuid'
 import _, { escape } from 'lodash'
 import { z } from 'zod'
 import { Router } from 'express'
 import { assertStringProp } from '../shared/express'
-import { getEmployees, upsertEmployee } from '../shared/dev-api'
+import { getEmployees } from '../shared/dev-api'
 import { createDevAuthRouter } from '../shared/auth/dev-auth'
-import {
-  employeeLogin,
-  EmployeeLoginRequest,
-  UserRole
-} from '../shared/service-client'
+import { employeeLogin } from '../shared/service-client'
 
 const Employee = z.object({
   externalId: z.string(),
@@ -29,8 +26,8 @@ export function createDevAdRouter(): Router {
     loginFormHandler: async (req, res) => {
       const employees = _.sortBy(await getEmployees(), ({ id }) => id)
       const employeeInputs = employees
-        .map((employee) => {
-          if (!employee.externalId || !employee.email) return ''
+        .filter((employee) => employee.externalId && employee.email)
+        .map((employee, idx) => {
           const { externalId, firstName, lastName } = employee
           const json = JSON.stringify(employee)
           return `<div>
@@ -38,17 +35,21 @@ export function createDevAdRouter(): Router {
               type="radio"
               id="${externalId}"
               name="preset"
+              ${idx == 0 ? 'checked' : ''}
               value="${escape(json)}" />
             <label for="${externalId}">${firstName} ${lastName}</label>
           </div>`
         })
-        .filter((line) => !!line)
 
       const formQuery =
         typeof req.query.RelayState === 'string'
           ? `?RelayState=${encodeURIComponent(req.query.RelayState)}`
           : ''
       const formUri = `${req.baseUrl}/login/callback${formQuery}`
+
+      const now = new Date()
+      const time = `${now.getHours()}${now.getMinutes()}${now.getSeconds()}`
+      const uuid = uuidv4()
 
       res.contentType('text/html').send(`
           <html>
@@ -57,15 +58,13 @@ export function createDevAdRouter(): Router {
             <form action="${formUri}" method="post">
                 ${employeeInputs.join('\n')}
                 <div style="margin-top: 20px">
-                  <input type="radio" id="custom" name="preset" value="custom" checked/><label for="custom">Custom (täytä tiedot alle)</label>
+                  <input type="radio" id="new" name="preset" value="new" /><label for="new">Luo uusi käyttäjä</label>
                 </div>
-                <h2>Custom</h2>
-                <label for="aad">AAD: </label>
-                <input id="aad-input" name="aad" value="cf5bcd6e-3d0e-4d8e-84a0-5ae2e4e65034" required
-                    pattern="[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/>
+                <h2>Uusi käyttäjä</h2>
+                <input id="aad-input" name="externalId" value="espoo-ad:${uuid}" type="hidden" />
                 <div>
                   <label for="firstName">Etunimi: </label>
-                  <input name="firstName" value="Seppo"/>
+                  <input name="firstName" value="Seppo ${time}"/>
                 </div>
                 <div>
                   <label for="lastName">Sukunimi: </label>
@@ -73,14 +72,7 @@ export function createDevAdRouter(): Router {
                 </div>
                 <div>
                   <label for="email">Email: </label>
-                  <input name="email" value="seppo.sorsa@espoo.fi"/>
-                </div>
-                <div>
-                  <label for="roles">Roolit:</label><br>
-                  <input id="evaka-espoo-officeholder" type="checkbox" name="roles" value="SERVICE_WORKER" checked /><label for="evaka-espoo-officeholder">Palveluohjaaja</label><br>
-                  <input id="evaka-espoo-financeadmin" type="checkbox" name="roles" value="FINANCE_ADMIN" checked /><label for="evaka-espoo-financeadmin">Laskutus</label><br>
-                  <input id="evaka-espoo-director" type="checkbox" name="roles" value="DIRECTOR" /><label for="evaka-espoo-director">Raportointi (director)</label><br>
-                  <input id="evaka-espoo-admin" type="checkbox" name="roles" value="ADMIN" /><label for="evaka-espoo-admin">Pääkäyttäjä</label><br>
+                  <input name="email" value="seppo${time}@example.com"/>
                 </div>
                 <div style="margin-top: 20px">
                   <button type="submit">Kirjaudu</button>
@@ -92,32 +84,9 @@ export function createDevAdRouter(): Router {
     },
     verifyUser: async (req) => {
       const preset = assertStringProp(req.body, 'preset')
-
-      let loginRequest: EmployeeLoginRequest
-      if (preset === 'custom') {
-        const roles = Array.isArray(req.body.roles)
-          ? req.body.roles
-          : req.body.roles !== undefined
-          ? [assertStringProp(req.body, 'roles')]
-          : []
-        const aad = assertStringProp(req.body, 'aad')
-        const externalId = `espoo-ad:${aad}}`
-        const firstName = assertStringProp(req.body, 'firstName')
-        const lastName = assertStringProp(req.body, 'lastName')
-        const email = assertStringProp(req.body, 'email')
-
-        await upsertEmployee({
-          externalId,
-          firstName,
-          lastName,
-          email,
-          roles: roles as UserRole[]
-        })
-        loginRequest = { externalId, firstName, lastName, email }
-      } else {
-        loginRequest = Employee.parse(JSON.parse(preset))
-      }
-      const person = await employeeLogin(loginRequest)
+      const person = await employeeLogin(
+        Employee.parse(preset === 'new' ? req.body : JSON.parse(preset))
+      )
       return {
         id: person.id,
         userType: 'EMPLOYEE',
