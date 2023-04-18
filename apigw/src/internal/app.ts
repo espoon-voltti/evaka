@@ -43,7 +43,6 @@ import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
 import { createSamlConfig } from '../shared/auth/saml'
 import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
-import { SamlConfig } from 'passport-saml'
 
 export default function internalGwApp(
   config: Config,
@@ -105,16 +104,12 @@ export default function internalGwApp(
       next()
     })
 
-    let adSamlConfig: SamlConfig
-    if (config.ad.mock) {
-      adSamlConfig = { cert: 'mock-certificate' }
-    } else {
-      if (!config.ad.saml) throw Error('Missing AD SAML configuration')
-      adSamlConfig = createSamlConfig(
-        config.ad.saml,
-        redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-      )
-    }
+    const adSamlConfig = config.ad.mock
+      ? { cert: 'mock-certificate' }
+      : createSamlConfig(
+          config.ad.saml,
+          redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+        )
     router.use(
       createSamlRouter(config, {
         strategyName: 'ead',

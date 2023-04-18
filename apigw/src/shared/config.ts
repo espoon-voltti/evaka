@@ -7,15 +7,16 @@ import type redis from 'redis'
 
 export interface Config {
   ad: {
-    mock: boolean
     externalIdPrefix: string
     userIdKey: string
-    saml: EvakaSamlConfig | undefined
-  }
-  sfi: {
-    mock: boolean
-    saml: EvakaSamlConfig | undefined
-  }
+  } & (
+    | { mock: true }
+    | {
+        mock: false
+        saml: EvakaSamlConfig
+      }
+  )
+  sfi: { mock: true } | { mock: false; saml: EvakaSamlConfig }
   keycloakEmployee: EvakaSamlConfig | undefined
   keycloakCitizen: EvakaSamlConfig | undefined
   redis: {
@@ -125,17 +126,17 @@ export function configFromEnv(): Config {
     env('DEV_LOGIN', parseBoolean) ??
     ifNodeEnv(['local', 'test'], true) ??
     false
-  const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
   const defaultUserIdKey =
     'http://schemas.microsoft.com/identity/claims/objectidentifier'
   const ad: Config['ad'] = {
-    mock: adMock,
     externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
     userIdKey: process.env.AD_USER_ID_KEY ?? defaultUserIdKey,
-    saml:
-      adCallbackUrl && !adMock
-        ? {
-            callbackUrl: required(adCallbackUrl),
+    ...(adMock
+      ? { mock: true }
+      : {
+          mock: false,
+          saml: {
+            callbackUrl: required(process.env.AD_SAML_CALLBACK_URL),
             entryPoint: required(process.env.AD_SAML_ENTRYPOINT_URL),
             logoutUrl: required(process.env.AD_SAML_LOGOUT_URL),
             issuer: required(process.env.AD_SAML_ISSUER),
@@ -148,30 +149,28 @@ export function configFromEnv(): Config {
               env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
             nameIdFormat: process.env.AD_NAME_ID_FORMAT
           }
-        : undefined
+        })
   }
 
   const sfiMock =
     env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
-  const sfiCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
-  const sfi: Config['sfi'] = {
-    mock: sfiMock,
-    saml:
-      sfiCallbackUrl && !sfiMock
-        ? {
-            callbackUrl: required(sfiCallbackUrl),
-            entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
-            logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
-            issuer: required(process.env.SFI_SAML_ISSUER),
-            publicCert: required(
-              envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
-            ),
-            privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
-            validateInResponseTo: true,
-            decryptAssertions: true
-          }
-        : undefined
-  }
+  const sfi: Config['sfi'] = sfiMock
+    ? { mock: true }
+    : {
+        mock: false,
+        saml: {
+          callbackUrl: required(process.env.SFI_SAML_CALLBACK_URL),
+          entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
+          logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
+          issuer: required(process.env.SFI_SAML_ISSUER),
+          publicCert: required(
+            envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+          ),
+          privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
+          validateInResponseTo: true,
+          decryptAssertions: true
+        }
+      }
 
   const keycloakEmployeeCallbackUrl =
     process.env.EVAKA_SAML_CALLBACK_URL ??

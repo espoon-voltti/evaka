@@ -26,7 +26,6 @@ import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
 import { Config } from '../shared/config'
-import { SamlConfig } from 'passport-saml'
 import { createSamlConfig } from '../shared/auth/saml'
 import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
 
@@ -71,17 +70,12 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
     router.use(publicRoutes)
     router.use(mapRoutes)
 
-    let suomifiSamlConfig: SamlConfig
-    if (config.sfi.mock) {
-      suomifiSamlConfig = { cert: 'mock-certificate' }
-    } else {
-      if (!config.sfi.saml)
-        throw new Error('Missing Suomi.fi SAML configuration')
-      suomifiSamlConfig = createSamlConfig(
-        config.sfi.saml,
-        redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
-      )
-    }
+    const suomifiSamlConfig = config.sfi.mock
+      ? { cert: 'mock-certificate' }
+      : createSamlConfig(
+          config.sfi.saml,
+          redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+        )
     router.use(
       createSamlRouter(config, {
         strategyName: 'suomifi',
