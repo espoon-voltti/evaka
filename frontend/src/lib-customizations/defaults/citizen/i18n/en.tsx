@@ -385,10 +385,10 @@ const en: Translations = {
       title: 'All changes could not be saved',
       text: (
         <>
-          The registration period for some of the days you selected has already
-          closed. Changes for these times could not be saved. Check the
-          attendances you have marked and notify the staff of missing changes
-          using the <Link to="/messages">messages function</Link>.
+          The range you selected contained days for which you could not make all
+          the reservations you wanted. Check the reservations you have marked
+          and notify the staff of missing changes using the{' '}
+          <Link to="/messages">messages function</Link>.
         </>
       ),
       ok: 'OK'
