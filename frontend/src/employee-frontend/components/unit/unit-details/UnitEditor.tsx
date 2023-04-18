@@ -5,9 +5,15 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import {
+  RangeValidationResult,
+  TimeRangeInput
+} from 'employee-frontend/components/child-information/daily-service-times/DailyServiceTimesForms'
+import { DayOfWeek } from 'employee-frontend/types'
 import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { time } from 'lib-common/form-validation'
 import {
   CareType,
   DaycareCareArea,
@@ -15,7 +21,8 @@ import {
   Language,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { Coordinate, TimeRange } from 'lib-common/generated/api-types/shared'
+import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -41,8 +48,7 @@ import { faPen } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { DayOfWeek } from '../../../types'
-import { Unit } from '../../../types/unit'
+import { Unit, formatTimeRange, parseTimeRange } from '../../../types/unit'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
@@ -81,6 +87,7 @@ interface FormData {
   ophUnitOid: string
   ophOrganizerOid: string
   operationDays: DayOfWeek[]
+  operationTimes: (JsonOf<TimeRange> | null)[]
   businessId: string
   iban: string
   providerId: string
@@ -149,11 +156,9 @@ const DaycareTypeSelectContainer = styled.div`
   }
 `
 
-const OperationDaysContainer = styled.div`
-  display: flex;
-  align-items: center;
+const FixedDayLabel = styled.div`
+  width: 30px;
 `
-
 const CapacityInputContainer = styled.div`
   display: flex;
   align-items: center;
@@ -196,6 +201,15 @@ const AlertBoxContainer = styled.div`
   flex-direction: column;
   align-items: flex-start;
 `
+const emptyTimeRange: JsonOf<TimeRange> = {
+  start: '',
+  end: ''
+}
+
+type UnitEditorErrors = {
+  rangeErrors: RangeValidationResult[]
+  formErrors: string[]
+}
 
 function AddressEditor({
   editable,
@@ -282,10 +296,46 @@ interface Props {
   submit: Result<void> | undefined
 }
 
+function validateTimeRange(
+  { start, end }: Partial<JsonOf<TimeRange>>,
+  required = false
+): RangeValidationResult {
+  if (required && !start && !end) {
+    return {
+      start: 'timeRequired',
+      end: 'timeRequired'
+    }
+  }
+
+  const errors: RangeValidationResult = {}
+
+  if (!start && end) {
+    errors.start = 'timeRequired'
+  }
+
+  if (start) {
+    errors.start = errors.start ?? time(start)
+  }
+
+  if (!end && start) {
+    errors.end = 'timeRequired'
+  }
+
+  if (end) {
+    errors.end = errors.end ?? time(end)
+  }
+
+  if (end && start && !errors.start && !errors.end) {
+    errors.end = errors.start = start > end ? 'timeRangeNotLinear' : undefined
+  }
+
+  return errors
+}
+
 function validateForm(
   i18n: Translations,
   form: FormData
-): [DaycareFields | undefined, string[]] {
+): [DaycareFields | undefined, UnitEditorErrors] {
   const errors: string[] = []
   const typeMap: Record<CareType, boolean> = {
     CLUB: form.careTypes.CLUB,
@@ -394,6 +444,18 @@ function validateForm(
     if (!form.providerId) errors.push(i18n.unitEditor.error.providerId)
   }
 
+  let operationTimes: (TimeRange | null)[] = []
+  const rangeErrors = form.operationTimes.map((tr) =>
+    tr ? validateTimeRange(tr) : {}
+  )
+  if (!rangeErrors.some((r) => r.start || r.end)) {
+    operationTimes = form.operationTimes.map((tr) =>
+      tr ? parseTimeRange(tr) : null
+    )
+  } else {
+    errors.push(i18n.unitEditor.error.operationTimes)
+  }
+
   const {
     openingDate,
     closingDate,
@@ -412,7 +474,6 @@ function validateForm(
     invoicedByMunicipality,
     ophUnitOid,
     ophOrganizerOid,
-    operationDays,
     businessId,
     iban,
     providerId
@@ -465,15 +526,15 @@ function validateForm(
         },
         ophUnitOid,
         ophOrganizerOid,
-        operationDays,
+        operationTimes,
         businessId,
         iban,
         providerId
       },
-      errors
+      { formErrors: errors, rangeErrors }
     ]
   } else {
-    return [undefined, errors]
+    return [undefined, { formErrors: errors, rangeErrors }]
   }
 }
 
@@ -543,6 +604,9 @@ function toFormData(unit: Unit | undefined): FormData {
       email: unit?.unitManager?.email ?? ''
     },
     operationDays: unit?.operationDays ?? [],
+    operationTimes: (unit?.operationTimes ?? []).map((range) =>
+      range ? formatTimeRange(range) : null
+    ),
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
     providerId: unit?.providerId ?? ''
@@ -556,7 +620,10 @@ export default function UnitEditor(props: Props): JSX.Element {
     [props.unit]
   )
   const [form, setForm] = useState<FormData>(initialData)
-  const [formErrors, setFormErrors] = useState<string[]>([])
+  const [validationErrors, setValidationErrors] = useState<UnitEditorErrors>({
+    rangeErrors: [],
+    formErrors: []
+  })
   const { careTypes, decisionCustomization, unitManager } = form
 
   const canApplyTypes = [
@@ -588,7 +655,7 @@ export default function UnitEditor(props: Props): JSX.Element {
     const newForm = { ...form, ...updates }
     setForm(newForm)
     const [, errors] = validateForm(i18n, newForm)
-    setFormErrors(errors)
+    setValidationErrors(errors)
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
     updateForm({ careTypes: { ...form.careTypes, ...updates } })
@@ -612,15 +679,15 @@ export default function UnitEditor(props: Props): JSX.Element {
   const onClickSubmit = (e: React.MouseEvent) => {
     e.preventDefault()
     const [fields, errors] = validateForm(i18n, form)
-    setFormErrors(errors)
-    if (fields && errors.length === 0) {
+    setValidationErrors(errors)
+    if (fields && checkFormValidation()) {
       props.onSubmit(fields, props.unit?.id)
     }
   }
 
   const onClickEditHandler = () => {
     const [, errors] = validateForm(i18n, form)
-    setFormErrors(errors)
+    setValidationErrors(errors)
     if (props.onClickEdit) props.onClickEdit()
   }
 
@@ -636,6 +703,10 @@ export default function UnitEditor(props: Props): JSX.Element {
       form.providerType === 'PRIVATE_SERVICE_VOUCHER' ||
       form.providerType === 'MUNICIPAL_SCHOOL'
     )
+  }
+
+  const checkFormValidation = (): boolean => {
+    return validationErrors.formErrors.length === 0
   }
 
   return (
@@ -974,36 +1045,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             </FormPart>
           </>
         )}
-      <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
-        <OperationDaysContainer>
-          {([1, 2, 3, 4, 5, 6, 7] as const).map((day) => (
-            <FixedSpaceColumn
-              key={`"weekday-${day}"`}
-              spacing="xs"
-              marginRight="m"
-              alignItems="center"
-            >
-              <div>{i18n.unitEditor.label.operationDay[day]}</div>
-              <Checkbox
-                disabled={!props.editable}
-                checked={form.operationDays.some(
-                  (selectedDay) => selectedDay == day
-                )}
-                hiddenLabel={true}
-                label=""
-                onChange={(checked) => {
-                  updateForm({
-                    operationDays: checked
-                      ? [...form.operationDays, day as DayOfWeek]
-                      : form.operationDays.filter((d) => d != day)
-                  })
-                }}
-              />
-            </FixedSpaceColumn>
-          ))}
-        </OperationDaysContainer>
-      </FormPart>
+
       <FormPart>
         <div>{i18n.unitEditor.label.roundTheClock}</div>
         <Checkbox
@@ -1012,6 +1054,63 @@ export default function UnitEditor(props: Props): JSX.Element {
           checked={form.roundTheClock}
           onChange={(roundTheClock) => updateForm({ roundTheClock })}
         />
+      </FormPart>
+      <FormPart>
+        <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
+        <FixedSpaceColumn spacing="xs">
+          {([1, 2, 3, 4, 5, 6, 7] as const).map((day) => {
+            const timesToday = form.operationTimes[day - 1]
+            return (
+              <FixedSpaceRow
+                key={`"weekday-${day}"`}
+                spacing="s"
+                alignItems="center"
+              >
+                <FixedDayLabel>
+                  {i18n.unitEditor.label.operationDay[day]}
+                </FixedDayLabel>
+                <Checkbox
+                  disabled={!props.editable}
+                  checked={form.operationDays.some(
+                    (selectedDay) => selectedDay == day
+                  )}
+                  hiddenLabel={true}
+                  label=""
+                  onChange={(checked) => {
+                    if (!checked) form.operationTimes[day - 1] = null
+                    updateForm({
+                      operationDays: checked
+                        ? [...form.operationDays, day as DayOfWeek]
+                        : form.operationDays.filter((d) => d != day),
+                      operationTimes: form.operationTimes
+                    })
+                  }}
+                />
+                {props.editable ? (
+                  <TimeRangeInput
+                    value={timesToday ?? emptyTimeRange}
+                    onChange={(value) => {
+                      form.operationTimes[day - 1] = value
+                      updateForm({
+                        operationTimes: form.operationTimes,
+                        operationDays: [...form.operationDays, day as DayOfWeek]
+                      })
+                    }}
+                    error={validationErrors.rangeErrors[day - 1]}
+                    dataQaPrefix={`"timeinput-${day}"`}
+                    hideErrorsBeforeTouched={false}
+                  />
+                ) : (
+                  <div>
+                    {timesToday?.start && timesToday?.end
+                      ? `${timesToday.start} - ${timesToday.end}`
+                      : ''}
+                  </div>
+                )}
+              </FixedSpaceRow>
+            )
+          })}
+        </FixedSpaceColumn>
       </FormPart>
       <FormPart>
         <label htmlFor="unit-capacity">{i18n.unitEditor.label.capacity}</label>
@@ -1427,7 +1526,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       {props.editable && (
         <>
           <>
-            {formErrors.map((error, key) => (
+            {validationErrors.formErrors.map((error, key) => (
               <FormError key={key}>{error}</FormError>
             ))}
           </>
@@ -1443,7 +1542,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               primary
               type="submit"
               onClick={(e) => onClickSubmit(e)}
-              disabled={props.submit?.isLoading}
+              disabled={props.submit?.isLoading || !checkFormValidation()}
               text={isNewUnit ? i18n.unitEditor.submitNew : i18n.common.save}
             />
           </FixedSpaceRow>

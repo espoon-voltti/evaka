@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.lang.reflect.Type
 import java.time.LocalDate
 import java.util.Optional
@@ -110,6 +111,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
             value = "[${it.start},${it.end}]"
         }
     }
+    jdbi.registerArrayType(TimeRange::class.java, "timerange") { tr -> tr?.toDbString() }
     jdbi.registerArrayType(LocalDate::class.java, "date")
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(

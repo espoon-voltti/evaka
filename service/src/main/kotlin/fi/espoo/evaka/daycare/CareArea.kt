@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
@@ -63,6 +64,7 @@ data class Daycare(
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
     val operationDays: Set<Int>,
+    val operationTimes: List<TimeRange?>,
     val roundTheClock: Boolean,
     val enabledPilotFeatures: List<PilotFeature>,
     val businessId: String,

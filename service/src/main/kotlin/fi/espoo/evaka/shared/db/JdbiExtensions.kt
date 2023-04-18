@@ -76,9 +76,7 @@ val timeRangeArgumentFactory =
     pgObjectArgumentFactory<TimeRange> {
         PGobject().apply {
             type = "timerange"
-            if (it != null) {
-                value = "(${it.start},${it.end})"
-            }
+            value = it?.toDbString()
         }
     }
 

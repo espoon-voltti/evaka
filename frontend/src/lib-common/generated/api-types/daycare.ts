@@ -19,6 +19,7 @@ import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
 import { TerminatedPlacement } from './placement'
+import { TimeRange } from './shared'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
@@ -281,6 +282,7 @@ export interface Daycare {
   name: string
   openingDate: LocalDate | null
   operationDays: number[]
+  operationTimes: (TimeRange | null)[]
   ophOrganizerOid: string | null
   ophUnitOid: string | null
   phone: string | null
@@ -346,7 +348,7 @@ export interface DaycareFields {
   mailingAddress: MailingAddress
   name: string
   openingDate: LocalDate | null
-  operationDays: number[] | null
+  operationTimes: (TimeRange | null)[]
   ophOrganizerOid: string | null
   ophUnitOid: string | null
   phone: string | null

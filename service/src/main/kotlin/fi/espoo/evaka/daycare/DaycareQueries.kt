@@ -22,11 +22,13 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.time.DayOfWeek
 import java.time.LocalDate
+import org.jdbi.v3.core.annotation.JdbiProperty
 
 data class DaycareFields(
     val name: String,
@@ -58,7 +60,7 @@ data class DaycareFields(
     val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
-    val operationDays: Set<Int>?,
+    val operationTimes: List<TimeRange?>,
     val roundTheClock: Boolean,
     val businessId: String,
     val iban: String,
@@ -125,7 +127,8 @@ SELECT
   finance_decision_handler.last_name AS finance_decision_handler_last_name,
   finance_decision_handler.created AS finance_decision_handler_created,
   um.name AS unit_manager_name, um.email AS unit_manager_email, um.phone AS unit_manager_phone,
-  ca.name AS care_area_name, ca.short_name AS care_area_short_name
+  ca.name AS care_area_name, ca.short_name AS care_area_short_name,
+  daycare.operation_times
 FROM daycare
 LEFT JOIN unit_manager um ON daycare.unit_manager_id = um.id
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
@@ -269,11 +272,11 @@ SET
   decision_preschool_name = :decisionCustomization.preschoolName,
   oph_unit_oid = :ophUnitOid,
   oph_organizer_oid = :ophOrganizerOid,
-  operation_days = :operationDays,
   round_the_clock = :roundTheClock,
   business_id = :businessId,
   iban = :iban,
-  provider_id = :providerId
+  provider_id = :providerId,
+  operation_times = :operationTimes
 WHERE id = :id
 """
         )

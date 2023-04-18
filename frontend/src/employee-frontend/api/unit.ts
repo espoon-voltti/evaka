@@ -6,7 +6,10 @@ import mapValues from 'lodash/mapValues'
 
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
-import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
+import {
+  parseDailyServiceTimes,
+  parseIsoTimeRange
+} from 'lib-common/api-types/daily-service-times'
 import {
   ChildDailyRecords,
   UnitAttendanceReservations,
@@ -73,7 +76,12 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
       : null,
     clubApplyPeriod: unit.clubApplyPeriod
       ? DateRange.parseJson(unit.clubApplyPeriod)
-      : null
+      : null,
+    operationTimes: unit.operationTimes
+      ? unit.operationTimes.map((item) =>
+          item ? parseIsoTimeRange(item) : null
+        )
+      : []
   }
 }
 
@@ -265,12 +273,12 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
     confirmed:
       serviceNeed.confirmed != null
         ? {
-            ...serviceNeed.confirmed,
-            at:
-              serviceNeed.confirmed.at != null
-                ? HelsinkiDateTime.parseIso(serviceNeed.confirmed.at)
-                : null
-          }
+          ...serviceNeed.confirmed,
+          at:
+            serviceNeed.confirmed.at != null
+              ? HelsinkiDateTime.parseIso(serviceNeed.confirmed.at)
+              : null
+        }
         : null,
     updated: HelsinkiDateTime.parseIso(serviceNeed.updated)
   }))
@@ -296,41 +304,41 @@ function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
     realized: mapOccupancyResponse(data.realized),
     realtime: data.realtime
       ? {
-          childAttendances: data.realtime.childAttendances.map(
-            (attendance) => ({
-              ...attendance,
-              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
-              departed: attendance.departed
-                ? HelsinkiDateTime.parseIso(attendance.departed)
-                : null
-            })
-          ),
-          staffAttendances: data.realtime.staffAttendances.map(
-            (attendance) => ({
-              ...attendance,
-              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
-              departed: attendance.departed
-                ? HelsinkiDateTime.parseIso(attendance.departed)
-                : null
-            })
-          ),
-          childCapacitySumSeries: data.realtime.childCapacitySumSeries.map(
-            (dataPoint) => ({
-              ...dataPoint,
-              time: HelsinkiDateTime.parseIso(dataPoint.time)
-            })
-          ),
-          staffCapacitySumSeries: data.realtime.staffCapacitySumSeries.map(
-            (dataPoint) => ({
-              ...dataPoint,
-              time: HelsinkiDateTime.parseIso(dataPoint.time)
-            })
-          ),
-          occupancySeries: data.realtime.occupancySeries.map((dataPoint) => ({
+        childAttendances: data.realtime.childAttendances.map(
+          (attendance) => ({
+            ...attendance,
+            arrived: HelsinkiDateTime.parseIso(attendance.arrived),
+            departed: attendance.departed
+              ? HelsinkiDateTime.parseIso(attendance.departed)
+              : null
+          })
+        ),
+        staffAttendances: data.realtime.staffAttendances.map(
+          (attendance) => ({
+            ...attendance,
+            arrived: HelsinkiDateTime.parseIso(attendance.arrived),
+            departed: attendance.departed
+              ? HelsinkiDateTime.parseIso(attendance.departed)
+              : null
+          })
+        ),
+        childCapacitySumSeries: data.realtime.childCapacitySumSeries.map(
+          (dataPoint) => ({
             ...dataPoint,
             time: HelsinkiDateTime.parseIso(dataPoint.time)
-          }))
-        }
+          })
+        ),
+        staffCapacitySumSeries: data.realtime.staffCapacitySumSeries.map(
+          (dataPoint) => ({
+            ...dataPoint,
+            time: HelsinkiDateTime.parseIso(dataPoint.time)
+          })
+        ),
+        occupancySeries: data.realtime.occupancySeries.map((dataPoint) => ({
+          ...dataPoint,
+          time: HelsinkiDateTime.parseIso(dataPoint.time)
+        }))
+      }
       : null,
     caretakers: data.caretakers
   }
@@ -372,8 +380,8 @@ function mapUnitApplicationsJson(
         return lastNameCmp !== 0
           ? lastNameCmp
           : applicationA.firstName.localeCompare(applicationB.firstName, 'fi', {
-              ignorePunctuation: true
-            })
+            ignorePunctuation: true
+          })
       })
   }
 }

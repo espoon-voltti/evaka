@@ -3501,7 +3501,8 @@ export const fi = {
       openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen',
       businessId: 'Y-tunnus puuttuu',
       iban: 'Tilinumero puuttuu',
-      providerId: 'Toimittajanumero puuttuu'
+      providerId: 'Toimittajanumero puuttuu',
+      operationTimes: 'Virheellinen merkintä yksikön toiminta-ajoissa'
     },
     warning: {
       placementsShouldBeEndedIfUnitIsClosed:
@@ -3858,6 +3859,7 @@ export const fi = {
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     dateRangeNotLinear:
       'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
+    timeRangeNotLinear: 'Tarkista järjestys',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
