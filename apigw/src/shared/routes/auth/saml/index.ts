@@ -6,7 +6,7 @@ import express, { Router, urlencoded } from 'express'
 import _ from 'lodash'
 import passport from 'passport'
 import path from 'path'
-import { AuthenticateOptions, SAML } from 'passport-saml'
+import passportSaml, { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
 import { Config, evakaBaseUrl, gatewayRole, nodeEnv } from '../../../config'
 import { getCitizens, getEmployees } from '../../../dev-api'
@@ -15,7 +15,7 @@ import { logAuditEvent, logDebug, logError } from '../../../logging'
 import { fromCallback } from '../../../promise-utils'
 import { logoutExpress, saveLogoutToken, saveSession } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
-import { SamlEndpointConfig, SamlUser } from './types'
+import { EvakaSessionUser, SamlEndpointConfig } from './types'
 import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
 
 const urlencodedParser = urlencoded({ extended: false })
@@ -74,8 +74,11 @@ function createLoginHandler({
     passport.authenticate(
       strategyName,
       options,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (err: any, user: SamlUser | undefined) => {
+      (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        err: any,
+        user: (EvakaSessionUser & passportSaml.Profile) | undefined
+      ) => {
         if (err || !user) {
           const description =
             parseDescriptionFromSamlError(err, req) ||

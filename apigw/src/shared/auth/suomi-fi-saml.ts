@@ -8,12 +8,12 @@ import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
 import { Config } from '../config'
-import { SamlUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { getCitizenBySsn } from '../dev-api'
 import DevSfiStrategy from './dev-sfi-strategy'
 import { toSamlVerifyFunction } from './saml'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -22,7 +22,9 @@ const SUOMI_FI_SSN_KEY = 'urn:oid:1.2.246.21'
 const SUOMI_FI_GIVEN_NAME_KEY = 'urn:oid:2.5.4.42'
 const SUOMI_FI_SURNAME_KEY = 'urn:oid:2.5.4.4'
 
-async function verifyProfile(profile: passportSaml.Profile): Promise<SamlUser> {
+async function verifyProfile(
+  profile: passportSaml.Profile
+): Promise<EvakaSessionUser> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
@@ -37,12 +39,7 @@ async function verifyProfile(profile: passportSaml.Profile): Promise<SamlUser> {
     id: person.id,
     userType: 'ENDUSER',
     globalRoles: ['END_USER'],
-    allScopedRoles: [],
-    nameID: profile.nameID,
-    nameIDFormat: profile.nameIDFormat,
-    nameQualifier: profile.nameQualifier,
-    spNameQualifier: profile.spNameQualifier,
-    sessionIndex: profile.sessionIndex
+    allScopedRoles: []
   }
 }
 

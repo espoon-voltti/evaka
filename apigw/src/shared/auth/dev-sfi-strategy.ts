@@ -4,10 +4,10 @@
 
 import { Strategy } from 'passport'
 import { Request } from 'express'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { assertStringProp } from '../express'
 
-type ProfileGetter = (userId: string) => Promise<SamlUser>
+type ProfileGetter = (userId: string) => Promise<EvakaSessionUser>
 
 export default class DevSfiStrategy extends Strategy {
   constructor(private profileGetter: ProfileGetter) {
@@ -27,7 +27,7 @@ export default class DevSfiStrategy extends Strategy {
     const preset = assertStringProp(req.body, 'preset')
 
     this.profileGetter(preset)
-      .then((samlUser) => this.success(samlUser))
+      .then((user) => this.success(user))
       .catch((err) => this.error(err))
   }
 

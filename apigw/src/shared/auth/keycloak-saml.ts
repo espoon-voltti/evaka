@@ -6,7 +6,6 @@ import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
 } from 'passport-saml'
-import { SamlUser } from '../routes/auth/saml/types'
 import { employeeLogin } from '../service-client'
 import { evakaSamlConfig } from '../config'
 import fs from 'fs'
@@ -14,6 +13,7 @@ import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { toSamlVerifyFunction } from './saml'
 import { z } from 'zod'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
@@ -62,7 +62,7 @@ export default function createKeycloakSamlStrategy(
 
 async function verifyKeycloakProfile(
   profile: passportSaml.Profile
-): Promise<SamlUser> {
+): Promise<EvakaSessionUser> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
@@ -78,11 +78,6 @@ async function verifyKeycloakProfile(
     id: person.id,
     userType: 'EMPLOYEE',
     globalRoles: person.globalRoles,
-    allScopedRoles: person.allScopedRoles,
-    nameID: profile.nameID,
-    nameIDFormat: profile.nameIDFormat,
-    nameQualifier: profile.nameQualifier,
-    spNameQualifier: profile.spNameQualifier,
-    sessionIndex: profile.sessionIndex
+    allScopedRoles: person.allScopedRoles
   }
 }

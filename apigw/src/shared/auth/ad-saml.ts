@@ -8,7 +8,7 @@ import passportSaml, {
   Strategy as SamlStrategy
 } from 'passport-saml'
 import DevAdStrategy from './dev-ad-strategy'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { getEmployeeByExternalId, upsertEmployee } from '../dev-api'
@@ -30,7 +30,7 @@ const AD_EMPLOYEE_NUMBER_KEY =
 async function verifyProfile(
   config: Config['ad'],
   profile: passportSaml.Profile
-): Promise<SamlUser> {
+): Promise<EvakaSessionUser> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
@@ -47,12 +47,7 @@ async function verifyProfile(
     id: person.id,
     userType: 'EMPLOYEE',
     globalRoles: person.globalRoles,
-    allScopedRoles: person.allScopedRoles,
-    nameID: profile.nameID,
-    nameIDFormat: profile.nameIDFormat,
-    nameQualifier: profile.nameQualifier,
-    spNameQualifier: profile.spNameQualifier,
-    sessionIndex: profile.sessionIndex
+    allScopedRoles: person.allScopedRoles
   }
 }
 

@@ -4,10 +4,10 @@
 
 import { Strategy } from 'passport'
 import { Request } from 'express'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { assertStringProp } from '../express'
 
-type ProfileGetter = (userId: string) => Promise<SamlUser>
+type ProfileGetter = (userId: string) => Promise<EvakaSessionUser>
 
 type ProfileUpserter = (
   userId: string,
@@ -15,7 +15,7 @@ type ProfileUpserter = (
   firstName: string,
   lastName: string,
   email: string
-) => Promise<SamlUser>
+) => Promise<EvakaSessionUser>
 
 export default class DevAdStrategy extends Strategy {
   constructor(
@@ -51,11 +51,11 @@ export default class DevAdStrategy extends Strategy {
         assertStringProp(req.body, 'lastName'),
         assertStringProp(req.body, 'email')
       )
-        .then((samlUser) => this.success(samlUser))
+        .then((user) => this.success(user))
         .catch((err) => this.error(err))
     } else {
       this.profileGetter(preset)
-        .then((samlUser) => this.success(samlUser))
+        .then((user) => this.success(user))
         .catch((err) => this.error(err))
     }
   }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type express from 'express'
-import type { SamlUser } from './routes/auth/saml/types'
+import type { EvakaSessionUser } from './routes/auth/saml/types'
 import { BaseError } from 'make-error-cause'
 
 export interface LogoutToken {
@@ -65,6 +65,9 @@ declare global {
       spanId?: string
     }
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface User extends SamlUser {}
+    interface User extends EvakaSessionUser {
+      // this is a hack needed for passport-saml compatibility
+      issuer?: string
+    }
   }
 }

@@ -4,13 +4,13 @@
 
 import { z } from 'zod'
 import { Profile, VerifiedCallback, VerifyWithoutRequest } from 'passport-saml'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { logWarn } from '../logging'
 
 export function toSamlVerifyFunction(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: z.ZodObject<any>,
-  verify: (profile: Profile) => Promise<SamlUser>
+  verify: (profile: Profile) => Promise<EvakaSessionUser>
 ): VerifyWithoutRequest {
   return (profile: Profile | null | undefined, done: VerifiedCallback) => {
     if (!profile) {
@@ -28,7 +28,21 @@ export function toSamlVerifyFunction(
         )
       }
       verify(profile)
-        .then((user) => done(null, user))
+        .then((user) => {
+          // Despite what the typings say, passport-saml assumes
+          // we give it back a valid Profile, including at least some of these
+          // SAML-specific fields
+          const samlUser: EvakaSessionUser & Profile = {
+            ...user,
+            issuer: profile.issuer,
+            nameID: profile.nameID,
+            nameIDFormat: profile.nameIDFormat,
+            nameQualifier: profile.nameQualifier,
+            spNameQualifier: profile.spNameQualifier,
+            sessionIndex: profile.sessionIndex
+          }
+          done(null, samlUser)
+        })
         .catch(done)
     }
   }

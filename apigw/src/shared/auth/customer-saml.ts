@@ -10,7 +10,7 @@ import passportSaml, {
 } from 'passport-saml'
 import { RedisClient } from 'redis'
 import { evakaCustomerSamlConfig } from '../config'
-import { SamlUser } from '../routes/auth/saml/types'
+import { EvakaSessionUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { toSamlVerifyFunction } from './saml'
@@ -63,7 +63,7 @@ const Profile = z.object({
 
 async function verifyKeycloakProfile(
   profile: passportSaml.Profile
-): Promise<SamlUser> {
+): Promise<EvakaSessionUser> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
@@ -81,11 +81,6 @@ async function verifyKeycloakProfile(
     id: person.id,
     userType: 'CITIZEN_WEAK',
     globalRoles: ['CITIZEN_WEAK'],
-    allScopedRoles: [],
-    nameID: profile.nameID,
-    nameIDFormat: profile.nameIDFormat,
-    nameQualifier: profile.nameQualifier,
-    spNameQualifier: profile.spNameQualifier,
-    sessionIndex: profile.sessionIndex
+    allScopedRoles: []
   }
 }
