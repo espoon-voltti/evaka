@@ -425,7 +425,7 @@ export function FeeDecisionStatusFilter({
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
         {statuses.map((id) => (
-          <Radio
+          <Checkbox
             key={id}
             label={i18n.feeDecision.status[id]}
             checked={toggled.includes(id)}
@@ -559,7 +559,6 @@ export const ValueDecisionStatusFilter = React.memo(
               checked={toggled.includes(id)}
               onChange={toggle(id)}
               data-qa={`value-decision-status-filter-${id}`}
-              small
             />
           ))}
         </FixedSpaceColumn>

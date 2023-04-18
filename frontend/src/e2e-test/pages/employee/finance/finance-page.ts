@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import {
+  PaymentStatus,
+  VoucherValueDecisionStatus
+} from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
@@ -162,11 +165,10 @@ export class ValueDecisionsPage {
   #firstValueDecisionRow = this.page
     .findAll('[data-qa="table-value-decision-row"]')
     .first()
-  #statusFilter = {
-    sent: new Checkbox(
-      this.page.find('[data-qa="value-decision-status-filter-SENT"]')
+  #statusFilter = (status: VoucherValueDecisionStatus) =>
+    new Checkbox(
+      this.page.findByDataQa(`value-decision-status-filter-${status}`)
     )
-  }
 
   async openFirstValueDecision(): Promise<ValueDecisionDetailsPage> {
     const popup = await this.page.capturePopup(async () => {
@@ -191,7 +193,7 @@ export class ValueDecisionsPage {
   }
 
   async toggleAllValueDecisions() {
-    await this.#allValueDecisionsToggle.check()
+    await this.#allValueDecisionsToggle.find('input').click()
   }
 
   async sendValueDecisions(mockedNow: HelsinkiDateTime) {
@@ -201,8 +203,9 @@ export class ValueDecisionsPage {
   }
 
   async assertSentDecisionsCount(count: number) {
-    await this.#statusFilter.sent.click()
-    await this.#statusFilter.sent.waitUntilChecked()
+    await this.#statusFilter('DRAFT').click()
+    await this.#statusFilter('SENT').click()
+    await this.#statusFilter('SENT').waitUntilChecked()
     await waitUntilEqual(
       () => this.page.findAll('[data-qa="table-value-decision-row"]').count(),
       count

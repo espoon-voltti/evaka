@@ -35,6 +35,8 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
+
 let page: Page
 let valueDecisionsPage: ValueDecisionsPage
 const decision1DateFrom = LocalDate.todayInSystemTz().subWeeks(1)
@@ -157,19 +159,14 @@ describe('Value decisions', () => {
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
     await valueDecisionDetailsPage.sendValueDecision()
-    await runPendingAsyncJobs(
-      HelsinkiDateTime.now() // TODO: use mock clock
-    )
+    await runPendingAsyncJobs(now)
     await valueDecisionsPage.assertSentDecisionsCount(1)
   })
 
   test('Voucher value decisions are toggled and sent', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-
     await valueDecisionsPage.toggleAllValueDecisions()
-    await valueDecisionsPage.sendValueDecisions(
-      HelsinkiDateTime.now() // TODO: use mock clock
-    )
+    await valueDecisionsPage.sendValueDecisions(now)
     await valueDecisionsPage.assertSentDecisionsCount(2)
   })
 

@@ -63,7 +63,7 @@ export default React.memo(function FeeDecisionsPage() {
     }
 
     const params: FeeDecisionSearchParams = {
-      status: searchFilters.statuses,
+      statuses: searchFilters.statuses,
       area: searchFilters.area,
       unit: searchFilters.unit,
       distinctions: searchFilters.distinctiveDetails,
@@ -123,7 +123,7 @@ export default React.memo(function FeeDecisionsPage() {
           sortDirection={sortDirection}
           setSortDirection={setSortDirection}
           showCheckboxes={
-            searchFilters.statuses.length > 0 &&
+            searchFilters.statuses.length === 1 &&
             searchFilters.statuses[0] === 'DRAFT'
           }
           checked={checkedState.checked}

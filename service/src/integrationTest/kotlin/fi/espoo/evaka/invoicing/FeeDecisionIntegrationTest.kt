@@ -292,7 +292,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     pageSize = 50,
-                    status = listOf(FeeDecisionStatus.DRAFT)
+                    statuses = listOf(FeeDecisionStatus.DRAFT)
                 )
             )
 
@@ -309,7 +309,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     pageSize = 50,
-                    status = listOf(FeeDecisionStatus.SENT)
+                    statuses = listOf(FeeDecisionStatus.SENT)
                 )
             )
 
@@ -325,7 +325,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     pageSize = 50,
-                    status = listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)
+                    statuses = listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)
                 )
             )
 
@@ -470,7 +470,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     pageSize = 50,
                     area = listOf("test_area"),
-                    status = listOf(FeeDecisionStatus.DRAFT)
+                    statuses = listOf(FeeDecisionStatus.DRAFT)
                 )
             )
 
@@ -1129,7 +1129,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     SearchFeeDecisionRequest(
                         page = 0,
                         pageSize = 50,
-                        status = listOf(FeeDecisionStatus.DRAFT)
+                        statuses = listOf(FeeDecisionStatus.DRAFT)
                     )
                 )
                 .data
@@ -1160,7 +1160,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     SearchFeeDecisionRequest(
                         page = 0,
                         pageSize = 50,
-                        status = listOf(FeeDecisionStatus.DRAFT)
+                        statuses = listOf(FeeDecisionStatus.DRAFT)
                     )
                 )
                 .data
@@ -1309,7 +1309,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     SearchFeeDecisionRequest(
                         page = 0,
                         pageSize = 50,
-                        status = listOf(FeeDecisionStatus.SENT)
+                        statuses = listOf(FeeDecisionStatus.SENT)
                     )
                 )
                 .data
@@ -1322,7 +1322,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     SearchFeeDecisionRequest(
                         page = 0,
                         pageSize = 50,
-                        status = listOf(FeeDecisionStatus.ANNULLED)
+                        statuses = listOf(FeeDecisionStatus.ANNULLED)
                     )
                 )
                 .data
@@ -1425,7 +1425,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     SearchFeeDecisionRequest(
                         page = 0,
                         pageSize = 50,
-                        status = listOf(FeeDecisionStatus.SENT)
+                        statuses = listOf(FeeDecisionStatus.SENT)
                     )
                 )
                 .data
