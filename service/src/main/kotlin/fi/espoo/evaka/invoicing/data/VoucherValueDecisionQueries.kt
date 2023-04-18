@@ -299,7 +299,7 @@ fun Database.Read.searchValueDecisions(
     pageSize: Int,
     sortBy: VoucherValueDecisionSortParam,
     sortDirection: SortDirection,
-    status: VoucherValueDecisionStatus,
+    statuses: List<VoucherValueDecisionStatus>,
     areas: List<String>,
     unit: DaycareId?,
     searchTerms: String = "",
@@ -327,7 +327,7 @@ fun Database.Read.searchValueDecisions(
         listOf(
             Binding.of("page", page),
             Binding.of("pageSize", pageSize),
-            Binding.of("status", status),
+            Binding.of("status", statuses),
             Binding.of("areas", areas),
             Binding.of("unit", unit),
             Binding.of("postOffice", postOffice),
@@ -373,6 +373,8 @@ NOT EXISTS (
 
     val conditions =
         listOfNotNull(
+            if (statuses.isNotEmpty()) "status = ANY(:status::voucher_value_decision_status[])"
+            else null,
             if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,
             if (unit != null) "decision.placement_unit_id = :unit" else null,
             if ((startDate != null || endDate != null) && !searchByStartDate)
@@ -431,8 +433,7 @@ LEFT JOIN person AS partner ON decision.partner_id = partner.id
 LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_unit_id
 LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
 WHERE
-    decision.status = :status::voucher_value_decision_status
-    AND $freeTextQuery
+    $freeTextQuery
     ${if (conditions.isNotEmpty()) {
             """AND ${conditions.joinToString("\nAND ")}
             """.trimIndent()

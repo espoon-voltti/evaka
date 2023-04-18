@@ -96,7 +96,7 @@ class VoucherValueDecisionController(
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
                         body.sortDirection ?: SortDirection.DESC,
-                        body.status,
+                        body.statuses,
                         body.area ?: emptyList(),
                         body.unit,
                         body.searchTerms ?: "",
@@ -399,20 +399,20 @@ enum class VoucherValueDecisionDistinctiveParams {
 }
 
 data class SearchVoucherValueDecisionRequest(
-    val page: Int,
-    val pageSize: Int,
-    val sortBy: VoucherValueDecisionSortParam?,
-    val sortDirection: SortDirection?,
-    val status: VoucherValueDecisionStatus,
-    val area: List<String>?,
-    val unit: DaycareId?,
-    val distinctions: List<VoucherValueDecisionDistinctiveParams>?,
-    val searchTerms: String?,
-    val financeDecisionHandlerId: EmployeeId?,
-    val difference: Set<VoucherValueDecisionDifference>?,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
-    val searchByStartDate: Boolean = false
+        val page: Int,
+        val pageSize: Int,
+        val sortBy: VoucherValueDecisionSortParam?,
+        val sortDirection: SortDirection?,
+        val statuses: List<VoucherValueDecisionStatus>,
+        val area: List<String>?,
+        val unit: DaycareId?,
+        val distinctions: List<VoucherValueDecisionDistinctiveParams>?,
+        val searchTerms: String?,
+        val financeDecisionHandlerId: EmployeeId?,
+        val difference: Set<VoucherValueDecisionDifference>?,
+        val startDate: LocalDate?,
+        val endDate: LocalDate?,
+        val searchByStartDate: Boolean = false
 )
 
 data class VoucherValueDecisionTypeRequest(val type: VoucherValueDecisionType)
