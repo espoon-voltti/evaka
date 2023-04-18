@@ -2,29 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Request, Router, urlencoded } from 'express'
-import { logDebug } from '../shared/logging'
-import passport, { Strategy } from 'passport'
-import { EvakaSessionUser } from '../shared/auth'
-import { fromCallback } from '../shared/promise-utils'
-import { logoutExpress, saveSession } from '../shared/session'
-import { assertStringProp, toRequestHandler } from '../shared/express'
+import { Router } from 'express'
+import { assertStringProp } from '../shared/express'
 import _ from 'lodash'
-import { getEmployees } from '../shared/dev-api'
-import { parseRelayState } from '../shared/saml'
-import { Config } from '../shared/config'
-import { createDevAdStrategy } from './ad-saml'
+import {
+  getEmployeeByExternalId,
+  getEmployees,
+  upsertEmployee
+} from '../shared/dev-api'
+import { createDevAuthRouter } from '../shared/auth/dev-auth'
+import {
+  employeeLogin,
+  EmployeeLoginRequest,
+  UserRole
+} from '../shared/service-client'
 
-export function createDevAdRouter(config: Config): Router {
-  const strategyName = 'ad'
-  passport.use(strategyName, createDevAdStrategy(config.ad))
-
-  const router = Router()
-  const root = '/employee'
-
-  router.get(
-    '/login',
-    toRequestHandler(async (req, res) => {
+export function createDevAdRouter(): Router {
+  return createDevAuthRouter({
+    sessionType: 'employee',
+    root: '/employee',
+    strategyName: 'dev-ad',
+    loginFormHandler: async (req, res) => {
       const employees = _.sortBy(await getEmployees(), ({ id }) => id)
       const employeeInputs = employees
         .map(({ externalId, firstName, lastName }) => {
@@ -79,108 +77,48 @@ export function createDevAdRouter(config: Config): Router {
           </body>
           </html>
         `)
-    })
-  )
+    },
+    verifyUser: async (req) => {
+      const preset = assertStringProp(req.body, 'preset')
 
-  router.post(
-    `/login/callback`,
-    urlencoded({ extended: false }), // needed to parse the POSTed form
-    (req, res, next) => {
-      passport.authenticate(
-        strategyName,
-        (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          err: any,
-          user: EvakaSessionUser | undefined
-        ) => {
-          if (err || !user) {
-            return res.redirect(`${root}?loginError=true`)
-          }
-          ;(async () => {
-            if (req.session) {
-              const session = req.session
-              await fromCallback<void>((cb) => session.regenerate(cb))
-            }
-            await fromCallback<void>((cb) => req.logIn(user, cb))
-            await saveSession(req)
+      let loginRequest: EmployeeLoginRequest
+      if (preset === 'custom') {
+        const roles = Array.isArray(req.body.roles)
+          ? req.body.roles
+          : req.body.roles !== undefined
+          ? [assertStringProp(req.body, 'roles')]
+          : []
+        const aad = assertStringProp(req.body, 'aad')
+        const externalId = `espoo-ad:${aad}}`
+        const firstName = assertStringProp(req.body, 'firstName')
+        const lastName = assertStringProp(req.body, 'lastName')
+        const email = assertStringProp(req.body, 'email')
 
-            return res.redirect(parseRelayState(req) ?? root)
-          })().catch((err) => {
-            if (!res.headersSent) {
-              res.redirect(`${root}?loginError=true`)
-            } else {
-              next(err)
-            }
-          })
+        await upsertEmployee({
+          externalId,
+          firstName,
+          lastName,
+          email,
+          roles: roles as UserRole[]
+        })
+        loginRequest = { externalId, firstName, lastName, email }
+      } else {
+        const externalId = `espoo-ad:${preset}`
+        const employee = await getEmployeeByExternalId(externalId)
+        loginRequest = {
+          externalId,
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          email: employee.email ?? ''
         }
-      )(req, res, next)
+      }
+      const person = await employeeLogin(loginRequest)
+      return {
+        id: person.id,
+        userType: 'EMPLOYEE',
+        globalRoles: person.globalRoles,
+        allScopedRoles: person.allScopedRoles
+      }
     }
-  )
-
-  router.get(
-    `/logout`,
-    toRequestHandler(async (req, res) => {
-      logDebug('Logging user out from passport.', req)
-      await logoutExpress(req, res, 'employee')
-      res.redirect(root)
-    })
-  )
-  return router
-}
-
-type ProfileGetter = (userId: string) => Promise<EvakaSessionUser>
-type ProfileUpserter = (
-  userId: string,
-  roles: string[],
-  firstName: string,
-  lastName: string,
-  email: string
-) => Promise<EvakaSessionUser>
-
-export class DevAdStrategy extends Strategy {
-  constructor(
-    private profileGetter: ProfileGetter,
-    private profileUpserter: ProfileUpserter
-  ) {
-    super()
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  authenticate(req: Request, _options?: any): any {
-    const shouldRedirect = !req.url.startsWith('/login/callback')
-
-    if (shouldRedirect) {
-      return this.redirect(
-        `${req.baseUrl}/login?RelayState=${req.query.RelayState}`
-      )
-    }
-
-    const preset = assertStringProp(req.body, 'preset')
-
-    if (preset === 'custom') {
-      const roles = Array.isArray(req.body.roles)
-        ? req.body.roles
-        : req.body.roles !== undefined
-        ? [assertStringProp(req.body, 'roles')]
-        : []
-
-      this.profileUpserter(
-        assertStringProp(req.body, 'aad'),
-        roles,
-        assertStringProp(req.body, 'firstName'),
-        assertStringProp(req.body, 'lastName'),
-        assertStringProp(req.body, 'email')
-      )
-        .then((user) => this.success(user))
-        .catch((err) => this.error(err))
-    } else {
-      this.profileGetter(preset)
-        .then((user) => this.success(user))
-        .catch((err) => this.error(err))
-    }
-  }
-
-  logout(req: Request, cb: (err: Error | null, url?: string | null) => void) {
-    cb(null, null)
-  }
+  })
 }

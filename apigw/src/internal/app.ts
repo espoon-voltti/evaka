@@ -106,7 +106,7 @@ export default function internalGwApp(
     })
 
     if (config.ad.mock) {
-      router.use('/auth/saml', createDevAdRouter(config))
+      router.use('/auth/saml', createDevAdRouter())
     } else {
       const adSamlConfig = createSamlConfig(
         config.ad.saml,

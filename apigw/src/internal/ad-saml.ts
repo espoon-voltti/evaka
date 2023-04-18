@@ -7,12 +7,10 @@ import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
 } from 'passport-saml'
-import { getEmployeeByExternalId, upsertEmployee } from '../shared/dev-api'
-import { employeeLogin, UserRole } from '../shared/service-client'
+import { employeeLogin } from '../shared/service-client'
 import { Config } from '../shared/config'
 import { toSamlVerifyFunction } from '../shared/saml'
 import { EvakaSessionUser } from '../shared/auth'
-import { DevAdStrategy } from './dev-ad-auth'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
@@ -45,47 +43,6 @@ async function verifyProfile(
     globalRoles: person.globalRoles,
     allScopedRoles: person.allScopedRoles
   }
-}
-
-export function createDevAdStrategy(config: Config['ad']) {
-  const getter = async (userId: string) => {
-    const employee = await getEmployeeByExternalId(
-      `${config.externalIdPrefix}:${userId}`
-    )
-    return verifyProfile(config, {
-      nameID: 'dummyid',
-      [config.userIdKey]: userId,
-      [AD_GIVEN_NAME_KEY]: employee.firstName,
-      [AD_FAMILY_NAME_KEY]: employee.lastName,
-      [AD_EMAIL_KEY]: employee.email ? employee.email : ''
-    })
-  }
-
-  const upserter = async (
-    userId: string,
-    roles: string[],
-    firstName: string,
-    lastName: string,
-    email: string
-  ) => {
-    if (!userId) throw Error('No user ID in SAML data')
-    await upsertEmployee({
-      firstName,
-      lastName,
-      email,
-      externalId: `${config.externalIdPrefix}:${userId}`,
-      roles: roles as UserRole[]
-    })
-    return verifyProfile(config, {
-      nameID: 'dummyid',
-      [config.userIdKey]: userId,
-      [AD_GIVEN_NAME_KEY]: firstName,
-      [AD_FAMILY_NAME_KEY]: lastName,
-      [AD_EMAIL_KEY]: email
-    })
-  }
-
-  return new DevAdStrategy(getter, upserter)
 }
 
 export default function createAdStrategy(

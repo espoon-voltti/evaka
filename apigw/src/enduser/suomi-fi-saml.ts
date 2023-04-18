@@ -5,10 +5,8 @@
 import { z } from 'zod'
 import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
 import { citizenLogin } from '../shared/service-client'
-import { getCitizenBySsn } from '../shared/dev-api'
 import { toSamlVerifyFunction } from '../shared/saml'
 import { EvakaSessionUser } from '../shared/auth'
-import { DevSfiStrategy } from './dev-sfi-auth'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -43,18 +41,6 @@ const Profile = z.object({
   [SUOMI_FI_GIVEN_NAME_KEY]: z.string(),
   [SUOMI_FI_SURNAME_KEY]: z.string()
 })
-
-export function createDevSuomiFiStrategy(): DevSfiStrategy {
-  return new DevSfiStrategy(async (ssn: string) => {
-    const citizen = await getCitizenBySsn(ssn)
-    return verifyProfile({
-      nameID: 'dummyid',
-      [SUOMI_FI_SSN_KEY]: citizen.ssn,
-      [SUOMI_FI_GIVEN_NAME_KEY]: citizen.firstName,
-      [SUOMI_FI_SURNAME_KEY]: citizen.lastName
-    })
-  })
-}
 
 export default function createSuomiFiStrategy(
   samlConfig: SamlConfig
