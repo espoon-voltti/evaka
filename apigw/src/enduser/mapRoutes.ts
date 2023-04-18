@@ -10,6 +10,7 @@ import {
 } from '../shared/config'
 import expressHttpProxy from 'express-http-proxy'
 import { createProxy } from '../shared/proxy-utils'
+import { logError, logWarn } from '../shared/logging'
 
 const router = Router()
 
@@ -28,6 +29,43 @@ function createDigitransitProxy(path: string) {
           : {})
       }
       return proxyReqOpts
+    },
+    userResDecorator: (proxyRes, proxyResData) => {
+      function parseBody(): unknown {
+        if (!Buffer.isBuffer(proxyResData)) {
+          return undefined
+        }
+        const body = proxyResData
+        try {
+          if (proxyRes.headers['content-type'] === 'application/json') {
+            return JSON.parse(body.toString('utf-8'))
+          }
+          if (proxyRes.headers['content-type']?.startsWith('text/')) {
+            return body.toString('utf-8')
+          }
+        } catch (e: unknown) {
+          if (e instanceof Error) {
+            logError(
+              'Failed to parse Digitransit error body',
+              undefined,
+              undefined,
+              e
+            )
+          }
+          return undefined
+        }
+      }
+
+      if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
+        logWarn('Digitransit API error', undefined, {
+          statusCode: proxyRes.statusCode,
+          headers: {
+            'content-type': proxyRes.headers['content-type']
+          },
+          body: parseBody()
+        })
+      }
+      return proxyResData
     }
   })
 }
