@@ -47,60 +47,60 @@ async function verifyProfile(
   }
 }
 
+export function createDevAdStrategy(config: Config['ad']) {
+  const getter = async (userId: string) => {
+    const employee = await getEmployeeByExternalId(
+      `${config.externalIdPrefix}:${userId}`
+    )
+    return verifyProfile(config, {
+      nameID: 'dummyid',
+      [config.userIdKey]: userId,
+      [AD_GIVEN_NAME_KEY]: employee.firstName,
+      [AD_FAMILY_NAME_KEY]: employee.lastName,
+      [AD_EMAIL_KEY]: employee.email ? employee.email : ''
+    })
+  }
+
+  const upserter = async (
+    userId: string,
+    roles: string[],
+    firstName: string,
+    lastName: string,
+    email: string
+  ) => {
+    if (!userId) throw Error('No user ID in SAML data')
+    await upsertEmployee({
+      firstName,
+      lastName,
+      email,
+      externalId: `${config.externalIdPrefix}:${userId}`,
+      roles: roles as UserRole[]
+    })
+    return verifyProfile(config, {
+      nameID: 'dummyid',
+      [config.userIdKey]: userId,
+      [AD_GIVEN_NAME_KEY]: firstName,
+      [AD_FAMILY_NAME_KEY]: lastName,
+      [AD_EMAIL_KEY]: email
+    })
+  }
+
+  return new DevAdStrategy(getter, upserter)
+}
+
 export default function createAdStrategy(
   config: Config['ad'],
   samlConfig: SamlConfig
-): SamlStrategy | DevAdStrategy {
-  if (config.mock) {
-    const getter = async (userId: string) => {
-      const employee = await getEmployeeByExternalId(
-        `${config.externalIdPrefix}:${userId}`
-      )
-      return verifyProfile(config, {
-        nameID: 'dummyid',
-        [config.userIdKey]: userId,
-        [AD_GIVEN_NAME_KEY]: employee.firstName,
-        [AD_FAMILY_NAME_KEY]: employee.lastName,
-        [AD_EMAIL_KEY]: employee.email ? employee.email : ''
-      })
-    }
-
-    const upserter = async (
-      userId: string,
-      roles: string[],
-      firstName: string,
-      lastName: string,
-      email: string
-    ) => {
-      if (!userId) throw Error('No user ID in SAML data')
-      await upsertEmployee({
-        firstName,
-        lastName,
-        email,
-        externalId: `${config.externalIdPrefix}:${userId}`,
-        roles: roles as UserRole[]
-      })
-      return verifyProfile(config, {
-        nameID: 'dummyid',
-        [config.userIdKey]: userId,
-        [AD_GIVEN_NAME_KEY]: firstName,
-        [AD_FAMILY_NAME_KEY]: lastName,
-        [AD_EMAIL_KEY]: email
-      })
-    }
-
-    return new DevAdStrategy(getter, upserter)
-  } else {
-    const Profile = z.object({
-      [config.userIdKey]: z.string(),
-      [AD_GIVEN_NAME_KEY]: z.string(),
-      [AD_FAMILY_NAME_KEY]: z.string(),
-      [AD_EMAIL_KEY]: z.string().optional(),
-      [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
-    })
-    return new SamlStrategy(
-      samlConfig,
-      toSamlVerifyFunction(Profile, (profile) => verifyProfile(config, profile))
-    )
-  }
+): SamlStrategy {
+  const Profile = z.object({
+    [config.userIdKey]: z.string(),
+    [AD_GIVEN_NAME_KEY]: z.string(),
+    [AD_FAMILY_NAME_KEY]: z.string(),
+    [AD_EMAIL_KEY]: z.string().optional(),
+    [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
+  })
+  return new SamlStrategy(
+    samlConfig,
+    toSamlVerifyFunction(Profile, (profile) => verifyProfile(config, profile))
+  )
 }

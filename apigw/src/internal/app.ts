@@ -43,6 +43,7 @@ import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
 import { createSamlConfig } from '../shared/auth/saml'
 import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
+import { createDevAdRouter } from './dev-ad-login'
 
 export default function internalGwApp(
   config: Config,
@@ -104,21 +105,23 @@ export default function internalGwApp(
       next()
     })
 
-    const adSamlConfig = config.ad.mock
-      ? { cert: 'mock-certificate' }
-      : createSamlConfig(
-          config.ad.saml,
-          redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-        )
-    router.use(
-      createSamlRouter(config, {
-        strategyName: 'ead',
-        strategy: createAdSamlStrategy(config.ad, adSamlConfig),
-        samlConfig: adSamlConfig,
-        sessionType: 'employee',
-        pathIdentifier: 'saml'
-      })
-    )
+    if (config.ad.mock) {
+      router.use('/auth/saml', createDevAdRouter(config))
+    } else {
+      const adSamlConfig = createSamlConfig(
+        config.ad.saml,
+        redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+      )
+      router.use(
+        createSamlRouter({
+          strategyName: 'ead',
+          strategy: createAdSamlStrategy(config.ad, adSamlConfig),
+          samlConfig: adSamlConfig,
+          sessionType: 'employee',
+          pathIdentifier: 'saml'
+        })
+      )
+    }
 
     if (!config.keycloakEmployee)
       throw new Error('Missing Keycloak SAML configuration (employee)')
@@ -127,7 +130,7 @@ export default function internalGwApp(
       redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
     )
     router.use(
-      createSamlRouter(config, {
+      createSamlRouter({
         strategyName: 'evaka',
         strategy: createEvakaSamlStrategy(keycloakEmployeeConfig),
         samlConfig: keycloakEmployeeConfig,
