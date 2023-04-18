@@ -9,14 +9,9 @@ import { csrfCookieName } from '../../shared/middleware/csrf'
 import { CitizenUser } from '../../shared/service-client'
 import enduserGwApp from '../app'
 import { configFromEnv } from '../../shared/config'
-import { DevCitizen } from '../../shared/dev-api'
 
-const mockUser: DevCitizen & CitizenUser = {
-  id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2',
-  firstName: 'dummy',
-  lastName: 'dummy',
-  ssn: '010101-999X',
-  dependantCount: 0
+const mockUser: CitizenUser = {
+  id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'
 }
 
 describe('CSRF middleware and cookie handling in enduser-gw', () => {
