@@ -5,7 +5,7 @@
 import type { CacheProvider } from 'passport-saml'
 import type { RedisClient } from 'redis'
 import redis from 'redis-mock'
-import redisCacheProvider from '../auth/passport-saml-cache-redis'
+import redisCacheProvider from '../saml/passport-saml-cache-redis'
 import { fromCallback } from '../promise-utils'
 
 const ttlSeconds = 1

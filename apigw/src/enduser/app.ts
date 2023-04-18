@@ -7,14 +7,13 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createEvakaCustomerSamlStrategy from '../shared/auth/customer-saml'
-import createSuomiFiStrategy from '../shared/auth/suomi-fi-saml'
+import createSuomiFiStrategy from './suomi-fi-saml'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
 import tracing from '../shared/middleware/tracing'
 import { trustReverseProxy } from '../shared/reverse-proxy'
-import createSamlRouter from '../shared/routes/auth/saml'
+import createSamlRouter from '../shared/routes/saml'
 import session, {
   refreshLogoutToken,
   touchSessionMaxAge
@@ -26,9 +25,10 @@ import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
 import { Config } from '../shared/config'
-import { createSamlConfig } from '../shared/auth/saml'
-import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
-import { createDevSfiRouter } from './dev-sfi-login'
+import { createSamlConfig } from '../shared/saml'
+import redisCacheProvider from '../shared/saml/passport-saml-cache-redis'
+import { createDevSfiRouter } from './dev-sfi-auth'
+import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml'
 
 export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
@@ -99,7 +99,7 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
       '/auth/evaka-customer',
       createSamlRouter({
         strategyName: 'evaka-customer',
-        strategy: createEvakaCustomerSamlStrategy(keycloakCitizenConfig),
+        strategy: createKeycloakCitizenSamlStrategy(keycloakCitizenConfig),
         samlConfig: keycloakCitizenConfig,
         sessionType: 'enduser'
       })

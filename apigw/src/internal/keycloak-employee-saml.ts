@@ -6,10 +6,10 @@ import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
 } from 'passport-saml'
-import { employeeLogin } from '../service-client'
-import { toSamlVerifyFunction } from './saml'
+import { employeeLogin } from '../shared/service-client'
+import { toSamlVerifyFunction } from '../shared/saml'
 import { z } from 'zod'
-import { EvakaSessionUser } from './index'
+import { EvakaSessionUser } from '../shared/auth'
 
 const Profile = z.object({
   id: z.string(),
@@ -18,7 +18,7 @@ const Profile = z.object({
   lastName: z.string()
 })
 
-export default function createKeycloakSamlStrategy(
+export function createKeycloakEmployeeSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
   return new SamlStrategy(

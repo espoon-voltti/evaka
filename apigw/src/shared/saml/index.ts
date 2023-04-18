@@ -6,16 +6,17 @@ import { z } from 'zod'
 import {
   CacheProvider,
   Profile,
+  SAML,
   SamlConfig,
   VerifiedCallback,
   VerifyWithoutRequest
 } from 'passport-saml'
 import { logError, logWarn } from '../logging'
-import { EvakaSessionUser } from './index'
+import { EvakaSessionUser } from '../auth'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config'
 import { readFileSync } from 'fs'
 import certificates, { TrustedCertificates } from '../certificates'
-import express from 'express'
+import express, { Request } from 'express'
 import path from 'path'
 
 export function createSamlConfig(
@@ -114,4 +115,34 @@ export function parseRelayState(req: express.Request): string | undefined {
   if (relayState) logError('Invalid RelayState in request', req)
 
   return undefined
+}
+
+/**
+ * If request is a SAMLRequest, parse, validate and return the Profile from it.
+ * @param saml Config must match active strategy's config
+ */
+export async function tryParseProfile(
+  req: Request,
+  saml: SAML
+): Promise<Profile | undefined> {
+  let profile: Profile | null | undefined
+
+  // NOTE: This duplicate parsing can be removed if passport-saml ever exposes
+  // an alternative for passport.authenticate() that either lets us hook into
+  // it before any redirects or separate XML parsing and authentication methods.
+  if (req.query?.SAMLRequest) {
+    // Redirects have signatures in the original query parameter
+    const dummyOrigin = 'http://evaka'
+    const originalQuery = new URL(req.url, dummyOrigin).search.replace(
+      /^\?/,
+      ''
+    )
+    profile = (await saml.validateRedirectAsync(req.query, originalQuery))
+      .profile
+  } else if (req.body?.SAMLRequest) {
+    // POST logout callbacks have the signature in the message body directly
+    profile = (await saml.validatePostRequestAsync(req.body)).profile
+  }
+
+  return profile || undefined
 }

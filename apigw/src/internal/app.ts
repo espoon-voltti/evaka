@@ -7,8 +7,8 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createAdSamlStrategy from '../shared/auth/ad-saml'
-import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
+import createAdSamlStrategy from './ad-saml'
+import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml'
 import {
   appCommit,
   Config,
@@ -23,7 +23,7 @@ import { errorHandler } from '../shared/middleware/error-handler'
 import tracing from '../shared/middleware/tracing'
 import { createProxy } from '../shared/proxy-utils'
 import { trustReverseProxy } from '../shared/reverse-proxy'
-import createSamlRouter from '../shared/routes/auth/saml'
+import createSamlRouter from '../shared/routes/saml'
 import csp from '../shared/routes/csp'
 import session, {
   refreshLogoutToken,
@@ -41,9 +41,9 @@ import AsyncRedisClient from '../shared/async-redis-client'
 import expressBasicAuth from 'express-basic-auth'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
-import { createSamlConfig } from '../shared/auth/saml'
-import redisCacheProvider from '../shared/auth/passport-saml-cache-redis'
-import { createDevAdRouter } from './dev-ad-login'
+import { createSamlConfig } from '../shared/saml'
+import redisCacheProvider from '../shared/saml/passport-saml-cache-redis'
+import { createDevAdRouter } from './dev-ad-auth'
 
 export default function internalGwApp(
   config: Config,
@@ -133,7 +133,7 @@ export default function internalGwApp(
       '/auth/evaka',
       createSamlRouter({
         strategyName: 'evaka',
-        strategy: createEvakaSamlStrategy(keycloakEmployeeConfig),
+        strategy: createKeycloakEmployeeSamlStrategy(keycloakEmployeeConfig),
         samlConfig: keycloakEmployeeConfig,
         sessionType: 'employee'
       })

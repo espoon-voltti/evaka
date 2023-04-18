@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Router, urlencoded } from 'express'
+import { Request, Router, urlencoded } from 'express'
 import { logDebug } from '../shared/logging'
-import passport from 'passport'
+import passport, { Strategy } from 'passport'
 import { EvakaSessionUser } from '../shared/auth'
 import { fromCallback } from '../shared/promise-utils'
 import { logoutExpress, saveSession } from '../shared/session'
-import { toRequestHandler } from '../shared/express'
+import { assertStringProp, toRequestHandler } from '../shared/express'
 import _ from 'lodash'
 import { getEmployees } from '../shared/dev-api'
-import { parseRelayState } from '../shared/auth/saml'
+import { parseRelayState } from '../shared/saml'
 import { Config } from '../shared/config'
-import { createDevAdStrategy } from '../shared/auth/ad-saml'
+import { createDevAdStrategy } from './ad-saml'
 
 export function createDevAdRouter(config: Config): Router {
   const strategyName = 'ad'
@@ -126,4 +126,61 @@ export function createDevAdRouter(config: Config): Router {
     })
   )
   return router
+}
+
+type ProfileGetter = (userId: string) => Promise<EvakaSessionUser>
+type ProfileUpserter = (
+  userId: string,
+  roles: string[],
+  firstName: string,
+  lastName: string,
+  email: string
+) => Promise<EvakaSessionUser>
+
+export class DevAdStrategy extends Strategy {
+  constructor(
+    private profileGetter: ProfileGetter,
+    private profileUpserter: ProfileUpserter
+  ) {
+    super()
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  authenticate(req: Request, _options?: any): any {
+    const shouldRedirect = !req.url.startsWith('/login/callback')
+
+    if (shouldRedirect) {
+      return this.redirect(
+        `${req.baseUrl}/login?RelayState=${req.query.RelayState}`
+      )
+    }
+
+    const preset = assertStringProp(req.body, 'preset')
+
+    if (preset === 'custom') {
+      const roles = Array.isArray(req.body.roles)
+        ? req.body.roles
+        : req.body.roles !== undefined
+        ? [assertStringProp(req.body, 'roles')]
+        : []
+
+      this.profileUpserter(
+        assertStringProp(req.body, 'aad'),
+        roles,
+        assertStringProp(req.body, 'firstName'),
+        assertStringProp(req.body, 'lastName'),
+        assertStringProp(req.body, 'email')
+      )
+        .then((user) => this.success(user))
+        .catch((err) => this.error(err))
+    } else {
+      this.profileGetter(preset)
+        .then((user) => this.success(user))
+        .catch((err) => this.error(err))
+    }
+  }
+
+  logout(req: Request, cb: (err: Error | null, url?: string | null) => void) {
+    cb(null, null)
+  }
 }

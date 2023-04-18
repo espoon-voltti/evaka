@@ -4,21 +4,25 @@
 
 import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
-import passportSaml, { AuthenticateOptions, SAML } from 'passport-saml'
+import passportSaml, {
+  AuthenticateOptions,
+  SAML,
+  SamlConfig
+} from 'passport-saml'
+import { createLogoutToken, EvakaSessionUser } from '../auth'
+import { gatewayRole, nodeEnv } from '../config'
+import { toMiddleware, toRequestHandler } from '../express'
+import { logAuditEvent, logDebug } from '../logging'
+import { fromCallback } from '../promise-utils'
 import {
-  createLogoutToken,
-  EvakaSessionUser,
-  tryParseProfile
-} from '../../../auth'
-import { gatewayRole, nodeEnv } from '../../../config'
-import { toMiddleware, toRequestHandler } from '../../../express'
-import { logAuditEvent, logDebug } from '../../../logging'
-import { fromCallback } from '../../../promise-utils'
-import { logoutExpress, saveLogoutToken, saveSession } from '../../../session'
-import { parseDescriptionFromSamlError } from './error-utils'
-import { SamlEndpointConfig } from './types'
+  logoutExpress,
+  saveLogoutToken,
+  saveSession,
+  SessionType
+} from '../session'
+import { parseDescriptionFromSamlError } from '../saml/error-utils'
 import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
-import { parseRelayState } from '../../../auth/saml'
+import { parseRelayState, tryParseProfile } from '../saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -42,6 +46,13 @@ function getDefaultPageUrl(req: express.Request): string {
 
 function getRedirectUrl(req: express.Request): string {
   return parseRelayState(req) ?? getDefaultPageUrl(req)
+}
+
+export interface SamlEndpointConfig {
+  strategyName: string
+  strategy: passportSaml.Strategy
+  samlConfig: SamlConfig
+  sessionType: SessionType
 }
 
 function createLoginHandler({

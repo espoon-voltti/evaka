@@ -7,11 +7,11 @@ import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
 } from 'passport-saml'
-import { citizenLogin } from '../service-client'
-import { toSamlVerifyFunction } from './saml'
-import { EvakaSessionUser } from './index'
+import { citizenLogin } from '../shared/service-client'
+import { toSamlVerifyFunction } from '../shared/saml'
+import { EvakaSessionUser } from '../shared/auth'
 
-export default function createKeycloakSamlStrategy(
+export function createKeycloakCitizenSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
   return new SamlStrategy(

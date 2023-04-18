@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Router, urlencoded } from 'express'
+import { Request, Router, urlencoded } from 'express'
 import { logDebug } from '../shared/logging'
-import passport from 'passport'
+import passport, { Strategy } from 'passport'
 import { EvakaSessionUser } from '../shared/auth'
 import { fromCallback } from '../shared/promise-utils'
 import { logoutExpress, saveSession } from '../shared/session'
-import { toRequestHandler } from '../shared/express'
+import { assertStringProp, toRequestHandler } from '../shared/express'
 import _ from 'lodash'
 import { getCitizens } from '../shared/dev-api'
-import { createDevSuomiFiStrategy } from '../shared/auth/suomi-fi-saml'
-import { parseRelayState } from '../shared/auth/saml'
+import { createDevSuomiFiStrategy } from './suomi-fi-saml'
+import { parseRelayState } from '../shared/saml'
 
 export function createDevSfiRouter(): Router {
   const strategyName = 'suomifi'
@@ -109,4 +109,33 @@ export function createDevSfiRouter(): Router {
     })
   )
   return router
+}
+
+type ProfileGetter = (userId: string) => Promise<EvakaSessionUser>
+
+export class DevSfiStrategy extends Strategy {
+  constructor(private profileGetter: ProfileGetter) {
+    super()
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  authenticate(req: Request, _options?: any): any {
+    const shouldRedirect = !req.url.startsWith('/login/callback')
+
+    if (shouldRedirect) {
+      return this.redirect(
+        `${req.baseUrl}/login?RelayState=${req.query.RelayState}`
+      )
+    }
+
+    const preset = assertStringProp(req.body, 'preset')
+
+    this.profileGetter(preset)
+      .then((user) => this.success(user))
+      .catch((err) => this.error(err))
+  }
+
+  logout(req: Request, cb: (err: Error | null, url?: string | null) => void) {
+    cb(null, null)
+  }
 }

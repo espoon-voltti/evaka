@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
-import { Profile, SAML } from 'passport-saml'
+import { Profile } from 'passport-saml'
 import { UserType } from '../service-client'
 
 const auditEventGatewayId =
@@ -101,34 +101,4 @@ export function createLogoutToken(
   sessionIndex: Profile['sessionIndex']
 ) {
   return `${nameID}:::${sessionIndex}`
-}
-
-/**
- * If request is a SAMLRequest, parse, validate and return the Profile from it.
- * @param saml Config must match active strategy's config
- */
-export async function tryParseProfile(
-  req: Request,
-  saml: SAML
-): Promise<Profile | undefined> {
-  let profile: Profile | null | undefined
-
-  // NOTE: This duplicate parsing can be removed if passport-saml ever exposes
-  // an alternative for passport.authenticate() that either lets us hook into
-  // it before any redirects or separate XML parsing and authentication methods.
-  if (req.query?.SAMLRequest) {
-    // Redirects have signatures in the original query parameter
-    const dummyOrigin = 'http://evaka'
-    const originalQuery = new URL(req.url, dummyOrigin).search.replace(
-      /^\?/,
-      ''
-    )
-    profile = (await saml.validateRedirectAsync(req.query, originalQuery))
-      .profile
-  } else if (req.body?.SAMLRequest) {
-    // POST logout callbacks have the signature in the message body directly
-    profile = (await saml.validatePostRequestAsync(req.body)).profile
-  }
-
-  return profile || undefined
 }

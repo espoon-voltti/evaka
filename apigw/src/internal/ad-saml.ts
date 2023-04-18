@@ -7,12 +7,12 @@ import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
 } from 'passport-saml'
-import DevAdStrategy from './dev-ad-strategy'
-import { getEmployeeByExternalId, upsertEmployee } from '../dev-api'
-import { employeeLogin, UserRole } from '../service-client'
-import { Config } from '../config'
-import { toSamlVerifyFunction } from './saml'
-import { EvakaSessionUser } from './index'
+import { getEmployeeByExternalId, upsertEmployee } from '../shared/dev-api'
+import { employeeLogin, UserRole } from '../shared/service-client'
+import { Config } from '../shared/config'
+import { toSamlVerifyFunction } from '../shared/saml'
+import { EvakaSessionUser } from '../shared/auth'
+import { DevAdStrategy } from './dev-ad-auth'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'

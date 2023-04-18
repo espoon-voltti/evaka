@@ -4,11 +4,11 @@
 
 import { z } from 'zod'
 import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
-import { citizenLogin } from '../service-client'
-import { getCitizenBySsn } from '../dev-api'
-import DevSfiStrategy from './dev-sfi-strategy'
-import { toSamlVerifyFunction } from './saml'
-import { EvakaSessionUser } from './index'
+import { citizenLogin } from '../shared/service-client'
+import { getCitizenBySsn } from '../shared/dev-api'
+import { toSamlVerifyFunction } from '../shared/saml'
+import { EvakaSessionUser } from '../shared/auth'
+import { DevSfiStrategy } from './dev-sfi-auth'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
