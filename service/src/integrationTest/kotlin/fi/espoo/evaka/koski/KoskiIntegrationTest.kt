@@ -31,6 +31,8 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testChildDuplicateOf
+import fi.espoo.evaka.testChildDuplicated
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
@@ -1037,6 +1039,43 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .vahvistus
                 ?.paikkakunta
                 ?.koodiarvo
+        )
+    }
+
+    @Test
+    fun `will send duplicate child's preschool daycare placement, but not the original child's`() {
+        val placementPeriodOfOriginal = preschoolTerm2019
+        insertPlacement(
+            child = testChildDuplicated,
+            period = placementPeriodOfOriginal,
+            type = PlacementType.PRESCHOOL_DAYCARE
+        )
+        koskiTester.triggerUploads(today = placementPeriodOfOriginal.end.plusDays(1))
+
+        val duplicatedChildsStudyRights = koskiServer.getStudyRights()
+
+        assertEquals(0, duplicatedChildsStudyRights.size)
+
+        val placementPeriodOfDuplicate =
+            FiniteDateRange(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1))
+
+        insertPlacement(
+            child = testChildDuplicateOf,
+            period = placementPeriodOfDuplicate,
+            type = PlacementType.PRESCHOOL_DAYCARE
+        )
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        val allStudyRights = koskiServer.getStudyRights()
+        assertEquals(1, allStudyRights.size)
+
+        val onlyStudyRight = allStudyRights.values.first()
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(placementPeriodOfDuplicate.start),
+                Opiskeluoikeusjakso.valmistunut(placementPeriodOfDuplicate.end)
+            ),
+            onlyStudyRight.opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
     }
 

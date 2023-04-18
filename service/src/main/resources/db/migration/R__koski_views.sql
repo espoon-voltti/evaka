@@ -32,6 +32,7 @@ TABLE (
         AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB', 'PREPARATORY', 'PREPARATORY_DAYCARE')
         WINDOW child AS (PARTITION BY child_id)
     ) p
+    WHERE NOT EXISTS (SELECT FROM person duplicate WHERE duplicate.duplicate_of = p.child_id)
     GROUP BY child_id, unit_id, type
 $$ LANGUAGE SQL STABLE;
 
