@@ -51,7 +51,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
 
-    // Also Monday
     private val sunday = LocalDate.of(2021, 11, 14)
     private val monday = sunday.plusDays(1)
     private val tuesday = monday.plusDays(1)
