@@ -2,20 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import _, { escape } from 'lodash'
+import { z } from 'zod'
 import { Router } from 'express'
 import { assertStringProp } from '../shared/express'
-import _ from 'lodash'
-import {
-  getEmployeeByExternalId,
-  getEmployees,
-  upsertEmployee
-} from '../shared/dev-api'
+import { getEmployees, upsertEmployee } from '../shared/dev-api'
 import { createDevAuthRouter } from '../shared/auth/dev-auth'
 import {
   employeeLogin,
   EmployeeLoginRequest,
   UserRole
 } from '../shared/service-client'
+
+const Employee = z.object({
+  externalId: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  email: z.string()
+})
 
 export function createDevAdRouter(): Router {
   return createDevAuthRouter({
@@ -25,10 +29,18 @@ export function createDevAdRouter(): Router {
     loginFormHandler: async (req, res) => {
       const employees = _.sortBy(await getEmployees(), ({ id }) => id)
       const employeeInputs = employees
-        .map(({ externalId, firstName, lastName }) => {
-          if (!externalId) return ''
-          const [_, aad] = externalId.split(':')
-          return `<div><input type="radio" id="${aad}" name="preset" value="${aad}" /><label for="${aad}">${firstName} ${lastName}</label></div>`
+        .map((employee) => {
+          if (!employee.externalId || !employee.email) return ''
+          const { externalId, firstName, lastName } = employee
+          const json = JSON.stringify(employee)
+          return `<div>
+            <input
+              type="radio"
+              id="${externalId}"
+              name="preset"
+              value="${escape(json)}" />
+            <label for="${externalId}">${firstName} ${lastName}</label>
+          </div>`
         })
         .filter((line) => !!line)
 
@@ -103,14 +115,7 @@ export function createDevAdRouter(): Router {
         })
         loginRequest = { externalId, firstName, lastName, email }
       } else {
-        const externalId = `espoo-ad:${preset}`
-        const employee = await getEmployeeByExternalId(externalId)
-        loginRequest = {
-          externalId,
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          email: employee.email ?? ''
-        }
+        loginRequest = Employee.parse(JSON.parse(preset))
       }
       const person = await employeeLogin(loginRequest)
       return {
