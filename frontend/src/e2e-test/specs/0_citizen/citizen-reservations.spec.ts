@@ -252,7 +252,14 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       'SICKLEAVE'
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [reservation])
+    await calendarPage.assertReservations(firstReservationDay, [
+      {
+        startTime: '08:00',
+        endTime: '16:00',
+        childIds: [children[1].id, children[2].id]
+      },
+      { absence: true, childIds: [children[0].id] }
+    ])
   })
 
   test('Citizen creates a repeating reservation and then overwrites it', async () => {
@@ -362,8 +369,8 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     )
 
     await calendarPage.assertReservations(firstReservationDay, [
-      reservation1,
-      reservation2
+      reservation2,
+      reservation1
     ])
   })
 

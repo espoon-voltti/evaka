@@ -85,7 +85,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 2 reservations are added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange) }
                 .flatMap {
                     it.children.mapNotNull { child ->
                         child.reservations.takeIf { it.isNotEmpty() }
@@ -130,7 +130,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then only 1 reservation is added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .mapNotNull { dailyData ->
                     dailyData.date.takeIf {
                         dailyData.children.any { it.reservations.isNotEmpty() }
@@ -176,7 +182,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then no reservation are added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .mapNotNull { dailyData ->
                     dailyData.date.takeIf {
                         dailyData.children.any { it.reservations.isNotEmpty() }
@@ -221,7 +233,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then only 1 reservation is added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .mapNotNull { dailyData ->
                     dailyData.date.takeIf {
                         dailyData.children.any { it.reservations.isNotEmpty() }
@@ -268,7 +286,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then only 1 reservation is added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .mapNotNull { dailyData ->
                     dailyData.date.takeIf {
                         dailyData.children.any { it.reservations.isNotEmpty() }
@@ -321,7 +345,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 1 reservation is added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .mapNotNull { dailyData ->
                     dailyData.date.takeIf {
                         dailyData.children.any { it.reservations.isNotEmpty() }
@@ -388,7 +418,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then no reservations exist
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .flatMap { dailyData -> dailyData.children.flatMap { it.reservations } }
         assertEquals(listOf(), reservations)
 
@@ -462,7 +498,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 1 reservation is added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .mapNotNull { dailyData ->
                     dailyData.date.takeIf {
                         dailyData.children.any { it.reservations.isNotEmpty() }
@@ -529,7 +571,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 1 reservation is changed
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
                 .flatMap { dailyData ->
                     dailyData.children.map { child -> dailyData.date to child.reservations }
                 }
@@ -579,7 +627,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then
         val dailyReservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, holidayPeriod, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        holidayPeriod,
+                    )
+                }
                 .flatMap { dailyData ->
                     dailyData.children.map { child -> dailyData.date to child.reservations }
                 }
@@ -692,7 +746,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then
         val reservationData =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, holidayPeriod, false) }
+            db.read {
+                it.getReservationsCitizen(
+                    monday,
+                    testAdult_1.id,
+                    holidayPeriod,
+                )
+            }
         val allReservations =
             reservationData.flatMap { dailyData ->
                 dailyData.children.flatMap { child -> child.reservations }
@@ -753,7 +813,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then
         val reservationData =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, holidayPeriod, false) }
+            db.read {
+                it.getReservationsCitizen(
+                    monday,
+                    testAdult_1.id,
+                    holidayPeriod,
+                )
+            }
         val allReservations =
             reservationData.flatMap { dailyData ->
                 dailyData.children.map { child -> dailyData.date to child.reservations }
@@ -818,7 +884,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then
         val allReservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, holidayPeriod, false) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        holidayPeriod,
+                    )
+                }
                 .flatMap { dailyData ->
                     dailyData.children.map { child -> dailyData.date to child.reservations }
                 }

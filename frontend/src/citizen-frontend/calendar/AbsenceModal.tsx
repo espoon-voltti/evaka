@@ -11,7 +11,9 @@ import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   AbsenceRequest,
-  ReservationChild
+  ReservationChild,
+  ReservationResponseDay,
+  ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
@@ -46,13 +48,6 @@ import {
 } from './CalendarModal'
 import { postAbsencesMutation } from './queries'
 
-interface Props {
-  close: () => void
-  availableChildren: ReservationChild[]
-  initialDate: LocalDate | undefined
-  firstPlannedAbsenceDate: LocalDate | null
-}
-
 function initialForm(
   initialDate: LocalDate | undefined,
   availableChildren: ReservationChild[]
@@ -73,18 +68,23 @@ function initialForm(
   }
 }
 
+interface Props {
+  close: () => void
+  reservationsResponse: ReservationsResponse
+  initialDate: LocalDate | undefined
+}
+
 export default React.memo(function AbsenceModal({
   close,
-  availableChildren,
-  initialDate,
-  firstPlannedAbsenceDate
+  reservationsResponse,
+  initialDate
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
   const { mutateAsync: postAbsences } = useMutationResult(postAbsencesMutation)
   const [form, setForm] = useState<Form>(() =>
-    initialForm(initialDate, availableChildren)
+    initialForm(initialDate, reservationsResponse.children)
   )
 
   const updateForm = useCallback(
@@ -94,8 +94,8 @@ export default React.memo(function AbsenceModal({
         const contractDayAbsenceTypeSettings =
           getContractDayAbsenceTypeSettings(
             form,
-            firstPlannedAbsenceDate,
-            availableChildren
+            reservationsResponse.reservableRange,
+            reservationsResponse.days
           )
         return {
           ...form,
@@ -107,7 +107,7 @@ export default React.memo(function AbsenceModal({
             : undefined)
         }
       }),
-    [setForm, firstPlannedAbsenceDate, availableChildren]
+    [reservationsResponse.reservableRange, reservationsResponse.days]
   )
 
   const [showAllErrors, setShowAllErrors] = useState(false)
@@ -116,21 +116,26 @@ export default React.memo(function AbsenceModal({
   const showShiftCareAbsenceType = useMemo(
     () =>
       featureFlags.citizenShiftCareAbsence
-        ? availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit)
+        ? reservationsResponse.days.some((day) =>
+            day.children.some(({ shiftCare }) => shiftCare)
+          )
         : false,
-    [availableChildren]
+    [reservationsResponse.days]
   )
   const contractDayAbsenceTypeSettings = useMemo(
     () =>
       getContractDayAbsenceTypeSettings(
         form,
-        firstPlannedAbsenceDate,
-        availableChildren
+        reservationsResponse.reservableRange,
+        reservationsResponse.days
       ),
-    [form, firstPlannedAbsenceDate, availableChildren]
+    [form, reservationsResponse.reservableRange, reservationsResponse.days]
   )
 
-  const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
+  const duplicateChildInfo = getDuplicateChildInfo(
+    reservationsResponse.children,
+    i18n
+  )
 
   return (
     <ModalAccessibilityWrapper>
@@ -155,7 +160,7 @@ export default React.memo(function AbsenceModal({
                 <H2>{i18n.calendar.absenceModal.selectedChildren}</H2>
                 <Gap size="xs" />
                 <FixedSpaceFlexWrap>
-                  {availableChildren.map((child) => (
+                  {reservationsResponse.children.map((child) => (
                     <SelectionChip
                       key={child.id}
                       text={`${formatFirstName(child)}${
@@ -342,23 +347,36 @@ const validateForm = (
 
 const getContractDayAbsenceTypeSettings = (
   form: Form,
-  firstPlannedAbsenceDate: LocalDate | null,
-  availableChildren: ReservationChild[]
+  reservableRange: FiniteDateRange,
+  calendarDays: ReservationResponseDay[]
 ) => {
   if (
     featureFlags.citizenContractDayAbsence &&
     form.startDate !== null &&
-    firstPlannedAbsenceDate !== null &&
-    form.startDate >= firstPlannedAbsenceDate
+    reservableRange.includes(form.startDate)
   ) {
-    const selectedChildren = availableChildren.filter(({ id }) =>
-      form.selectedChildren.includes(id)
+    const startDate = form.startDate
+    const endDate = form.endDate ?? reservableRange.end
+
+    const relevantDays = calendarDays.filter(
+      (d) => startDate.isEqualOrBefore(d.date) && endDate.isEqualOrAfter(d.date)
     )
     return {
-      visible: selectedChildren.some(({ hasContractDays }) => hasContractDays),
+      visible: relevantDays.some((day) =>
+        day.children.some(
+          (child) =>
+            child.contractDays && form.selectedChildren.includes(child.childId)
+        )
+      ),
       enabled:
-        selectedChildren.length > 0 &&
-        selectedChildren.every(({ hasContractDays }) => hasContractDays)
+        form.selectedChildren.length > 0 &&
+        relevantDays.every((day) =>
+          day.children.every(
+            (child) =>
+              !form.selectedChildren.includes(child.childId) ||
+              child.contractDays
+          )
+        )
     }
   }
   return { visible: false, enabled: false }

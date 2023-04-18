@@ -10,20 +10,17 @@ import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
-import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,7 +41,7 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ReservationsResponse {
-        val range =
+        val requestedRange =
             try {
                 FiniteDateRange(from, to)
             } catch (e: IllegalArgumentException) {
@@ -60,32 +57,94 @@ class ReservationControllerCitizen(
                         Action.Citizen.Person.READ_RESERVATIONS,
                         user.id
                     )
-                    val children = tx.getReservationChildren(clock.today(), user.id, range)
-                    val includeWeekends =
-                        children.any {
-                            it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
+                    val holidays = tx.getHolidays(requestedRange)
+                    val placements =
+                        tx.getReservationPlacements(user.id, clock.today(), requestedRange)
+                    val children = tx.getReservationChildren(placements.keys, clock.today())
+                    val includesWeekends =
+                        placements.any { (_, pls) ->
+                            (pls.regularPlacements + pls.backupPlacements).any {
+                                it.operationDays.contains(6) || it.operationDays.contains(7)
+                            }
                         }
-                    val reservations =
-                        tx.getReservationsCitizen(clock.today(), user.id, range, includeWeekends)
+
+                    val reservationData =
+                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
+                    val absences: Map<Pair<ChildId, LocalDate>, AbsenceInfo> =
+                        reservationData
+                            .flatMap { d ->
+                                d.children.mapNotNull { c ->
+                                    if (c.absence == null) null
+                                    else
+                                        Pair(
+                                            Pair(c.childId, d.date),
+                                            AbsenceInfo(c.absence, c.markedByEmployee)
+                                        )
+                                }
+                            }
+                            .toMap()
+                    val reservations: Map<Pair<ChildId, LocalDate>, List<Reservation>> =
+                        reservationData
+                            .flatMap { d ->
+                                d.children.map { c ->
+                                    Pair(Pair(c.childId, d.date), c.reservations)
+                                }
+                            }
+                            .toMap()
+                    val attendances: Map<Pair<ChildId, LocalDate>, List<OpenTimeRange>> =
+                        reservationData
+                            .flatMap { d ->
+                                d.children.map { c -> Pair(Pair(c.childId, d.date), c.attendances) }
+                            }
+                            .toMap()
+
                     val reservableRange =
                         getReservableRange(
                             clock.now(),
                             featureConfig.citizenReservationThresholdHours,
                         )
-                    val reservableDays =
-                        children.associate { child ->
-                            Pair(
-                                child.id,
-                                child.placements.mapNotNull { placement ->
-                                    reservableRange.intersection(placement)
-                                }
-                            )
-                        }
+                    val days =
+                        requestedRange
+                            .dates()
+                            .mapNotNull { date ->
+                                if (!includesWeekends && date.dayOfWeek.value > 5)
+                                    return@mapNotNull null
+                                val isHoliday = holidays.contains(date)
+                                ReservationResponseDay(
+                                    date = date,
+                                    holiday = isHoliday,
+                                    children =
+                                        // Includes all children that are eligible for daycare
+                                        // on this date: have a placement, is an operation day in
+                                        // their unit
+                                        children
+                                            .mapNotNull { child ->
+                                                placementDay(date, isHoliday, placements[child.id])
+                                                    ?.let { placementDay ->
+                                                        val key = Pair(child.id, date)
+                                                        ReservationResponseDayChild(
+                                                            childId = child.id,
+                                                            shiftCare = placementDay.shiftCare,
+                                                            contractDays =
+                                                                placementDay.contractDays,
+                                                            absence = absences[key],
+                                                            reservations = reservations[key]
+                                                                    ?: listOf(),
+                                                            attendances = attendances[key]
+                                                                    ?: listOf(),
+                                                        )
+                                                    }
+                                            }
+                                            .sortedBy { it.childId }
+                                )
+                            }
+                            .toList()
+
                     ReservationsResponse(
-                        dailyData = reservations,
                         children = children,
-                        reservableDays = reservableDays,
-                        includesWeekends = includeWeekends
+                        days = days,
+                        reservableRange = reservableRange,
+                        includesWeekends = includesWeekends,
                     )
                 }
             }
@@ -192,195 +251,57 @@ class ReservationControllerCitizen(
     }
 }
 
+data class PlacementDay(val shiftCare: Boolean, val contractDays: Boolean)
+
+private fun placementDay(
+    date: LocalDate,
+    isHoliday: Boolean,
+    placements: ReservationPlacements?
+): PlacementDay? {
+    if (placements == null) return null
+
+    // Backup placements take precedence
+    val placement =
+        placements.backupPlacements.find { it.startDate <= date && date <= it.endDate }
+            ?: placements.regularPlacements.find { it.startDate <= date && date <= it.endDate }
+
+    return if (placement == null) {
+        null
+    } else if (placement.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)) {
+        PlacementDay(shiftCare = true, contractDays = placement.hasContractDays)
+    } else if (placement.operationDays.contains(date.dayOfWeek.value) && !isHoliday) {
+        PlacementDay(shiftCare = false, contractDays = placement.hasContractDays)
+    } else {
+        null
+    }
+}
+
 data class ReservationsResponse(
-    val dailyData: List<DailyReservationData>,
     val children: List<ReservationChild>,
-    val reservableDays: Map<ChildId, List<FiniteDateRange>>,
+    val days: List<ReservationResponseDay>,
+    val reservableRange: FiniteDateRange,
     val includesWeekends: Boolean
 )
 
-data class DailyReservationData(
+data class ReservationResponseDay(
     val date: LocalDate,
-    val isHoliday: Boolean,
-    @Json val children: List<ChildDailyData>
+    val holiday: Boolean,
+    val children: List<ReservationResponseDayChild>
 )
 
-@Json
-data class ChildDailyData(
+data class ReservationResponseDayChild(
     val childId: ChildId,
-    val markedByEmployee: Boolean,
-    val absence: AbsenceType?,
+    val shiftCare: Boolean, // Can make more one reservation for this day
+    val contractDays: Boolean,
+    val absence: AbsenceInfo?,
     val reservations: List<Reservation>,
-    val attendances: List<OpenTimeRange>
+    val attendances: List<OpenTimeRange>,
 )
 
-data class ReservationChild(
-    val id: ChildId,
-    val firstName: String,
-    val lastName: String,
-    val preferredName: String,
-    val duplicateOf: PersonId?,
-    val imageId: ChildImageId?,
-    val placements: List<FiniteDateRange>,
-    val upcomingPlacementType: PlacementType?,
-    val maxOperationalDays: Set<Int>,
-    val inShiftCareUnit: Boolean,
-    val hasContractDays: Boolean
-)
+data class AbsenceInfo(val type: AbsenceType, val markedByEmployee: Boolean)
 
 data class AbsenceRequest(
     val childIds: Set<ChildId>,
     val dateRange: FiniteDateRange,
     val absenceType: AbsenceType
 )
-
-fun Database.Read.getReservationsCitizen(
-    today: LocalDate,
-    userId: PersonId,
-    range: FiniteDateRange,
-    includeWeekends: Boolean
-): List<DailyReservationData> {
-    if (range.durationInDays() > 450) throw BadRequest("Range too long")
-
-    return createQuery(
-            """
-WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
-    UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
-)
-SELECT
-    t::date AS date,
-    EXISTS(SELECT 1 FROM holiday h WHERE h.date = t::date) AS is_holiday,
-    coalesce(
-        jsonb_agg(
-            jsonb_build_object(
-                'childId', c.child_id,
-                'markedByEmployee', a.modified_by_type <> 'CITIZEN',
-                'absence', a.absence_type,
-                'reservations', coalesce(ar.reservations, '[]'),
-                'attendances', coalesce(ca.attendances, '[]')
-            )
-        ) FILTER (
-            WHERE (a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL)
-              AND EXISTS(
-                SELECT 1 FROM placement p
-                JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-                WHERE c.child_id = p.child_id AND p.start_date <= t::date AND p.end_date >= t::date
-              )
-        ),
-        '[]'
-    ) AS children
-FROM generate_series(:start, :end, '1 day') t, children c
-LEFT JOIN LATERAL (
-    SELECT
-        jsonb_agg(
-            CASE WHEN ar.start_time IS NULL OR ar.end_time IS NULL THEN
-                jsonb_build_object('type', 'NO_TIMES')
-            ELSE
-                jsonb_build_object('type', 'TIMES', 'startTime', ar.start_time, 'endTime', ar.end_time)
-            END
-            ORDER BY ar.start_time
-        ) AS reservations
-    FROM attendance_reservation ar WHERE ar.child_id = c.child_id AND ar.date = t::date
-) ar ON true
-LEFT JOIN LATERAL (
-    SELECT
-        jsonb_agg(
-            jsonb_build_object(
-                'startTime', to_char(ca.start_time, 'HH24:MI'),
-                'endTime', to_char(ca.end_time, 'HH24:MI')
-            ) ORDER BY ca.start_time ASC
-        ) AS attendances
-    FROM child_attendance ca WHERE ca.child_id = c.child_id AND ca.date = t::date
-) ca ON true
-LEFT JOIN LATERAL (
-    SELECT a.absence_type, eu.type AS modified_by_type
-    FROM absence a JOIN evaka_user eu ON eu.id = a.modified_by
-    WHERE a.child_id = c.child_id AND a.date = t::date
-    LIMIT 1
-) a ON true
-WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
-GROUP BY date, is_holiday
-        """
-                .trimIndent()
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .bind("start", range.start)
-        .bind("end", range.end)
-        .bind("includeWeekends", includeWeekends)
-        .mapTo<DailyReservationData>()
-        .toList()
-}
-
-private fun Database.Read.getReservationChildren(
-    today: LocalDate,
-    userId: PersonId,
-    range: FiniteDateRange
-): List<ReservationChild> {
-    return createQuery(
-            """
-WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
-    UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
-)
-SELECT
-    ch.id,
-    ch.first_name,
-    ch.last_name,
-    ch.preferred_name,
-    ch.duplicate_of,
-    ci.id AS image_id,
-    p.placements,
-    upcoming_pl.type AS upcoming_placement_type,
-    p.max_operational_days,
-    p.in_shift_care_unit,
-    p.has_contract_days
-FROM person ch
-JOIN children c ON ch.id = c.child_id
-LEFT JOIN child_images ci ON ci.child_id = ch.id
-LEFT JOIN (
-    SELECT
-        p.child_id,
-        array_agg(DISTINCT daterange(p.start_date, p.end_date, '[]')) as placements,
-        array_agg(DISTINCT p.operation_days) AS max_operational_days,
-        bool_or(p.round_the_clock) AS in_shift_care_unit,
-        bool_or(p.contract_days_per_month IS NOT NULL) AS has_contract_days
-    FROM (
-             SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, pl.child_id, coalesce(sno.contract_days_per_month, sno_default.contract_days_per_month) AS contract_days_per_month
-             FROM placement pl
-             JOIN daycare u ON pl.unit_id = u.id
-             LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') && :range
-             LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-             LEFT JOIN service_need_option sno_default ON sno_default.valid_placement_type = pl.type AND sno_default.default_option
-             WHERE daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
-
-             UNION ALL
-
-             SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, bc.child_id, NULL AS contract_days_per_month
-             FROM backup_care bc
-             JOIN daycare u ON bc.unit_id = u.id
-             WHERE daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
-    ) p
-    GROUP BY p.child_id
-) p ON p.child_id = c.child_id
-LEFT JOIN LATERAL (
-  SELECT child_id, type
-  FROM placement
-  WHERE child_id = ch.id AND :today <= end_date
-  ORDER BY start_date
-  LIMIT 1
-) upcoming_pl ON true
-WHERE p.placements IS NOT NULL
-ORDER BY ch.date_of_birth, ch.duplicate_of
-        """
-                .trimIndent()
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .bind("range", range)
-        .mapTo<ReservationChild>()
-        .list()
-}

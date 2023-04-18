@@ -24,12 +24,12 @@ import {
   AttendingChild,
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
+  AbsenceInfo,
   DailyReservationRequest,
-  OpenTimeRange,
   Reservation,
   ReservationChild,
+  ReservationResponseDayChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -39,6 +39,7 @@ import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
+import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -71,7 +72,42 @@ import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput from './TimeRangeInput'
 import { postReservationsMutation } from './queries'
-import { isDayReservableForSomeone } from './utils'
+
+interface ChildWithReservations extends ReservationResponseDayChild {
+  child: ReservationChild
+}
+
+function getChildrenWithReservations(
+  date: LocalDate,
+  reservationsResponse: ReservationsResponse
+): {
+  previousDate: LocalDate | undefined
+  relevantChildren: ChildWithReservations[]
+  nextDate: LocalDate | undefined
+} {
+  const dateIndex = reservationsResponse.days.findIndex((reservation) =>
+    date.isEqual(reservation.date)
+  )
+  if (dateIndex === -1) {
+    return {
+      previousDate: undefined,
+      relevantChildren: [],
+      nextDate: undefined
+    }
+  }
+  return {
+    previousDate: reservationsResponse.days[dateIndex - 1]?.date,
+    relevantChildren: reservationsResponse.days[dateIndex].children.flatMap(
+      (reservationChild) => {
+        const child = reservationsResponse.children.find(
+          (c) => c.id === reservationChild.childId
+        )
+        return child !== undefined ? [{ child, ...reservationChild }] : []
+      }
+    ),
+    nextDate: reservationsResponse.days[dateIndex + 1]?.date
+  }
+}
 
 interface Props {
   date: LocalDate
@@ -80,70 +116,6 @@ interface Props {
   close: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
-}
-
-interface ChildWithReservations {
-  child: ReservationChild
-  absence: AbsenceType | undefined
-  reservations: Reservation[]
-  attendances: OpenTimeRange[]
-  reservationEditable: boolean
-  markedByEmployee: boolean
-}
-
-function getChildrenWithReservations(
-  date: LocalDate,
-  reservationsResponse: ReservationsResponse
-): ChildWithReservations[] {
-  const dailyData = reservationsResponse.dailyData.find((day) =>
-    date.isEqual(day.date)
-  )
-  if (!dailyData) return []
-
-  return reservationsResponse.children
-    .filter((child) =>
-      child.placements.some((pl) => date.isBetween(pl.start, pl.end))
-    )
-    .filter((child) =>
-      child.maxOperationalDays.includes(date.getIsoDayOfWeek())
-    )
-    .filter(
-      (child) => !dailyData.isHoliday || child.maxOperationalDays.length == 7
-    )
-    .map((child) => {
-      const childReservations = dailyData?.children.find(
-        ({ childId }) => childId === child.id
-      )
-
-      const markedByEmployee = childReservations?.markedByEmployee ?? false
-
-      const reservationEditable =
-        !markedByEmployee &&
-        (!dailyData.isHoliday || child.inShiftCareUnit) &&
-        child.maxOperationalDays.includes(date.getIsoDayOfWeek())
-
-      return {
-        child,
-        absence: childReservations?.absence ?? undefined,
-        reservations: childReservations?.reservations ?? [],
-        attendances: childReservations?.attendances ?? [],
-        reservationEditable,
-        markedByEmployee
-      }
-    })
-}
-
-function getSurroundingDates(
-  date: LocalDate,
-  reservationsResponse: ReservationsResponse
-) {
-  const dateIndexInData = reservationsResponse.dailyData.findIndex(
-    (reservation) => date.isEqual(reservation.date)
-  )
-  return [
-    reservationsResponse.dailyData[dateIndexInData - 1]?.date,
-    reservationsResponse.dailyData[dateIndexInData + 1]?.date
-  ]
 }
 
 export default React.memo(function DayView({
@@ -157,19 +129,14 @@ export default React.memo(function DayView({
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const childrenWithReservations = useMemo(
+  const { previousDate, relevantChildren, nextDate } = useMemo(
     () => getChildrenWithReservations(date, reservationsResponse),
     [date, reservationsResponse]
   )
 
-  const [previousDate, nextDate] = useMemo(
-    () => getSurroundingDates(date, reservationsResponse),
-    [date, reservationsResponse]
-  )
-
   const {
-    editable,
-    absenceEditable,
+    reservationsEditable,
+    absencesEditable,
     editing,
     startEditing,
     editorState,
@@ -178,18 +145,14 @@ export default React.memo(function DayView({
     navigate,
     confirmationModal,
     stopEditing
-  } = useEditState(
-    date,
-    childrenWithReservations,
-    reservationsResponse.reservableDays
-  )
+  } = useEditState(date, relevantChildren, reservationsResponse.reservableRange)
 
   const navigateToPrevDate = useCallback(
-    () => selectDate(previousDate),
+    () => previousDate && selectDate(previousDate),
     [selectDate, previousDate]
   )
   const navigateToNextDate = useCallback(
-    () => selectDate(nextDate),
+    () => nextDate && selectDate(nextDate),
     [selectDate, nextDate]
   )
   const onCreateAbsence = useCallback(
@@ -199,9 +162,13 @@ export default React.memo(function DayView({
 
   const childStates = useFormElems(editorState)
 
-  const duplicateChildInfo = getDuplicateChildInfo(
-    childrenWithReservations.map((reservation) => reservation.child),
-    i18n
+  const duplicateChildInfo = useMemo(
+    () =>
+      getDuplicateChildInfo(
+        relevantChildren.map((c) => c.child),
+        i18n
+      ),
+    [i18n, relevantChildren]
   )
 
   return (
@@ -239,13 +206,13 @@ export default React.memo(function DayView({
 
               <Gap size="m" sizeOnMobile="s" />
 
-              {childrenWithReservations.length === 0 ? (
+              {relevantChildren.length === 0 ? (
                 <CalendarModalSection data-qa="no-active-placements-msg">
                   {i18n.calendar.noActivePlacements}
                 </CalendarModalSection>
               ) : (
                 <>
-                  {zip(childrenWithReservations, childStates).map(
+                  {zip(relevantChildren, childStates).map(
                     ([childWithReservation, childState], childIndex) => {
                       if (!childWithReservation || !childState) return null
 
@@ -254,8 +221,7 @@ export default React.memo(function DayView({
                         absence,
                         reservations,
                         attendances,
-                        reservationEditable,
-                        markedByEmployee
+                        shiftCare
                       } = childWithReservation
 
                       const showAttendanceWarning =
@@ -331,18 +297,15 @@ export default React.memo(function DayView({
                               <LabelLike>{i18n.calendar.reservation}</LabelLike>
                               <div>
                                 {editing &&
-                                (reservationEditable || reservations.length) ? (
+                                !(absence && absence.markedByEmployee) ? (
                                   <EditReservation
                                     canAddSecondReservation={
-                                      !reservations[1] && child.inShiftCareUnit
+                                      shiftCare && !reservations[1]
                                     }
                                     childState={childState}
                                   />
                                 ) : absence ? (
-                                  <Absence
-                                    absence={absence}
-                                    markedByEmployee={markedByEmployee}
-                                  />
+                                  <Absence absence={absence} />
                                 ) : (
                                   <Reservations reservations={reservations} />
                                 )}
@@ -431,9 +394,9 @@ export default React.memo(function DayView({
               <Gap size="L" sizeOnMobile="s" />
             </div>
 
-            {childrenWithReservations.length > 0 && (
+            {relevantChildren.length > 0 && (
               <ButtonFooter>
-                {editable ? (
+                {reservationsEditable ? (
                   editing ? (
                     <Button
                       disabled={saving}
@@ -464,7 +427,7 @@ export default React.memo(function DayView({
                     primary
                     text={i18n.calendar.newAbsence}
                     onClick={onCreateAbsence}
-                    disabled={!absenceEditable}
+                    disabled={!absencesEditable}
                     data-qa="create-absence"
                   />
                 )}
@@ -478,19 +441,19 @@ export default React.memo(function DayView({
 })
 
 const childForm = object({
-  child: value<ReservationChild>(),
+  childId: value<UUID>(),
   reservations: array(localTimeRange),
   absent: boolean()
 })
 
 function childFormState({
-  child,
+  childId,
   reservations,
   absence
-}: ChildWithReservations): StateOf<typeof childForm> {
+}: ReservationResponseDayChild): StateOf<typeof childForm> {
   const withTimes = reservations.filter(reservationHasTimes)
   return {
-    child,
+    childId,
     reservations:
       withTimes.length > 0
         ? withTimes.map((reservation) => ({
@@ -498,7 +461,7 @@ function childFormState({
             endTime: reservation.endTime.format()
           }))
         : [{ startTime: '', endTime: '' }],
-    absent: absence !== undefined
+    absent: absence !== null
   }
 }
 
@@ -507,7 +470,7 @@ const editorForm = mapped(
   // The output value is a function that creates an array DailyReservationRequest given the date
   (output) =>
     (date: LocalDate): DailyReservationRequest[] =>
-      output.map(({ child, reservations, absent }) => {
+      output.map(({ childId, reservations, absent }) => {
         const res: Reservation[] = reservations.flatMap((reservation) =>
           reservation
             ? [
@@ -522,18 +485,18 @@ const editorForm = mapped(
         return res.length === 0 && absent
           ? {
               type: 'ABSENCE',
-              childId: child.id,
+              childId,
               date
             }
           : res.length === 0
           ? {
               type: 'NOTHING',
-              childId: child.id,
+              childId,
               date
             }
           : {
               type: 'RESERVATIONS',
-              childId: child.id,
+              childId,
               date,
               reservation: res[0],
               secondReservation: res[1] ?? null
@@ -542,36 +505,23 @@ const editorForm = mapped(
 )
 
 function editorFormState(
-  childrenWithReservations: ChildWithReservations[]
+  childrenWithReservations: ReservationResponseDayChild[]
 ): StateOf<typeof editorForm> {
   return childrenWithReservations.map(childFormState)
 }
 
 function useEditState(
   date: LocalDate,
-  childrenWithReservations: ChildWithReservations[],
-  reservableDays: Record<string, FiniteDateRange[]>
+  childrenWithReservations: ReservationResponseDayChild[],
+  reservableRange: FiniteDateRange
 ) {
   const t = useTranslation()
   const today = LocalDate.todayInSystemTz()
 
-  const anyChildReservable = useMemo(
-    () =>
-      childrenWithReservations.some(
-        ({ reservationEditable }) => reservationEditable
-      ),
-    [childrenWithReservations]
-  )
-
-  const editable = useMemo(
-    () => anyChildReservable && isDayReservableForSomeone(date, reservableDays),
-    [anyChildReservable, reservableDays, date]
-  )
-
-  const absenceEditable = useMemo(
-    () => anyChildReservable && date.isEqualOrAfter(today),
-    [anyChildReservable, date, today]
-  )
+  const anyChildReservable = childrenWithReservations !== undefined
+  const reservationsEditable =
+    anyChildReservable && reservableRange.includes(date)
+  const absencesEditable = anyChildReservable && date.isEqualOrAfter(today)
 
   const [editing, { on: startEditing, off: stopEditing }] = useBoolean(false)
 
@@ -639,8 +589,8 @@ function useEditState(
   )
 
   return {
-    editable,
-    absenceEditable,
+    reservationsEditable,
+    absencesEditable,
     editing,
     startEditing,
     editorState,
@@ -720,20 +670,18 @@ const EditReservation = React.memo(function EditReservation({
 })
 
 const Absence = React.memo(function Absence({
-  absence,
-  markedByEmployee
+  absence
 }: {
-  absence: AbsenceType
-  markedByEmployee: boolean
+  absence: AbsenceInfo
 }) {
   const i18n = useTranslation()
   const [open, setOpen] = useState(false)
   const onClick = useCallback(() => setOpen((prev) => !prev), [])
 
-  if (!markedByEmployee) {
+  if (!absence.markedByEmployee) {
     return (
       <span data-qa="absence">
-        {absence === 'SICKLEAVE'
+        {absence.type === 'SICKLEAVE'
           ? i18n.calendar.absences.SICKLEAVE
           : i18n.calendar.absent}
       </span>

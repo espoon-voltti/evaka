@@ -16,8 +16,8 @@ import styled, { css, useTheme } from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
-  DailyReservationData,
-  ReservationChild
+  ReservationChild,
+  ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -33,7 +33,11 @@ import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
 import { headerHeightDesktop } from '../navigation/const'
 
-import { asWeeklyData, WeeklyData } from './CalendarListView'
+import {
+  CalendarEventCount,
+  CalendarEventCountContainer
+} from './CalendarEventCount'
+import { CalendarWeek, groupByWeek } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
@@ -43,20 +47,20 @@ import { isQuestionnaireAvailable } from './utils'
 
 export interface Props {
   childData: ReservationChild[]
-  dailyData: DailyReservationData[]
+  calendarDays: ReservationResponseDay[]
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
   onReportHolidaysClicked: () => void
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsReservable: (date: LocalDate) => boolean
   events: CitizenCalendarEvent[]
 }
 
 export default React.memo(function CalendarGridView({
   childData,
-  dailyData,
+  calendarDays,
   onCreateReservationClicked,
   onCreateAbsencesClicked,
   onReportHolidaysClicked,
@@ -67,7 +71,10 @@ export default React.memo(function CalendarGridView({
   events
 }: Props) {
   const i18n = useTranslation()
-  const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
+  const calendarMonths = useMemo(
+    () => groupByMonth(calendarDays),
+    [calendarDays]
+  )
   const todayRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -130,12 +137,11 @@ export default React.memo(function CalendarGridView({
         </ButtonContainer>
       </StickyBottomBar>
       <Container>
-        {monthlyData.map(({ month, year, weeks }) => (
+        {calendarMonths.map(({ month, year, weeks }) => (
           <Month
             key={`${month}${year}`}
             year={year}
             month={month}
-            childData={childData}
             weeks={weeks}
             holidayPeriods={holidayPeriods}
             todayRef={todayRef}
@@ -155,14 +161,14 @@ export default React.memo(function CalendarGridView({
 interface MonthlyData {
   month: number
   year: number
-  weeks: WeeklyData[]
+  weeks: CalendarWeek[]
 }
 
-const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
-  const getWeekMonths = (weeklyData: WeeklyData) => {
-    const firstDay = weeklyData.dailyReservations[0].date
+const groupByMonth = (dailyData: ReservationResponseDay[]): MonthlyData[] => {
+  const getWeekMonths = (weeklyData: CalendarWeek) => {
+    const firstDay = weeklyData.calendarDays[0].date
     const lastDay =
-      weeklyData.dailyReservations[weeklyData.dailyReservations.length - 1].date
+      weeklyData.calendarDays[weeklyData.calendarDays.length - 1].date
 
     return firstDay.month === lastDay.month
       ? [[firstDay.month, firstDay.year]]
@@ -172,7 +178,7 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
         ]
   }
 
-  return asWeeklyData(dailyData).reduce<MonthlyData[]>(
+  return groupByWeek(dailyData).reduce<MonthlyData[]>(
     (monthlyData, weeklyData) => {
       const weekMonths = getWeekMonths(weeklyData).map(([month, year]) => ({
         month,
@@ -189,7 +195,7 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
         // days of the month. This can happen because the first day of the month
         // can be eg. a sunday, which might not be shown on the calendar.
         if (
-          firstWeekOfTheMonth.weeks[0].dailyReservations.some(
+          firstWeekOfTheMonth.weeks[0].calendarDays.some(
             ({ date }) => date.date <= 3
           )
         ) {
@@ -225,7 +231,6 @@ const daysWithWeekends = [0, 1, 2, 3, 4, 5, 6]
 const Month = React.memo(function Month({
   year,
   month,
-  childData,
   weeks,
   holidayPeriods,
   todayRef,
@@ -238,14 +243,13 @@ const Month = React.memo(function Month({
 }: {
   year: number
   month: number
-  childData: ReservationChild[]
-  weeks: WeeklyData[]
+  weeks: CalendarWeek[]
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | null>
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsReservable: (date: LocalDate) => boolean
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
 }) {
@@ -269,7 +273,6 @@ const Month = React.memo(function Month({
             key={`${w.weekNumber}${month}${year}`}
             year={year}
             month={month}
-            childData={childData}
             week={w}
             holidayPeriods={holidayPeriods}
             todayRef={todayRef}
@@ -288,7 +291,6 @@ const Month = React.memo(function Month({
 const Week = React.memo(function Week({
   year,
   month,
-  childData,
   week,
   holidayPeriods,
   todayRef,
@@ -300,24 +302,22 @@ const Week = React.memo(function Week({
 }: {
   year: number
   month: number
-  childData: ReservationChild[]
-  week: WeeklyData
+  week: CalendarWeek
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | null>
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsReservable: (date: LocalDate) => boolean
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
 }) {
   return (
     <>
       <WeekNumber>{week.weekNumber}</WeekNumber>
-      {week.dailyReservations.map((d) => (
+      {week.calendarDays.map((d) => (
         <Day
           key={`${d.date.formatIso()}${month}${year}`}
           day={d}
-          childData={childData}
           holidayPeriods={holidayPeriods}
           todayRef={todayRef}
           dateType={dateType(year, month, d.date)}
@@ -340,33 +340,8 @@ function dateType(year: number, month: number, date: LocalDate): DateType {
   return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
 }
 
-export const CalendarEventCountContainer = styled.div`
-  position: relative;
-  font-size: 20px;
-  height: fit-content;
-`
-
-export const CalendarEventCount = styled.div`
-  padding: 2px;
-  height: 20px;
-  min-width: 20px;
-  background-color: ${(p) => p.theme.colors.status.warning};
-  color: ${(p) => p.theme.colors.grayscale.g0};
-  font-weight: ${fontWeights.bold};
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 100%;
-  left: 100%;
-  transform: translate(-60%, -60%);
-  font-size: 14px;
-  border-radius: 9999px;
-`
-
 const Day = React.memo(function Day({
   day,
-  childData,
   holidayPeriods,
   todayRef,
   dateType,
@@ -376,14 +351,13 @@ const Day = React.memo(function Day({
   childImages,
   events
 }: {
-  day: DailyReservationData
-  childData: ReservationChild[]
+  day: ReservationResponseDay
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | null>
   dateType: DateType
   selected: boolean
   selectDate: (date: LocalDate) => void
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsReservable: (date: LocalDate) => boolean
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
 }) {
@@ -398,7 +372,8 @@ const Day = React.memo(function Day({
   )
   const markedByEmployee = useMemo(
     () =>
-      day.children.length > 0 && day.children.every((c) => c.markedByEmployee),
+      day.children.length > 0 &&
+      day.children.every((c) => c.absence?.markedByEmployee ?? false),
     [day.children]
   )
   const holidayPeriod = useMemo(
@@ -445,9 +420,9 @@ const Day = React.memo(function Day({
     >
       <DayCellHeader>
         <DayCellDate
-          inactive={!dayIsReservable(day)}
+          inactive={!dayIsReservable(day.date)}
+          holiday={day.holiday}
           aria-label={day.date.formatExotic('EEEE do MMMM', lang)}
-          holiday={day.isHoliday}
         >
           {day.date.format('d.M.')}
         </DayCellDate>
@@ -465,9 +440,8 @@ const Day = React.memo(function Day({
       <div data-qa="reservations">
         <Reservations
           data={day}
-          allChildren={childData}
           childImages={childImages}
-          isReservable={dayIsReservable(day)}
+          isReservable={dayIsReservable(day.date)}
         />
       </div>
       {dateType === 'past' && <HistoryOverlay />}

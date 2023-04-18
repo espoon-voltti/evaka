@@ -9,10 +9,7 @@ import styled from 'styled-components'
 import { combine, isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import {
-  DailyReservationData,
-  ReservationsResponse
-} from 'lib-common/generated/api-types/reservations'
+import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { mockToday } from 'lib-common/utils/helpers'
@@ -86,16 +83,8 @@ const CalendarPage = React.memo(function CalendarPage() {
   }, [openReservationModal])
 
   const dayIsReservable = useCallback(
-    ({ date, isHoliday }: DailyReservationData) =>
-      data
-        .map(({ children }) =>
-          children.some(
-            ({ maxOperationalDays, inShiftCareUnit }) =>
-              maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
-              (inShiftCareUnit || !isHoliday)
-          )
-        )
-        .getOrElse(false),
+    (date: LocalDate) =>
+      data.map((data) => data.reservableRange.includes(date)).getOrElse(false),
     [data]
   )
 
@@ -122,34 +111,24 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   const { data: questionnaire } = useQuery(activeQuestionnaireQuery)
 
-  const firstReservableDate = useMemo(() => {
-    if (data.isSuccess) {
-      const allReservableDateRanges = Object.keys(
-        data.value.reservableDays
-      ).flatMap((childId) => data.value.reservableDays[childId])
-
-      // First reservable day that has no reservations
-      const firstReservableEmptyDate = data.value.dailyData.find(
-        (day) =>
-          allReservableDateRanges.find((range) => range.includes(day.date)) &&
-          day.children.length == 0
-      )
-      return firstReservableEmptyDate?.date ?? null
-    } else {
-      return LocalDate.todayInSystemTz()
-    }
-  }, [data])
-
-  const firstPlannedAbsenceDate = data
-    .map((response) =>
-      Object.values(response.reservableDays)
-        .flatMap((reservableDays) => reservableDays)
-        .reduce<LocalDate | null>(
-          (prev, { start: cur }) => (prev !== null && prev < cur ? prev : cur),
-          null
-        )
-    )
-    .getOrElse(null)
+  // const firstReservableDate = useMemo(() => {
+  //   if (data.isSuccess) {
+  //     const allReservableDateRanges = Object.keys(
+  //       data.value.reservableDays
+  //     ).flatMap((childId) => data.value.reservableDays[childId])
+  //
+  //     // First reservable day that has no reservations
+  //     const firstReservableEmptyDate = data.value.dailyData.find(
+  //       (day) =>
+  //         allReservableDateRanges.find((range) => range.includes(day.date)) &&
+  //         day.children.length == 0
+  //     )
+  //     return firstReservableEmptyDate?.date ?? null
+  //   } else {
+  //     return LocalDate.todayInSystemTz()
+  //   }
+  // }, [data])
+  const firstReservableDate = null
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
@@ -161,10 +140,7 @@ const CalendarPage = React.memo(function CalendarPage() {
         combine(data, events, upcomingHolidayPeriods),
         ([response, events, upcomingHolidayPeriods]) => (
           <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-            <CalendarNotifications
-              reservationChildren={response.children}
-              dailyData={response.dailyData}
-            />
+            <CalendarNotifications calendarDays={response.days} />
             <MobileAndTablet>
               <ContentArea
                 opaque
@@ -173,7 +149,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               >
                 <CalendarListView
                   childData={response.children}
-                  dailyData={response.dailyData}
+                  calendarDays={response.days}
                   onHoverButtonClick={openPickActionModal}
                   selectDate={openDayModal}
                   dayIsReservable={dayIsReservable}
@@ -185,7 +161,7 @@ const CalendarPage = React.memo(function CalendarPage() {
             <DesktopOnly>
               <CalendarGridView
                 childData={response.children}
-                dailyData={response.dailyData}
+                calendarDays={response.days}
                 onCreateReservationClicked={
                   openReservationModalWithoutInitialRange
                 }
@@ -221,7 +197,7 @@ const CalendarPage = React.memo(function CalendarPage() {
             {modalState?.type === 'reservations' && (
               <ReservationModal
                 onClose={closeModal}
-                availableChildren={response.children}
+                reservationsResponse={response}
                 onSuccess={(containsNonReservableDays: boolean) => {
                   if (containsNonReservableDays) {
                     openNonReservableDaysWarningModal()
@@ -229,12 +205,10 @@ const CalendarPage = React.memo(function CalendarPage() {
                     closeModal()
                   }
                 }}
-                reservableDays={response.reservableDays}
                 initialStart={
                   modalState.initialRange?.start ?? firstReservableDate
                 }
                 initialEnd={modalState.initialRange?.end ?? null}
-                existingReservations={response.dailyData}
                 upcomingHolidayPeriods={upcomingHolidayPeriods}
               />
             )}
@@ -242,8 +216,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               <AbsenceModal
                 close={closeModal}
                 initialDate={modalState.initialDate}
-                availableChildren={response.children}
-                firstPlannedAbsenceDate={firstPlannedAbsenceDate}
+                reservationsResponse={response}
               />
             )}
             {modalState?.type === 'holidays' && questionnaire && (

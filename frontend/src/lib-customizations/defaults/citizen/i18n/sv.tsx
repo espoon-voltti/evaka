@@ -382,9 +382,9 @@ const sv: Translations = {
       title: 'Alla ändringar kunde inte sparas',
       text: (
         <>
-          Registreringsperioden för några av de dagar du valt har redan stängts.
-          Ändringar för dessa tider kunde inte sparas. Kontrollera närvaron du
-          har markerat och meddela personalen om saknade ändringar med hjälp av{' '}
+          Den valda perioden innehöll dagar där det inte var möjligt att göra
+          alla önskade reservationer. Kontrollera de reservationer du har
+          markerat och meddela personalen om saknade ändringar med hjälp av{' '}
           <Link to="/messages">meddelandefunktionen</Link>.
         </>
       ),

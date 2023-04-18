@@ -3,15 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import dropRight from 'lodash/dropRight'
-import last from 'lodash/last'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
-  DailyReservationData,
-  ReservationChild
+  ReservationChild,
+  ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -27,17 +25,17 @@ import WeekElem from './WeekElem'
 
 export interface Props {
   childData: ReservationChild[]
-  dailyData: DailyReservationData[]
+  calendarDays: ReservationResponseDay[]
   onHoverButtonClick: () => void
   selectDate: (date: LocalDate) => void
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsReservable: (date: LocalDate) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
   events: CitizenCalendarEvent[]
 }
 
 export default React.memo(function CalendarListView({
   childData,
-  dailyData,
+  calendarDays,
   dayIsHolidayPeriod,
   onHoverButtonClick,
   selectDate,
@@ -45,18 +43,17 @@ export default React.memo(function CalendarListView({
   events
 }: Props) {
   const i18n = useTranslation()
-  const weeklyData = useMemo(() => asWeeklyData(dailyData), [dailyData])
-
+  const calendarWeeks = useMemo(() => groupByWeek(calendarDays), [calendarDays])
   const childImages = useMemo(() => getChildImages(childData), [childData])
 
   return (
     <>
       <FixedSpaceColumn spacing="zero">
-        {weeklyData.map((w) => (
+        {calendarWeeks.map((w) => (
           <WeekElem
-            {...w}
-            key={w.dailyReservations[0].date.formatIso()}
-            childData={childData}
+            key={`${w.year}-${w.weekNumber}`}
+            weekNumber={w.weekNumber}
+            calendarDays={w.calendarDays}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
             dayIsHolidayPeriod={dayIsHolidayPeriod}
@@ -78,35 +75,28 @@ export default React.memo(function CalendarListView({
   )
 })
 
-export interface WeeklyData {
+export interface CalendarWeek {
+  year: number
   weekNumber: number
-  dailyReservations: DailyReservationData[]
+  calendarDays: ReservationResponseDay[]
 }
 
-export const asWeeklyData = (dailyData: DailyReservationData[]): WeeklyData[] =>
-  dailyData.reduce<WeeklyData[]>((weekly, daily) => {
-    const lastWeek = last(weekly)
-    if (
-      lastWeek === undefined ||
-      daily.date.getIsoWeek() !== lastWeek.weekNumber
-    ) {
-      return [
-        ...weekly,
-        {
-          weekNumber: daily.date.getIsoWeek(),
-          dailyReservations: [daily]
-        }
-      ]
-    } else {
-      return [
-        ...dropRight(weekly),
-        {
-          ...lastWeek,
-          dailyReservations: [...lastWeek.dailyReservations, daily]
-        }
-      ]
+export function groupByWeek(days: ReservationResponseDay[]): CalendarWeek[] {
+  const weeks: CalendarWeek[] = []
+  let currentWeek: CalendarWeek | undefined = undefined
+  days.forEach((d) => {
+    if (!currentWeek || currentWeek.weekNumber !== d.date.getIsoWeek()) {
+      currentWeek = {
+        year: d.date.year,
+        weekNumber: d.date.getIsoWeek(),
+        calendarDays: []
+      }
+      weeks.push(currentWeek)
     }
-  }, [])
+    currentWeek.calendarDays.push(d)
+  })
+  return weeks
+}
 
 const HoverButton = styled(Button)`
   position: fixed;

@@ -19,10 +19,10 @@ import {
 } from 'lib-common/form/form'
 import { StateOf } from 'lib-common/form/types'
 import {
-  DailyReservationData,
   DailyReservationRequest,
   Reservation,
-  ReservationChild
+  ReservationChild,
+  ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import {
@@ -137,22 +137,15 @@ export const reservationForm = mapped(
     times: timesUnion
   }),
   (output) => ({
-    containsNonReservableDays: (
-      reservableDays: Record<string, FiniteDateRange[]>
-    ) =>
-      !output.selectedChildren.every((childId) => {
-        const childReservableDays = reservableDays[childId] ?? []
-        return [...output.dateRange.dates()].every((date) =>
-          childReservableDays.some((range) => range.includes(date))
-        )
-      }),
-    toRequest: (
-      reservableDays: Record<string, FiniteDateRange[]>
-    ): DailyReservationRequest[] =>
+    containsNonReservableDays: (dayProperties: DayProperties) =>
+      !output.selectedChildren.every((childId) =>
+        dayProperties.isWholeRangeReservableForChild(output.dateRange, childId)
+      ),
+    toRequest: (dayProperties: DayProperties): DailyReservationRequest[] =>
       output.selectedChildren.flatMap((childId): DailyReservationRequest[] => {
-        const childReservableDays = reservableDays[childId] ?? []
-        const dates = [...output.dateRange.dates()].filter((date) =>
-          childReservableDays.some((range) => range.includes(date))
+        const dates = dayProperties.getReservableDatesInRangeForChild(
+          output.dateRange,
+          childId
         )
         switch (output.times.branch) {
           case 'dailyTimes': {
@@ -207,11 +200,11 @@ export interface HolidayPeriodInfo {
 }
 
 export function initialState(
+  dayProperties: DayProperties,
   availableChildren: ReservationChild[],
+  calendarDays: ReservationResponseDay[],
   initialStart: LocalDate | null,
   initialEnd: LocalDate | null,
-  childrenInShiftCare: boolean,
-  existingReservations: DailyReservationData[],
   holidayPeriods: HolidayPeriodInfo[],
   i18n: Translations
 ): StateOf<typeof reservationForm> {
@@ -232,9 +225,9 @@ export function initialState(
     times:
       initialStart !== null && initialEnd !== null
         ? resetTimes(
+            dayProperties,
             availableChildren,
-            childrenInShiftCare,
-            existingReservations,
+            calendarDays,
             'IRREGULAR',
             new FiniteDateRange(initialStart, initialEnd),
             selectedChildren,
@@ -254,25 +247,22 @@ export function initialState(
 }
 
 export function resetTimes(
+  dayProperties: DayProperties,
   availableChildren: ReservationChild[],
-  childrenInShiftCare: boolean,
-  existingReservations: DailyReservationData[],
+  calendarDays: ReservationResponseDay[],
   repetition: Repetition,
   selectedRange: FiniteDateRange,
   selectedChildren: UUID[],
   holidayPeriods: HolidayPeriodInfo[]
 ): StateOf<typeof reservationForm>['times'] {
-  const reservations = existingReservations.filter((reservation) =>
-    selectedRange.includes(reservation.date)
+  const calendarDaysInRange = calendarDays.filter((day) =>
+    selectedRange.includes(day.date)
   )
   const selectedRangeDates = [...selectedRange.dates()]
-  const combinedOperationDays = new Set(
-    availableChildren.flatMap((child) => child.maxOperationalDays)
-  )
   const includedWeekDays = [1, 2, 3, 4, 5, 6, 7].filter(
-    (day) =>
-      combinedOperationDays.has(day) &&
-      selectedRangeDates.some((date) => date.getIsoDayOfWeek() === day)
+    (dayOfWeek) =>
+      dayProperties.isOperationalDayForAnyChild(dayOfWeek) &&
+      selectedRangeDates.some((date) => date.getIsoDayOfWeek() === dayOfWeek)
   )
   const weekDayRange: [number, number] = [
     includedWeekDays[0],
@@ -294,7 +284,7 @@ export function resetTimes(
       }
     }
 
-    if (!hasReservationsForEveryChild(reservations, selectedChildren)) {
+    if (!hasReservationsForEveryChild(calendarDaysInRange, selectedChildren)) {
       return {
         branch: 'dailyTimes',
         state: {
@@ -304,7 +294,10 @@ export function resetTimes(
       }
     }
 
-    const commonTimeRanges = getCommonTimeRanges(reservations, selectedChildren)
+    const commonTimeRanges = getCommonTimeRanges(
+      calendarDaysInRange,
+      selectedChildren
+    )
 
     if (commonTimeRanges) {
       return {
@@ -347,20 +340,20 @@ export function resetTimes(
           return { branch: 'holidayReservation', state: 'not-set' }
         }
 
-        const relevantReservations = reservations.filter(({ date }) =>
+        const relevantCalendarDays = calendarDaysInRange.filter(({ date }) =>
           dayOfWeekDays.some((d) => d.isEqual(date))
         )
 
         if (
           allChildrenAreAbsentMarkedByEmployee(
-            relevantReservations,
+            relevantCalendarDays,
             selectedChildren
           )
         ) {
           return { branch: 'readOnly', state: 'not-editable' }
         }
 
-        if (allChildrenAreAbsent(relevantReservations, selectedChildren)) {
+        if (allChildrenAreAbsent(relevantCalendarDays, selectedChildren)) {
           return {
             branch: 'reservation',
             state: [emptyTimeRange]
@@ -368,13 +361,13 @@ export function resetTimes(
         }
 
         if (
-          !hasReservationsForEveryChild(relevantReservations, selectedChildren)
+          !hasReservationsForEveryChild(relevantCalendarDays, selectedChildren)
         ) {
           return emptyDay
         }
 
         const commonTimeRanges = getCommonTimeRanges(
-          relevantReservations,
+          relevantCalendarDays,
           selectedChildren
         )
 
@@ -408,18 +401,18 @@ export function resetTimes(
           }
         }
 
-        const existingTimes = reservations.find(({ date }) =>
+        const calendarDay = calendarDaysInRange.find(({ date }) =>
           rangeDate.isEqual(date)
         )
 
-        if (!existingTimes) {
+        if (!calendarDay) {
           return {
             date: rangeDate,
             day: emptyDay
           }
         }
 
-        if (existingTimes.isHoliday && !childrenInShiftCare) {
+        if (calendarDay.holiday && !dayProperties.anyChildInShiftCare) {
           return {
             date: rangeDate,
             day: { branch: 'readOnly', state: 'holiday' }
@@ -427,10 +420,7 @@ export function resetTimes(
         }
 
         if (
-          allChildrenAreAbsentMarkedByEmployee(
-            [existingTimes],
-            selectedChildren
-          )
+          allChildrenAreAbsentMarkedByEmployee([calendarDay], selectedChildren)
         ) {
           return {
             date: rangeDate,
@@ -441,7 +431,7 @@ export function resetTimes(
           }
         }
 
-        if (allChildrenAreAbsent([existingTimes], selectedChildren)) {
+        if (allChildrenAreAbsent([calendarDay], selectedChildren)) {
           return {
             date: rangeDate,
             day: {
@@ -451,7 +441,7 @@ export function resetTimes(
           }
         }
 
-        if (!hasReservationsForEveryChild([existingTimes], selectedChildren)) {
+        if (!hasReservationsForEveryChild([calendarDay], selectedChildren)) {
           return {
             date: rangeDate,
             day: emptyDay
@@ -459,7 +449,7 @@ export function resetTimes(
         }
 
         const commonTimeRanges = getCommonTimeRanges(
-          [existingTimes],
+          [calendarDay],
           selectedChildren
         )
 
@@ -485,7 +475,7 @@ export function resetTimes(
 }
 
 const hasReservationsForEveryChild = (
-  dayData: DailyReservationData[],
+  dayData: ReservationResponseDay[],
   childIds: string[]
 ) =>
   dayData.every((reservations) =>
@@ -497,26 +487,27 @@ const hasReservationsForEveryChild = (
   )
 
 const allChildrenAreAbsent = (
-  dayData: DailyReservationData[],
+  calendarDays: ReservationResponseDay[],
   childIds: string[]
 ) =>
-  dayData.every((reservations) =>
+  calendarDays.every((day) =>
     childIds.every((childId) =>
-      reservations.children.some(
-        (child) => child.childId === childId && !!child.absence
+      day.children.some(
+        (child) => child.childId === childId && child.absence !== null
       )
     )
   )
 
 const allChildrenAreAbsentMarkedByEmployee = (
-  dayData: DailyReservationData[],
+  calendarDays: ReservationResponseDay[],
   childIds: string[]
 ) =>
-  dayData.every((reservations) =>
+  calendarDays.every((day) =>
     childIds.every((childId) =>
-      reservations.children.some(
+      day.children.some(
         (child) =>
-          child.childId === childId && !!child.absence && child.markedByEmployee
+          child.childId === childId &&
+          (child.absence?.markedByEmployee ?? false)
       )
     )
   )
@@ -536,11 +527,11 @@ const bindUnboundedTimeRanges = (
 }
 
 const getCommonTimeRanges = (
-  dayData: DailyReservationData[],
+  calendarDays: ReservationResponseDay[],
   childIds: string[]
 ): TimeRange[] | undefined => {
   const uniqueRanges = uniqBy(
-    dayData
+    calendarDays
       .flatMap((reservations) =>
         reservations.children
           .filter(({ childId }) => childIds.includes(childId))
@@ -566,4 +557,68 @@ const getCommonTimeRanges = (
   }
 
   return undefined
+}
+
+export class DayProperties {
+  readonly anyChildInShiftCare: boolean
+  private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
+  private readonly combinedOperationDays: Set<number>
+  private readonly includesWeekends: boolean
+
+  constructor(
+    calendarDays: ReservationResponseDay[],
+    includesWeekends: boolean
+  ) {
+    let anyChildInShiftCare = false
+    const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
+    const combinedOperationDays = new Set<number>()
+
+    calendarDays.forEach((day) => {
+      const dayOfWeek = day.date.getIsoDayOfWeek()
+      combinedOperationDays.add(dayOfWeek)
+      day.children.forEach((child) => {
+        anyChildInShiftCare = anyChildInShiftCare || child.shiftCare
+
+        let childReservableDays = reservableDaysByChild[child.childId]
+        if (!childReservableDays) {
+          childReservableDays = new Set()
+          reservableDaysByChild[child.childId] = childReservableDays
+        }
+        childReservableDays.add(day.date.formatIso())
+      })
+    })
+
+    this.anyChildInShiftCare = anyChildInShiftCare
+    this.reservableDaysByChild = reservableDaysByChild
+    this.combinedOperationDays = combinedOperationDays
+    this.includesWeekends = includesWeekends
+  }
+
+  isOperationalDayForAnyChild(dayOfWeek: number): boolean {
+    return this.combinedOperationDays.has(dayOfWeek)
+  }
+
+  isWholeRangeReservableForChild(
+    range: FiniteDateRange,
+    childId: UUID
+  ): boolean {
+    const reservableDays = this.reservableDaysByChild[childId]
+    if (!reservableDays) return false
+
+    return [...range.dates()].every((date) =>
+      // Skip weekend days in range if the calendar doesn't include weekends
+      !this.includesWeekends && date.isWeekend()
+        ? true
+        : reservableDays.has(date.formatIso())
+    )
+  }
+
+  getReservableDatesInRangeForChild(range: FiniteDateRange, childId: UUID) {
+    const reservableDays = this.reservableDaysByChild[childId]
+    if (!reservableDays) return []
+
+    return [...range.dates()].filter((date) =>
+      reservableDays.has(date.formatIso())
+    )
+  }
 }

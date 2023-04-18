@@ -8,10 +8,7 @@ import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import {
-  DailyReservationData,
-  ReservationChild
-} from 'lib-common/generated/api-types/reservations'
+import { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { scrollToPos } from 'lib-common/utils/scrolling'
@@ -27,16 +24,16 @@ import { headerHeightMobile } from '../navigation/const'
 import {
   CalendarEventCount,
   CalendarEventCountContainer
-} from './CalendarGridView'
-import { WeeklyData } from './CalendarListView'
+} from './CalendarEventCount'
 import { HistoryOverlay } from './HistoryOverlay'
 import { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
-interface Props extends WeeklyData {
-  childData: ReservationChild[]
+interface Props {
+  weekNumber: number
+  calendarDays: ReservationResponseDay[]
   selectDate: (date: LocalDate) => void
-  dayIsReservable: (dailyData: DailyReservationData) => boolean
+  dayIsReservable: (date: LocalDate) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
@@ -44,8 +41,7 @@ interface Props extends WeeklyData {
 
 export default React.memo(function WeekElem({
   weekNumber,
-  childData,
-  dailyReservations,
+  calendarDays,
   dayIsHolidayPeriod,
   selectDate,
   dayIsReservable,
@@ -59,20 +55,19 @@ export default React.memo(function WeekElem({
         {i18n.common.datetime.week} {weekNumber}
       </WeekTitle>
       <div>
-        {dailyReservations.map((d) => (
-          <Fragment key={d.date.formatIso()}>
-            {d.date.date === 1 && (
+        {calendarDays.map((day) => (
+          <Fragment key={day.date.formatIso()}>
+            {day.date.date === 1 && (
               <MonthTitle>
-                {i18n.common.datetime.months[d.date.month - 1]}
+                {i18n.common.datetime.months[day.date.month - 1]}
               </MonthTitle>
             )}
             <DayElem
-              childData={childData}
-              dailyReservations={d}
-              key={d.date.formatIso()}
+              key={day.date.formatIso()}
+              calendarDay={day}
               selectDate={selectDate}
-              isReservable={dayIsReservable(d)}
-              isHolidayPeriod={dayIsHolidayPeriod(d.date)}
+              isReservable={dayIsReservable(day.date)}
+              isHolidayPeriod={dayIsHolidayPeriod(day.date)}
               childImages={childImages}
               events={events}
             />
@@ -107,8 +102,7 @@ const MonthTitle = styled(H2)`
 `
 
 interface DayProps {
-  childData: ReservationChild[]
-  dailyReservations: DailyReservationData
+  calendarDay: ReservationResponseDay
   selectDate: (date: LocalDate) => void
   isReservable: boolean
   isHolidayPeriod: boolean
@@ -117,8 +111,7 @@ interface DayProps {
 }
 
 const DayElem = React.memo(function DayElem({
-  childData,
-  dailyReservations,
+  calendarDay,
   selectDate,
   isReservable,
   isHolidayPeriod,
@@ -128,14 +121,14 @@ const DayElem = React.memo(function DayElem({
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
 
-  const markedByEmployee = useMemo(
-    () =>
-      dailyReservations.children.length > 0 &&
-      dailyReservations.children.every((c) => c.markedByEmployee),
-    [dailyReservations]
-  )
-
-  const isToday = dailyReservations.date.isToday()
+  // const markedByEmployee = useMemo(
+  //   () =>
+  //     calendarDay.children.length > 0 &&
+  //     calendarDay.children.every((c) => c.markedByEmployee),
+  //   [calendarDay]
+  // )
+  //
+  const isToday = calendarDay.date.isToday()
   const setRef = useCallback(
     (e: HTMLButtonElement) => {
       if (isToday) {
@@ -146,8 +139,8 @@ const DayElem = React.memo(function DayElem({
   )
 
   const handleClick = useCallback(() => {
-    selectDate(dailyReservations.date)
-  }, [selectDate, dailyReservations.date])
+    selectDate(calendarDay.date)
+  }, [selectDate, calendarDay.date])
 
   useEffect(() => {
     const top = ref.current?.getBoundingClientRect().top
@@ -166,14 +159,12 @@ const DayElem = React.memo(function DayElem({
           ({ attendingChildren }) =>
             Object.values(attendingChildren).filter((attending) =>
               attending.some(({ periods }) =>
-                periods.some((period) =>
-                  period.includes(dailyReservations.date)
-                )
+                periods.some((period) => period.includes(calendarDay.date))
               )
             ).length
         )
       ),
-    [dailyReservations.date, events]
+    [calendarDay.date, events]
   )
 
   const i18n = useTranslation()
@@ -182,29 +173,30 @@ const DayElem = React.memo(function DayElem({
   return (
     <Day
       ref={setRef}
-      today={dailyReservations.date.isToday()}
-      markedByEmployee={markedByEmployee}
+      today={calendarDay.date.isToday()}
+      markedByEmployee={calendarDay.children.every(
+        (c) => c.absence?.markedByEmployee ?? false
+      )}
       holidayPeriod={isHolidayPeriod}
       onClick={handleClick}
-      data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
+      data-qa={`mobile-calendar-day-${calendarDay.date.formatIso()}`}
     >
       <DayColumn
         spacing="xxs"
         inactive={!isReservable}
-        holiday={dailyReservations.isHoliday}
+        holiday={calendarDay.holiday}
       >
-        <div aria-label={dailyReservations.date.formatExotic('EEEE', lang)}>
-          {capitalizeFirstLetter(dailyReservations.date.format('EEEEEE', lang))}
+        <div aria-label={calendarDay.date.formatExotic('EEEE', lang)}>
+          {capitalizeFirstLetter(calendarDay.date.format('EEEEEE', lang))}
         </div>
-        <div aria-label={dailyReservations.date.formatExotic('do MMMM', lang)}>
-          {dailyReservations.date.format('d.M.')}
+        <div aria-label={calendarDay.date.formatExotic('do MMMM', lang)}>
+          {calendarDay.date.format('d.M.')}
         </div>
       </DayColumn>
       <Gap size="s" horizontal />
       <ReservationsContainer data-qa="reservations">
         <Reservations
-          data={dailyReservations}
-          allChildren={childData}
+          data={calendarDay}
           childImages={childImages}
           isReservable={isReservable}
         />
@@ -219,7 +211,7 @@ const DayElem = React.memo(function DayElem({
           </CalendarEventCount>
         </CalendarEventCountContainer>
       )}
-      {dailyReservations.date.isBefore(LocalDate.todayInSystemTz()) && (
+      {calendarDay.date.isBefore(LocalDate.todayInSystemTz()) && (
         <HistoryOverlay />
       )}
     </Day>
