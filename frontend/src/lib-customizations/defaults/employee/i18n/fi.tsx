@@ -2058,7 +2058,6 @@ export const fi = {
           IRREGULAR: 'Epäsäännöllinen'
         }
       },
-      dayOff: 'Vapaapäivä',
       missingHolidayReservation: 'Lomavaraus puuttuu',
       missingServiceTime: 'Sop.aika puuttuu',
       serviceTimeIndicator: '(s)',

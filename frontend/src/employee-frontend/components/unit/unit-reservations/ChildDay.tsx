@@ -108,8 +108,6 @@ export default React.memo(function ChildDay({
   const { reservation, dailyServiceTimes, inOtherUnit, isInBackupGroup } =
     dailyData
 
-  const serviceTimesAvailable =
-    dailyServiceTimes !== null && !isVariableTime(dailyServiceTimes)
   const serviceTimeOfDay =
     dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
       ? null
@@ -181,11 +179,6 @@ export default React.memo(function ChildDay({
               {i18n.unit.attendanceReservations.serviceTimeIndicator}
             </ReservationTime>
           </>
-        ) : serviceTimesAvailable && serviceTimeOfDay === null ? (
-          // daily service times are known but there is none for this day of week, show day off
-          <ReservationTime data-qa="reservation-day-off">
-            {i18n.unit.attendanceReservations.dayOff}
-          </ReservationTime>
         ) : (
           // otherwise show missing service time indicator
           <ReservationTime warning data-qa="reservation-missing">
