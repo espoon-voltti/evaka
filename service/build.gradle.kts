@@ -50,15 +50,12 @@ idea {
     }
 }
 
-val ktlint by configurations.registering
-
 dependencies {
     api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
     runtimeOnly(platform(project(":evaka-bom")))
     integrationTestImplementation(platform(project(":evaka-bom")))
-    ktlint { platform(project(":evaka-bom")) }
 
     // Kotlin + core
     api(kotlin("stdlib"))
@@ -166,8 +163,6 @@ dependencies {
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
-
-    ktlint { "com.pinterest:ktlint:${Version.ktlint}" }
 }
 
 allOpen {
@@ -253,12 +248,6 @@ tasks {
         systemProperty("spring.datasource.password", "evaka_it")
         systemProperty("flyway.username", "evaka_it")
         systemProperty("flyway.password", "evaka_it")
-    }
-
-    register("ktlintApplyToIdea", JavaExec::class) {
-        mainClass.set("com.pinterest.ktlint.Main")
-        classpath = ktlint.get()
-        args = listOf("applyToIDEAProject", "-y")
     }
 
     register("generateVapidKey", JavaExec::class) {
