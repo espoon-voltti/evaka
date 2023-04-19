@@ -347,7 +347,7 @@ class ApplicationControllerCitizen(
     }
 
     @DeleteMapping("/applications/{applicationId}")
-    fun cancelUnprocessedApplication(
+    fun deleteOrCancelUnprocessedApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
@@ -355,13 +355,6 @@ class ApplicationControllerCitizen(
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.Application.DELETE,
-                    applicationId
-                )
                 val application =
                     tx.fetchApplicationDetails(applicationId)
                         ?: throw NotFound(
@@ -369,7 +362,16 @@ class ApplicationControllerCitizen(
                         )
 
                 when (application.status) {
-                    ApplicationStatus.CREATED -> tx.deleteApplication(applicationId)
+                    ApplicationStatus.CREATED -> {
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Application.DELETE,
+                            applicationId
+                        )
+                        tx.deleteApplication(applicationId)
+                    }
                     ApplicationStatus.SENT ->
                         applicationStateService.cancelApplication(tx, user, clock, applicationId)
                     else ->

@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.testAdult_1
@@ -35,7 +34,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Autowired private lateinit var stateService: ApplicationStateService
 
-    private val clock = MockEvakaClock(HelsinkiDateTime.now())
+    private val clock = MockEvakaClock(2020, 1, 1, 12, 0)
 
     @BeforeEach
     fun beforeEach() {
@@ -59,7 +58,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 )
             }
 
-        applicationControllerCitizen.cancelUnprocessedApplication(
+        applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             clock = clock,
@@ -88,7 +87,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 application
             }
 
-        applicationControllerCitizen.cancelUnprocessedApplication(
+        applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             clock = clock,
@@ -130,7 +129,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             }
 
         assertThrows<BadRequest> {
-            applicationControllerCitizen.cancelUnprocessedApplication(
+            applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
                 db = dbInstance(),
                 user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
                 clock = clock,
