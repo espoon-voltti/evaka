@@ -41,7 +41,7 @@ fi
 
 function run_reuse() {
     run_args=("$@")
-    docker run --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "$REUSE_IMAGE" "${run_args[@]}"
+    docker run -u "${UID}" --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "$REUSE_IMAGE" "${run_args[@]}"
 }
 
 function addheader() {
