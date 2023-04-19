@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,7 +8,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
-import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType
@@ -19,15 +18,14 @@ import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 
 class VTJPersonDetailsService(
     private val vtjClientService: IVtjClientService,
-    private val henkiloMapper: VtjHenkiloMapper,
-    private val vtjCache: VtjCache
+    private val henkiloMapper: VtjHenkiloMapper
 ) : IPersonDetailsService {
     /*
        Fetches person with dependants from VTJ, then for each dependant, fetches
        the dependant basic details from VTJ.
     */
     override fun getPersonWithDependants(query: DetailsQuery): VtjPerson {
-        val guardianResult = doCacheBackedUpVtjQuery(query, HUOLTAJA_HUOLLETTAVA)
+        val guardianResult = doVtjQuery(query, HUOLTAJA_HUOLLETTAVA)
 
         val dependants =
             guardianResult.dependants
@@ -38,7 +36,7 @@ class VTJPersonDetailsService(
                             ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber)
                     )
                 }
-                .map { doCacheBackedUpVtjQuery(it, PERUSSANOMA3) }
+                .map { doVtjQuery(it, PERUSSANOMA3) }
 
         return guardianResult.copy(dependants = dependants)
     }
@@ -48,7 +46,7 @@ class VTJPersonDetailsService(
         the guardian basic details from VTJ.
     */
     override fun getPersonWithGuardians(query: DetailsQuery): VtjPerson {
-        val childResult = doCacheBackedUpVtjQuery(query, HUOLLETTAVA_HUOLTAJAT)
+        val childResult = doVtjQuery(query, HUOLLETTAVA_HUOLTAJAT)
 
         val guardians =
             childResult.guardians
@@ -59,23 +57,17 @@ class VTJPersonDetailsService(
                             ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber)
                     )
                 }
-                .map { doCacheBackedUpVtjQuery(it, PERUSSANOMA3) }
+                .map { doVtjQuery(it, PERUSSANOMA3) }
 
         return childResult.copy(guardians = guardians)
     }
 
     override fun getBasicDetailsFor(query: DetailsQuery): VtjPerson {
-        return doCacheBackedUpVtjQuery(query, PERUSSANOMA3)
+        return doVtjQuery(query, PERUSSANOMA3)
     }
 
-    private fun doCacheBackedUpVtjQuery(query: DetailsQuery, requestType: RequestType): VtjPerson {
-        val cacheKey = "${query.targetIdentifier.ssn}-$requestType"
-        return vtjCache.getPerson(cacheKey)
-            ?: run {
-                val vtjResult = doVtjQuery(query.mapToVtjQuery(requestType))
-                vtjCache.save(cacheKey, vtjResult)
-                vtjResult
-            }
+    private fun doVtjQuery(query: DetailsQuery, requestType: RequestType): VtjPerson {
+        return doVtjQuery(query.mapToVtjQuery(requestType))
     }
 
     private fun doVtjQuery(vtjQuery: VTJQuery): VtjPerson {

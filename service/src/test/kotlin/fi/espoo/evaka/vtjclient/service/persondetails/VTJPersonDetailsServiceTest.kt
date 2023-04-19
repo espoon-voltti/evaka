@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -14,7 +14,6 @@ import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
-import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
@@ -41,8 +40,6 @@ class VTJPersonDetailsServiceTest {
     @InjectMocks lateinit var service: VTJPersonDetailsService
 
     @Mock lateinit var vtjService: IVtjClientService
-
-    @Mock lateinit var vtjCache: VtjCache
 
     @Mock lateinit var henkiloMapper: VtjHenkiloMapper
 

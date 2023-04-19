@@ -67,10 +67,6 @@ evaka:
           type: JKS
   jwt:
     public_keys_url: classpath:local-development/jwks.json
-  redis:
-    password: ""
-    use_ssl: false
-    url: localhost
   web_push:
     enabled: true
     vapid_private_key: G3IfWt-tclp_R5d_SIMLl_jjttrC86dwG4Fs8OwMDmg

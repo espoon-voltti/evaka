@@ -92,7 +92,6 @@ dependencies {
     implementation("com.zaxxer:HikariCP")
     implementation("org.flywaydb:flyway-core")
     implementation("org.postgresql:postgresql")
-    implementation("redis.clients:jedis")
 
     // JDBI
     implementation("org.jdbi:jdbi3-core") {

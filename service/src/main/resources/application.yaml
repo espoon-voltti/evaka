@@ -10,8 +10,6 @@ evaka:
   five_years_old_daycare:
     enabled: true
   max_attachments_per_user: 100
-  redis:
-    port: 6379
   s3mock:
     url: "http://localhost:9876"
 

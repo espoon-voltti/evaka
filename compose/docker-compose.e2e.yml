@@ -81,7 +81,6 @@ services:
     depends_on:
       - db
       - db_it
-      - redis
       - s3.mock.evaka
     environment:
       VOLTTI_ENV: local
@@ -114,10 +113,6 @@ services:
       FI_ESPOO_INTEGRATION_KOSKI_USER: ""
       FI_ESPOO_INTEGRATION_KOSKI_SECRET: ""
       FI_ESPOO_INTEGRATION_KOSKI_SOURCE_SYSTEM: ""
-      REDIS_URL: ${EVAKA_REDIS_HOST}
-      REDIS_PORT: ${EVAKA_REDIS_PORT}
-      REDIS_PASSWORD: ""
-      REDIS_SSL: "false"
       APPLICATION_FRONTEND_BASEURL: ""
       APPLICATION_FRONTEND_BASEURL_SV: ""
     restart: unless-stopped

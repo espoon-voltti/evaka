@@ -13,7 +13,6 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
-import fi.espoo.evaka.RedisEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.VardaEnv
@@ -44,8 +43,6 @@ class EnvConfig {
     @Bean fun vardaEnv(env: Environment): VardaEnv = VardaEnv.fromEnvironment(env)
 
     @Bean fun databaseEnv(env: Environment): DatabaseEnv = DatabaseEnv.fromEnvironment(env)
-
-    @Bean fun redisEnv(env: Environment): RedisEnv = RedisEnv.fromEnvironment(env)
 
     @Bean
     fun dvvModificationsEnv(env: Environment): DvvModificationsEnv =
