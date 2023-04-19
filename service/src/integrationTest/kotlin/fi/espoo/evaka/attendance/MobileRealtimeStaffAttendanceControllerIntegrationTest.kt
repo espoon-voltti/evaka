@@ -349,7 +349,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee arriving 20 minutes before planned time can be marked arrived with {0}"
     )
     @EnumSource(names = ["OVERTIME", "JUSTIFIED_CHANGE"])
-    @Suppress("DEPRECATION")
     fun testStaffArrivalBeforePlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -385,7 +384,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee arriving 20 minutes before planned time cannot be marked arrived with {0}"
     )
     @EnumSource(names = ["PRESENT", "OTHER_WORK", "TRAINING"])
-    @Suppress("DEPRECATION")
     fun testStaffArrivalBeforePlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -476,7 +474,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee arriving 20 minutes after planned time can be marked arrived with {0}"
     )
     @EnumSource(names = ["OTHER_WORK", "TRAINING"])
-    @Suppress("DEPRECATION")
     fun testStaffArrivalAfterPlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -515,7 +512,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee arriving 20 minutes after planned time cannot be marked arrived with {0}"
     )
     @EnumSource(names = ["PRESENT", "OVERTIME"])
-    @Suppress("DEPRECATION")
     fun testStaffArrivalAfterPlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -650,7 +646,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee departing 20 minutes before planned time can be marked departed with {0}"
     )
     @EnumSource(names = ["OTHER_WORK", "TRAINING"])
-    @Suppress("DEPRECATION")
     fun testStaffDepartureBeforePlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -699,7 +694,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             "Employee departing 20 minutes before planned time cannot be marked departed with {0}"
     )
     @EnumSource(names = ["PRESENT", "OVERTIME"])
-    @Suppress("DEPRECATION")
     fun testStaffDepartureBeforePlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -769,7 +763,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee departing 20 minutes after planned time can be marked departed with {0}"
     )
     @EnumSource(names = ["OVERTIME", "JUSTIFIED_CHANGE"])
-    @Suppress("DEPRECATION")
     fun testStaffDepartureAfterPlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
@@ -814,7 +807,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         name = "Employee departing 20 minutes after planned time cannot be marked departed with {0}"
     )
     @EnumSource(names = ["PRESENT", "OTHER_WORK", "TRAINING"])
-    @Suppress("DEPRECATION")
     fun testStaffDepartureAfterPlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
