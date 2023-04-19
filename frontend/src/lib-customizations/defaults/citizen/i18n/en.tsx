@@ -317,8 +317,7 @@ const en: Translations = {
     eventsCount: 'events',
     reservationModal: {
       title: 'Register attendance',
-      selectChildren: 'Children whose attendance you wish to register',
-      selectChildrenLabel: 'Select children',
+      selectChildren: 'Select children',
       holidayPeriod: (period: FiniteDateRange) =>
         `Holiday period: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'

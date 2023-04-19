@@ -313,8 +313,7 @@ export default {
     eventsCount: 'tapahtumaa',
     reservationModal: {
       title: 'Ilmoita läsnäolo',
-      selectChildren: 'Lapset, joiden läsnäolo ilmoitetaan',
-      selectChildrenLabel: 'Valitse lapset',
+      selectChildren: 'Valitse lapset',
       holidayPeriod: (period: FiniteDateRange) =>
         `Loma-aika: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'

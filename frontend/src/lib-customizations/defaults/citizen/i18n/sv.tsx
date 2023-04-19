@@ -313,8 +313,7 @@ const sv: Translations = {
     eventsCount: 'händelser',
     reservationModal: {
       title: 'Anmäl närvaro',
-      selectChildren: 'Barn, vars närvaro anmäls',
-      selectChildrenLabel: 'Välj barn',
+      selectChildren: 'Välj barn',
       holidayPeriod: (period: FiniteDateRange) =>
         `Semesterperioden: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'
