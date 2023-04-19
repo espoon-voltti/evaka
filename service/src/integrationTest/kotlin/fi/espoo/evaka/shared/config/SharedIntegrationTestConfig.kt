@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -37,13 +37,11 @@ import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
 import io.opentracing.noop.NoopTracerFactory
 import javax.sql.DataSource
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import redis.clients.jedis.JedisPool
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -96,26 +94,6 @@ class SharedIntegrationTestConfig {
     @Bean fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
 
     @Bean fun dataSource(): DataSource = getTestDataSource()
-
-    @Bean
-    fun redisPool(): JedisPool {
-        // Use database 1 to avoid conflicts with normal development setup in database 0
-        val database = 1
-        return JedisPool(
-                GenericObjectPoolConfig(),
-                "localhost",
-                6379,
-                redis.clients.jedis.Protocol.DEFAULT_TIMEOUT,
-                null,
-                database
-            )
-            .also { pool ->
-                pool.resource.use {
-                    // Clear all data from database 1
-                    it.flushDB()
-                }
-            }
-    }
 
     @Bean
     fun s3Client(env: BucketEnv): S3Client {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -146,23 +146,6 @@ data class DatabaseEnv(
                     )
                         ?: 10,
                 logSql = env.lookup("evaka.database.log_sql") ?: false
-            )
-    }
-}
-
-data class RedisEnv(
-    val url: String,
-    val port: Int,
-    val password: Sensitive<String>,
-    val useSsl: Boolean
-) {
-    companion object {
-        fun fromEnvironment(env: Environment) =
-            RedisEnv(
-                url = env.lookup("evaka.redis.url", "redis.url"),
-                port = env.lookup("evaka.redis.port", "redis.port"),
-                password = Sensitive(env.lookup("evaka.redis.password", "redis.password")),
-                useSsl = env.lookup("evaka.redis.use_ssl", "redis.ssl")
             )
     }
 }

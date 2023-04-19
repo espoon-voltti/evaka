@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,6 @@ package fi.espoo.evaka.vtjclient.config
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
-import fi.espoo.evaka.vtjclient.service.cache.VtjCache
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.VTJPersonDetailsService
@@ -26,8 +25,7 @@ class PersonDetailsServiceConfig {
             true ->
                 VTJPersonDetailsService(
                     vtjClientService = ctx.getBean(VtjClientService::class.java),
-                    henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
-                    vtjCache = ctx.getBean(VtjCache::class.java)
+                    henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java)
                 )
             false -> MockPersonDetailsService()
         }
