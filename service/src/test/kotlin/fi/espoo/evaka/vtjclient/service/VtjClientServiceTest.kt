@@ -335,7 +335,7 @@ class VtjClientServiceTest {
 
         assertThat(argumentArray).hasSize(1)
 
-        @Suppress("UNCHECKED_CAST") val marker = argumentArray[0] as MapEntriesAppendingMarker
+        val marker = argumentArray[0] as MapEntriesAppendingMarker
 
         val mockGenerator: JsonGenerator = mock()
 
