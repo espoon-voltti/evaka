@@ -11,6 +11,7 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Result } from 'lib-common/api'
 import {
+  AccountType,
   CitizenMessageBody,
   GetReceiversResponse,
   MessageAccount
@@ -43,7 +44,8 @@ const emptyMessage: CitizenMessageBody = {
   children: []
 }
 
-const isPrimaryRecipient = ({ type }: MessageAccount) => type !== 'CITIZEN'
+export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
+  type !== 'CITIZEN'
 
 interface Props {
   receiverOptions: GetReceiversResponse
@@ -229,13 +231,14 @@ export default React.memo(function MessageEditor({
                     {validAccounts.secondary.map((recipient) => (
                       <ToggleableRecipient
                         key={recipient.id}
-                        id={recipient.id}
+                        recipient={{
+                          ...recipient,
+                          toggleable: true,
+                          selected: recipients.secondary.some(
+                            (acc) => acc.id === recipient.id
+                          )
+                        }}
                         data-qa="secondary-recipient"
-                        toggleable={true}
-                        selected={recipients.secondary.some(
-                          (acc) => acc.id === recipient.id
-                        )}
-                        name={recipient.name}
                         onToggleRecipient={(_, selected) =>
                           setMessage((message) => ({
                             ...message,

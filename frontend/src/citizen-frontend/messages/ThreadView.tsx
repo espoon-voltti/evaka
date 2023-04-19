@@ -50,6 +50,7 @@ import {
   MessageContainer,
   ReplyEditorContainer
 } from './MessageComponents'
+import { isPrimaryRecipient } from './MessageEditor'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -240,6 +241,10 @@ export default React.memo(function ThreadView({
     [i18n]
   )
 
+  const sendEnabled =
+    !!replyContent &&
+    recipients.some((r) => r.selected && isPrimaryRecipient(r))
+
   return (
     <ThreadContainer data-qa="thread-reader">
       <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
@@ -292,6 +297,7 @@ export default React.memo(function ThreadView({
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
             i18n={editorLabels}
+            sendEnabled={sendEnabled}
           />
         </ReplyEditorContainer>
       ) : (

@@ -224,6 +224,8 @@ export function SingleThreadView({
     [i18n]
   )
 
+  const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
+
   return (
     <ThreadContainer>
       <ContentArea opaque>
@@ -270,6 +272,7 @@ export function SingleThreadView({
                 onToggleRecipient={onToggleRecipient}
                 replyContent={replyContent}
                 i18n={editorLabels}
+                sendEnabled={sendEnabled}
               />
             </MessageContainer>
           ) : (
