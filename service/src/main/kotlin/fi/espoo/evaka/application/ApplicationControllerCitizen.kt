@@ -347,7 +347,7 @@ class ApplicationControllerCitizen(
     }
 
     @DeleteMapping("/applications/{applicationId}")
-    fun deleteUnprocessedApplication(
+    fun deleteOrCancelUnprocessedApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
@@ -355,29 +355,30 @@ class ApplicationControllerCitizen(
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.Application.DELETE,
-                    applicationId
-                )
                 val application =
                     tx.fetchApplicationDetails(applicationId)
                         ?: throw NotFound(
                             "Application $applicationId of guardian ${user.id} not found"
                         )
 
-                if (
-                    application.status != ApplicationStatus.CREATED &&
-                        application.status != ApplicationStatus.SENT
-                ) {
-                    throw BadRequest(
-                        "Only applications which are not yet being processed can be deleted"
-                    )
+                when (application.status) {
+                    ApplicationStatus.CREATED -> {
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Application.DELETE,
+                            applicationId
+                        )
+                        tx.deleteApplication(applicationId)
+                    }
+                    ApplicationStatus.SENT ->
+                        applicationStateService.cancelApplication(tx, user, clock, applicationId)
+                    else ->
+                        throw BadRequest(
+                            "Only applications which are not yet being processed can be cancelled"
+                        )
                 }
-
-                tx.deleteApplication(applicationId)
             }
         }
         Audit.ApplicationDelete.log(targetId = applicationId)

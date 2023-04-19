@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.domain
 
 import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalTime
 
 interface EvakaClock {
     fun today(): LocalDate
@@ -13,6 +14,17 @@ interface EvakaClock {
 }
 
 class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
+    constructor(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        second: Int = 0
+    ) : this(
+        HelsinkiDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minute, second))
+    )
+
     override fun today(): LocalDate = now.toLocalDate()
     override fun now(): HelsinkiDateTime = now
 
