@@ -6,15 +6,6 @@ import config from '../config'
 
 import { Page, TextInput } from './page'
 
-export type DevLoginRole = typeof devLoginRoles[number]
-const devLoginRoles = [
-  'SERVICE_WORKER',
-  'FINANCE_ADMIN',
-  'DIRECTOR',
-  'REPORT_VIEWER',
-  'ADMIN'
-] as const
-
 export async function enduserLogin(page: Page, ssn = '070644-937X') {
   const authUrl = `${config.citizenApiUrl}/auth/saml/login/callback?RelayState=%2Fapplications`
   if (!page.url.startsWith(config.enduserUrl)) {
@@ -54,9 +45,27 @@ export async function enduserLoginWeak(page: Page) {
   await page.findByDataQa('header-city-logo').waitUntilVisible()
 }
 
-export async function employeeLogin(page: Page, user: { externalId: string }) {
+export async function employeeLogin(
+  page: Page,
+  {
+    externalId,
+    firstName,
+    lastName,
+    email
+  }: {
+    externalId: string
+    firstName: string
+    lastName: string
+    email?: string
+  }
+) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
-  const preset = user.externalId.split(':')[1]
+  const preset = JSON.stringify({
+    externalId,
+    firstName,
+    lastName,
+    email: email ?? ''
+  })
 
   if (!page.url.startsWith(config.employeeUrl)) {
     // We must be in the correct domain to be able to fetch()
