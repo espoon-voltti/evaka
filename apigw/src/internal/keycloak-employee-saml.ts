@@ -5,9 +5,9 @@
 import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
-} from 'passport-saml'
+} from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client'
-import { toSamlVerifyFunction } from '../shared/saml'
+import { samlLogoutFunction, toSamlLoginFunction } from '../shared/saml'
 import { z } from 'zod'
 import { EvakaSessionUser } from '../shared/auth'
 
@@ -23,7 +23,8 @@ export function createKeycloakEmployeeSamlStrategy(
 ): SamlStrategy {
   return new SamlStrategy(
     config,
-    toSamlVerifyFunction(Profile, verifyKeycloakProfile)
+    toSamlLoginFunction(Profile, verifyKeycloakProfile),
+    samlLogoutFunction()
   )
 }
 

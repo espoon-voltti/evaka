@@ -143,7 +143,7 @@ export async function logoutExpress(
   sessionType: SessionType,
   logoutToken?: LogoutToken['value']
 ) {
-  req.logout()
+  await fromCallback((cb) => req.logout(cb))
   await consumeLogoutToken(req, logoutToken)
   if (req.session) {
     const session = req.session

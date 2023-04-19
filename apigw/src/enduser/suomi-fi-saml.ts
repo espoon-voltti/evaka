@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
-import passportSaml, { SamlConfig, Strategy } from 'passport-saml'
+import passportSaml, { SamlConfig, Strategy } from '@node-saml/passport-saml'
 import { citizenLogin } from '../shared/service-client'
-import { toSamlVerifyFunction } from '../shared/saml'
+import { samlLogoutFunction, toSamlLoginFunction } from '../shared/saml'
 import { EvakaSessionUser } from '../shared/auth'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
@@ -45,5 +45,9 @@ const Profile = z.object({
 export default function createSuomiFiStrategy(
   samlConfig: SamlConfig
 ): Strategy {
-  return new Strategy(samlConfig, toSamlVerifyFunction(Profile, verifyProfile))
+  return new Strategy(
+    samlConfig,
+    toSamlLoginFunction(Profile, verifyProfile),
+    samlLogoutFunction()
+  )
 }

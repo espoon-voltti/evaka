@@ -4,12 +4,8 @@
 
 import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
-import passportSaml, {
-  AuthenticateOptions,
-  SAML,
-  SamlConfig
-} from 'passport-saml'
-import { createLogoutToken, EvakaSessionUser } from '../auth'
+import passportSaml, { SAML, SamlConfig } from '@node-saml/passport-saml'
+import { createLogoutToken } from '../auth'
 import { gatewayRole, nodeEnv } from '../config'
 import { toMiddleware, toRequestHandler } from '../express'
 import { logAuditEvent, logDebug } from '../logging'
@@ -21,7 +17,10 @@ import {
   SessionType
 } from '../session'
 import { parseDescriptionFromSamlError } from '../saml/error-utils'
-import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
+import type {
+  AuthenticateOptions,
+  RequestWithUser
+} from '@node-saml/passport-saml/lib/types'
 import { parseRelayState, tryParseProfile } from '../saml'
 
 const urlencodedParser = urlencoded({ extended: false })
@@ -74,7 +73,7 @@ function createLoginHandler({
       (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         err: any,
-        user: (EvakaSessionUser & passportSaml.Profile) | undefined
+        user: (Express.User & passportSaml.Profile) | undefined
       ) => {
         if (err || !user) {
           const description =

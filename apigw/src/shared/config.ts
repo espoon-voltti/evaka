@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type redis from 'redis'
+import { ValidateInResponseTo } from '@node-saml/node-saml'
 
 export interface Config {
   ad: {
@@ -43,7 +44,7 @@ export interface EvakaSamlConfig {
   issuer: string
   publicCert: string | string[]
   privateCert: string
-  validateInResponseTo: boolean
+  validateInResponseTo: ValidateInResponseTo
   decryptAssertions: boolean
   nameIdFormat?: string | undefined
 }
@@ -145,7 +146,7 @@ export function configFromEnv(): Config {
               envArray('AD_SAML_PUBLIC_CERT', (value) => value)
             ),
             privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
-            validateInResponseTo: true,
+            validateInResponseTo: ValidateInResponseTo.always,
             decryptAssertions:
               env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
             nameIdFormat: process.env.AD_NAME_ID_FORMAT
@@ -171,7 +172,7 @@ export function configFromEnv(): Config {
               envArray('SFI_SAML_PUBLIC_CERT', (value) => value)
             ),
             privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
-            validateInResponseTo: true,
+            validateInResponseTo: ValidateInResponseTo.always,
             decryptAssertions: true
           }
         }
@@ -217,7 +218,7 @@ export function configFromEnv(): Config {
             process.env.EVAKA_SAML_PRIVATE_CERT ??
               ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
           ),
-          validateInResponseTo: true,
+          validateInResponseTo: ValidateInResponseTo.always,
           decryptAssertions: true
         }
       : undefined
@@ -262,7 +263,7 @@ export function configFromEnv(): Config {
             process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
               ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
           ),
-          validateInResponseTo: true,
+          validateInResponseTo: ValidateInResponseTo.always,
           decryptAssertions: true
         }
       : undefined

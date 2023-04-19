@@ -6,10 +6,10 @@ import { z } from 'zod'
 import passportSaml, {
   SamlConfig,
   Strategy as SamlStrategy
-} from 'passport-saml'
+} from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client'
 import { Config } from '../shared/config'
-import { toSamlVerifyFunction } from '../shared/saml'
+import { samlLogoutFunction, toSamlLoginFunction } from '../shared/saml'
 import { EvakaSessionUser } from '../shared/auth'
 
 const AD_GIVEN_NAME_KEY =
@@ -58,6 +58,7 @@ export default function createAdStrategy(
   })
   return new SamlStrategy(
     samlConfig,
-    toSamlVerifyFunction(Profile, (profile) => verifyProfile(config, profile))
+    toSamlLoginFunction(Profile, (profile) => verifyProfile(config, profile)),
+    samlLogoutFunction()
   )
 }

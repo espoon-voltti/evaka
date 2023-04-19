@@ -8,9 +8,8 @@ import {
   Profile,
   SAML,
   SamlConfig,
-  VerifiedCallback,
   VerifyWithRequest
-} from 'passport-saml'
+} from '@node-saml/passport-saml'
 import { logError, logWarn } from '../logging'
 import { EvakaSessionUser } from '../auth'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config'
@@ -53,20 +52,17 @@ export function createSamlConfig(
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
+    wantAssertionsSigned: false,
     passReqToCallback: true
   }
 }
 
-export function toSamlVerifyFunction(
+export function toSamlLoginFunction(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: z.ZodObject<any>,
   verify: (profile: Profile) => Promise<EvakaSessionUser>
 ): VerifyWithRequest {
-  return (
-    _req: Express.Request,
-    profile: Profile | null | undefined,
-    done: VerifiedCallback
-  ) => {
+  return (_req, profile, done) => {
     if (!profile) {
       done(new Error('No SAML profile'))
     } else {
@@ -99,6 +95,12 @@ export function toSamlVerifyFunction(
         })
         .catch(done)
     }
+  }
+}
+
+export function samlLogoutFunction(): VerifyWithRequest {
+  return (_req, profile, done) => {
+    done(null, profile ?? undefined)
   }
 }
 
