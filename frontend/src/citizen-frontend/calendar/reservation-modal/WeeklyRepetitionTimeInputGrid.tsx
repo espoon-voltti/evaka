@@ -5,12 +5,12 @@
 import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { BoundForm, useFormElems } from 'lib-common/form/hooks'
+import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { LabelLike } from 'lib-components/typography'
 
 import { Day } from './TimeInputs'
-import { weeklyTimes } from './form'
+import { weekDay, weeklyTimes } from './form'
 
 export interface WeeklyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof weeklyTimes>
@@ -23,25 +23,47 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
   showAllErrors,
   anyChildInShiftCare
 }: WeeklyRepetitionTimeInputGridProps) {
-  const i18n = useTranslation()
   const weekDays = useFormElems(bind)
   return (
     <>
-      {weekDays.map((weekDay, index) => (
-        <Day
-          key={`day-${index}`}
-          bind={weekDay}
-          label={
-            <LabelLike>{i18n.common.datetime.weekdaysShort[index]}</LabelLike>
-          }
+      {weekDays.map((form) => (
+        <WeekDay
+          key={form.state.weekDay}
+          bind={form}
           showAllErrors={showAllErrors}
-          allowExtraTimeRange={anyChildInShiftCare}
-          dataQaPrefix={`weekly-${index}`}
-          onFocus={(ev) => {
-            scrollIntoViewSoftKeyboard(ev.target)
-          }}
+          anyChildInShiftCare={anyChildInShiftCare}
         />
       ))}
     </>
+  )
+})
+
+const WeekDay = React.memo(function WeekDay({
+  bind,
+  showAllErrors,
+  anyChildInShiftCare
+}: {
+  bind: BoundForm<typeof weekDay>
+  showAllErrors: boolean
+  anyChildInShiftCare: boolean
+}) {
+  const i18n = useTranslation()
+
+  const day = useFormField(bind, 'day')
+  const weekDay = bind.state.weekDay
+
+  return (
+    <Day
+      bind={day}
+      label={
+        <LabelLike>{i18n.common.datetime.weekdaysShort[weekDay - 1]}</LabelLike>
+      }
+      showAllErrors={showAllErrors}
+      allowExtraTimeRange={anyChildInShiftCare}
+      dataQaPrefix={`weekly-${weekDay - 1}`}
+      onFocus={(ev) => {
+        scrollIntoViewSoftKeyboard(ev.target)
+      }}
+    />
   )
 })

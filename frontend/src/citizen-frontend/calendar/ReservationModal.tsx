@@ -91,7 +91,6 @@ export default React.memo(function ReservationModal({
       initialState(
         dayProperties,
         availableChildren,
-        calendarDays,
         initialStart,
         initialEnd,
         upcomingHolidayPeriods,
@@ -119,8 +118,6 @@ export default React.memo(function ReservationModal({
             ...nextState,
             times: resetTimes(
               dayProperties,
-              availableChildren,
-              calendarDays,
               repetition,
               selectedRange,
               selectedChildren,
@@ -141,8 +138,6 @@ export default React.memo(function ReservationModal({
             ...nextState,
             times: resetTimes(
               dayProperties,
-              availableChildren,
-              calendarDays,
               repetition,
               selectedRange,
               selectedChildren,
