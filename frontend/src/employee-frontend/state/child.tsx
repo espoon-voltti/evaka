@@ -134,8 +134,11 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   )
 
   const [placements, loadPlacements] = useApiState(
-    () => getPlacements(id),
-    [id]
+    async () =>
+      permittedActions.has('READ_PLACEMENT')
+        ? await getPlacements(id)
+        : Loading.of<PlacementResponse>(),
+    [id, permittedActions]
   )
   const [parentships] = useApiState(
     async (): Promise<Result<ParentshipWithPermittedActions[]>> =>
@@ -146,13 +149,19 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   )
 
   const [backupCares, loadBackupCares] = useApiState(
-    () => getChildBackupCares(id),
-    [id]
+    async () =>
+      permittedActions.has('READ_BACKUP_CARE')
+        ? getChildBackupCares(id)
+        : Loading.of<ChildBackupCareResponse[]>(),
+    [id, permittedActions]
   )
 
   const [guardians, reloadGuardians] = useApiState(
-    () => getPersonGuardians(id),
-    [id]
+    async () =>
+      permittedActions.has('READ_GUARDIANS')
+        ? await getPersonGuardians(id)
+        : Loading.of<PersonJSON[]>(),
+    [id, permittedActions]
   )
 
   const consecutivePlacementRanges = useMemo(
