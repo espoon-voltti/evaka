@@ -614,7 +614,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             http
                 .post("/value-decisions/search")
                 .jsonBody(
-                    """{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms", "distinctions": $distinctionsString}"""
+                    """{"page": 0, "pageSize": 100, "statuses": ["$status"], "searchTerms": "$searchTerms", "distinctions": $distinctionsString}"""
                 )
                 .withMockedTime(now)
                 .asUser(financeWorker)
@@ -629,7 +629,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val (_, _, data) =
             http
                 .post("/value-decisions/search")
-                .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
+                .jsonBody("""{"page": 0, "pageSize": 100, "statuses": ["DRAFT"]}""")
                 .withMockedTime(now)
                 .asUser(financeWorker)
                 .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)

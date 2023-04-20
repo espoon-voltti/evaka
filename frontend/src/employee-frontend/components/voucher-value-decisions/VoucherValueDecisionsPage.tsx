@@ -69,9 +69,8 @@ export default React.memo(function VoucherValueDecisionsPage() {
       return
     }
 
-    const status = searchFilters.status
     const params: VoucherValueDecisionSearchParams = {
-      status: status.length > 0 ? status : undefined,
+      statuses: searchFilters.statuses,
       area: searchFilters.area,
       unit: searchFilters.unit,
       distinctions: searchFilters.distinctiveDetails,
@@ -128,7 +127,10 @@ export default React.memo(function VoucherValueDecisionsPage() {
           setSortBy={setSortBy}
           sortDirection={sortDirection}
           setSortDirection={setSortDirection}
-          showCheckboxes={searchFilters.status === 'DRAFT'}
+          showCheckboxes={
+            searchFilters.statuses.length === 1 &&
+            searchFilters.statuses[0] === 'DRAFT'
+          }
           checked={checkedState.checked}
           toggleChecked={checkedState.toggleChecked}
           checkAll={checkAll}
@@ -136,7 +138,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
         />
       </ContentArea>
       <VoucherValueDecisionActions
-        status={searchFilters.status}
+        statuses={searchFilters.statuses}
         checkedIds={Object.keys(checkedState.checked).filter(
           (id) => !!checkedState.checked[id]
         )}

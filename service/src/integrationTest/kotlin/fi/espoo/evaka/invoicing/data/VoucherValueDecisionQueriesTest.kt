@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -176,7 +177,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -250,7 +251,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -336,7 +337,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -392,7 +393,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -466,7 +467,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -535,7 +536,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.CHILD,
                     sortDirection = direction,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -625,7 +626,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.VALIDITY,
                     sortDirection = direction,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -711,7 +712,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.VOUCHER_VALUE,
                     sortDirection = direction,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -791,7 +792,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.FINAL_CO_PAYMENT,
                     sortDirection = direction,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -857,7 +858,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.NUMBER,
                     sortDirection = direction,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -919,7 +920,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.CREATED,
                     sortDirection = direction,
-                    status = VoucherValueDecisionStatus.DRAFT,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                     areas = emptyList(),
                     unit = null,
                     startDate = null,
@@ -1015,7 +1016,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         pageSize = 100,
                         sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                         sortDirection = SortDirection.ASC,
-                        status = VoucherValueDecisionStatus.DRAFT,
+                        statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                         areas = listOf(testArea.shortName),
                         unit = null,
                         startDate = null,
@@ -1048,7 +1049,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         pageSize = 100,
                         sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                         sortDirection = SortDirection.ASC,
-                        status = VoucherValueDecisionStatus.DRAFT,
+                        statuses = listOf(VoucherValueDecisionStatus.DRAFT),
                         areas = emptyList(),
                         unit = null,
                         startDate = null,
@@ -1061,6 +1062,82 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     .data
                     .size
             )
+        }
+    }
+
+    @Test
+    fun `search with status`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(
+                            headOfFamilyId = testAdult_1.id,
+                            status = VoucherValueDecisionStatus.DRAFT
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            status = VoucherValueDecisionStatus.SENT
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            headOfFamilyId = testAdult_3.id,
+                            status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
+                        )
+                )
+            )
+        }
+
+        assertEquals(3, searchWithStatuses(emptyList()).size)
+        assertEquals(
+            2,
+            searchWithStatuses(
+                    listOf(VoucherValueDecisionStatus.DRAFT, VoucherValueDecisionStatus.SENT)
+                )
+                .size
+        )
+        assertEquals(
+            1,
+            searchWithStatuses(listOf(VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING)).size
+        )
+    }
+
+    private fun searchWithStatuses(
+        statuses: List<VoucherValueDecisionStatus>
+    ): List<VoucherValueDecisionSummary> {
+        return db.read { tx ->
+            tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = statuses,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+                .data
         }
     }
 }

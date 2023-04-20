@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.placement.PlacementType
@@ -573,6 +574,82 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName)
             )
+    }
+
+    @Test
+    fun `search with multiple statuses`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.DRAFT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    period = testPeriod,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = child.id,
+                                dateOfBirth = child.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = PlacementType.DAYCARE,
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                            )
+                        )
+                )
+            }
+            tx.upsertFeeDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(
+                            status = FeeDecisionStatus.DRAFT,
+                            headOfFamilyId = testAdult_1.id,
+                            headOfFamilyIncome = null
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            status = FeeDecisionStatus.SENT,
+                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyIncome = null
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyIncome = null
+                        ),
+                )
+            )
+        }
+
+        assertEquals(3, searchByStatuses(emptyList()).size)
+        assertEquals(
+            2,
+            searchByStatuses(listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)).size
+        )
+        assertEquals(1, searchByStatuses(listOf(FeeDecisionStatus.DRAFT)).size)
+    }
+
+    private fun searchByStatuses(statuses: List<FeeDecisionStatus>): List<FeeDecisionSummary> {
+        return db.read { tx ->
+                tx.searchFeeDecisions(
+                    clock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = statuses,
+                    areas = emptyList(),
+                    unit = null,
+                    distinctiveParams = emptyList(),
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet()
+                )
+            }
+            .data
     }
 
     private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {

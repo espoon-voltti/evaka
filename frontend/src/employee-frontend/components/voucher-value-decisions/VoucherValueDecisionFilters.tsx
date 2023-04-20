@@ -120,15 +120,18 @@ export default React.memo(function VoucherValueDecisionFilters() {
         })
   }
 
-  const toggleStatus = useCallback(
-    (status: VoucherValueDecisionStatus) => () => {
-      setSearchFilters((filters) => ({
-        ...filters,
-        status
-      }))
-    },
-    [setSearchFilters]
-  )
+  const toggleStatus = (status: VoucherValueDecisionStatus) => () => {
+    searchFilters.statuses.includes(status)
+      ? setSearchFilters({
+          ...searchFilters,
+          statuses: searchFilters.statuses.filter((v) => v !== status)
+        })
+      : setSearchFilters({
+          ...searchFilters,
+          statuses: [...searchFilters.statuses, status]
+        })
+  }
+
   const setStartDate = (startDate: LocalDate | undefined) => {
     setSearchFilters({
       ...searchFilters,
@@ -217,7 +220,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
       column3={
         <>
           <ValueDecisionStatusFilter
-            toggled={searchFilters.status}
+            toggled={searchFilters.statuses}
             toggle={toggleStatus}
           />
           <Gap size="L" />

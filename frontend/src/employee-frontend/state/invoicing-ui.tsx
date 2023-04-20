@@ -41,7 +41,7 @@ export interface Checked {
 interface FeeDecisionSearchFilters {
   area: string[]
   unit?: UUID
-  status: FeeDecisionStatus
+  statuses: FeeDecisionStatus[]
   distinctiveDetails: DistinctiveParams[]
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
@@ -62,7 +62,7 @@ interface FeeDecisionSearchFilterState {
 interface ValueDecisionSearchFilters {
   area: string[]
   unit?: UUID
-  status: VoucherValueDecisionStatus
+  statuses: VoucherValueDecisionStatus[]
   distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
   financeDecisionHandlerId?: UUID
   difference: VoucherValueDecisionDifference[]
@@ -160,7 +160,7 @@ const defaultState: UiState = {
   feeDecisions: {
     searchFilters: {
       distinctiveDetails: [],
-      status: 'DRAFT',
+      statuses: ['DRAFT'],
       area: [],
       startDate: undefined,
       endDate: LocalDate.todayInSystemTz(),
@@ -177,7 +177,7 @@ const defaultState: UiState = {
   valueDecisions: {
     searchFilters: {
       distinctiveDetails: [],
-      status: 'DRAFT',
+      statuses: ['DRAFT'],
       area: [],
       difference: [],
       startDate: undefined,

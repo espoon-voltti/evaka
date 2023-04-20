@@ -707,7 +707,7 @@ export interface SearchFeeDecisionRequest {
   sortBy: FeeDecisionSortParam | null
   sortDirection: SortDirection | null
   startDate: LocalDate | null
-  status: FeeDecisionStatus[] | null
+  statuses: FeeDecisionStatus[] | null
   unit: UUID | null
 }
 
@@ -761,7 +761,7 @@ export interface SearchVoucherValueDecisionRequest {
   sortBy: VoucherValueDecisionSortParam | null
   sortDirection: SortDirection | null
   startDate: LocalDate | null
-  status: VoucherValueDecisionStatus
+  statuses: VoucherValueDecisionStatus[]
   unit: UUID | null
 }
 

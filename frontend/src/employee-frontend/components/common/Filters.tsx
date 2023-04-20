@@ -401,7 +401,7 @@ export function VoucherValueDecisionDifferenceFilter({
 }
 
 interface FeeDecisionStatusFilterProps {
-  toggled: FeeDecisionStatus
+  toggled: FeeDecisionStatus[]
   toggle: (status: FeeDecisionStatus) => () => void
 }
 
@@ -425,13 +425,12 @@ export function FeeDecisionStatusFilter({
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
         {statuses.map((id) => (
-          <Radio
+          <Checkbox
             key={id}
             label={i18n.feeDecision.status[id]}
-            checked={toggled === id}
+            checked={toggled.includes(id)}
             onChange={toggle(id)}
             data-qa={`fee-decision-status-filter-${id}`}
-            small
           />
         ))}
       </FixedSpaceColumn>
@@ -535,7 +534,7 @@ export const ValueDecisionStatusFilter = React.memo(
     toggled,
     toggle
   }: {
-    toggled: VoucherValueDecisionStatus
+    toggled: VoucherValueDecisionStatus[]
     toggle(v: VoucherValueDecisionStatus): () => void
   }) {
     const { i18n } = useTranslation()
@@ -554,13 +553,12 @@ export const ValueDecisionStatusFilter = React.memo(
         <Gap size="xs" />
         <FixedSpaceColumn spacing="xs">
           {statuses.map((id) => (
-            <Radio
+            <Checkbox
               key={id}
               label={i18n.valueDecision.status[id]}
-              checked={toggled === id}
+              checked={toggled.includes(id)}
               onChange={toggle(id)}
               data-qa={`value-decision-status-filter-${id}`}
-              small
             />
           ))}
         </FixedSpaceColumn>
