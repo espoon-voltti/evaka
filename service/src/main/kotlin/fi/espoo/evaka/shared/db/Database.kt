@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
@@ -47,7 +46,7 @@ import org.jdbi.v3.json.Json
  */
 class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     private val threadId = ThreadId()
-    private var connected = AtomicBoolean()
+    private var hasOpenHandle = false
 
     /**
      * Opens a database connection, runs the given function, and closes the connection.
@@ -63,34 +62,24 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      */
     fun connectWithManualLifecycle(): Connection {
         threadId.assertCurrentThread()
-        check(!connected.get()) { "Already connected to database" }
-        return Connection(
-            threadId,
-            connected,
-            tracer,
-            lazy(LazyThreadSafetyMode.NONE) { jdbi.open() }
-        )
+        check(!hasOpenHandle) { "Already connected to database" }
+        return Connection(threadId, tracer, lazy(LazyThreadSafetyMode.NONE) { this.openHandle() })
     }
+
+    private fun openHandle(): Handle =
+        jdbi.open().also {
+            check(!hasOpenHandle) { "Already connected to database" }
+            hasOpenHandle = true
+            it.addCleanable { hasOpenHandle = false }
+        }
 
     /** A single lazily initialized database connection tied to a single thread */
     open class Connection
     internal constructor(
         private val threadId: ThreadId,
-        private val connected: AtomicBoolean,
         private val tracer: Tracer,
         private val lazyHandle: Lazy<Handle>
     ) : AutoCloseable {
-        private fun getHandle(): Handle {
-            threadId.assertCurrentThread()
-            return if (lazyHandle.isInitialized()) {
-                lazyHandle.value
-            } else {
-                val wasConnected = connected.getAndSet(true)
-                check(!wasConnected) { "Already connected to database" }
-                lazyHandle.value
-            }
-        }
-
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any
          * exceptions the function may have thrown.
@@ -99,7 +88,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * transaction
          */
         fun <T> read(f: (db: Read) -> T): T {
-            val handle = this.getHandle()
+            threadId.assertCurrentThread()
+            val handle = this.lazyHandle.value
             check(!handle.isInTransaction) { "Already in a transaction" }
             handle.isReadOnly = true
             try {
@@ -119,7 +109,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * transaction.
          */
         fun <T> transaction(f: (db: Transaction) -> T): T {
-            val handle = this.getHandle()
+            threadId.assertCurrentThread()
+            val handle = this.lazyHandle.value
             check(!handle.isInTransaction) { "Already in a transaction" }
             val hooks = TransactionHooks()
             return tracer
@@ -129,16 +120,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                 .also { hooks.afterCommit.forEach { it() } }
         }
 
-        fun isConnected(): Boolean = connected.get()
-
         override fun close() {
             threadId.assertCurrentThread()
             if (lazyHandle.isInitialized()) {
                 val handle = lazyHandle.value
-                if (!handle.isClosed) {
-                    connected.set(false)
-                    handle.close()
-                }
+                handle.close()
             }
         }
     }
