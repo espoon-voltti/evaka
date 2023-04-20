@@ -1763,10 +1763,22 @@ export const fi = {
       email: 'Sähköpostiosoite',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
+      removeTemporaryEmployeeConfirmation:
+        'Haluatko poistaa listalta valitun henkilön?',
       addDaycareAclModal: {
         title: 'Lisää henkilö',
+        type: {
+          PERMANENT: 'Henkilökunta',
+          TEMPORARY: 'Tilapäinen sijainen'
+        },
         groups: 'Valitse ryhmä',
-        employees: 'Valitse henkilö'
+        employees: 'Valitse henkilö',
+        firstName: 'Etunimi',
+        firstNamePlaceholder: 'Kirjoita etunimi',
+        lastName: 'Sukunimi',
+        lastNamePlaceholder: 'Kirjoita sukunimi',
+        pinCode: 'PIN-koodi',
+        pinCodePlaceholder: 'koodi'
       },
       editEmployeeRowModal: {
         title: 'Muokkaa henkilön tietoja',
@@ -1782,7 +1794,8 @@ export const fi = {
       },
       groups: 'Luvitukset ryhmiin',
       noGroups: 'Ei luvituksia',
-      hasOccupancyCoefficient: 'Kasvatusvastuullinen'
+      hasOccupancyCoefficient: 'Kasvatusvastuullinen',
+      previousTemporaryEmployees: 'Aiemmat tilapäiset työntekijät'
     },
     filters: {
       title: 'Näytä tiedot',

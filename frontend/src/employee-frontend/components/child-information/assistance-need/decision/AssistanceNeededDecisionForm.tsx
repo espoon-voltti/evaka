@@ -8,7 +8,6 @@ import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Employee } from 'employee-frontend/types/employee'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { Result } from 'lib-common/api'
 import {
@@ -16,6 +15,7 @@ import {
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'

@@ -12,14 +12,13 @@ import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
-import { Employee } from 'employee-frontend/types/employee'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { Failure, Result } from 'lib-common/api'
 import {
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionLanguage
 } from 'lib-common/generated/api-types/assistanceneed'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'

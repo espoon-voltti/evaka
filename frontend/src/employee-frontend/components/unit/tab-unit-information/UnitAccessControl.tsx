@@ -7,13 +7,14 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { combine, isLoading } from 'lib-common/api'
-import { AdRole } from 'lib-common/api-types/employee-auth'
+import { combine, isLoading, Success } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { StaticChip } from 'lib-components/atoms/Chip'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -21,13 +22,17 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2 } from 'lib-components/typography'
+import { H2, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
   DaycareGroupSummary,
+  deleteTemporaryEmployee,
+  deleteTemporaryEmployeeAcl,
+  getTemporaryEmployees,
   removeDaycareAclEarlyChildhoodEducationSecretary,
   removeDaycareAclSpecialEducationTeacher,
   removeDaycareAclStaff,
@@ -59,10 +64,13 @@ export type DaycareAclRole = Extract<
 
 export interface FormattedRow {
   id: UUID
+  firstName: string
+  lastName: string
   name: string
   email: string
   groupIds: UUID[]
   hasStaffOccupancyEffect: boolean
+  temporary: boolean
 }
 
 const RowButtons = styled.div`
@@ -101,6 +109,7 @@ function GroupListing({
 
 function AclRow({
   row,
+  hideTemporaryChip,
   isEditable,
   isDeletable,
   coefficientPermitted,
@@ -109,6 +118,7 @@ function AclRow({
   unitGroups
 }: {
   row: FormattedRow
+  hideTemporaryChip: boolean
   isEditable: boolean
   isDeletable: boolean
   coefficientPermitted: boolean
@@ -141,7 +151,17 @@ function AclRow({
 
   return (
     <Tr data-qa={`acl-row-${row.id}`}>
-      <Td data-qa="name">{row.name}</Td>
+      <Td data-qa="name">
+        <span data-qa="text">{row.name}</span>
+        {!hideTemporaryChip && row.temporary && (
+          <>
+            {' '}
+            <StaticChip color={colors.accents.a8lightBlue} data-qa="icon">
+              TS
+            </StaticChip>
+          </>
+        )}
+      </Td>
       <Td data-qa="email">{row.email}</Td>
       {unitGroups && (
         <Td data-qa="groups">
@@ -184,17 +204,21 @@ const ActionsTh = styled(Th)`
 `
 
 function AclTable({
+  dataQa = 'acl-table',
   unitGroups,
   rows,
+  hideTemporaryChip,
   onDeleteAclRow,
   onClickEdit,
   editPermitted,
   deletePermitted,
   coefficientPermitted
 }: {
+  dataQa?: string
   unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
-  onDeleteAclRow: (employeeId: UUID) => void
+  hideTemporaryChip?: boolean
+  onDeleteAclRow: (employee: FormattedRow) => void
   onClickEdit: (employeeRow: FormattedRow) => void
   editPermitted?: boolean
   deletePermitted: boolean
@@ -204,7 +228,7 @@ function AclTable({
   const { user } = useContext(UserContext)
 
   return (
-    <Table data-qa="acl-table">
+    <Table data-qa={dataQa}>
       <Thead>
         <Tr>
           <Th>{i18n.common.form.name}</Th>
@@ -222,10 +246,11 @@ function AclTable({
             key={row.id}
             unitGroups={unitGroups}
             row={row}
+            hideTemporaryChip={hideTemporaryChip ?? false}
             isDeletable={deletePermitted && row.id !== user?.id}
             isEditable={!!(editPermitted && unitGroups)}
             coefficientPermitted={coefficientPermitted}
-            onClickDelete={() => onDeleteAclRow(row.id)}
+            onClickDelete={() => onDeleteAclRow(row)}
             onClickEdit={onClickEdit}
           />
         ))}
@@ -235,7 +260,7 @@ function AclTable({
 }
 
 interface RemoveState {
-  employeeId: UUID
+  employee: FormattedRow
   removeFn: (unitId: UUID, employeeId: UUID) => Promise<unknown>
 }
 
@@ -249,7 +274,7 @@ interface AdditionState {
 
 function formatRowsOfRole(
   rows: DaycareAclRow[],
-  role: AdRole,
+  role: UserRole,
   i18n: Translations
 ): FormattedRow[] {
   return orderBy(
@@ -258,9 +283,12 @@ function formatRowsOfRole(
       .map((row) => ({
         id: row.employee.id,
         hasStaffOccupancyEffect: row.employee.hasStaffOccupancyEffect ?? false,
+        firstName: row.employee.firstName,
+        lastName: row.employee.lastName,
         name: formatName(row.employee.firstName, row.employee.lastName, i18n),
-        email: row.employee.email ?? row.employee.id,
-        groupIds: row.groupIds
+        email: row.employee.email ?? '',
+        groupIds: row.groupIds,
+        temporary: row.employee.temporary
       })),
     (row) => row.name
   )
@@ -286,6 +314,28 @@ const DeleteConfirmationModal = React.memo(function DeleteConfirmationModal({
   )
 })
 
+const DeleteTemporaryEmployeeConfirmationModal = React.memo(
+  function DeleteTemporaryEmployeeConfirmationModal({
+    onClose,
+    onConfirm
+  }: {
+    onClose: () => void
+    onConfirm: () => void
+  }) {
+    const { i18n } = useTranslation()
+    return (
+      <InfoModal
+        data-qa="remove-temporary-employee-modal"
+        type="warning"
+        title={i18n.unit.accessControl.removeTemporaryEmployeeConfirmation}
+        icon={faQuestion}
+        reject={{ action: onClose, label: i18n.common.cancel }}
+        resolve={{ action: onConfirm, label: i18n.common.remove }}
+      />
+    )
+  }
+)
+
 export default React.memo(function UnitAccessControl({
   groups,
   permittedActions
@@ -296,6 +346,13 @@ export default React.memo(function UnitAccessControl({
     useContext(UnitContext)
   const { user } = useContext(UserContext)
   const [employees] = useApiState(getEmployees, [])
+  const [temporaryEmployees, reloadTemporaryEmployees] = useApiState(
+    () =>
+      permittedActions.has('READ_TEMPORARY_EMPLOYEE')
+        ? getTemporaryEmployees(unitId)
+        : Promise.resolve(Success.of([])),
+    [permittedActions, unitId]
+  )
 
   const candidateEmployees = useMemo(
     () =>
@@ -304,12 +361,29 @@ export default React.memo(function UnitAccessControl({
           employees.filter(
             (employee) =>
               employee.id !== user?.id &&
+              employee.externalId !== null &&
+              employee.temporaryInUnitId === null &&
               !daycareAclRows.some((row) => row.employee.id === employee.id)
           ),
           [(row) => row.email, (row) => row.id]
         )
       ),
     [employees, daycareAclRows, user]
+  )
+  const candidateTemporaryEmployees = useMemo(
+    () =>
+      combine(temporaryEmployees, daycareAclRows).map(
+        ([temporaryEmployees, daycareAclRows]) =>
+          orderBy(
+            temporaryEmployees.filter(
+              (employee) =>
+                employee.id !== user?.id &&
+                !daycareAclRows.some((row) => row.employee.id === employee.id)
+            ),
+            [(row) => row.email, (row) => row.id]
+          )
+      ),
+    [temporaryEmployees, daycareAclRows, user]
   )
 
   const unitSupervisors = useMemo(
@@ -393,10 +467,41 @@ export default React.memo(function UnitAccessControl({
   }, [clearUiMode])
 
   const confirmRemoveModal = useCallback(async () => {
-    await removeState?.removeFn(unitId, removeState.employeeId)
+    await removeState?.removeFn(unitId, removeState.employee.id)
     closeRemoveModal()
     reloadDaycareAclRows()
-  }, [closeRemoveModal, reloadDaycareAclRows, removeState, unitId])
+    await reloadTemporaryEmployees()
+  }, [
+    closeRemoveModal,
+    reloadDaycareAclRows,
+    reloadTemporaryEmployees,
+    removeState,
+    unitId
+  ])
+
+  const openRemoveTemporaryEmployeeModal = useCallback(
+    (removeState: RemoveState) => {
+      setRemoveState(removeState)
+      toggleUiMode(`remove-temporary-employee-${unitId}`)
+    },
+    [toggleUiMode, unitId]
+  )
+
+  const closeRemoveTemporaryEmployeeModal = useCallback(() => {
+    clearUiMode()
+    setRemoveState(undefined)
+  }, [clearUiMode])
+
+  const confirmRemoveTemporaryEmployeeModal = useCallback(async () => {
+    await removeState?.removeFn(unitId, removeState.employee.id)
+    closeRemoveTemporaryEmployeeModal()
+    await reloadTemporaryEmployees()
+  }, [
+    closeRemoveTemporaryEmployeeModal,
+    reloadTemporaryEmployees,
+    removeState,
+    unitId
+  ])
 
   // daycare addition modal role-based addition fns
   const openAddStaffModal = useCallback(() => {
@@ -440,13 +545,20 @@ export default React.memo(function UnitAccessControl({
         />
       )}
 
-      {uiMode === `edit-daycare-acl-${unitId}` && (
+      {uiMode === `remove-temporary-employee-${unitId}` && (
+        <DeleteTemporaryEmployeeConfirmationModal
+          onClose={closeRemoveTemporaryEmployeeModal}
+          onConfirm={confirmRemoveTemporaryEmployeeModal}
+        />
+      )}
+
+      {uiMode === `edit-daycare-acl-${unitId}` && updateState && (
         <EmployeeAclRowEditModal
           onClose={closeEmployeeAclRowEditModal}
           onSuccess={confirmEmployeeAclRowEditModal}
           updatesGroupAcl={updateDaycareGroupAcl}
           permittedActions={permittedActions}
-          employeeRow={updateState?.employeeRow}
+          employeeRow={updateState.employeeRow}
           unitId={unitId}
           groups={groups}
         />
@@ -467,15 +579,16 @@ export default React.memo(function UnitAccessControl({
           )}
         </>
       ))}
+
       <ContentArea opaque data-qa="daycare-acl-supervisors">
         <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
         {renderResult(unitSupervisors, (unitSupervisors) => (
           <>
             <AclTable
               rows={unitSupervisors}
-              onDeleteAclRow={(employeeId) =>
+              onDeleteAclRow={(employee) =>
                 openRemoveModal({
-                  employeeId,
+                  employee,
                   removeFn: removeDaycareAclSupervisor
                 })
               }
@@ -511,9 +624,9 @@ export default React.memo(function UnitAccessControl({
           <>
             <AclTable
               rows={specialEducationTeachers}
-              onDeleteAclRow={(employeeId) =>
+              onDeleteAclRow={(employee) =>
                 openRemoveModal({
-                  employeeId,
+                  employee,
                   removeFn: removeDaycareAclSpecialEducationTeacher
                 })
               }
@@ -551,9 +664,9 @@ export default React.memo(function UnitAccessControl({
             <>
               <AclTable
                 rows={earlyChildhoodEducationSecretaries}
-                onDeleteAclRow={(employeeId) =>
+                onDeleteAclRow={(employee) =>
                   openRemoveModal({
-                    employeeId,
+                    employee,
                     removeFn: removeDaycareAclEarlyChildhoodEducationSecretary
                   })
                 }
@@ -592,10 +705,12 @@ export default React.memo(function UnitAccessControl({
           <>
             <AclTable
               rows={staff}
-              onDeleteAclRow={(employeeId) =>
+              onDeleteAclRow={(employee) =>
                 openRemoveModal({
-                  employeeId,
-                  removeFn: removeDaycareAclStaff
+                  employee,
+                  removeFn: employee.temporary
+                    ? deleteTemporaryEmployeeAcl
+                    : removeDaycareAclStaff
                 })
               }
               unitGroups={groups}
@@ -609,7 +724,8 @@ export default React.memo(function UnitAccessControl({
                 'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
-            {permittedActions.has('INSERT_ACL_STAFF') && (
+            {(permittedActions.has('INSERT_ACL_STAFF') ||
+              permittedActions.has('CREATE_TEMPORARY_EMPLOYEE')) && (
               <>
                 <Gap />
                 <AddButton
@@ -617,6 +733,55 @@ export default React.memo(function UnitAccessControl({
                   onClick={openAddStaffModal}
                   data-qa="open-add-daycare-acl-modal"
                 />
+              </>
+            )}
+            {permittedActions.has('READ_TEMPORARY_EMPLOYEE') && (
+              <>
+                {renderResult(candidateTemporaryEmployees, (employees) => (
+                  <>
+                    {employees.length > 0 && (
+                      <>
+                        <HorizontalLine />
+                        <H4>
+                          {i18n.unit.accessControl.previousTemporaryEmployees}
+                        </H4>
+                        <AclTable
+                          dataQa="previous-temporary-employee-table"
+                          rows={employees.map((employee) => ({
+                            id: employee.id,
+                            firstName: employee.firstName ?? '',
+                            lastName: employee.lastName ?? '',
+                            name: formatName(
+                              employee.firstName,
+                              employee.lastName,
+                              i18n
+                            ),
+                            email: employee.email ?? '',
+                            groupIds: [],
+                            hasStaffOccupancyEffect: false,
+                            temporary: true
+                          }))}
+                          hideTemporaryChip={true}
+                          onDeleteAclRow={(employee) =>
+                            openRemoveTemporaryEmployeeModal({
+                              employee,
+                              removeFn: deleteTemporaryEmployee
+                            })
+                          }
+                          unitGroups={groups}
+                          onClickEdit={openEmployeeAclRowEditModal}
+                          editPermitted={permittedActions.has(
+                            'UPDATE_TEMPORARY_EMPLOYEE'
+                          )}
+                          deletePermitted={permittedActions.has(
+                            'DELETE_TEMPORARY_EMPLOYEE'
+                          )}
+                          coefficientPermitted={true}
+                        />
+                      </>
+                    )}
+                  </>
+                ))}
               </>
             )}
           </>

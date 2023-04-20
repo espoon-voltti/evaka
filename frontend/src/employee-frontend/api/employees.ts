@@ -6,6 +6,7 @@ import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import {
+  Employee,
   EmployeePreferredFirstName,
   EmployeeSetPreferredFirstNameUpdateRequest
 } from 'lib-common/generated/api-types/pis'
@@ -14,7 +15,7 @@ import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
-import { Employee, EmployeeUser } from '../types/employee'
+import { EmployeeUser } from '../types/employee'
 
 import { client } from './client'
 
@@ -25,7 +26,8 @@ export async function getEmployees(): Promise<Result<Employee[]>> {
       res.data.map((data) => ({
         ...data,
         created: HelsinkiDateTime.parseIso(data.created),
-        updated: HelsinkiDateTime.parseIso(data.updated)
+        updated:
+          data.updated !== null ? HelsinkiDateTime.parseIso(data.updated) : null
       }))
     )
     .then((v) => Success.of(v))

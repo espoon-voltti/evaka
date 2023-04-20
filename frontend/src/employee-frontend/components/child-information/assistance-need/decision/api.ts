@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Employee } from 'employee-frontend/types/employee'
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import {
@@ -12,6 +11,7 @@ import {
   AssistanceNeedDecisionResponse,
   AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -180,7 +180,8 @@ export function getAssistanceDecisionMakerOptions(
       res.data.map((data) => ({
         ...data,
         created: HelsinkiDateTime.parseIso(data.created),
-        updated: HelsinkiDateTime.parseIso(data.updated)
+        updated:
+          data.updated !== null ? HelsinkiDateTime.parseIso(data.updated) : null
       }))
     )
     .then((v) => Success.of(v))

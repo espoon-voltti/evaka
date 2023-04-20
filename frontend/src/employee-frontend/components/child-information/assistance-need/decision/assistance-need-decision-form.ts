@@ -4,13 +4,13 @@
 
 import React, { SetStateAction, useCallback, useEffect, useState } from 'react'
 
-import { Employee } from 'employee-frontend/types/employee'
 import {
   AutosaveStatus,
   useAutosave
 } from 'employee-frontend/utils/use-autosave'
 import { Result } from 'lib-common/api'
 import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
