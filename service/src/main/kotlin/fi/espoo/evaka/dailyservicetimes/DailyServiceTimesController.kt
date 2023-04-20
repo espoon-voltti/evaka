@@ -6,7 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.generateAbsencesFromIrregularDailyServiceTimes
-import fi.espoo.evaka.reservations.clearReservationsForRange
+import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -291,7 +291,8 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 validityPeriod.end
             )
 
-        val deletedReservationCount = tx.clearReservationsForRange(childId, actionableRange)
+        val deletedReservationCount =
+            tx.clearReservationsForRangeExceptInHolidayPeriod(childId, actionableRange)
         tx.addDailyServiceTimesNotification(
             today,
             id,

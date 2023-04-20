@@ -95,9 +95,17 @@ fun Database.Transaction.clearOldReservations(
     return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
 }
 
-fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: DateRange): Int {
+fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
+    childId: ChildId,
+    range: DateRange
+): Int {
     return this.createUpdate(
-            "DELETE FROM attendance_reservation WHERE child_id = :childId AND between_start_and_end(:range, date)"
+            """
+            DELETE FROM attendance_reservation
+            WHERE child_id = :childId
+            AND between_start_and_end(:range, date)
+            AND NOT EXISTS (SELECT 1 FROM holiday_period hp WHERE period @> date)
+            """
         )
         .bind("childId", childId)
         .bind("range", range)
