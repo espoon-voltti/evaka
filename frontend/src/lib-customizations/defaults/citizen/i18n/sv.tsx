@@ -213,8 +213,8 @@ const sv: Translations = {
       <>
         <InlineButton text="Anmäl" onClick={() => undefined} /> närvaro och
         frånvaro mellan {period.start.format('dd.MM.')}-{period.end.format()}{' '}
-        senast {deadline.format()}. De exakta tiderna för närvaro kommer att
-        markeras efter frågeformuläret har stängts.
+        senast {deadline.format()}. Exakta klockslag för närvarodagar fylls i
+        när frågeformuläret har stängts.
       </>
     ),
     fixedPeriodCta: (deadline: LocalDate) =>
