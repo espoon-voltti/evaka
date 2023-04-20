@@ -302,7 +302,8 @@ class ApplicationControllerV2(
                         it,
                         user,
                         clock,
-                        Action.Global.READ_PERSON_APPLICATION
+                        Action.Person.READ_APPLICATIONS,
+                        guardianId
                     )
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }

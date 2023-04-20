@@ -149,9 +149,6 @@ sealed interface Action {
         ),
         FETCH_INCOME_STATEMENTS_AWAITING_HANDLER(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_PAPER_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
-        READ_PERSON_APPLICATION(
-            HasGlobalRole(ADMIN, SERVICE_WORKER)
-        ), // Applications summary on person page
         READ_SERVICE_WORKER_APPLICATION_NOTES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         WRITE_SERVICE_WORKER_APPLICATION_NOTES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_PERSON(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
@@ -1375,6 +1372,9 @@ sealed interface Action {
         GENERATE_RETROACTIVE_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         MERGE(HasGlobalRole(ADMIN)),
+        READ_APPLICATIONS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER)
+        ), // Applications summary on person page
         READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
