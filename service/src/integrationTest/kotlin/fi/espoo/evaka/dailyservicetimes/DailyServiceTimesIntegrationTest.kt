@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.dailyservicetimes
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -13,6 +11,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.ReservationControllerCitizen
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -21,15 +20,17 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -37,15 +38,21 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
+    @Autowired
+    private lateinit var dailyServiceTimesCitizenController: DailyServiceTimesCitizenController
+    @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
+
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val guardian1 = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK)
     private val guardian2 = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.WEAK)
@@ -87,11 +94,15 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `cannot create, update or delete if validity has started`() {
-        createDailyServiceTimes(
-            testChild_1.id,
-            DailyServiceTimesValue.RegularTimes(DateRange(now.toLocalDate(), null), tenToNoonRange),
-            400
-        )
+        assertThrows<BadRequest> {
+            createDailyServiceTimes(
+                testChild_1.id,
+                DailyServiceTimesValue.RegularTimes(
+                    DateRange(now.toLocalDate(), null),
+                    tenToNoonRange
+                ),
+            )
+        }
 
         val id = DailyServiceTimesId(UUID.randomUUID())
         db.transaction { tx ->
@@ -104,16 +115,17 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         }
 
-        updateDailyServiceTimes(
-            id,
-            DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(now.toLocalDate().minusDays(1), null),
-                regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
-            ),
-            400
-        )
+        assertThrows<BadRequest> {
+            updateDailyServiceTimes(
+                id,
+                DailyServiceTimesValue.RegularTimes(
+                    validityPeriod = DateRange(now.toLocalDate().minusDays(1), null),
+                    regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
+                ),
+            )
+        }
 
-        deleteDailyServiceTimes(id, 400)
+        assertThrows<BadRequest> { deleteDailyServiceTimes(id) }
     }
 
     @Test
@@ -138,12 +150,15 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         }
 
         // Set to future
-        setDailyServiceTimesEndDate(idFuture, now.toLocalDate().plusDays(1), 200)
+        setDailyServiceTimesEndDate(idFuture, now.toLocalDate().plusDays(1))
+
         // Set to past -> not allowed
-        setDailyServiceTimesEndDate(idFuture, now.toLocalDate(), 400)
+        assertThrows<BadRequest> { setDailyServiceTimesEndDate(idFuture, now.toLocalDate()) }
 
         // Already in the past -> not allowed
-        setDailyServiceTimesEndDate(past, now.toLocalDate().plusDays(1), 400)
+        assertThrows<BadRequest> {
+            setDailyServiceTimesEndDate(past, now.toLocalDate().plusDays(1))
+        }
     }
 
     @Test
@@ -168,15 +183,16 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
 
         // Add overlapping entry in the middle -> not allowed
-        createDailyServiceTimes(
-            testChild_1.id,
-            DailyServiceTimesValue.RegularTimes(
-                validityPeriod =
-                    DateRange(now.toLocalDate().plusDays(30), now.toLocalDate().plusDays(50)),
-                regularTimes = tenToNoonRange
-            ),
-            409
-        )
+        assertThrows<Conflict> {
+            createDailyServiceTimes(
+                testChild_1.id,
+                DailyServiceTimesValue.RegularTimes(
+                    validityPeriod =
+                        DateRange(now.toLocalDate().plusDays(30), now.toLocalDate().plusDays(50)),
+                    regularTimes = tenToNoonRange
+                ),
+            )
+        }
 
         // Add overlapping entry to the end
         createDailyServiceTimes(
@@ -221,8 +237,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(now.toLocalDate().plusDays(1), null),
                 regularTimes = tenToNoonRange
-            ),
-            200
+            )
         )
 
         run {
@@ -257,17 +272,23 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // Attempt updating the first entry so that it overlaps with the second -> not allowed
 
-        updateDailyServiceTimes(
-            id,
-            DailyServiceTimesValue.RegularTimes(
-                validityPeriod =
-                    DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(11)),
-                regularTimes = tenToNoonRange
-            ),
-            400
-        )
+        assertThrows<BadRequest> {
+            updateDailyServiceTimes(
+                id,
+                DailyServiceTimesValue.RegularTimes(
+                    validityPeriod =
+                        DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(11)),
+                    regularTimes = tenToNoonRange
+                ),
+            )
+        }
 
-        setDailyServiceTimesEndDate(id, now.toLocalDate().plusDays(11), 400)
+        assertThrows<BadRequest> {
+            setDailyServiceTimesEndDate(
+                id,
+                now.toLocalDate().plusDays(11),
+            )
+        }
     }
 
     @Test
@@ -407,118 +428,90 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun createDailyServiceTimes(
         childId: ChildId,
         dailyServiceTime: DailyServiceTimesValue,
-        expectedStatus: Int = 200
     ) {
-        val (_, res, _) =
-            http
-                .post("/children/$childId/daily-service-times")
-                .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
-                .asUser(admin)
-                .withMockedTime(now)
-                .response()
-
-        assertEquals(expectedStatus, res.statusCode)
+        dailyServiceTimesController.postDailyServiceTimes(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            childId,
+            dailyServiceTime
+        )
     }
 
     private fun updateDailyServiceTimes(
         id: DailyServiceTimesId,
         dailyServiceTime: DailyServiceTimesValue,
-        expectedStatus: Int = 200
     ) {
-        val (_, res, _) =
-            http
-                .put("/daily-service-times/$id")
-                .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
-                .asUser(admin)
-                .withMockedTime(now)
-                .response()
-
-        assertEquals(expectedStatus, res.statusCode)
+        dailyServiceTimesController.putDailyServiceTimes(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            id,
+            dailyServiceTime
+        )
     }
 
     private fun setDailyServiceTimesEndDate(
         id: DailyServiceTimesId,
         endDate: LocalDate,
-        expectedStatus: Int = 200
     ) {
-        val (_, res, _) =
-            http
-                .put("/daily-service-times/$id/end")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        DailyServiceTimesController.DailyServiceTimesEndDate(endDate)
-                    )
-                )
-                .asUser(admin)
-                .withMockedTime(now)
-                .response()
-
-        assertEquals(expectedStatus, res.statusCode)
+        dailyServiceTimesController.putDailyServiceTimesEnd(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            id,
+            DailyServiceTimesController.DailyServiceTimesEndDate(endDate)
+        )
     }
 
-    private fun deleteDailyServiceTimes(id: DailyServiceTimesId, expectedStatus: Int = 200) {
-        val (_, res, _) =
-            http.delete("/daily-service-times/$id").asUser(admin).withMockedTime(now).response()
-
-        assertEquals(expectedStatus, res.statusCode)
+    private fun deleteDailyServiceTimes(id: DailyServiceTimesId) {
+        dailyServiceTimesController.deleteDailyServiceTimes(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            id
+        )
     }
 
     private fun getDailyServiceTimes(
         childId: ChildId
     ): List<DailyServiceTimesController.DailyServiceTimesResponse> {
-        val (_, res, result) =
-            http
-                .get("/children/$childId/daily-service-times")
-                .asUser(admin)
-                .withMockedTime(now)
-                .responseObject<List<DailyServiceTimesController.DailyServiceTimesResponse>>(
-                    jsonMapper
-                )
-
-        assertEquals(200, res.statusCode)
-
-        return result.get()
+        return dailyServiceTimesController.getDailyServiceTimes(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            childId
+        )
     }
 
     private fun getDailyServiceTimeNotifications(
         user: AuthenticatedUser.Citizen
     ): List<DailyServiceTimeNotification> {
-        val (_, res, result) =
-            http
-                .get("/citizen/daily-service-time-notifications")
-                .asUser(user)
-                .withMockedTime(now)
-                .responseObject<List<DailyServiceTimeNotification>>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-
-        return result.get()
+        return dailyServiceTimesCitizenController.getDailyServiceTimeNotifications(
+            dbInstance(),
+            user,
+            MockEvakaClock(now)
+        )
     }
 
     private fun dismissDailyServiceTimeNotification(
         user: AuthenticatedUser.Citizen,
         notificationId: DailyServiceTimeNotificationId
     ) {
-        val (_, res, _) =
-            http
-                .post("/citizen/daily-service-time-notifications/dismiss")
-                .jsonBody(jsonMapper.writeValueAsString(listOf(notificationId)))
-                .asUser(user)
-                .withMockedTime(now)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        dailyServiceTimesCitizenController.dismissDailyServiceTimeNotification(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            listOf(notificationId)
+        )
     }
 
     private fun postReservations(request: List<DailyReservationRequest>) {
-        val (_, res, _) =
-            http
-                .post("/citizen/reservations")
-                .jsonBody(jsonMapper.writeValueAsString(request.toTypedArray()))
-                .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
-                .withMockedTime(now)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        reservationControllerCitizen.postReservations(
+            dbInstance(),
+            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+            MockEvakaClock(now),
+            request
+        )
     }
 }
