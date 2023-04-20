@@ -30,7 +30,7 @@ import org.jdbi.v3.json.Json
 //         To call this function, you need to have a lazy database connection *without* an active
 // transaction.
 //         The function can read/write the database and freely execute 0 to N individual
-// transactions.
+// transactions. It may also close the connection temporarily and reuse it afterwards.
 //     fun doStuff(tx: Database.Read)
 //         To call this function, you need to have an active read-only transaction.
 //         The function can only read the database, and can't manage transactions by itself.
@@ -63,7 +63,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     fun connectWithManualLifecycle(): Connection {
         threadId.assertCurrentThread()
         check(!hasOpenHandle) { "Already connected to database" }
-        return Connection(threadId, tracer, lazy(LazyThreadSafetyMode.NONE) { this.openHandle() })
+        return Connection(threadId, tracer, this::openHandle)
     }
 
     private fun openHandle(): Handle =
@@ -73,13 +73,23 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             it.addCleanable { hasOpenHandle = false }
         }
 
-    /** A single lazily initialized database connection tied to a single thread */
+    /**
+     * A single *possibly open* database connection tied to a single thread.
+     *
+     * Whenever a transaction is started, the underlying raw handle is opened lazily. Once the
+     * connection is closed with `close()` and any new transaction will once again lazily open a raw
+     * handle.
+     */
     open class Connection
     internal constructor(
         private val threadId: ThreadId,
         private val tracer: Tracer,
-        private val lazyHandle: Lazy<Handle>
+        private val openRawHandle: () -> Handle
     ) : AutoCloseable {
+        private var rawHandle: Handle? = null
+
+        private fun getRawHandle(): Handle = rawHandle ?: openRawHandle().also { rawHandle = it }
+
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any
          * exceptions the function may have thrown.
@@ -89,7 +99,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          */
         fun <T> read(f: (db: Read) -> T): T {
             threadId.assertCurrentThread()
-            val handle = this.lazyHandle.value
+            val handle = this.getRawHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             handle.isReadOnly = true
             try {
@@ -110,7 +120,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          */
         fun <T> transaction(f: (db: Transaction) -> T): T {
             threadId.assertCurrentThread()
-            val handle = this.lazyHandle.value
+            val handle = this.getRawHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             val hooks = TransactionHooks()
             return tracer
@@ -122,10 +132,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun close() {
             threadId.assertCurrentThread()
-            if (lazyHandle.isInitialized()) {
-                val handle = lazyHandle.value
-                handle.close()
-            }
+            this.rawHandle?.close()
+            this.rawHandle = null
         }
     }
 
