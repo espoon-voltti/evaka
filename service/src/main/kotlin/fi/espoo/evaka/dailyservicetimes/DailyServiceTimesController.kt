@@ -6,7 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.generateAbsencesFromIrregularDailyServiceTimes
-import fi.espoo.evaka.reservations.clearReservationsForRange
+import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -98,7 +97,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     )
                     updateOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
                     val id = tx.createChildDailyServiceTimes(childId, body)
-                    deleteCollidingReservationsAndNotify(tx, now, id, childId, body.validityPeriod)
+                    deleteCollidingReservationsAndNotify(
+                        tx,
+                        today,
+                        id,
+                        childId,
+                        body.validityPeriod
+                    )
                     generateAbsencesFromIrregularDailyServiceTimes(tx, now, childId)
                     id
                 }
@@ -147,7 +152,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 }
 
                 tx.updateChildDailyServiceTimes(id, body)
-                deleteCollidingReservationsAndNotify(tx, now, id, old.childId, body.validityPeriod)
+                deleteCollidingReservationsAndNotify(
+                    tx,
+                    today,
+                    id,
+                    old.childId,
+                    body.validityPeriod
+                )
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
             }
         }
@@ -199,7 +210,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 }
 
                 tx.updateChildDailyServiceTimesValidity(id, newValidity)
-                deleteCollidingReservationsAndNotify(tx, now, id, old.childId, newValidity)
+                deleteCollidingReservationsAndNotify(tx, today, id, old.childId, newValidity)
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
             }
         }
@@ -266,12 +277,11 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     private fun deleteCollidingReservationsAndNotify(
         tx: Database.Transaction,
-        now: HelsinkiDateTime,
+        today: LocalDate,
         id: DailyServiceTimesId,
         childId: ChildId,
         validityPeriod: DateRange
     ) {
-        val today = now.toLocalDate()
         if ((validityPeriod.end ?: LocalDate.MAX) <= today)
             throw Error("Unexpected validity period")
 
@@ -281,7 +291,8 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 validityPeriod.end
             )
 
-        val deletedReservationCount = tx.clearReservationsForRange(childId, actionableRange)
+        val deletedReservationCount =
+            tx.clearReservationsForRangeExceptInHolidayPeriod(childId, actionableRange)
         tx.addDailyServiceTimesNotification(
             today,
             id,
