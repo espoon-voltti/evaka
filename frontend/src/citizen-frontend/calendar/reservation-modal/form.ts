@@ -356,6 +356,18 @@ export function resetTimes(
         )
 
         if (
+          holidayWithNoChildrenInShiftCare(
+            relevantCalendarDays,
+            selectedChildren
+          )
+        ) {
+          return {
+            weekDay: dayOfWeek,
+            day: { branch: 'readOnly', state: 'holiday' }
+          }
+        }
+
+        if (
           allChildrenAreAbsentMarkedByEmployee(
             relevantCalendarDays,
             selectedChildren
@@ -435,7 +447,7 @@ export function resetTimes(
             holidayPeriod.isOpen && holidayPeriod.period.includes(rangeDate)
         )
 
-        if (calendarDay.holiday && !dayProperties.anyChildInShiftCare) {
+        if (holidayWithNoChildrenInShiftCare([calendarDay], selectedChildren)) {
           return {
             date: rangeDate,
             day: { branch: 'readOnly', state: 'holiday' }
@@ -505,13 +517,25 @@ export function resetTimes(
   }
 }
 
-const hasReservationsForEveryChild = (
-  dayData: ReservationResponseDay[],
-  childIds: string[]
+const holidayWithNoChildrenInShiftCare = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
 ) =>
-  dayData.every((reservations) =>
-    childIds.every((childId) =>
-      reservations.children.some(
+  calendarDays.every(
+    (day) =>
+      day.holiday &&
+      day.children.every(
+        (child) => !child.shiftCare || !selectedChildren.includes(child.childId)
+      )
+  )
+
+const hasReservationsForEveryChild = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
+) =>
+  calendarDays.every((day) =>
+    selectedChildren.every((childId) =>
+      day.children.some(
         (child) => child.childId === childId && child.reservations.length > 0
       )
     )
@@ -519,10 +543,10 @@ const hasReservationsForEveryChild = (
 
 const allChildrenAreAbsent = (
   calendarDays: ReservationResponseDay[],
-  childIds: string[]
+  selectedChildren: string[]
 ) =>
   calendarDays.every((day) =>
-    childIds.every((childId) =>
+    selectedChildren.every((childId) =>
       day.children.some(
         (child) => child.childId === childId && child.absence !== null
       )
@@ -531,10 +555,10 @@ const allChildrenAreAbsent = (
 
 const allChildrenAreAbsentMarkedByEmployee = (
   calendarDays: ReservationResponseDay[],
-  childIds: string[]
+  selectedChildren: string[]
 ) =>
   calendarDays.every((day) =>
-    childIds.every((childId) =>
+    selectedChildren.every((childId) =>
       day.children.some(
         (child) =>
           child.childId === childId &&
@@ -594,7 +618,6 @@ export class DayProperties {
   readonly calendarDays: ReservationResponseDay[]
 
   // Does any child have shift care?
-  // TODO: Remove this, because we're only interested in _selected_ children, not all of them
   readonly anyChildInShiftCare: boolean
 
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>

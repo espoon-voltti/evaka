@@ -15,6 +15,7 @@ import { DayProperties, resetTimes } from './form'
 
 const monday = LocalDate.of(2021, 2, 1)
 const tuesday = monday.addDays(1)
+const wednesday = monday.addDays(2)
 const sunday = monday.addDays(6)
 const thursdayLastWeek = monday.subDays(4)
 const tuesdayNextWeek = sunday.addDays(2)
@@ -38,12 +39,6 @@ const emptyCalendarDaysIncludingWeekend: ReservationResponseDay[] = [
 const emptyCalendarDays = emptyCalendarDaysIncludingWeekend.filter(
   (day) => !day.date.isWeekend()
 )
-
-//
-//
-// TODO: Add tests for holidays
-//
-//
 
 const emptyChild = {
   childId: 'child-1',
@@ -1029,6 +1024,76 @@ describe('resetTimes', () => {
       })
     })
 
+    it('Holidays', () => {
+      // MO TU WE
+      //    s  s
+      //       s
+      const calendarDays: ReservationResponseDay[] = [
+        {
+          date: monday,
+          holiday: true,
+          children: [
+            { ...emptyChild, childId: 'child-1', shiftCare: false },
+            { ...emptyChild, childId: 'child-2', shiftCare: false }
+          ]
+        },
+        {
+          date: tuesday,
+          holiday: true,
+          children: [
+            { ...emptyChild, childId: 'child-1', shiftCare: true },
+            { ...emptyChild, childId: 'child-2', shiftCare: false }
+          ]
+        },
+        {
+          date: wednesday,
+          holiday: true,
+          children: [
+            { ...emptyChild, childId: 'child-1', shiftCare: true },
+            { ...emptyChild, childId: 'child-2', shiftCare: true }
+          ]
+        }
+      ]
+
+      const includeWeekends = false
+      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+
+      expect(
+        resetTimes(
+          dayProperties,
+          'WEEKLY',
+          new FiniteDateRange(monday, wednesday),
+          ['child-1', 'child-2'],
+          []
+        )
+      ).toEqual({
+        branch: 'weeklyTimes',
+        state: [
+          {
+            weekDay: 1,
+            day: {
+              branch: 'readOnly',
+              state: 'holiday'
+            }
+          },
+          {
+            weekDay: 2,
+            day: {
+              branch: 'reservation',
+              state: [{ startTime: '', endTime: '' }]
+            }
+          },
+          {
+            weekDay: 3,
+            day: {
+              branch: 'reservation',
+              state: [{ startTime: '', endTime: '' }]
+            }
+          }
+        ]
+      })
+    })
+
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
@@ -1748,6 +1813,76 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[6],
+            day: {
+              branch: 'reservation',
+              state: [{ startTime: '', endTime: '' }]
+            }
+          }
+        ]
+      })
+    })
+
+    it('Holidays', () => {
+      // MO TU WE
+      //    s  s
+      //       s
+      const calendarDays: ReservationResponseDay[] = [
+        {
+          date: monday,
+          holiday: true,
+          children: [
+            { ...emptyChild, childId: 'child-1', shiftCare: false },
+            { ...emptyChild, childId: 'child-2', shiftCare: false }
+          ]
+        },
+        {
+          date: tuesday,
+          holiday: true,
+          children: [
+            { ...emptyChild, childId: 'child-1', shiftCare: true },
+            { ...emptyChild, childId: 'child-2', shiftCare: false }
+          ]
+        },
+        {
+          date: wednesday,
+          holiday: true,
+          children: [
+            { ...emptyChild, childId: 'child-1', shiftCare: true },
+            { ...emptyChild, childId: 'child-2', shiftCare: true }
+          ]
+        }
+      ]
+
+      const includeWeekends = false
+      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+
+      expect(
+        resetTimes(
+          dayProperties,
+          'IRREGULAR',
+          new FiniteDateRange(monday, wednesday),
+          ['child-1', 'child-2'],
+          []
+        )
+      ).toEqual({
+        branch: 'irregularTimes',
+        state: [
+          {
+            date: monday,
+            day: {
+              branch: 'readOnly',
+              state: 'holiday'
+            }
+          },
+          {
+            date: tuesday,
+            day: {
+              branch: 'reservation',
+              state: [{ startTime: '', endTime: '' }]
+            }
+          },
+          {
+            date: wednesday,
             day: {
               branch: 'reservation',
               state: [{ startTime: '', endTime: '' }]
