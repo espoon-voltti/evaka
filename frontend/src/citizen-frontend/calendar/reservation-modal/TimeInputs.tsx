@@ -91,9 +91,9 @@ const ReservationTimes = React.memo(function ReservationTimes({
 
   // Empty reservations array => absent
   return state.length === 0 ? (
-    <FixedSpaceRow fullWidth>
+    <FixedSpaceRow fullWidth alignItems="center">
       <LeftCell>{label}</LeftCell>
-      <MiddleCell textOnly>{i18n.calendar.reservationModal.absent}</MiddleCell>
+      <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
       <RightCell>
         <IconButton
           data-qa={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
@@ -136,7 +136,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
   switch (mode) {
     case undefined:
       return (
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow fullWidth alignItems="center">
           <LeftCell>{label}</LeftCell>
           <MiddleCell />
           <RightCell />
@@ -145,11 +145,9 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case 'not-editable':
       return (
         <>
-          <FixedSpaceRow fullWidth>
+          <FixedSpaceRow fullWidth alignItems="center">
             <LeftCell>{label}</LeftCell>
-            <MiddleCell textOnly>
-              {i18n.calendar.reservationModal.absent}
-            </MiddleCell>
+            <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
             <RightCell>
               <InfoButton
                 onClick={onInfoClick}
@@ -178,9 +176,9 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       )
     case 'holiday':
       return (
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow fullWidth alignItems="center">
           <LeftCell>{label}</LeftCell>
-          <MiddleCell textOnly>{i18n.calendar.holiday}</MiddleCell>
+          <MiddleCell>{i18n.calendar.holiday}</MiddleCell>
           <RightCell />
         </FixedSpaceRow>
       )
@@ -216,7 +214,7 @@ export const Times = React.memo(function Times({
 
   return (
     <>
-      <FixedSpaceRow fullWidth>
+      <FixedSpaceRow fullWidth alignItems="center">
         <LeftCell>{label}</LeftCell>
         <MiddleCell>
           <TimeRangeInput
@@ -251,7 +249,7 @@ export const Times = React.memo(function Times({
         </RightCell>
       </FixedSpaceRow>
       {secondTimeRange !== undefined ? (
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow fullWidth alignItems="center">
           <LeftCell />
           <MiddleCell>
             <TimeRangeInput
@@ -283,9 +281,9 @@ export function HolidayReservation({
 }) {
   const i18n = useTranslation()
   return (
-    <FixedSpaceRow fullWidth>
+    <FixedSpaceRow fullWidth alignItems="center">
       <LeftCell>{label}</LeftCell>
-      <MiddleCell>
+      <MiddleCell narrow>
         <Radio
           checked={bind.state === 'present'}
           onChange={() => bind.set('present')}
@@ -306,15 +304,17 @@ export function HolidayReservation({
 }
 
 const LeftCell = styled.div`
-  flex: 0.25;
-  padding-top: 8px;
+  width: 80px;
 `
-const MiddleCell = styled.div<{ textOnly?: boolean }>`
-  flex: 0.7;
-  ${(p) => p.textOnly && 'padding-top: 8px;'}
+const MiddleCell = styled.div<{ narrow?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  flex: ${(p) => (p.narrow ? 1 : 3)};
+  min-height: 37px;
 `
 const RightCell = styled.div`
-  flex: 0.15;
-  padding-top: 8px;
-  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  flex: 2;
+  min-height: 37px;
 `
