@@ -70,10 +70,10 @@ class LocationController {
         db: Database,
         @RequestParam type: UnitTypeFilter,
         @RequestParam(required = false) area: String?,
-        @RequestParam(required = false) date: LocalDate?
+        @RequestParam(required = false) from: LocalDate?
     ): List<UnitStub> {
         val areas = area?.split(",") ?: listOf()
-        return db.connect { dbc -> dbc.read { it.getUnits(areas, type, date) } }
+        return db.connect { dbc -> dbc.read { it.getUnits(areas, type, from) } }
     }
 }
 
@@ -116,7 +116,7 @@ enum class UnitTypeFilter {
 private fun Database.Read.getUnits(
     areaShortNames: Collection<String>,
     type: UnitTypeFilter,
-    date: LocalDate?
+    from: LocalDate?
 ): List<UnitStub> =
     createQuery(
             // language=SQL
@@ -130,13 +130,13 @@ AND (:type = 'ALL' OR
     (:type = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
     (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
 )
-AND (:date::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') @> :date)
+AND (:from::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') && daterange(:from, NULL))
 ORDER BY name
     """
                 .trimIndent()
         )
         .bind("areaShortNames", areaShortNames.takeIf { it.isNotEmpty() })
         .bind("type", type)
-        .bind("date", date)
+        .bind("from", from)
         .mapTo<UnitStub>()
         .list()
