@@ -211,7 +211,6 @@ export function initialState(
   availableChildren: ReservationChild[],
   initialStart: LocalDate | null,
   initialEnd: LocalDate | null,
-  holidayPeriods: HolidayPeriodInfo[],
   i18n: Translations
 ): StateOf<typeof reservationForm> {
   const selectedChildren = availableChildren.map((child) => child.id)
@@ -234,8 +233,7 @@ export function initialState(
             dayProperties,
             'IRREGULAR',
             new FiniteDateRange(initialStart, initialEnd),
-            selectedChildren,
-            holidayPeriods
+            selectedChildren
           )
         : {
             branch: 'dailyTimes',
@@ -254,8 +252,7 @@ export function resetTimes(
   dayProperties: DayProperties,
   repetition: Repetition,
   selectedRange: FiniteDateRange,
-  selectedChildren: UUID[],
-  holidayPeriods: HolidayPeriodInfo[]
+  selectedChildren: UUID[]
 ): StateOf<typeof reservationForm>['times'] {
   const calendarDaysInRange = dayProperties.calendarDays.filter((day) =>
     selectedRange.includes(day.date)
@@ -272,9 +269,8 @@ export function resetTimes(
         ? [includedWeekDays[0], includedWeekDays[includedWeekDays.length - 1]]
         : undefined
 
-    const isOpenHolidayPeriod = holidayPeriods.some(
-      (period) => period.isOpen && period.period.contains(selectedRange)
-    )
+    const isOpenHolidayPeriod =
+      dayProperties.containedInOpenHolidayPeriod(selectedRange)
 
     if (
       isOpenHolidayPeriod &&
@@ -336,10 +332,8 @@ export function resetTimes(
       date.getIsoDayOfWeek()
     )
 
-    const isOpenHolidayPeriod = holidayPeriods.some(
-      (holidayPeriod) =>
-        holidayPeriod.isOpen && holidayPeriod.period.contains(selectedRange)
-    )
+    const isOpenHolidayPeriod =
+      dayProperties.containedInOpenHolidayPeriod(selectedRange)
 
     const weeklyTimes = includedWeekDays.map(
       (dayOfWeek): StateOf<typeof weekDay> => {
@@ -442,10 +436,7 @@ export function resetTimes(
           }
         }
 
-        const isOpenHolidayPeriod = holidayPeriods.some(
-          (holidayPeriod) =>
-            holidayPeriod.isOpen && holidayPeriod.period.includes(rangeDate)
-        )
+        const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
 
         if (holidayWithNoChildrenInShiftCare([calendarDay], selectedChildren)) {
           return {
@@ -615,18 +606,16 @@ const getCommonTimeRanges = (
 }
 
 export class DayProperties {
-  readonly calendarDays: ReservationResponseDay[]
-
   // Does any child have shift care?
   readonly anyChildInShiftCare: boolean
 
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly combinedOperationDays: Set<number>
-  private readonly includesWeekends: boolean
 
   constructor(
-    calendarDays: ReservationResponseDay[],
-    includesWeekends: boolean
+    public readonly calendarDays: ReservationResponseDay[],
+    private readonly holidayPeriods: HolidayPeriodInfo[],
+    private readonly includesWeekends: boolean
   ) {
     let anyChildInShiftCare = false
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
@@ -680,6 +669,20 @@ export class DayProperties {
 
     return [...range.dates()].filter((date) =>
       reservableDays.has(date.formatIso())
+    )
+  }
+
+  inOpenHolidayPeriod(date: LocalDate): boolean {
+    return this.holidayPeriods.some(
+      (holidayPeriod) =>
+        holidayPeriod.isOpen && holidayPeriod.period.includes(date)
+    )
+  }
+
+  containedInOpenHolidayPeriod(dateRange: FiniteDateRange): boolean {
+    return this.holidayPeriods.some(
+      (holidayPeriod) =>
+        holidayPeriod.isOpen && holidayPeriod.period.contains(dateRange)
     )
   }
 }

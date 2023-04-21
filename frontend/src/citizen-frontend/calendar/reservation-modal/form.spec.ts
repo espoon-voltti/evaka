@@ -54,19 +54,13 @@ describe('resetTimes', () => {
     it('No reservable days', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
-      const calendarDays = emptyCalendarDays
-
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(emptyCalendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -89,17 +83,10 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -121,17 +108,11 @@ describe('resetTimes', () => {
           children: [emptyChild]
         })
       )
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -152,17 +133,11 @@ describe('resetTimes', () => {
           ...day,
           children: [emptyChild]
         }))
-      const includeWeekends = true
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+
+      const dayProperties = new DayProperties(calendarDays, [], true)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -211,18 +186,14 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       // Common reservations for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -236,13 +207,11 @@ describe('resetTimes', () => {
 
       // No common reservations for all children
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          []
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -269,17 +238,14 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          [emptyChild.childId],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -311,17 +277,14 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          [emptyChild.childId],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -365,17 +328,17 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -417,17 +380,17 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -466,17 +429,17 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -515,17 +478,17 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'DAILY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'DAILY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'dailyTimes',
         state: {
@@ -543,19 +506,13 @@ describe('resetTimes', () => {
     it('No reservable days', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
-      const calendarDays = emptyCalendarDays
-
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(emptyCalendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: []
@@ -572,17 +529,10 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -607,17 +557,10 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -639,17 +582,10 @@ describe('resetTimes', () => {
           children: [emptyChild]
         }))
 
-      const includeWeekends = true
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], true)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5, 6, 7].map((weekDay) => ({
@@ -693,18 +629,14 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       // Common absence for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -718,13 +650,11 @@ describe('resetTimes', () => {
 
       // Common absence for child-1, child-2 and child-3 on one day
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -798,18 +728,14 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       // Common absence for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -823,13 +749,11 @@ describe('resetTimes', () => {
 
       // Common absence for child-1, child-2 and child-3 on one day
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -919,18 +843,14 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       // Common reservations for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -974,13 +894,11 @@ describe('resetTimes', () => {
 
       // Common reservations for child-1, child-2 and child-3 on one day
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          []
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -1055,16 +973,14 @@ describe('resetTimes', () => {
         }
       ]
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
         resetTimes(
           dayProperties,
           'WEEKLY',
           new FiniteDateRange(monday, wednesday),
-          ['child-1', 'child-2'],
-          []
+          ['child-1', 'child-2']
         )
       ).toEqual({
         branch: 'weeklyTimes',
@@ -1105,17 +1021,14 @@ describe('resetTimes', () => {
         (day) => ({ ...day, children: [emptyChild] })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          [emptyChild.childId],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -1147,17 +1060,14 @@ describe('resetTimes', () => {
         (day) => ({ ...day, children: [emptyChild] })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          [emptyChild.childId],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [emptyChild.childId])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -1205,18 +1115,18 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       // Common absences for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -1230,13 +1140,11 @@ describe('resetTimes', () => {
 
       // Common absences for child-1, child-2 and child-3 on one day
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -1315,18 +1223,18 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       // Common absences for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -1340,13 +1248,11 @@ describe('resetTimes', () => {
 
       // Common absences for child-1, child-2 and child-3 on one day
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -1431,18 +1337,18 @@ describe('resetTimes', () => {
         })
       )
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       // Common reservations for child-1 and child-2
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
@@ -1456,13 +1362,11 @@ describe('resetTimes', () => {
 
       // Common reservations for child-1, child-2 and child-3 on one day
       expect(
-        resetTimes(
-          dayProperties,
-          'WEEKLY',
-          selectedRange,
-          ['child-1', 'child-2', 'child-3'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'WEEKLY', selectedRange, [
+          'child-1',
+          'child-2',
+          'child-3'
+        ])
       ).toEqual({
         branch: 'weeklyTimes',
         state: [
@@ -1515,19 +1419,13 @@ describe('resetTimes', () => {
     it('No reservable days', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
-      const calendarDays = emptyCalendarDays
-
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(emptyCalendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: selectedRangeWeekDays.map((date) => ({
@@ -1547,17 +1445,12 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          emptyChild.childId
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: selectedRangeWeekDays.map((date) => ({
@@ -1577,17 +1470,12 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          emptyChild.childId
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: selectedRangeWeekDays.map((date) => ({
@@ -1608,17 +1496,12 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const includeWeekends = true
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], true)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          [emptyChild.childId],
-          []
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          emptyChild.childId
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: [...selectedRange.dates()].map((date) => ({
@@ -1755,17 +1638,13 @@ describe('resetTimes', () => {
         }
       ]
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          ['child-1', 'child-2'],
-          []
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: [
@@ -1853,16 +1732,14 @@ describe('resetTimes', () => {
         }
       ]
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(calendarDays, [], false)
 
       expect(
         resetTimes(
           dayProperties,
           'IRREGULAR',
           new FiniteDateRange(monday, wednesday),
-          ['child-1', 'child-2'],
-          []
+          ['child-1', 'child-2']
         )
       ).toEqual({
         branch: 'irregularTimes',
@@ -1904,17 +1781,16 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          [emptyChild.childId],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          emptyChild.childId
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: selectedRangeWeekDays.map((date) => ({
@@ -2051,17 +1927,17 @@ describe('resetTimes', () => {
         }
       ]
 
-      const includeWeekends = false
-      const dayProperties = new DayProperties(calendarDays, includeWeekends)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        holidayPeriods,
+        false
+      )
 
       expect(
-        resetTimes(
-          dayProperties,
-          'IRREGULAR',
-          selectedRange,
-          ['child-1', 'child-2'],
-          holidayPeriods
-        )
+        resetTimes(dayProperties, 'IRREGULAR', selectedRange, [
+          'child-1',
+          'child-2'
+        ])
       ).toEqual({
         branch: 'irregularTimes',
         state: [

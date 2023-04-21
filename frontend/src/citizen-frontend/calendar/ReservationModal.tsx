@@ -82,8 +82,9 @@ export default React.memo(function ReservationModal({
   } = reservationsResponse
 
   const dayProperties = useMemo(
-    () => new DayProperties(calendarDays, includesWeekends),
-    [calendarDays, includesWeekends]
+    () =>
+      new DayProperties(calendarDays, upcomingHolidayPeriods, includesWeekends),
+    [calendarDays, includesWeekends, upcomingHolidayPeriods]
   )
   const form = useForm(
     reservationForm,
@@ -93,7 +94,6 @@ export default React.memo(function ReservationModal({
         availableChildren,
         initialStart,
         initialEnd,
-        upcomingHolidayPeriods,
         i18n
       ),
     i18n.validationErrors,
@@ -120,8 +120,7 @@ export default React.memo(function ReservationModal({
               dayProperties,
               repetition,
               selectedRange,
-              selectedChildren,
-              upcomingHolidayPeriods
+              selectedChildren
             )
           }
         }
@@ -140,8 +139,7 @@ export default React.memo(function ReservationModal({
               dayProperties,
               repetition,
               selectedRange,
-              selectedChildren,
-              upcomingHolidayPeriods
+              selectedChildren
             )
           }
         }
