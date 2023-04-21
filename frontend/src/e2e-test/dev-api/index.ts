@@ -1234,3 +1234,13 @@ export async function insertAbsence(
     throw new DevApiError(e)
   }
 }
+
+export async function forceFullVtjRefresh(person: UUID): Promise<void> {
+  try {
+    await devClient.post<void>(
+      `/persons/${encodeURIComponent(person)}/force-full-vtj-refresh`
+    )
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

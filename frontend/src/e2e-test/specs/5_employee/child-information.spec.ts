@@ -7,7 +7,11 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { insertDaycareGroupFixtures, resetDatabase } from '../../dev-api'
+import {
+  forceFullVtjRefresh,
+  insertDaycareGroupFixtures,
+  resetDatabase
+} from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -62,6 +66,11 @@ beforeEach(async () => {
       endDate: LocalDate.of(2020, 6, 1).formatIso()
     })
     .save()
+
+  // HACK: make sure VTJ guardians are synced between mock VTJ and database,
+  // because some parts of the child information page assumes guardian info
+  // is up to date or will return wrong results
+  await forceFullVtjRefresh(childId)
 
   page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
   await employeeLogin(page, admin)
