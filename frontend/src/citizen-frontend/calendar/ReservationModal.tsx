@@ -82,8 +82,9 @@ export default React.memo(function ReservationModal({
   } = reservationsResponse
 
   const dayProperties = useMemo(
-    () => new DayProperties(calendarDays, includesWeekends),
-    [calendarDays, includesWeekends]
+    () =>
+      new DayProperties(calendarDays, upcomingHolidayPeriods, includesWeekends),
+    [calendarDays, includesWeekends, upcomingHolidayPeriods]
   )
   const form = useForm(
     reservationForm,
@@ -91,10 +92,8 @@ export default React.memo(function ReservationModal({
       initialState(
         dayProperties,
         availableChildren,
-        calendarDays,
         initialStart,
         initialEnd,
-        upcomingHolidayPeriods,
         i18n
       ),
     i18n.validationErrors,
@@ -117,36 +116,35 @@ export default React.memo(function ReservationModal({
         if (!prev.isValid) {
           return {
             ...nextState,
-            times: resetTimes(
-              dayProperties,
-              availableChildren,
-              calendarDays,
+            times: resetTimes(dayProperties, undefined, {
               repetition,
               selectedRange,
-              selectedChildren,
-              upcomingHolidayPeriods
-            )
+              selectedChildren
+            })
           }
         }
 
         const [prevRepetition, prevDateRange, prevSelectedChildren] = prev.value
+        const dateRangeChanged = !prevDateRange.isEqual(selectedRange)
+        const childrenChanged = !isEqual(prevSelectedChildren, selectedChildren)
         if (
-          selectedRange !== undefined &&
-          (prevRepetition !== repetition ||
-            prevDateRange === undefined ||
-            !prevDateRange.isEqual(selectedRange) ||
-            !isEqual(prevSelectedChildren, selectedChildren))
+          prevRepetition !== repetition ||
+          dateRangeChanged ||
+          childrenChanged
         ) {
           return {
             ...nextState,
             times: resetTimes(
               dayProperties,
-              availableChildren,
-              calendarDays,
-              repetition,
-              selectedRange,
-              selectedChildren,
-              upcomingHolidayPeriods
+              {
+                childrenChanged,
+                times: prevState.times
+              },
+              {
+                repetition,
+                selectedRange,
+                selectedChildren
+              }
             )
           }
         }
@@ -211,9 +209,6 @@ export default React.memo(function ReservationModal({
 
               <CalendarModalSection>
                 <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
-                <Label>
-                  {i18n.calendar.reservationModal.selectChildrenLabel}
-                </Label>
                 <Gap size="xs" />
                 <FixedSpaceFlexWrap>
                   {availableChildren.map((child) => (
