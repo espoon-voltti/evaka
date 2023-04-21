@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
@@ -31,7 +30,7 @@ import org.jdbi.v3.json.Json
 //         To call this function, you need to have a lazy database connection *without* an active
 // transaction.
 //         The function can read/write the database and freely execute 0 to N individual
-// transactions.
+// transactions. It may also close the connection temporarily and reuse it afterwards.
 //     fun doStuff(tx: Database.Read)
 //         To call this function, you need to have an active read-only transaction.
 //         The function can only read the database, and can't manage transactions by itself.
@@ -47,7 +46,7 @@ import org.jdbi.v3.json.Json
  */
 class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     private val threadId = ThreadId()
-    private var connected = AtomicBoolean()
+    private var hasOpenHandle = false
 
     /**
      * Opens a database connection, runs the given function, and closes the connection.
@@ -63,33 +62,33 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      */
     fun connectWithManualLifecycle(): Connection {
         threadId.assertCurrentThread()
-        check(!connected.get()) { "Already connected to database" }
-        return Connection(
-            threadId,
-            connected,
-            tracer,
-            lazy(LazyThreadSafetyMode.NONE) { jdbi.open() }
-        )
+        check(!hasOpenHandle) { "Already connected to database" }
+        return Connection(threadId, tracer, this::openHandle)
     }
 
-    /** A single lazily initialized database connection tied to a single thread */
+    private fun openHandle(): Handle =
+        jdbi.open().also {
+            check(!hasOpenHandle) { "Already connected to database" }
+            hasOpenHandle = true
+            it.addCleanable { hasOpenHandle = false }
+        }
+
+    /**
+     * A single *possibly open* database connection tied to a single thread.
+     *
+     * Whenever a transaction is started, the underlying raw handle is opened lazily. Once the
+     * connection is closed with `close()` and any new transaction will once again lazily open a raw
+     * handle.
+     */
     open class Connection
     internal constructor(
         private val threadId: ThreadId,
-        private val connected: AtomicBoolean,
         private val tracer: Tracer,
-        private val lazyHandle: Lazy<Handle>
+        private val openRawHandle: () -> Handle
     ) : AutoCloseable {
-        private fun getHandle(): Handle {
-            threadId.assertCurrentThread()
-            return if (lazyHandle.isInitialized()) {
-                lazyHandle.value
-            } else {
-                val wasConnected = connected.getAndSet(true)
-                check(!wasConnected) { "Already connected to database" }
-                lazyHandle.value
-            }
-        }
+        private var rawHandle: Handle? = null
+
+        private fun getRawHandle(): Handle = rawHandle ?: openRawHandle().also { rawHandle = it }
 
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any
@@ -99,7 +98,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * transaction
          */
         fun <T> read(f: (db: Read) -> T): T {
-            val handle = this.getHandle()
+            threadId.assertCurrentThread()
+            val handle = this.getRawHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             handle.isReadOnly = true
             try {
@@ -119,7 +119,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * transaction.
          */
         fun <T> transaction(f: (db: Transaction) -> T): T {
-            val handle = this.getHandle()
+            threadId.assertCurrentThread()
+            val handle = this.getRawHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             val hooks = TransactionHooks()
             return tracer
@@ -129,17 +130,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                 .also { hooks.afterCommit.forEach { it() } }
         }
 
-        fun isConnected(): Boolean = connected.get()
-
         override fun close() {
             threadId.assertCurrentThread()
-            if (lazyHandle.isInitialized()) {
-                val handle = lazyHandle.value
-                if (!handle.isClosed) {
-                    connected.set(false)
-                    handle.close()
-                }
-            }
+            this.rawHandle?.close()
+            this.rawHandle = null
         }
     }
 
