@@ -23,14 +23,14 @@ export interface Unit {
 export async function getUnits(
   areas: string[],
   type: UnitTypeFilter,
-  date?: LocalDate
+  from?: LocalDate
 ): Promise<Result<Unit[]>> {
   return client
     .get<JsonOf<Unit[]>>('/filters/units', {
       params: {
         type,
         ...(areas.length > 0 ? { area: areas.join(',') } : {}),
-        date: date?.toJSON()
+        from: from?.toJSON()
       }
     })
     .then((res) =>
