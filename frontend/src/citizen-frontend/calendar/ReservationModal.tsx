@@ -116,30 +116,35 @@ export default React.memo(function ReservationModal({
         if (!prev.isValid) {
           return {
             ...nextState,
-            times: resetTimes(
-              dayProperties,
+            times: resetTimes(dayProperties, undefined, {
               repetition,
               selectedRange,
               selectedChildren
-            )
+            })
           }
         }
 
         const [prevRepetition, prevDateRange, prevSelectedChildren] = prev.value
+        const dateRangeChanged = !prevDateRange.isEqual(selectedRange)
+        const childrenChanged = !isEqual(prevSelectedChildren, selectedChildren)
         if (
-          selectedRange !== undefined &&
-          (prevRepetition !== repetition ||
-            prevDateRange === undefined ||
-            !prevDateRange.isEqual(selectedRange) ||
-            !isEqual(prevSelectedChildren, selectedChildren))
+          prevRepetition !== repetition ||
+          dateRangeChanged ||
+          childrenChanged
         ) {
           return {
             ...nextState,
             times: resetTimes(
               dayProperties,
-              repetition,
-              selectedRange,
-              selectedChildren
+              {
+                childrenChanged,
+                times: prevState.times
+              },
+              {
+                repetition,
+                selectedRange,
+                selectedChildren
+              }
             )
           }
         }

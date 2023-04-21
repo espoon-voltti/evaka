@@ -229,12 +229,11 @@ export function initialState(
     },
     times:
       initialStart !== null && initialEnd !== null
-        ? resetTimes(
-            dayProperties,
-            'IRREGULAR',
-            new FiniteDateRange(initialStart, initialEnd),
+        ? resetTimes(dayProperties, undefined, {
+            repetition: 'IRREGULAR',
+            selectedRange: new FiniteDateRange(initialStart, initialEnd),
             selectedChildren
-          )
+          })
         : {
             branch: 'dailyTimes',
             state: {
@@ -250,10 +249,20 @@ export function initialState(
 
 export function resetTimes(
   dayProperties: DayProperties,
-  repetition: Repetition,
-  selectedRange: FiniteDateRange,
-  selectedChildren: UUID[]
-): StateOf<typeof reservationForm>['times'] {
+  prev:
+    | {
+        childrenChanged: boolean
+        times: StateOf<typeof timesUnion>
+      }
+    | undefined,
+  next: {
+    repetition: Repetition
+    selectedRange: FiniteDateRange
+    selectedChildren: UUID[]
+  }
+): StateOf<typeof timesUnion> {
+  const { repetition, selectedRange, selectedChildren } = next
+
   const calendarDaysInRange = dayProperties.calendarDays.filter((day) =>
     selectedRange.includes(day.date)
   )
@@ -422,9 +431,21 @@ export function resetTimes(
       state: weeklyTimes
     }
   } else if (repetition === 'IRREGULAR') {
+    // Attempt to reuse previous state if selected children are the same
+    const prevState =
+      prev && !prev.childrenChanged && prev.times.branch === 'irregularTimes'
+        ? prev.times.state
+        : undefined
+
     const irregularTimes = calendarDaysInRange.map(
       (calendarDay): StateOf<typeof irregularDay> => {
         const rangeDate = calendarDay.date
+
+        if (prevState) {
+          const existing = prevState.find((day) => day.date.isEqual(rangeDate))
+          if (existing) return existing
+        }
+
         const dayChildren = calendarDay.children.filter((dayChild) =>
           selectedChildren.includes(dayChild.childId)
         )
