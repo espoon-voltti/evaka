@@ -40,6 +40,7 @@ sealed interface DatabaseTable {
     sealed class DailyServicesTimeNotification : DatabaseTable
     sealed class DaycareCaretaker : DatabaseTable
     sealed class Decision : DatabaseTable
+    sealed class DocumentTemplate : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class EvakaUser : DatabaseTable
     sealed class FeeAlteration : DatabaseTable
@@ -145,6 +146,8 @@ typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServicesTimeNot
 typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
 
 typealias DecisionId = Id<DatabaseTable.Decision>
+
+typealias DocumentTemplateId = Id<DatabaseTable.DocumentTemplate>
 
 typealias EmployeeId = Id<DatabaseTable.Employee>
 

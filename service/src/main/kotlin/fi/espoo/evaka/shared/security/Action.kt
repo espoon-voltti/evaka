@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -141,6 +142,11 @@ sealed interface Action {
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY
                 )
                 .inAnyUnit()
+        ),
+        CREATE_DOCUMENT_TEMPLATE(HasGlobalRole(ADMIN)),
+        READ_DOCUMENT_TEMPLATE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit()
         ),
         CREATE_VASU_TEMPLATE(HasGlobalRole(ADMIN)),
         READ_VASU_TEMPLATE(
@@ -1050,6 +1056,18 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
+    enum class DocumentTemplate(
+        override vararg val defaultRules: ScopedActionRule<in DocumentTemplateId>
+    ) : ScopedAction<DocumentTemplateId> {
+        READ(HasGlobalRole(ADMIN)),
+        COPY(HasGlobalRole(ADMIN)),
+        UPDATE(HasGlobalRole(ADMIN)),
+        DELETE(HasGlobalRole(ADMIN));
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
     enum class Employee(override vararg val defaultRules: ScopedActionRule<in EmployeeId>) :
         ScopedAction<EmployeeId> {
         READ(
