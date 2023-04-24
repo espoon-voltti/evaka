@@ -5,18 +5,11 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.dev.ensureDevData
-import fi.espoo.evaka.shared.dev.runDevScript
 import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 
 class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {
     init {
-        Database(jdbi, tracer).connect { db ->
-            db.transaction { tx ->
-                tx.runDevScript("lock-database-nowait.sql")
-                tx.runDevScript("reset-database.sql")
-                tx.ensureDevData()
-            }
-        }
+        Database(jdbi, tracer).connect { db -> db.transaction { tx -> tx.ensureDevData() } }
     }
 }

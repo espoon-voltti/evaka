@@ -90,15 +90,8 @@ fun Database.Transaction.runDevScript(devScriptName: String) {
     }
 }
 
-fun Database.Transaction.resetDatabase() {
-    execute("SELECT reset_database()")
-    execute(
-        "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')"
-    )
-}
-
 fun Database.Transaction.ensureDevData() {
-    if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
+    if (createQuery("SELECT count(*) FROM evaka_user").mapTo<Int>().first() == 0) {
         listOf(
                 "espoo-dev-data.sql",
                 "service-need-options.sql",

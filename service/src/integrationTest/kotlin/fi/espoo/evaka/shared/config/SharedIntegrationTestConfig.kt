@@ -6,10 +6,10 @@ package fi.espoo.evaka.shared.config
 
 import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
@@ -23,10 +23,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
-import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -35,10 +32,8 @@ import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
-import io.opentracing.noop.NoopTracerFactory
+import java.time.Duration
 import javax.sql.DataSource
-import org.flywaydb.core.Flyway
-import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -51,7 +46,9 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 // Hides Closeable interface from Spring, which would close the shared instance otherwise
-class TestDataSource(pool: HikariDataSource) : DataSource by pool
+class TestDataSource(private val pool: DevDataSource) : DataSource by pool {
+    fun resetDatabase() = pool.resetDatabase()
+}
 
 private val globalLock = object {}
 private var testDataSource: TestDataSource? = null
@@ -60,31 +57,21 @@ fun getTestDataSource(): TestDataSource =
     synchronized(globalLock) {
         testDataSource
             ?: TestDataSource(
-                    HikariDataSource(
-                            HikariConfig().apply {
-                                jdbcUrl = "jdbc:postgresql://localhost:15432/evaka_it"
-                                username = "evaka_it"
-                                password = "evaka_it"
-                            }
+                    DevDataSource.create(
+                            DatabaseEnv(
+                                url = "jdbc:postgresql://localhost:15432/evaka_it",
+                                username = "evaka_it",
+                                password = Sensitive("evaka_it"),
+                                flywayUsername = "evaka_it",
+                                flywayPassword = Sensitive("evaka_it"),
+                                flywayIgnoreFutureMigrations = false,
+                                leakDetectionThreshold = 0,
+                                defaultStatementTimeout = Duration.ofSeconds(60),
+                                maximumPoolSize = 10,
+                                logSql = false
+                            )
                         )
-                        .also {
-                            Flyway.configure()
-                                .apply {
-                                    pluginRegister
-                                        .getPlugin(PostgreSQLConfigurationExtension::class.java)
-                                        .isTransactionalLock = false
-                                }
-                                .dataSource(it)
-                                .placeholders(mapOf("application_user" to "evaka_it"))
-                                .load()
-                                .run { migrate() }
-                            Database(Jdbi.create(it), NoopTracerFactory.create()).connect { db ->
-                                db.transaction { tx ->
-                                    tx.runDevScript("reset-database.sql")
-                                    tx.resetDatabase()
-                                }
-                            }
-                        }
+                        .also { it.resetDatabase() }
                 )
                 .also { testDataSource = it }
     }
@@ -93,7 +80,7 @@ fun getTestDataSource(): TestDataSource =
 class SharedIntegrationTestConfig {
     @Bean fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
 
-    @Bean fun dataSource(): DataSource = getTestDataSource()
+    @Bean fun dataSource(): TestDataSource = getTestDataSource()
 
     @Bean
     fun s3Client(env: BucketEnv): S3Client {

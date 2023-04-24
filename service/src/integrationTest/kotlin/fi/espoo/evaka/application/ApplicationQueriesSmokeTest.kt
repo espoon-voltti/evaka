@@ -34,6 +34,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @BeforeAll
     fun beforeAll() {
+        check(!db.isConnected())
         db.transaction { tx ->
             val areaId = tx.insertTestCareArea(DevCareArea())
             val childId = tx.insertTestPerson(DevPerson())

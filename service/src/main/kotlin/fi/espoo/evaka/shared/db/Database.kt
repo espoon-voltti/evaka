@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
+import io.opentracing.noop.NoopTracerFactory
 import java.time.Duration
 import kotlin.reflect.KClass
 import org.intellij.lang.annotations.Language
@@ -44,7 +45,7 @@ import org.jdbi.v3.json.Json
  * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong
  * thread.
  */
-class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
+class Database(private val jdbi: Jdbi, private val tracer: Tracer = NoopTracerFactory.create()) {
     private val threadId = ThreadId()
     private var hasOpenHandle = false
 
@@ -87,6 +88,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         private val openRawHandle: () -> Handle
     ) : AutoCloseable {
         private var rawHandle: Handle? = null
+
+        fun isConnected() = rawHandle != null
 
         private fun getRawHandle(): Handle = rawHandle ?: openRawHandle().also { rawHandle = it }
 

@@ -2,5 +2,4 @@
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
-CREATE ROLE evaka_it WITH SUPERUSER LOGIN PASSWORD 'evaka_it';
-CREATE DATABASE evaka_it OWNER evaka_it;
+CREATE ROLE evaka_it WITH SUPERUSER CREATEDB LOGIN PASSWORD 'evaka_it';
