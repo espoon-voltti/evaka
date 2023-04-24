@@ -102,7 +102,9 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
         assertEquals("application/pdf", s3response.headers["Content-Type"].first())
         assertContentEquals(byteArrayOf(0x33, 0x11, 0x22), s3data.get())
         assertEquals(
-            listOf("attachment; filename*=UTF-8''overridden-filename.pdf"),
+            listOf(
+                "attachment; filename=\"=?UTF-8?Q?overridden-filename.pdf?=\"; filename*=UTF-8''overridden-filename.pdf"
+            ),
             response.headers["Content-Disposition"]
         )
     }
@@ -122,7 +124,9 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
         assertEquals("text/plain", s3response.headers["Content-Type"].first())
         assertContentEquals(byteArrayOf(0x12, 0x34, 0x56), s3data.get())
         assertEquals(
-            listOf("inline; filename*=UTF-8''overridden-filename.txt"),
+            listOf(
+                "inline; filename=\"=?UTF-8?Q?overridden-filename.txt?=\"; filename*=UTF-8''overridden-filename.txt"
+            ),
             response.headers["Content-Disposition"]
         )
     }
