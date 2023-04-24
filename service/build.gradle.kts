@@ -16,10 +16,10 @@ buildscript {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version Version.GradlePlugin.kotlin
-    id("org.jetbrains.kotlin.plugin.allopen") version Version.GradlePlugin.kotlin
-    id("org.jetbrains.kotlin.plugin.spring") version Version.GradlePlugin.kotlin
-    id("org.springframework.boot") version Version.GradlePlugin.springBoot
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.allopen)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.spring.boot)
     id("org.flywaydb.flyway") version Version.GradlePlugin.flyway
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
