@@ -32,7 +32,7 @@ import {
 } from './queries'
 
 const minStartDate = (mockToday() ?? LocalDate.todayInSystemTz()).addWeeks(4)
-const maxPeriod = 8 * 7 * 24 * 60 * 60 * 1000 // 8 weeks
+const maxPeriod = 15 * 7 * 24 * 60 * 60 * 1000 // 15 weeks
 
 const holidayPeriodForm = object({
   period: validated(required(localDateRange), (output) =>
