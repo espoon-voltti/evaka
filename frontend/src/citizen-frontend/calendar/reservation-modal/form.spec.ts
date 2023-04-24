@@ -1765,22 +1765,18 @@ describe('resetTimes', () => {
       // MO TU WE
       //    s  s
       //       s
+
+      // Children without shift care are excluded from the day's children array
       const calendarDays: ReservationResponseDay[] = [
         {
           date: monday,
           holiday: true,
-          children: [
-            { ...emptyChild, childId: 'child-1', shiftCare: false },
-            { ...emptyChild, childId: 'child-2', shiftCare: false }
-          ]
+          children: []
         },
         {
           date: tuesday,
           holiday: true,
-          children: [
-            { ...emptyChild, childId: 'child-1', shiftCare: true },
-            { ...emptyChild, childId: 'child-2', shiftCare: false }
-          ]
+          children: [{ ...emptyChild, childId: 'child-1', shiftCare: true }]
         },
         {
           date: wednesday,

@@ -450,19 +450,22 @@ export function resetTimes(
           selectedChildren.includes(dayChild.childId)
         )
 
-        if (dayChildren.length === 0) {
+        if (holidayWithNoChildrenInShiftCare([calendarDay], selectedChildren)) {
           return {
             date: rangeDate,
-            day: { branch: 'readOnly', state: undefined }
+            day: { branch: 'readOnly', state: 'holiday' }
           }
         }
 
         const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
 
-        if (holidayWithNoChildrenInShiftCare([calendarDay], selectedChildren)) {
+        if (dayChildren.length === 0) {
           return {
             date: rangeDate,
-            day: { branch: 'readOnly', state: 'holiday' }
+            day: {
+              branch: 'readOnly',
+              state: undefined
+            }
           }
         }
 
