@@ -173,11 +173,14 @@ const DayElem = React.memo(function DayElem({
   return (
     <Day
       ref={setRef}
-      today={calendarDay.date.isToday()}
-      markedByEmployee={calendarDay.children.every(
-        (c) => c.absence?.markedByEmployee ?? false
-      )}
-      holidayPeriod={isHolidayPeriod}
+      $today={calendarDay.date.isToday()}
+      $highlight={
+        calendarDay.children.every((c) => c.absence && !c.absence.editable)
+          ? 'nonEditableAbsence'
+          : isHolidayPeriod
+          ? 'holidayPeriod'
+          : undefined
+      }
       onClick={handleClick}
       data-qa={`mobile-calendar-day-${calendarDay.date.formatIso()}`}
     >
@@ -223,9 +226,8 @@ const ReservationsContainer = styled.div`
 `
 
 const Day = styled.button<{
-  today: boolean
-  markedByEmployee: boolean
-  holidayPeriod: boolean
+  $today: boolean
+  $highlight?: 'nonEditableAbsence' | 'holidayPeriod' | undefined
 }>`
   display: flex;
   flex-direction: row;
@@ -237,15 +239,15 @@ const Day = styled.button<{
   border: none;
   border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
-    ${(p) => (p.today ? colors.status.success : 'transparent')};
+    ${(p) => (p.$today ? colors.status.success : 'transparent')};
   cursor: pointer;
   text-align: left;
   color: ${(p) => p.theme.colors.grayscale.g100};
 
   ${(p) =>
-    p.markedByEmployee
+    p.$highlight === 'nonEditableAbsence'
       ? `background-color: ${colors.grayscale.g15}`
-      : p.holidayPeriod
+      : p.$highlight === 'holidayPeriod'
       ? `background-color: ${colors.accents.a10powder}`
       : undefined};
 

@@ -371,7 +371,7 @@ export function resetTimes(
         }
 
         if (
-          allChildrenAreAbsentMarkedByEmployee(
+          allChildrenAreAbsentNotEditable(
             relevantCalendarDays,
             selectedChildren
           )
@@ -457,8 +457,6 @@ export function resetTimes(
           }
         }
 
-        const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
-
         if (dayChildren.length === 0) {
           return {
             date: rangeDate,
@@ -469,9 +467,7 @@ export function resetTimes(
           }
         }
 
-        if (
-          allChildrenAreAbsentMarkedByEmployee([calendarDay], selectedChildren)
-        ) {
+        if (allChildrenAreAbsentNotEditable([calendarDay], selectedChildren)) {
           return {
             date: rangeDate,
             day: {
@@ -480,6 +476,8 @@ export function resetTimes(
             }
           }
         }
+
+        const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
 
         if (allChildrenAreAbsent([calendarDay], selectedChildren)) {
           return {
@@ -568,7 +566,7 @@ const allChildrenAreAbsent = (
     )
   )
 
-const allChildrenAreAbsentMarkedByEmployee = (
+const allChildrenAreAbsentNotEditable = (
   calendarDays: ReservationResponseDay[],
   selectedChildren: string[]
 ) =>
@@ -577,7 +575,8 @@ const allChildrenAreAbsentMarkedByEmployee = (
       day.children.some(
         (child) =>
           child.childId === childId &&
-          (child.absence?.markedByEmployee ?? false)
+          child.absence !== null &&
+          !child.absence.editable
       )
     )
   )

@@ -335,7 +335,7 @@ describe('resetTimes', () => {
               childId: 'child-1',
               absence: {
                 type: 'OTHER_ABSENCE',
-                markedByEmployee: false
+                editable: true
               }
             },
             {
@@ -343,7 +343,7 @@ describe('resetTimes', () => {
               childId: 'child-2',
               absence: {
                 type: 'OTHER_ABSENCE',
-                markedByEmployee: false
+                editable: true
               }
             }
           ]
@@ -391,7 +391,7 @@ describe('resetTimes', () => {
               childId: 'child-1',
               absence: {
                 type: 'OTHER_ABSENCE',
-                markedByEmployee: false
+                editable: true
               }
             },
             {
@@ -649,19 +649,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: false }
+              absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: false }
+              absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
               childId: 'child-3',
               absence:
                 day.date.getIsoDayOfWeek() === 3
-                  ? { type: 'OTHER_ABSENCE', markedByEmployee: false }
+                  ? { type: 'OTHER_ABSENCE', editable: true }
                   : null
             }
           ]
@@ -737,7 +737,7 @@ describe('resetTimes', () => {
       })
     })
 
-    it('Common absences (marked by employee)', () => {
+    it('Common absences (marked by employee or free)', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          a  a        | a  a  a  a  a        | a  a  a  a  a
       //          a  a        | a  a  a  a  a        | a  a  a  a  a
@@ -749,19 +749,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: true }
+              absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: true }
+              absence: { type: 'FREE_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
               childId: 'child-3',
               absence:
                 day.date.getIsoDayOfWeek() === 3
-                  ? { type: 'OTHER_ABSENCE', markedByEmployee: true }
+                  ? { type: 'OTHER_ABSENCE', editable: false }
                   : null
             }
           ]
@@ -1145,19 +1145,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: false }
+              absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: false }
+              absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
               childId: 'child-3',
               absence:
                 day.date.getIsoDayOfWeek() === 3
-                  ? { type: 'OTHER_ABSENCE', markedByEmployee: false }
+                  ? { type: 'OTHER_ABSENCE', editable: true }
                   : null
             }
           ]
@@ -1254,19 +1254,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: true }
+              absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: { type: 'OTHER_ABSENCE', markedByEmployee: true }
+              absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
               childId: 'child-3',
               absence:
                 day.date.getIsoDayOfWeek() === 3
-                  ? { type: 'OTHER_ABSENCE', markedByEmployee: true }
+                  ? { type: 'OTHER_ABSENCE', editable: false }
                   : null
             }
           ]
@@ -1579,12 +1579,12 @@ describe('resetTimes', () => {
         startTime: LocalTime.of(8, 0),
         endTime: LocalTime.of(16, 0)
       }
-      const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', markedByEmployee: false }
-      const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', markedByEmployee: true }
+      const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
+      const an: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | r  r  r  aa aa       | ae _
-      //                      | r  _  aa aa _        | ae ae
+      //                      | r  r  r  ae ae       | an _
+      //                      | r  _  ae ae _        | an an
       const calendarDays: ReservationResponseDay[] = [
         {
           date: selectedRangeWeekDays[0],
@@ -1629,7 +1629,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: aa
+              absence: ae
             }
           ]
         },
@@ -1640,12 +1640,12 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: aa
+              absence: ae
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: aa
+              absence: ae
             }
           ]
         },
@@ -1656,7 +1656,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: aa
+              absence: ae
             },
             {
               ...emptyChild,
@@ -1671,12 +1671,12 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              absence: ae
+              absence: an
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: ae
+              absence: an
             }
           ]
         },
@@ -1691,7 +1691,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
-              absence: ae
+              absence: an
             }
           ]
         }
@@ -1862,8 +1862,8 @@ describe('resetTimes', () => {
 
     it('Open holiday period + reservations + absences + employee-marked absences', () => {
       const r: Reservation = { type: 'NO_TIMES' }
-      const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', markedByEmployee: false }
-      const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', markedByEmployee: true }
+      const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
+      const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
       //                      | H  H  H  H  H  H  H  | H  H

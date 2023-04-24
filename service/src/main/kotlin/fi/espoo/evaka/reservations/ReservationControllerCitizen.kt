@@ -78,7 +78,7 @@ class ReservationControllerCitizen(
                                     else
                                         Pair(
                                             Pair(c.childId, d.date),
-                                            AbsenceInfo(c.absence, c.markedByEmployee)
+                                            AbsenceInfo(c.absence, c.absenceEditable)
                                         )
                                 }
                             }
@@ -298,7 +298,7 @@ data class ReservationResponseDayChild(
     val attendances: List<OpenTimeRange>,
 )
 
-data class AbsenceInfo(val type: AbsenceType, val markedByEmployee: Boolean)
+data class AbsenceInfo(val type: AbsenceType, val editable: Boolean)
 
 data class AbsenceRequest(
     val childIds: Set<ChildId>,
