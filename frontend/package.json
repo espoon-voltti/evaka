@@ -71,8 +71,8 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.10",
-    "@babel/preset-env": "^7.18.10",
+    "@babel/core": "^7.21.4",
+    "@babel/preset-env": "^7.21.4",
     "@playwright/test": "^1.25.0",
     "@sentry/webpack-plugin": "^1.20.0",
     "@types/form-data": "^2.5.0",
