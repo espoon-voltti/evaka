@@ -45,6 +45,7 @@ import AssistanceNeedDecisionEditPage from './components/child-information/assis
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
+import DocumentTemplatesPage from './components/document-templates/DocumentTemplatesPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import EmployeePreferredFirstNamePage from './components/employee/EmployeePreferredFirstNamePage'
 import EmployeePage from './components/employees/EmployeePage'
@@ -654,6 +655,14 @@ export default function App() {
                       element={
                         <EmployeeRoute title={i18n.titles.vasuTemplates}>
                           <VasuTemplateEditor />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/document-templates"
+                      element={
+                        <EmployeeRoute title={i18n.titles.documentTemplates}>
+                          <DocumentTemplatesPage />
                         </EmployeeRoute>
                       }
                     />

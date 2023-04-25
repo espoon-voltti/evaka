@@ -361,6 +361,15 @@ export default React.memo(function Header() {
                   {i18n.financeBasics.title}
                 </Link>
               )}
+              {user?.accessibleFeatures.documentTemplates && (
+                <Link
+                  to="/document-templates"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-document-templates"
+                >
+                  {i18n.documentTemplates.title}
+                </Link>
+              )}
               {user?.accessibleFeatures.vasuTemplates && (
                 <Link
                   to="/vasu-templates"

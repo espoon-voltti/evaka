@@ -19,6 +19,7 @@ export const fi = {
     customers: 'Asiakastiedot',
     placementDraft: 'Sijoitushahmotelma',
     decision: 'Päätöksen teko ja lähetys',
+    documentTemplates: 'Lomakepohjat',
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
@@ -3703,6 +3704,9 @@ export const fi = {
         }
       }
     }
+  },
+  documentTemplates: {
+    title: 'Lomakepohjat (beta)'
   },
   vasuTemplates: {
     title: 'Opetussuunnitelmapohjat',

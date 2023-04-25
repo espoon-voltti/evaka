@@ -82,6 +82,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
         ),
+        DOCUMENT_TEMPLATES_PAGE(HasGlobalRole(ADMIN)),
         EMPLOYEES_PAGE(HasGlobalRole(ADMIN)),
         FINANCE_BASICS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         FINANCE_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),

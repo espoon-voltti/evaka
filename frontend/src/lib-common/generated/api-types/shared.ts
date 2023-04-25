@@ -46,6 +46,7 @@ export interface EmployeeFeatures {
   assistanceNeedDecisionsReport: boolean
   createDraftInvoices: boolean
   createUnits: boolean
+  documentTemplates: boolean
   employees: boolean
   finance: boolean
   financeBasics: boolean
