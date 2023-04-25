@@ -80,7 +80,7 @@ export default class AssistanceNeedDecisionPreviewPage {
   }
 
   readonly sendDecisionButton = this.page.findByDataQa('send-decision')
-
+  readonly revertToUnsent = this.page.findByDataQa('revert-to-unsent')
   get decisionSentAt() {
     return this.page.findByDataQa('decision-sent-at')
   }
