@@ -32,23 +32,33 @@ import {
 } from './queries'
 
 const minStartDate = (mockToday() ?? LocalDate.todayInSystemTz()).addWeeks(4)
-const maxPeriod = 8 * 7 * 24 * 60 * 60 * 1000 // 8 weeks
+const maxPeriod = 15 * 7 * 24 * 60 * 60 * 1000 // 15 weeks
 
-const holidayPeriodForm = object({
-  period: validated(required(localDateRange), (output) =>
-    output.start.isBefore(minStartDate)
-      ? 'tooSoon'
-      : output.end.toSystemTzDate().valueOf() -
-          output.start.toSystemTzDate().valueOf() >
-        maxPeriod
-      ? 'tooLong'
-      : undefined
-  ),
-  reservationDeadline: required(localDate),
-  confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
-})
+function makeHolidayPeriodForm(mode: 'create' | 'update') {
+  return object({
+    period: validated(required(localDateRange), (output) =>
+      // Extra validations when creating a new holiday period
+      mode === 'create'
+        ? output.start.isBefore(minStartDate)
+          ? 'tooSoon'
+          : output.end.toSystemTzDate().valueOf() -
+              output.start.toSystemTzDate().valueOf() >
+            maxPeriod
+          ? 'tooLong'
+          : undefined
+        : undefined
+    ),
+    reservationDeadline: required(localDate),
+    confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
+  })
+}
 
-const emptyFormState: StateOf<typeof holidayPeriodForm> = {
+const createHolidayPeriodForm = makeHolidayPeriodForm('create')
+const updateHolidayPeriodForm = makeHolidayPeriodForm('update')
+
+type HolidayPeriodFormState = StateOf<typeof createHolidayPeriodForm>
+
+const emptyFormState: HolidayPeriodFormState = {
   period: {
     startDate: null,
     endDate: null
@@ -57,7 +67,7 @@ const emptyFormState: StateOf<typeof holidayPeriodForm> = {
   confirm: false
 }
 
-function initialFormState(p: HolidayPeriod): StateOf<typeof holidayPeriodForm> {
+function initialFormState(p: HolidayPeriod): HolidayPeriodFormState {
   return {
     period: {
       startDate: p.period.start,
@@ -82,7 +92,9 @@ export default React.memo(function HolidayPeriodForm({
   const { i18n, lang } = useTranslation()
 
   const form = useForm(
-    holidayPeriodForm,
+    holidayPeriod !== undefined
+      ? updateHolidayPeriodForm
+      : createHolidayPeriodForm,
     () =>
       holidayPeriod !== undefined
         ? initialFormState(holidayPeriod)

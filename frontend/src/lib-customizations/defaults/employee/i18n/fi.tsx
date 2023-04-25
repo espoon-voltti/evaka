@@ -3853,7 +3853,7 @@ export const fi = {
       'Ymmärrän, että tehdyt varaukset poistetaan välittömästi, eikä tätä voi enää perua.',
     validationErrors: {
       tooSoon: 'Loma-ajan voi luoda aikaisintaan 4 viikon päähän',
-      tooLong: 'Loma-aika voi olla enintään 8 viikkoa pitkä'
+      tooLong: 'Loma-aika voi olla enintään 15 viikkoa pitkä'
     }
   },
   holidayQuestionnaires: {
