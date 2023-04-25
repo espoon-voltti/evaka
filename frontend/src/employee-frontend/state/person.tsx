@@ -78,11 +78,20 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     void loadPerson(id)
   }, [loadPerson, id])
 
-  const [family, reloadFamily] = useApiState(() => getFamilyOverview(id), [id])
+  const [family, reloadFamily] = useApiState(
+    async () =>
+      permittedActions.has('READ_FAMILY_OVERVIEW')
+        ? getFamilyOverview(id)
+        : Loading.of<FamilyOverview>(),
+    [id, permittedActions]
+  )
 
   const [fridgeChildren, loadFridgeChildren] = useApiState(
-    () => getParentshipsByHeadOfChild(id),
-    [id]
+    async () =>
+      permittedActions.has('READ_PARENTSHIPS')
+        ? getParentshipsByHeadOfChild(id)
+        : Loading.of<ParentshipWithPermittedActions[]>(),
+    [id, permittedActions]
   )
 
   const reloadFridgeChildren = useCallback(() => {

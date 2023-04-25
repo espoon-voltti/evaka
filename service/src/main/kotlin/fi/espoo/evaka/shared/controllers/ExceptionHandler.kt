@@ -11,13 +11,17 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Unauthorized
 import jakarta.servlet.http.HttpServletRequest
 import java.io.IOException
+import java.lang.Exception
 import java.time.Instant
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.context.request.WebRequest
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
@@ -82,6 +86,17 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         }
         logger.error("IOException", ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse())
+    }
+
+    override fun handleExceptionInternal(
+        ex: Exception,
+        body: Any?,
+        headers: HttpHeaders,
+        statusCode: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        logger.warn("Spring exception (${ex.message})", ex)
+        return super.handleExceptionInternal(ex, body, headers, statusCode, request)
     }
 
     @ExceptionHandler(value = [Throwable::class])

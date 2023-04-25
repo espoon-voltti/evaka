@@ -5,6 +5,7 @@
 import React, { useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
+import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
@@ -25,7 +26,11 @@ import PersonFridgePartner from '../components/person-profile/PersonFridgePartne
 import PersonIncome from '../components/person-profile/PersonIncome'
 import PersonInvoices from '../components/person-profile/PersonInvoices'
 import { useTranslation } from '../state/i18n'
-import { PersonContext, PersonContextProvider } from '../state/person'
+import {
+  PersonContext,
+  PersonContextProvider,
+  PersonState
+} from '../state/person'
 import { UserContext } from '../state/user'
 
 import { getLayout, Layouts } from './layouts'
@@ -64,19 +69,66 @@ export const InfoLabelContainer = styled.div`
   }
 `
 
+interface SectionProps {
+  id: UUID
+  open: boolean
+}
+
+function requireOneOfPermittedActions(
+  Component: React.FunctionComponent<SectionProps>,
+  ...actions: Array<Action.Person>
+): React.FunctionComponent<SectionProps> {
+  return function Section({ id, open }: SectionProps) {
+    const { permittedActions } = useContext<PersonState>(PersonContext)
+    if (actions.some((action) => permittedActions.has(action))) {
+      return <Component id={id} open={open} />
+    } else {
+      return null
+    }
+  }
+}
+
 const components = {
-  'family-overview': FamilyOverview,
-  income: PersonIncome,
-  'fee-decisions': PersonFeeDecisions,
-  invoices: PersonInvoices,
-  invoiceCorrections: PersonInvoiceCorrections,
-  voucherValueDecisions: PersonVoucherValueDecisions,
-  partners: PersonFridgePartner,
-  'fridge-children': PersonFridgeChild,
-  dependants: PersonDependants,
-  fosterChildren: FosterChildren,
-  applications: PersonApplications,
-  decisions: PersonDecisions
+  'family-overview': requireOneOfPermittedActions(
+    FamilyOverview,
+    'READ_FAMILY_OVERVIEW'
+  ),
+  income: requireOneOfPermittedActions(
+    PersonIncome,
+    'READ_INCOME_STATEMENTS',
+    'READ_INCOME'
+  ),
+  'fee-decisions': requireOneOfPermittedActions(
+    PersonFeeDecisions,
+    'READ_FEE_DECISIONS'
+  ),
+  invoices: requireOneOfPermittedActions(PersonInvoices, 'READ_INVOICES'),
+  invoiceCorrections: requireOneOfPermittedActions(
+    PersonInvoiceCorrections,
+    'READ_INVOICE_CORRECTIONS'
+  ),
+  voucherValueDecisions: requireOneOfPermittedActions(
+    PersonVoucherValueDecisions,
+    'READ_VOUCHER_VALUE_DECISIONS'
+  ),
+  partners: requireOneOfPermittedActions(
+    PersonFridgePartner,
+    'READ_PARTNERSHIPS'
+  ),
+  'fridge-children': requireOneOfPermittedActions(
+    PersonFridgeChild,
+    'READ_PARENTSHIPS'
+  ),
+  dependants: requireOneOfPermittedActions(PersonDependants, 'READ_DEPENDANTS'),
+  fosterChildren: requireOneOfPermittedActions(
+    FosterChildren,
+    'READ_FOSTER_CHILDREN'
+  ),
+  applications: requireOneOfPermittedActions(
+    PersonApplications,
+    'READ_APPLICATIONS'
+  ),
+  decisions: requireOneOfPermittedActions(PersonDecisions, 'READ_DECISIONS')
 }
 
 const layouts: Layouts<typeof components> = {

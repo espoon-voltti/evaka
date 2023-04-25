@@ -790,6 +790,18 @@ RETURNING id
         }
     }
 
+    @PostMapping("/persons/{person}/force-full-vtj-refresh")
+    fun forceFullVtjRefresh(db: Database, @PathVariable person: PersonId) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val user = AuthenticatedUser.SystemInternalUser
+                personService.getUpToDatePersonFromVtj(tx, user, person)
+                personService.getGuardians(tx, user, person)
+                personService.getPersonWithChildren(tx, user, person)
+            }
+        }
+    }
+
     @GetMapping("/vtj-persons/{ssn}")
     fun getVtjPerson(@PathVariable ssn: String): VtjPerson {
         return MockPersonDetailsService.getPerson(ssn)
