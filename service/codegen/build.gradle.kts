@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Version.GradlePlugin.ktfmt
-
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jmailen.kotlinter")
-    id("com.ncorti.ktfmt.gradle") version Version.GradlePlugin.ktfmt
+    id("com.ncorti.ktfmt.gradle")
 }
 
 dependencies {

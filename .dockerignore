@@ -8,6 +8,7 @@
 
 !service/.editorconfig
 !service/gradle/wrapper
+!service/gradle/libs.versions.toml
 !service/gradlew
 !service/gradle.properties
 !service/owasp-suppressions.xml

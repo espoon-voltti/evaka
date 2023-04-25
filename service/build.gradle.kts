@@ -11,21 +11,21 @@ buildscript {
     }
     dependencies {
         classpath(files("custom-ktlint-rules/custom-ktlint-rules.jar"))
-        classpath("com.pinterest:ktlint:${Version.ktlint}")
+        classpath(libs.ktlint)
     }
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version Version.GradlePlugin.kotlin
-    id("org.jetbrains.kotlin.plugin.allopen") version Version.GradlePlugin.kotlin
-    id("org.jetbrains.kotlin.plugin.spring") version Version.GradlePlugin.kotlin
-    id("org.springframework.boot") version Version.GradlePlugin.springBoot
-    id("org.flywaydb.flyway") version Version.GradlePlugin.flyway
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.allopen)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.flyway)
 
-    id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
-    id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
-    id("com.ncorti.ktfmt.gradle") version Version.GradlePlugin.ktfmt
-    id("org.owasp.dependencycheck") version Version.GradlePlugin.owasp
+    alias(libs.plugins.versions)
+    alias(libs.plugins.kotlinter)
+    alias(libs.plugins.ktfmt)
+    alias(libs.plugins.owasp)
 
     idea
 }
@@ -170,12 +170,12 @@ allOpen {
 
 allprojects {
     tasks.withType<JavaCompile> {
-        sourceCompatibility = Version.java
-        targetCompatibility = Version.java
+        sourceCompatibility = libs.versions.java.get()
+        targetCompatibility = libs.versions.java.get()
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = Version.java
+        kotlinOptions.jvmTarget = libs.versions.java.get()
         kotlinOptions.allWarningsAsErrors = true
     }
 

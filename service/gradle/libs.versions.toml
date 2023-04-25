@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+[versions]
+flyway = "9.14.1"
+java = "17"
+kotlin = "1.8.10"
+kotlinter = "3.13.0"
+ktfmt = "0.11.0"
+ktlint = "0.47.1"
+owasp = "8.2.1"
+spring-boot = "3.0.6"
+versions = "0.45.0"
+
+[libraries]
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
+ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
+spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+
+[plugins]
+flyway = { id = "org.flywaydb.flyway", version.ref = "flyway" }
+kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
+owasp = { id = "org.owasp.dependencycheck", version.ref = "owasp" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }

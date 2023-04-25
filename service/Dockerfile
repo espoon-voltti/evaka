@@ -34,7 +34,6 @@ RUN TRUSTSTORE_PASSWORD="public-certificates-only" /certificates/integraatiopalv
 COPY ./espoo-customizations/ ./espoo-customizations/
 COPY ./service/gradle/ ./service/gradle/
 COPY ./service/custom-ktlint-rules/ ./service/custom-ktlint-rules/
-COPY ./service/buildSrc ./service/buildSrc
 COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./service/settings.gradle.kts ./service/
 COPY ./service/vtjclient/build.gradle.kts ./service/vtjclient/build.gradle.kts
 COPY ./service-lib/*.kts ./service-lib/
