@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.attendance.deleteOccupancyCoefficient
 import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -22,7 +21,6 @@ fun removeDaycareAclForRole(
 ) {
     tx.clearDaycareGroupAcl(daycareId, employeeId)
     tx.deleteDaycareAclRow(daycareId, employeeId, role)
-    tx.deleteOccupancyCoefficient(daycareId, employeeId)
     deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
 }
 

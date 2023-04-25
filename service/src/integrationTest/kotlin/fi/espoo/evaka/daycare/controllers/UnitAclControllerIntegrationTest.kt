@@ -195,7 +195,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val coefficientsAfterDelete = getDaycareOccupancyCoefficients(testDaycare.id)
 
-        assertEquals(null, coefficientsAfterDelete[employee.id])
+        assertEquals(BigDecimal("7.00"), coefficientsAfterDelete[employee.id])
 
         assertTrue(getAclRows().isEmpty())
     }

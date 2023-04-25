@@ -66,7 +66,7 @@ export default React.memo(function DaycareAclAdditionModal({
   const [formData, setFormData] = useState<DaycareAclAdditionFormState>({
     selectedEmployee: null,
     selectedGroups: null,
-    hasStaffOccupancyEffect: null
+    hasStaffOccupancyEffect: permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') ? false : null
   })
 
   const submit = useCallback(async () => {
