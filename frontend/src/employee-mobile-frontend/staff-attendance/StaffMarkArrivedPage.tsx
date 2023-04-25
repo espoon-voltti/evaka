@@ -132,12 +132,14 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const selectedTimeDiffFromPlannedStartOfDayMinutes = useMemo(
     () =>
-      firstPlannedStartOfTheDay &&
-      isValidTimeString(time) &&
-      differenceInMinutes(
-        HelsinkiDateTime.now().withTime(LocalTime.parse(time)).toSystemTzDate(),
-        firstPlannedStartOfTheDay.toSystemTzDate()
-      ),
+      firstPlannedStartOfTheDay && isValidTimeString(time)
+        ? differenceInMinutes(
+            HelsinkiDateTime.now()
+              .withTime(LocalTime.parse(time))
+              .toSystemTzDate(),
+            firstPlannedStartOfTheDay.toSystemTzDate()
+          )
+        : undefined,
     [firstPlannedStartOfTheDay, time]
   )
 
@@ -257,7 +259,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
             const disableConfirmBecauseOfPlan =
               showAttendanceTypeSelection &&
-              selectedTimeDiffFromPlannedStartOfDayMinutes != null &&
+              selectedTimeDiffFromPlannedStartOfDayMinutes !== undefined &&
               selectedTimeDiffFromPlannedStartOfDayMinutes < -5 &&
               attendanceType == null
 
