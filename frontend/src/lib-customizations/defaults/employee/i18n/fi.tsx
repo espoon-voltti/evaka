@@ -852,6 +852,7 @@ export const fi = {
       preview: 'Esikatsele',
       modifyDecision: 'Muokkaa',
       sendToDecisionMaker: 'Lähetä päätöksen tekijälle',
+      revertToUnsent: 'Palauta takaisin lähettämättömäksi',
       sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
       appealInstructionsTitle: 'Oikaisuvaatimusohje',
       appealInstructions: (

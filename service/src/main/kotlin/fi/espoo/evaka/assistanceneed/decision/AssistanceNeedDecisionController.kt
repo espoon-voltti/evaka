@@ -222,6 +222,44 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = id) }
     }
 
+    @PostMapping("/assistance-need-decision/{id}/revert-to-unsent")
+    fun revertToUnsentAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedDecisionId
+    ) {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.REVERT_TO_UNSENT,
+                        id
+                    )
+                    val decision = tx.getAssistanceNeedDecisionById(id)
+
+                    if (
+                        !(decision.status == AssistanceNeedDecisionStatus.DRAFT &&
+                            decision.sentForDecision != null)
+                    ) {
+                        throw Forbidden(
+                            "Only sent draft decisions can be reverted",
+                            "UNREVERTABLE_DECISION"
+                        )
+                    }
+
+                    tx.updateAssistanceNeedDecision(
+                        id,
+                        decision.copy(sentForDecision = null).toForm(),
+                        false
+                    )
+                }
+            }
+            .also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = id) }
+    }
+
     @GetMapping("/children/{childId}/assistance-needs/decisions")
     fun getAssistanceNeedDecisions(
         db: Database,

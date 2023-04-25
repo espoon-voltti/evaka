@@ -121,6 +121,15 @@ export function sendAssistanceNeedDecision(id: UUID): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
+export function revertToUnsentAssistanceNeedDecision(
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .post(`/assistance-need-decision/${id}/revert-to-unsent`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export function decideAssistanceNeedDecision(
   id: UUID,
   status: Exclude<AssistanceNeedDecisionStatus, 'DRAFT'>

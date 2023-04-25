@@ -592,6 +592,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision()
         ),
+        REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()
