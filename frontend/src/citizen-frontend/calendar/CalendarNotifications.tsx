@@ -152,7 +152,11 @@ function reservationsExistForPeriod(
   return calendarDays.every((day) => {
     if (period.includes(day.date)) {
       return day.children.every((child) => {
-        return child.reservations.length > 0 || child.absence !== null
+        return (
+          !child.requiresReservation ||
+          child.reservations.length > 0 ||
+          child.absence !== null
+        )
       })
     } else {
       return true

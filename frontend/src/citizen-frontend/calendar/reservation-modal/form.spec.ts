@@ -6,7 +6,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceInfo,
   Reservation,
-  ReservationResponseDay
+  ReservationResponseDay,
+  ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -40,8 +41,9 @@ const emptyCalendarDays = emptyCalendarDaysIncludingWeekend.filter(
   (day) => !day.date.isWeekend()
 )
 
-const emptyChild = {
+const emptyChild: ReservationResponseDayChild = {
   childId: 'child-1',
+  requiresReservation: true,
   contractDays: false,
   shiftCare: false,
   absence: null,

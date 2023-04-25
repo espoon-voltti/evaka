@@ -128,6 +128,7 @@ export interface ReservationResponseDayChild {
   attendances: OpenTimeRange[]
   childId: UUID
   contractDays: boolean
+  requiresReservation: boolean
   reservations: Reservation[]
   shiftCare: boolean
 }

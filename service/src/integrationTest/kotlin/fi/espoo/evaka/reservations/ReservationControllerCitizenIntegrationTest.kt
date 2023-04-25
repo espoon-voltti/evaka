@@ -55,6 +55,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private val monday = sunday.plusDays(1)
     private val tuesday = monday.plusDays(1)
     private val wednesday = monday.plusDays(2)
+    private val thursday = monday.plusDays(3)
 
     private val startTime = LocalTime.of(9, 0)
     private val endTime = LocalTime.of(17, 0)
@@ -97,9 +98,21 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `get reservations returns correct children every day in range`() {
-        db.transaction { tx -> tx.insertTestHoliday(tuesday) }
+        db.transaction { tx ->
+            tx.insertTestHoliday(wednesday)
 
-        val res = getReservations(FiniteDateRange(sunday, wednesday))
+            // Reservation not required (PRESCHOOL)
+            tx.insertTestPlacement(
+                childId = testChild_3.id,
+                unitId = testDaycare.id,
+                type = PlacementType.PRESCHOOL,
+                startDate = monday,
+                endDate = wednesday
+            )
+            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
+        }
+
+        val res = getReservations(FiniteDateRange(sunday, thursday))
 
         assertEquals(
             ReservationsResponse(
@@ -130,6 +143,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                         ),
+                        ReservationChild(
+                            id = testChild_3.id,
+                            firstName = testChild_3.firstName,
+                            lastName = testChild_3.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.PRESCHOOL,
+                        ),
                     ),
                 days =
                     listOf(
@@ -141,17 +163,29 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                         dayChild(testChild_1.id),
-                                        dayChild(testChild_2.id, contractDays = true)
+                                        dayChild(testChild_2.id, contractDays = true),
+                                        dayChild(testChild_3.id, requiresReservation = false)
                                     )
                                     .sortedBy { it.childId }
                         ),
                         ReservationResponseDay(
                             date = tuesday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                        dayChild(testChild_1.id),
+                                        dayChild(testChild_2.id, contractDays = true),
+                                        dayChild(testChild_3.id, requiresReservation = false)
+                                    )
+                                    .sortedBy { it.childId }
+                        ),
+                        ReservationResponseDay(
+                            date = wednesday,
                             holiday = true,
                             children = emptyList() // Holiday, no children eligible for daycare
                         ),
                         ReservationResponseDay(
-                            date = wednesday,
+                            date = thursday,
                             holiday = false,
                             children = emptyList()
                         )
@@ -565,6 +599,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     private fun dayChild(
         childId: ChildId,
+        requiresReservation: Boolean = true,
         shiftCare: Boolean = false,
         contractDays: Boolean = false,
         absence: AbsenceInfo? = null,
@@ -573,6 +608,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     ) =
         ReservationResponseDayChild(
             childId,
+            requiresReservation,
             shiftCare,
             contractDays,
             absence,
