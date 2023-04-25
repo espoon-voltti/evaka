@@ -90,6 +90,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 endDate = placementEnd,
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
+
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,

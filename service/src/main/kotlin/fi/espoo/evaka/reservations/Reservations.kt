@@ -129,6 +129,7 @@ fun createReservationsAndAbsences(
     val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
 
     val childIds = requests.map { it.childId }.toSet()
+    val placements = tx.getReservationPlacements(childIds, reservationsRange)
     val childReservationDates =
         tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)
     val childAbsenceDates = tx.getAbsenceDatesForChildrenInRange(childIds, reservationsRange)
@@ -153,8 +154,7 @@ fun createReservationsAndAbsences(
                     }
                     if (isCitizen) {
                         // Citizens cannot add reservations on days without existing reservations OR
-                        // with absences
-                        // on closed holiday periods
+                        // with absences on closed holiday periods
                         val hasReservation =
                             (childReservationDates[request.childId] ?: setOf()).contains(
                                 request.date
@@ -178,6 +178,26 @@ fun createReservationsAndAbsences(
                         throw BadRequest("Reservations outside holiday periods must have times")
                     }
                     request
+                }
+            }
+            .map { request ->
+                when (request) {
+                    is DailyReservationRequest.Reservations -> {
+                        // Don't create reservations for children whose placement type doesn't
+                        // require them
+                        val reservable =
+                            placements[request.childId]
+                                ?.find { it.range.includes(request.date) }
+                                ?.type
+                                ?.requiresAttendanceReservations()
+                                ?: false
+                        if (!reservable) {
+                            DailyReservationRequest.Nothing(request.childId, request.date)
+                        } else {
+                            request
+                        }
+                    }
+                    else -> request
                 }
             }
             .map { request ->
