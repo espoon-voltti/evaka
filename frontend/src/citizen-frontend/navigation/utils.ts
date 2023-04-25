@@ -5,9 +5,9 @@
 import sum from 'lodash/sum'
 import { useMemo } from 'react'
 
-import { Child } from 'lib-common/generated/api-types/children'
+import type { Child } from 'lib-common/generated/api-types/children'
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
 import { childrenQuery } from '../children/queries'

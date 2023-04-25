@@ -5,7 +5,8 @@
 import styled from 'styled-components'
 
 import { tabletMin } from '../breakpoints'
-import { defaultMargins, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins } from '../white-space'
 
 type AdaptiveFlexProps = {
   breakpoint?: string

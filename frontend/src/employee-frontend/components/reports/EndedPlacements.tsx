@@ -7,8 +7,9 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -17,11 +18,10 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import {
-  getEndedPlacementsReport,
-  PlacementsReportFilters
-} from '../../api/reports'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { PlacementsReportFilters } from '../../api/reports'
+import { getEndedPlacementsReport } from '../../api/reports'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 

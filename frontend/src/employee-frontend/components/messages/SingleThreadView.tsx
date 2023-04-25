@@ -14,14 +14,14 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
+import type {
   Message,
   MessageChild,
   MessageThread,
   MessageType
 } from 'lib-common/generated/api-types/messaging'
 import { formatPreferredName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
@@ -47,7 +47,7 @@ import { useTranslation } from '../../state/i18n'
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
 import { archiveThread } from './api'
-import { View } from './types-view'
+import type { View } from './types-view'
 
 const MessageContainer = styled.div`
   background-color: ${colors.grayscale.g0};

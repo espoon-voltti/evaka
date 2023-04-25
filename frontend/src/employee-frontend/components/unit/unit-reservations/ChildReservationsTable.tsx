@@ -7,18 +7,19 @@ import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
-import {
+import type {
   Child,
   ChildDailyRecords,
   OperationalDay
 } from 'lib-common/api-types/reservations'
-import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { Table, Tbody } from 'lib-components/layout/Table'
 
 import EllipsisMenu from '../../../components/common/EllipsisMenu'
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'

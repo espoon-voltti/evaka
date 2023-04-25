@@ -5,17 +5,18 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold, fontWeights, P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faPlus } from 'lib-icons'
 
+import type { PairingResponse } from '../api/unit'
 import {
   getPairingStatus,
-  PairingResponse,
   postPairing,
   postPairingResponse,
   putMobileDeviceName

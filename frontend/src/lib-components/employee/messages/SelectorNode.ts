@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageReceiver } from 'lib-common/api-types/messaging'
-import {
+import type { MessageReceiver } from 'lib-common/api-types/messaging'
+import type {
   MessageReceiversResponse,
   MessageRecipient
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
-import { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
+import type { UUID } from 'lib-common/types'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 
 /*
     SelectorNode is a recursive type for storing a selectorId, the corresponding selected

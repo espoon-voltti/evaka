@@ -5,8 +5,8 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { VasuDocument } from 'lib-common/generated/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
+import type { VasuDocument } from 'lib-common/generated/api-types/vasu'
+import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'

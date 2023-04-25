@@ -7,8 +7,8 @@
 import defaultsUntyped from '@evaka/customizations/employee'
 import mergeWith from 'lodash/mergeWith'
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { JsonOf } from 'lib-common/json'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee/i18n/fi'

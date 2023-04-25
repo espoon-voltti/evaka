@@ -5,22 +5,22 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import LocalTime from '../../local-time'
-import { AbsenceType } from './daycare'
-import { ApplicationStatus } from './application'
-import { AssistanceActionOption } from './assistanceaction'
-import { AssistanceBasisOption } from './assistanceneed'
-import { AssistanceMeasure } from './assistanceaction'
-import { AssistanceNeedDecisionStatus } from './assistanceneed'
-import { DecisionType } from './decision'
-import { OccupancyValues } from './occupancy'
-import { PlacementType } from './placement'
-import { ProviderType } from './daycare'
-import { ServiceNeedOption } from './application'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import type LocalTime from '../../local-time'
+import { type AbsenceType } from './daycare'
+import { type ApplicationStatus } from './application'
+import { type AssistanceActionOption } from './assistanceaction'
+import { type AssistanceBasisOption } from './assistanceneed'
+import { type AssistanceMeasure } from './assistanceaction'
+import { type AssistanceNeedDecisionStatus } from './assistanceneed'
+import { type DecisionType } from './decision'
+import { type OccupancyValues } from './occupancy'
+import { type PlacementType } from './placement'
+import { type ProviderType } from './daycare'
+import { type ServiceNeedOption } from './application'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.reports.ApplicationsReportRow

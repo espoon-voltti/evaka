@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { DailyServiceTimesType } from 'lib-common/generated/enums'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import type { Page } from '../../utils/page'
 import {
   Checkbox,
   Combobox,
@@ -16,7 +17,6 @@ import {
   Element,
   FileInput,
   Modal,
-  Page,
   Radio,
   Select,
   TextInput

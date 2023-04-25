@@ -4,9 +4,10 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
-import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
-import { UUID } from 'lib-common/types'
+import type { ChildState } from 'employee-frontend/state/child'
+import { ChildContext } from 'employee-frontend/state/child'
+import type { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'

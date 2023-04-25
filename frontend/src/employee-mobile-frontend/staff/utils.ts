@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
+import type { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { UUID } from 'lib-common/types'
 
 export interface AttendanceValues {
   count: number

@@ -5,9 +5,9 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { Action } from 'lib-common/generated/action'
-import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { UUID } from 'lib-common/types'
+import type { Action } from 'lib-common/generated/action'
+import type { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'

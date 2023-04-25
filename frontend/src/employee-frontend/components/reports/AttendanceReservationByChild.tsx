@@ -4,16 +4,17 @@
 
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DefaultTheme, useTheme } from 'styled-components'
+import type { DefaultTheme } from 'styled-components'
+import { useTheme } from 'styled-components'
 
 import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
 import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type LocalTime from 'lib-common/local-time'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -25,12 +26,10 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 
-import {
-  AttendanceReservationReportFilters,
-  getAssistanceReservationReportByChild
-} from '../../api/reports'
+import type { AttendanceReservationReportFilters } from '../../api/reports'
+import { getAssistanceReservationReportByChild } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'

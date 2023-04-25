@@ -4,7 +4,8 @@
 
 import classNames from 'classnames'
 import React from 'react'
-import ReactSelect, { Props } from 'react-select'
+import type { Props } from 'react-select'
+import ReactSelect from 'react-select'
 import styled, { useTheme } from 'styled-components'
 
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'

@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import DateRange from 'lib-common/date-range'
+import type DateRange from 'lib-common/date-range'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { colors } from 'lib-customizations/common'
 

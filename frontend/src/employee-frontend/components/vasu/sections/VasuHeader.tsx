@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { VasuDocument } from 'lib-common/generated/api-types/vasu'
+import type { VasuDocument } from 'lib-common/generated/api-types/vasu'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'

@@ -5,12 +5,13 @@
 import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { BoundForm, useFormFields, useFormUnion } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormFields, useFormUnion } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 
 import { HolidayReservation, Times } from './TimeInputs'
-import { dailyTimes } from './form'
+import type { dailyTimes } from './form'
 
 export interface DailyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof dailyTimes>

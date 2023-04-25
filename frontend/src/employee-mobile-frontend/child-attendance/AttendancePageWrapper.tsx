@@ -8,7 +8,10 @@ import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type {
+  Child,
+  GroupInfo
+} from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -16,17 +19,19 @@ import colors from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
-import { CountInfo } from '../common/GroupSelector'
+import type { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 import { zIndex } from '../constants'
-import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
+import type { ChildAttendanceUIState } from '../types'
+import { mapChildAttendanceUIState } from '../types'
 
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
-import { AttendanceStatuses, childAttendanceStatus } from './utils'
+import type { AttendanceStatuses } from './utils'
+import { childAttendanceStatus } from './utils'
 
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, groupId, attendanceStatus } = useNonNullableParams<{

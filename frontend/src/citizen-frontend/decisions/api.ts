@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   ApplicationDecisions,
   DecisionWithValidStartDatePeriod
 } from 'lib-common/generated/api-types/application'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 

@@ -7,7 +7,8 @@ import React from 'react'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Gap } from 'lib-components/white-space'
 
-import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
+import type { ModalBaseProps } from './BaseModal'
+import BaseModal, { ModalButtons } from './BaseModal'
 
 type Props = Omit<ModalBaseProps, 'mobileFullScreen'> &
   (

@@ -4,10 +4,10 @@
 
 import React from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -29,7 +29,7 @@ import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,

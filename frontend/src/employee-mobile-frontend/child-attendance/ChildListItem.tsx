@@ -6,13 +6,13 @@ import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
+import type {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -26,7 +26,7 @@ import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
-import { ListItem } from './ChildList'
+import type { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
 
 const ChildBox = styled.div`

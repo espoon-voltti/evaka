@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import { type UUID } from 'lib-common/types'
 
-import { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
+import { type DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
 import {
-  AbsenceType,
-  ChildServiceNeedInfo
+  type AbsenceType,
+  type ChildServiceNeedInfo
 } from '../generated/api-types/daycare'
-import { Reservation } from '../generated/api-types/reservations'
-import { JsonOf } from '../json'
-import LocalDate from '../local-date'
+import { type Reservation } from '../generated/api-types/reservations'
+import { type JsonOf } from '../json'
+import type LocalDate from '../local-date'
 
 export interface UnitAttendanceReservations {
   unit: string

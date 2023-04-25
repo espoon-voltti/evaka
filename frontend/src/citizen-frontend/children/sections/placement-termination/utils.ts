@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 type TerminatedPlacementInfoType =
   | { type: 'placement'; placementType: PlacementType }

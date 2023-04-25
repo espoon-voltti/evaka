@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

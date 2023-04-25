@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import { UUID } from '../../types'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.note.child.daily.ChildDailyNote

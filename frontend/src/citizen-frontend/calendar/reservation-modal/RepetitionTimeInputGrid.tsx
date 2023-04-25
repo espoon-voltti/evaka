@@ -4,13 +4,14 @@
 
 import React from 'react'
 
-import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormUnion } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import DailyRepetitionTimeInputGrid from './DailyRepetitionTimeInputGrid'
 import IrregularRepetitionTimeInputGrid from './IrregularRepetitionTimeInputGrid'
 import WeeklyRepetitionTimeInputGrid from './WeeklyRepetitionTimeInputGrid'
-import { timesUnion } from './form'
+import type { timesUnion } from './form'
 
 export interface RepetitionTimeInputGridProps {
   bind: BoundForm<typeof timesUnion>

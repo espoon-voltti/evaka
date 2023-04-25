@@ -4,7 +4,7 @@
 
 import React, { useMemo, createContext } from 'react'
 
-import { AdRole, User } from 'lib-common/api-types/employee-auth'
+import type { AdRole, User } from 'lib-common/api-types/employee-auth'
 
 export interface UserState {
   loggedIn: boolean

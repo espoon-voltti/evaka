@@ -10,12 +10,10 @@ import {
   insertApplications,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import type { EmployeeDetail } from '../../dev-api/types'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

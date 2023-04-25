@@ -4,8 +4,9 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -13,7 +14,8 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { getPresenceReport, PeriodFilters } from '../../api/reports'
+import type { PeriodFilters } from '../../api/reports'
+import { getPresenceReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'

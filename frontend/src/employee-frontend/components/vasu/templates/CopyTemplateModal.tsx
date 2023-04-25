@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
-import { UUID } from 'lib-common/types'
+import type { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
+import type { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'

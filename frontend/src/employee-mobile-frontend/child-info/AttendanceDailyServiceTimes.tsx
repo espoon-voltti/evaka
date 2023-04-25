@@ -4,8 +4,8 @@
 
 import React, { useMemo } from 'react'
 
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { Reservation } from 'lib-common/generated/api-types/reservations'
+import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { Reservation } from 'lib-common/generated/api-types/reservations'
 
 import { Reservations } from '../child-attendance/Reservations'
 import { ServiceTime } from '../common/components'

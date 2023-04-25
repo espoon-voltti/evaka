@@ -6,7 +6,7 @@ import last from 'lodash/last'
 import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 
-import {
+import type {
   VasuSection,
   VasuDocumentState,
   VasuDocument
@@ -14,7 +14,7 @@ import {
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
 import DateQuestionElem from '../components/DateQuestion'

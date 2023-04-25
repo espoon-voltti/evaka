@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Translations } from 'citizen-frontend/localization'
-import { Child } from 'lib-common/generated/api-types/children'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { UUID } from 'lib-common/types'
+import type { Translations } from 'citizen-frontend/localization'
+import type { Child } from 'lib-common/generated/api-types/children'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { UUID } from 'lib-common/types'
 
 const toDuplicatedChildIds = (children: Array<Child | ReservationChild>) =>
   children.flatMap((child) =>

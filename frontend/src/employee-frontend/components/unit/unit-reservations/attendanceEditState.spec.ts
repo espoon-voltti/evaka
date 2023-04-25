@@ -6,7 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { ModalAttendance } from './StaffAttendanceDetailsModal'
+import type { ModalAttendance } from './StaffAttendanceDetailsModal'
 import {
   externalAttendanceValidator,
   staffAttendanceValidator

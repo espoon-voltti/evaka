@@ -14,10 +14,8 @@ import {
   insertPersonFixture,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
   createDaycarePlacementFixture,
@@ -27,12 +25,14 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
-import CitizenCalendarPage, {
+import type { PersonDetail } from '../../dev-api/types'
+import type {
   AbsenceReservation,
   StartAndEndTimeReservation
 } from '../../pages/citizen/citizen-calendar'
-import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import type { EnvType } from '../../pages/citizen/citizen-header'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 

@@ -5,12 +5,12 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { UUID } from '../../types'
-import { VasuQuestion } from '../../api-types/vasu'
+import type FiniteDateRange from '../../finite-date-range'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import { type Action } from '../action'
+import { type UUID } from '../../types'
+import { type VasuQuestion } from '../../api-types/vasu'
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuController.ChangeDocumentStateRequest

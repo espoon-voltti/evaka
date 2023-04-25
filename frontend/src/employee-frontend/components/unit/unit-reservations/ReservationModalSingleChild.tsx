@@ -6,7 +6,7 @@ import classNames from 'classnames'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/api-types/reservations'
+import type { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, localDateRange, localTimeRange } from 'lib-common/form/fields'
 import {
@@ -18,24 +18,20 @@ import {
   required,
   value
 } from 'lib-common/form/form'
+import type { BoundForm, BoundFormShape } from 'lib-common/form/hooks'
 import {
-  BoundForm,
-  BoundFormShape,
   useForm,
   useFormElem,
   useFormElems,
   useFormField
 } from 'lib-common/form/hooks'
-import {
-  combine,
-  Form,
-  StateOf,
-  ValidationSuccess
-} from 'lib-common/form/types'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type { Form, StateOf } from 'lib-common/form/types'
+import { combine, ValidationSuccess } from 'lib-common/form/types'
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { Repetition, timeRangeToTimes } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { Repetition } from 'lib-common/reservations'
+import { timeRangeToTimes } from 'lib-common/reservations'
+import type { UUID } from 'lib-common/types'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -50,7 +46,7 @@ import {
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { postReservations } from '../../../api/unit'

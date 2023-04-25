@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  ApplicationOrigin,
-  ApplicationStatus,
-  ApplicationType,
-  OtherGuardianAgreementStatus,
-  PreferredUnit,
-  ServiceNeedOption
+  type ApplicationOrigin,
+  type ApplicationStatus,
+  type ApplicationType,
+  type OtherGuardianAgreementStatus,
+  type PreferredUnit,
+  type ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import { type UUID } from 'lib-common/types'
 
-import { AttachmentType } from '../../generated/api-types/attachment'
+import { type AttachmentType } from '../../generated/api-types/attachment'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { JsonOf } from '../../json'
-import { Attachment } from '../attachment'
+import { type JsonOf } from '../../json'
+import { type Attachment } from '../attachment'
 
 export interface ApplicationDetails {
   id: string

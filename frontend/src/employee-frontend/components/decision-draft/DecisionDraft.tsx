@@ -11,18 +11,20 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
+import type { NavigateFunction } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
+import type {
   DecisionDraft,
   DecisionDraftUpdate,
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -45,8 +47,10 @@ import {
   updateDecisionDrafts
 } from '../../api/decision-draft'
 import LabelValueList from '../../components/common/LabelValueList'
-import { Translations, useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { formatName } from '../../utils'
 
 const ColumnTitle = styled.div`

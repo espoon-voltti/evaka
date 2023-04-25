@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'

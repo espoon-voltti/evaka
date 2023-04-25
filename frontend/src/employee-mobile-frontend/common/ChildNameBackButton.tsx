@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 import { faArrowLeft } from 'lib-icons'
 
 import { BackButtonInline } from './components'

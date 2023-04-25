@@ -5,9 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'

@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import type { Paged, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import {
   deserializeMessageCopy,
   deserializeMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging'
-import {
+import type {
   AuthorizedMessageAccount,
   DraftContent,
   MessageCopy,
@@ -20,9 +21,9 @@ import {
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
-import { SaveDraftParams } from 'lib-components/employee/messages/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
+import type { SaveDraftParams } from 'lib-components/employee/messages/types'
 
 import { client } from '../../api/client'
 

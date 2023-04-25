@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { BaseProps } from 'lib-components/utils'
+import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 

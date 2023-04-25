@@ -6,7 +6,7 @@ import partition from 'lodash/partition'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import { useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'

@@ -4,7 +4,7 @@
 
 import mapValues from 'lodash/mapValues'
 
-import {
+import type {
   CheckboxQuestion,
   DateQuestion,
   Followup,
@@ -18,9 +18,12 @@ import {
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
-import { VasuContent, VasuSection } from 'lib-common/generated/api-types/vasu'
+import type {
+  VasuContent,
+  VasuSection
+} from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 
 export function isTextQuestion(

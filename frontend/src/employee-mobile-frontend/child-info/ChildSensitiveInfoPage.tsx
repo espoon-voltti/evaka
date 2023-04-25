@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 

@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from '../finite-date-range'
-import LocalDate from '../local-date'
+import type LocalDate from '../local-date'
 import LocalTime from '../local-time'
 
 import { mapped, object, transformed, value } from './form'
+import type { ObjectFieldError } from './types'
 import {
-  ObjectFieldError,
   ValidationError,
-  ValidationResult,
+  type ValidationResult,
   ValidationSuccess
 } from './types'
 

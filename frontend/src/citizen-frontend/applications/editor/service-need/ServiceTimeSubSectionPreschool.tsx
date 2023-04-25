@@ -5,12 +5,12 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type { Result } from 'lib-common/api'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -36,7 +36,7 @@ import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`
   padding-top: 36px;

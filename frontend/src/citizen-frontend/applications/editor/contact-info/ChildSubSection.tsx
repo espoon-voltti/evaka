@@ -19,7 +19,7 @@ import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
-import { ContactInfoSectionProps } from './ContactInfoSection'
+import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function ChildSubSection({
   formData,

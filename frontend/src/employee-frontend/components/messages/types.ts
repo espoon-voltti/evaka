@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   DraftContent,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 
 export const deserializeDraftContent = ({
   created,

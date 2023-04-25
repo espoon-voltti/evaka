@@ -8,13 +8,14 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
+import type { Lang } from 'employee-frontend/state/i18n'
+import { I18nContext, useTranslation } from 'employee-frontend/state/i18n'
 import { UserContext } from 'employee-frontend/state/user'
-import {
+import type {
   AssistanceNeedDecision,
   AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
@@ -27,7 +28,7 @@ import Content from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { ModalType } from 'lib-components/molecules/modals/BaseModal'
+import type { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion, faTimes } from 'lib-icons'

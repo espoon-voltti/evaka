@@ -6,7 +6,7 @@ import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import type { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
 import {
   cancelApplication,
@@ -24,8 +24,9 @@ import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import PrimaryAction from '../../components/applications/PrimaryAction'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
-import { ApplicationSummaryStatusOptions } from '../common/Filters'
+import type { MenuItem } from '../common/EllipsisMenu'
+import EllipsisMenu from '../common/EllipsisMenu'
+import type { ApplicationSummaryStatusOptions } from '../common/Filters'
 
 export type Action = {
   id: string

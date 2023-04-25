@@ -3,18 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { resetDatabase } from '../../dev-api'
+import type { DaycareBuilder, PersonBuilder } from '../../dev-api/fixtures'
 import {
   careAreaFixture,
-  DaycareBuilder,
   daycareFixture,
   daycareGroupFixture,
   enduserChildFixtureJari,
   enduserGuardianFixture,
   Fixture,
-  PersonBuilder,
   uuidv4
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'

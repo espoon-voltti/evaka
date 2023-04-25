@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -20,7 +20,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { AssistanceNeedDecision, EmployeeDetail } from '../../dev-api/types'
+import type {
+  AssistanceNeedDecision,
+  EmployeeDetail
+} from '../../dev-api/types'
 import AssistanceNeedDecisionEditPage from '../../pages/employee/assistance-need-decision/assistance-need-decision-edit-page'
 import AssistanceNeedDecisionPreviewPage from '../../pages/employee/assistance-need-decision/assistance-need-decision-preview-page'
 import { waitUntilEqual } from '../../utils'

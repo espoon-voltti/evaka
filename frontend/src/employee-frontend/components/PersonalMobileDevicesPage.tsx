@@ -8,7 +8,7 @@ import {
   deleteMobileDevice,
   putMobileDeviceName
 } from 'employee-frontend/api/unit'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

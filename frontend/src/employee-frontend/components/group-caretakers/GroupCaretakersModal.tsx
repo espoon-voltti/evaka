@@ -5,9 +5,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
   DatePickerDeprecated,
@@ -19,7 +19,7 @@ import { faPen, faPlus } from 'lib-icons'
 
 import { postCaretakers, putCaretakers } from '../../api/caretakers'
 import { useTranslation } from '../../state/i18n'
-import { CaretakerAmount } from '../../types/caretakers'
+import type { CaretakerAmount } from '../../types/caretakers'
 
 const NumberInputContainer = styled.div`
   width: 150px;

@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'

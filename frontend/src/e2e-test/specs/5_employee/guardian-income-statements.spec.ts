@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -20,7 +20,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import type { PersonDetail } from '../../dev-api/types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

@@ -5,9 +5,9 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { QuestionOption } from 'lib-common/api-types/vasu'
-import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
+import type { QuestionOption } from 'lib-common/api-types/vasu'
+import type { VasuLanguage } from 'lib-common/generated/api-types/vasu'
+import type LocalDate from 'lib-common/local-date'
 import Radio from 'lib-components/atoms/form/Radio'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 

@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export default class ChildAttendancePage {
   constructor(private readonly page: Page) {}

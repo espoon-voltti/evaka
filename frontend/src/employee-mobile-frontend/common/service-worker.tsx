@@ -13,7 +13,7 @@ import React, {
 } from 'react'
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { mockNow } from 'lib-common/utils/helpers'
 
 import { upsertPushSubscription } from '../auth/api'

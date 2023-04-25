@@ -5,10 +5,10 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import HelsinkiDateTime from '../../helsinki-date-time'
-import { MessageAttachment } from './attachment'
-import { MessageReceiver } from '../../api-types/messaging'
-import { UUID } from '../../types'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import { type MessageAttachment } from './attachment'
+import { type MessageReceiver } from '../../api-types/messaging'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType

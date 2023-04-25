@@ -5,7 +5,7 @@
 import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
+import type { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -14,7 +14,7 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { AccountView, View } from './types-view'
+import type { AccountView, View } from './types-view'
 
 export const MessageBoxRow = styled.div<{ active: boolean }>`
   cursor: pointer;

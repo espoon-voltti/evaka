@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 

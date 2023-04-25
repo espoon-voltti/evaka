@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { ErrorKey, ErrorsOf } from 'lib-common/form-validation'
 import {
   email,
   emailVerificationCheck,
-  ErrorKey,
-  ErrorsOf,
   getErrorCount,
   phone,
   regexp,
@@ -19,7 +18,7 @@ import {
   TIME_REGEXP,
   validate
 } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 

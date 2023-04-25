@@ -5,10 +5,8 @@
 import LocalDate from 'lib-common/local-date'
 
 import { resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'

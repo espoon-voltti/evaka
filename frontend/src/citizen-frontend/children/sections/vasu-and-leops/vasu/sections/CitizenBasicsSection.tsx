@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch } from 'react'
+import type { Dispatch } from 'react'
+import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ChildLanguage,
   CurriculumType,
   VasuBasics
@@ -14,7 +15,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { ValueOrNoRecord } from '../components/ValueOrNoRecord'
 

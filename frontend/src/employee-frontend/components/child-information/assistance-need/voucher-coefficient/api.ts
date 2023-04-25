@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from 'employee-frontend/api/client'
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AssistanceNeedVoucherCoefficientRequest,
   AssistanceNeedVoucherCoefficientResponse
 } from 'lib-common/generated/api-types/assistanceneed'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 const mapToAssistanceNeedVoucherCoefficient = (
   data: JsonOf<AssistanceNeedVoucherCoefficientResponse>

@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'

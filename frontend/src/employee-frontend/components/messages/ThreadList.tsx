@@ -4,10 +4,10 @@
 
 import React from 'react'
 
-import { Result } from 'lib-common/api'
-import { MessageType } from 'lib-common/generated/api-types/messaging'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { MessageType } from 'lib-common/generated/api-types/messaging'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { UUID } from 'lib-common/types'
 import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faBoxArchive } from 'lib-icons'

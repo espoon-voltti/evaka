@@ -4,20 +4,19 @@
 import classNames from 'classnames'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
-import { Form } from 'lib-common/form/types'
-import LocalDate from 'lib-common/local-date'
-import {
-  InputFieldUnderRow,
-  InputInfo
-} from 'lib-components/atoms/form/InputField'
+import type { BoundFormShape } from 'lib-common/form/hooks'
+import { useFormField } from 'lib-common/form/hooks'
+import type { Form } from 'lib-common/form/types'
+import type LocalDate from 'lib-common/local-date'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import UnderRowStatusIcon from '../../atoms/StatusIcon'
 import { useTranslations } from '../../i18n'
 
+import type { DatePickerProps } from './DatePicker'
 import DatePicker, {
-  DatePickerProps,
   DatePickerSpacer,
   nativeDatePickerEnabled
 } from './DatePicker'

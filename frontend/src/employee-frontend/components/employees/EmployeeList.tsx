@@ -7,14 +7,14 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
-import { EmployeeUser as Employee } from '../../types/employee'
+import type { EmployeeUser as Employee } from '../../types/employee'
 
 const LinkTr = styled(Tr)`
   cursor: pointer;

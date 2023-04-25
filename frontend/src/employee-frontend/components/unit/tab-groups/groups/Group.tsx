@@ -9,18 +9,19 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { Caretakers } from 'lib-common/generated/api-types/daycare'
+import type {
   ChildDailyNote,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
-import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
@@ -54,14 +55,14 @@ import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/grou
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
-import {
+import type {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
 import { formatPersonName } from '../../../../utils'
-import { UnitFilters } from '../../../../utils/UnitFilters'
+import type { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'

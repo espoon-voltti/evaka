@@ -5,19 +5,19 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { Result } from 'lib-common/api'
+import type DateRange from 'lib-common/date-range'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   CareType,
   DaycareCareArea,
   DaycareFields,
   Language,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -39,10 +39,11 @@ import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
-import { Translations, useTranslation } from '../../../state/i18n'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { DayOfWeek } from '../../../types'
-import { Unit } from '../../../types/unit'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
+import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import type { DayOfWeek } from '../../../types'
+import type { Unit } from '../../../types/unit'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'

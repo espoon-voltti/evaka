@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
+import { type Caretakers } from 'lib-common/generated/api-types/daycare'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import {
@@ -21,7 +22,7 @@ import OccupancyCard from '../../../components/unit/tab-unit-information/occupan
 import OccupancyGraph from '../../../components/unit/tab-unit-information/occupancy/OccupancyGraph'
 import OccupancySingleDay from '../../../components/unit/tab-unit-information/occupancy/OccupancySingleDay'
 import { useTranslation } from '../../../state/i18n'
-import { UnitFilters } from '../../../utils/UnitFilters'
+import type { UnitFilters } from '../../../utils/UnitFilters'
 import { renderResult } from '../../async-rendering'
 import { DataList } from '../../common/DataList'
 import UnitDataFilters from '../UnitDataFilters'

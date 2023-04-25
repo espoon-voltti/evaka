@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import styled, { css } from 'styled-components'
 
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { desktopMin } from 'lib-components/breakpoints'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { defaultMargins } from 'lib-components/white-space'

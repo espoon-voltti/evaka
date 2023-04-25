@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 
 import { Success } from 'lib-common/api'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'

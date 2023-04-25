@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import {
+import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'

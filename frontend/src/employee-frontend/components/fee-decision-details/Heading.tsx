@@ -6,13 +6,13 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
-import {
+import type DateRange from 'lib-common/date-range'
+import type {
   PersonDetailed,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'

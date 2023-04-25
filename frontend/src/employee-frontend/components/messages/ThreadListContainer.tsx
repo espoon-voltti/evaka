@@ -5,8 +5,9 @@
 import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type {
   MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
@@ -21,8 +22,9 @@ import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
-import { ThreadList, ThreadListItem } from './ThreadList'
-import { View } from './types-view'
+import type { ThreadListItem } from './ThreadList'
+import { ThreadList } from './ThreadList'
+import type { View } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;

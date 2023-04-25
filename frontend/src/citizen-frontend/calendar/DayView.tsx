@@ -8,23 +8,23 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, localTimeRange } from 'lib-common/form/fields'
 import { array, mapped, object, value } from 'lib-common/form/form'
+import type { BoundForm } from 'lib-common/form/hooks'
 import {
-  BoundForm,
   useBoolean,
   useForm,
   useFormElem,
   useFormElems,
   useFormField
 } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import {
+import type { StateOf } from 'lib-common/form/types'
+import type {
   AttendingChild,
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type {
   AbsenceInfo,
   DailyReservationRequest,
   Reservation,
@@ -39,7 +39,7 @@ import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

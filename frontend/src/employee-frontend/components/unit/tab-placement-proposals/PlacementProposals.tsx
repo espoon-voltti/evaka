@@ -13,12 +13,12 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   PlacementPlanConfirmationStatus,
   PlacementPlanDetails,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'

@@ -4,7 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -14,9 +14,9 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
+import type { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitCalendarPage } from '../../pages/employee/units/unit-attendances-page'
+import type { UnitCalendarPage } from '../../pages/employee/units/unit-attendances-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

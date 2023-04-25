@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'

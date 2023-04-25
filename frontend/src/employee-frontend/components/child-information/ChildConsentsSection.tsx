@@ -11,17 +11,19 @@ import React, {
 } from 'react'
 
 import { client } from 'employee-frontend/api/client'
-import { ChildState, ChildContext } from 'employee-frontend/state/child'
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { ChildState } from 'employee-frontend/state/child'
+import { ChildContext } from 'employee-frontend/state/child'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   ChildConsent,
   ChildConsentType,
-  childConsentTypes,
   UpdateChildConsentRequest
 } from 'lib-common/generated/api-types/children'
+import { childConsentTypes } from 'lib-common/generated/api-types/children'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

@@ -25,7 +25,7 @@ import { UnwrapResult } from '../../../async-rendering'
 import { useTranslation } from '../../../localization'
 import { applicationUnitsQuery } from '../../queries'
 
-import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+import type { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 
 export default React.memo(function UnitsSubSection({
   formData,

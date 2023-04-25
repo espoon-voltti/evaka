@@ -8,8 +8,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import {
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type {
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode
 } from 'lib-common/generated/api-types/reports'
@@ -28,10 +28,8 @@ import {
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getManualDuplicationReport,
-  ManualDuplicationReportFilters
-} from '../../api/reports'
+import type { ManualDuplicationReportFilters } from '../../api/reports'
+import { getManualDuplicationReport } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 

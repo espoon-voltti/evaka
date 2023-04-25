@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  ApplicationAttachment,
-  ApplicationDetails,
-  ApplicationFormUpdate
+  type ApplicationAttachment,
+  type ApplicationDetails,
+  type ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
+import { type ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { throwIfNull } from 'lib-common/form-validation'
 import {
-  CitizenChildren,
-  OtherGuardianAgreementStatus,
-  ServiceNeedOption
+  type CitizenChildren,
+  type OtherGuardianAgreementStatus,
+  type ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
+import { type PlacementType } from 'lib-common/generated/api-types/placement'
+import type LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null

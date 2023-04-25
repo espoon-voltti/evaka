@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { FormEvent, useContext, useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   AssistanceBasisOption,
   AssistanceNeedRequest
 } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -28,10 +29,14 @@ import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceNeed, AssistanceNeedResponse } from '../../../types/child'
-import { DateRange, rangeContainsDate } from '../../../utils/date'
+import type {
+  AssistanceNeed,
+  AssistanceNeedResponse
+} from '../../../types/child'
+import type { DateRange } from '../../../utils/date'
+import { rangeContainsDate } from '../../../utils/date'
+import type { FormErrors } from '../../../utils/validation/validations'
 import {
-  FormErrors,
   formHasErrors,
   isDateRangeInverted
 } from '../../../utils/validation/validations'

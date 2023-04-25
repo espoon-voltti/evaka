@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { memoizeLast } from './memoize'
+import type { ObjectFieldError } from './types'
 import {
-  AnyForm,
-  ErrorOf,
-  Form,
-  ObjectFieldError,
-  OutputOf,
-  StateOf,
+  type AnyForm,
+  type ErrorOf,
+  type Form,
+  type OutputOf,
+  type StateOf,
   ValidationError,
-  ValidationResult,
+  type ValidationResult,
   ValidationSuccess
 } from './types'
 

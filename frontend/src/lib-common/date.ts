@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Locale } from 'date-fns'
+import { type Locale } from 'date-fns'
 import { enGB, fi, sv } from 'date-fns/locale'
 import { formatInTimeZone } from 'date-fns-tz'
 
-import HelsinkiDateTime from './helsinki-date-time'
+import type HelsinkiDateTime from './helsinki-date-time'
 
 export const locales: { fi: Locale; sv: Locale; en: Locale } = {
   fi,

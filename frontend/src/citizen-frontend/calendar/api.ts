@@ -9,24 +9,24 @@ import {
   deserializeHolidayPeriod
 } from 'lib-common/api-types/holiday-period'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
-import {
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
+import type {
   ActiveQuestionnaire,
   FixedPeriodsBody,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
-import {
+import type {
   AbsenceRequest,
   DailyReservationRequest,
   ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { parseReservation } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 

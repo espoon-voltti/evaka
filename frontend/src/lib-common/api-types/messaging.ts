@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import { type UUID } from 'lib-common/types'
 
 import {
-  Message,
-  MessageAccount,
-  MessageCopy,
-  MessageRecipientType,
-  MessageThread,
-  ThreadReply
+  type Message,
+  type MessageAccount,
+  type MessageCopy,
+  type MessageRecipientType,
+  type MessageThread,
+  type ThreadReply
 } from '../generated/api-types/messaging'
 import HelsinkiDateTime from '../helsinki-date-time'
-import { JsonOf } from '../json'
+import { type JsonOf } from '../json'
 
 export type MessageReceiver =
   | MessageReceiverArea

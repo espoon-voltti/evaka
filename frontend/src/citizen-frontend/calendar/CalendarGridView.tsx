@@ -4,18 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sum from 'lodash/sum'
-import React, {
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef
-} from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type {
   ReservationChild,
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
@@ -37,10 +32,12 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { CalendarWeek, groupByWeek } from './CalendarListView'
+import type { CalendarWeek } from './CalendarListView'
+import { groupByWeek } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
-import { ChildImageData, getChildImages } from './RoundChildImages'
+import type { ChildImageData } from './RoundChildImages'
+import { getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'

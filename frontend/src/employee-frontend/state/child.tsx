@@ -12,17 +12,18 @@ import React, {
 } from 'react'
 
 import { getChildBackupCares } from 'employee-frontend/api/child/backup-care'
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
-import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
+import type { ChildResponse } from 'lib-common/generated/api-types/daycare'
+import type {
   ParentshipWithPermittedActions,
   PersonJSON
 } from 'lib-common/generated/api-types/pis'
-import { PlacementResponse } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import type { PlacementResponse } from 'lib-common/generated/api-types/placement'
+import type { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
 import { getPlacements } from '../api/child/placements'

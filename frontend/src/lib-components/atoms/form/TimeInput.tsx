@@ -5,10 +5,11 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 import { autocomplete } from 'lib-common/time'
 
-import InputField, { TextInputProps } from './InputField'
+import type { TextInputProps } from './InputField'
+import InputField from './InputField'
 
 export interface TimeInputProps
   extends Pick<

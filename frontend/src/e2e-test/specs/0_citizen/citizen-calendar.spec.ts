@@ -4,7 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -13,7 +13,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import type { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

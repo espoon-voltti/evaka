@@ -6,7 +6,8 @@ import React, { createContext, useContext } from 'react'
 
 import { getAssistanceNeedDecisionUnreadCount } from 'employee-frontend/api/reports'
 import { UserContext } from 'employee-frontend/state/user'
-import { Loading, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { featureFlags } from 'lib-customizations/employee'
 

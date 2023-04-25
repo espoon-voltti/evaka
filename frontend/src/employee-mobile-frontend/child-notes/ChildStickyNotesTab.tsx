@@ -4,16 +4,15 @@
 
 import React, { useCallback, useMemo } from 'react'
 
-import { ChildStickyNote } from 'lib-common/generated/api-types/note'
+import type { ChildStickyNote } from 'lib-common/generated/api-types/note'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import {
-  StickyNoteTab,
-  StickyNoteTabLabels
-} from 'lib-components/employee/notes/StickyNoteTab'
-import { EditedNote } from 'lib-components/employee/notes/notes'
+import type { UUID } from 'lib-common/types'
+import type { StickyNoteTabLabels } from 'lib-components/employee/notes/StickyNoteTab'
+import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
+import type { EditedNote } from 'lib-components/employee/notes/notes'
 
-import { Translations, useTranslation } from '../common/i18n'
+import type { Translations } from '../common/i18n'
+import { useTranslation } from '../common/i18n'
 
 import {
   createChildStickyNoteMutation,

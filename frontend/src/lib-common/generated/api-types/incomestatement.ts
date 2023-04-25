@@ -5,11 +5,11 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import { ProviderType } from './daycare'
-import { SortDirection } from './invoicing'
-import { UUID } from '../../types'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import { type ProviderType } from './daycare'
+import { type SortDirection } from './invoicing'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.Accountant

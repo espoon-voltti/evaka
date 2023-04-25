@@ -4,8 +4,9 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -14,7 +15,8 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { DateFilters, getServiceNeedReport } from '../../api/reports'
+import type { DateFilters } from '../../api/reports'
+import { getServiceNeedReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 

@@ -5,7 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -14,12 +14,10 @@ import {
   resetDatabase,
   upsertMessageAccounts
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import type { EmployeeDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'

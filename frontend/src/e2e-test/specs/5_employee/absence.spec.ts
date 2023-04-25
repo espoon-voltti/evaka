@@ -7,10 +7,8 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'

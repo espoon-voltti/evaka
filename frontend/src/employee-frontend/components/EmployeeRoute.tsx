@@ -5,7 +5,8 @@
 import React, { useContext, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { TitleContext, TitleState } from '../state/title'
+import type { TitleState } from '../state/title'
+import { TitleContext } from '../state/title'
 import { UserContext } from '../state/user'
 
 interface Props {

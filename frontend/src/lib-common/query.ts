@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  QueryKey,
+  type QueryKey,
   useMutation as useMutationOriginal,
-  UseMutationOptions,
-  UseMutationResult,
+  type UseMutationOptions,
+  type UseMutationResult,
   useQuery as useQueryOriginal,
   useInfiniteQuery as useInfiniteQueryOriginal,
   useQueryClient,
-  UseQueryOptions,
-  UseQueryResult,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  InfiniteData
+  type UseQueryOptions,
+  type UseQueryResult,
+  type UseInfiniteQueryOptions,
+  type UseInfiniteQueryResult,
+  type InfiniteData
 } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { Failure, Loading, type Result, Success } from 'lib-common/api'
 
 export interface QueryDescription<Data, Key extends QueryKey> {
   api: () => Promise<Data>

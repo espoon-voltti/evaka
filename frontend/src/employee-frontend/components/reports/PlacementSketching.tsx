@@ -7,9 +7,10 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
-import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -22,10 +23,8 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faFileAlt } from 'lib-icons'
 
-import {
-  getPlacementSketchingReport,
-  PlacementSketchingReportFilters
-} from '../../api/reports'
+import type { PlacementSketchingReportFilters } from '../../api/reports'
+import { getPlacementSketchingReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'

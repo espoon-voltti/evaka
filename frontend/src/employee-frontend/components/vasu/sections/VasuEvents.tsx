@@ -5,14 +5,14 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { VasuDocument } from 'lib-common/generated/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
+import type { VasuDocument } from 'lib-common/generated/api-types/vasu'
+import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatPersonName } from '../../../utils'

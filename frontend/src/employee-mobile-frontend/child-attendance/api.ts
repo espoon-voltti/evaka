@@ -4,20 +4,24 @@
 
 import mapValues from 'lodash/mapValues'
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   AbsenceThreshold,
   Child,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
-import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type {
+  Absence,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { parseReservation } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 

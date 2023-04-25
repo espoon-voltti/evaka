@@ -5,8 +5,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

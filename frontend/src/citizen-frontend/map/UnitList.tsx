@@ -6,8 +6,8 @@ import sortBy from 'lodash/sortBy'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Result } from 'lib-common/api'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -19,9 +19,10 @@ import { faAngleDown } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { MapAddress } from './MapView'
+import type { MapAddress } from './MapView'
 import UnitListItem from './UnitListItem'
-import { formatDistance, UnitWithDistance } from './distances'
+import type { UnitWithDistance } from './distances'
+import { formatDistance } from './distances'
 
 type Props = {
   selectedAddress: MapAddress | null

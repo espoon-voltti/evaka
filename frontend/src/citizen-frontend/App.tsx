@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import React, { ReactNode, useCallback, useContext } from 'react'
+import type { ReactNode } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import styled, { ThemeProvider } from 'styled-components'
 

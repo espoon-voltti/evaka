@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { FileInput, Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { FileInput, TextInput } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
   constructor(private readonly page: Page) {}

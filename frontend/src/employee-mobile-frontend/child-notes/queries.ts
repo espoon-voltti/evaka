@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ChildDailyNoteBody,
   ChildStickyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { childrenQuery } from '../child-attendance/queries'
 import { createQueryKeys } from '../query'

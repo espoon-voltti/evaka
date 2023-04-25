@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { RefObject, useEffect, useRef, useState } from 'react'
+import type { RefObject } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
 import { Failure, Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -25,10 +26,8 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 
-import {
-  AttendanceReservationReportFilters,
-  getAssistanceReservationReport
-} from '../../api/reports'
+import type { AttendanceReservationReportFilters } from '../../api/reports'
+import { getAssistanceReservationReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'

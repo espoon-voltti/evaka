@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import HelsinkiDateTime from '../../helsinki-date-time'
-import { PlacementType } from './placement'
-import { UUID } from '../../types'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import { type PlacementType } from './placement'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.children.Child

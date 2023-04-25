@@ -4,8 +4,8 @@
 
 import React, { useCallback } from 'react'
 
-import { Attachment } from 'lib-common/api-types/attachment'
-import { UUID } from 'lib-common/types'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -20,7 +20,7 @@ import {
 } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { AttachmentType } from './types/common'
+import type { AttachmentType } from './types/common'
 
 export default React.memo(function Attachments({
   incomeStatementId,

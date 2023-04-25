@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { TerminatedPlacement } from 'lib-common/generated/api-types/placement'
+import type { TerminatedPlacement } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 

@@ -12,10 +12,8 @@ import {
   resetDatabase,
   upsertMessageAccounts
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
   daycare2Fixture,
@@ -23,7 +21,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail, PersonDetail } from '../../dev-api/types'
+import type { EmployeeDetail, PersonDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'

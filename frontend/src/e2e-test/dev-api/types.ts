@@ -2,39 +2,39 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
-import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
+import type DateRange from 'lib-common/date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ApplicationForm,
   ApplicationOrigin,
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
-import { Language } from 'lib-common/generated/api-types/daycare'
-import {
+import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { Language } from 'lib-common/generated/api-types/daycare'
+import type {
   DecisionStatus,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import {
+import type {
   FixedPeriodQuestionnaireBody,
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
-import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import type { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   Coordinate,
   PilotFeature,
   TimeRange,
   UserRole
 } from 'lib-common/generated/api-types/shared'
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { DailyServiceTimesType } from 'lib-common/generated/enums'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 type ISODate = string
 

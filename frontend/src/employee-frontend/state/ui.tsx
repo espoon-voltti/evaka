@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, createContext, useCallback } from 'react'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 export type ErrorMessageType = 'warning' | 'error'
 

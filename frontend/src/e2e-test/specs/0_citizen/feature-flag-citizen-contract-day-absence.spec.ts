@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -11,16 +11,14 @@ import {
   insertServiceNeeds,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Daycare, PersonDetail } from '../../dev-api/types'
+import type { Daycare, PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

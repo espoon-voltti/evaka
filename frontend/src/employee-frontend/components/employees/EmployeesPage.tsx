@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Paged, Result } from 'lib-common/api'
+import type { Paged, Result } from 'lib-common/api'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -17,7 +17,7 @@ import { faSearch } from 'lib-icons'
 
 import { searchEmployees } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
-import { EmployeeUser as Employee } from '../../types/employee'
+import type { EmployeeUser as Employee } from '../../types/employee'
 
 import { EmployeeList } from './EmployeeList'
 

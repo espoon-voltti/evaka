@@ -9,11 +9,11 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
-import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
+import type LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
@@ -46,9 +46,9 @@ import {
 } from './CalendarModal'
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
+import type { HolidayPeriodInfo } from './reservation-modal/form'
 import {
   DayProperties,
-  HolidayPeriodInfo,
   initialState,
   reservationForm,
   resetTimes

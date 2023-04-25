@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Action } from 'lib-common/generated/action'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
-import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import type { Action } from 'lib-common/generated/action'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { Caretakers } from 'lib-common/generated/api-types/daycare'
+import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -29,14 +30,14 @@ import BackupCareGroupModal from '../../../components/unit/tab-groups/missing-gr
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UserContext } from '../../../state/user'
-import {
+import type {
   DaycareGroup,
   DaycareGroupPlacementDetailed,
-  flatMapGroupPlacements,
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../types/unit'
-import { UnitFilters } from '../../../utils/UnitFilters'
+import { flatMapGroupPlacements } from '../../../types/unit'
+import type { UnitFilters } from '../../../utils/UnitFilters'
 import { requireRole } from '../../../utils/roles'
 
 function renderGroups(

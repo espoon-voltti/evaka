@@ -7,9 +7,9 @@ import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Result } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
+import type {
   PersonDetailed,
   InvoiceCodes,
   InvoiceRowDetailed

@@ -12,8 +12,9 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   CheckboxQuestion,
   DateQuestion,
   Followup,
@@ -25,12 +26,12 @@ import {
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
-import {
+import type {
   CurriculumType,
   VasuSection,
   VasuTemplate
 } from 'lib-common/generated/api-types/vasu'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import usePrompt from 'lib-common/utils/usePrompt'
 import { useRestApi } from 'lib-common/utils/useRestApi'

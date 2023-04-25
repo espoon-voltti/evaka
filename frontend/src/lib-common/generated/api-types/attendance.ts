@@ -5,19 +5,19 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import LocalTime from '../../local-time'
-import { AbsenceCategory } from './daycare'
-import { AbsenceType } from './daycare'
-import { ChildDailyNote } from './note'
-import { ChildStickyNote } from './note'
-import { DailyServiceTimesValue } from './dailyservicetimes'
-import { HelsinkiDateTimeRange } from './shared'
-import { PilotFeature } from './shared'
-import { PlacementType } from './placement'
-import { Reservation } from './reservations'
-import { UUID } from '../../types'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import type LocalTime from '../../local-time'
+import { type AbsenceCategory } from './daycare'
+import { type AbsenceType } from './daycare'
+import { type ChildDailyNote } from './note'
+import { type ChildStickyNote } from './note'
+import { type DailyServiceTimesValue } from './dailyservicetimes'
+import { type HelsinkiDateTimeRange } from './shared'
+import { type PilotFeature } from './shared'
+import { type PlacementType } from './placement'
+import { type Reservation } from './reservations'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.AbsenceRangeRequest

@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  Entrepreneur,
-  EstimatedIncome,
-  IncomeStatement,
-  IncomeStatementAwaitingHandler,
-  SelfEmployed
+  type Entrepreneur,
+  type EstimatedIncome,
+  type IncomeStatement,
+  type IncomeStatementAwaitingHandler,
+  type SelfEmployed
 } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 
-import { OtherIncome } from '../generated/enums'
+import { type OtherIncome } from '../generated/enums'
 import HelsinkiDateTime from '../helsinki-date-time'
-import { JsonOf } from '../json'
+import { type JsonOf } from '../json'
 
 export const otherIncome: OtherIncome[] = [
   'PENSION',

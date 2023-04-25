@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react'
 
-import { Paragraph } from 'lib-common/api-types/vasu'
-import { VasuSection } from 'lib-common/generated/api-types/vasu'
+import type { Paragraph } from 'lib-common/api-types/vasu'
+import type { VasuSection } from 'lib-common/generated/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import TextArea from 'lib-components/atoms/form/TextArea'

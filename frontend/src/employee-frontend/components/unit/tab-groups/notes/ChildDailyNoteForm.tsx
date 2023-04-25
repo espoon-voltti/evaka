@@ -4,15 +4,17 @@
 
 import React, { Fragment, useCallback, useState } from 'react'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   ChildDailyNote,
   ChildDailyNoteBody,
+  ChildDailyNoteReminder
+} from 'lib-common/generated/api-types/note'
+import {
   childDailyNoteLevelValues,
-  ChildDailyNoteReminder,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'

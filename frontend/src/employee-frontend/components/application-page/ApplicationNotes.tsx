@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'

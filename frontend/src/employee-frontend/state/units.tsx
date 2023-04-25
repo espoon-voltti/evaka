@@ -2,18 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { createContext, useMemo, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 
-import { SearchOrder } from '../types'
-import { Unit } from '../types/unit'
+import type { SearchOrder } from '../types'
+import type { Unit } from '../types/unit'
 
 export interface UnitsState {
   units: Result<Unit[]>

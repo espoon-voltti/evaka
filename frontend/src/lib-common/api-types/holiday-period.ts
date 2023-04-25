@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  ActiveQuestionnaire,
-  FixedPeriodQuestionnaire,
-  HolidayPeriod
+  type ActiveQuestionnaire,
+  type FixedPeriodQuestionnaire,
+  type HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 
 import FiniteDateRange from '../finite-date-range'
-import { JsonOf } from '../json'
+import { type JsonOf } from '../json'
 import LocalDate from '../local-date'
 
 export const deserializeHolidayPeriod = ({

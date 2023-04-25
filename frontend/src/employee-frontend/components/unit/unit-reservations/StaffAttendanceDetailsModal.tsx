@@ -10,16 +10,14 @@ import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import { ErrorKey } from 'lib-common/form-validation'
-import {
-  StaffAttendanceType,
-  staffAttendanceTypes
-} from 'lib-common/generated/api-types/attendance'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { ErrorKey } from 'lib-common/form-validation'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import { staffAttendanceTypes } from 'lib-common/generated/api-types/attendance'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { presentInGroup } from 'lib-common/staff-attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'

@@ -4,7 +4,7 @@
 
 import React, { useState, useContext } from 'react'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
@@ -19,7 +19,7 @@ import { faPen } from 'lib-icons'
 import { editGroup } from '../../../../../api/unit'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import { DaycareGroup } from '../../../../../types/unit'
+import type { DaycareGroup } from '../../../../../types/unit'
 
 interface Props {
   group: DaycareGroup

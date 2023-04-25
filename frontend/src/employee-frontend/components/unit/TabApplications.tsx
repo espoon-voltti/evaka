@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 
-import { ApplicationUnitSummary } from 'lib-common/generated/api-types/application'
+import type { ApplicationUnitSummary } from 'lib-common/generated/api-types/application'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

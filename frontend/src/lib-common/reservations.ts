@@ -2,9 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
-import { OpenTimeRange, Reservation } from './generated/api-types/reservations'
-import { JsonOf } from './json'
+import { type ErrorKey, regexp, TIME_REGEXP } from './form-validation'
+import {
+  type OpenTimeRange,
+  type Reservation
+} from './generated/api-types/reservations'
+import { type JsonOf } from './json'
 import LocalTime from './local-time'
 
 export function reservationHasTimes(

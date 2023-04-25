@@ -2,15 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Daycare } from '../../dev-api/types'
+import type { Daycare } from '../../dev-api/types'
 import { delay, waitUntilEqual } from '../../utils'
-import {
-  Element,
-  Page,
-  Radio,
-  SelectionChip,
-  TextInput
-} from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Element, Radio, SelectionChip, TextInput } from '../../utils/page'
 
 export default class CitizenMapPage {
   constructor(private readonly page: Page) {}

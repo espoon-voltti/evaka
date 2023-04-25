@@ -7,14 +7,15 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import type { GuardiansAndBlockedGuardians } from 'employee-frontend/api/person'
 import {
   getPersonGuardiansAndBlockedGuardians,
-  GuardiansAndBlockedGuardians,
   updateEvakaRights
 } from 'employee-frontend/api/person'
-import { Result, Success } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'

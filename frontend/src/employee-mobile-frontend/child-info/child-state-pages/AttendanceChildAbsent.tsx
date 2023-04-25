@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { returnToComingMutation } from '../../child-attendance/queries'
 import { InlineWideAsyncButton } from '../../common/components'

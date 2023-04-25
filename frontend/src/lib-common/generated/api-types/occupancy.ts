@@ -5,10 +5,10 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
-import { Caretakers } from './daycare'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import { type Caretakers } from './daycare'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.occupancy.ChildCapacityPoint

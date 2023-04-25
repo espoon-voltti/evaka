@@ -6,7 +6,7 @@ import React from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Failure, Success } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/children'
+import type { Child } from 'lib-common/generated/api-types/children'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'

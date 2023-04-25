@@ -4,17 +4,17 @@
 
 import React from 'react'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
-import { UUID } from 'lib-common/types'
+import type { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
+import type { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import { IncomeTypeOptions } from '../../../api/income'
+import type { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
-import {
+import type {
   Income,
   IncomeBody,
   IncomeId,

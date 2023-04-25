@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 
 import { sendVoucherValueDecisions } from '../../api/invoicing'

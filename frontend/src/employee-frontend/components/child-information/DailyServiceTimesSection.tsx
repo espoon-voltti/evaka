@@ -5,8 +5,9 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
-import { UUID } from 'lib-common/types'
+import type { ChildState } from 'employee-frontend/state/child'
+import { ChildContext } from 'employee-frontend/state/child'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'

@@ -5,12 +5,12 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
+import type { Result } from 'lib-common/api'
+import type { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -19,7 +19,8 @@ import { fontWeights, H2, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { Translations, useTranslation } from '../common/i18n'
+import type { Translations } from '../common/i18n'
+import { useTranslation } from '../common/i18n'
 
 import PlusMinus from './PlusMinus'
 

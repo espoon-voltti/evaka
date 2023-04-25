@@ -4,14 +4,14 @@
 
 import { client } from 'citizen-frontend/api-client'
 import DateRange from 'lib-common/date-range'
-import {
+import type {
   AssistanceNeedDecision,
   AssistanceNeedDecisionCitizenListItem,
   UnreadAssistanceNeedDecisionItem
 } from 'lib-common/generated/api-types/assistanceneed'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 const mapToAssistanceNeedDecision = (
   data: JsonOf<AssistanceNeedDecision>

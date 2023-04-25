@@ -6,10 +6,11 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -23,10 +24,8 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
 import { deletePerson, mergePeople } from '../../api/person'
-import {
-  DuplicatePeopleFilters,
-  getDuplicatePeopleReport
-} from '../../api/reports'
+import type { DuplicatePeopleFilters } from '../../api/reports'
+import { getDuplicatePeopleReport } from '../../api/reports'
 import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'

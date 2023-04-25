@@ -5,11 +5,11 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import DateRange from '../../date-range'
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { TimeRange } from './shared'
-import { UUID } from '../../types'
+import type DateRange from '../../date-range'
+import type LocalDate from '../../local-date'
+import { type Action } from '../action'
+import { type TimeRange } from './shared'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimeNotification

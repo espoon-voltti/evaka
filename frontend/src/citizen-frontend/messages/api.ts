@@ -4,21 +4,21 @@
 
 import sortBy from 'lodash/sortBy'
 
-import { Paged } from 'lib-common/api'
+import type { Paged } from 'lib-common/api'
 import {
   deserializeMessageAccount,
   deserializeMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging'
-import {
+import type {
   CitizenMessageBody,
   GetReceiversResponse,
   MessageThread,
   ReplyToMessageBody,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 

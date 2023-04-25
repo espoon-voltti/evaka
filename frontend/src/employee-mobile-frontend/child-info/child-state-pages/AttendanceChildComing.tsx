@@ -4,7 +4,7 @@
 
 import React, { Fragment } from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 

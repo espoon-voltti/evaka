@@ -9,7 +9,7 @@ import styled, { css } from 'styled-components'
 import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
 import { fontWeights, NavLinkText } from '../typography'
-import { BaseProps } from '../utils'
+import type { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
 interface Tab {

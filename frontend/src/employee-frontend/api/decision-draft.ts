@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
+import type {
   DecisionDraftUpdate,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from './client'
 

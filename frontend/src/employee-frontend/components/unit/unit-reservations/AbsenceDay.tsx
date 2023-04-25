@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

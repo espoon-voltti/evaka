@@ -5,11 +5,11 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
-import {
+import type {
   PaymentDistinctiveParams,
   PaymentStatus
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

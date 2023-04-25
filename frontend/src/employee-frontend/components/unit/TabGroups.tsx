@@ -2,17 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useMemo
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 
 import { getUnitGroupDetails } from 'employee-frontend/api/unit'
-import { combine, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

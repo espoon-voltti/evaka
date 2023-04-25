@@ -2,19 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
-import { GlobalRole } from 'lib-common/api-types/employee-auth'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { GlobalRole } from 'lib-common/api-types/employee-auth'
+import type { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import type {
   EmployeePreferredFirstName,
   EmployeeSetPreferredFirstNameUpdateRequest
 } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
-import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
-import { Employee, EmployeeUser } from '../types/employee'
+import type { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
+import type { Employee, EmployeeUser } from '../types/employee'
 
 import { client } from './client'
 

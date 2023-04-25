@@ -6,12 +6,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { Failure } from 'lib-common/api'
-import {
-  ChildConsentType,
-  childConsentTypes
-} from 'lib-common/generated/api-types/children'
+import type { ChildConsentType } from 'lib-common/generated/api-types/children'
+import { childConsentTypes } from 'lib-common/generated/api-types/children'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'

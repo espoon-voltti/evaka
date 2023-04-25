@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type {
   ChildBasics,
   DaycarePlacementWithDetails,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
-import { DayOfWeek } from './index'
+import type { DayOfWeek } from './index'
 
 export interface Unit extends Omit<Daycare, 'operationDays'> {
   operationDays: DayOfWeek[]

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from './date-range'
-import FiniteDateRange from './finite-date-range'
-import HelsinkiDateTime from './helsinki-date-time'
-import LocalDate from './local-date'
-import LocalTime from './local-time'
+import type DateRange from './date-range'
+import type FiniteDateRange from './finite-date-range'
+import type HelsinkiDateTime from './helsinki-date-time'
+import type LocalDate from './local-date'
+import type LocalTime from './local-time'
 
 export type JsonOf<T> = T extends string | number | boolean | null | undefined
   ? T

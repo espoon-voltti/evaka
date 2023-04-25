@@ -14,7 +14,7 @@ import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 
 import LocalDate from './local-date'
 import LocalTime from './local-time'
-import { Ordered } from './ordered'
+import { type Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const EUROPE_HELSINKI = 'Europe/Helsinki'

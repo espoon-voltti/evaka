@@ -3,17 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef
-} from 'react'
+import type { ChangeEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
-import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
+import type { Result } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
+import type { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'

@@ -5,7 +5,8 @@
 import styled from 'styled-components'
 
 import { Container } from 'lib-components/layout/Container'
-import { defaultMargins, SpacingSize } from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 
 type VasuContainerProps = {
   gapSize: SpacingSize

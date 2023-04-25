@@ -6,7 +6,7 @@ import { format, parse } from 'date-fns'
 import isInteger from 'lodash/isInteger'
 
 import HelsinkiDateTime from './helsinki-date-time'
-import { Ordered } from './ordered'
+import { type Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 // ISO local time with nanosecond precision

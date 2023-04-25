@@ -2,23 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import type { Paged, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import {
   deserializeIncomeStatement,
   deserializeIncomeStatementAwaitingHandler
 } from 'lib-common/api-types/incomeStatement'
-import {
+import type {
   ChildBasicInfo,
   IncomeStatement,
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
-import { IncomeStatementSearchFilters } from '../state/invoicing-ui'
+import type { IncomeStatementSearchFilters } from '../state/invoicing-ui'
 
 import { client } from './client'
 

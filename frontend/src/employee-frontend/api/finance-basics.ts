@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
-import { JsonOf } from 'lib-common/json'
+import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import type { JsonOf } from 'lib-common/json'
 
-import { FeeThresholdsWithId } from '../types/finance-basics'
+import type { FeeThresholdsWithId } from '../types/finance-basics'
 
 import { client } from './client'
 

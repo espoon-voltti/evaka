@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   Group,
   AuthorizedMessageAccount,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 export interface GroupMessageAccount extends AuthorizedMessageAccount {
   daycareGroup: Group

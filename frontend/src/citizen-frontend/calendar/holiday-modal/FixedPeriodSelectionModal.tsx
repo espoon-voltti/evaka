@@ -7,16 +7,16 @@ import styled from 'styled-components'
 
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   FixedPeriodQuestionnaire,
   FixedPeriodsBody,
   HolidayQuestionnaireAnswer
 } from 'lib-common/generated/api-types/holidayperiod'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import React from 'react'
 import styled from 'styled-components'
 

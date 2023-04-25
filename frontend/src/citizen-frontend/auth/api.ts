@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { UserDetailsResponse } from 'lib-common/api-types/vtjclient'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { UserDetailsResponse } from 'lib-common/api-types/vtjclient'
 
 import { client } from '../api-client'
 

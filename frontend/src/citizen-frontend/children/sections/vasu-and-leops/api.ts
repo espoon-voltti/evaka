@@ -4,16 +4,16 @@
 
 import { client } from 'citizen-frontend/api-client'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CitizenGetVasuDocumentResponse,
   CitizenGetVasuDocumentSummariesResponse,
   VasuDocument,
   VasuDocumentEvent
 } from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { mapVasuContent } from './vasu/vasu-content'
 

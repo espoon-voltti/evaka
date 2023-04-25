@@ -16,25 +16,26 @@ import React, {
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, Failure, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CalendarEvent,
   CalendarEventForm,
   CalendarEventUpdateForm,
   GroupInfo,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import TreeDropdown, {
-  hasUncheckedChildren,
-  TreeNode
+  hasUncheckedChildren
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'

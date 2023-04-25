@@ -12,13 +12,13 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   AbsenceCategory,
   AbsenceDelete,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -32,10 +32,10 @@ import {
   postGroupAbsences
 } from '../../api/absences'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
+import type { Cell, CellPart } from '../../types/absence'
 import {
-  Cell,
-  CellPart,
   defaultAbsenceType,
   defaultAbsenceCategories
 } from '../../types/absence'

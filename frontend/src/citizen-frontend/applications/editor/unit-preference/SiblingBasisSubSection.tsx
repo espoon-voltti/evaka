@@ -12,7 +12,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
+import type { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 

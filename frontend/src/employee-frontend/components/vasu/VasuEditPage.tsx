@@ -6,7 +6,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'

@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { Page, TextInput, Element, Checkbox } from '../../../utils/page'
+import type { Page, Element } from '../../../utils/page'
+import { TextInput, Checkbox } from '../../../utils/page'
 
 import {
   AuthoringSection,

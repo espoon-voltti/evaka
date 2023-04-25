@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 
 import { LabelLike } from 'lib-components/typography'

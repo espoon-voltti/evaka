@@ -5,7 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import AsyncButton, { AsyncButtonProps } from './AsyncButton'
+import type { AsyncButtonProps } from './AsyncButton'
+import AsyncButton from './AsyncButton'
 
 type AsyncIconButtonProps<T> = Omit<AsyncButtonProps<T>, 'text'>
 

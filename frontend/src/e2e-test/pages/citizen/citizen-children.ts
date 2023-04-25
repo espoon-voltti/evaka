@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual } from '../../utils'
-import { AsyncButton, Page, Radio, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { AsyncButton, Radio, TextInput } from '../../utils/page'
 
 export class CitizenChildPage {
   constructor(private readonly page: Page) {}

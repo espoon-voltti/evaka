@@ -5,8 +5,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Paged, Result } from 'lib-common/api'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import type {
   ApplicationSortColumn,
   ApplicationSummary
 } from 'lib-common/generated/api-types/application'
@@ -21,8 +21,8 @@ import { getApplications } from '../../api/applications'
 import ApplicationsList from '../../components/applications/ApplicationsList'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
-import { SearchOrder } from '../../types'
-import { ApplicationSearchParams } from '../../types/application'
+import type { SearchOrder } from '../../types'
+import type { ApplicationSearchParams } from '../../types/application'
 
 import ApplicationFilters from './ApplicationsFilters'
 

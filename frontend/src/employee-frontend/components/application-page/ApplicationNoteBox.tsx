@@ -12,9 +12,9 @@ import {
   deleteApplicationNote,
   updateApplicationNote
 } from 'employee-frontend/api/applications-queries'
-import { ApplicationNote } from 'lib-common/generated/api-types/application'
+import type { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { useMutation } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'

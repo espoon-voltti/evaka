@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 
-import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/fi'

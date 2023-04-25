@@ -2,16 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo
-} from 'react'
+import type { ReactNode } from 'react'
+import React, { createContext, useContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   CitizenUserDetails,
   UserDetailsResponse
 } from 'lib-common/api-types/vtjclient'

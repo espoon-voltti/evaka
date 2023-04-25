@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SetStateAction, useCallback, useEffect, useState } from 'react'
+import type { SetStateAction } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { Employee } from 'employee-frontend/types/employee'
-import {
-  AutosaveStatus,
-  useAutosave
-} from 'employee-frontend/utils/use-autosave'
-import { Result } from 'lib-common/api'
-import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
-import { UUID } from 'lib-common/types'
+import type { Employee } from 'employee-frontend/types/employee'
+import type { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
+import { useAutosave } from 'employee-frontend/utils/use-autosave'
+import type { Result } from 'lib-common/api'
+import type { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import {

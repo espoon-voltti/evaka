@@ -4,16 +4,16 @@
 
 import React from 'react'
 
-import { TextQuestion } from 'lib-common/api-types/vasu'
+import type { TextQuestion } from 'lib-common/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 interface TextQuestionQuestionProps extends QuestionProps<TextQuestion> {
   onChange?: (value: string) => void

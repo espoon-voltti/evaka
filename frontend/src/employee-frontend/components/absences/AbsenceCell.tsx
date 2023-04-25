@@ -5,18 +5,18 @@
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
-import {
+import type {
   AbsenceCategory,
   AbsenceWithModifierInfo
 } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
-import { Cell, CellPart } from '../../types/absence'
+import type { Cell, CellPart } from '../../types/absence'
 
 const cellSize = 20
 

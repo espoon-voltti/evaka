@@ -5,12 +5,12 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import LocalTime from '../../local-time'
-import { AbsenceType } from './daycare'
-import { PlacementType } from './placement'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type LocalTime from '../../local-time'
+import { type AbsenceType } from './daycare'
+import { type PlacementType } from './placement'
+import { type UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo

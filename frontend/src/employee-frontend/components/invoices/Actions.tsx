@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { fontWeights } from 'lib-components/typography'
@@ -16,7 +16,7 @@ import { deleteInvoices } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 
-import { InvoicesActions } from './invoices-state'
+import type { InvoicesActions } from './invoices-state'
 
 const ErrorMessage = styled.div`
   color: ${colors.status.danger};

@@ -17,10 +17,8 @@ import {
   rejectDecisionByCitizen,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   daycareFixture,
@@ -29,7 +27,7 @@ import {
   preschoolFixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Application, EmployeeDetail } from '../../dev-api/types'
+import type { Application, EmployeeDetail } from '../../dev-api/types'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'

@@ -6,14 +6,14 @@ import React, { Fragment, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import {
-  ChildDailyNoteBody,
   childDailyNoteLevelValues,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
 import { useMutation, useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -38,7 +38,7 @@ import {
   deleteChildDailyNoteMutation,
   updateChildDailyNoteMutation
 } from './queries'
-import { ChildDailyNoteFormData } from './types'
+import type { ChildDailyNoteFormData } from './types'
 
 const Time = styled.div`
   display: flex;

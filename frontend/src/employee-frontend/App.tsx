@@ -12,7 +12,7 @@ import {
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
-import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
+import type { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { Notifications } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'

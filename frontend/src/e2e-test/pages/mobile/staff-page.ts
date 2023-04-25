@@ -2,18 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 
-import { DaycareGroup } from '../../dev-api/types'
+import type { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import {
-  Checkbox,
-  Combobox,
-  Element,
-  Page,
-  Select,
-  TextInput
-} from '../../utils/page'
+import type { Element, Page } from '../../utils/page'
+import { Checkbox, Combobox, Select, TextInput } from '../../utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}

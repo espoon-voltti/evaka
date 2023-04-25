@@ -5,14 +5,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/citizen'
+import type { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import components from '../../components/i18n/sv'

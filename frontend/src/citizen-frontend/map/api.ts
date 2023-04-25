@@ -6,20 +6,17 @@ import axios from 'axios'
 import sortBy from 'lodash/sortBy'
 
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 import { mapConfig } from 'lib-customizations/citizen'
 
 import { client } from '../api-client'
 
-import { MapAddress } from './MapView'
-import {
-  calcStraightDistance,
-  UnitWithDistance,
-  UnitWithStraightDistance
-} from './distances'
+import type { MapAddress } from './MapView'
+import type { UnitWithDistance, UnitWithStraightDistance } from './distances'
+import { calcStraightDistance } from './distances'
 
 export async function fetchUnits(type: ApplicationType): Promise<PublicUnit[]> {
   return client

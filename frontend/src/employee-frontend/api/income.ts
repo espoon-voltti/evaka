@@ -4,14 +4,15 @@
 
 import partition from 'lodash/partition'
 
-import { Failure, Response, Result, Success } from 'lib-common/api'
-import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
+import type { Response, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import {
+import type {
   Income,
   IncomeOption,
   IncomeBody,

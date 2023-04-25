@@ -4,9 +4,9 @@
 
 import React, { useContext, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import { UpdateStateFn } from 'lib-common/form-state'
-import LocalDate from 'lib-common/local-date'
+import type { Result } from 'lib-common/api'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type LocalDate from 'lib-common/local-date'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -16,7 +16,7 @@ import { faExchange } from 'lib-icons'
 import { transferGroup } from '../../../../../api/unit'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import {
+import type {
   DaycareGroup,
   DaycareGroupPlacementDetailed
 } from '../../../../../types/unit'

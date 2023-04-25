@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { stringToInt } from 'lib-common/utils/number'
 
-import * as Form from './form'
+import type * as Form from './form'
 
 type ReadOnlyFields = 'id' | 'created' | 'updated' | 'handled' | 'handlerNote'
 

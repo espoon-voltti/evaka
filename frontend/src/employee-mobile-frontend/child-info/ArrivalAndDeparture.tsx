@@ -6,7 +6,7 @@ import { faArrowRotateLeft } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
-import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
+import type { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

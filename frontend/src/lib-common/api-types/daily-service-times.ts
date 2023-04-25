@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from '../date-range'
-import { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
-import { TimeRange } from '../generated/api-types/shared'
-import { JsonOf } from '../json'
+import { type DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
+import { type TimeRange } from '../generated/api-types/shared'
+import { type JsonOf } from '../json'
 import LocalTime from '../local-time'
 
 export function isRegular(

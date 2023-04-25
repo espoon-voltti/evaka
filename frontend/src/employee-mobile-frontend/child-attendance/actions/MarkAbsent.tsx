@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'

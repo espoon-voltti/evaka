@@ -7,7 +7,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'

@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   SortDirection,
   VoucherValueDecisionSortParam,
   VoucherValueDecisionSummary

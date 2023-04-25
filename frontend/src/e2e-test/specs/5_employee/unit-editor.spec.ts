@@ -6,7 +6,7 @@ import config from '../../config'
 import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { Daycare } from '../../dev-api/types'
+import type { Daycare } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   UnitEditor,

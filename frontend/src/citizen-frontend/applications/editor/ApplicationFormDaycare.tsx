@@ -17,7 +17,7 @@ import UnitPreferenceSection from '../../applications/editor/unit-preference/Uni
 import { useTranslation } from '../../localization'
 import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
-import { ApplicationFormProps } from './ApplicationEditor'
+import type { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormDaycare({
   application,

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
 import { query } from 'lib-common/query'
 
 import { createQueryKeys } from '../query'
 
-import { MapAddress } from './MapView'
+import type { MapAddress } from './MapView'
 import {
   fetchUnits,
   fetchDistance,

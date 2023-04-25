@@ -5,9 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { AccountType } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { AccountType } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 import { faTrash } from 'lib-icons'
 
 import AsyncButton from '../atoms/buttons/AsyncButton'

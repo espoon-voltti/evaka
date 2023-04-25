@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'

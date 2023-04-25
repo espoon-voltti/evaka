@@ -6,7 +6,7 @@ import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'

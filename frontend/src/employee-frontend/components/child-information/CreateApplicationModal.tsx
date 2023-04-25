@@ -4,11 +4,11 @@
 
 import React, { useContext, useState } from 'react'
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -19,17 +19,16 @@ import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
 import { faFileAlt } from 'lib-icons'
 
-import {
-  createPaperApplication,
-  PaperApplicationRequest
-} from '../../api/applications'
+import type { PaperApplicationRequest } from '../../api/applications'
+import { createPaperApplication } from '../../api/applications'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import {
   DbPersonSearch as PersonSearch,
   VtjPersonSearch
 } from '../../components/common/PersonSearch'
 import { getEmployeeUrlPrefix } from '../../constants'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 

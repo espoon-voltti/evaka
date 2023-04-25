@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import type { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
@@ -20,10 +20,8 @@ import {
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getMissingServiceNeedReport,
-  MissingServiceNeedReportFilters
-} from '../../api/reports'
+import type { MissingServiceNeedReportFilters } from '../../api/reports'
+import { getMissingServiceNeedReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'

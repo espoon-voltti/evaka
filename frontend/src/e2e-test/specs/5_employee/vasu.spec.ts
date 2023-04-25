@@ -7,7 +7,7 @@ import assert from 'assert'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -28,14 +28,13 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
+import type {
   DaycarePlacement,
   EmployeeDetail,
   PersonDetailWithDependantsAndGuardians
 } from '../../dev-api/types'
-import ChildInformationPage, {
-  VasuAndLeopsSection
-} from '../../pages/employee/child-information'
+import type { VasuAndLeopsSection } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'

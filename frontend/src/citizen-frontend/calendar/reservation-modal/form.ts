@@ -17,21 +17,18 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import { StateOf } from 'lib-common/form/types'
-import {
+import type { StateOf } from 'lib-common/form/types'
+import type {
   DailyReservationRequest,
   Reservation,
   ReservationChild,
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
-import {
-  Repetition,
-  TimeRange,
-  timeRangeToTimes
-} from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
-import { Translations } from 'lib-customizations/citizen'
+import type LocalDate from 'lib-common/local-date'
+import type { Repetition, TimeRange } from 'lib-common/reservations'
+import { timeRangeToTimes } from 'lib-common/reservations'
+import type { UUID } from 'lib-common/types'
+import type { Translations } from 'lib-customizations/citizen'
 
 export const emptyTimeRange: StateOf<typeof localTimeRange> = {
   startTime: '',

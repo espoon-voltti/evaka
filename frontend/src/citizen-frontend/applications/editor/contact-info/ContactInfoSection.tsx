@@ -4,10 +4,10 @@
 
 import React from 'react'
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import EditorSection from '../../../applications/editor/EditorSection'
@@ -17,7 +17,7 @@ import OtherChildrenSubSection from '../../../applications/editor/contact-info/O
 import OtherPartnerSubSection from '../../../applications/editor/contact-info/OtherPartnerSubSection'
 import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
 import { useTranslation } from '../../../localization'
-import { ApplicationFormDataErrors } from '../validations'
+import type { ApplicationFormDataErrors } from '../validations'
 
 export type ContactInfoSectionProps = {
   type: ApplicationType

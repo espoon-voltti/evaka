@@ -5,7 +5,7 @@
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import type { EmployeeDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
 import { Page } from '../../utils/page'

@@ -11,16 +11,17 @@ import {
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
-import {
+import type {
   ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
-import { Reservation } from 'lib-common/generated/api-types/reservations'
-import { TimeRange as ServiceTimesTimeRange } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { Reservation } from 'lib-common/generated/api-types/reservations'
+import type { TimeRange as ServiceTimesTimeRange } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { attendanceTimeDiffers, TimeRange } from 'lib-common/reservations'
+import type { TimeRange } from 'lib-common/reservations'
+import { attendanceTimeDiffers } from 'lib-common/reservations'
 import { fontWeights, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -29,7 +30,7 @@ import { useTranslation } from '../../../state/i18n'
 
 import AbsenceDay from './AbsenceDay'
 import { TimeRangeEditor } from './attendance-elements'
-import { EditState } from './reservation-table-edit-state'
+import type { EditState } from './reservation-table-edit-state'
 
 function getExpectedAttendanceTime(
   reservation: Reservation | null,

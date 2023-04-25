@@ -2,15 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DependencyList, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  type DependencyList,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import {
-  ApiFunction,
-  ApiResultOf,
+  type ApiFunction,
+  type ApiResultOf,
   Failure,
   isCancelled,
   Loading,
-  Result,
+  type Result,
   withStaleCancellation
 } from '../api'
 

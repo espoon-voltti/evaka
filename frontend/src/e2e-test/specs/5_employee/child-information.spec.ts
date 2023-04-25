@@ -2,23 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EmployeeDetail } from 'e2e-test/dev-api/types'
+import type { EmployeeDetail } from 'e2e-test/dev-api/types'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { insertDaycareGroupFixtures, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   daycareGroupFixture,
   enduserDeceasedChildFixture,
   enduserNonSsnChildFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import ChildInformationPage, {
+import type {
   AdditionalInformationSection,
   BackupCaresSection,
   ConsentsSection,
@@ -26,6 +24,7 @@ import ChildInformationPage, {
   FamilyContactsSection,
   GuardiansSection
 } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

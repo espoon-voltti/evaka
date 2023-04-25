@@ -8,10 +8,13 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
-import { AdRole } from 'lib-common/api-types/employee-auth'
-import { Action } from 'lib-common/generated/action'
-import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import type { AdRole } from 'lib-common/api-types/employee-auth'
+import type { Action } from 'lib-common/generated/action'
+import type {
+  DaycareAclRow,
+  UserRole
+} from 'lib-common/generated/api-types/shared'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -26,15 +29,16 @@ import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
+import type { DaycareGroupSummary } from '../../../api/unit'
 import {
-  DaycareGroupSummary,
   removeDaycareAclEarlyChildhoodEducationSecretary,
   removeDaycareAclSpecialEducationTeacher,
   removeDaycareAclStaff,
   removeDaycareAclSupervisor,
   updateDaycareGroupAcl
 } from '../../../api/unit'
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UnitContext } from '../../../state/unit'
 import { UserContext } from '../../../state/user'

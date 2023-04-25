@@ -4,12 +4,15 @@
 
 import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { CurriculumType, VasuBasics } from 'lib-common/generated/api-types/vasu'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
+  CurriculumType,
+  VasuBasics
+} from 'lib-common/generated/api-types/vasu'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 type Props = {
   basics: VasuBasics

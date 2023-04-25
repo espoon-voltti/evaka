@@ -11,8 +11,9 @@ import React, {
   useState
 } from 'react'
 
-import { Failure, Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Loading } from 'lib-common/api'
+import type {
   MessageThread,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
@@ -24,12 +25,12 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
-import { ReplyToThreadParams } from './api'
+import type { ReplyToThreadParams } from './api'
 import {
   markThreadReadMutation,
   messageAccountQuery,

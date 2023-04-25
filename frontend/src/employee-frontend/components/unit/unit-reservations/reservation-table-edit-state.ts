@@ -4,22 +4,20 @@
 
 import { useCallback, useState } from 'react'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { ChildDailyRecords } from 'lib-common/api-types/reservations'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { ChildDailyRecords } from 'lib-common/api-types/reservations'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type {
   DailyReservationRequest,
   Reservation
 } from 'lib-common/generated/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
+import type { JsonOf } from 'lib-common/json'
+import type LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import {
-  TimeRange,
-  TimeRangeErrors,
-  validateTimeRange
-} from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { TimeRange, TimeRangeErrors } from 'lib-common/reservations'
+import { validateTimeRange } from 'lib-common/reservations'
+import type { UUID } from 'lib-common/types'
 
 import { deleteChildAbsences } from '../../../api/absences'
 import { postAttendances, postReservations } from '../../../api/unit'

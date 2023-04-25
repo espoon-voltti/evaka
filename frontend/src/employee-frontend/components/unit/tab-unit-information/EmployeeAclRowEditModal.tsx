@@ -6,12 +6,13 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { DaycareGroupSummary } from 'employee-frontend/api/unit'
-import { Failure, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import { AclUpdate } from 'lib-common/generated/api-types/daycare'
+import type { DaycareGroupSummary } from 'employee-frontend/api/unit'
+import type { Result } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
+import type { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -23,7 +24,7 @@ import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 
-import { FormattedRow } from './UnitAccessControl'
+import type { FormattedRow } from './UnitAccessControl'
 
 type EmployeeRowEditFormState = {
   selectedGroups: DaycareGroupSummary[] | null

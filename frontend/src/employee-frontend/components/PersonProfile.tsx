@@ -5,7 +5,7 @@
 import React, { useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -28,7 +28,8 @@ import { useTranslation } from '../state/i18n'
 import { PersonContext, PersonContextProvider } from '../state/person'
 import { UserContext } from '../state/user'
 
-import { getLayout, Layouts } from './layouts'
+import type { Layouts } from './layouts'
+import { getLayout } from './layouts'
 import FosterChildren from './person-profile/FosterChildren'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'

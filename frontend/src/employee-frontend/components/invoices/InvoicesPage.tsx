@@ -7,8 +7,9 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
-import { Loading, Result, Success } from 'lib-common/api'
-import { InvoiceSummaryResponse } from 'lib-common/generated/api-types/invoicing'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { InvoiceSummaryResponse } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -22,7 +23,8 @@ import { useTranslation } from '../../state/i18n'
 import Actions from './Actions'
 import InvoiceFilters from './InvoiceFilters'
 import Invoices from './Invoices'
-import { InvoicesActions, useInvoicesState } from './invoices-state'
+import type { InvoicesActions } from './invoices-state'
+import { useInvoicesState } from './invoices-state'
 
 export default React.memo(function InvoicesPage() {
   const { user } = useContext(UserContext)

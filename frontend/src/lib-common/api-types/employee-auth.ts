@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
+import { type MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
-import { EmployeeFeatures } from '../generated/api-types/shared'
-import { UUID } from '../types'
+import { type EmployeeFeatures } from '../generated/api-types/shared'
+import { type UUID } from '../types'
 
 export interface User {
   id: UUID

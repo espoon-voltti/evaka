@@ -5,8 +5,8 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { ChildAbsence } from 'lib-common/generated/api-types/attendance'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ChildAbsence } from 'lib-common/generated/api-types/attendance'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
 

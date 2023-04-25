@@ -7,7 +7,7 @@ import range from 'lodash/range'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -28,7 +28,7 @@ import {
 } from '../../api/family-overview'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { FamilyContact } from '../../types/family-overview'
+import type { FamilyContact } from '../../types/family-overview'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 

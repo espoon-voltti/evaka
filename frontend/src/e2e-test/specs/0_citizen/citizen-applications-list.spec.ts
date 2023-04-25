@@ -9,10 +9,8 @@ import {
   insertApplications,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture } from '../../dev-api/fixtures'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'

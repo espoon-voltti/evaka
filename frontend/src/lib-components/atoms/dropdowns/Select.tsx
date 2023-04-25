@@ -4,19 +4,16 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, {
-  ChangeEvent,
-  FocusEventHandler,
-  useCallback,
-  useMemo
-} from 'react'
+import type { ChangeEvent, FocusEventHandler } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { OneOf } from 'lib-common/form/form'
-import { BoundForm } from 'lib-common/form/hooks'
+import type { OneOf } from 'lib-common/form/form'
+import type { BoundForm } from 'lib-common/form/hooks'
 import { faChevronDown } from 'lib-icons'
 
-import { borderStyles, DropdownProps, Root } from './shared'
+import type { DropdownProps } from './shared'
+import { borderStyles, Root } from './shared'
 
 type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &
   (T extends string | number

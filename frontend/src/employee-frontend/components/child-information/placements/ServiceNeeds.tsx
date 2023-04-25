@@ -7,14 +7,14 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type {
   ServiceNeed,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -23,7 +23,7 @@ import { faPlus, faQuestion } from 'lib-icons'
 
 import { deleteServiceNeed } from '../../../api/child/service-needs'
 import { useTranslation } from '../../../state/i18n'
-import { DateRange } from '../../../utils/date'
+import type { DateRange } from '../../../utils/date'
 
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'

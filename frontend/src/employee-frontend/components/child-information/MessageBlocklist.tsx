@@ -4,8 +4,8 @@
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { Recipient } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { Recipient } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

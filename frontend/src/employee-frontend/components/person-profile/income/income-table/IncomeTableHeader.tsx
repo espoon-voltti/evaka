@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { Translations } from '../../../../state/i18n'
+import type { Translations } from '../../../../state/i18n'
 
 const TypeHeader = styled(Th)`
   width: 50%;

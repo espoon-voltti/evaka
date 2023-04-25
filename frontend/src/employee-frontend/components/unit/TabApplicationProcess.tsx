@@ -6,7 +6,7 @@ import React, { useCallback, useContext } from 'react'
 
 import { getUnitApplications } from 'employee-frontend/api/unit'
 import { UnitContext } from 'employee-frontend/state/unit'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'

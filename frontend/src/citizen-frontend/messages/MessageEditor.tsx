@@ -9,8 +9,8 @@ import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   AccountType,
   CitizenMessageBody,
   GetReceiversResponse,

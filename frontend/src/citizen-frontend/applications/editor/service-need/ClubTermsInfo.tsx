@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 

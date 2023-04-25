@@ -5,11 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   OccupancyResponse,
   RealtimeOccupancy
 } from 'lib-common/generated/api-types/occupancy'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 

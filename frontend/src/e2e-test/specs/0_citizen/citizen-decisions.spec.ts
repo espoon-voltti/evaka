@@ -14,10 +14,8 @@ import {
   resetDatabase,
   runPendingAsyncJobs
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'

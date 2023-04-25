@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { MessageAccount } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 
 const views = [
   'received',

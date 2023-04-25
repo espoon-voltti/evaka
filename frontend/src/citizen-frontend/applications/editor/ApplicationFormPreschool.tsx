@@ -18,7 +18,7 @@ import ServiceNeedSection from '../../applications/editor/service-need/ServiceNe
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
-import { ApplicationFormProps } from './ApplicationEditor'
+import type { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormPreschool({
   application,

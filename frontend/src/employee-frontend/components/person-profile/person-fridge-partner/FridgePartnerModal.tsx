@@ -4,11 +4,15 @@
 
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
+  Partnership,
+  PersonSummary
+} from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated

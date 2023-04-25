@@ -13,12 +13,12 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   Message,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

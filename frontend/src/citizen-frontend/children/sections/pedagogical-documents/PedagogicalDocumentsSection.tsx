@@ -10,12 +10,12 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { getAttachmentUrl } from 'citizen-frontend/attachments'
 import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
-import {
+import type {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

@@ -6,29 +6,31 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import {
+import type {
   DaycareCareArea,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   DistinctiveParams,
-  feeDecisionDistinctiveParams,
   FeeDecisionDifference,
-  feeDecisionDifferences,
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
   VoucherValueDecisionDifference,
-  voucherValueDecisionDifferences,
-  voucherValueDecisionDistinctiveParams,
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
+import {
+  feeDecisionDistinctiveParams,
+  feeDecisionDifferences,
+  voucherValueDecisionDifferences,
+  voucherValueDecisionDistinctiveParams
+} from 'lib-common/generated/api-types/invoicing'
+import type LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -57,8 +59,8 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
-import { ApplicationSummaryStatus } from '../../types/application'
+import type { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
+import type { ApplicationSummaryStatus } from '../../types/application'
 import { FeeDecisionDifferenceIcons } from '../fee-decisions/FeeDecisionDifferenceIcon'
 import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 

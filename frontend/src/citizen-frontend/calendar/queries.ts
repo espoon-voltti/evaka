@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 
 import { createQueryKeys } from '../query'

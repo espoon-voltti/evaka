@@ -4,7 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
@@ -12,7 +12,8 @@ import { featureFlags } from 'lib-customizations/employee'
 
 import AssistanceAction from '../../components/child-information/AssistanceAction'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
-import { ChildContext, ChildState } from '../../state/child'
+import type { ChildState } from '../../state/child'
+import { ChildContext } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { VasuDocumentEvent } from 'lib-common/generated/api-types/vasu'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { VasuDocumentEvent } from 'lib-common/generated/api-types/vasu'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 export const getLastPublished = (
   events: VasuDocumentEvent[]

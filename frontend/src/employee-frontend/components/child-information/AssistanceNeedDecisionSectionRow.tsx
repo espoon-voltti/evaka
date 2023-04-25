@@ -6,7 +6,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Td, Tr } from 'lib-components/layout/Table'

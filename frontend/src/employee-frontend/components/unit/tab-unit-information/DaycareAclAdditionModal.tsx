@@ -6,17 +6,15 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  addDaycareFullAcl,
-  DaycareGroupSummary
-} from 'employee-frontend/api/unit'
-import { Employee } from 'employee-frontend/types/employee'
+import type { DaycareGroupSummary } from 'employee-frontend/api/unit'
+import { addDaycareFullAcl } from 'employee-frontend/api/unit'
+import type { Employee } from 'employee-frontend/types/employee'
 import { formatName } from 'employee-frontend/utils'
 import { Failure } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import { AclUpdate } from 'lib-common/generated/api-types/daycare'
+import type { Action } from 'lib-common/generated/action'
+import type { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -29,7 +27,7 @@ import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 
-import { DaycareAclRole } from './UnitAccessControl'
+import type { DaycareAclRole } from './UnitAccessControl'
 
 interface EmployeeOption {
   label: string

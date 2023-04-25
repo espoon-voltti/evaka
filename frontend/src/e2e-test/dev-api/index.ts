@@ -4,49 +4,48 @@
 
 import * as fs from 'fs/promises'
 
-import axios, {
+import type {
   AxiosRequestConfig,
   AxiosRequestHeaders,
   AxiosResponse
 } from 'axios'
+import axios from 'axios'
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
-import {
-  ApplicationDetails,
-  deserializeApplicationDetails
-} from 'lib-common/api-types/application/ApplicationDetails'
-import { ScopedRole } from 'lib-common/api-types/employee-auth'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { deserializeApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ScopedRole } from 'lib-common/api-types/employee-auth'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   FeeDecision,
   FeeThresholds,
   IncomeNotification,
   Invoice,
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'
-import {
+import type {
   ChildDailyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import {
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type {
   CurriculumType,
   VasuLanguage
 } from 'lib-common/generated/api-types/vasu'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { JsonOf } from 'lib-common/json'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import config from '../config'
 
-import {
+import type {
   Application,
   AssistanceNeed,
   AssistanceNeedDecision,
@@ -62,7 +61,6 @@ import {
   DaycarePlacement,
   Decision,
   DecisionFixture,
-  deserializeDecision,
   DevCalendarEvent,
   DevCalendarEventAttendee,
   DevChildConsent,
@@ -92,6 +90,7 @@ import {
   SuomiFiMessage,
   VtjPerson
 } from './types'
+import { deserializeDecision } from './types'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {

@@ -6,12 +6,11 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
+import type {
   DaycareBuilder,
-  DaycareGroupBuilder,
-  daycareGroupFixture,
-  Fixture
+  DaycareGroupBuilder
 } from '../../dev-api/fixtures'
+import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import UnitListPage from '../../pages/mobile/unit-list-page'
 import { pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'

@@ -4,8 +4,9 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { combine, Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { combine, Loading } from 'lib-common/api'
+import type {
   DaycareCareArea,
   DaycareFields
 } from 'lib-common/generated/api-types/daycare'
@@ -15,10 +16,12 @@ import { Gap } from 'lib-components/white-space'
 
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import { getDaycare, UnitResponse, updateDaycare } from '../../../api/unit'
+import type { UnitResponse } from '../../../api/unit'
+import { getDaycare, updateDaycare } from '../../../api/unit'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { TitleContext, TitleState } from '../../../state/title'
+import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import type { TitleState } from '../../../state/title'
+import { TitleContext } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
 
 export default React.memo(function UnitDetailsPage() {

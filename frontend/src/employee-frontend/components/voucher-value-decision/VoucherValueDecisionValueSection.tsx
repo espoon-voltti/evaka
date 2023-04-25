@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { formatDecimal } from 'lib-common/utils/number'
 import { H3 } from 'lib-components/typography'

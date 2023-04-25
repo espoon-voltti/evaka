@@ -6,14 +6,14 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import DateRange from 'lib-common/date-range'
-import {
+import type DateRange from 'lib-common/date-range'
+import type {
   AssistanceLevel,
   AssistanceNeedDecisionStatus,
   UnitInfoBasics
 } from 'lib-common/generated/api-types/assistanceneed'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

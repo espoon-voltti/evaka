@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SyntheticEvent, useCallback } from 'react'
+import type { SyntheticEvent } from 'react'
+import React, { useCallback } from 'react'
 import { Link } from 'react-router-dom'
 
 import { formatDateOrTime } from 'lib-common/date'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import type { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import {
   FixedSpaceColumn,

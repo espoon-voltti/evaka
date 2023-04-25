@@ -6,7 +6,8 @@ import { useState } from 'react'
 import React, { Fragment, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 
-import { Result, Loading } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
@@ -17,12 +18,8 @@ import EvakaLogo from '../assets/EvakaLogo.svg'
 import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
 
-import {
-  authMobile,
-  getPairingStatus,
-  PairingResponse,
-  postPairingChallenge
-} from './api'
+import type { PairingResponse } from './api'
+import { authMobile, getPairingStatus, postPairingChallenge } from './api'
 import { FullHeightContainer, WideLinkButton } from './components'
 
 const CenteredColumn = styled.div`

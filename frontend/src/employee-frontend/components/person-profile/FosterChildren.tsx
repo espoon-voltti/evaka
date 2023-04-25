@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

@@ -10,14 +10,14 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { boolean } from './fields'
 import {
-  AnyForm,
-  ErrorOf,
-  Form,
+  type AnyForm,
+  type ErrorOf,
+  type Form,
   ObjectFieldError,
-  OutputOf,
-  ShapeOf,
-  StateOf,
-  ValidationResult
+  type OutputOf,
+  type ShapeOf,
+  type StateOf,
+  type ValidationResult
 } from './types'
 
 export type InfoStatus = 'warning' | 'success'
@@ -56,20 +56,27 @@ export function useForm<F extends AnyForm>(
   initialState: () => StateOf<F>,
   errorDict: Record<Exclude<ErrorOf<F>, ObjectFieldError>, string>,
   options: {
-    onUpdate?: (prevState: StateOf<F>, nextState: StateOf<F>, form: F) => StateOf<F>
+    onUpdate?: (
+      prevState: StateOf<F>,
+      nextState: StateOf<F>,
+      form: F
+    ) => StateOf<F>
   } = {}
 ): BoundForm<F> {
   const onUpdateRef = useRef(options.onUpdate)
   onUpdateRef.current = options.onUpdate
 
   const [state, setState] = useState(initialState)
-  const update = useCallback((fn: (prev: StateOf<F>) => StateOf<F>) => {
-    setState((prev) => {
-      const next = fn(prev)
-      const onUpdate = onUpdateRef.current
-      return onUpdate ? onUpdate(prev, next, form) : next
-    })
-  }, [form])
+  const update = useCallback(
+    (fn: (prev: StateOf<F>) => StateOf<F>) => {
+      setState((prev) => {
+        const next = fn(prev)
+        const onUpdate = onUpdateRef.current
+        return onUpdate ? onUpdate(prev, next, form) : next
+      })
+    },
+    [form]
+  )
   const set = useCallback((value: StateOf<F>) => {
     setState(value)
   }, [])

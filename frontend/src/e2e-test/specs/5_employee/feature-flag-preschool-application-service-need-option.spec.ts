@@ -5,12 +5,10 @@
 import LocalDate from 'lib-common/local-date'
 
 import { insertDaycareGroupFixtures, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
-import CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
+import type CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

@@ -7,17 +7,18 @@ import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
-import {
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type {
   Accountant,
   Entrepreneur,
-  EstimatedIncome,
   Gross,
   IncomeStatement,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
-import { UUID } from 'lib-common/types'
+import { type EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -44,7 +45,8 @@ import {
   updateIncomeStatementHandled
 } from '../api/income-statement'
 import { getPerson } from '../api/person'
-import { Translations, useTranslation } from '../state/i18n'
+import type { Translations } from '../state/i18n'
+import { useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 

@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ChildDailyNoteBody,
   ChildStickyNoteBody,
   GroupNote,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 

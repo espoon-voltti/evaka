@@ -6,12 +6,8 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import {
-  BoundForm,
-  BoundFormState,
-  useFormElem,
-  useFormUnion
-} from 'lib-common/form/hooks'
+import type { BoundForm, BoundFormState } from 'lib-common/form/hooks'
+import { useFormElem, useFormUnion } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -23,7 +19,8 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, times } from './form'
+import type { day, times } from './form'
+import { emptyTimeRange } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>

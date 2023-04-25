@@ -7,12 +7,12 @@ import { faTimes } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-import { SelectableAccount } from './MessageReplyEditor'
+import type { SelectableAccount } from './MessageReplyEditor'
 
 interface ToggleableRecipientProps {
   'data-qa'?: string

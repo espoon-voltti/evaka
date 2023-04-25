@@ -9,9 +9,9 @@ import {
   insertPedagogicalDocumentAttachment,
   resetDatabase
 } from '../../dev-api'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
 import {
   addConsentsForChildren,
-  AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {

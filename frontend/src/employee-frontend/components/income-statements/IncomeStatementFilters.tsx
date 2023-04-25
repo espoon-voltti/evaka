@@ -4,8 +4,8 @@
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

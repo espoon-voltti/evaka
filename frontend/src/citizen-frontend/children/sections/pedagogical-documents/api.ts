@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from 'citizen-frontend/api-client'
-import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 const deserializePedagogicalDocument = (
   data: JsonOf<PedagogicalDocumentCitizen>

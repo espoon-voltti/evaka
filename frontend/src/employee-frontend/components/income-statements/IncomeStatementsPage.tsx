@@ -5,11 +5,11 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import {
+import type {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import { Container, ContentArea } from 'lib-components/layout/Container'

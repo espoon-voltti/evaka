@@ -7,7 +7,7 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
@@ -15,7 +15,7 @@ import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import {
   FixedSpaceColumn,
@@ -25,7 +25,8 @@ import { Light } from 'lib-components/typography'
 
 import { useTranslation } from '../localization'
 
-import RoundChildImages, { ChildImageData } from './RoundChildImages'
+import type { ChildImageData } from './RoundChildImages'
+import RoundChildImages from './RoundChildImages'
 
 type DailyChildGroupElementType =
   | 'attendance'

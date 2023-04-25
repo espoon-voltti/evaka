@@ -12,12 +12,13 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -29,11 +30,11 @@ import {
   createBackupCare,
   updateBackupCare
 } from '../../../api/child/backup-care'
-import { getUnits, Unit } from '../../../api/daycare'
+import { getUnits, type Unit } from '../../../api/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { DateRange } from '../../../utils/date'
+import type { DateRange } from '../../../utils/date'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting

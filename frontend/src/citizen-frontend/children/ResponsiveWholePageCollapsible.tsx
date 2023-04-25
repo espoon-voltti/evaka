@@ -11,8 +11,8 @@ import { useTranslation } from 'citizen-frontend/localization'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
+import type { CollapsibleContentAreaProps } from 'lib-components/layout/Container'
 import {
-  CollapsibleContentAreaProps,
   ContentArea,
   TitleContainer,
   TitleIcon
@@ -23,7 +23,8 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import { fontWeights, H2 } from 'lib-components/typography'
-import { defaultMargins, SpacingSize } from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import {
   faArrowLeft,
   faChevronDown,

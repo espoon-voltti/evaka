@@ -18,6 +18,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
+    "verbatimModuleSyntax": true,
     "baseUrl": "src"
   }
 }

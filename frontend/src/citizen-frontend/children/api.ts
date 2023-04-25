@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Child } from 'lib-common/generated/api-types/children'
-import { JsonOf } from 'lib-common/json'
+import type { Child } from 'lib-common/generated/api-types/children'
+import type { JsonOf } from 'lib-common/json'
 
 import { client } from '../api-client'
 

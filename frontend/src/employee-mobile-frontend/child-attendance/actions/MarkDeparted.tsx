@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
@@ -36,7 +36,8 @@ import {
   DailyNotes,
   TimeWrapper
 } from '../../common/components'
-import { Translations, useTranslation } from '../../common/i18n'
+import type { Translations } from '../../common/i18n'
+import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
 import {

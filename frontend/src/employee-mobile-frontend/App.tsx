@@ -14,7 +14,7 @@ import {
 import { ThemeProvider } from 'styled-components'
 
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import {
   Notifications,

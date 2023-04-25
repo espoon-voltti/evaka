@@ -8,7 +8,7 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
+import type { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

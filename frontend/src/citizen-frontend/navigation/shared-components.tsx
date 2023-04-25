@@ -8,12 +8,8 @@ import React, { useCallback, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
-import {
-  Lang,
-  langs,
-  useLang,
-  useTranslation
-} from 'citizen-frontend/localization'
+import type { Lang } from 'citizen-frontend/localization'
+import { langs, useLang, useTranslation } from 'citizen-frontend/localization'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'

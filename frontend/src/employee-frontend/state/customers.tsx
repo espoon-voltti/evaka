@@ -10,14 +10,15 @@ import React, {
   createContext
 } from 'react'
 
-import { Result, Success } from 'lib-common/api'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import { findByNameOrAddress } from '../api/person'
-import { SearchOrder } from '../types'
-import { SearchColumn } from '../types/person'
+import type { SearchOrder } from '../types'
+import type { SearchColumn } from '../types/person'
 
 export interface CustomersState {
   customers: Result<PersonSummary[]>

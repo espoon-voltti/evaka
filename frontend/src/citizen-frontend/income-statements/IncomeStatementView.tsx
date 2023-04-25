@@ -7,16 +7,16 @@ import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type {
   Accountant,
   Entrepreneur,
-  EstimatedIncome,
   Gross,
   IncomeStatement
 } from 'lib-common/generated/api-types/incomestatement'
+import { type EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'

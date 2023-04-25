@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import {
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type {
   PaymentStatus,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
   AsyncButton,
   Checkable,
   Checkbox,
   Combobox,
   DatePickerDeprecated,
-  Page,
   Radio,
   Select,
   TextInput

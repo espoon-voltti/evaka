@@ -2,14 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import leaflet, { LatLngTuple, LeafletEventHandlerFnMap } from 'leaflet'
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useRef
-} from 'react'
+import type { LatLngTuple, LeafletEventHandlerFnMap } from 'leaflet'
+import leaflet from 'leaflet'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import {
   MapContainer,
   Marker,
@@ -20,7 +16,7 @@ import {
 } from 'react-leaflet'
 import styled from 'styled-components'
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { fontWeights } from 'lib-components/typography'
@@ -31,9 +27,10 @@ import colors from 'lib-customizations/common'
 import { FooterContent } from '../Footer'
 import { useTranslation } from '../localization'
 
-import { MapAddress } from './MapView'
+import type { MapAddress } from './MapView'
 import { mapViewBreakpoint } from './const'
-import { formatDistance, UnitWithDistance } from './distances'
+import type { UnitWithDistance } from './distances'
+import { formatDistance } from './distances'
 import { formatCareTypes } from './format'
 import markerAddress from './marker-address.svg'
 import markerUnitHighlight from './marker-unit-highlight.svg'

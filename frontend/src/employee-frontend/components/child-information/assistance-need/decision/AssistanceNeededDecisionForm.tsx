@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SetStateAction, useCallback, useMemo } from 'react'
+import type { SetStateAction } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Employee } from 'employee-frontend/types/employee'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { Result } from 'lib-common/api'
-import {
+import type { Employee } from 'employee-frontend/types/employee'
+import type { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
+import type { Result } from 'lib-common/api'
+import type {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
@@ -19,7 +20,8 @@ import {
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import {
   FixedSpaceColumn,

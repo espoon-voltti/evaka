@@ -6,7 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -17,9 +17,9 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
+import type { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import {
+import type {
   ReservationModal,
   UnitAttendancesSection,
   UnitCalendarPage

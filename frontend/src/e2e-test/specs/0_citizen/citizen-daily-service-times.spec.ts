@@ -5,16 +5,18 @@
 import LocalDate from 'lib-common/local-date'
 
 import { resetDatabase } from '../../dev-api'
-import {
-  careAreaFixture,
+import type {
   DailyServiceTimeBuilder,
   DaycareBuilder,
+  PersonBuilder
+} from '../../dev-api/fixtures'
+import {
+  careAreaFixture,
   daycareFixture,
   daycareGroupFixture,
   enduserChildFixtureJari,
   enduserGuardianFixture,
-  Fixture,
-  PersonBuilder
+  Fixture
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'

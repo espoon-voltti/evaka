@@ -4,10 +4,11 @@
 
 import cloneDeep from 'lodash/cloneDeep'
 import last from 'lodash/last'
-import React, { Dispatch, Fragment, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 
-import {
+import type {
   CheckboxQuestion,
   DateQuestion,
   Followup,
@@ -19,7 +20,7 @@ import {
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
-import {
+import type {
   VasuContent,
   VasuSection,
   VasuDocumentState
@@ -27,7 +28,7 @@ import {
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { CheckboxQuestion as CheckboxQuestionElem } from '../components/CheckboxQuestion'
 import DateQuestionElem from '../components/DateQuestion'
@@ -36,13 +37,11 @@ import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
 import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import ParagraphElem from '../components/Paragraph'
-import {
-  RadioGroupQuestion as RadioGroupQuestionElem,
-  RadioGroupSelectedValue
-} from '../components/RadioGroupQuestion'
+import type { RadioGroupSelectedValue } from '../components/RadioGroupQuestion'
+import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
 import StaticInfoSubsection from '../components/StaticInfoSubsection'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
-import { VasuMetadata } from '../use-vasu'
+import type { VasuMetadata } from '../use-vasu'
 import {
   getQuestionNumber,
   isCheckboxQuestion,

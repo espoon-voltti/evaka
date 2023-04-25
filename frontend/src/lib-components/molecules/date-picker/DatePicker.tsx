@@ -9,13 +9,13 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { DayModifiers } from 'react-day-picker'
+import type { DayModifiers } from 'react-day-picker'
 import styled from 'styled-components'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 
-import { InputInfo } from '../../atoms/form/InputField'
+import type { InputInfo } from '../../atoms/form/InputField'
 import { useTranslations } from '../../i18n'
 import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'

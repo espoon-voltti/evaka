@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

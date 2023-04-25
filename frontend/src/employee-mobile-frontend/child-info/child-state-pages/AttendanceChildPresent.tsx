@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import { useTranslation } from '../../common/i18n'

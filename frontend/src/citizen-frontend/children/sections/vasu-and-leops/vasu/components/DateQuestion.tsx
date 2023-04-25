@@ -4,13 +4,13 @@
 
 import React from 'react'
 
-import { DateQuestion } from 'lib-common/api-types/vasu'
+import type { DateQuestion } from 'lib-common/api-types/vasu'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<DateQuestion> {
   translations: VasuTranslations

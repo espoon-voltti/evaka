@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChartDataset, ChartOptions } from 'chart.js'
+import type { ChartDataset, ChartOptions } from 'chart.js'
 import { fi } from 'date-fns/locale'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
 
 import { formatDate } from 'lib-common/date'
-import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import colors from 'lib-customizations/common'
 
 type DatePoint = { x: Date; y: number | null | undefined }

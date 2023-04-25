@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 
-import { Action } from './ApplicationActions'
+import type { Action } from './ApplicationActions'
 
 type Props = {
   action: Action | undefined

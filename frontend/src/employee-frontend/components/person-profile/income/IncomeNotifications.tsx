@@ -6,7 +6,7 @@ import { faExclamation } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
-import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
+import type { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import colors from 'lib-customizations/common'
 

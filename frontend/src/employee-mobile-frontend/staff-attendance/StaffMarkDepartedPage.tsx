@@ -15,7 +15,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'

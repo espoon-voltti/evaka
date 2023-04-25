@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
+import type { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
 import { H3, InformationText, P } from 'lib-components/typography'
 
 import { useTranslation } from '../../../localization'

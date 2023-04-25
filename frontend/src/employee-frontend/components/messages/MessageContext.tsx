@@ -14,8 +14,9 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import { useTheme } from 'styled-components'
 
-import { Failure, Loading, Paged, Result } from 'lib-common/api'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import { Failure, Loading } from 'lib-common/api'
+import type {
   DraftContent,
   Message,
   MessageThread,
@@ -26,24 +27,25 @@ import {
   MessageCopy
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { NotificationsContext } from 'lib-components/Notifications'
+import type { GroupMessageAccount } from 'lib-components/employee/messages/types'
 import {
-  GroupMessageAccount,
   isGroupMessageAccount,
   isMunicipalMessageAccount,
   isPersonalMessageAccount,
   isServiceWorkerMessageAccount
 } from 'lib-components/employee/messages/types'
-import { SelectOption } from 'lib-components/molecules/Select'
+import type { SelectOption } from 'lib-components/molecules/Select'
 import { faCheck } from 'lib-icons'
 
 import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
 
 import { UndoMessage } from './UndoMessageNotification'
+import type { ReplyToThreadParams } from './api'
 import {
   getMessageCopies,
   getMessageDrafts,
@@ -54,11 +56,10 @@ import {
   getUnreadCounts,
   markThreadRead,
   replyToThread,
-  ReplyToThreadParams,
   getThread
 } from './api'
+import type { AccountView } from './types-view'
 import {
-  AccountView,
   groupMessageBoxes,
   isValidView,
   municipalMessageBoxes,

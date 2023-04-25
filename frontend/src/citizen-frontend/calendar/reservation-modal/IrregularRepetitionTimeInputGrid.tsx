@@ -6,13 +6,14 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useLang, useTranslation } from 'citizen-frontend/localization'
-import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { Day } from './TimeInputs'
-import { irregularDay, irregularTimes } from './form'
+import type { irregularDay, irregularTimes } from './form'
 
 export interface IrregularRepetitionTimeInputGridProps {
   bind: BoundForm<typeof irregularTimes>

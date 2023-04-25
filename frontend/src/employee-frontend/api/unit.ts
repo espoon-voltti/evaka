@@ -4,24 +4,25 @@
 
 import mapValues from 'lodash/mapValues'
 
-import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
-import { Failure, Result, Success } from 'lib-common/api'
+import type { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
-import {
+import type {
   ChildDailyRecords,
   UnitAttendanceReservations,
   UnitServiceNeedInfo
 } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   ApplicationUnitSummary,
   UnitApplications
 } from 'lib-common/generated/api-types/application'
-import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import {
+import type { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type {
   AclUpdate,
   CreateDaycareResponse,
   DaycareAclResponse,
@@ -30,32 +31,32 @@ import {
   UnitGroupDetails,
   UnitNotifications
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   OccupancyPeriod,
   OccupancyResponse,
   OccupancyResponseSpeculated,
   UnitOccupancies
 } from 'lib-common/generated/api-types/occupancy'
-import {
+import type {
   MobileDevice,
   PostPairingReq
 } from 'lib-common/generated/api-types/pairing'
-import {
+import type {
   DaycarePlacementWithDetails,
   MissingGroupPlacement,
   PlacementPlanDetails,
   TerminatedPlacement
 } from 'lib-common/generated/api-types/placement'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import type { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { parseReservation } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { DaycareGroup, Unit } from '../types/unit'
+import type { DaycareGroup, Unit } from '../types/unit'
 
 import { client } from './client'
 

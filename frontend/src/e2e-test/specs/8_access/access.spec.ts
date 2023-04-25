@@ -4,10 +4,8 @@
 
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'

@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
-import { Checkbox, Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, TextInput } from '../../utils/page'
 
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}

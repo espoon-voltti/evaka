@@ -6,7 +6,7 @@ import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Action } from 'lib-common/generated/action'
+import type { Action } from 'lib-common/generated/action'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

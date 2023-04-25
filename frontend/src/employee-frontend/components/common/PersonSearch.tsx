@@ -5,13 +5,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { BaseProps } from 'lib-components/utils'
+import type { BaseProps } from 'lib-components/utils'
 
 import {
   findByNameOrAddress,

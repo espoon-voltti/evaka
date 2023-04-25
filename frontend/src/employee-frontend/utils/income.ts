@@ -4,11 +4,10 @@
 
 import { useEffect, useState } from 'react'
 
-import {
-  getIncomeOptions,
-  IncomeTypeOptions
-} from 'employee-frontend/api/income'
-import { Loading, Result } from 'lib-common/api'
+import type { IncomeTypeOptions } from 'employee-frontend/api/income'
+import { getIncomeOptions } from 'employee-frontend/api/income'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 export function useIncomeTypeOptions() {

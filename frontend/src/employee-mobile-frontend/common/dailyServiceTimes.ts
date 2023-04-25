@@ -7,8 +7,8 @@ import {
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
+import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { TimeRange } from 'lib-common/generated/api-types/shared'
 import { mockNow } from 'lib-common/utils/helpers'
 
 const dayNames = [

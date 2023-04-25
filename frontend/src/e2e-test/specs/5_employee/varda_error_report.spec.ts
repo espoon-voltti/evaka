@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -13,14 +13,12 @@ import {
   resetDatabase
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
-  daycareGroupFixture,
-  Fixture,
-  ServiceNeedBuilder
-} from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import type { ServiceNeedBuilder } from '../../dev-api/fixtures'
+import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import type { EmployeeDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import ReportsPage, { VardaErrorsReport } from '../../pages/employee/reports'
+import type { VardaErrorsReport } from '../../pages/employee/reports'
+import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

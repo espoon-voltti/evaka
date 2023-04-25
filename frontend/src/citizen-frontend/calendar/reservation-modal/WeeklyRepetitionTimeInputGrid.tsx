@@ -5,12 +5,13 @@
 import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { LabelLike } from 'lib-components/typography'
 
 import { Day } from './TimeInputs'
-import { weekDay, weeklyTimes } from './form'
+import type { weekDay, weeklyTimes } from './form'
 
 export interface WeeklyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof weeklyTimes>

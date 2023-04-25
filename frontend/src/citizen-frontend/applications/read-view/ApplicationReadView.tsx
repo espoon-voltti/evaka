@@ -7,7 +7,7 @@ import React from 'react'
 import { combine } from 'lib-common/api'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Container from 'lib-components/layout/Container'
 

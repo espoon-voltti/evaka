@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Child } from '../../dev-api/types'
+import type { Child } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}

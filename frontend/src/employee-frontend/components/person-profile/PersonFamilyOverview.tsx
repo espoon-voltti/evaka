@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
-import { IncomeEffect } from 'lib-common/api-types/income'
+import type { IncomeEffect } from 'lib-common/api-types/income'
 import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -15,9 +15,10 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 
 import LabelValueList from '../../components/common/LabelValueList'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
-import {
+import type {
   FamilyOverview,
   FamilyOverviewPerson,
   FamilyOverviewPersonRole,

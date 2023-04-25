@@ -7,8 +7,9 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
-import { AuthContext, User } from 'citizen-frontend/auth/state'
-import { Result } from 'lib-common/api'
+import type { User } from 'citizen-frontend/auth/state'
+import { AuthContext } from 'citizen-frontend/auth/state'
+import type { Result } from 'lib-common/api'
 import { boolean, string } from 'lib-common/form/fields'
 import {
   chained,
@@ -18,7 +19,8 @@ import {
   validated
 } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
-import { StateOf, ValidationSuccess } from 'lib-common/form/types'
+import type { StateOf } from 'lib-common/form/types'
+import { ValidationSuccess } from 'lib-common/form/types'
 import {
   requiredPhoneNumber,
   requiredEmail,

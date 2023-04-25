@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
-import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type {
+  CareType,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   ApplicationsReportRow,
   AssistanceNeedDecisionsReportRow,
   AssistanceNeedsAndActionsReport,
@@ -41,10 +45,10 @@ import {
   VardaErrorReportRow
 } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from './client'
 

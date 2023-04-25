@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
 import { waitUntilTrue } from '../../utils'
-import { AsyncButton, Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { AsyncButton, TextInput } from '../../utils/page'
 
 export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}

@@ -5,8 +5,8 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'

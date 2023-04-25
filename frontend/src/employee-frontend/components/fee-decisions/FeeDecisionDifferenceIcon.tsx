@@ -6,7 +6,7 @@ import React from 'react'
 import { useTheme } from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { FeeDecisionDifference } from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecisionDifference } from 'lib-common/generated/api-types/invoicing'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 

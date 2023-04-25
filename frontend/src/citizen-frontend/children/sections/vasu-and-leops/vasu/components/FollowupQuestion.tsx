@@ -5,11 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Followup } from 'lib-common/api-types/vasu'
+import type { Followup } from 'lib-common/api-types/vasu'
 import { Dimmed, H2, Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 interface FollowupQuestionProps extends QuestionProps<Followup> {
   translations: VasuTranslations

@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'

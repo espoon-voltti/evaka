@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import type { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
+import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 

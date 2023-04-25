@@ -12,16 +12,14 @@ import {
   resetDatabase,
   upsertMessageAccounts
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   Fixture,
   applicationFixture,
   applicationFixtureId
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import type { EmployeeDetail } from '../../dev-api/types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationsPage from '../../pages/employee/applications'

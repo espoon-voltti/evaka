@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   Chart,
   ChartData,
   ChartDataset,
@@ -20,7 +20,7 @@ import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import type { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -28,7 +28,8 @@ import { mockNow } from 'lib-common/utils/helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { Translations, useTranslation } from '../../../../state/i18n'
+import type { Translations } from '../../../../state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 
 import { ChartTooltip } from './ChartTooltip'
 

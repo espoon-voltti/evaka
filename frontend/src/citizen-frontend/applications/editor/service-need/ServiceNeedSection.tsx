@@ -4,16 +4,16 @@
 
 import React from 'react'
 
-import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import {
+import type {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import LocalDate from 'lib-common/local-date'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import EditorSection from '../../../applications/editor/EditorSection'
@@ -22,7 +22,7 @@ import PreferredStartSubSection from '../../../applications/editor/service-need/
 import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
 import { useTranslation } from '../../../localization'
-import { ApplicationFormDataErrors } from '../validations'
+import type { ApplicationFormDataErrors } from '../validations'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus

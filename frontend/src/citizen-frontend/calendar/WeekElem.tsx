@@ -7,8 +7,8 @@ import sum from 'lodash/sum'
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { scrollToPos } from 'lib-common/utils/scrolling'
@@ -26,7 +26,7 @@ import {
   CalendarEventCountContainer
 } from './CalendarEventCount'
 import { HistoryOverlay } from './HistoryOverlay'
-import { ChildImageData } from './RoundChildImages'
+import type { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 interface Props {

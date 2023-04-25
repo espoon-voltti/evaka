@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from 'citizen-frontend/api-client'
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   ChildPlacement,
   ChildPlacementResponse,
   PlacementTerminationRequestBody,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 const deserializeChildPlacement = ({
   startDate,

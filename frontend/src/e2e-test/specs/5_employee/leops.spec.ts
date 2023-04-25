@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -13,10 +13,9 @@ import {
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
-import ChildInformationPage, {
-  VasuAndLeopsSection
-} from '../../pages/employee/child-information'
+import type { EmployeeDetail } from '../../dev-api/types'
+import type { VasuAndLeopsSection } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   VasuEditPage,

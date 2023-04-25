@@ -12,7 +12,8 @@ import { faRedo } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-import { CancelableMessage, MessageContext } from './MessageContext'
+import type { CancelableMessage } from './MessageContext'
+import { MessageContext } from './MessageContext'
 import { undoMessage, undoMessageReply } from './api'
 
 export const UndoMessage = React.memo(function UndoMessageToast({

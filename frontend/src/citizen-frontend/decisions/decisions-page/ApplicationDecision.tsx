@@ -5,12 +5,12 @@
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import {
+import type {
   DecisionStatus,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import Button from 'lib-components/atoms/buttons/Button'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'

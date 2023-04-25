@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
-import { DecisionType } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { DecisionType } from 'lib-common/generated/api-types/decision'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilTrue } from '../../utils'
-import { Checkbox, Combobox, Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, Combobox } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
 

@@ -4,18 +4,20 @@
 
 import React, { useCallback, useMemo } from 'react'
 
-import {
+import type {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
 
 import { useTranslation } from '../common/i18n'
 
-import ChildList, { ListItem } from './ChildList'
-import { AttendanceStatuses, childAttendanceStatus } from './utils'
+import type { ListItem } from './ChildList'
+import ChildList from './ChildList'
+import type { AttendanceStatuses } from './utils'
+import { childAttendanceStatus } from './utils'
 
 interface Props {
   unitId: UUID

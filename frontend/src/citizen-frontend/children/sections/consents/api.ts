@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from 'citizen-frontend/api-client'
-import { CitizenChildConsent } from 'lib-common/generated/api-types/children'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { CitizenChildConsent } from 'lib-common/generated/api-types/children'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 export function getChildConsents(): Promise<
   Record<UUID, CitizenChildConsent[]>

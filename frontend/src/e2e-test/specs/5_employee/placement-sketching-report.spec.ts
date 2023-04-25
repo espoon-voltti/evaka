@@ -10,10 +10,8 @@ import {
   insertDaycarePlacementFixtures,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
@@ -21,7 +19,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Application } from '../../dev-api/types'
+import type { Application } from '../../dev-api/types'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
