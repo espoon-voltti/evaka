@@ -1,0 +1,43 @@
+name: Cleanup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 6' # At 04:00 UTC on Saturday
+
+permissions:
+  actions: write
+  # packages: write # using pat
+
+jobs:
+  cleaup-ghcr:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for name in $(gh api \
+                          -H "Accept: application/vnd.github+json" \
+                          -H "X-GitHub-Api-Version: 2022-11-28" \
+                          '/orgs/espoon-voltti/packages?package_type=container' | jq -r .[].name); do
+              if [[ $name == evaka/* ]]; then
+                  gh api \
+                      --method DELETE \
+                      -H "Accept: application/vnd.github+json" \
+                      -H "X-GitHub-Api-Version: 2022-11-28" \
+                      "/orgs/espoon-voltti/packages/container/${name/\//%2F}"
+              fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.EVAKA_PAT }}
+
+      - uses: actions/github-script@v6
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'build.yml',
+              ref: 'master',
+              inputs: {
+                'push': 'false'
+              }
+            })
