@@ -10,9 +10,9 @@ on:
     - master
   workflow_dispatch:
     inputs:
-      no_sha:
+      push:
         required: false
-        default: false
+        default: 'true'
 
 env:
   AWS_REGION: eu-west-1
@@ -69,11 +69,10 @@ jobs:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/proxy
           path: ./proxy
-          push: true
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
@@ -108,11 +107,10 @@ jobs:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/keycloak
           path: ./keycloak
-          push: true
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
@@ -150,12 +148,12 @@ jobs:
           registry: ghcr.io/espoon-voltti
           name: evaka/frontend-common
           path: ./frontend
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build frontend image builder
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -167,12 +165,12 @@ jobs:
           cache_from: ${{ steps.build.outputs.image_cache }}
           path: ./frontend
           target: builder
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
@@ -241,13 +239,13 @@ jobs:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/frontend
           path: ./frontend
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=pro
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
@@ -328,7 +326,6 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build API-gateway image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -338,11 +335,10 @@ jobs:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/api-gateway
           path: ./apigw
-          push: true
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build docker tests and image on fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
@@ -387,11 +383,10 @@ jobs:
           name: evaka/service
           path: .
           dockerfile: service/Dockerfile
-          push: true
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Build Evaka Service builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -404,11 +399,10 @@ jobs:
           cache_from: ${{ steps.build.outputs.image_cache }}
           path: .
           dockerfile: service/Dockerfile
-          push: true
+          push: ${{ inputs.push || 'true' }}
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Docker cleanup
         if: always()
@@ -455,7 +449,6 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             BASE_IMAGE=${{ needs.service.outputs.builder_image }}
-          no_sha: ${{ inputs.no_sha || 'false' }}
 
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -651,7 +644,7 @@ jobs:
           retention-days: 2
 
   frontend-install:
-    if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+    if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
     needs:
       - frontend
       - frontend-test
