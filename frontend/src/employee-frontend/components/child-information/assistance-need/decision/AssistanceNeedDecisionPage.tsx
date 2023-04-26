@@ -25,7 +25,11 @@ import {
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getAssistanceNeedDecision, sendAssistanceNeedDecision } from './api'
+import {
+  getAssistanceNeedDecision,
+  revertToUnsentAssistanceNeedDecision,
+  sendAssistanceNeedDecision
+} from './api'
 
 const StickyFooterContainer = styled.div`
   padding: ${defaultMargins.xs};
@@ -122,6 +126,17 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                       </InformationText>
                     </FixedSpaceColumn>
                   )}
+
+                  {decision.sentForDecision &&
+                    permittedActions.includes('REVERT_TO_UNSENT') && (
+                      <AsyncButton
+                        primary
+                        text={t.revertToUnsent}
+                        onClick={() => revertToUnsentAssistanceNeedDecision(id)}
+                        onSuccess={reloadDecision}
+                        data-qa="revert-to-unsent"
+                      />
+                    )}
 
                   {permittedActions.includes('SEND') && (
                     <AsyncButton

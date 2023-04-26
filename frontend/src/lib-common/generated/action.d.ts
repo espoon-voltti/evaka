@@ -132,6 +132,7 @@ export type AssistanceNeedDecision =
   | 'READ'
   | 'READ_DECISION_MAKER_OPTIONS'
   | 'READ_IN_REPORT'
+  | 'REVERT_TO_UNSENT'
   | 'SEND'
   | 'UPDATE'
   | 'UPDATE_DECISION_MAKER'

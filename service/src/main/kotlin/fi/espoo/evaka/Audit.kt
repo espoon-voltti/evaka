@@ -77,6 +77,7 @@ enum class Audit(
     ChildAssistanceNeedDecisionUpdate,
     ChildAssistanceNeedDecisionsList,
     ChildAssistanceNeedDecisionSend,
+    ChildAssistanceNeedDecisionRevertToUnsent,
     ChildAssistanceNeedDecisionDecide,
     ChildAssistanceNeedDecisionOpened,
     ChildAssistanceNeedDecisionUpdateDecisionMaker,

@@ -288,4 +288,33 @@ describe('Assistance Need Decisions - Preview page', () => {
       ''
     )
   })
+
+  test('Sent decision can be reverted by admin', async () => {
+    const admin = await Fixture.employeeAdmin().save()
+    await employeeLogin(page, admin.data)
+
+    await page.goto(
+      `${
+        config.employeeUrl
+      }/child-information/${childId}/assistance-need-decision/${
+        preFilledAssistanceNeedDecision?.id ?? ''
+      }`
+    )
+    assistanceNeedDecisionPreviewPage = new AssistanceNeedDecisionPreviewPage(
+      page
+    )
+
+    await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
+    await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
+      LocalDate.todayInSystemTz().format()
+    )
+    await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
+      'disabled',
+      ''
+    )
+
+    await assistanceNeedDecisionPreviewPage.revertToUnsent.click()
+    await assistanceNeedDecisionPreviewPage.decisionSentAt.waitUntilHidden()
+    await assistanceNeedDecisionPreviewPage.revertToUnsent.waitUntilHidden()
+  })
 })
