@@ -518,8 +518,13 @@ function useEditState(
   const today = LocalDate.todayInSystemTz()
 
   const anyChildReservable = childrenWithReservations !== undefined
+  const allChildrenHaveUneditableAbsence = childrenWithReservations.every(
+    (child) => child.absence && !child.absence.editable
+  )
   const reservationsEditable =
-    anyChildReservable && reservableRange.includes(date)
+    reservableRange.includes(date) &&
+    anyChildReservable &&
+    !allChildrenHaveUneditableAbsence
   const absencesEditable = anyChildReservable && date.isEqualOrAfter(today)
 
   const [editing, { on: startEditing, off: stopEditing }] = useBoolean(false)
