@@ -593,9 +593,12 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfAssistanceNeedDecision()
         ),
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
+        @Suppress("UNCHECKED_CAST")
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
-            IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()
+            IsEmployee.andIsDecisionMakerForAssistanceNeedDecision(),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in AssistanceNeedDecisionId>,
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision() as ScopedActionRule<in AssistanceNeedDecisionId>
         ),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
