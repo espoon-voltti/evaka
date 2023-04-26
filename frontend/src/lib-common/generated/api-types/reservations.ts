@@ -16,7 +16,7 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo
 */
 export interface AbsenceInfo {
-  markedByEmployee: boolean
+  editable: boolean
   type: AbsenceType
 }
 

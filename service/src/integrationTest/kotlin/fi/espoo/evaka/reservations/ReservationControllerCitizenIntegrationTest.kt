@@ -398,11 +398,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.OTHER_ABSENCE,
-                                    markedByEmployee = false
-                                )
+                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
                         ),
                         dayChild(testChild_2.id, contractDays = true)
                     )
@@ -457,20 +453,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.OTHER_ABSENCE,
-                                    markedByEmployee = false
-                                )
+                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
-                            absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.OTHER_ABSENCE,
-                                    markedByEmployee = false
-                                )
+                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
                         )
                     )
                     .sortedBy { it.childId },
@@ -484,20 +472,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.OTHER_ABSENCE,
-                                    markedByEmployee = false
-                                )
+                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.OTHER_ABSENCE,
-                                    markedByEmployee = false
-                                ),
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                         )
                     )
                     .sortedBy { it.childId },
@@ -555,10 +536,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             testChild_2.id,
                             contractDays = true,
                             absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.PLANNED_ABSENCE,
-                                    markedByEmployee = true
-                                )
+                                AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = false)
                         ),
                     )
                     .sortedBy { it.childId },
@@ -574,11 +552,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
-                            absence =
-                                AbsenceInfo(
-                                    type = AbsenceType.OTHER_ABSENCE,
-                                    markedByEmployee = false
-                                )
+                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
                         )
                     )
                     .sortedBy { it.childId },

@@ -370,15 +370,15 @@ const Day = React.memo(function Day({
     },
     [dateType, todayRef]
   )
-  const markedByEmployee = useMemo(
+  const highlight = useMemo(
     () =>
       day.children.length > 0 &&
-      day.children.every((c) => c.absence?.markedByEmployee ?? false),
-    [day.children]
-  )
-  const holidayPeriod = useMemo(
-    () => holidayPeriods.some((p) => p.includes(day.date)),
-    [day.date, holidayPeriods]
+      day.children.every((c) => c.absence && !c.absence.editable)
+        ? 'nonEditableAbsence'
+        : holidayPeriods.some((p) => p.includes(day.date))
+        ? 'holidayPeriod'
+        : undefined,
+    [day.children, day.date, holidayPeriods]
   )
   const onClick = useCallback(
     () => selectDate(day.date),
@@ -411,10 +411,9 @@ const Day = React.memo(function Day({
   return (
     <DayCell
       ref={ref}
-      today={dateType === 'today'}
-      markedByEmployee={markedByEmployee}
-      holidayPeriod={holidayPeriod}
-      selected={selected}
+      $today={dateType === 'today'}
+      $highlight={highlight}
+      $selected={selected}
       onClick={onClick}
       data-qa={`desktop-calendar-day-${day.date.formatIso()}`}
     >
@@ -503,10 +502,9 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
 `
 
 const DayCell = styled.button<{
-  today: boolean
-  markedByEmployee: boolean
-  selected: boolean
-  holidayPeriod: boolean
+  $today: boolean
+  $highlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
+  $selected: boolean
 }>`
   display: flex;
   flex-direction: column;
@@ -516,9 +514,9 @@ const DayCell = styled.button<{
   min-height: 150px;
   padding: ${defaultMargins.s};
   background-color: ${(p) =>
-    p.markedByEmployee
+    p.$highlight === 'nonEditableAbsence'
       ? p.theme.colors.grayscale.g15
-      : p.holidayPeriod
+      : p.$highlight === 'holidayPeriod'
       ? p.theme.colors.accents.a10powder
       : p.theme.colors.grayscale.g0};
   border: none;
@@ -528,7 +526,7 @@ const DayCell = styled.button<{
   text-align: left;
 
   ${(p) =>
-    p.today
+    p.$today
       ? css`
           border-left: 4px solid ${colors.status.success};
           padding-left: calc(${defaultMargins.s} - 3px);
@@ -536,7 +534,7 @@ const DayCell = styled.button<{
       : ''};
 
   ${(p) =>
-    p.selected
+    p.$selected
       ? css`
           box-shadow: 0 2px 3px 2px #00000030;
           z-index: 1;

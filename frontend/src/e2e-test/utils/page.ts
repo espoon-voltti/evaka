@@ -211,7 +211,7 @@ export class Element {
   }
 
   async assertTextEquals(expected: string): Promise<void> {
-    await this.assertText((text) => text === expected)
+    await waitUntilEqual(() => this.text, expected)
   }
 
   get visible(): Promise<boolean> {

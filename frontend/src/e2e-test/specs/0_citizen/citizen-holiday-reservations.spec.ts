@@ -240,8 +240,14 @@ describe('Holiday periods', () => {
       await assertFreeAbsences(true)
 
       const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 26))
-      await dayView.assertAbsence(child.id, 'Poissa')
-      await dayView.assertAbsence(child2.id, 'Poissa')
+      await dayView.assertAbsence(
+        child.id,
+        'Henkilökunnan merkitsemä poissaolo'
+      )
+      await dayView.assertAbsence(
+        child2.id,
+        'Henkilökunnan merkitsemä poissaolo'
+      )
       await dayView.close()
 
       holidayModal = await calendar.openHolidayModal()
@@ -334,7 +340,10 @@ describe('Holiday periods', () => {
       )
 
       const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 26))
-      await dayView.assertAbsence(child.id, 'Poissa')
+      await dayView.assertAbsence(
+        child.id,
+        'Henkilökunnan merkitsemä poissaolo'
+      )
       await dayView.assertNoReservation(child2.id)
     })
   })

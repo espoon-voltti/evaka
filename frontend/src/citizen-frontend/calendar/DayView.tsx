@@ -296,8 +296,7 @@ export default React.memo(function DayView({
                             <ReservationTable>
                               <LabelLike>{i18n.calendar.reservation}</LabelLike>
                               <div>
-                                {editing &&
-                                !(absence && absence.markedByEmployee) ? (
+                                {editing && (!absence || absence.editable) ? (
                                   <EditReservation
                                     canAddSecondReservation={
                                       shiftCare && !reservations[1]
@@ -519,8 +518,13 @@ function useEditState(
   const today = LocalDate.todayInSystemTz()
 
   const anyChildReservable = childrenWithReservations !== undefined
+  const allChildrenHaveUneditableAbsence = childrenWithReservations.every(
+    (child) => child.absence && !child.absence.editable
+  )
   const reservationsEditable =
-    anyChildReservable && reservableRange.includes(date)
+    reservableRange.includes(date) &&
+    anyChildReservable &&
+    !allChildrenHaveUneditableAbsence
   const absencesEditable = anyChildReservable && date.isEqualOrAfter(today)
 
   const [editing, { on: startEditing, off: stopEditing }] = useBoolean(false)
@@ -678,7 +682,7 @@ const Absence = React.memo(function Absence({
   const [open, setOpen] = useState(false)
   const onClick = useCallback(() => setOpen((prev) => !prev), [])
 
-  if (!absence.markedByEmployee) {
+  if (absence.editable) {
     return (
       <span data-qa="absence">
         {absence.type === 'SICKLEAVE'
