@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from '../date-range'
 import FiniteDateRange from '../finite-date-range'
 import { TimeRange } from '../generated/api-types/shared'
 import LocalDate from '../local-date'
@@ -26,6 +27,10 @@ export const localDate = transformed(
     s !== null ? ValidationSuccess.of(s) : ValidationError.objectFieldError
 )
 
+export const optionalLocalDate = transformed(value<LocalDate | null>(), (s) =>
+  ValidationSuccess.of(s)
+)
+
 export const localDateRange = transformed(
   object({
     startDate: localDate,
@@ -44,6 +49,28 @@ export const localDateRange = transformed(
     } else {
       return ValidationSuccess.of(new FiniteDateRange(startDate, endDate))
     }
+  }
+)
+
+export const localOpenEndedDateRange = transformed(
+  object({
+    startDate: localDate,
+    endDate: optionalLocalDate
+  }),
+  ({ startDate, endDate }) => {
+    if (startDate === undefined && endDate === undefined) {
+      return ValidationSuccess.of(undefined)
+    }
+
+    if (startDate === undefined) {
+      return ValidationError.of('timeFormat')
+    }
+
+    if (endDate !== null && endDate.isBefore(startDate)) {
+      return ValidationError.of('timeFormat')
+    }
+
+    return ValidationSuccess.of(new DateRange(startDate, endDate))
   }
 )
 
