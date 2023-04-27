@@ -9,6 +9,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
+import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/employeeMobile'
 
@@ -21,6 +22,7 @@ Sentry.init({
   dsn: appConfig.sentry?.dsn,
   environment: getEnvironment()
 })
+Sentry.addGlobalEventProcessor(sentryEventFilter)
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
