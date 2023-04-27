@@ -16,10 +16,11 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
-import fi.espoo.evaka.shared.config.TestDataSource
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
+import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import io.opentracing.Tracer
@@ -49,7 +50,6 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
             .build()
 
     private lateinit var jdbi: Jdbi
-    @Autowired private lateinit var dataSource: TestDataSource
 
     /** HTTP client for testing the application */
     @Autowired protected lateinit var http: FuelManager
@@ -72,19 +72,17 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         assert(httpPort > 0)
         http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
-        jdbi = configureJdbi(Jdbi.create(dataSource))
+        jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi, tracer).connectWithManualLifecycle()
         if (!resetDbBeforeEach) {
-            db.close()
-            dataSource.resetDatabase()
+            db.transaction { it.resetDatabase() }
         }
     }
 
     @BeforeEach
     fun resetBeforeTest() {
         if (resetDbBeforeEach) {
-            db.close()
-            dataSource.resetDatabase()
+            db.transaction { it.resetDatabase() }
         }
         MockEmailClient.clear()
     }

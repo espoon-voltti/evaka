@@ -134,8 +134,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.config.DevDataSource
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -165,7 +165,10 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import java.util.concurrent.TimeUnit
+import mu.KotlinLogging
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json
 import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -186,6 +189,8 @@ private val fakeAdmin =
         roles = setOf(UserRole.ADMIN)
     )
 
+private val logger = KotlinLogging.logger {}
+
 @Profile("enable_dev_api")
 @RestController
 @RequestMapping("/dev-api")
@@ -196,7 +201,6 @@ class DevApi(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
-    private val dataSource: DevDataSource,
     bucketEnv: BucketEnv
 ) {
     private val filesBucket = bucketEnv.attachments
@@ -216,10 +220,14 @@ class DevApi(
 
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database, clock: EvakaClock) {
-        dataSource.resetDatabase()
+        // Run async jobs before database reset to avoid database locks/deadlocks
+        runAllAsyncJobs(clock)
 
         db.connect { dbc ->
-            dbc.transaction {
+            dbc.waitUntilNoQueriesRunning(timeout = Duration.ofSeconds(10))
+            dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) {
+                it.resetDatabase()
+
                 // Terms are not inserted by fixtures
                 it.runDevScript("preschool-terms.sql")
                 it.runDevScript("club-terms.sql")
@@ -1454,6 +1462,65 @@ RETURNING id
             }
         }
 }
+
+// https://www.postgresql.org/docs/14/errcodes-appendix.html
+// Class 55 — Object Not In Prerequisite State: lock_not_available
+private const val LOCK_NOT_AVAILABLE: String = "55P03"
+
+private fun <T> Database.Connection.withLockedDatabase(
+    timeout: Duration,
+    f: (tx: Database.Transaction) -> T
+): T {
+    val start = Instant.now()
+    do {
+        try {
+            return transaction {
+                it.execute("SELECT lock_database_nowait()")
+                f(it)
+            }
+        } catch (e: UnableToExecuteStatementException) {
+            when (e.psqlCause()?.sqlState) {
+                LOCK_NOT_AVAILABLE -> {}
+                else -> throw e
+            }
+        }
+        logger.warn { "Failed to obtain database lock" }
+        TimeUnit.MILLISECONDS.sleep(100)
+    } while (Duration.between(start, Instant.now()).abs() < timeout)
+    error("Timed out while waiting for database lock")
+}
+
+private data class ActiveConnection(
+    val state: String,
+    val xactStart: Instant?,
+    val queryStart: Instant?,
+    val query: String?
+)
+
+private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
+    val start = Instant.now()
+    var connections: List<ActiveConnection>
+    do {
+        connections = read { it.getActiveConnections() }
+        if (connections.isEmpty()) {
+            return
+        }
+        TimeUnit.MILLISECONDS.sleep(100)
+    } while (Duration.between(start, Instant.now()).abs() < timeout)
+    error("Timed out while waiting for database activity to finish: $connections")
+}
+
+private fun Database.Read.getActiveConnections(): List<ActiveConnection> =
+    createQuery(
+            """
+SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
+WHERE pid <> pg_backend_pid() AND datname = current_database() AND usename = current_user AND backend_type = 'client backend'
+AND state != 'idle'
+    """
+                .trimIndent()
+        )
+        .mapTo<ActiveConnection>()
+        .list()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql
