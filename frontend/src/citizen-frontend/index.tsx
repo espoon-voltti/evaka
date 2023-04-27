@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom'
 import 'lib-common/assets/fonts/fonts.css'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
+import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
@@ -22,6 +23,7 @@ Sentry.init({
   dsn: appConfig.sentry?.dsn,
   environment: getEnvironment()
 })
+Sentry.addGlobalEventProcessor(sentryEventFilter)
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
