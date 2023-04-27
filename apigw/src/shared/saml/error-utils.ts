@@ -4,13 +4,32 @@
 
 import { Request } from 'express'
 import { XMLParser } from 'fast-xml-parser'
-import { logDebug, logError } from '../../../logging'
-import {
-  PassportSamlError,
-  PrimaryStatusCodeValue,
-  SecondaryStatusCodeValue,
-  StatusObject
-} from './types'
+import { logDebug, logError } from '../logging'
+
+export interface PassportSamlError extends Error {
+  statusXml?: string
+}
+
+export type PrimaryStatusCodeValue =
+  | 'urn:oasis:names:tc:SAML:2.0:status:Success'
+  | 'urn:oasis:names:tc:SAML:2.0:status:Requester'
+  | 'urn:oasis:names:tc:SAML:2.0:status:Responder'
+  | 'urn:oasis:names:tc:SAML:2.0:status:VersionMismatch'
+export type SecondaryStatusCodeValue =
+  | 'urn:oasis:names:tc:SAML:2.0:status:AuthnFailed'
+  | 'urn:oasis:names:tc:SAML:2.0:status:RequestDenied'
+
+export interface StatusObject {
+  Status: {
+    StatusCode: {
+      '@_Value': PrimaryStatusCodeValue
+      StatusCode?: {
+        '@_Value': SecondaryStatusCodeValue
+      }
+    }
+    StatusMessage: string
+  }
+}
 
 function trimStatusCodePrefix(
   statusCode: PrimaryStatusCodeValue | SecondaryStatusCodeValue

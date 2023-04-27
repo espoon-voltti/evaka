@@ -11,7 +11,6 @@ import { evakaServiceUrl } from '../config'
 import { sessionCookie, SessionType } from '../session'
 import { csrfCookieName } from '../middleware/csrf'
 import { CitizenUser, EmployeeUser } from '../service-client'
-import { DevCitizen } from '../dev-api'
 
 export class GatewayTester {
   public readonly client: AxiosInstance
@@ -83,18 +82,22 @@ export class GatewayTester {
   }
 
   public async login(
-    user: (CitizenUser & DevCitizen) | EmployeeUser,
+    user: CitizenUser | EmployeeUser,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postData?: any
   ): Promise<void> {
-    const usingDevStrategy = !postData
-    postData = postData !== undefined ? postData : { preset: 'dummy' }
     if (this.sessionType === 'employee') {
-      if (usingDevStrategy) {
-        this.nockScope
-          .get('/dev-api/employee/external-id/espoo-ad:dummy')
-          .reply(200, user)
-      }
+      postData =
+        postData !== undefined
+          ? postData
+          : {
+              preset: JSON.stringify({
+                externalId: 'dummy',
+                firstName: '',
+                lastName: '',
+                email: ''
+              })
+            }
       this.nockScope.post('/system/employee-login').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',
@@ -106,9 +109,7 @@ export class GatewayTester {
       )
       this.nockScope.done()
     } else {
-      if (usingDevStrategy) {
-        this.nockScope.get('/dev-api/citizen/ssn/dummy').reply(200, user)
-      }
+      postData = postData !== undefined ? postData : { preset: 'dummy' }
       this.nockScope.post('/system/citizen-login').reply(200, user)
       await this.client.post(
         '/api/application/auth/saml/login/callback',

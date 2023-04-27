@@ -2,22 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import certificates, { TrustedCertificates } from './certificates'
 import type redis from 'redis'
 
 export interface Config {
   ad: {
-    mock: boolean
     externalIdPrefix: string
     userIdKey: string
-    nameIdFormat: string
-    decryptAssertions: boolean
-    saml: EvakaSamlConfig | undefined
-  }
-  sfi: {
-    mock: boolean
-    saml: EvakaSamlConfig | undefined
-  }
+  } & (
+    | { type: 'mock' | 'disabled' }
+    | {
+        type: 'saml'
+        saml: EvakaSamlConfig
+      }
+  )
+  sfi: { type: 'mock' | 'disabled' } | { type: 'saml'; saml: EvakaSamlConfig }
+  keycloakEmployee: EvakaSamlConfig | undefined
+  keycloakCitizen: EvakaSamlConfig | undefined
   redis: {
     host: string | undefined
     port: number | undefined
@@ -41,9 +41,11 @@ export interface EvakaSamlConfig {
   entryPoint: string
   logoutUrl: string
   issuer: string
-  publicCert: string | TrustedCertificates[]
+  publicCert: string | string[]
   privateCert: string
   validateInResponseTo: boolean
+  decryptAssertions: boolean
+  nameIdFormat?: string | undefined
 }
 
 export const gatewayRoles = ['enduser', 'internal'] as const
@@ -123,53 +125,147 @@ export function configFromEnv(): Config {
     env('DEV_LOGIN', parseBoolean) ??
     ifNodeEnv(['local', 'test'], true) ??
     false
-  const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
+  const adType =
+    gatewayRole === 'enduser' ? 'disabled' : adMock ? 'mock' : 'saml'
   const defaultUserIdKey =
     'http://schemas.microsoft.com/identity/claims/objectidentifier'
-  const defaultNameIdFormat =
-    'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
   const ad: Config['ad'] = {
-    mock: adMock,
     externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
     userIdKey: process.env.AD_USER_ID_KEY ?? defaultUserIdKey,
-    nameIdFormat: process.env.AD_NAME_ID_FORMAT ?? defaultNameIdFormat,
-    decryptAssertions: env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
-    saml:
-      adCallbackUrl && !adMock
-        ? {
-            callbackUrl: required(adCallbackUrl),
+    ...(adType !== 'saml'
+      ? { type: adType }
+      : {
+          type: adType,
+          saml: {
+            callbackUrl: required(process.env.AD_SAML_CALLBACK_URL),
             entryPoint: required(process.env.AD_SAML_ENTRYPOINT_URL),
             logoutUrl: required(process.env.AD_SAML_LOGOUT_URL),
             issuer: required(process.env.AD_SAML_ISSUER),
             publicCert: required(
-              envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+              envArray('AD_SAML_PUBLIC_CERT', (value) => value)
             ),
             privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
-            validateInResponseTo: true
+            validateInResponseTo: true,
+            decryptAssertions:
+              env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
+            nameIdFormat: process.env.AD_NAME_ID_FORMAT
           }
-        : undefined
+        })
   }
 
   const sfiMock =
     env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
-  const sfiCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
-  const sfi: Config['sfi'] = {
-    mock: sfiMock,
-    saml:
-      sfiCallbackUrl && !sfiMock
-        ? {
-            callbackUrl: required(sfiCallbackUrl),
+  const sfiType =
+    gatewayRole === 'internal' ? 'disabled' : sfiMock ? 'mock' : 'saml'
+  const sfi: Config['sfi'] =
+    sfiType !== 'saml'
+      ? { type: sfiType }
+      : {
+          type: sfiType,
+          saml: {
+            callbackUrl: required(process.env.SFI_SAML_CALLBACK_URL),
             entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
             logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
             issuer: required(process.env.SFI_SAML_ISSUER),
             publicCert: required(
-              envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+              envArray('SFI_SAML_PUBLIC_CERT', (value) => value)
             ),
             privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
-            validateInResponseTo: true
+            validateInResponseTo: true,
+            decryptAssertions: true
           }
-        : undefined
-  }
+        }
+
+  const keycloakEmployeeCallbackUrl =
+    process.env.EVAKA_SAML_CALLBACK_URL ??
+    ifNodeEnv(
+      ['local', 'test'],
+      `http://localhost:9099/api/internal/auth/evaka/login/callback`
+    )
+
+  const keycloakEmployee: EvakaSamlConfig | undefined =
+    keycloakEmployeeCallbackUrl
+      ? {
+          callbackUrl: required(keycloakEmployeeCallbackUrl),
+          entryPoint: required(
+            process.env.EVAKA_SAML_ENTRYPOINT ??
+              ifNodeEnv(
+                ['local', 'test'],
+                'http://localhost:8080/auth/realms/evaka/protocol/saml'
+              )
+          ),
+          // NOTE: Same as entrypoint, on purpose
+          logoutUrl: required(
+            process.env.EVAKA_SAML_ENTRYPOINT ??
+              ifNodeEnv(
+                ['local', 'test'],
+                'http://localhost:8080/auth/realms/evaka/protocol/saml'
+              )
+          ),
+          issuer: required(
+            process.env.EVAKA_SAML_ISSUER ??
+              ifNodeEnv(['local', 'test'], 'evaka')
+          ),
+          publicCert: required(
+            envArray('EVAKA_SAML_PUBLIC_CERT', (value) => value) ??
+              ifNodeEnv(
+                ['local', 'test'],
+                ['config/test-cert/keycloak-local.pem']
+              )
+          ),
+          privateCert: required(
+            process.env.EVAKA_SAML_PRIVATE_CERT ??
+              ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+          ),
+          validateInResponseTo: true,
+          decryptAssertions: true
+        }
+      : undefined
+
+  const keycloakCitizenCallbackUrl =
+    process.env.EVAKA_CUSTOMER_SAML_CALLBACK_URL ??
+    ifNodeEnv(
+      ['local', 'test'],
+      `http://localhost:9099/api/application/auth/evaka-customer/login/callback`
+    )
+
+  const keycloakCitizen: EvakaSamlConfig | undefined =
+    keycloakCitizenCallbackUrl
+      ? {
+          callbackUrl: required(keycloakCitizenCallbackUrl),
+          entryPoint: required(
+            process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
+              ifNodeEnv(
+                ['local', 'test'],
+                'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+              )
+          ),
+          logoutUrl: required(
+            process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
+              ifNodeEnv(
+                ['local', 'test'],
+                'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+              )
+          ),
+          issuer: required(
+            process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
+              ifNodeEnv(['local', 'test'], 'evaka-customer')
+          ),
+          publicCert: required(
+            envArray('EVAKA_CUSTOMER_SAML_PUBLIC_CERT', (value) => value) ??
+              ifNodeEnv(
+                ['local', 'test'],
+                ['config/test-cert/keycloak-local.pem']
+              )
+          ),
+          privateCert: required(
+            process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
+              ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+          ),
+          validateInResponseTo: true,
+          decryptAssertions: true
+        }
+      : undefined
 
   return {
     ad,
@@ -183,7 +279,9 @@ export function configFromEnv(): Config {
         env('REDIS_DISABLE_SECURITY', parseBoolean) ??
         ifNodeEnv(['local'], true) ??
         false
-    }
+    },
+    keycloakEmployee,
+    keycloakCitizen
   }
 }
 
@@ -243,91 +341,6 @@ export const enableDevApi =
   env('ENABLE_DEV_API', parseBoolean) ??
   ifNodeEnv(['local', 'test'], true) ??
   false
-
-const certificateNames = Object.keys(
-  certificates
-) as ReadonlyArray<TrustedCertificates>
-
-const evakaCallbackUrl =
-  process.env.EVAKA_SAML_CALLBACK_URL ??
-  ifNodeEnv(
-    ['local', 'test'],
-    `http://localhost:9099/api/internal/auth/evaka/login/callback`
-  )
-
-const evakaCustomerCallbackUrl =
-  process.env.EVAKA_CUSTOMER_SAML_CALLBACK_URL ??
-  ifNodeEnv(
-    ['local', 'test'],
-    `http://localhost:9099/api/application/auth/evaka-customer/login/callback`
-  )
-
-export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
-  ? {
-      callbackUrl: required(evakaCallbackUrl),
-      entryPoint: required(
-        process.env.EVAKA_SAML_ENTRYPOINT ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka/protocol/saml'
-          )
-      ),
-      // NOTE: Same as entrypoint, on purpose
-      logoutUrl: required(
-        process.env.EVAKA_SAML_ENTRYPOINT ??
-          ifNodeEnv(
-            ['local', 'test'],
-            'http://localhost:8080/auth/realms/evaka/protocol/saml'
-          )
-      ),
-      issuer: required(
-        process.env.EVAKA_SAML_ISSUER ?? ifNodeEnv(['local', 'test'], 'evaka')
-      ),
-      publicCert: required(
-        process.env.EVAKA_SAML_PUBLIC_CERT ??
-          ifNodeEnv(['local', 'test'], 'config/test-cert/keycloak-local.pem')
-      ),
-      privateCert: required(
-        process.env.EVAKA_SAML_PRIVATE_CERT ??
-          ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-      ),
-      validateInResponseTo: true
-    }
-  : undefined
-
-export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
-  evakaCustomerCallbackUrl
-    ? {
-        callbackUrl: required(evakaCustomerCallbackUrl),
-        entryPoint: required(
-          process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
-            ifNodeEnv(
-              ['local', 'test'],
-              'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
-            )
-        ),
-        logoutUrl: required(
-          process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
-            ifNodeEnv(
-              ['local', 'test'],
-              'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
-            )
-        ),
-        issuer: required(
-          process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
-            ifNodeEnv(['local', 'test'], 'evaka-customer')
-        ),
-        publicCert: required(
-          process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??
-            ifNodeEnv(['local', 'test'], 'config/test-cert/keycloak-local.pem')
-        ),
-        privateCert: required(
-          process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
-            ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-        ),
-        validateInResponseTo: true
-      }
-    : undefined
 
 const titaniaUsername = process.env.EVAKA_TITANIA_USERNAME
 export const titaniaConfig = titaniaUsername

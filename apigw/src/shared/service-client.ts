@@ -5,8 +5,11 @@
 import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config'
-import { createAuthHeader, createIntegrationAuthHeader } from './auth'
-import { SamlUser } from './routes/auth/saml/types'
+import {
+  createAuthHeader,
+  createIntegrationAuthHeader,
+  EvakaSessionUser
+} from './auth'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
@@ -14,7 +17,7 @@ export const client = axios.create({
 
 export type UUID = string
 
-const machineUser: SamlUser = {
+const machineUser: EvakaSessionUser = {
   id: '00000000-0000-0000-0000-000000000000',
   roles: [],
   userType: 'SYSTEM'
@@ -49,7 +52,7 @@ export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
 
 export function createServiceRequestHeaders(
   req: express.Request | undefined,
-  user: SamlUser | undefined | null = req?.user
+  user: EvakaSessionUser | undefined | null = req?.user
 ) {
   const headers: ServiceRequestHeaders = {}
   if (req?.path.startsWith('/integration/')) {
@@ -219,11 +222,6 @@ export async function getUserDetails(req: express.Request, personId: string) {
     headers: createServiceRequestHeaders(req)
   })
   return data
-}
-
-export interface EmployeePinLoginRequest {
-  employeeId: UUID
-  pin: string
 }
 
 export interface EmployeePinLoginResponse {
