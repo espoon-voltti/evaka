@@ -395,10 +395,10 @@ describe('Assistance need decisions report', () => {
       })
       .save()
 
-    const seo = (await Fixture.employeeSpecialEducationTeacher(unitId).save())
+    const VEO = (await Fixture.employeeSpecialEducationTeacher(unitId).save())
       .data
 
-    await employeeLogin(page, seo)
+    await employeeLogin(page, VEO)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
 
     const assistanceNeedDecisionsPage = new AssistanceNeedDecisionsReport(page)
