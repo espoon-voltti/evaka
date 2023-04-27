@@ -11,7 +11,7 @@ import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
 import xmldom from '@xmldom/xmldom'
 import zlib from 'zlib'
-import { configFromEnv } from '../config'
+import { Config, configFromEnv } from '../config'
 import { fromCallback } from '../promise-utils'
 import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
@@ -57,10 +57,10 @@ describe('SAML Single Logout', () => {
   beforeEach(async () => {
     redisClient = redisMock.createClient()
     const { default: enduserGwApp } = await import('../../enduser/app')
-    const config = {
+    const config: Config = {
       ...configFromEnv(),
       sfi: {
-        mock: false,
+        type: 'saml',
         // Explicitly use separate domains for the simulated SP and IdP to replicate
         // 3rd party cookie and SAML message parsing issues only present in those
         // conditions. SP must be in a domain that, from a browser's cookie handling

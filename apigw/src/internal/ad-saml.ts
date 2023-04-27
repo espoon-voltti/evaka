@@ -29,7 +29,7 @@ async function verifyProfile(
     value == null ? undefined : String(value)
 
   const aad = profile[config.userIdKey]
-  if (!config.mock && !aad) throw Error('No user ID in SAML data')
+  if (!aad) throw Error('No user ID in SAML data')
   const person = await employeeLogin({
     externalId: `${config.externalIdPrefix}:${aad}`,
     firstName: asString(profile[AD_GIVEN_NAME_KEY]) ?? '',

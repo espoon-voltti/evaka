@@ -71,9 +71,9 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
     router.use(publicRoutes)
     router.use(mapRoutes)
 
-    if (config.sfi.mock) {
+    if (config.sfi.type === 'mock') {
       router.use('/auth/saml', createDevSfiRouter())
-    } else {
+    } else if (config.sfi.type === 'saml') {
       const suomifiSamlConfig = createSamlConfig(
         config.sfi.saml,
         redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })

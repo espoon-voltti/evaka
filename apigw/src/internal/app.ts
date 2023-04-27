@@ -105,9 +105,9 @@ export default function internalGwApp(
       next()
     })
 
-    if (config.ad.mock) {
+    if (config.ad.type === 'mock') {
       router.use('/auth/saml', createDevAdRouter())
-    } else {
+    } else if (config.ad.type === 'saml') {
       const adSamlConfig = createSamlConfig(
         config.ad.saml,
         redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
