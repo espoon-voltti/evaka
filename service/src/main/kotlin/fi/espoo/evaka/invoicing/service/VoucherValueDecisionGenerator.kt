@@ -37,6 +37,7 @@ import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getVoucherValues
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -247,6 +248,7 @@ private fun generateNewValueDecisions(
                     family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
                 val baseCoPayment =
                     calculateBaseFee(
+                        placement?.type ?: PlacementType.DAYCARE,
                         price,
                         family.getSize(),
                         familyIncomes + listOfNotNull(childIncome)
@@ -284,7 +286,11 @@ private fun generateNewValueDecisions(
                             validTo = period.end,
                             child = ChildWithDateOfBirth(voucherChild.id, voucherChild.dateOfBirth),
                             baseCoPayment = baseCoPayment,
-                            siblingDiscount = price.siblingDiscountPercent(1),
+                            siblingDiscount =
+                                price.siblingDiscountPercent(
+                                    1,
+                                    placement?.type ?: PlacementType.DAYCARE
+                                ),
                             baseValue = 0
                         )
                 }
@@ -301,7 +307,9 @@ private fun generateNewValueDecisions(
                         )
                         .indexOfFirst { (child, _) -> child == voucherChild }
 
-                val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
+                val siblingDiscountMultiplier =
+                    price.siblingDiscountMultiplier(siblingIndex + 1, placement.type)
+
                 val coPaymentBeforeAlterations =
                     calculateFeeBeforeFeeAlterations(
                         baseCoPayment,
@@ -343,7 +351,8 @@ private fun generateNewValueDecisions(
                                 placement.missingServiceNeed
                             ),
                         baseCoPayment = baseCoPayment,
-                        siblingDiscount = price.siblingDiscountPercent(siblingIndex + 1),
+                        siblingDiscount =
+                            price.siblingDiscountPercent(siblingIndex + 1, placement.type),
                         coPayment = coPaymentBeforeAlterations,
                         feeAlterations =
                             toFeeAlterationsWithEffects(

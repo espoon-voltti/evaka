@@ -1512,7 +1512,9 @@ export class Fixture {
       temporaryFee: 2800,
       temporaryFeePartDay: 1500,
       temporaryFeeSibling: 1500,
-      temporaryFeeSiblingPartDay: 800
+      temporaryFeeSiblingPartDay: 800,
+      preschoolClubFee: null,
+      preschoolClubSiblingDiscount: null
     })
   }
 

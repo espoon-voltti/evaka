@@ -77,6 +77,18 @@ export default class FinanceBasicsPage {
             'siblingDiscount2Plus',
             formatPercents(thresholds.siblingDiscount2Plus)
           )
+          if (thresholds.preschoolClubFee !== null) {
+            await expectValueToBe(
+              'preschoolClubFee',
+              formatEuros(thresholds.preschoolClubFee)
+            )
+          }
+          if (thresholds.preschoolClubSiblingDiscount !== null) {
+            await expectValueToBe(
+              'preschoolClubSiblingDiscount',
+              formatPercents(thresholds.preschoolClubSiblingDiscount)
+            )
+          }
         }
       }
     },
@@ -119,6 +131,12 @@ export default class FinanceBasicsPage {
       ),
       temporaryFeeSiblingPartDay: new TextInput(
         this.page.find('[data-qa="temporary-fee-sibling-part-day"]')
+      ),
+      preschoolClubFee: new TextInput(
+        this.page.find('[data-qa="preschool-club-fee"]')
+      ),
+      preschoolClubSiblingDiscount: new TextInput(
+        this.page.find('[data-qa="preschool-club-sibling-discount"]')
       ),
       saveButton: new AsyncButton(this.page.find('[data-qa="save"]')),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
@@ -167,6 +185,16 @@ export default class FinanceBasicsPage {
         await this.feesSection.editor.temporaryFeeSiblingPartDay.fill(
           formatDecimal(feeThresholds.temporaryFeeSiblingPartDay)
         )
+        if (feeThresholds.preschoolClubFee !== null) {
+          await this.feesSection.editor.preschoolClubFee.fill(
+            formatCents(feeThresholds.preschoolClubFee)
+          )
+        }
+        if (feeThresholds.preschoolClubSiblingDiscount !== null) {
+          await this.feesSection.editor.preschoolClubSiblingDiscount.fill(
+            formatDecimal(feeThresholds.preschoolClubSiblingDiscount)
+          )
+        }
       },
       assertSaveIsDisabled: async () => {
         await waitUntilTrue(() => this.feesSection.editor.saveButton.disabled)

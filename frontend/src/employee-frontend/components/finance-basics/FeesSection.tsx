@@ -164,7 +164,9 @@ const emptyForm = (latestEndDate?: LocalDate): FormState => ({
   temporaryFee: '',
   temporaryFeePartDay: '',
   temporaryFeeSibling: '',
-  temporaryFeeSiblingPartDay: ''
+  temporaryFeeSiblingPartDay: '',
+  preschoolClubFee: '',
+  preschoolClubSiblingDiscount: ''
 })
 
 const formatMulti = (multi: number) =>
@@ -199,5 +201,13 @@ const copyForm = (feeThresholds: FeeThresholds): FormState => ({
   temporaryFeeSibling: formatCents(feeThresholds.temporaryFeeSibling),
   temporaryFeeSiblingPartDay: formatCents(
     feeThresholds.temporaryFeeSiblingPartDay
-  )
+  ),
+  preschoolClubFee:
+    feeThresholds.preschoolClubFee !== null
+      ? formatCents(feeThresholds.preschoolClubFee)
+      : '',
+  preschoolClubSiblingDiscount:
+    feeThresholds.preschoolClubSiblingDiscount !== null
+      ? formatMulti(feeThresholds.preschoolClubSiblingDiscount)
+      : ''
 })

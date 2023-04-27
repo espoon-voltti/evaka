@@ -32,6 +32,7 @@ import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 import fi.espoo.evaka.shared.ChildId
@@ -76,6 +77,7 @@ import fi.espoo.evaka.snDefaultPreschoolDaycare
 import fi.espoo.evaka.snPreparatoryDaycare50
 import fi.espoo.evaka.snPreparatoryDaycarePartDay40
 import fi.espoo.evaka.snPreparatoryDaycarePartDay40to50
+import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.snPreschoolDaycarePartDay35to45
@@ -390,6 +392,100 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(PRESCHOOL_DAYCARE, result[0].children[0].placement.type)
         assertEquals(BigDecimal("0.80"), result[0].children[0].serviceNeed.feeCoefficient)
         assertEquals(23100, result[0].children[0].finalFee)
+    }
+
+    @Test
+    fun `fee decision is generated for child with a preschool club`() {
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertServiceNeed(
+            insertPlacement(
+                testChild_1.id,
+                placementPeriod.asDateRange(),
+                PRESCHOOL_CLUB,
+                testDaycare.id
+            ),
+            placementPeriod,
+            snPreschoolClub45.id
+        )
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod.asDateRange())
+
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
+
+        val result = getAllFeeDecisions()
+
+        assertEquals(PRESCHOOL_CLUB, result[0].children[0].placement.type)
+        assertEquals(BigDecimal("0.80"), result[0].children[0].serviceNeed.feeCoefficient)
+        assertEquals(11200, result[0].children[0].finalFee)
+    }
+
+    @Test
+    fun `fee decision is formed correctly for two children in preschool club`() {
+        val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val serviceNeed = snPreschoolClub45
+        insertServiceNeed(
+            insertPlacement(
+                testChild_1.id,
+                placementPeriod.asDateRange(),
+                PRESCHOOL_CLUB,
+                testDaycare.id
+            ),
+            placementPeriod,
+            serviceNeed.id
+        )
+        insertServiceNeed(
+            insertPlacement(
+                testChild_2.id,
+                placementPeriod.asDateRange(),
+                PRESCHOOL_CLUB,
+                testDaycare.id
+            ),
+            placementPeriod,
+            serviceNeed.id
+        )
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod.asDateRange()
+        )
+
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(11200 + 6700, decision.totalFee)
+            assertEquals(2, decision.children.size)
+            decision.children.first().let { child ->
+                assertEquals(14000, child.baseFee)
+                assertEquals(PRESCHOOL_CLUB, child.placement.type)
+                assertEquals(serviceNeed.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(11200, child.fee)
+                assertEquals(11200, child.finalFee)
+            }
+            decision.children.last().let { child ->
+                assertEquals(14000, child.baseFee)
+                assertEquals(PRESCHOOL_CLUB, child.placement.type)
+                assertEquals(serviceNeed.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(40, child.siblingDiscount)
+                assertEquals(6700, child.fee)
+                assertEquals(6700, child.finalFee)
+            }
+        }
     }
 
     @Test
@@ -1729,7 +1825,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     temporaryFee = 2900,
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
-                    temporaryFeeSiblingPartDay = 800
+                    temporaryFeeSiblingPartDay = 800,
+                    preschoolClubFee = null,
+                    preschoolClubSiblingDiscount = null
                 )
             )
         }

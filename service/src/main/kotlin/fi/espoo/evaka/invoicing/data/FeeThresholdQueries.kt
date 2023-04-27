@@ -36,7 +36,9 @@ SELECT
     temporary_fee,
     temporary_fee_part_day,
     temporary_fee_sibling,
-    temporary_fee_sibling_part_day
+    temporary_fee_sibling_part_day,
+    preschool_club_fee,
+    preschool_club_sibling_discount
 FROM fee_thresholds
 WHERE valid_during && daterange(:from, null)
         """
