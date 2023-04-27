@@ -86,7 +86,7 @@ The database lies in a docker container while the tests are executed. You can
 access the db with eg.
 
 ```sh
-docker exec -it <container> psql -U evaka_it -d evaka_it
+docker exec -it <container> psql -U evaka_application_local -d evaka_it
 ```
 
 where `<container>` is to be found with `docker ps`.

@@ -80,7 +80,6 @@ services:
     hostname: evaka-srv
     depends_on:
       - db
-      - db_it
       - s3.mock.evaka
     environment:
       VOLTTI_ENV: local
@@ -118,8 +117,6 @@ services:
     restart: unless-stopped
 
   db:
-
-  db_it:
 
   redis:
 
