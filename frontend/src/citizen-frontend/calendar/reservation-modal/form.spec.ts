@@ -16,6 +16,7 @@ import { DayProperties, resetTimes } from './form'
 const monday = LocalDate.of(2021, 2, 1)
 const tuesday = monday.addDays(1)
 const wednesday = monday.addDays(2)
+const friday = monday.addDays(4)
 const sunday = monday.addDays(6)
 const thursdayLastWeek = monday.subDays(4)
 const tuesdayNextWeek = sunday.addDays(2)
@@ -2180,6 +2181,123 @@ describe('resetTimes', () => {
           }
         ]
       })
+    })
+  })
+})
+
+describe('DayProperties', () => {
+  describe('isWholeRangeReservableForChildren', () => {
+    it('Works in the basic case (no weekends)', () => {
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      const calendarDays = emptyCalendarDays.map((day) => ({
+        ...day,
+        children: [emptyChild]
+      }))
+      const dayProperties = new DayProperties(calendarDays, [], false)
+
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          emptyChild.childId
+        ])
+      ).toEqual(true)
+
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          emptyChild.childId,
+          'child-2' // has no reservable days
+        ])
+      ).toEqual(false)
+    })
+
+    it('Works in the basic case (weekends included)', () => {
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          _  _  _  _  | _  _  _  _  _  _  _  | _  _  _  _  _
+      const calendarDays = emptyCalendarDaysIncludingWeekend.map((day) => ({
+        ...day,
+        children: [emptyChild]
+      }))
+      const dayProperties = new DayProperties(calendarDays, [], true)
+
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          emptyChild.childId
+        ])
+      ).toEqual(true)
+
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          emptyChild.childId,
+          'child-2' // has no reservable days
+        ])
+      ).toEqual(false)
+    })
+
+    it('Holidays are considered as reservable if weekends are not included', () => {
+      // If there's a holiday in the reserved range and all selected children
+      // are in a "normal" unit that's not open on holidays, the user won't
+      // still get a warning about non-reservable days.
+
+      //                              H                      H
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      const calendarDays = emptyCalendarDays.map((day) => ({
+        ...day,
+        holiday: day.date.getIsoDayOfWeek() === 3,
+        children: [emptyChild]
+      }))
+      const dayProperties = new DayProperties(calendarDays, [], false)
+
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          emptyChild.childId
+        ])
+      ).toEqual(true)
+    })
+
+    it('Holidays are considered based on real reservable status if weekends are included', () => {
+      // If there's a holiday in the reserved range and some of the selected
+      // children are in a shift care unit that's open every day, the user gets
+      // a warning about non-reservable days.
+
+      const calendarDays = emptyCalendarDaysIncludingWeekend.map((day) => ({
+        ...day,
+        holiday: day.date.getIsoDayOfWeek() === 3,
+        children:
+          day.date.isWeekend() || day.date.getIsoDayOfWeek() === 3
+            ? [{ ...emptyChild, childId: 'child-1' }]
+            : [
+                { ...emptyChild, childId: 'child-1' },
+                { ...emptyChild, childId: 'child-2' }
+              ]
+      }))
+      const dayProperties = new DayProperties(calendarDays, [], true)
+
+      //                              H                      H
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          _  _  _  _  | _  _  _  _  _  _  _  | _  _  _  _  _
+      //          _  _        | _  _     _  _        | _  _     _  _
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          'child-1'
+        ])
+      ).toEqual(true)
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(selectedRange, [
+          'child-1',
+          'child-2'
+        ])
+      ).toEqual(false)
+
+      //                              H                      H
+      // mo tu we th fr sa su | MO TU WE TH FR sa su | mo tu we th fr sa su
+      //          _  _        | _  _     _  _        | _  _     _  _
+      expect(
+        dayProperties.isWholeRangeReservableForChildren(
+          new FiniteDateRange(monday, friday),
+          ['child-2']
+        )
+      ).toEqual(false)
     })
   })
 })

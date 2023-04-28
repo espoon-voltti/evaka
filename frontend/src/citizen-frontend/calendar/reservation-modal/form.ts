@@ -143,8 +143,9 @@ export const reservationForm = mapped(
   }),
   (output) => ({
     containsNonReservableDays: (dayProperties: DayProperties) =>
-      !output.selectedChildren.every((childId) =>
-        dayProperties.isWholeRangeReservableForChild(output.dateRange, childId)
+      !dayProperties.isWholeRangeReservableForChildren(
+        output.dateRange,
+        output.selectedChildren
       ),
     toRequest: (dayProperties: DayProperties): DailyReservationRequest[] =>
       output.selectedChildren.flatMap((childId): DailyReservationRequest[] => {
@@ -632,6 +633,7 @@ export class DayProperties {
   // Does any child have shift care?
   readonly anyChildInShiftCare: boolean
 
+  private readonly holidays: Set<string>
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly combinedOperationDays: Set<number>
 
@@ -643,9 +645,13 @@ export class DayProperties {
     let anyChildInShiftCare = false
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const combinedOperationDays = new Set<number>()
+    const holidays = new Set<string>()
 
     calendarDays.forEach((day) => {
       const dayOfWeek = day.date.getIsoDayOfWeek()
+      if (day.holiday) {
+        holidays.add(day.date.formatIso())
+      }
       day.children.forEach((child) => {
         combinedOperationDays.add(dayOfWeek)
 
@@ -662,6 +668,7 @@ export class DayProperties {
 
     this.calendarDays = calendarDays
     this.anyChildInShiftCare = anyChildInShiftCare
+    this.holidays = holidays
     this.reservableDaysByChild = reservableDaysByChild
     this.combinedOperationDays = combinedOperationDays
     this.includesWeekends = includesWeekends
@@ -671,19 +678,22 @@ export class DayProperties {
     return this.combinedOperationDays.has(dayOfWeek)
   }
 
-  isWholeRangeReservableForChild(
+  isWholeRangeReservableForChildren(
     range: FiniteDateRange,
-    childId: UUID
+    childIds: UUID[]
   ): boolean {
-    const reservableDays = this.reservableDaysByChild[childId]
-    if (!reservableDays) return false
+    return childIds.every((childId) => {
+      const reservableDays = this.reservableDaysByChild[childId]
+      if (!reservableDays) return false
 
-    return [...range.dates()].every((date) =>
-      // Skip weekend days in range if the calendar doesn't include weekends
-      !this.includesWeekends && date.isWeekend()
-        ? true
-        : reservableDays.has(date.formatIso())
-    )
+      return [...range.dates()].every((date) =>
+        // Skip weekend days and holidays in range if the calendar doesn't include weekends
+        !this.includesWeekends &&
+        (date.isWeekend() || this.holidays.has(date.formatIso()))
+          ? true
+          : reservableDays.has(date.formatIso())
+      )
+    })
   }
 
   getReservableDatesInRangeForChild(range: FiniteDateRange, childId: UUID) {
