@@ -701,7 +701,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `citizen cannot override absences in closed holiday periods`() {
+    fun `citizen cannot override days with absences or without reservations in closed holiday periods`() {
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
         val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
@@ -738,6 +738,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
+                        Reservation.Times(startTime, endTime),
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = holidayPeriodStart.plusDays(1),
                         Reservation.Times(startTime, endTime),
                     )
                 )
