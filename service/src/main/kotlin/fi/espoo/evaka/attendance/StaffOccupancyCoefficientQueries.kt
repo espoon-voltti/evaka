@@ -80,15 +80,3 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .mapTo<StaffOccupancyCoefficientId>()
         .single()
-
-fun Database.Transaction.deleteOccupancyCoefficient(unitId: DaycareId, employeeId: EmployeeId) =
-    createUpdate(
-            """
-DELETE FROM staff_occupancy_coefficient
-WHERE daycare_id = :unitId AND employee_id = :employeeId
-        """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("employeeId", employeeId)
-        .execute()
