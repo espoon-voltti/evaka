@@ -7,11 +7,8 @@ import LocalDate from 'lib-common/local-date'
 
 import {
   insertAbsence,
-  insertChildFixtures,
   insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
-  insertGuardianFixtures,
-  insertPersonFixture,
   resetDatabase
 } from '../../dev-api'
 import {
@@ -21,9 +18,7 @@ import {
 import {
   careArea2Fixture,
   createDaycarePlacementFixture,
-  createPreschoolDaycarePlacementFixture,
   daycare2Fixture,
-  enduserGuardianFixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -126,53 +121,6 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       reservation.startTime,
       reservation.endTime
     )
-
-    await calendarPage.assertReservations(firstReservationDay, [reservation])
-  })
-
-  test('Citizen creates a reservation for all children, but some days are not reservable', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // Add a child whose placement ends in the middle of the reservations. This has to be done after the calendar page
-    // is opened because login creates the family from VTJ.
-    const childId = uuidv4()
-    const firstReservationDay = today.addDays(14)
-    const lastReservationDay = firstReservationDay.addDays(6)
-
-    const childFixture = { ...fixtures.enduserNonSsnChildFixture, id: childId }
-    await insertPersonFixture(childFixture)
-    await insertChildFixtures([childFixture])
-    await insertGuardianFixtures([
-      { childId, guardianId: enduserGuardianFixture.id }
-    ])
-    await insertDaycarePlacementFixtures([
-      createPreschoolDaycarePlacementFixture(
-        uuidv4(),
-        childFixture.id,
-        fixtures.daycareFixture.id,
-        today.formatIso(),
-        lastReservationDay.subDays(1).formatIso()
-      )
-    ])
-
-    await page.reload()
-
-    const reservation = {
-      startTime: '08:00',
-      endTime: '16:00',
-      childIds: [...children.map(({ id }) => id), childId]
-    }
-
-    const reservationsModal = await calendarPage.openReservationsModal()
-    await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, lastReservationDay),
-      reservation.startTime,
-      reservation.endTime
-    )
-
-    await calendarPage.nonReservableDaysWarningModal.waitUntilVisible()
-    await calendarPage.nonReservableDaysWarningModal.okButton.click()
-    await calendarPage.nonReservableDaysWarningModal.waitUntilHidden()
 
     await calendarPage.assertReservations(firstReservationDay, [reservation])
   })

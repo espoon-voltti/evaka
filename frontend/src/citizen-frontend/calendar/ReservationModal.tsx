@@ -56,7 +56,7 @@ import {
 
 interface Props {
   onClose: () => void
-  onSuccess: (containsNonReservableDays: boolean) => void
+  onSuccess: () => void
   reservationsResponse: ReservationsResponse
   initialStart: LocalDate | null
   initialEnd: LocalDate | null
@@ -77,14 +77,12 @@ export default React.memo(function ReservationModal({
   const {
     children: availableChildren,
     days: calendarDays,
-    includesWeekends,
     reservableRange
   } = reservationsResponse
 
   const dayProperties = useMemo(
-    () =>
-      new DayProperties(calendarDays, upcomingHolidayPeriods, includesWeekends),
-    [calendarDays, includesWeekends, upcomingHolidayPeriods]
+    () => new DayProperties(calendarDays, upcomingHolidayPeriods),
+    [calendarDays, upcomingHolidayPeriods]
   )
   const form = useForm(
     reservationForm,
@@ -318,11 +316,7 @@ export default React.memo(function ReservationModal({
                     )
                   }
                 }}
-                onSuccess={() => {
-                  onSuccess(
-                    form.value().containsNonReservableDays(dayProperties)
-                  )
-                }}
+                onSuccess={onSuccess}
                 onFailure={(reason) => {
                   showSaveError(reason)
                 }}

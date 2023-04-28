@@ -33,7 +33,6 @@ import CalendarListView from './CalendarListView'
 import CalendarNotifications from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
-import NonReservableDaysWarningModal from './NonReservableDaysWarningModal'
 import ReservationModal from './ReservationModal'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 import {
@@ -74,7 +73,6 @@ const CalendarPage = React.memo(function CalendarPage() {
     openHolidayModal,
     openAbsenceModal,
     openDayModal,
-    openNonReservableDaysWarningModal,
     closeModal
   } = useCalendarModalState()
 
@@ -198,13 +196,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               <ReservationModal
                 onClose={closeModal}
                 reservationsResponse={response}
-                onSuccess={(containsNonReservableDays: boolean) => {
-                  if (containsNonReservableDays) {
-                    openNonReservableDaysWarningModal()
-                  } else {
-                    closeModal()
-                  }
-                }}
+                onSuccess={closeModal}
                 initialStart={
                   modalState.initialRange?.start ?? firstReservableDate
                 }
@@ -236,9 +228,6 @@ const CalendarPage = React.memo(function CalendarPage() {
                 />
               </RequireAuth>
             )}
-            {modalState?.type === 'nonReservableDaysWarning' && (
-              <NonReservableDaysWarningModal onClose={closeModal} />
-            )}
           </div>
         )
       )}
@@ -253,10 +242,8 @@ type URLModalState =
   | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
   | { type: 'holidays' }
 
-// Modal statse not stored to the URL
-type NonURLModalState =
-  | { type: 'pickAction' }
-  | { type: 'nonReservableDaysWarning' }
+// Modal state not stored to the URL
+type NonURLModalState = { type: 'pickAction' }
 
 // All possible modal states
 type ModalState = URLModalState | NonURLModalState
@@ -268,7 +255,6 @@ interface UseModalStateResult {
   openReservationModal: (initialRange: FiniteDateRange | undefined) => void
   openAbsenceModal: (initialDate: LocalDate | undefined) => void
   openHolidayModal: () => void
-  openNonReservableDaysWarningModal: () => void
   closeModal: () => void
 }
 
@@ -317,10 +303,6 @@ export function useCalendarModalState(): UseModalStateResult {
     () => setNonUrlModalState({ type: 'pickAction' }),
     []
   )
-  const openNonReservableDaysWarningModal = useCallback(
-    () => setNonUrlModalState({ type: 'nonReservableDaysWarning' }),
-    []
-  )
 
   return {
     modalState: nonUrlModalState ?? urlModalState,
@@ -329,7 +311,6 @@ export function useCalendarModalState(): UseModalStateResult {
     openReservationModal,
     openAbsenceModal,
     openHolidayModal,
-    openNonReservableDaysWarningModal,
     closeModal
   }
 }

@@ -142,10 +142,6 @@ export const reservationForm = mapped(
     times: timesUnion
   }),
   (output) => ({
-    containsNonReservableDays: (dayProperties: DayProperties) =>
-      !output.selectedChildren.every((childId) =>
-        dayProperties.isWholeRangeReservableForChild(output.dateRange, childId)
-      ),
     toRequest: (dayProperties: DayProperties): DailyReservationRequest[] =>
       output.selectedChildren.flatMap((childId): DailyReservationRequest[] => {
         const dates = dayProperties.getReservableDatesInRangeForChild(
@@ -637,15 +633,18 @@ export class DayProperties {
 
   constructor(
     public readonly calendarDays: ReservationResponseDay[],
-    private readonly holidayPeriods: HolidayPeriodInfo[],
-    private readonly includesWeekends: boolean
+    private readonly holidayPeriods: HolidayPeriodInfo[]
   ) {
     let anyChildInShiftCare = false
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const combinedOperationDays = new Set<number>()
+    const holidays = new Set<string>()
 
     calendarDays.forEach((day) => {
       const dayOfWeek = day.date.getIsoDayOfWeek()
+      if (day.holiday) {
+        holidays.add(day.date.formatIso())
+      }
       day.children.forEach((child) => {
         combinedOperationDays.add(dayOfWeek)
 
@@ -664,26 +663,10 @@ export class DayProperties {
     this.anyChildInShiftCare = anyChildInShiftCare
     this.reservableDaysByChild = reservableDaysByChild
     this.combinedOperationDays = combinedOperationDays
-    this.includesWeekends = includesWeekends
   }
 
   isOperationalDayForAnyChild(dayOfWeek: number): boolean {
     return this.combinedOperationDays.has(dayOfWeek)
-  }
-
-  isWholeRangeReservableForChild(
-    range: FiniteDateRange,
-    childId: UUID
-  ): boolean {
-    const reservableDays = this.reservableDaysByChild[childId]
-    if (!reservableDays) return false
-
-    return [...range.dates()].every((date) =>
-      // Skip weekend days in range if the calendar doesn't include weekends
-      !this.includesWeekends && date.isWeekend()
-        ? true
-        : reservableDays.has(date.formatIso())
-    )
   }
 
   getReservableDatesInRangeForChild(range: FiniteDateRange, childId: UUID) {
