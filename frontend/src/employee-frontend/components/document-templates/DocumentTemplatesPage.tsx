@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -13,14 +14,14 @@ import { H1 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import CreateTemplateModal from './CreateTemplateModal'
+import TemplateModal from './TemplateModal'
 import { documentTemplateSummariesQuery } from './queries'
 
 export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()
   const t = i18n.documentTemplates
 
-  const [creationModalOpen, setCreationModalOpen] = useState(false)
+  const [templateModalOpen, setTemplateModalOpen] = useState(false)
 
   const templates = useQueryResult(documentTemplateSummariesQuery)
 
@@ -29,19 +30,19 @@ export default React.memo(function DocumentTemplatesPage() {
       <ContentArea opaque>
         <H1>{t.title}</H1>
         <AddButtonRow
-          onClick={() => setCreationModalOpen(true)}
+          onClick={() => setTemplateModalOpen(true)}
           text="Lisää uusi"
         />
-        {creationModalOpen && (
-          <CreateTemplateModal onClose={() => setCreationModalOpen(false)} />
+        {templateModalOpen && (
+          <TemplateModal onClose={() => setTemplateModalOpen(false)} />
         )}
         {renderResult(templates, (data) => (
           <>
             <Table>
               <Thead>
                 <Tr>
-                  <Th>Tyyppi</Th>
                   <Th>Nimi</Th>
+                  <Th>Tyyppi</Th>
                   <Th>Voimassa</Th>
                   <Th>Tila</Th>
                 </Tr>
@@ -49,8 +50,12 @@ export default React.memo(function DocumentTemplatesPage() {
               <Tbody>
                 {data.map((template) => (
                   <Tr key={template.id}>
+                    <Td>
+                      <Link to={`/document-templates/${template.id}`}>
+                        {template.name}
+                      </Link>
+                    </Td>
                     <Td>Ei määritelty</Td>
-                    <Td>{template.name}</Td>
                     <Td>{template.validity.format()}</Td>
                     <Td>{template.published ? 'Julkaistu' : 'Luonnos'}</Td>
                   </Tr>

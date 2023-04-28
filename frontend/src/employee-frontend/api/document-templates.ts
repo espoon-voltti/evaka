@@ -5,14 +5,16 @@
 import DateRange from 'lib-common/date-range'
 import {
   DocumentTemplate,
+  DocumentTemplateContent,
   DocumentTemplateCreateRequest,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
 import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 
 import { client } from './client'
 
-export function postDocumentTemplate(
+export async function postDocumentTemplate(
   data: DocumentTemplateCreateRequest
 ): Promise<DocumentTemplate> {
   return client
@@ -23,7 +25,7 @@ export function postDocumentTemplate(
     }))
 }
 
-export function getDocumentTemplateSummaries(): Promise<
+export async function getDocumentTemplateSummaries(): Promise<
   DocumentTemplateSummary[]
 > {
   return client
@@ -34,4 +36,24 @@ export function getDocumentTemplateSummaries(): Promise<
         validity: DateRange.parseJson(template.validity)
       }))
     )
+}
+
+export async function getDocumentTemplate(id: UUID): Promise<DocumentTemplate> {
+  return client
+    .get<JsonOf<DocumentTemplate>>(`/document-templates/${id}`)
+    .then((res) => ({
+      ...res.data,
+      validity: DateRange.parseJson(res.data.validity)
+    }))
+}
+
+export async function putDocumentTemplateContent(
+  id: UUID,
+  content: DocumentTemplateContent
+): Promise<void> {
+  await client.put(`/document-templates/${id}/content`, content)
+}
+
+export async function putDocumentTemplatePublish(id: UUID): Promise<void> {
+  await client.put(`/document-templates/${id}/publish`)
 }

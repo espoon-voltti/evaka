@@ -2,16 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { mutation, query } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 
 import {
+  getDocumentTemplate,
   getDocumentTemplateSummaries,
-  postDocumentTemplate
+  postDocumentTemplate,
+  putDocumentTemplateContent,
+  putDocumentTemplatePublish
 } from '../../api/document-templates'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('documentTemplates', {
-  documentTemplateSummaries: () => ['documentTemplateSummaries']
+  documentTemplateSummaries: () => ['documentTemplateSummaries'],
+  documentTemplate: (templateId: UUID) => ['documentTemplates', templateId]
 })
 
 export const documentTemplateSummariesQuery = query({
@@ -19,7 +25,29 @@ export const documentTemplateSummariesQuery = query({
   queryKey: queryKeys.documentTemplateSummaries
 })
 
+export const documentTemplateQuery = query({
+  api: getDocumentTemplate,
+  queryKey: queryKeys.documentTemplate
+})
+
 export const createDocumentTemplateMutation = mutation({
   api: postDocumentTemplate,
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
+})
+
+export const updateDocumentTemplateContentMutation = mutation({
+  api: (arg: { id: UUID; content: DocumentTemplateContent }) =>
+    putDocumentTemplateContent(arg.id, arg.content),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.documentTemplateSummaries(),
+    queryKeys.documentTemplate(arg.id)
+  ]
+})
+
+export const publishDocumentTemplateMutation = mutation({
+  api: (id: string) => putDocumentTemplatePublish(id),
+  invalidateQueryKeys: (id) => [
+    queryKeys.documentTemplateSummaries(),
+    queryKeys.documentTemplate(id)
+  ]
 })

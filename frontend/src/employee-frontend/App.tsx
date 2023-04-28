@@ -46,6 +46,7 @@ import AssistanceNeedDecisionPage from './components/child-information/assistanc
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import DocumentTemplatesPage from './components/document-templates/DocumentTemplatesPage'
+import TemplateEditorPage from './components/document-templates/template-editor/TemplateEditorPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import EmployeePreferredFirstNamePage from './components/employee/EmployeePreferredFirstNamePage'
 import EmployeePage from './components/employees/EmployeePage'
@@ -663,6 +664,14 @@ export default function App() {
                       element={
                         <EmployeeRoute title={i18n.titles.documentTemplates}>
                           <DocumentTemplatesPage />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/document-templates/:templateId"
+                      element={
+                        <EmployeeRoute title={i18n.titles.documentTemplates}>
+                          <TemplateEditorPage />
                         </EmployeeRoute>
                       }
                     />
