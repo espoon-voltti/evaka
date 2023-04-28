@@ -211,6 +211,27 @@ fun Database.Read.getChildAttendanceReservationStartDatesByRange(
         .list()
 }
 
+data class ChildReservationDateRow(val childId: ChildId, val date: LocalDate)
+
+fun Database.Read.getReservationDatesForChildrenInRange(
+    childIds: Set<ChildId>,
+    range: FiniteDateRange
+): Map<ChildId, Set<LocalDate>> {
+    return createQuery(
+            """
+        SELECT child_id, date
+        FROM attendance_reservation
+        WHERE between_start_and_end(:range, date)
+        AND child_id = ANY (:childIds)
+        """
+        )
+        .bind("range", range)
+        .bind("childIds", childIds)
+        .mapTo<ChildReservationDateRow>()
+        .groupBy({ it.childId }, { it.date })
+        .mapValues { (_, value) -> value.toSet() }
+}
+
 data class DailyReservationData(val date: LocalDate, @Json val children: List<ChildDailyData>)
 
 @Json

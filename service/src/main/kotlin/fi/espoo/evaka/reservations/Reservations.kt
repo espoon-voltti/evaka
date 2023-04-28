@@ -127,8 +127,11 @@ fun createReservationsAndAbsences(
 
     val reservationsRange = reservationRequestRange(requests)
     val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
-    val childAbsenceDates =
-        tx.getAbsenceDatesForChildrenInRange(requests.map { it.childId }.toSet(), reservationsRange)
+
+    val childIds = requests.map { it.childId }.toSet()
+    val childReservationDates =
+        tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)
+    val childAbsenceDates = tx.getAbsenceDatesForChildrenInRange(childIds, reservationsRange)
 
     val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
     val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
@@ -149,12 +152,19 @@ fun createReservationsAndAbsences(
                         throw BadRequest("Reservations in closed holiday periods must have times")
                     }
                     if (isCitizen) {
-                        // Citizens cannot override absences on closed holiday periods. They're just
-                        // filtered out
-                        // here because they cannot be reliably filtered out in the UI.
+                        // Citizens cannot add reservations on days without existing reservations OR
+                        // with absences
+                        // on closed holiday periods
+                        val hasReservation =
+                            (childReservationDates[request.childId] ?: setOf()).contains(
+                                request.date
+                            )
                         val hasAbsence =
                             (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
-                        if (request is DailyReservationRequest.Reservations && hasAbsence) {
+                        if (
+                            request is DailyReservationRequest.Reservations &&
+                                (!hasReservation || hasAbsence)
+                        ) {
                             null
                         } else {
                             request
