@@ -311,9 +311,10 @@ private fun generateFeeDecisions(
                             }
 
                             val siblingDiscountMultiplier =
-                                price.siblingDiscountMultiplier(index + 1)
+                                price.siblingDiscountMultiplier(index + 1, placement.type)
                             val baseFee =
                                 calculateBaseFee(
+                                    placement.type,
                                     price,
                                     family.getSize(),
                                     familyIncomes + listOfNotNull(childPeriodIncome.get(child.id))
@@ -349,7 +350,7 @@ private fun generateFeeDecisions(
                                     placement.missingServiceNeed
                                 ),
                                 baseFee,
-                                price.siblingDiscountPercent(index + 1),
+                                price.siblingDiscountPercent(index + 1, placement.type),
                                 feeBeforeAlterations,
                                 feeAlterationsWithEffects,
                                 finalFee,

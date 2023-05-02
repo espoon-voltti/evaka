@@ -82,7 +82,9 @@ val oldTestFeeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
+        preschoolClubFee = null,
+        preschoolClubSiblingDiscount = null
     )
 
 val testFeeThresholds =
@@ -111,7 +113,9 @@ val testFeeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
+        preschoolClubFee = null,
+        preschoolClubSiblingDiscount = null
     )
 
 val testDecisionChild1 =

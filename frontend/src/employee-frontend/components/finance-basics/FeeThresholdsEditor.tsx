@@ -25,6 +25,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { placementTypes } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
 import {
@@ -40,6 +41,8 @@ import {
 } from '../../types/finance-basics'
 
 import { FormState } from './FeesSection'
+
+const preschoolClubEnabled = placementTypes.includes('PRESCHOOL_CLUB')
 
 export default React.memo(function FeeThresholdsEditor({
   i18n,
@@ -405,6 +408,51 @@ export default React.memo(function FeeThresholdsEditor({
           />
         </FixedSpaceColumn>
       </RowWithMargin>
+      {preschoolClubEnabled && (
+        <>
+          <H4>{i18n.financeBasics.fees.preschoolClubFees}</H4>
+          <RowWithMargin>
+            <FixedSpaceColumn spacing="xxs">
+              <Label htmlFor="preschoolClubFee">
+                {i18n.financeBasics.fees.preschoolClubFee}
+              </Label>
+              <InputField
+                width="s"
+                value={editorState.preschoolClubFee}
+                onChange={(preschoolClubFee) =>
+                  setEditorState((previousState) => ({
+                    ...previousState,
+                    preschoolClubFee
+                  }))
+                }
+                symbol="€"
+                info={validationErrorInfo('preschoolClubFee')}
+                hideErrorsBeforeTouched
+                data-qa="preschool-club-fee"
+              />
+            </FixedSpaceColumn>
+            <FixedSpaceColumn spacing="xxs">
+              <Label htmlFor="preschoolClubSiblingDiscount">
+                {i18n.financeBasics.fees.preschoolClubSiblingDiscount}
+              </Label>
+              <InputField
+                width="s"
+                value={editorState.preschoolClubSiblingDiscount}
+                onChange={(preschoolClubSiblingDiscount) =>
+                  setEditorState((previousState) => ({
+                    ...previousState,
+                    preschoolClubSiblingDiscount
+                  }))
+                }
+                symbol="%"
+                info={validationErrorInfo('preschoolClubSiblingDiscount')}
+                hideErrorsBeforeTouched
+                data-qa="preschool-club-sibling-discount"
+              />
+            </FixedSpaceColumn>
+          </RowWithMargin>
+        </>
+      )}
       {saveError ? (
         <SaveError>
           {i18n.financeBasics.fees.errors[saveError] ??
@@ -534,7 +582,10 @@ const centProps = [
   'temporaryFee',
   'temporaryFeePartDay',
   'temporaryFeeSibling',
-  'temporaryFeeSiblingPartDay'
+  'temporaryFeeSiblingPartDay',
+  ...(preschoolClubEnabled
+    ? (['preschoolClubFee', 'preschoolClubSiblingDiscount'] as const)
+    : [])
 ] as const
 
 function validateForm(
@@ -654,7 +705,13 @@ function parseFormOrThrow(form: FormState): FeeThresholdsPayload {
     temporaryFeeSibling: parseCentsOrThrow(form.temporaryFeeSibling),
     temporaryFeeSiblingPartDay: parseCentsOrThrow(
       form.temporaryFeeSiblingPartDay
-    )
+    ),
+    preschoolClubFee: preschoolClubEnabled
+      ? parseCentsOrThrow(form.preschoolClubFee)
+      : null,
+    preschoolClubSiblingDiscount: preschoolClubEnabled
+      ? parseMultiplier(form.preschoolClubSiblingDiscount)
+      : null
   }
 }
 

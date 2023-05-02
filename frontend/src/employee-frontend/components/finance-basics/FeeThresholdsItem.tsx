@@ -18,11 +18,13 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/employee'
+import { Translations, placementTypes } from 'lib-customizations/employee'
 import { faCopy, faPen, faQuestion } from 'lib-icons'
 
 import { familySizes } from '../../types/finance-basics'
 import StatusLabel from '../common/StatusLabel'
+
+const preschoolClubEnabled = placementTypes.includes('PRESCHOOL_CLUB')
 
 export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   i18n,
@@ -179,6 +181,30 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
             </Indent>
           </FixedSpaceColumn>
         </RowWithMargin>
+
+        {preschoolClubEnabled && (
+          <>
+            <H4>{i18n.financeBasics.fees.preschoolClubFees}</H4>
+            <RowWithMargin spacing="XL">
+              <FixedSpaceColumn>
+                <Label>{i18n.financeBasics.fees.preschoolClubFee}</Label>
+                <Indent data-qa="preschoolClubFee">
+                  {feeThresholds.preschoolClubFee !== null &&
+                    `${formatCents(feeThresholds.preschoolClubFee)} €`}
+                </Indent>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn>
+                <Label>
+                  {i18n.financeBasics.fees.preschoolClubSiblingDiscount}
+                </Label>
+                <Indent data-qa="preschoolClubSiblingDiscount">
+                  {feeThresholds.preschoolClubSiblingDiscount !== null &&
+                    `${feeThresholds.preschoolClubSiblingDiscount * 100} %`}
+                </Indent>
+              </FixedSpaceColumn>
+            </RowWithMargin>
+          </>
+        )}
       </div>
       {showModal ? (
         <InfoModal
