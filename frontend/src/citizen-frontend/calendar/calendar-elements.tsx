@@ -34,6 +34,7 @@ type DailyChildGroupElementType =
   | 'absent'
   | 'missing-reservation'
   | 'absent-free'
+  | 'reservation-not-required'
 
 interface DailyChildGroupElement {
   type: DailyChildGroupElementType
@@ -92,11 +93,13 @@ export const Reservations = React.memo(function Reservations({
               {group.type === 'reservation-no-times'
                 ? i18n.calendar.reservationNoTimes
                 : group.type === 'missing-reservation'
-                ? i18n.calendar.noReservation
+                ? i18n.calendar.missingReservation
                 : group.type === 'absent'
                 ? i18n.calendar.absent
                 : group.type === 'absent-free'
                 ? i18n.calendar.absentFree
+                : group.type === 'reservation-not-required'
+                ? i18n.calendar.reservationNoTimes
                 : group.text}
             </GroupedElementText>
           </FixedSpaceRow>
@@ -169,6 +172,13 @@ const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
                   `${startTime.format()}–${endTime.format()}`
               )
               .join(', ')
+          }
+        }
+
+        if (!child.requiresReservation) {
+          return {
+            childId: child.childId,
+            type: 'reservation-not-required'
           }
         }
 

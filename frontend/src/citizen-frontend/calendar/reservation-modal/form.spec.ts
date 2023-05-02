@@ -240,6 +240,86 @@ describe('resetTimes', () => {
       })
     })
 
+    it('Reservations not required', () => {
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          n  n        | n  n  n  n  n        | n  n  n  n  n
+      //          n  n        | n  n  n  n  n        | n  n  n  n  n
+      //          n  n        | n  n  a  n  n        | n  n  a  n  n
+      const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
+        (day) => ({
+          ...day,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              requiresReservation: false
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              requiresReservation: false
+            },
+            {
+              ...emptyChild,
+              childId: 'child-3',
+              requiresReservation: false,
+              absence:
+                day.date.getIsoDayOfWeek() === 3
+                  ? {
+                      type: 'OTHER_ABSENCE',
+                      editable: true
+                    }
+                  : null
+            }
+          ]
+        })
+      )
+
+      const dayProperties = new DayProperties(calendarDays, [])
+
+      // Empty days for child-1 and child-2
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'DAILY',
+          selectedRange,
+          selectedChildren: ['child-1', 'child-2']
+        })
+      ).toEqual({
+        branch: 'dailyTimes',
+        state: {
+          weekDayRange: [1, 5],
+          reservation: {
+            branch: 'noTimes',
+            state: {
+              selection: 'present',
+              mode: 'reservationNotRequired'
+            }
+          }
+        }
+      })
+
+      // Empty days for child-1 and child-2, child 3 has a single absence
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'DAILY',
+          selectedRange,
+          selectedChildren: ['child-1', 'child-2', 'child-3']
+        })
+      ).toEqual({
+        branch: 'dailyTimes',
+        state: {
+          weekDayRange: [1, 5],
+          reservation: {
+            branch: 'noTimes',
+            state: {
+              selection: 'not-set',
+              mode: 'reservationNotRequired'
+            }
+          }
+        }
+      })
+    })
+
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
@@ -266,7 +346,10 @@ describe('resetTimes', () => {
         branch: 'dailyTimes',
         state: {
           weekDayRange: [1, 5],
-          reservation: { branch: 'holidayReservation', state: 'not-set' }
+          reservation: {
+            branch: 'noTimes',
+            state: { selection: 'not-set', mode: 'holidayPeriod' }
+          }
         }
       })
     })
@@ -357,8 +440,8 @@ describe('resetTimes', () => {
         state: {
           weekDayRange: [1, 5],
           reservation: {
-            branch: 'holidayReservation',
-            state: 'absent'
+            branch: 'noTimes',
+            state: { selection: 'absent', mode: 'holidayPeriod' }
           }
         }
       })
@@ -406,8 +489,8 @@ describe('resetTimes', () => {
         state: {
           weekDayRange: [1, 5],
           reservation: {
-            branch: 'holidayReservation',
-            state: 'not-set'
+            branch: 'noTimes',
+            state: { selection: 'not-set', mode: 'holidayPeriod' }
           }
         }
       })
@@ -452,8 +535,8 @@ describe('resetTimes', () => {
         state: {
           weekDayRange: [1, 5],
           reservation: {
-            branch: 'holidayReservation',
-            state: 'present'
+            branch: 'noTimes',
+            state: { selection: 'present', mode: 'holidayPeriod' }
           }
         }
       })
@@ -498,8 +581,8 @@ describe('resetTimes', () => {
         state: {
           weekDayRange: [1, 5],
           reservation: {
-            branch: 'holidayReservation',
-            state: 'not-set'
+            branch: 'noTimes',
+            state: { selection: 'not-set', mode: 'holidayPeriod' }
           }
         }
       })
@@ -962,6 +1045,89 @@ describe('resetTimes', () => {
       })
     })
 
+    it('Reservations not required', () => {
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          n  n        | n  n  n  a  n        | n  n  n  n  n
+      //          n  n        | n  n  a  a  n        | n  n  a  n  n
+      const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
+        (day) => ({
+          ...day,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              requiresReservation: false,
+              absence:
+                day.date.getIsoDayOfWeek() === 4
+                  ? { type: 'OTHER_ABSENCE', editable: true }
+                  : null
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              requiresReservation: false,
+              absence:
+                day.date.getIsoDayOfWeek() === 3 ||
+                day.date.getIsoDayOfWeek() === 4
+                  ? { type: 'OTHER_ABSENCE', editable: true }
+                  : null
+            }
+          ]
+        })
+      )
+
+      const dayProperties = new DayProperties(calendarDays, [])
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'WEEKLY',
+          selectedRange,
+          selectedChildren: ['child-1', 'child-2']
+        })
+      ).toEqual({
+        branch: 'weeklyTimes',
+        state: [
+          {
+            weekDay: 1,
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'present', mode: 'reservationNotRequired' }
+            }
+          },
+          {
+            weekDay: 2,
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'present', mode: 'reservationNotRequired' }
+            }
+          },
+          {
+            weekDay: 3,
+            // The other child has an absence on this day
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'reservationNotRequired' }
+            }
+          },
+          {
+            weekDay: 4,
+            // Both children have an absence on this day
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'absent', mode: 'reservationNotRequired' }
+            }
+          },
+          {
+            weekDay: 5,
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'present', mode: 'reservationNotRequired' }
+            }
+          }
+        ]
+      })
+    })
+
     it('Holidays', () => {
       // MO TU WE
       //    s  s
@@ -1053,8 +1219,8 @@ describe('resetTimes', () => {
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
           day: {
-            branch: 'holidayReservation',
-            state: 'not-set'
+            branch: 'reservationNoTimes',
+            state: { selection: 'not-set', mode: 'holidayPeriod' }
           }
         }))
       })
@@ -1148,8 +1314,8 @@ describe('resetTimes', () => {
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
           day: {
-            branch: 'holidayReservation',
-            state: 'absent'
+            branch: 'reservationNoTimes',
+            state: { selection: 'absent', mode: 'holidayPeriod' }
           }
         }))
       })
@@ -1167,37 +1333,37 @@ describe('resetTimes', () => {
           {
             weekDay: 1,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 2,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 3,
             day: {
               // This day has an absence for all children
-              branch: 'holidayReservation',
-              state: 'absent'
+              branch: 'reservationNoTimes',
+              state: { selection: 'absent', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 4,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 5,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           }
         ]
@@ -1272,15 +1438,15 @@ describe('resetTimes', () => {
           {
             weekDay: 1,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 2,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
@@ -1294,15 +1460,15 @@ describe('resetTimes', () => {
           {
             weekDay: 4,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 5,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           }
         ]
@@ -1364,8 +1530,8 @@ describe('resetTimes', () => {
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
           day: {
-            branch: 'holidayReservation',
-            state: 'present'
+            branch: 'reservationNoTimes',
+            state: { selection: 'present', mode: 'holidayPeriod' }
           }
         }))
       })
@@ -1383,37 +1549,37 @@ describe('resetTimes', () => {
           {
             weekDay: 1,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 2,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 3,
             // This day has a reservation for all children
             day: {
-              branch: 'holidayReservation',
-              state: 'present'
+              branch: 'reservationNoTimes',
+              state: { selection: 'present', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 4,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             weekDay: 5,
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           }
         ]
@@ -1532,6 +1698,11 @@ describe('resetTimes', () => {
     })
 
     it('Reservations + absences + employee-marked absences', () => {
+      const range = new FiniteDateRange(monday, fridayNextWeek)
+      const rangeWeekDays = [...range.dates()].filter(
+        (date) => !date.isWeekend()
+      )
+
       const r: Reservation = {
         type: 'TIMES',
         startTime: LocalTime.of(8, 0),
@@ -1539,13 +1710,15 @@ describe('resetTimes', () => {
       }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const an: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
+      // n = no reservation required
+      // nae = n + ae
 
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | r  r  r  ae ae       | an _
-      //                      | r  _  ae ae _        | an an
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU WE  TH  fr sa su
+      //                      | r  r  r  ae ae       | an _  nae nae n
+      //                      | r  _  ae ae _        | an an nae n   n
       const calendarDays: ReservationResponseDay[] = [
         {
-          date: selectedRangeWeekDays[0],
+          date: rangeWeekDays[0],
           holiday: false,
           children: [
             {
@@ -1561,7 +1734,7 @@ describe('resetTimes', () => {
           ]
         },
         {
-          date: selectedRangeWeekDays[1],
+          date: rangeWeekDays[1],
           holiday: false,
           children: [
             {
@@ -1576,7 +1749,7 @@ describe('resetTimes', () => {
           ]
         },
         {
-          date: selectedRangeWeekDays[2],
+          date: rangeWeekDays[2],
           holiday: false,
           children: [
             {
@@ -1592,7 +1765,7 @@ describe('resetTimes', () => {
           ]
         },
         {
-          date: selectedRangeWeekDays[3],
+          date: rangeWeekDays[3],
           holiday: false,
           children: [
             {
@@ -1608,7 +1781,7 @@ describe('resetTimes', () => {
           ]
         },
         {
-          date: selectedRangeWeekDays[4],
+          date: rangeWeekDays[4],
           holiday: false,
           children: [
             {
@@ -1623,7 +1796,7 @@ describe('resetTimes', () => {
           ]
         },
         {
-          date: selectedRangeWeekDays[5],
+          date: rangeWeekDays[5],
           holiday: false,
           children: [
             {
@@ -1639,7 +1812,7 @@ describe('resetTimes', () => {
           ]
         },
         {
-          date: selectedRangeWeekDays[6],
+          date: rangeWeekDays[6],
           holiday: false,
           children: [
             {
@@ -1652,6 +1825,57 @@ describe('resetTimes', () => {
               absence: an
             }
           ]
+        },
+        {
+          date: rangeWeekDays[7],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              requiresReservation: false,
+              absence: ae
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              requiresReservation: false,
+              absence: ae
+            }
+          ]
+        },
+        {
+          date: rangeWeekDays[8],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              requiresReservation: false,
+              absence: ae
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              requiresReservation: false
+            }
+          ]
+        },
+        {
+          date: rangeWeekDays[9],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              requiresReservation: false
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              requiresReservation: false
+            }
+          ]
         }
       ]
 
@@ -1660,59 +1884,77 @@ describe('resetTimes', () => {
       expect(
         resetTimes(dayProperties, undefined, {
           repetition: 'IRREGULAR',
-          selectedRange,
+          selectedRange: range,
           selectedChildren: ['child-1', 'child-2']
         })
       ).toEqual({
         branch: 'irregularTimes',
         state: [
           {
-            date: selectedRangeWeekDays[0],
+            date: rangeWeekDays[0],
             day: {
               branch: 'reservation',
               state: [{ startTime: '08:00', endTime: '16:00' }]
             }
           },
           {
-            date: selectedRangeWeekDays[1],
+            date: rangeWeekDays[1],
             day: {
               branch: 'reservation',
               state: [{ startTime: '', endTime: '' }]
             }
           },
           {
-            date: selectedRangeWeekDays[2],
+            date: rangeWeekDays[2],
             day: {
               branch: 'reservation',
               state: [{ startTime: '', endTime: '' }]
             }
           },
           {
-            date: selectedRangeWeekDays[3],
+            date: rangeWeekDays[3],
             day: {
               branch: 'reservation',
               state: []
             }
           },
           {
-            date: selectedRangeWeekDays[4],
+            date: rangeWeekDays[4],
             day: {
               branch: 'reservation',
               state: [{ startTime: '', endTime: '' }]
             }
           },
           {
-            date: selectedRangeWeekDays[5],
-            day: {
-              branch: 'readOnly',
-              state: 'not-editable'
-            }
+            date: rangeWeekDays[5],
+            day: { branch: 'readOnly', state: 'not-editable' }
           },
           {
-            date: selectedRangeWeekDays[6],
+            date: rangeWeekDays[6],
             day: {
               branch: 'reservation',
               state: [{ startTime: '', endTime: '' }]
+            }
+          },
+          {
+            date: rangeWeekDays[7],
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'absent', mode: 'reservationNotRequired' }
+            }
+          },
+          {
+            date: rangeWeekDays[8],
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'reservationNotRequired' }
+            }
+          },
+          {
+            date: rangeWeekDays[9],
+            day: {
+              branch: 'reservationNoTimes',
+              state: { selection: 'present', mode: 'reservationNotRequired' }
             }
           }
         ]
@@ -1807,8 +2049,8 @@ describe('resetTimes', () => {
         state: selectedRangeWeekDays.map((date) => ({
           date,
           day: {
-            branch: 'holidayReservation',
-            state: 'not-set'
+            branch: 'reservationNoTimes',
+            state: { selection: 'not-set', mode: 'holidayPeriod' }
           }
         }))
       })
@@ -1952,36 +2194,36 @@ describe('resetTimes', () => {
           {
             date: selectedRangeWeekDays[0],
             day: {
-              branch: 'holidayReservation',
-              state: 'present'
+              branch: 'reservationNoTimes',
+              state: { selection: 'present', mode: 'holidayPeriod' }
             }
           },
           {
             date: selectedRangeWeekDays[1],
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             date: selectedRangeWeekDays[2],
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
             date: selectedRangeWeekDays[3],
             day: {
-              branch: 'holidayReservation',
-              state: 'absent'
+              branch: 'reservationNoTimes',
+              state: { selection: 'absent', mode: 'holidayPeriod' }
             }
           },
           {
             date: selectedRangeWeekDays[4],
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           },
           {
@@ -1994,8 +2236,8 @@ describe('resetTimes', () => {
           {
             date: selectedRangeWeekDays[6],
             day: {
-              branch: 'holidayReservation',
-              state: 'not-set'
+              branch: 'reservationNoTimes',
+              state: { selection: 'not-set', mode: 'holidayPeriod' }
             }
           }
         ]

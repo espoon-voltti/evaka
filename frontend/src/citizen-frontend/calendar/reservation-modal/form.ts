@@ -45,19 +45,29 @@ export const times = array(
   )
 )
 
+export const noTimes = object({
+  selection: value<'present' | 'absent' | 'not-set'>(),
+
+  // holidayPeriod => output a NO_TIMES reservation
+  // reservationNotRequired => output nothing (undefined)
+  mode: value<'holidayPeriod' | 'reservationNotRequired'>()
+})
+
 export const day = mapped(
   union({
     readOnly: value<'not-editable' | 'holiday' | undefined>(),
     reservation: times,
-    holidayReservation: value<'present' | 'absent' | 'not-set'>()
+    reservationNoTimes: noTimes
   }),
   ({ branch, value }): Reservation[] | undefined =>
     branch === 'reservation'
       ? value.map(timeRangeToTimes)
-      : branch === 'holidayReservation'
-      ? value === 'present'
-        ? [{ type: 'NO_TIMES' }]
-        : value === 'absent'
+      : branch === 'reservationNoTimes'
+      ? value.selection === 'present'
+        ? value.mode === 'holidayPeriod'
+          ? [{ type: 'NO_TIMES' }]
+          : undefined // reservationNotRequired
+        : value.selection === 'absent'
         ? []
         : undefined // not-set
       : undefined // readOnly
@@ -73,15 +83,17 @@ export const dailyTimes = mapped(
     weekDayRange: value<[number, number] | undefined>(),
     reservation: union({
       times,
-      holidayReservation: value<'present' | 'absent' | 'not-set'>()
+      noTimes
     })
   }),
   (output): Reservation[] | undefined =>
     output.reservation.branch === 'times'
       ? output.reservation.value.map(timeRangeToTimes)
-      : output.reservation.value === 'present'
-      ? [{ type: 'NO_TIMES' }]
-      : output.reservation.value === 'absent'
+      : output.reservation.value.selection === 'present'
+      ? output.reservation.value.mode === 'holidayPeriod'
+        ? [{ type: 'NO_TIMES' }]
+        : undefined
+      : output.reservation.value.selection === 'absent'
       ? []
       : undefined // not-set
 )
@@ -276,27 +288,47 @@ export function resetTimes(
 
     const isOpenHolidayPeriod =
       dayProperties.containedInOpenHolidayPeriod(selectedRange)
+    const reservationNotRequired = reservationNotRequiredForAnyChild(
+      calendarDaysInRange,
+      selectedChildren
+    )
 
     if (
-      isOpenHolidayPeriod &&
+      (isOpenHolidayPeriod || reservationNotRequired) &&
       allChildrenAreAbsent(calendarDaysInRange, selectedChildren)
     ) {
       return {
         branch: 'dailyTimes',
         state: {
           weekDayRange,
-          reservation: { branch: 'holidayReservation', state: 'absent' }
+          reservation: {
+            branch: 'noTimes',
+            state: {
+              selection: 'absent',
+              mode: reservationNotRequired
+                ? 'reservationNotRequired'
+                : 'holidayPeriod'
+            }
+          }
         }
       }
     }
 
     if (hasReservationsForEveryChild(calendarDaysInRange, selectedChildren)) {
-      if (isOpenHolidayPeriod) {
+      if (isOpenHolidayPeriod || reservationNotRequired) {
         return {
           branch: 'dailyTimes',
           state: {
             weekDayRange,
-            reservation: { branch: 'holidayReservation', state: 'present' }
+            reservation: {
+              branch: 'noTimes',
+              state: {
+                selection: 'present',
+                mode: reservationNotRequired
+                  ? 'reservationNotRequired'
+                  : 'holidayPeriod'
+              }
+            }
           }
         }
       }
@@ -324,12 +356,21 @@ export function resetTimes(
       branch: 'dailyTimes',
       state: {
         weekDayRange,
-        reservation: isOpenHolidayPeriod
-          ? { branch: 'holidayReservation', state: 'not-set' }
-          : {
-              branch: 'times',
-              state: [emptyTimeRange]
-            }
+        reservation:
+          isOpenHolidayPeriod || reservationNotRequired
+            ? {
+                branch: 'noTimes',
+                state: {
+                  selection: 'not-set',
+                  mode: reservationNotRequired
+                    ? 'reservationNotRequired'
+                    : 'holidayPeriod'
+                }
+              }
+            : {
+                branch: 'times',
+                state: [emptyTimeRange]
+              }
       }
     }
   } else if (repetition === 'WEEKLY') {
@@ -352,6 +393,10 @@ export function resetTimes(
 
         const relevantCalendarDays = calendarDaysInRange.filter(({ date }) =>
           dayOfWeekDays.some((d) => d.isEqual(date))
+        )
+        const reservationNotRequired = reservationNotRequiredForAnyChild(
+          relevantCalendarDays,
+          selectedChildren
         )
 
         if (
@@ -381,22 +426,39 @@ export function resetTimes(
         if (allChildrenAreAbsent(relevantCalendarDays, selectedChildren)) {
           return {
             weekDay: dayOfWeek,
-            day: isOpenHolidayPeriod
-              ? { branch: 'holidayReservation', state: 'absent' }
-              : {
-                  branch: 'reservation',
-                  state: []
-                }
+            day:
+              isOpenHolidayPeriod || reservationNotRequired
+                ? {
+                    branch: 'reservationNoTimes',
+                    state: {
+                      selection: 'absent',
+                      mode: reservationNotRequired
+                        ? 'reservationNotRequired'
+                        : 'holidayPeriod'
+                    }
+                  }
+                : {
+                    branch: 'reservation',
+                    state: []
+                  }
           }
         }
 
         if (
           hasReservationsForEveryChild(relevantCalendarDays, selectedChildren)
         ) {
-          if (isOpenHolidayPeriod) {
+          if (isOpenHolidayPeriod || reservationNotRequired) {
             return {
               weekDay: dayOfWeek,
-              day: { branch: 'holidayReservation', state: 'present' }
+              day: {
+                branch: 'reservationNoTimes',
+                state: {
+                  selection: 'present',
+                  mode: reservationNotRequired
+                    ? 'reservationNotRequired'
+                    : 'holidayPeriod'
+                }
+              }
             }
           }
 
@@ -414,11 +476,21 @@ export function resetTimes(
               }
             }
         }
+
         return {
           weekDay: dayOfWeek,
-          day: isOpenHolidayPeriod
-            ? { branch: 'holidayReservation', state: 'not-set' }
-            : emptyDay
+          day:
+            isOpenHolidayPeriod || reservationNotRequired
+              ? {
+                  branch: 'reservationNoTimes',
+                  state: {
+                    selection: 'not-set',
+                    mode: reservationNotRequired
+                      ? 'reservationNotRequired'
+                      : 'holidayPeriod'
+                  }
+                }
+              : emptyDay
         }
       }
     )
@@ -441,6 +513,12 @@ export function resetTimes(
           const existing = prevState.find((day) => day.date.isEqual(rangeDate))
           if (existing) return existing
         }
+
+        const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
+        const reservationNotRequired = reservationNotRequiredForAnyChild(
+          [calendarDay],
+          selectedChildren
+        )
 
         const dayChildren = calendarDay.children.filter((dayChild) =>
           selectedChildren.includes(dayChild.childId)
@@ -473,47 +551,72 @@ export function resetTimes(
           }
         }
 
-        const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
-
         if (allChildrenAreAbsent([calendarDay], selectedChildren)) {
           return {
             date: rangeDate,
-            day: isOpenHolidayPeriod
-              ? { branch: 'holidayReservation', state: 'absent' }
-              : {
-                  branch: 'reservation',
-                  state: []
-                }
+            day:
+              isOpenHolidayPeriod || reservationNotRequired
+                ? {
+                    branch: 'reservationNoTimes',
+                    state: {
+                      selection: 'absent',
+                      mode: reservationNotRequired
+                        ? 'reservationNotRequired'
+                        : 'holidayPeriod'
+                    }
+                  }
+                : {
+                    branch: 'reservation',
+                    state: []
+                  }
           }
         }
 
         if (hasReservationsForEveryChild([calendarDay], selectedChildren)) {
-          if (isOpenHolidayPeriod) {
+          if (isOpenHolidayPeriod || reservationNotRequired) {
             return {
               date: rangeDate,
-              day: { branch: 'holidayReservation', state: 'present' }
-            }
-          } else {
-            const commonTimeRanges = getCommonTimeRanges(
-              [calendarDay],
-              selectedChildren
-            )
-            if (commonTimeRanges) {
-              return {
-                date: rangeDate,
-                day: {
-                  branch: 'reservation',
-                  state: bindUnboundedTimeRanges(commonTimeRanges)
+              day: {
+                branch: 'reservationNoTimes',
+                state: {
+                  selection: 'present',
+                  mode: reservationNotRequired
+                    ? 'reservationNotRequired'
+                    : 'holidayPeriod'
                 }
               }
             }
           }
+
+          const commonTimeRanges = getCommonTimeRanges(
+            [calendarDay],
+            selectedChildren
+          )
+          if (commonTimeRanges) {
+            return {
+              date: rangeDate,
+              day: {
+                branch: 'reservation',
+                state: bindUnboundedTimeRanges(commonTimeRanges)
+              }
+            }
+          }
         }
+
         return {
           date: rangeDate,
-          day: isOpenHolidayPeriod
-            ? { branch: 'holidayReservation', state: 'not-set' }
-            : emptyDay
+          day:
+            isOpenHolidayPeriod || reservationNotRequired
+              ? {
+                  branch: 'reservationNoTimes',
+                  state: {
+                    selection: 'not-set',
+                    mode: reservationNotRequired
+                      ? 'reservationNotRequired'
+                      : 'holidayPeriod'
+                  }
+                }
+              : emptyDay
         }
       }
     )
@@ -545,7 +648,10 @@ const hasReservationsForEveryChild = (
   calendarDays.every((day) =>
     selectedChildren.every((childId) =>
       day.children.some(
-        (child) => child.childId === childId && child.reservations.length > 0
+        (child) =>
+          child.childId === childId &&
+          (child.reservations.length > 0 || !child.requiresReservation) &&
+          child.absence === null
       )
     )
   )
@@ -573,6 +679,18 @@ const allChildrenAreAbsentNotEditable = (
           child.childId === childId &&
           child.absence !== null &&
           !child.absence.editable
+      )
+    )
+  )
+
+const reservationNotRequiredForAnyChild = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
+) =>
+  calendarDays.every((day) =>
+    selectedChildren.every((childId) =>
+      day.children.some(
+        (child) => child.childId === childId && !child.requiresReservation
       )
     )
   )

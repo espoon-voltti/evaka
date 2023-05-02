@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import { useTranslation } from 'citizen-frontend/localization'
 import {
   BoundForm,
-  BoundFormState,
   useFormElem,
+  useFormField,
   useFormUnion
 } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -23,7 +23,7 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, times } from './form'
+import { day, emptyTimeRange, noTimes, times } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
@@ -64,8 +64,8 @@ export const Day = React.memo(function Day({
           onFocus={onFocus}
         />
       )
-    case 'holidayReservation':
-      return <HolidayReservation bind={form} label={label} />
+    case 'reservationNoTimes':
+      return <ReservationNoTimes bind={form} label={label} />
   }
 })
 
@@ -119,7 +119,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
 })
 
 interface ReadOnlyDayProps {
-  mode: 'not-editable' | 'holiday' | undefined
+  mode: 'not-editable' | 'not-required' | 'holiday' | undefined
   label: React.ReactNode
   dataQaPrefix?: string
 }
@@ -173,6 +173,14 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
             </FixedSpaceRow>
           )}
         </>
+      )
+    case 'not-required':
+      return (
+        <FixedSpaceRow fullWidth alignItems="center">
+          <LeftCell>{label}</LeftCell>
+          <MiddleCell>{i18n.calendar.reservationNotRequired}</MiddleCell>
+          <RightCell />
+        </FixedSpaceRow>
       )
     case 'holiday':
       return (
@@ -272,36 +280,38 @@ export const Times = React.memo(function Times({
   )
 })
 
-export function HolidayReservation({
+export const ReservationNoTimes = React.memo(function ReservationNoTimes({
   bind,
   label
 }: {
-  bind: BoundFormState<'present' | 'absent'>
+  bind: BoundForm<typeof noTimes>
   label: React.ReactNode
 }) {
   const i18n = useTranslation()
+  const selection = useFormField(bind, 'selection')
+
   return (
     <FixedSpaceRow fullWidth alignItems="center">
       <LeftCell>{label}</LeftCell>
       <MiddleCell narrow>
         <Radio
-          checked={bind.state === 'present'}
-          onChange={() => bind.set('present')}
+          checked={selection.state === 'present'}
+          onChange={() => selection.set('present')}
           label={i18n.calendar.reservationModal.present}
           ariaLabel={i18n.calendar.reservationModal.present}
         />
       </MiddleCell>
       <RightCell>
         <Radio
-          checked={bind.state === 'absent'}
-          onChange={() => bind.set('absent')}
+          checked={selection.state === 'absent'}
+          onChange={() => selection.set('absent')}
           label={i18n.calendar.reservationModal.absent}
           ariaLabel={i18n.calendar.reservationModal.absent}
         />
       </RightCell>
     </FixedSpaceRow>
   )
-}
+})
 
 const LeftCell = styled.div`
   width: 80px;

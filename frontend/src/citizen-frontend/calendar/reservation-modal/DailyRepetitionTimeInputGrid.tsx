@@ -9,7 +9,7 @@ import { BoundForm, useFormFields, useFormUnion } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 
-import { HolidayReservation, Times } from './TimeInputs'
+import { ReservationNoTimes, Times } from './TimeInputs'
 import { dailyTimes } from './form'
 
 export interface DailyRepetitionTimeInputGridProps {
@@ -53,7 +53,7 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
           }}
         />
       )
-    case 'holidayReservation':
-      return <HolidayReservation bind={form} label={label} />
+    case 'noTimes':
+      return <ReservationNoTimes bind={form} label={label} />
   }
 })
