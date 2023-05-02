@@ -394,103 +394,13 @@ export function resetTimes(
         const relevantCalendarDays = calendarDaysInRange.filter(({ date }) =>
           dayOfWeekDays.some((d) => d.isEqual(date))
         )
-        const reservationNotRequired = reservationNotRequiredForAnyChild(
-          relevantCalendarDays,
-          selectedChildren
-        )
-
-        if (
-          holidayWithNoChildrenInShiftCare(
-            relevantCalendarDays,
-            selectedChildren
-          )
-        ) {
-          return {
-            weekDay: dayOfWeek,
-            day: { branch: 'readOnly', state: 'holiday' }
-          }
-        }
-
-        if (
-          allChildrenAreAbsentNotEditable(
-            relevantCalendarDays,
-            selectedChildren
-          )
-        ) {
-          return {
-            weekDay: dayOfWeek,
-            day: { branch: 'readOnly', state: 'not-editable' }
-          }
-        }
-
-        if (allChildrenAreAbsent(relevantCalendarDays, selectedChildren)) {
-          return {
-            weekDay: dayOfWeek,
-            day:
-              isOpenHolidayPeriod || reservationNotRequired
-                ? {
-                    branch: 'reservationNoTimes',
-                    state: {
-                      selection: 'absent',
-                      mode: reservationNotRequired
-                        ? 'reservationNotRequired'
-                        : 'holidayPeriod'
-                    }
-                  }
-                : {
-                    branch: 'reservation',
-                    state: []
-                  }
-          }
-        }
-
-        if (
-          hasReservationsForEveryChild(relevantCalendarDays, selectedChildren)
-        ) {
-          if (isOpenHolidayPeriod || reservationNotRequired) {
-            return {
-              weekDay: dayOfWeek,
-              day: {
-                branch: 'reservationNoTimes',
-                state: {
-                  selection: 'present',
-                  mode: reservationNotRequired
-                    ? 'reservationNotRequired'
-                    : 'holidayPeriod'
-                }
-              }
-            }
-          }
-
-          const commonTimeRanges = getCommonTimeRanges(
-            relevantCalendarDays,
-            selectedChildren
-          )
-
-          if (commonTimeRanges)
-            return {
-              weekDay: dayOfWeek,
-              day: {
-                branch: 'reservation',
-                state: bindUnboundedTimeRanges(commonTimeRanges)
-              }
-            }
-        }
-
         return {
           weekDay: dayOfWeek,
-          day:
-            isOpenHolidayPeriod || reservationNotRequired
-              ? {
-                  branch: 'reservationNoTimes',
-                  state: {
-                    selection: 'not-set',
-                    mode: reservationNotRequired
-                      ? 'reservationNotRequired'
-                      : 'holidayPeriod'
-                  }
-                }
-              : emptyDay
+          day: resetDay(
+            isOpenHolidayPeriod,
+            relevantCalendarDays,
+            selectedChildren
+          )
         }
       }
     )
@@ -515,108 +425,9 @@ export function resetTimes(
         }
 
         const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
-        const reservationNotRequired = reservationNotRequiredForAnyChild(
-          [calendarDay],
-          selectedChildren
-        )
-
-        const dayChildren = calendarDay.children.filter((dayChild) =>
-          selectedChildren.includes(dayChild.childId)
-        )
-
-        if (holidayWithNoChildrenInShiftCare([calendarDay], selectedChildren)) {
-          return {
-            date: rangeDate,
-            day: { branch: 'readOnly', state: 'holiday' }
-          }
-        }
-
-        if (dayChildren.length === 0) {
-          return {
-            date: rangeDate,
-            day: {
-              branch: 'readOnly',
-              state: undefined
-            }
-          }
-        }
-
-        if (allChildrenAreAbsentNotEditable([calendarDay], selectedChildren)) {
-          return {
-            date: rangeDate,
-            day: {
-              branch: 'readOnly',
-              state: 'not-editable'
-            }
-          }
-        }
-
-        if (allChildrenAreAbsent([calendarDay], selectedChildren)) {
-          return {
-            date: rangeDate,
-            day:
-              isOpenHolidayPeriod || reservationNotRequired
-                ? {
-                    branch: 'reservationNoTimes',
-                    state: {
-                      selection: 'absent',
-                      mode: reservationNotRequired
-                        ? 'reservationNotRequired'
-                        : 'holidayPeriod'
-                    }
-                  }
-                : {
-                    branch: 'reservation',
-                    state: []
-                  }
-          }
-        }
-
-        if (hasReservationsForEveryChild([calendarDay], selectedChildren)) {
-          if (isOpenHolidayPeriod || reservationNotRequired) {
-            return {
-              date: rangeDate,
-              day: {
-                branch: 'reservationNoTimes',
-                state: {
-                  selection: 'present',
-                  mode: reservationNotRequired
-                    ? 'reservationNotRequired'
-                    : 'holidayPeriod'
-                }
-              }
-            }
-          }
-
-          const commonTimeRanges = getCommonTimeRanges(
-            [calendarDay],
-            selectedChildren
-          )
-          if (commonTimeRanges) {
-            return {
-              date: rangeDate,
-              day: {
-                branch: 'reservation',
-                state: bindUnboundedTimeRanges(commonTimeRanges)
-              }
-            }
-          }
-        }
-
         return {
           date: rangeDate,
-          day:
-            isOpenHolidayPeriod || reservationNotRequired
-              ? {
-                  branch: 'reservationNoTimes',
-                  state: {
-                    selection: 'not-set',
-                    mode: reservationNotRequired
-                      ? 'reservationNotRequired'
-                      : 'holidayPeriod'
-                  }
-                }
-              : emptyDay
+          day: resetDay(isOpenHolidayPeriod, [calendarDay], selectedChildren)
         }
       }
     )
@@ -627,6 +438,92 @@ export function resetTimes(
   } else {
     throw new Error('Not reached')
   }
+}
+
+function resetDay(
+  isOpenHolidayPeriod: boolean,
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: UUID[]
+): StateOf<typeof day> {
+  const reservationNotRequired = reservationNotRequiredForAnyChild(
+    calendarDays,
+    selectedChildren
+  )
+
+  const dayChildren = calendarDays.flatMap((day) =>
+    day.children.filter((dayChild) =>
+      selectedChildren.includes(dayChild.childId)
+    )
+  )
+
+  if (holidayWithNoChildrenInShiftCare(calendarDays, selectedChildren)) {
+    return { branch: 'readOnly', state: 'holiday' }
+  }
+
+  if (dayChildren.length === 0) {
+    return {
+      branch: 'readOnly',
+      state: undefined
+    }
+  }
+
+  if (allChildrenAreAbsentNotEditable(calendarDays, selectedChildren)) {
+    return {
+      branch: 'readOnly',
+      state: 'not-editable'
+    }
+  }
+
+  if (allChildrenAreAbsent(calendarDays, selectedChildren)) {
+    return isOpenHolidayPeriod || reservationNotRequired
+      ? {
+          branch: 'reservationNoTimes',
+          state: {
+            selection: 'absent',
+            mode: reservationNotRequired
+              ? 'reservationNotRequired'
+              : 'holidayPeriod'
+          }
+        }
+      : {
+          branch: 'reservation',
+          state: []
+        }
+  }
+
+  if (hasReservationsForEveryChild(calendarDays, selectedChildren)) {
+    if (isOpenHolidayPeriod || reservationNotRequired) {
+      return {
+        branch: 'reservationNoTimes',
+        state: {
+          selection: 'present',
+          mode: reservationNotRequired
+            ? 'reservationNotRequired'
+            : 'holidayPeriod'
+        }
+      }
+    }
+
+    const commonTimeRanges = getCommonTimeRanges(calendarDays, selectedChildren)
+    if (commonTimeRanges) {
+      return {
+        branch: 'reservation',
+        state: bindUnboundedTimeRanges(commonTimeRanges)
+      }
+    }
+  }
+
+  return isOpenHolidayPeriod || reservationNotRequired
+    ? {
+        branch: 'reservationNoTimes',
+        state: {
+          selection: 'not-set',
+          mode: reservationNotRequired
+            ? 'reservationNotRequired'
+            : 'holidayPeriod'
+        }
+      }
+    : emptyDay
 }
 
 const holidayWithNoChildrenInShiftCare = (
