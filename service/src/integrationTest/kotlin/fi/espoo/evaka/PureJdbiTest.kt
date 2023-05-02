@@ -24,6 +24,7 @@ abstract class PureJdbiTest(private val resetDbBeforeEach: Boolean) {
     protected lateinit var db: Database.Connection
     protected val noopTracer: Tracer = NoopTracerFactory.create()
 
+    protected fun dbInstance(): Database = Database(jdbi, noopTracer)
     @BeforeAll
     fun initializeJdbi() {
         dataSource = getTestDataSource()

@@ -4,9 +4,10 @@
 
 package fi.espoo.evaka.espoobi
 
-import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import org.unbescape.csv.CsvEscape
@@ -20,8 +21,11 @@ fun printCsvField(value: Any?): String =
         null -> ""
         is Number -> value.toString()
         is String -> value
-        is Id<*> -> value.raw.toString()
+        is Boolean -> if (value) "true" else "false"
+        is UUID -> value.toString()
         is LocalDate -> value.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        is HelsinkiDateTime ->
+            value.toZonedDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         is Enum<*> -> value.name
         else -> error("Unsupported CSV field type ${value.javaClass}")
     }

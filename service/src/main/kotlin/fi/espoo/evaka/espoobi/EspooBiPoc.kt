@@ -10,18 +10,79 @@ import fi.espoo.evaka.shared.db.QuerySql
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.function.ServerResponse
 
-class EspooBiPoc {
-    val getAreas = streamingCsvRoute<BiArea> { sql("""
-SELECT id, name
+object EspooBiPoc {
+    val getAreas =
+        streamingCsvRoute<BiArea> { sql("""
+SELECT id, updated, name
 FROM care_area
 """) }
 
     val getUnits =
         streamingCsvRoute<BiUnit> {
+            sql(
+                """
+SELECT
+    id, updated, care_area_id AS area, name, provider_type, cost_center,
+    'CLUB' = ANY(type) AS club, 'PRESCHOOL' = ANY(type) AS preschool, 'PREPARATORY_EDUCATION' = ANY(type) AS preparatory_education,
+    (CASE WHEN 'GROUP_FAMILY' = ANY(type) THEN 'GROUP_FAMILY'
+          WHEN 'FAMILY' = ANY(type) THEN 'FAMILY'
+          WHEN 'CENTRE' = ANY(type) THEN 'DAYCARE'
+     END) AS daycare
+FROM daycare
+"""
+            )
+        }
+
+    val getGroups =
+        streamingCsvRoute<BiGroup> {
             sql("""
-    SELECT id, care_area_id AS area, name
-    FROM daycare
-    """)
+SELECT id, name, start_date, end_date
+FROM daycare_group
+""")
+        }
+
+    val getChildren =
+        streamingCsvRoute<BiChild> {
+            sql(
+                """
+SELECT
+    id, updated, date_of_birth AS birth_date, language, language_at_home,
+    restricted_details_enabled AS vtj_non_disclosure, postal_code, post_office
+FROM child
+JOIN person USING (id)
+"""
+            )
+        }
+
+    val getPlacements =
+        streamingCsvRoute<BiPlacement> {
+            sql(
+                """
+SELECT id, updated, child_id AS child, unit_id AS unit, start_date, end_date, FALSE AS is_backup, type
+FROM placement
+
+UNION ALL
+
+SELECT id, updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
+FROM backup_care
+"""
+            )
+        }
+
+    val getGroupPlacements =
+        streamingCsvRoute<BiGroupPlacement> {
+            sql(
+                """
+SELECT id, updated, daycare_placement_id AS placement, daycare_group_id AS "group", start_date, end_date
+FROM daycare_group_placement
+
+UNION ALL
+
+SELECT id, updated, id AS placement, group_id AS "group", start_date, end_date
+FROM backup_care
+WHERE group_id IS NOT NULL
+"""
+            )
         }
 }
 
@@ -30,9 +91,11 @@ private fun printEspooBiCsvField(value: Any?): String =
     // only option is to remove quotes from the original data completely
     printCsvField(value).replace("\"", "")
 
+typealias StreamingCsvRoute = (db: Database, user: AuthenticatedUser.Integration) -> ServerResponse
+
 private inline fun <reified T : Any> streamingCsvRoute(
     crossinline f: QuerySql.Builder<T>.() -> QuerySql<T>
-): (db: Database, user: AuthenticatedUser.Integration) -> ServerResponse = { db, _ ->
+): StreamingCsvRoute = { db, _ ->
     ServerResponse.ok().build { _, response ->
         db.connect { dbc ->
             dbc.read { tx ->
