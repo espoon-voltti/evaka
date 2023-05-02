@@ -48,6 +48,9 @@ export function validateTimeRange(
   }
   endTime = endTime ?? regexp(timeRange.endTime, TIME_REGEXP, 'timeFormat')
 
+  if (timeRange.startTime === '00:00' && timeRange.endTime === '00:00')
+    endTime = 'timeFormat'
+
   if (
     !startTime &&
     !endTime &&
