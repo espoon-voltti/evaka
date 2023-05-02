@@ -24,7 +24,7 @@ services:
     volumes:
       - ./test-results/:/evaka/service/build/test-results/
     depends_on:
-      - db_it
+      - db
       - redis
       - s3.mock.evaka
     ipc: host

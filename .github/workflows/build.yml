@@ -522,7 +522,7 @@ jobs:
           cd ./compose
           mkdir -p test-results/
           ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
-          ./compose-integration logs db_it > test-results/db.log
+          ./compose-integration logs db > test-results/db.log
 
       - name: Run service integration tests for fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}

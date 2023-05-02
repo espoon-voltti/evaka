@@ -30,16 +30,6 @@ services:
       timeout: 5s
       retries: 5
 
-  db_it:
-    build: ./db-integration-test
-    ports:
-    - "15432:5432"
-    healthcheck:
-      test: "pg_isready -U postgres"
-      interval: 2s
-      timeout: 5s
-      retries: 5
-
   redis:
     image: redis:7-alpine
     ports:

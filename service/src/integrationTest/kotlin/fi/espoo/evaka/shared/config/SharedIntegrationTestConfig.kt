@@ -40,6 +40,7 @@ import javax.sql.DataSource
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
+import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
@@ -62,7 +63,7 @@ fun getTestDataSource(): TestDataSource =
             ?: TestDataSource(
                     HikariDataSource(
                             HikariConfig().apply {
-                                jdbcUrl = "jdbc:postgresql://localhost:15432/evaka_it"
+                                jdbcUrl = "jdbc:postgresql://localhost:5432/evaka_it"
                                 username = "evaka_it"
                                 password = "evaka_it"
                             }
@@ -74,8 +75,19 @@ fun getTestDataSource(): TestDataSource =
                                         .getPlugin(PostgreSQLConfigurationExtension::class.java)
                                         .isTransactionalLock = false
                                 }
-                                .dataSource(it)
-                                .placeholders(mapOf("application_user" to "evaka_it"))
+                                .dataSource(
+                                    PGSimpleDataSource().apply {
+                                        setUrl("jdbc:postgresql://localhost:5432/evaka_it")
+                                        user = "evaka_migration_local"
+                                        password = "flyway"
+                                    }
+                                )
+                                .placeholders(
+                                    mapOf(
+                                        "application_user" to "evaka_application_local",
+                                        "migration_user" to "evaka_migration_local"
+                                    )
+                                )
                                 .load()
                                 .run { migrate() }
                             Database(Jdbi.create(it), NoopTracerFactory.create()).connect { db ->
