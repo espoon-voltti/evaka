@@ -1454,3 +1454,13 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         )
         .bindKotlin(guardian)
         .execute()
+
+fun Database.Transaction.insertTestAbsence(absence: DevAbsence) =
+    insertTestDataRow(
+            absence,
+            """
+INSERT INTO absence (id, child_id, date, absence_type, modified_at, modified_by, category, questionnaire_id)
+VALUES (:id, :childId, :date, :absenceType, :modifiedAt, :modifiedBy, :absenceCategory, :questionnaireId)
+"""
+        )
+        .let(::AbsenceId)

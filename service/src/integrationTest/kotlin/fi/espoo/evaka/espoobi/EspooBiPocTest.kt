@@ -5,6 +5,8 @@
 package fi.espoo.evaka.espoobi
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -14,6 +16,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -21,6 +24,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -28,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import java.time.LocalDate
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.http.converter.HttpMessageConverter
@@ -73,6 +78,12 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertSingleRowContainingId(EspooBiPoc.getGroupPlacements, groupPlacementId)
     }
 
+    @Test
+    fun getAbsences() {
+        val absenceId = db.transaction { it.insertTestAbsence() }
+        assertSingleRowContainingId(EspooBiPoc.getAbsences, absenceId)
+    }
+
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
         val request = MockHttpServletRequest()
         val response = MockHttpServletResponse()
@@ -107,4 +118,12 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
+    private fun Database.Transaction.insertTestAbsence(): AbsenceId =
+        insertTestAbsence(
+            DevAbsence(
+                childId = insertTestChild(),
+                date = LocalDate.of(2020, 1, 1),
+                absenceCategory = AbsenceCategory.BILLABLE,
+            )
+        )
 }

@@ -84,6 +84,16 @@ WHERE group_id IS NOT NULL
 """
             )
         }
+
+    val getAbsences =
+        streamingCsvRoute<BiAbsence> {
+            sql(
+                """
+SELECT id, modified_at AS updated, child_id AS child, date, category
+FROM absence
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =

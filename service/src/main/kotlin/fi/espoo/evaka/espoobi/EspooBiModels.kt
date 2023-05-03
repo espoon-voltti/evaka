@@ -5,6 +5,7 @@
 package fi.espoo.evaka.espoobi
 
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -67,4 +68,12 @@ data class BiGroupPlacement(
     val group: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate,
+)
+
+data class BiAbsence(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val date: LocalDate,
+    val category: AbsenceCategory,
 )
