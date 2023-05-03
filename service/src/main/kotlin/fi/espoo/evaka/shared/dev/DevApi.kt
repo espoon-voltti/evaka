@@ -1687,8 +1687,8 @@ data class DevDaycareGroupPlacement(
     val id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
     val daycarePlacementId: PlacementId,
     val daycareGroupId: GroupId,
-    val startDate: LocalDate,
-    val endDate: LocalDate
+    val startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    val endDate: LocalDate = LocalDate.of(2019, 12, 31),
 )
 
 data class DevAssistanceNeed(

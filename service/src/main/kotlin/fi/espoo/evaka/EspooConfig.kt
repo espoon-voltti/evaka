@@ -152,8 +152,6 @@ class EspooConfig {
         exceptionHandler: ExceptionHandler
     ) =
         if (env.espooBiPocEnabled) {
-            val espooBiPoc = EspooBiPoc()
-
             fun error(entity: ResponseEntity<ErrorResponse>?): ServerResponse =
                 entity?.body?.let { ServerResponse.status(entity.statusCode).body(it) }
                     ?: ServerResponse.status(entity?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR)
@@ -179,8 +177,12 @@ class EspooConfig {
 
             router {
                 path("/integration/espoo-bi-poc").nest {
-                    GET("/areas", route(espooBiPoc.getAreas))
-                    GET("/units", route(espooBiPoc.getUnits))
+                    GET("/areas", route(EspooBiPoc.getAreas))
+                    GET("/units", route(EspooBiPoc.getUnits))
+                    GET("/groups", route(EspooBiPoc.getGroups))
+                    GET("/children", route(EspooBiPoc.getChildren))
+                    GET("/placements", route(EspooBiPoc.getPlacements))
+                    GET("/group-placements", route(EspooBiPoc.getGroupPlacements))
                 }
             }
         } else {
