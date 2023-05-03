@@ -11,15 +11,15 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
-import { sectionForm } from '../forms'
+import { templateSectionForm } from '../forms'
 
 interface Props {
-  initialState?: StateOf<typeof sectionForm>
-  onSave: (state: StateOf<typeof sectionForm>) => void
+  initialState?: StateOf<typeof templateSectionForm>
+  onSave: (state: StateOf<typeof templateSectionForm>) => void
   onCancel: () => void
 }
 
-export default React.memo(function SectionModal({
+export default React.memo(function TemplateSectionModal({
   initialState,
   onSave,
   onCancel
@@ -27,7 +27,7 @@ export default React.memo(function SectionModal({
   const { i18n } = useTranslation()
 
   const form = useForm(
-    sectionForm,
+    templateSectionForm,
     () =>
       initialState ?? {
         id: crypto.randomUUID(),

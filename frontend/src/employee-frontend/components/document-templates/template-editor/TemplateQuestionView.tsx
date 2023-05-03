@@ -6,15 +6,17 @@ import { faArrowDown, faArrowUp, faPen, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
+import { BoundForm } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 
-import { mapTextQuestionFromForm, questionForm } from '../forms'
-import TextQuestionView from '../questions/TextQuestionView'
+import {
+  DocumentQuestionView,
+  questionForm
+} from '../question-descriptors/questions'
 
-import QuestionModal from './QuestionModal'
+import TemplateQuestionModal from './TemplateQuestionModal'
 
 const Wrapper = styled.div<{ $readOnly: boolean }>`
   .question-actions {
@@ -45,7 +47,7 @@ interface Props {
   readOnly: boolean
 }
 
-export default React.memo(function QuestionView({
+export default React.memo(function TemplateQuestionView({
   bind,
   onMoveUp,
   onMoveDown,
@@ -55,17 +57,12 @@ export default React.memo(function QuestionView({
   readOnly
 }: Props) {
   const [editing, setEditing] = useState(false)
-  const { branch, form } = useFormUnion(bind)
 
   return (
     <Wrapper $readOnly={readOnly}>
       <FixedSpaceRow justifyContent="space-between" alignItems="start">
-        {branch === 'TEXT' && (
-          <TextQuestionView
-            question={mapTextQuestionFromForm(form.state)}
-            readOnly={false}
-          />
-        )}
+        <DocumentQuestionView bind={bind} />
+
         {!readOnly && (
           <FixedSpaceRow className="question-actions">
             <IconButton
@@ -89,7 +86,7 @@ export default React.memo(function QuestionView({
           </FixedSpaceRow>
         )}
         {editing && (
-          <QuestionModal
+          <TemplateQuestionModal
             initialState={bind.state}
             onSave={(q) => {
               bind.set(q)

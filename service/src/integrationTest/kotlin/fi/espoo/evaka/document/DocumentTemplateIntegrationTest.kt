@@ -39,11 +39,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         questions =
                             listOf(
                                 Question.TextQuestion(id = "q1", label = "kysymys 1"),
-                                Question.MultiselectQuestion(
-                                    id = "q2",
-                                    label = "kysymys 2",
-                                    options = listOf("a", "b", "c")
-                                )
+                                Question.CheckboxQuestion(id = "q2", label = "kysymys 2")
                             )
                     )
                 )
@@ -221,11 +217,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 questions =
                                     listOf(
                                         Question.TextQuestion(id = "q1", label = "foo"),
-                                        Question.MultiselectQuestion(
-                                            id = "q1",
-                                            label = "bar",
-                                            options = listOf("a", "b")
-                                        ),
+                                        Question.CheckboxQuestion(id = "q1", label = "bar"),
                                     )
                             )
                         )

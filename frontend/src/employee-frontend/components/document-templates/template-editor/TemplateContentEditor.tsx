@@ -19,8 +19,8 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 import {
-  mapDocumentContentFromForm,
-  mapQuestionToForm,
+  deserializeDocumentTemplateContentToTemplateContentForm,
+  serializeTemplateContentFormToDocumentTemplateContent,
   templateContentForm
 } from '../forms'
 import {
@@ -28,8 +28,8 @@ import {
   updateDocumentTemplateContentMutation
 } from '../queries'
 
-import SectionModal from './SectionModal'
-import SectionView from './SectionView'
+import TemplateSectionModal from './TemplateSectionModal'
+import TemplateSectionView from './TemplateSectionView'
 
 interface Props {
   templateId: UUID
@@ -57,13 +57,8 @@ export default React.memo(function TemplateContentEditor({
 
   const form = useForm(
     templateContentForm,
-    () => ({
-      sections: templateContent.sections.map((s) => ({
-        id: s.id,
-        label: s.label,
-        questions: s.questions.map(mapQuestionToForm)
-      }))
-    }),
+    () =>
+      deserializeDocumentTemplateContentToTemplateContentForm(templateContent),
     {
       ...i18n.validationErrors
     }
@@ -76,7 +71,7 @@ export default React.memo(function TemplateContentEditor({
       <ContentArea opaque>
         <FixedSpaceColumn spacing="L">
           {sectionElems.map((section, index) => (
-            <SectionView
+            <TemplateSectionView
               key={section.state.id}
               bind={section}
               onMoveUp={() =>
@@ -106,7 +101,7 @@ export default React.memo(function TemplateContentEditor({
         )}
 
         {creatingSection && (
-          <SectionModal
+          <TemplateSectionModal
             onSave={(newSection) => {
               sections.update((old) => [...old, newSection])
               setCreatingSection(false)
@@ -138,7 +133,10 @@ export default React.memo(function TemplateContentEditor({
                 onClick={() =>
                   updateDocumentTemplateContent({
                     id: templateId,
-                    content: mapDocumentContentFromForm(form)
+                    content:
+                      serializeTemplateContentFormToDocumentTemplateContent(
+                        form.state
+                      )
                   }).then((res) =>
                     readyToPublish ? publishDocumentTemplate(templateId) : res
                   )

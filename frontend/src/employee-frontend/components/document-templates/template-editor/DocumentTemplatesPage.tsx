@@ -11,11 +11,11 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
 
-import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
+import { useTranslation } from '../../../state/i18n'
+import { renderResult } from '../../async-rendering'
+import { documentTemplateSummariesQuery } from '../queries'
 
 import TemplateModal from './TemplateModal'
-import { documentTemplateSummariesQuery } from './queries'
 
 export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()

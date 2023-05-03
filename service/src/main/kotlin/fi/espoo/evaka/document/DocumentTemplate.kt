@@ -218,13 +218,18 @@ sealed interface Question {
     @JsonTypeName("TEXT")
     data class TextQuestion(override val id: String, val label: String) : Question
 
-    @JsonTypeName("MULTISELECT")
-    data class MultiselectQuestion(
+    @JsonTypeName("CHECKBOX")
+    data class CheckboxQuestion(override val id: String, val label: String) : Question
+
+    @JsonTypeName("CHECKBOX_GROUP")
+    data class CheckboxGroupQuestion(
         override val id: String,
         val label: String,
-        val options: List<String>
+        val options: List<MultiselectOption>
     ) : Question
 }
+
+data class MultiselectOption(val id: String, val label: String)
 
 data class Section(val id: String, val label: String, val questions: List<Question>)
 

@@ -15,9 +15,8 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../state/i18n'
-
-import { createDocumentTemplateMutation } from './queries'
+import { useTranslation } from '../../../state/i18n'
+import { createDocumentTemplateMutation } from '../queries'
 
 const documentTemplateForm = object({
   name: validated(string(), nonEmpty),

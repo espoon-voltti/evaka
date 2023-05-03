@@ -44,17 +44,34 @@ export interface DocumentTemplateSummary {
   validity: DateRange
 }
 
+/**
+* Generated from fi.espoo.evaka.document.MultiselectOption
+*/
+export interface MultiselectOption {
+  id: string
+  label: string
+}
+
 export namespace Question {
   /**
-  * Generated from fi.espoo.evaka.document.Question.MultiselectQuestion
+  * Generated from fi.espoo.evaka.document.Question.CheckboxGroupQuestion
   */
-  export interface MultiselectQuestion {
-    type: 'MULTISELECT'
+  export interface CheckboxGroupQuestion {
+    type: 'CHECKBOX_GROUP'
     id: string
     label: string
-    options: string[]
+    options: MultiselectOption[]
   }
-  
+
+  /**
+  * Generated from fi.espoo.evaka.document.Question.CheckboxQuestion
+  */
+  export interface CheckboxQuestion {
+    type: 'CHECKBOX'
+    id: string
+    label: string
+  }
+
   /**
   * Generated from fi.espoo.evaka.document.Question.TextQuestion
   */
@@ -68,7 +85,7 @@ export namespace Question {
 /**
 * Generated from fi.espoo.evaka.document.Question
 */
-export type Question = Question.MultiselectQuestion | Question.TextQuestion
+export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.TextQuestion
 
 
 /**

@@ -3706,7 +3706,12 @@ export const fi = {
     }
   },
   documentTemplates: {
-    title: 'Lomakepohjat (beta)'
+    title: 'Lomakepohjat (beta)',
+    questionTypes: {
+      TEXT: 'Tekstikenttä',
+      CHECKBOX: 'Rasti',
+      CHECKBOX_GROUP: 'Monivalinta'
+    }
   },
   vasuTemplates: {
     title: 'Opetussuunnitelmapohjat',

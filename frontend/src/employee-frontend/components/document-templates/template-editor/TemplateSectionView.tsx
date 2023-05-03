@@ -13,11 +13,11 @@ import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { sectionForm } from '../forms'
+import { templateSectionForm } from '../forms'
 
-import QuestionModal from './QuestionModal'
-import QuestionView from './QuestionView'
-import SectionModal from './SectionModal'
+import TemplateQuestionModal from './TemplateQuestionModal'
+import TemplateQuestionView from './TemplateQuestionView'
+import TemplateSectionModal from './TemplateSectionModal'
 
 const QuestionList = styled(FixedSpaceColumn)`
   padding: ${defaultMargins.m};
@@ -50,7 +50,7 @@ const HeaderRow = styled.div`
 `
 
 interface Props {
-  bind: BoundForm<typeof sectionForm>
+  bind: BoundForm<typeof templateSectionForm>
   onMoveUp: () => void
   onMoveDown: () => void
   onDelete: () => void
@@ -59,7 +59,7 @@ interface Props {
   readOnly: boolean
 }
 
-export default React.memo(function SectionView({
+export default React.memo(function TemplateSectionView({
   bind,
   onMoveUp,
   onMoveDown,
@@ -112,7 +112,7 @@ export default React.memo(function SectionView({
       </HeaderRow>
       <QuestionList spacing="L">
         {questionElems.map((question, index) => (
-          <QuestionView
+          <TemplateQuestionView
             key={question.state.state.id}
             bind={question}
             onMoveUp={() =>
@@ -134,7 +134,7 @@ export default React.memo(function SectionView({
         ))}
       </QuestionList>
       {editing && (
-        <SectionModal
+        <TemplateSectionModal
           onSave={(s) => {
             bind.set(s)
             setEditing(false)
@@ -144,7 +144,7 @@ export default React.memo(function SectionView({
         />
       )}
       {creatingQuestion && (
-        <QuestionModal
+        <TemplateQuestionModal
           onSave={(q) => {
             questions.update((old) => [...old, q])
             setCreatingQuestion(false)
