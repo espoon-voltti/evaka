@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.espoobi
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
@@ -25,6 +26,11 @@ data class BiUnit(
     val daycare: BiUnitDaycareType?,
     val preschool: Boolean,
     val preparatoryEducation: Boolean,
+    val openingDate: LocalDate?,
+    val closingDate: LocalDate?,
+    val language: Language,
+    val unitManagerName: String?,
+    val roundTheClock: Boolean,
 )
 
 enum class BiUnitDaycareType {

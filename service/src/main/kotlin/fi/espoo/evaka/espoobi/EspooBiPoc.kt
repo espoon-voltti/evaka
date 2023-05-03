@@ -22,13 +22,15 @@ FROM care_area
             sql(
                 """
 SELECT
-    id, updated, care_area_id AS area, name, provider_type, cost_center,
+    daycare.id, updated, care_area_id AS area, daycare.name, provider_type, cost_center,
     'CLUB' = ANY(type) AS club, 'PRESCHOOL' = ANY(type) AS preschool, 'PREPARATORY_EDUCATION' = ANY(type) AS preparatory_education,
     (CASE WHEN 'GROUP_FAMILY' = ANY(type) THEN 'GROUP_FAMILY'
           WHEN 'FAMILY' = ANY(type) THEN 'FAMILY'
           WHEN 'CENTRE' = ANY(type) THEN 'DAYCARE'
-     END) AS daycare
+     END) AS daycare,
+     opening_date, closing_date, language, um.name AS unit_manager_name, round_the_clock
 FROM daycare
+LEFT JOIN unit_manager um on daycare.unit_manager_id = um.id
 """
             )
         }
