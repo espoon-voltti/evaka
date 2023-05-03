@@ -24,6 +24,7 @@ concurrency:
 
 permissions:
   packages: write
+  actions: write
 
 jobs:
   lint-shell:
@@ -728,7 +729,8 @@ jobs:
           fi
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+    # TODO: enable
+    #if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
     env:
       DEPLOY_REPO_OWNER: 'espoon-voltti'
       DEPLOY_REPO_NAME: 'evaka-deploy'
@@ -744,7 +746,7 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         with:
-          github-token: '${{ secrets.EVAKA_PAT }}'
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: '${{ env.DEPLOY_REPO_OWNER }}',
