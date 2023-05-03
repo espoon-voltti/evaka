@@ -976,6 +976,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                     evakaEnv = evakaEnv,
                     now = approvedAt,
                     ids = listOf(decision.id),
+                    decisionHandlerId = null,
                     alwaysUseDaycareFinanceDecisionHandler
                 )
                 decision.id

@@ -333,6 +333,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 evakaEnv = evakaEnv,
                 now = approvedAt,
                 ids = listOf(decision.id),
+                decisionHandlerId = null,
                 alwaysUseDaycareFinanceDecisionHandler
             )
             decision.id

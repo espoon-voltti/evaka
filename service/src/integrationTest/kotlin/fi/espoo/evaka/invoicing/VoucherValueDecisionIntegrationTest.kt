@@ -512,6 +512,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 listOf(decision.id),
                 testDecisionMaker_1.id,
                 HelsinkiDateTime.now(),
+                null,
                 forceDaycareHandler
             )
         }

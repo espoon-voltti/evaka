@@ -1957,7 +1957,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         decisionIds: List<FeeDecisionId>,
         now: EvakaClock = RealEvakaClock()
     ) {
-        feeDecisionController.confirmDrafts(dbInstance(), user, now, decisionIds)
+        feeDecisionController.confirmDrafts(dbInstance(), user, now, decisionIds, null)
     }
 
     private fun setDecisionType(id: FeeDecisionId, body: FeeDecisionTypeRequest) {

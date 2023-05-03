@@ -1397,7 +1397,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             RealEvakaClock(),
-            listOf(firstDecision.id)
+            listOf(firstDecision.id),
+            null
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
