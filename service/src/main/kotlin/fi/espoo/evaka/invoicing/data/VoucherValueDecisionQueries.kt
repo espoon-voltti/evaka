@@ -564,6 +564,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
     ids: List<VoucherValueDecisionId>,
     approvedBy: EmployeeId,
     approvedAt: HelsinkiDateTime,
+    decisionHandlerId: EmployeeId?,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
     // language=sql
@@ -574,6 +575,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = (CASE
+                WHEN :decisionHandlerId IS NOT NULL THEN :decisionHandlerId
                 WHEN daycare.finance_decision_handler IS NOT NULL AND :alwaysUseDaycareFinanceDecisionHandler = true THEN daycare.finance_decision_handler
                 WHEN daycare.finance_decision_handler IS NOT NULL AND vd.decision_type = 'NORMAL' THEN daycare.finance_decision_handler
                 ELSE :approvedBy
@@ -592,6 +594,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
             .bind("approvedBy", approvedBy)
             .bind("approvedAt", approvedAt)
             .bind("id", id)
+            .bind("decisionHandlerId", decisionHandlerId)
             .bind("alwaysUseDaycareFinanceDecisionHandler", alwaysUseDaycareFinanceDecisionHandler)
             .add()
     }

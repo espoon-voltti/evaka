@@ -75,6 +75,9 @@ export class FeeDecisionsPage {
   #sendFeeDecisionsButton = new AsyncButton(
     this.page.find('[data-qa="confirm-decisions"]')
   )
+  #openDecisionHandlerSelectModalButton = new AsyncButton(
+    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+  )
 
   async getFeeDecisionCount() {
     return this.page.findAll('[data-qa="table-fee-decision-row"]').count()
@@ -106,6 +109,11 @@ export class FeeDecisionsPage {
     await runPendingAsyncJobs(mockedNow)
   }
 
+  async openDecisionHandlerModal() {
+    await this.#openDecisionHandlerSelectModalButton.click()
+    return new FinanceDecisionHandlerSelectModal(this.page)
+  }
+
   async assertSentDecisionsCount(count: number) {
     await this.#statusFilter.sent.check()
     await waitUntilEqual(
@@ -120,10 +128,18 @@ export class FeeDecisionDetailsPage {
 
   #partnerName = this.page.find('[data-qa="partner"]')
   #headOfFamily = this.page.find('[data-qa="head-of-family"]')
+  #decisionHandler = this.page.find('[data-qa="decision-handler"]')
   #childIncome = this.page.findAll('[data-qa="child-income"]')
+  #openDecisionHandlerSelectModalButton = new AsyncButton(
+    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+  )
 
   async assertPartnerName(expectedName: string) {
     await this.#partnerName.assertTextEquals(expectedName)
+  }
+
+  async assertDecisionHandler(expectedName: string) {
+    await this.#decisionHandler.assertTextEquals(expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
@@ -141,6 +157,11 @@ export class FeeDecisionDetailsPage {
     await this.page
       .find('[data-qa="fee-decision-details-page"]')
       .waitUntilVisible()
+  }
+
+  async openDecisionHandlerModal() {
+    await this.#openDecisionHandlerSelectModalButton.click()
+    return new FinanceDecisionHandlerSelectModal(this.page)
   }
 }
 
@@ -161,6 +182,9 @@ export class ValueDecisionsPage {
   )
   #sendValueDecisionsButton = new AsyncButton(
     this.page.find('[data-qa="send-decisions"]')
+  )
+  #openDecisionHandlerSelectModalButton = new AsyncButton(
+    this.page.find('[data-qa="open-decision-handler-select-modal"]')
   )
   #firstValueDecisionRow = this.page
     .findAll('[data-qa="table-value-decision-row"]')
@@ -202,6 +226,11 @@ export class ValueDecisionsPage {
     await runPendingAsyncJobs(mockedNow)
   }
 
+  async openDecisionHandlerModal() {
+    await this.#openDecisionHandlerSelectModalButton.click()
+    return new FinanceDecisionHandlerSelectModal(this.page)
+  }
+
   async assertSentDecisionsCount(count: number) {
     await this.#statusFilter('DRAFT').click()
     await this.#statusFilter('SENT').click()
@@ -218,8 +247,12 @@ export class ValueDecisionDetailsPage {
 
   #partnerName = this.page.find('[data-qa="partner"]')
   #headOfFamily = this.page.find('[data-qa="head-of-family"]')
+  #decisionHandler = this.page.find('[data-qa="decision-handler"]')
 
   #sendDecisionButton = this.page.find('[data-qa="button-send-decision"]')
+  #openDecisionHandlerSelectModalButton = new AsyncButton(
+    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+  )
   #childIncome = this.page.findAll('[data-qa="child-income"]')
 
   async sendValueDecision() {
@@ -236,6 +269,10 @@ export class ValueDecisionDetailsPage {
     await this.#partnerName.waitUntilHidden()
   }
 
+  async assertDecisionHandler(expectedName: string) {
+    await this.#decisionHandler.assertTextEquals(expectedName)
+  }
+
   async assertChildIncome(nth: number, expectedTotalText: string) {
     await waitUntilTrue(async () =>
       (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
@@ -246,6 +283,41 @@ export class ValueDecisionDetailsPage {
     await this.page
       .find('[data-qa="voucher-value-decision-page"]')
       .waitUntilVisible()
+  }
+
+  async openDecisionHandlerModal() {
+    await this.#openDecisionHandlerSelectModalButton.click()
+    return new FinanceDecisionHandlerSelectModal(this.page)
+  }
+}
+
+export class FinanceDecisionHandlerSelectModal {
+  constructor(private readonly page: Page) {}
+
+  #decisionHandlerSelect = new Select(
+    this.page.find('[data-qa="finance-decision-handler-select"]')
+  )
+  #decisionHandlerSelectModalResolveBtn = new AsyncButton(
+    this.page.find('[data-qa="modal-okBtn"]')
+  )
+  #decisionHandlerSelectModalRejectBtn = new AsyncButton(
+    this.page.find('[data-qa="modal-cancelBtn"]')
+  )
+
+  async selectDecisionHandler(value: string) {
+    await this.#decisionHandlerSelect.selectOption({ value })
+  }
+
+  async resolveDecisionHandlerModal(mockedNow: HelsinkiDateTime) {
+    await this.#decisionHandlerSelectModalResolveBtn.click()
+    await this.#decisionHandlerSelectModalResolveBtn.waitUntilHidden()
+    await runPendingAsyncJobs(mockedNow)
+  }
+
+  async rejectDecisionHandlerModal(mockedNow: HelsinkiDateTime) {
+    await this.#decisionHandlerSelectModalRejectBtn.click()
+    await this.#decisionHandlerSelectModalRejectBtn.waitUntilHidden()
+    await runPendingAsyncJobs(mockedNow)
   }
 }
 

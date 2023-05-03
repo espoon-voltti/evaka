@@ -49,12 +49,6 @@ beforeEach(async () => {
   await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-
-  page = await Page.open({ acceptDownloads: true })
-
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-  await employeeLogin(page, financeAdmin.data)
-  await page.goto(config.employeeUrl)
 })
 
 const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
@@ -109,6 +103,14 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
 }
 
 describe('Value decisions', () => {
+  beforeEach(async () => {
+    page = await Page.open({ acceptDownloads: true })
+
+    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    await employeeLogin(page, financeAdmin.data)
+    await page.goto(config.employeeUrl)
+  })
+
   test('Date filter filters out decisions', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
 
@@ -218,5 +220,98 @@ describe('Value decisions', () => {
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
     await valueDecisionDetailsPage.assertChildIncome(0, '543,21 €')
+  })
+})
+
+describe('Value decisions with finance decision handler select enabled', () => {
+  beforeEach(async () => {
+    page = await Page.open({
+      acceptDownloads: true,
+      employeeCustomizations: {
+        featureFlags: {
+          financeDecisionHandlerSelect: true
+        }
+      }
+    })
+
+    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    await employeeLogin(page, financeAdmin.data)
+    await page.goto(config.employeeUrl)
+  })
+
+  test('Voucher value decisions are toggled and cancelled', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.toggleAllValueDecisions()
+    const modal = await valueDecisionsPage.openDecisionHandlerModal()
+    await modal.rejectDecisionHandlerModal(now)
+    await valueDecisionsPage.assertSentDecisionsCount(0)
+  })
+
+  test('Voucher value decisions are toggled and sent without selecting decision handler', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    await valueDecisionsPage.toggleAllValueDecisions()
+    const modal = await valueDecisionsPage.openDecisionHandlerModal()
+    await modal.resolveDecisionHandlerModal(now)
+    await valueDecisionsPage.assertSentDecisionsCount(2)
+    const valueDecisionDetailsPage =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPage.assertDecisionHandler('Lasse Laskuttaja')
+  })
+
+  test('Voucher value decisions are toggled and sent with selecting decision handler', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
+      .with({
+        email: 'laura.laskuttaja@evaka.test',
+        firstName: 'Laura',
+        lastName: 'Laskuttaja'
+      })
+      .save()
+    await valueDecisionsPage.toggleAllValueDecisions()
+    const modal = await valueDecisionsPage.openDecisionHandlerModal()
+    await modal.selectDecisionHandler(otherFinanceAdmin.id)
+    await modal.resolveDecisionHandlerModal(now)
+    await valueDecisionsPage.assertSentDecisionsCount(2)
+    const valueDecisionDetailsPage =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPage.assertDecisionHandler('Laura Laskuttaja')
+  })
+
+  test('Voucher value decision is sent without selecting decision handler', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    const valueDecisionDetailsPageDraft =
+      await valueDecisionsPage.openFirstValueDecision()
+    const modal = await valueDecisionDetailsPageDraft.openDecisionHandlerModal()
+    await modal.resolveDecisionHandlerModal(now)
+    await valueDecisionDetailsPageDraft.assertDecisionHandler(
+      'Lasse Laskuttaja'
+    )
+    await valueDecisionsPage.assertSentDecisionsCount(1)
+    const valueDecisionDetailsPageSent =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPageSent.assertDecisionHandler('Lasse Laskuttaja')
+  })
+
+  test('Voucher value decision is sent with selecting decision handler', async () => {
+    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
+      .with({
+        email: 'laura.laskuttaja@evaka.test',
+        firstName: 'Laura',
+        lastName: 'Laskuttaja'
+      })
+      .save()
+    const valueDecisionDetailsPageDraft =
+      await valueDecisionsPage.openFirstValueDecision()
+    const modal = await valueDecisionDetailsPageDraft.openDecisionHandlerModal()
+    await modal.selectDecisionHandler(otherFinanceAdmin.id)
+    await modal.resolveDecisionHandlerModal(now)
+    await valueDecisionDetailsPageDraft.assertDecisionHandler(
+      'Laura Laskuttaja'
+    )
+    await valueDecisionsPage.assertSentDecisionsCount(1)
+    const valueDecisionDetailsPageSent =
+      await valueDecisionsPage.openFirstValueDecision()
+    await valueDecisionDetailsPageSent.assertDecisionHandler('Laura Laskuttaja')
   })
 })

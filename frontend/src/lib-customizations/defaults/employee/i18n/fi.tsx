@@ -2256,6 +2256,18 @@ export const fi = {
     noChildren: 'Henkilö ei ole yhdenkään lapsen päämies',
     addRow: 'Lisää korjausrivi'
   },
+  financeDecisions: {
+    handlerSelectModal: {
+      title: 'Tarkista tiedot',
+      label: 'Päätöksentekijä',
+      error: 'Päätöksentekijöiden lataus epäonnistui, yritä uudelleen',
+      default: 'Yksikön tiedoissa asetettu päätöksentekijä',
+      decisionCount: (count: number) =>
+        count === 1 ? '1 päätös valittu' : `${count} päätöstä valittu`,
+      resolve: (count: number) =>
+        count === 1 ? 'Vahvista ja luo päätös' : 'Vahvista ja luo päätökset'
+    }
+  },
   feeDecisions: {
     table: {
       title: 'Maksupäätökset',
@@ -2296,11 +2308,9 @@ export const fi = {
     },
     buttons: {
       checked: (count: number) =>
-        count === 1
-          ? `${count} maksupäätös valittu`
-          : `${count} maksupäätöstä valittu`,
+        count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
       createDecision: (count: number) =>
-        count === 1 ? 'Luo maksupäätös' : 'Luo maksupäätökset',
+        count === 1 ? 'Luo päätös' : 'Luo päätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset',
@@ -2357,11 +2367,9 @@ export const fi = {
     },
     buttons: {
       checked: (count: number) =>
-        count === 1
-          ? `${count} arvopäätös valittu`
-          : `${count} arvopäätöstä valittu`,
+        count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
       createDecision: (count: number) =>
-        count === 1 ? 'Luo arvopäätös' : 'Luo arvopäätökset',
+        count === 1 ? 'Luo päätös' : 'Luo päätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset',

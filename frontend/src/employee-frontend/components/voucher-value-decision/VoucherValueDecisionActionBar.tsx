@@ -6,7 +6,9 @@ import React, { useCallback, useContext } from 'react'
 
 import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { featureFlags } from 'lib-customizations/employee'
 
 import {
   markVoucherValueDecisionSent,
@@ -19,18 +21,22 @@ import { UIContext } from '../../state/ui'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
+  goToDecisions(): void
   loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
   newDecisionType: string
+  onHandlerSelectModal: () => void
 }
 
 export default React.memo(function VoucherValueDecisionActionBar({
   decision,
+  goToDecisions,
   loadDecision,
   modified,
   setModified,
-  newDecisionType
+  newDecisionType,
+  onHandlerSelectModal
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage, clearErrorMessage } = useContext(UIContext)
@@ -54,6 +60,12 @@ export default React.memo(function VoucherValueDecisionActionBar({
     <FixedSpaceRow justifyContent="flex-end">
       {isDraft && (
         <>
+          <Button
+            onClick={goToDecisions}
+            disabled={!modified}
+            data-qa="decision-actions-close"
+            text={i18n.feeDecisions.buttons.close}
+          />
           <AsyncButton
             text={i18n.common.save}
             textInProgress={i18n.common.saving}
@@ -74,29 +86,39 @@ export default React.memo(function VoucherValueDecisionActionBar({
             disabled={!modified}
             data-qa="button-save-decision"
           />
-          <AsyncButton
-            primary
-            data-qa="button-send-decision"
-            disabled={modified}
-            text={i18n.common.send}
-            onClick={sendDecision}
-            onSuccess={() => {
-              clearErrorMessage()
-              void loadDecision()
-            }}
-            onFailure={(result) => {
-              setErrorMessage({
-                title: i18n.common.error.unknown,
-                text:
-                  result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
-                    ? i18n.valueDecisions.buttons.errors
-                        .WAITING_FOR_MANUAL_SENDING
-                    : i18n.common.error.saveFailed,
-                type: 'error',
-                resolveLabel: i18n.common.ok
-              })
-            }}
-          />
+          {featureFlags.financeDecisionHandlerSelect ? (
+            <Button
+              primary
+              text={i18n.feeDecisions.buttons.createDecision(1)}
+              disabled={modified}
+              onClick={() => onHandlerSelectModal()}
+              data-qa="open-decision-handler-select-modal"
+            />
+          ) : (
+            <AsyncButton
+              primary
+              data-qa="button-send-decision"
+              disabled={modified}
+              text={i18n.common.send}
+              onClick={sendDecision}
+              onSuccess={() => {
+                clearErrorMessage()
+                void loadDecision()
+              }}
+              onFailure={(result) => {
+                setErrorMessage({
+                  title: i18n.common.error.unknown,
+                  text:
+                    result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
+                      ? i18n.valueDecisions.buttons.errors
+                          .WAITING_FOR_MANUAL_SENDING
+                      : i18n.common.error.saveFailed,
+                  type: 'error',
+                  resolveLabel: i18n.common.ok
+                })
+              }}
+            />
+          )}
         </>
       )}
       {isWaiting && (

@@ -16,9 +16,10 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import { getFeeDecision } from '../../api/invoicing'
+import { confirmFeeDecisions, getFeeDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
+import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 
 import Actions from './Actions'
 import ChildSection from './ChildSection'
@@ -26,6 +27,7 @@ import Heading from './Heading'
 import Summary from './Summary'
 
 export default React.memo(function FeeDecisionDetailsPage() {
+  const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const navigate = useNavigate()
   const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
@@ -82,38 +84,58 @@ export default React.memo(function FeeDecisionDetailsPage() {
       >
         <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
         {decision.isSuccess && (
-          <ContentArea opaque>
-            <Heading
-              {...decision.value}
-              changeDecisionType={changeDecisionType}
-              newDecisionType={newDecisionType}
-            />
-            {decision.value.children.map(
-              ({
-                child,
-                placementType,
-                placementUnit,
-                serviceNeedDescriptionFi
-              }) => (
-                <ChildSection
-                  key={child.id}
-                  child={child}
-                  placementType={placementType}
-                  placementUnit={placementUnit}
-                  serviceNeedDescription={serviceNeedDescriptionFi}
-                />
-              )
+          <>
+            {showHandlerSelectModal && (
+              <FinanceDecisionHandlerSelectModal
+                onResolve={async (decisionHandlerId) => {
+                  const result = await confirmFeeDecisions(
+                    [decision.value.id],
+                    decisionHandlerId
+                  )
+                  if (result.isSuccess) {
+                    await loadDecision()
+                    setShowHandlerSelectModal(false)
+                  }
+                  return result
+                }}
+                onReject={() => setShowHandlerSelectModal(false)}
+                checkedIds={[decision.value.id]}
+              />
             )}
-            <Summary decision={decision.value} />
-            <Actions
-              decision={decision.value}
-              goToDecisions={goBack}
-              loadDecision={loadDecision}
-              modified={modified}
-              setModified={setModified}
-              newDecisionType={newDecisionType}
-            />
-          </ContentArea>
+            <ContentArea opaque>
+              <Heading
+                {...decision.value}
+                changeDecisionType={changeDecisionType}
+                newDecisionType={newDecisionType}
+              />
+              {decision.value.children.map(
+                ({
+                  child,
+                  placementType,
+                  placementUnit,
+                  serviceNeedDescriptionFi
+                }) => (
+                  <ChildSection
+                    key={child.id}
+                    child={child}
+                    placementType={placementType}
+                    placementUnit={placementUnit}
+                    serviceNeedDescription={serviceNeedDescriptionFi}
+                  />
+                )
+              )}
+              <Summary decision={decision.value} />
+              <Actions
+                decision={decision.value}
+                goToDecisions={goBack}
+                loadDecision={loadDecision}
+                modified={modified}
+                setModified={setModified}
+                newDecisionType={newDecisionType}
+                onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
+              />
+            </ContentArea>
+          </>
         )}
       </Container>
       {confirmingBack && (

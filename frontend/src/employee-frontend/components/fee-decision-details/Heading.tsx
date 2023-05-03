@@ -156,9 +156,10 @@ export default React.memo(function Heading({
       label: React.ReactNode
       value: React.ReactNode
       valueWidth?: string
-      'data-qa'?: string
+      dataQa?: string
     }[] = [
       {
+        dataQa: 'valid-during',
         label: i18n.feeDecision.validPeriod,
         value: validDuring.format()
       },
@@ -174,6 +175,7 @@ export default React.memo(function Heading({
       financeDecisionHandlerFirstName && financeDecisionHandlerLastName
         ? [
             {
+              dataQa: 'decision-handler',
               label: i18n.feeDecision.decisionHandler,
               value: `${financeDecisionHandlerFirstName} ${financeDecisionHandlerLastName}`
             }

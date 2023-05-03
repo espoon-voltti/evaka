@@ -14,9 +14,14 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import { getFeeDecisions, FeeDecisionSearchParams } from '../../api/invoicing'
+import {
+  FeeDecisionSearchParams,
+  confirmFeeDecisions,
+  getFeeDecisions
+} from '../../api/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 
 import Actions from './Actions'
 import FeeDecisionFilters from './FeeDecisionFilters'
@@ -29,6 +34,7 @@ export type PagedFeeDecisions = {
 }
 
 export default React.memo(function FeeDecisionsPage() {
+  const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<FeeDecisionSortParam>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
@@ -107,6 +113,24 @@ export default React.memo(function FeeDecisionsPage() {
 
   return (
     <Container data-qa="fee-decisions-page">
+      {showHandlerSelectModal && (
+        <FinanceDecisionHandlerSelectModal
+          onResolve={async (decisionHandlerId) => {
+            const result = await confirmFeeDecisions(
+              checkedIds,
+              decisionHandlerId
+            )
+            if (result.isSuccess) {
+              checkedState.clearChecked()
+              loadDecisions()
+              setShowHandlerSelectModal(false)
+            }
+            return result
+          }}
+          onReject={() => setShowHandlerSelectModal(false)}
+          checkedIds={checkedIds}
+        />
+      )}
       <ContentArea opaque>
         <FeeDecisionFilters />
       </ContentArea>
@@ -137,6 +161,7 @@ export default React.memo(function FeeDecisionsPage() {
         checkedIds={checkedIds}
         clearChecked={checkedState.clearChecked}
         loadDecisions={loadDecisions}
+        onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
       />
     </Container>
   )
