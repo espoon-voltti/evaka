@@ -4,6 +4,7 @@
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
+  FeeDecisionStatus,
   PaymentStatus,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
@@ -64,11 +65,8 @@ export class FeeDecisionsPage {
     .findAll('[data-qa="table-fee-decision-row"]')
     .first()
   #navigateBackButton = this.page.find('[data-qa="navigate-back"]')
-  #statusFilter = {
-    sent: new Checkbox(
-      this.page.find('[data-qa="fee-decision-status-filter-SENT"]')
-    )
-  }
+  #statusFilter = (status: FeeDecisionStatus) =>
+    new Checkbox(this.page.findByDataQa(`fee-decision-status-filter-${status}`))
   #allFeeDecisionsToggle = new Checkbox(
     this.page.find('[data-qa="toggle-all-decisions"]')
   )
@@ -115,7 +113,9 @@ export class FeeDecisionsPage {
   }
 
   async assertSentDecisionsCount(count: number) {
-    await this.#statusFilter.sent.check()
+    await this.#statusFilter('DRAFT').click()
+    await this.#statusFilter('SENT').click()
+    await this.#statusFilter('SENT').waitUntilChecked()
     await waitUntilEqual(
       () => this.page.findAll('[data-qa="table-fee-decision-row"]').count(),
       count
