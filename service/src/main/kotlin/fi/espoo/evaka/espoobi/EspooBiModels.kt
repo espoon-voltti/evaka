@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
@@ -76,4 +77,13 @@ data class BiAbsence(
     val child: UUID,
     val date: LocalDate,
     val category: AbsenceCategory,
+)
+
+data class BiGroupCaretakerAllocation(
+    val id: UUID,
+    val group: UUID,
+    val updated: HelsinkiDateTime,
+    val amount: BigDecimal,
+    val startDate: LocalDate,
+    val endDate: LocalDate?
 )

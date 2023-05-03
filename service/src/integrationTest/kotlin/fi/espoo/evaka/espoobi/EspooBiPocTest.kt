@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -28,6 +30,7 @@ import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestDaycareCaretaker
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -44,44 +47,50 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getAreas() {
-        val areaId = db.transaction { it.insertTestArea() }
-        assertSingleRowContainingId(EspooBiPoc.getAreas, areaId)
+        val id = db.transaction { it.insertTestArea() }
+        assertSingleRowContainingId(EspooBiPoc.getAreas, id)
     }
 
     @Test
     fun getUnits() {
-        val unitId = db.transaction { it.insertTestDaycare() }
-        assertSingleRowContainingId(EspooBiPoc.getUnits, unitId)
+        val id = db.transaction { it.insertTestDaycare() }
+        assertSingleRowContainingId(EspooBiPoc.getUnits, id)
     }
 
     @Test
     fun getGroups() {
-        val groupId = db.transaction { it.insertTestGroup() }
-        assertSingleRowContainingId(EspooBiPoc.getGroups, groupId)
+        val id = db.transaction { it.insertTestGroup() }
+        assertSingleRowContainingId(EspooBiPoc.getGroups, id)
     }
 
     @Test
     fun getChildren() {
-        val childId = db.transaction { it.insertTestChild() }
-        assertSingleRowContainingId(EspooBiPoc.getChildren, childId)
+        val id = db.transaction { it.insertTestChild() }
+        assertSingleRowContainingId(EspooBiPoc.getChildren, id)
     }
 
     @Test
     fun getPlacements() {
-        val placementId = db.transaction { it.insertTestPlacement() }
-        assertSingleRowContainingId(EspooBiPoc.getPlacements, placementId)
+        val id = db.transaction { it.insertTestPlacement() }
+        assertSingleRowContainingId(EspooBiPoc.getPlacements, id)
     }
 
     @Test
     fun getGroupPlacements() {
-        val groupPlacementId = db.transaction { it.insertTestGroupPlacement() }
-        assertSingleRowContainingId(EspooBiPoc.getGroupPlacements, groupPlacementId)
+        val id = db.transaction { it.insertTestGroupPlacement() }
+        assertSingleRowContainingId(EspooBiPoc.getGroupPlacements, id)
     }
 
     @Test
     fun getAbsences() {
-        val absenceId = db.transaction { it.insertTestAbsence() }
-        assertSingleRowContainingId(EspooBiPoc.getAbsences, absenceId)
+        val id = db.transaction { it.insertTestAbsence() }
+        assertSingleRowContainingId(EspooBiPoc.getAbsences, id)
+    }
+
+    @Test
+    fun getGroupCaretakerAllocations() {
+        val id = db.transaction { it.insertTestGroupCaretakerAllocation() }
+        assertSingleRowContainingId(EspooBiPoc.getGroupCaretakerAllocations, id)
     }
 
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
@@ -124,6 +133,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId = insertTestChild(),
                 date = LocalDate.of(2020, 1, 1),
                 absenceCategory = AbsenceCategory.BILLABLE,
+            )
+        )
+
+    private fun Database.Transaction.insertTestGroupCaretakerAllocation(): DaycareCaretakerId =
+        insertTestDaycareCaretaker(
+            DevDaycareCaretaker(
+                groupId = insertTestGroup(),
             )
         )
 }

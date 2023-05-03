@@ -94,6 +94,16 @@ FROM absence
 """
             )
         }
+
+    val getGroupCaretakerAllocations =
+        streamingCsvRoute<BiGroupCaretakerAllocation> {
+            sql(
+                """
+SELECT id, group_id AS "group", updated, amount, start_date, end_date
+FROM daycare_caretaker
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =

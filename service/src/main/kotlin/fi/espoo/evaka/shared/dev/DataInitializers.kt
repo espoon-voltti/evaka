@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -1464,3 +1465,13 @@ VALUES (:id, :childId, :date, :absenceType, :modifiedAt, :modifiedBy, :absenceCa
 """
         )
         .let(::AbsenceId)
+
+fun Database.Transaction.insertTestDaycareCaretaker(row: DevDaycareCaretaker) =
+    insertTestDataRow(
+            row,
+            """
+INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
+VALUES (:id, :groupId, :amount, :startDate, :endDate)
+"""
+        )
+        .let(::DaycareCaretakerId)

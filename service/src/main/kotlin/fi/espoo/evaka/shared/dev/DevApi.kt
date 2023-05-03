@@ -107,6 +107,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -1990,6 +1991,14 @@ data class DevAbsence(
 )
 
 data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
+
+data class DevDaycareCaretaker(
+    val id: DaycareCaretakerId = DaycareCaretakerId(UUID.randomUUID()),
+    val groupId: GroupId,
+    val amount: BigDecimal = BigDecimal.ZERO,
+    val startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    val endDate: LocalDate? = null
+)
 
 data class Citizen(
     val ssn: String,

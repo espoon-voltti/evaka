@@ -184,6 +184,10 @@ class EspooConfig {
                     GET("/placements", route(EspooBiPoc.getPlacements))
                     GET("/group-placements", route(EspooBiPoc.getGroupPlacements))
                     GET("/absences", route(EspooBiPoc.getAbsences))
+                    GET(
+                        "/group-caretaker-allocations",
+                        route(EspooBiPoc.getGroupCaretakerAllocations)
+                    )
                 }
             }
         } else {
