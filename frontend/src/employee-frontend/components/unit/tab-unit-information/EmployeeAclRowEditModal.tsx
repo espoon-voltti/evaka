@@ -260,13 +260,11 @@ export default React.memo(function EmployeeAclRowEditModal({
         )}
         <BottomRow>
           <InlineButton
-            className="left-button"
             text={i18n.common.cancel}
             data-qa="edit-acl-row-cancel-btn"
             onClick={onClose}
           />
           <InlineAsyncButton
-            className="right-button"
             text={i18n.common.save}
             data-qa="edit-acl-row-save-btn"
             onClick={submit}
@@ -280,20 +278,9 @@ export default React.memo(function EmployeeAclRowEditModal({
 })
 
 const BottomRow = styled.div`
-  position: absolute;
-  width: 100%;
-  bottom: 50px;
-  left: 0px;
-
-  & > .left-button {
-    position: absolute;
-    left: 30px;
-  }
-
-  & > .right-button {
-    position: absolute;
-    right: 30px;
-  }
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
 `
 const FormControl = styled.div`
   display: flex;

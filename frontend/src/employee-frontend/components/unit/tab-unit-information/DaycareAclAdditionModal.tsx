@@ -286,13 +286,11 @@ export default React.memo(function DaycareAclAdditionModal({
         )}
         <BottomRow>
           <InlineButton
-            className="left-button"
             text={i18n.common.cancel}
             data-qa="add-daycare-acl-cancel-btn"
             onClick={onClose}
           />
           <InlineAsyncButton
-            className="right-button"
             text={i18n.common.save}
             data-qa="add-daycare-acl-save-btn"
             onClick={submit}
@@ -329,18 +327,7 @@ const FormControl = styled.div`
   justify-content: center;
 `
 const BottomRow = styled.div`
-  position: absolute;
-  width: 100%;
-  bottom: 50px;
-  left: 0px;
-
-  & > .left-button {
-    position: absolute;
-    left: 30px;
-  }
-
-  & > .right-button {
-    position: absolute;
-    right: 30px;
-  }
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
 `
