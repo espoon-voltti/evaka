@@ -127,6 +127,16 @@ WHERE status != 'CREATED'
 """
             )
         }
+
+    val getDecisions =
+        streamingCsvRoute<BiDecision> {
+            sql(
+                """
+SELECT id, updated, application_id AS application, sent_date, status, type, start_date, end_date
+FROM decision
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =

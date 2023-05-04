@@ -12,12 +12,15 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.decision.DecisionStatus
+import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
@@ -33,6 +36,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -42,6 +46,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareCaretaker
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import java.time.LocalDate
@@ -108,6 +113,12 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertSingleRowContainingId(EspooBiPoc.getApplications, id)
     }
 
+    @Test
+    fun getDecisions() {
+        val id = db.transaction { it.insertTestDecision() }
+        assertSingleRowContainingId(EspooBiPoc.getDecisions, id)
+    }
+
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
         val request = MockHttpServletRequest()
         val response = MockHttpServletResponse()
@@ -158,7 +169,9 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-    private fun Database.Transaction.insertTestApplicationWithForm(): ApplicationId =
+    private fun Database.Transaction.insertTestApplicationWithForm(
+        daycare: DaycareId? = null
+    ): ApplicationId =
         insertTestApplication(
                 type = ApplicationType.DAYCARE,
                 childId = insertTestChild(),
@@ -178,9 +191,24 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                         extendedCare = true,
                         child = Child(dateOfBirth = null),
                         guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(insertTestDaycare())),
+                        apply = Apply(preferredUnits = listOf(daycare ?: insertTestDaycare())),
                         preferredStartDate = LocalDate.of(2019, 1, 1)
                     )
                 )
             }
+
+    private fun Database.Transaction.insertTestDecision(): DecisionId {
+        val daycare = insertTestDaycare()
+        return insertTestDecision(
+            TestDecision(
+                applicationId = insertTestApplicationWithForm(daycare),
+                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                startDate = LocalDate.of(2019, 3, 1),
+                endDate = LocalDate.of(2019, 4, 1),
+                type = DecisionType.DAYCARE,
+                unitId = daycare,
+                status = DecisionStatus.ACCEPTED,
+            )
+        )
+    }
 }

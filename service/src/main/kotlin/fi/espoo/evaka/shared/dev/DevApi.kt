@@ -403,7 +403,7 @@ class DevApi(
                         evakaClock.today(),
                         decision.applicationId,
                         decision.unitId,
-                        decision.type.toString(),
+                        decision.type,
                         decision.startDate,
                         decision.endDate
                     )

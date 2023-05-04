@@ -294,7 +294,7 @@ fun Database.Transaction.insertDecision(
     sentDate: LocalDate,
     applicationId: ApplicationId,
     unitId: DaycareId,
-    decisionType: String,
+    decisionType: DecisionType,
     startDate: LocalDate,
     endDate: LocalDate
 ) {

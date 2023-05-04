@@ -10,6 +10,8 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.decision.DecisionStatus
+import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
@@ -111,4 +113,15 @@ data class BiApplication(
     val urgent: Boolean?,
     val assistanceNeeded: Boolean?,
     val shiftCare: Boolean?,
+)
+
+data class BiDecision(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val application: UUID,
+    val sentDate: LocalDate,
+    val status: DecisionStatus,
+    val type: DecisionType,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
 )

@@ -189,6 +189,7 @@ class EspooConfig {
                         route(EspooBiPoc.getGroupCaretakerAllocations)
                     )
                     GET("/applications", route(EspooBiPoc.getApplications))
+                    GET("/decisions", route(EspooBiPoc.getDecisions))
                 }
             }
         } else {
