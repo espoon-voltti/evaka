@@ -160,6 +160,12 @@ class CitizenApplicationEditor {
     '[data-qa="preferredStartDate-input-info"]'
   )
 
+  saveAsDraftButton = this.page.findByDataQa('save-as-draft-btn')
+  modalOkBtn = this.page.findByDataQa('modal-okBtn')
+  guardianPhoneInput = new TextInput(
+    this.page.findByDataQa('guardianPhone-input')
+  )
+
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="applications-list"][data-isloading="false"]')
