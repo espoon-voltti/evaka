@@ -380,6 +380,36 @@ export class UnitChildReservationsTable extends Element {
     await this.findAll('thead').first().click()
   }
 
+  async assertWarningIsShown(
+    date: LocalDate,
+    expectStartTimeWarning: boolean,
+    expectEndTimeWarning: boolean
+  ) {
+    const reservations = this.#attendanceCell(date, 0)
+
+    expectStartTimeWarning
+      ? await reservations
+          .find('[data-qa="input-start-time"].warning')
+          .waitUntilVisible()
+      : await waitUntilEqual(
+          () =>
+            reservations
+              .findAll('[data-qa="input-start-time"].warning')
+              .count(),
+          0
+        )
+
+    expectEndTimeWarning
+      ? await reservations
+          .find('[data-qa="input-end-time"].warning')
+          .waitUntilVisible()
+      : await waitUntilEqual(
+          () =>
+            reservations.findAll('[data-qa="input-end-time"].warning').count(),
+          0
+        )
+  }
+
   async setAttendanceTimes(
     date: LocalDate,
     startTime: string,

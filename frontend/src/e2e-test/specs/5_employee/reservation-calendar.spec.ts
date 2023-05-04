@@ -413,6 +413,7 @@ describe('Unit group calendar for shift care unit', () => {
     )
   })
 
+  // TODO
   // DST breaks this
   test.skip('Employee sees attendances along reservations', async () => {
     const childReservations = (await loadUnitAttendancesSection())
@@ -525,6 +526,17 @@ describe('Unit group calendar for shift care unit', () => {
       () => childReservations.getAttendance(mockedToday, 0),
       ['08:02', '–']
     )
+  })
+
+  test('Employee cannot add attendance that starts and ends at 00:00', async () => {
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+    await childReservations.openInlineEditor(child1Fixture.id)
+    await childReservations.setAttendanceTimes(mockedToday, '00:00', '00:00')
+    await childReservations.assertWarningIsShown(mockedToday, false, true)
+    await childReservations.setAttendanceTimes(mockedToday, '00:00', '23:59')
+    await childReservations.assertWarningIsShown(mockedToday, false, false)
   })
 
   test('Employee cannot edit attendances in the future', async () => {
