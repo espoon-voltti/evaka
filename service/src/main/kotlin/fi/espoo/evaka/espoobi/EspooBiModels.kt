@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.espoobi
 
+import fi.espoo.evaka.application.ApplicationOrigin
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
@@ -92,4 +95,20 @@ data class BiGroupCaretakerAllocation(
     val amount: BigDecimal,
     val startDate: LocalDate,
     val endDate: LocalDate?
+)
+
+data class BiApplication(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val type: ApplicationType,
+    val transferApplication: Boolean,
+    val origin: ApplicationOrigin,
+    val status: ApplicationStatus,
+    val additionalDaycareApplication: Boolean,
+    val sentDate: LocalDate,
+    val preferredUnits: List<UUID>,
+    val preferredStartDate: LocalDate,
+    val urgent: Boolean?,
+    val assistanceNeeded: Boolean?,
+    val shiftCare: Boolean?,
 )

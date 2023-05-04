@@ -5,8 +5,15 @@
 package fi.espoo.evaka.espoobi
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.CareDetails
+import fi.espoo.evaka.application.persistence.daycare.Child
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareCaretakerId
@@ -27,6 +34,8 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -93,6 +102,12 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertSingleRowContainingId(EspooBiPoc.getGroupCaretakerAllocations, id)
     }
 
+    @Test
+    fun getApplications() {
+        val id = db.transaction { it.insertTestApplicationWithForm() }
+        assertSingleRowContainingId(EspooBiPoc.getApplications, id)
+    }
+
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
         val request = MockHttpServletRequest()
         val response = MockHttpServletResponse()
@@ -142,4 +157,30 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 groupId = insertTestGroup(),
             )
         )
+
+    private fun Database.Transaction.insertTestApplicationWithForm(): ApplicationId =
+        insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                childId = insertTestChild(),
+                guardianId = insertTestPerson(DevPerson())
+            )
+            .also {
+                insertTestApplicationForm(
+                    it,
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        connectedDaycare = false,
+                        urgent = true,
+                        careDetails =
+                            CareDetails(
+                                assistanceNeeded = true,
+                            ),
+                        extendedCare = true,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(insertTestDaycare())),
+                        preferredStartDate = LocalDate.of(2019, 1, 1)
+                    )
+                )
+            }
 }

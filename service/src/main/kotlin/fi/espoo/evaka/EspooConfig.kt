@@ -188,6 +188,7 @@ class EspooConfig {
                         "/group-caretaker-allocations",
                         route(EspooBiPoc.getGroupCaretakerAllocations)
                     )
+                    GET("/applications", route(EspooBiPoc.getApplications))
                 }
             }
         } else {

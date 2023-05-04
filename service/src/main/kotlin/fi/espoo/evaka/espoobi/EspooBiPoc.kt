@@ -106,6 +106,27 @@ FROM daycare_caretaker
 """
             )
         }
+
+    val getApplications =
+        streamingCsvRoute<BiApplication> {
+            sql(
+                """
+SELECT
+    a.id, a.updated, a.type, a.transferapplication, a.origin, a.status, a.additionaldaycareapplication, a.sentdate,
+    (
+      SELECT array_agg(e::UUID)
+      FROM jsonb_array_elements_text(document -> 'apply' -> 'preferredUnits') e
+    ) AS preferredUnits,
+    (document ->> 'preferredStartDate') :: date AS preferred_start_date,
+    (document ->> 'urgent') :: boolean AS urgent,
+    (document -> 'careDetails' ->> 'assistanceNeeded') :: boolean AS assistanceNeeded,
+    (document ->> 'extendedCare') :: boolean AS shift_care
+FROM application a
+JOIN application_form af ON a.id = af.application_id AND latest IS TRUE
+WHERE status != 'CREATED'
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =
