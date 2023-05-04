@@ -14,6 +14,8 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -25,6 +27,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -37,6 +41,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -49,7 +54,12 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.Month
+import java.util.UUID
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.http.converter.HttpMessageConverter
@@ -117,6 +127,18 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getDecisions() {
         val id = db.transaction { it.insertTestDecision() }
         assertSingleRowContainingId(EspooBiPoc.getDecisions, id)
+    }
+
+    @Test
+    fun getServiceNeedOptions() {
+        val id = db.transaction { it.insertTestServiceNeedOption() }
+        assertSingleRowContainingId(EspooBiPoc.getServiceNeedOptions, id)
+    }
+
+    @Test
+    fun getServiceNeeds() {
+        val id = db.transaction { it.insertTestServiceNeed() }
+        assertSingleRowContainingId(EspooBiPoc.getServiceNeeds, id)
     }
 
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
@@ -211,4 +233,40 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
     }
+
+    private fun Database.Transaction.insertTestServiceNeedOption(): ServiceNeedOptionId =
+        ServiceNeedOptionId(UUID.randomUUID()).also {
+            insertServiceNeedOption(
+                ServiceNeedOption(
+                    id = it,
+                    nameFi = "Tarve",
+                    nameSv = "",
+                    nameEn = "",
+                    validPlacementType = PlacementType.DAYCARE,
+                    defaultOption = true,
+                    feeCoefficient = BigDecimal.ONE,
+                    occupancyCoefficient = BigDecimal.ONE,
+                    occupancyCoefficientUnder3y = BigDecimal.ONE,
+                    realizedOccupancyCoefficient = BigDecimal.ONE,
+                    realizedOccupancyCoefficientUnder3y = BigDecimal.ONE,
+                    daycareHoursPerWeek = 40,
+                    contractDaysPerMonth = null,
+                    partDay = false,
+                    partWeek = false,
+                    feeDescriptionFi = "",
+                    feeDescriptionSv = "",
+                    voucherValueDescriptionFi = "",
+                    voucherValueDescriptionSv = "",
+                    active = true,
+                )
+            )
+        }
+
+    private fun Database.Transaction.insertTestServiceNeed(): ServiceNeedId =
+        insertTestServiceNeed(
+            confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            placementId = insertTestPlacement(),
+            period = FiniteDateRange.ofMonth(2019, Month.JANUARY),
+            optionId = insertTestServiceNeedOption(),
+        )
 }

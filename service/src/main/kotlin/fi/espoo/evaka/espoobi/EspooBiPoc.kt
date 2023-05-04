@@ -137,6 +137,26 @@ FROM decision
 """
             )
         }
+
+    val getServiceNeedOptions =
+        streamingCsvRoute<BiServiceNeedOption> {
+            sql(
+                """
+SELECT id, updated, name_fi AS name, valid_placement_type
+FROM service_need_option
+"""
+            )
+        }
+
+    val getServiceNeeds =
+        streamingCsvRoute<BiServiceNeed> {
+            sql(
+                """
+SELECT id, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care
+FROM service_need
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =

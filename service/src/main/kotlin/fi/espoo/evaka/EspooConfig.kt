@@ -190,6 +190,8 @@ class EspooConfig {
                     )
                     GET("/applications", route(EspooBiPoc.getApplications))
                     GET("/decisions", route(EspooBiPoc.getDecisions))
+                    GET("/service-need-options", route(EspooBiPoc.getServiceNeedOptions))
+                    GET("/service-needs", route(EspooBiPoc.getServiceNeeds))
                 }
             }
         } else {

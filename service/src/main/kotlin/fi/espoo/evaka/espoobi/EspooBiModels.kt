@@ -125,3 +125,20 @@ data class BiDecision(
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
+
+data class BiServiceNeedOption(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val name: String,
+    val validPlacementType: PlacementType,
+)
+
+data class BiServiceNeed(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val option: UUID,
+    val placement: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val shiftCare: Boolean,
+)
