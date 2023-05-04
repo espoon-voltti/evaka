@@ -72,8 +72,9 @@ SELECT person_id AS guardian_id, valid_to AS expiration_date
 FROM expiring_income_with_billable_placement_day_after_expiration expiring_income 
 WHERE NOT EXISTS (
     SELECT 1 FROM income_statement
-    WHERE person_id = expiring_income.person_id AND created > :today - INTERVAL '1 month'
+    WHERE person_id = expiring_income.person_id
         AND (end_date IS NULL OR UPPER(:checkForExpirationRange) <= end_date)
+        AND handler_id IS NULL
 ) 
 ${if (checkForExistingRecentIncomeNotificationType != null) " AND NOT EXISTS ($existingRecentIncomeNotificationQuery)" else ""}                
 ${if (guardianId != null) " AND person_id = :guardianId" else ""}

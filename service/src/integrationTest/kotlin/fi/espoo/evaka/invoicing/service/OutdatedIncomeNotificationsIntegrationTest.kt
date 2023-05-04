@@ -192,7 +192,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
-    fun `expiring income is not notified if there is a new income statement`() {
+    fun `expiring income is not notified if there is a new unhandled income statement reaching after expiration`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
@@ -211,12 +211,42 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = guardianId,
                     startDate = incomeExpirationDate.plusDays(1),
                     type = IncomeStatementType.INCOME,
-                    grossEstimatedMonthlyIncome = 42
+                    grossEstimatedMonthlyIncome = 42,
+                    handlerId = null
                 )
             )
         }
 
         assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `expiring income is notified if there is a handled income statement reaching after expiration`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4)
+
+        db.transaction {
+            it.insertTestIncome(
+                DevIncome(
+                    personId = guardianId,
+                    updatedBy = employeeEvakaUserId,
+                    validFrom = incomeExpirationDate.minusMonths(1),
+                    validTo = incomeExpirationDate
+                )
+            )
+
+            it.insertIncomeStatement(
+                DevIncomeStatement(
+                    id = IncomeStatementId(UUID.randomUUID()),
+                    personId = guardianId,
+                    startDate = incomeExpirationDate.plusDays(1),
+                    type = IncomeStatementType.INCOME,
+                    grossEstimatedMonthlyIncome = 42,
+                    handlerId = employeeId
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
     }
 
     @Test
