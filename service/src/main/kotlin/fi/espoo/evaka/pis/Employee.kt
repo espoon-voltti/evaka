@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.math.BigDecimal
 
 data class Employee(
     val id: EmployeeId,
@@ -28,6 +27,6 @@ data class TemporaryEmployee(
     val firstName: String,
     val lastName: String,
     val groupIds: Set<GroupId>,
-    val occupancyCoefficient: BigDecimal,
+    val hasStaffOccupancyEffect: Boolean,
     val pinCode: PinCode?,
 )

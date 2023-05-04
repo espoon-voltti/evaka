@@ -285,7 +285,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 firstName = "Etu1",
                 lastName = "Suku1",
                 groupIds = emptySet(),
-                occupancyCoefficient = BigDecimal("0.00"),
+                hasStaffOccupancyEffect = false,
                 pinCode = null
             )
         val temporaryEmployeeId =
@@ -315,7 +315,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 firstName = "Etu2",
                 lastName = "Suku2",
                 groupIds = setOf(testDaycareGroup.id),
-                occupancyCoefficient = BigDecimal("7.00"),
+                hasStaffOccupancyEffect = true,
                 pinCode = PinCode("2537")
             )
         assertThrows<NotFound> {
@@ -405,7 +405,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     firstName = "Etu1",
                     lastName = "Suku1",
                     groupIds = emptySet(),
-                    occupancyCoefficient = BigDecimal("0.00"),
+                    hasStaffOccupancyEffect = false,
                     pinCode = null
                 )
             )
@@ -502,7 +502,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     firstName = "Etu1",
                     lastName = "Suku1",
                     groupIds = emptySet(),
-                    occupancyCoefficient = BigDecimal("0.00"),
+                    hasStaffOccupancyEffect = false,
                     pinCode = null
                 )
             )

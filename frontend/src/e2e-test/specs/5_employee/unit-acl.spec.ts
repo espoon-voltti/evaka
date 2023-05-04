@@ -8,7 +8,11 @@ import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
-import { EmployeeRowEditModal, UnitPage } from '../../pages/employee/units/unit'
+import {
+  EmployeeRowEditModal,
+  UnitInfoPage,
+  UnitPage
+} from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -48,8 +52,6 @@ beforeEach(async () => {
   await Fixture.employee().with(pete).save()
   await Fixture.employee().with(yrjo).save()
   admin = (await Fixture.employeeAdmin().save()).data
-
-  page = await Page.open()
 })
 
 const expectedAclRows = {
@@ -77,6 +79,10 @@ const expectedAclRows = {
 }
 
 describe('Employee - unit ACL', () => {
+  beforeEach(async () => {
+    page = await Page.open()
+  })
+
   test('Unit supervisors can be added/deleted', async () => {
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)
@@ -203,5 +209,303 @@ describe('Employee - unit ACL', () => {
 
     await unitInfoPage.mobileAcl.addMobileDevice('Testilaite')
     await unitInfoPage.mobileAcl.assertDeviceExists('Testilaite')
+  })
+
+  test('Temporary employee selector is hidden in supervisor acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.supervisorAcl.assertTemporaryEmployeeHidden()
+  })
+
+  test('Temporary employee selector is hidden in special education teacher acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.specialEducationTeacherAcl.assertTemporaryEmployeeHidden()
+  })
+
+  test('Temporary employee selector is hidden in early childhood education secretary acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.earlyChildhoodEducationSecretary.assertTemporaryEmployeeHidden()
+  })
+
+  test('Temporary employee selector is hidden in staff acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.assertTemporaryEmployeeHidden()
+  })
+})
+
+describe('Employee - unit ACL - temporary employee enabled', () => {
+  beforeEach(async () => {
+    page = await Page.open({
+      employeeCustomizations: {
+        featureFlags: { experimental: { temporaryEmployee: true } }
+      }
+    })
+  })
+
+  test('Temporary employee selector is hidden in supervisor acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.supervisorAcl.assertTemporaryEmployeeHidden()
+  })
+
+  test('Temporary employee selector is hidden in special education teacher acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.specialEducationTeacherAcl.assertTemporaryEmployeeHidden()
+  })
+
+  test('Temporary employee selector is hidden in early childhood education secretary acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.earlyChildhoodEducationSecretary.assertTemporaryEmployeeHidden()
+  })
+
+  test('Temporary employee selector is visible in staff acl', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.assertTemporaryEmployeeVisible()
+  })
+
+  async function openEditModalByIndex(
+    unitInfoPage: UnitInfoPage,
+    index: number
+  ) {
+    const row = unitInfoPage.staffAcl.getRowByIndex(index)
+    await row.edit()
+    return new EmployeeRowEditModal(
+      page.find('[data-qa="employee-row-edit-person-modal"]')
+    )
+  }
+
+  test('Temporary staff member name can be changed', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.addTemporaryAcl('Salli', 'Sijainen', [], '2394')
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+
+    const editModal = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal.submitWithTemporaryEmployee({
+      firstName: 'Väiski',
+      lastName: 'Väliaikainen'
+    })
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Väiski Väliaikainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+  })
+
+  test('Temporary staff can be added and assigned/removed to/from groups', async () => {
+    await Fixture.daycareGroup()
+      .with({ id: groupId, daycareId, name: 'Testailijat' })
+      .save()
+
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.addTemporaryAcl(
+      'Salli',
+      'Sijainen',
+      [groupId],
+      '2394'
+    )
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: ['Testailijat'],
+        occupancyCoefficient: false
+      }
+    ])
+
+    const editModal1 = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal1.submitWithTemporaryEmployee({
+      toggleGroups: [groupId]
+    })
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+
+    const editModal2 = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal2.submitWithTemporaryEmployee({
+      toggleGroups: [groupId]
+    })
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: ['Testailijat'],
+        occupancyCoefficient: false
+      }
+    ])
+  })
+
+  test('Temporary staff member coefficient can be set on and off', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.addTemporaryAcl('Salli', 'Sijainen', [], '2394')
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+
+    const editModal1 = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal1.submitWithTemporaryEmployee({
+      coefficient: true
+    })
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: true
+      }
+    ])
+
+    const editModal2 = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal2.submitWithTemporaryEmployee({
+      coefficient: false
+    })
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+  })
+
+  test('Temporary staff member pin code can be changed', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.addTemporaryAcl('Salli', 'Sijainen', [], '2394')
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+
+    const editModal1 = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal1.submitWithTemporaryEmployee({
+      pinCode: '9328'
+    })
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+    const editModal2 = await openEditModalByIndex(unitInfoPage, 0)
+    await editModal2.assertPinCode('9328')
+  })
+
+  test('Multiple temporary staff members can be added', async () => {
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+
+    await unitInfoPage.staffAcl.addTemporaryAcl('Salli', 'Sijainen', [], '2394')
+    await unitInfoPage.staffAcl.addTemporaryAcl(
+      'Väiski',
+      'Väliaikainen',
+      [],
+      '9327'
+    )
+    await unitInfoPage.staffAcl.assertRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      },
+      {
+        name: 'Väiski Väliaikainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+  })
+
+  test('Temporary staff member can be deleted', async () => {
+    await Fixture.daycareGroup()
+      .with({ id: groupId, daycareId, name: 'Testailijat' })
+      .save()
+
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
+    await unitInfoPage.staffAcl.addTemporaryAcl(
+      'Salli',
+      'Sijainen',
+      [groupId],
+      '2394'
+    )
+
+    await unitInfoPage.staffAcl.deleteAclByIndex(0)
+    await unitInfoPage.staffAcl.assertRowsExactly([])
+    await unitInfoPage.staffAcl.assertPreviousTemporaryEmployeeRowsExactly([
+      {
+        name: 'Salli Sijainen',
+        email: '',
+        groups: [],
+        occupancyCoefficient: false
+      }
+    ])
+
+    await unitInfoPage.staffAcl.deleteTemporaryEmployeeByIndex(0)
+    await unitInfoPage.staffAcl.assertRowsExactly([])
+    await unitInfoPage.staffAcl.assertPreviousTemporaryEmployeeRowsExactly([])
   })
 })

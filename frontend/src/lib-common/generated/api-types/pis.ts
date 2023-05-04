@@ -514,7 +514,7 @@ export interface SearchPersonBody {
 export interface TemporaryEmployee {
   firstName: string
   groupIds: UUID[]
+  hasStaffOccupancyEffect: boolean
   lastName: string
-  occupancyCoefficient: number
   pinCode: PinCode | null
 }

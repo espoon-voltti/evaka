@@ -21,6 +21,24 @@ import { isPinCodeLocked, updatePinCode } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
 
+const badPins = [
+  '1234',
+  '0000',
+  '1111',
+  '2222',
+  '3333',
+  '4444',
+  '5555',
+  '6666',
+  '7777',
+  '8888',
+  '9999'
+]
+
+export function isValidPinCode(pin: string) {
+  return !badPins.includes(pin) && /^\d{4}$/.test(pin)
+}
+
 export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
   const [pin, setPin] = useState<string>('')
@@ -32,25 +50,8 @@ export default React.memo(function EmployeePinCodePage() {
     void isPinCodeLocked().then((res) => res.map(setPinLocked))
   }, [setPinLocked])
 
-  function isValidNumber(pin: string) {
-    return /^\d{4}$/.test(pin)
-  }
-
   function errorCheck(pin: string) {
-    const badPins = [
-      '1234',
-      '0000',
-      '1111',
-      '2222',
-      '3333',
-      '4444',
-      '5555',
-      '6666',
-      '7777',
-      '8888',
-      '9999'
-    ]
-    if (badPins.includes(pin) || !isValidNumber(pin)) {
+    if (!isValidPinCode(pin)) {
       setError(true)
     } else {
       setError(false)

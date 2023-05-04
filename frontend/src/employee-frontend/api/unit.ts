@@ -40,6 +40,7 @@ import {
   MobileDevice,
   PostPairingReq
 } from 'lib-common/generated/api-types/pairing'
+import { Employee, TemporaryEmployee } from 'lib-common/generated/api-types/pis'
 import {
   DaycarePlacementWithDetails,
   MissingGroupPlacement,
@@ -591,6 +592,79 @@ export async function addDaycareFullAcl(
       role
     })
     .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getTemporaryEmployees(
+  unitId: UUID
+): Promise<Result<Employee[]>> {
+  return client
+    .get<JsonOf<Employee[]>>(`/daycares/${unitId}/temporary`)
+    .then(({ data }) =>
+      Success.of(
+        data.map((item) => ({
+          ...item,
+          created: HelsinkiDateTime.parseIso(item.created),
+          updated:
+            item.updated !== null
+              ? HelsinkiDateTime.parseIso(item.updated)
+              : null
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export function createTemporaryEmployee(
+  unitId: UUID,
+  data: TemporaryEmployee
+): Promise<Result<UUID>> {
+  return client
+    .post<UUID>(`/daycares/${unitId}/temporary`, data)
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getTemporaryEmployee(
+  unitId: UUID,
+  employeeId: UUID
+): Promise<Result<TemporaryEmployee>> {
+  return client
+    .get<JsonOf<TemporaryEmployee>>(
+      `/daycares/${unitId}/temporary/${employeeId}`
+    )
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function updateTemporaryEmployee(
+  unitId: UUID,
+  employeeId: UUID,
+  data: TemporaryEmployee
+): Promise<Result<void>> {
+  return client
+    .put(`/daycares/${unitId}/temporary/${employeeId}`, data)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function deleteTemporaryEmployeeAcl(
+  unitId: UUID,
+  employeeId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/daycares/${unitId}/temporary/${employeeId}/acl`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function deleteTemporaryEmployee(
+  unitId: UUID,
+  employeeId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/daycares/${unitId}/temporary/${employeeId}`)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

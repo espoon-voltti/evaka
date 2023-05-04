@@ -348,18 +348,21 @@ class UnitAclController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): List<Employee> {
-        return db.connect { dbc ->
-            dbc.read { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.READ_TEMPORARY_EMPLOYEE,
-                    unitId
-                )
-                tx.getTemporaryEmployees(unitId)
+        val employees =
+            db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_TEMPORARY_EMPLOYEE,
+                        unitId
+                    )
+                    tx.getTemporaryEmployees(unitId)
+                }
             }
-        }
+        Audit.TemporaryEmployeesRead.log(meta = mapOf("unitId" to unitId))
+        return employees
     }
 
     @PostMapping("/daycares/{unitId}/temporary")
@@ -370,30 +373,33 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable unitId: DaycareId,
         @RequestBody input: TemporaryEmployee
     ): EmployeeId {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.CREATE_TEMPORARY_EMPLOYEE,
-                    unitId
-                )
-                val employee =
-                    tx.createEmployee(
-                        NewEmployee(
-                            firstName = input.firstName,
-                            lastName = input.lastName,
-                            email = null,
-                            externalId = null,
-                            employeeNumber = null,
-                            temporaryInUnitId = unitId
-                        )
+        val employeeId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.CREATE_TEMPORARY_EMPLOYEE,
+                        unitId
                     )
-                setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
-                employee.id
+                    val employee =
+                        tx.createEmployee(
+                            NewEmployee(
+                                firstName = input.firstName,
+                                lastName = input.lastName,
+                                email = null,
+                                externalId = null,
+                                employeeNumber = null,
+                                temporaryInUnitId = unitId
+                            )
+                        )
+                    setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
+                    employee.id
+                }
             }
-        }
+        Audit.TemporaryEmployeeCreate.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
+        return employeeId
     }
 
     @GetMapping("/daycares/{unitId}/temporary/{employeeId}")
@@ -404,37 +410,40 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ): TemporaryEmployee {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val employee = getTemporaryEmployee(tx, unitId, employeeId)
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.READ_TEMPORARY_EMPLOYEE,
-                    unitId
-                )
-                val groupIds =
-                    tx.getDaycareAclRows(daycareId = unitId, false)
-                        .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
-                        .flatMap { it.groupIds }
-                        .toSet()
-                val occupancyCoefficient =
-                    tx.getOccupancyCoefficientForEmployeeInUnit(
-                        employeeId = employeeId,
-                        unitId = unitId
+        val employee =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val employee = getTemporaryEmployee(tx, unitId, employeeId)
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_TEMPORARY_EMPLOYEE,
+                        unitId
                     )
-                        ?: BigDecimal.ZERO
-                val pinCode = tx.getPinCode(employee.id)
-                TemporaryEmployee(
-                    firstName = employee.firstName,
-                    lastName = employee.lastName,
-                    groupIds = groupIds,
-                    occupancyCoefficient = occupancyCoefficient,
-                    pinCode = pinCode
-                )
+                    val groupIds =
+                        tx.getDaycareAclRows(daycareId = unitId, false)
+                            .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
+                            .flatMap { it.groupIds }
+                            .toSet()
+                    val occupancyCoefficient =
+                        tx.getOccupancyCoefficientForEmployeeInUnit(
+                            employeeId = employeeId,
+                            unitId = unitId
+                        )
+                            ?: BigDecimal.ZERO
+                    val pinCode = tx.getPinCode(employee.id)
+                    TemporaryEmployee(
+                        firstName = employee.firstName,
+                        lastName = employee.lastName,
+                        groupIds = groupIds,
+                        hasStaffOccupancyEffect = occupancyCoefficient > BigDecimal.ZERO,
+                        pinCode = pinCode
+                    )
+                }
             }
-        }
+        Audit.TemporaryEmployeeRead.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
+        return employee
     }
 
     @PutMapping("/daycares/{unitId}/temporary/{employeeId}")
@@ -464,6 +473,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
             }
         }
+        Audit.TemporaryEmployeeUpdate.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
     }
 
     @DeleteMapping("/daycares/{unitId}/temporary/{employeeId}/acl")
@@ -487,6 +497,10 @@ class UnitAclController(private val accessControl: AccessControl) {
                 deleteTemporaryEmployeeAcl(tx, unitId, employee)
             }
         }
+        Audit.TemporaryEmployeeDeleteAcl.log(
+            meta = mapOf("unitId" to unitId),
+            targetId = employeeId
+        )
     }
 
     @DeleteMapping("/daycares/{unitId}/temporary/{employeeId}")
@@ -511,6 +525,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 tx.updateEmployeeTemporaryInUnitId(employee.id, null)
             }
         }
+        Audit.TemporaryEmployeeDelete.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
     }
 
     private fun setTemporaryEmployeeDetails(
@@ -532,7 +547,11 @@ class UnitAclController(private val accessControl: AccessControl) {
 
         tx.upsertEmployeeMessageAccount(employeeId)
         tx.upsertOccupancyCoefficient(
-            OccupancyCoefficientUpsert(unitId, employeeId, input.occupancyCoefficient)
+            OccupancyCoefficientUpsert(
+                unitId,
+                employeeId,
+                parseCoefficientValue(input.hasStaffOccupancyEffect)
+            )
         )
         if (input.pinCode != null) {
             tx.upsertPinCode(employeeId, input.pinCode)
