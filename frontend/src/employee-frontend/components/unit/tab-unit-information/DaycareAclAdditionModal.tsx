@@ -145,12 +145,13 @@ export default React.memo(function DaycareAclAdditionModal({
     [groups]
   )
 
+  const pinCodeIsValid = isValidPinCode(formData.pinCode)
   const isValid =
     (formData.type === 'PERMANENT' && formData.selectedEmployee) ||
     (formData.type === 'TEMPORARY' &&
       formData.firstName &&
       formData.lastName &&
-      isValidPinCode(formData.pinCode))
+      pinCodeIsValid)
 
   return (
     <PlainModal margin="auto" data-qa="add-daycare-acl-modal">
@@ -275,6 +276,11 @@ export default React.memo(function DaycareAclAdditionModal({
                 i18n.unit.accessControl.addDaycareAclModal.pinCodePlaceholder
               }
               data-qa="add-daycare-acl-pin-code"
+              info={
+                formData.pinCode && !pinCodeIsValid
+                  ? { text: i18n.pinCode.error, status: 'warning' }
+                  : undefined
+              }
             />
           </FormControl>
         )}

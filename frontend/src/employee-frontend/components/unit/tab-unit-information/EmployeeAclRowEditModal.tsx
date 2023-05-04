@@ -152,11 +152,10 @@ export default React.memo(function EmployeeAclRowEditModal({
     }
   }, [formData, unitId, employeeRow, updatesGroupAcl, permittedActions])
 
+  const pinCodeIsValid = isValidPinCode(formData.pinCode)
   const isValid =
     !employeeRow.temporary ||
-    (formData.firstName &&
-      formData.lastName &&
-      isValidPinCode(formData.pinCode))
+    (formData.firstName && formData.lastName && pinCodeIsValid)
 
   return (
     <PlainModal margin="auto" data-qa="employee-row-edit-person-modal">
@@ -251,6 +250,11 @@ export default React.memo(function EmployeeAclRowEditModal({
                 i18n.unit.accessControl.addDaycareAclModal.pinCodePlaceholder
               }
               data-qa="pin-code"
+              info={
+                formData.pinCode && !pinCodeIsValid
+                  ? { text: i18n.pinCode.error, status: 'warning' }
+                  : undefined
+              }
             />
           </FormControl>
         )}
