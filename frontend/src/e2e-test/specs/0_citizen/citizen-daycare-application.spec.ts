@@ -246,4 +246,25 @@ describe('Citizen daycare applications', () => {
     await applicationReadView.unitPreferenceSection.waitUntilVisible()
     await applicationReadView.contactInfoSection.waitUntilHidden()
   })
+
+  test('Application can be saved as draft', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      fixtures.enduserChildFixtureJari.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalDaycareForm().form,
+      contactInfo: {
+        guardianPhone: '040123456789',
+        noGuardianEmail: true,
+        otherGuardianAgreementStatus: 'AGREED'
+      }
+    })
+    await editorPage.saveAsDraftButton.click()
+    await editorPage.modalOkBtn.click()
+    await applicationsPage.editApplication(applicationId)
+    await editorPage.guardianPhoneInput.assertValueEquals('040123456789')
+  })
 })
