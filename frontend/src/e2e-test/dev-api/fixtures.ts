@@ -27,6 +27,7 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -113,9 +114,11 @@ import {
   insertIncomeNotification,
   insertReservationFixtures
 } from './index'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 
-const fullDayTimeRange: TimeRange = { start: LocalTime.MIN, end:LocalTime.parse("23:59") }
+const fullDayTimeRange: TimeRange = {
+  start: LocalTime.MIN,
+  end: LocalTime.parse('23:59')
+}
 
 export const careAreaFixture: CareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
@@ -167,8 +170,6 @@ export const clubFixture: Daycare = {
   iban: '',
   providerId: ''
 }
-
-
 
 export const daycareFixture: Daycare = {
   id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',

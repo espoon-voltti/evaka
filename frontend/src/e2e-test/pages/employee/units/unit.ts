@@ -146,7 +146,9 @@ export class UnitDetailsPage {
   }
 
   async assertTimeRangeByDay(dayNumber: number, expectedTime: string) {
-    await this.page.find(`[data-qa="unit-timerange-detail-${dayNumber}"]`).assertTextEquals(expectedTime)
+    await this.page
+      .find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
+      .assertTextEquals(expectedTime)
   }
 
   readonly #unitManagerName = this.page.find('[data-qa="unit-manager-name"]')
@@ -178,12 +180,14 @@ export class UnitEditor {
   }
 
   #timeCheckBox(dayNumber: number) {
-    return new Checkbox(this.page.find(`[data-qa="operation-day-${dayNumber}"]`))
+    return new Checkbox(
+      this.page.find(`[data-qa="operation-day-${dayNumber}"]`)
+    )
   }
 
   async fillDayTimeRange(dayNumber: number, start: string, end: string) {
-    await this.#timeInput(dayNumber, "start").fill(start)
-    await this.#timeInput(dayNumber, "end").fill(end)
+    await this.#timeInput(dayNumber, 'start').fill(start)
+    await this.#timeInput(dayNumber, 'end').fill(end)
   }
 
   async clearDayTimeRange(dayNumber: number) {

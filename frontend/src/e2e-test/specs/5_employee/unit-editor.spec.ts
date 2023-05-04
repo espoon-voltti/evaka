@@ -67,11 +67,11 @@ describe('Employee - unit details', () => {
     // The daycare fixture has this on but it needs to be turned off to be able to save
     await unitEditorPage.setInvoiceByMunicipality(false)
 
-    await unitEditorPage.fillDayTimeRange(3, "10:00", "16:00")
-  
+    await unitEditorPage.fillDayTimeRange(3, '10:00', '16:00')
+
     const unitDetailsPage = await unitEditorPage.submit()
-  
-    await unitDetailsPage.assertTimeRangeByDay(3, "10:00 - 16:00")
+
+    await unitDetailsPage.assertTimeRangeByDay(3, '10:00 - 16:00')
     await unitDetailsPage.assertUnitName(daycare1.name)
     await unitDetailsPage.assertManagerData(
       'Päiväkodin Johtaja',
@@ -79,11 +79,7 @@ describe('Employee - unit details', () => {
       'manager@example.com'
     )
   })
-
 })
-
-
-
 
 describe('Employee - unit editor validations and warnings', () => {
   let page: Page
@@ -114,12 +110,12 @@ describe('Employee - unit editor validations and warnings', () => {
 
   test('Invalid unit operation times produce a form error', async () => {
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
-    await unitEditorPage.fillDayTimeRange(2, "10:00", "10:66")
+    await unitEditorPage.fillDayTimeRange(2, '10:00', '10:66')
     await unitEditorPage.assertWarningIsVisible('unit-operationtimes')
     await unitEditorPage.clearDayTimeRange(2)
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
-    
-    await unitEditorPage.fillDayTimeRange(3, "12:00", "10:00")
+
+    await unitEditorPage.fillDayTimeRange(3, '12:00', '10:00')
     await unitEditorPage.assertWarningIsVisible('unit-operationtimes')
     await unitEditorPage.clearDayTimeRange(3)
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')

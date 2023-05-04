@@ -210,7 +210,7 @@ const emptyOperationWeek = [null, null, null, null, null, null, null]
 
 type EditableTimeRange = JsonOf<TimeRange> | null
 
-type FormErrorItem = {key: string, text: string}
+type FormErrorItem = { key: string; text: string }
 
 type UnitEditorErrors = {
   rangeErrors: RangeValidationResult[]
@@ -386,68 +386,107 @@ function validateForm(
   }
 
   if (!name) {
-    errors.push({text: i18n.unitEditor.error.name, key: "unit-name"})
+    errors.push({ text: i18n.unitEditor.error.name, key: 'unit-name' })
   }
   if (!form.areaId) {
-    errors.push({text: i18n.unitEditor.error.area, key: "unit-area"})
+    errors.push({ text: i18n.unitEditor.error.area, key: 'unit-area' })
   }
   if (Object.values(form.careTypes).every((v) => !v)) {
-    errors.push({text: i18n.unitEditor.error.careType, key: "unit-caretype"})
+    errors.push({ text: i18n.unitEditor.error.careType, key: 'unit-caretype' })
   }
   if (form.careTypes.DAYCARE && !form.daycareType) {
-    errors.push({text: i18n.unitEditor.error.daycareType, key: "unit-daycaretype"})
+    errors.push({
+      text: i18n.unitEditor.error.daycareType,
+      key: 'unit-daycaretype'
+    })
   }
   if (!Number.isSafeInteger(capacity)) {
-    errors.push({text: i18n.unitEditor.error.capacity, key: "unit-capacity"})
+    errors.push({ text: i18n.unitEditor.error.capacity, key: 'unit-capacity' })
   }
   if (form.invoicedByMunicipality && !costCenter) {
-    errors.push({text: i18n.unitEditor.error.costCenter, key: "unit-costcenter"})
+    errors.push({
+      text: i18n.unitEditor.error.costCenter,
+      key: 'unit-costcenter'
+    })
   }
   if (url && !(url.startsWith('https://') || url.startsWith('http://'))) {
-    errors.push({text: i18n.unitEditor.error.url, key: "unit-url"})
+    errors.push({ text: i18n.unitEditor.error.url, key: 'unit-url' })
   }
   if (!visitingAddress.streetAddress) {
-    errors.push({text: i18n.unitEditor.error.visitingAddress.streetAddress, key: "unit-streetaddress"})
+    errors.push({
+      text: i18n.unitEditor.error.visitingAddress.streetAddress,
+      key: 'unit-streetaddress'
+    })
   }
   if (!visitingAddress.postalCode) {
-    errors.push({text: i18n.unitEditor.error.visitingAddress.postalCode, key: "unit-postalcode"})
+    errors.push({
+      text: i18n.unitEditor.error.visitingAddress.postalCode,
+      key: 'unit-postalcode'
+    })
   }
   if (!visitingAddress.postOffice) {
-    errors.push({text: i18n.unitEditor.error.visitingAddress.postOffice, key: "unit-postoffice"})
+    errors.push({
+      text: i18n.unitEditor.error.visitingAddress.postOffice,
+      key: 'unit-postoffice'
+    })
   }
   if (form.location && !location) {
-    errors.push({text: i18n.unitEditor.error.location, key: "unit-location"})
+    errors.push({ text: i18n.unitEditor.error.location, key: 'unit-location' })
   }
   if (!unitManager.name) {
-    errors.push({text: i18n.unitEditor.error.unitManager.name, key: "unit-managername"})
+    errors.push({
+      text: i18n.unitEditor.error.unitManager.name,
+      key: 'unit-managername'
+    })
   }
   if (!unitManager.phone) {
-    errors.push({text: i18n.unitEditor.error.unitManager.phone, key: "unit-managerphone"})
+    errors.push({
+      text: i18n.unitEditor.error.unitManager.phone,
+      key: 'unit-managerphone'
+    })
   }
   if (!unitManager.email) {
-    errors.push({text: i18n.unitEditor.error.unitManager.email, key: "unit-manageremail"})
+    errors.push({
+      text: i18n.unitEditor.error.unitManager.email,
+      key: 'unit-manageremail'
+    })
   }
   if (
     (!form.careTypes.DAYCARE && form.daycareApplyPeriod != null) ||
     (!form.careTypes.PRESCHOOL && form.preschoolApplyPeriod != null) ||
     (!form.careTypes.CLUB && form.clubApplyPeriod != null)
   ) {
-    errors.push({text: i18n.unitEditor.error.cannotApplyToDifferentType, key: "unit-applicationtypeconflict"})
+    errors.push({
+      text: i18n.unitEditor.error.cannotApplyToDifferentType,
+      key: 'unit-applicationtypeconflict'
+    })
   }
   if (
     form.openingDate != null &&
     form.closingDate != null &&
     form.openingDate.isAfter(form.closingDate)
   ) {
-    errors.push({text: i18n.unitEditor.error.openingDateIsAfterClosingDate, key: "unit-openingclosingorder"})
+    errors.push({
+      text: i18n.unitEditor.error.openingDateIsAfterClosingDate,
+      key: 'unit-openingclosingorder'
+    })
   }
   if (
     featureFlags.experimental?.voucherUnitPayments &&
     form.providerType === 'PRIVATE_SERVICE_VOUCHER'
   ) {
-    if (!form.businessId) errors.push({text: i18n.unitEditor.error.businessId, key: "unit-businessid"})
-    if (!form.iban) errors.push({text: i18n.unitEditor.error.iban, key: "unit-iban"})
-    if (!form.providerId) errors.push({text: i18n.unitEditor.error.providerId, key: "unit-providerid"})
+    if (!form.businessId)
+      errors.push({
+        text: i18n.unitEditor.error.businessId,
+        key: 'unit-businessid'
+      })
+    if (!form.iban)
+      errors.push({ text: i18n.unitEditor.error.iban, key: 'unit-iban' })
+    if (!form.providerId)
+      errors.push({
+        text: i18n.unitEditor.error.providerId,
+        key: 'unit-providerid'
+      })
   }
 
   let operationTimes: (TimeRange | null)[] = []
@@ -459,7 +498,10 @@ function validateForm(
       tr ? parseTimeRange(tr) : null
     )
   } else {
-    errors.push({text: i18n.unitEditor.error.operationTimes, key: "unit-operationtimes"})
+    errors.push({
+      text: i18n.unitEditor.error.operationTimes,
+      key: 'unit-operationtimes'
+    })
   }
 
   const {
@@ -1534,7 +1576,9 @@ export default function UnitEditor(props: Props): JSX.Element {
         <>
           <>
             {validationErrors.formErrors.map((error, index) => (
-              <FormError key={index} data-qa={error.key}>{error.text}</FormError>
+              <FormError key={index} data-qa={error.key}>
+                {error.text}
+              </FormError>
             ))}
           </>
           <FixedSpaceRow>
