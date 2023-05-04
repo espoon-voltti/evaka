@@ -243,6 +243,8 @@ tasks {
         classpath = sourceSets["main"].runtimeClasspath
         systemProperty("spring.profiles.active", "local")
         systemProperty("spring.datasource.url", "jdbc:postgresql://localhost:5432/evaka_it")
+        systemProperty("spring.datasource.username", "evaka_it")
+        systemProperty("spring.datasource.password", "evaka_it")
     }
 
     register("generateVapidKey", JavaExec::class) {
