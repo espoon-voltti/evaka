@@ -220,7 +220,9 @@ private fun Database.Read.findFamiliesByHeadOfFamily(
     val partners =
         getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = dateRange)
     val fridgePartnerParentships =
-        partners.distinctBy { it.person.id }.flatMap { getParentships(it.person.id, null, false, dateRange) }
+        partners
+            .distinctBy { it.person.id }
+            .flatMap { getParentships(it.person.id, null, false, dateRange) }
 
     return generateFamilyCompositions(
         from,
