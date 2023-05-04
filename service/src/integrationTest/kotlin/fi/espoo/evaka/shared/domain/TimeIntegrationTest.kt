@@ -5,10 +5,12 @@
 package fi.espoo.evaka.shared.domain
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.updateDaycareOperationTimes
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -34,13 +36,7 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `operational days with no holidays and a round the clock unit in database`() {
-        db.transaction { tx ->
-            tx.createUpdate(
-                    "UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id"
-                )
-                .bind("id", testDaycare.id)
-                .execute()
-        }
+        db.transaction { tx -> tx.updateDaycareOperationTimes(testDaycare.id, allWeekOpTimes) }
 
         val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
@@ -62,11 +58,8 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 tx.insertTestDaycare(
                     DevDaycare(areaId = testArea.id, name = "third round the clock unit")
                 )
-            tx.createUpdate(
-                    "UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)"
-                )
-                .bind("ids", arrayOf(secondUnitId, thirdUnitId))
-                .execute()
+            tx.updateDaycareOperationTimes(secondUnitId!!, allWeekOpTimes)
+            tx.updateDaycareOperationTimes(thirdUnitId!!, allWeekOpTimes)
         }
 
         val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
@@ -136,11 +129,7 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .bind("date2", epiphany)
                 .execute()
 
-            tx.createUpdate(
-                    "UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id"
-                )
-                .bind("id", testDaycare.id)
-                .execute()
+            tx.updateDaycareOperationTimes(testDaycare.id, allWeekOpTimes)
         }
 
         val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }

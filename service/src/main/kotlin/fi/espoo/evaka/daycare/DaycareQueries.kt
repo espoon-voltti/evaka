@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.time.DayOfWeek
 import java.time.LocalDate
-import org.jdbi.v3.core.annotation.JdbiProperty
 
 data class DaycareFields(
     val name: String,

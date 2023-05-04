@@ -259,7 +259,7 @@ val dateRangeColumnMapper = PgObjectColumnMapper { obj ->
 }
 
 val timeRangeColumnMapper = PgObjectColumnMapper {
-    assert(it.type == "timerange")
+    assert(it.type == "timerange" || it.type == "timerange_non_nullable_range")
     it.value?.let { value ->
         val parts = value.trim('(', ')').split(',')
         TimeRange(LocalTime.parse(parts[0]), LocalTime.parse(parts[1]))

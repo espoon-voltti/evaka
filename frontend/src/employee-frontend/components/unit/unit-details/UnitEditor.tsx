@@ -87,7 +87,7 @@ interface FormData {
   ophUnitOid: string
   ophOrganizerOid: string
   operationDays: DayOfWeek[]
-  operationTimes: (JsonOf<TimeRange> | null)[]
+  operationTimes: EditableTimeRange[]
   businessId: string
   iban: string
   providerId: string
@@ -206,9 +206,15 @@ const emptyTimeRange: JsonOf<TimeRange> = {
   end: ''
 }
 
+const emptyOperationWeek = [null, null, null, null, null, null, null]
+
+type EditableTimeRange = JsonOf<TimeRange> | null
+
+type FormErrorItem = {key: string, text: string}
+
 type UnitEditorErrors = {
   rangeErrors: RangeValidationResult[]
-  formErrors: string[]
+  formErrors: FormErrorItem[]
 }
 
 function AddressEditor({
@@ -336,7 +342,7 @@ function validateForm(
   i18n: Translations,
   form: FormData
 ): [DaycareFields | undefined, UnitEditorErrors] {
-  const errors: string[] = []
+  const errors: FormErrorItem[] = []
   const typeMap: Record<CareType, boolean> = {
     CLUB: form.careTypes.CLUB,
     CENTRE: form.daycareType === 'CENTRE',
@@ -380,68 +386,68 @@ function validateForm(
   }
 
   if (!name) {
-    errors.push(i18n.unitEditor.error.name)
+    errors.push({text: i18n.unitEditor.error.name, key: "unit-name"})
   }
   if (!form.areaId) {
-    errors.push(i18n.unitEditor.error.area)
+    errors.push({text: i18n.unitEditor.error.area, key: "unit-area"})
   }
   if (Object.values(form.careTypes).every((v) => !v)) {
-    errors.push(i18n.unitEditor.error.careType)
+    errors.push({text: i18n.unitEditor.error.careType, key: "unit-caretype"})
   }
   if (form.careTypes.DAYCARE && !form.daycareType) {
-    errors.push(i18n.unitEditor.error.daycareType)
+    errors.push({text: i18n.unitEditor.error.daycareType, key: "unit-daycaretype"})
   }
   if (!Number.isSafeInteger(capacity)) {
-    errors.push(i18n.unitEditor.error.capacity)
+    errors.push({text: i18n.unitEditor.error.capacity, key: "unit-capacity"})
   }
   if (form.invoicedByMunicipality && !costCenter) {
-    errors.push(i18n.unitEditor.error.costCenter)
+    errors.push({text: i18n.unitEditor.error.costCenter, key: "unit-costcenter"})
   }
   if (url && !(url.startsWith('https://') || url.startsWith('http://'))) {
-    errors.push(i18n.unitEditor.error.url)
+    errors.push({text: i18n.unitEditor.error.url, key: "unit-url"})
   }
   if (!visitingAddress.streetAddress) {
-    errors.push(i18n.unitEditor.error.visitingAddress.streetAddress)
+    errors.push({text: i18n.unitEditor.error.visitingAddress.streetAddress, key: "unit-streetaddress"})
   }
   if (!visitingAddress.postalCode) {
-    errors.push(i18n.unitEditor.error.visitingAddress.postalCode)
+    errors.push({text: i18n.unitEditor.error.visitingAddress.postalCode, key: "unit-postalcode"})
   }
   if (!visitingAddress.postOffice) {
-    errors.push(i18n.unitEditor.error.visitingAddress.postOffice)
+    errors.push({text: i18n.unitEditor.error.visitingAddress.postOffice, key: "unit-postoffice"})
   }
   if (form.location && !location) {
-    errors.push(i18n.unitEditor.error.location)
+    errors.push({text: i18n.unitEditor.error.location, key: "unit-location"})
   }
   if (!unitManager.name) {
-    errors.push(i18n.unitEditor.error.unitManager.name)
+    errors.push({text: i18n.unitEditor.error.unitManager.name, key: "unit-managername"})
   }
   if (!unitManager.phone) {
-    errors.push(i18n.unitEditor.error.unitManager.phone)
+    errors.push({text: i18n.unitEditor.error.unitManager.phone, key: "unit-managerphone"})
   }
   if (!unitManager.email) {
-    errors.push(i18n.unitEditor.error.unitManager.email)
+    errors.push({text: i18n.unitEditor.error.unitManager.email, key: "unit-manageremail"})
   }
   if (
     (!form.careTypes.DAYCARE && form.daycareApplyPeriod != null) ||
     (!form.careTypes.PRESCHOOL && form.preschoolApplyPeriod != null) ||
     (!form.careTypes.CLUB && form.clubApplyPeriod != null)
   ) {
-    errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
+    errors.push({text: i18n.unitEditor.error.cannotApplyToDifferentType, key: "unit-applicationtypeconflict"})
   }
   if (
     form.openingDate != null &&
     form.closingDate != null &&
     form.openingDate.isAfter(form.closingDate)
   ) {
-    errors.push(i18n.unitEditor.error.openingDateIsAfterClosingDate)
+    errors.push({text: i18n.unitEditor.error.openingDateIsAfterClosingDate, key: "unit-openingclosingorder"})
   }
   if (
     featureFlags.experimental?.voucherUnitPayments &&
     form.providerType === 'PRIVATE_SERVICE_VOUCHER'
   ) {
-    if (!form.businessId) errors.push(i18n.unitEditor.error.businessId)
-    if (!form.iban) errors.push(i18n.unitEditor.error.iban)
-    if (!form.providerId) errors.push(i18n.unitEditor.error.providerId)
+    if (!form.businessId) errors.push({text: i18n.unitEditor.error.businessId, key: "unit-businessid"})
+    if (!form.iban) errors.push({text: i18n.unitEditor.error.iban, key: "unit-iban"})
+    if (!form.providerId) errors.push({text: i18n.unitEditor.error.providerId, key: "unit-providerid"})
   }
 
   let operationTimes: (TimeRange | null)[] = []
@@ -453,7 +459,7 @@ function validateForm(
       tr ? parseTimeRange(tr) : null
     )
   } else {
-    errors.push(i18n.unitEditor.error.operationTimes)
+    errors.push({text: i18n.unitEditor.error.operationTimes, key: "unit-operationtimes"})
   }
 
   const {
@@ -604,7 +610,7 @@ function toFormData(unit: Unit | undefined): FormData {
       email: unit?.unitManager?.email ?? ''
     },
     operationDays: unit?.operationDays ?? [],
-    operationTimes: (unit?.operationTimes ?? []).map((range) =>
+    operationTimes: (unit?.operationTimes ?? emptyOperationWeek).map((range) =>
       range ? formatTimeRange(range) : null
     ),
     businessId: unit?.businessId ?? '',
@@ -1076,6 +1082,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                   )}
                   hiddenLabel={true}
                   label=""
+                  data-qa={`operation-day-${day}`}
                   onChange={(checked) => {
                     if (!checked) form.operationTimes[day - 1] = null
                     updateForm({
@@ -1097,11 +1104,11 @@ export default function UnitEditor(props: Props): JSX.Element {
                       })
                     }}
                     error={validationErrors.rangeErrors[day - 1]}
-                    dataQaPrefix={`"timeinput-${day}"`}
+                    dataQaPrefix={`${day}`}
                     hideErrorsBeforeTouched={false}
                   />
                 ) : (
-                  <div>
+                  <div data-qa={`unit-timerange-detail-${day}`}>
                     {timesToday?.start && timesToday?.end
                       ? `${timesToday.start} - ${timesToday.end}`
                       : ''}
@@ -1526,8 +1533,8 @@ export default function UnitEditor(props: Props): JSX.Element {
       {props.editable && (
         <>
           <>
-            {validationErrors.formErrors.map((error, key) => (
-              <FormError key={key}>{error}</FormError>
+            {validationErrors.formErrors.map((error, index) => (
+              <FormError key={index} data-qa={error.key}>{error.text}</FormError>
             ))}
           </>
           <FixedSpaceRow>

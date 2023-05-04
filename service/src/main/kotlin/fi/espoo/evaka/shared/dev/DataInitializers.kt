@@ -68,6 +68,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.user.EvakaUser
@@ -152,7 +153,7 @@ INSERT INTO daycare (
   location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
   unit_manager_id,
   decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
-  oph_unit_oid, oph_organizer_oid, round_the_clock, operation_days, enabled_pilot_features,
+  oph_unit_oid, oph_organizer_oid, round_the_clock, operation_times, enabled_pilot_features,
   finance_decision_handler, business_id, iban, provider_id
 ) VALUES (
   :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :daycareApplyPeriod, :preschoolApplyPeriod, :clubApplyPeriod, :providerType,
@@ -162,7 +163,7 @@ INSERT INTO daycare (
   :location, :mailingAddress.streetAddress, :mailingAddress.poBox, :mailingAddress.postalCode, :mailingAddress.postOffice,
   (SELECT id FROM insert_unit_manager),
   :decisionCustomization.daycareName, :decisionCustomization.preschoolName, :decisionCustomization.handler, :decisionCustomization.handlerAddress,
-  :ophUnitOid, :ophOrganizerOid, :roundTheClock, :operationDays, :enabledPilotFeatures::pilot_feature[], :financeDecisionHandler,
+  :ophUnitOid, :ophOrganizerOid, :roundTheClock, :operationTimes, :enabledPilotFeatures::pilot_feature[], :financeDecisionHandler,
   :businessId, :iban, :providerId
 )
 RETURNING id
@@ -1475,3 +1476,14 @@ VALUES (:id, :groupId, :amount, :startDate, :endDate)
 """
         )
         .let(::DaycareCaretakerId)
+
+fun Database.Transaction.updateDaycareOperationTimes(
+    daycareId: DaycareId,
+    opTimes: List<TimeRange>
+) =
+    createUpdate(
+            "UPDATE daycare SET operation_times = :operationTimes WHERE id = :daycareId",
+        )
+        .bind("daycareId", daycareId)
+        .bind("operationTimes", opTimes)
+        .execute()

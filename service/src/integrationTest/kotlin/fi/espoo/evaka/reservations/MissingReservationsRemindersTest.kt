@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
@@ -54,6 +55,16 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
 
     private val guardianEmail = "guardian@example.com"
     private val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5)
+    private val operationTimes: List<TimeRange?> =
+        listOf(
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            null,
+            null
+        )
     private lateinit var guardian: PersonId
     private lateinit var child: ChildId
 
@@ -78,7 +89,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                 tx.insertTestDaycare(
                     DevDaycare(
                         areaId = areaId,
-                        operationDays = operationDays,
+                        operationTimes = operationTimes,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
                     )
                 )
