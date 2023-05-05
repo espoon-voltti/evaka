@@ -115,7 +115,7 @@ import {
   insertReservationFixtures
 } from './index'
 
-const fullDayTimeRange: TimeRange = {
+export const fullDayTimeRange: TimeRange = {
   start: LocalTime.MIN,
   end: LocalTime.parse('23:59')
 }

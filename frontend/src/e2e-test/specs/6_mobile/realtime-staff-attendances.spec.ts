@@ -13,6 +13,7 @@ import {
   daycareGroupFixture,
   EmployeeBuilder,
   Fixture,
+  fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
 import { DaycareGroup } from '../../dev-api/types'
@@ -45,7 +46,15 @@ beforeEach(async () => {
       ...daycare2Fixture,
       areaId: fixtures.careAreaFixture.id,
       enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
-      operationDays: [1, 2, 3, 4, 5]
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ]
     })
     .save()
 
