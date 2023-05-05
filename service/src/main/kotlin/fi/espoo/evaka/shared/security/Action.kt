@@ -595,7 +595,9 @@ sealed interface Action {
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
-            IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()
+            IsEmployee.andIsDecisionMakerForAssistanceNeedDecision(),
+            HasUnitRole(UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedDecision(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision()
         ),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),

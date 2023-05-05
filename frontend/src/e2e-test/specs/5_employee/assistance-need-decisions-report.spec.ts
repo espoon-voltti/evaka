@@ -13,10 +13,13 @@ import {
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
+  careArea2Fixture,
   careAreaFixture,
   createDaycarePlacementFixture,
+  daycare2Fixture,
   daycareFixture,
   daycareGroupFixture,
+  enduserChildFixtureJari,
   familyWithTwoGuardians,
   Fixture,
   uuidv4
@@ -347,5 +350,73 @@ describe('Assistance need decisions report', () => {
     )
 
     await decisionPage.approveBtn.assertDisabled(false)
+  })
+
+  test('Special education teacher on child s unit can open the decision', async () => {
+    const decisionId = uuidv4()
+    await Fixture.assistanceNeedDecision()
+      .with({
+        id: decisionId,
+        childId,
+        decisionMaker: {
+          employeeId: decisionMaker.id,
+          title: 'regional director'
+        },
+        sentForDecision: LocalDate.of(2021, 1, 6),
+        selectedUnit: { id: unitId }
+      })
+      .save()
+
+    const anotherChildId = enduserChildFixtureJari.id
+    const careArea = await Fixture.careArea().with(careArea2Fixture).save()
+    const anotherDaycare = await Fixture.daycare()
+      .with(daycare2Fixture)
+      .careArea(careArea)
+      .save()
+
+    const daycarePlacementFixture2 = createDaycarePlacementFixture(
+      uuidv4(),
+      anotherChildId,
+      anotherDaycare.data.id
+    )
+
+    await insertDaycarePlacementFixtures([daycarePlacementFixture2])
+
+    await Fixture.assistanceNeedDecision()
+      .with({
+        id: uuidv4(),
+        childId: anotherChildId,
+        decisionMaker: {
+          employeeId: decisionMaker.id,
+          title: 'regional director'
+        },
+        sentForDecision: LocalDate.of(2021, 1, 6),
+        selectedUnit: { id: anotherDaycare.data.id }
+      })
+      .save()
+
+    const VEO = (await Fixture.employeeSpecialEducationTeacher(unitId).save())
+      .data
+
+    await employeeLogin(page, VEO)
+    await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
+
+    const assistanceNeedDecisionsPage = new AssistanceNeedDecisionsReport(page)
+
+    await waitUntilEqual(() => assistanceNeedDecisionsPage.rows.count(), 1)
+    await waitUntilEqual(() => assistanceNeedDecisionsPage.row(0), {
+      ...baseReportRow,
+      sentForDecision: '06.01.2021',
+      isUnopened: false
+    })
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-need-decisions/${decisionId}`
+    )
+
+    const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
+    await decisionPage.decisionMaker.assertTextEquals(
+      `${decisionMaker.firstName} ${decisionMaker.lastName}, regional director`
+    )
   })
 })

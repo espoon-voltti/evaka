@@ -139,4 +139,56 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
             )
         }
     }
+
+    @Test
+    fun `HasUnitRole inSelectedUnitOfAssistanceNeedDecision`() {
+        val action = Action.AssistanceNeedDecision.READ
+        rules.add(
+            action,
+            HasUnitRole(UserRole.UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedDecision()
+        )
+        val daycareId =
+            db.transaction { tx ->
+                val areaId = tx.insertTestCareArea(DevCareArea())
+                val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        endDate = LocalDate.of(2100, 1, 1)
+                    )
+                )
+                daycareId
+            }
+
+        val unitSupervisor =
+            createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
+
+        db.transaction {
+            it.createUpdate(
+                    "UPDATE assistance_need_decision SET selected_unit = :selectedUnit WHERE id = :id"
+                )
+                .bind("selectedUnit", daycareId)
+                .bind("id", assistanceNeedDecisionId)
+                .execute()
+        }
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(
+                    tx,
+                    unitSupervisor,
+                    clock,
+                    action,
+                    assistanceNeedDecisionId
+                )
+            )
+        }
+
+        val staff = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.STAFF))
+        db.read { tx ->
+            assertFalse(
+                accessControl.hasPermissionFor(tx, staff, clock, action, assistanceNeedDecisionId)
+            )
+        }
+    }
 }
