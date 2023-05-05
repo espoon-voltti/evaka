@@ -180,7 +180,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                 date={modalState.date}
                 reservationsResponse={response}
                 selectDate={openDayModal}
-                close={closeModal}
+                onClose={closeModal}
                 openAbsenceModal={openAbsenceModal}
                 events={events}
               />

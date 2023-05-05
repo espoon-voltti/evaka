@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import zip from 'lodash/zip'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
@@ -28,20 +27,21 @@ import {
   AbsenceInfo,
   DailyReservationRequest,
   Reservation,
-  ReservationChild,
+  ReservationResponseDay,
   ReservationResponseDayChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useMutation } from 'lib-common/query'
+import { useMutationResult } from 'lib-common/query'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -60,13 +60,12 @@ import {
   ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2, H3, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faChevronLeft, faChevronRight, faPlus, faTrash } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { useLang, useTranslation } from '../localization'
+import { Translations, useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
@@ -74,47 +73,11 @@ import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput from './TimeRangeInput'
 import { postReservationsMutation } from './queries'
 
-interface ChildWithReservations extends ReservationResponseDayChild {
-  child: ReservationChild
-}
-
-function getChildrenWithReservations(
-  date: LocalDate,
-  reservationsResponse: ReservationsResponse
-): {
-  previousDate: LocalDate | undefined
-  relevantChildren: ChildWithReservations[]
-  nextDate: LocalDate | undefined
-} {
-  const dateIndex = reservationsResponse.days.findIndex((reservation) =>
-    date.isEqual(reservation.date)
-  )
-  if (dateIndex === -1) {
-    return {
-      previousDate: undefined,
-      relevantChildren: [],
-      nextDate: undefined
-    }
-  }
-  return {
-    previousDate: reservationsResponse.days[dateIndex - 1]?.date,
-    relevantChildren: reservationsResponse.days[dateIndex].children.flatMap(
-      (reservationChild) => {
-        const child = reservationsResponse.children.find(
-          (c) => c.id === reservationChild.childId
-        )
-        return child !== undefined ? [{ child, ...reservationChild }] : []
-      }
-    ),
-    nextDate: reservationsResponse.days[dateIndex + 1]?.date
-  }
-}
-
 interface Props {
   date: LocalDate
   reservationsResponse: ReservationsResponse
   selectDate: (date: LocalDate) => void
-  close: () => void
+  onClose: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
 }
@@ -123,54 +86,218 @@ export default React.memo(function DayView({
   date,
   reservationsResponse,
   selectDate,
-  close,
+  onClose,
   openAbsenceModal,
   events
 }: Props) {
   const i18n = useTranslation()
-  const [lang] = useLang()
 
-  const { previousDate, relevantChildren, nextDate } = useMemo(
-    () => getChildrenWithReservations(date, reservationsResponse),
-    [date, reservationsResponse]
+  const modalData = useMemo(
+    () => computeModalData(date, reservationsResponse, events, i18n),
+    [date, events, i18n, reservationsResponse]
+  )
+  const dateActions = useMemo(
+    () =>
+      findAdjacentDates(selectDate, reservationsResponse, modalData?.dateIndex),
+    [modalData?.dateIndex, reservationsResponse, selectDate]
   )
 
-  const {
-    reservationsEditable,
-    absencesEditable,
-    editing,
-    startEditing,
-    editorState,
-    saving,
-    save,
-    navigate,
-    confirmationModal,
-    stopEditing
-  } = useEditState(date, relevantChildren, reservationsResponse.reservableRange)
-
-  const navigateToPrevDate = useCallback(
-    () => previousDate && selectDate(previousDate),
-    [selectDate, previousDate]
-  )
-  const navigateToNextDate = useCallback(
-    () => nextDate && selectDate(nextDate),
-    [selectDate, nextDate]
-  )
   const onCreateAbsence = useCallback(
     () => openAbsenceModal(date),
     [openAbsenceModal, date]
   )
 
-  const childStates = useFormElems(editorState)
+  const [editing, edit] = useBoolean(false)
 
-  const duplicateChildInfo = useMemo(
-    () =>
-      getDuplicateChildInfo(
-        relevantChildren.map((c) => c.child),
-        i18n
-      ),
-    [i18n, relevantChildren]
+  return modalData === undefined ? (
+    <DayModal
+      date={date}
+      dateActions={dateActions}
+      rows={[]}
+      onClose={onClose}
+      leftButton={undefined}
+      rightButton={undefined}
+    />
+  ) : editing ? (
+    <Edit
+      modalData={modalData}
+      dateActions={dateActions}
+      onClose={onClose}
+      onCancel={edit.off}
+    />
+  ) : (
+    <View
+      modalData={modalData}
+      dateActions={dateActions}
+      reservableRange={reservationsResponse.reservableRange}
+      onClose={onClose}
+      onEditReservations={edit.on}
+      onCreateAbsence={onCreateAbsence}
+    />
   )
+})
+
+function View({
+  modalData,
+  dateActions,
+  reservableRange,
+  onClose,
+  onEditReservations,
+  onCreateAbsence
+}: {
+  modalData: ModalData
+  dateActions: DateActions
+  reservableRange: FiniteDateRange
+  onClose: () => void
+  onEditReservations: () => void
+  onCreateAbsence: () => void
+}) {
+  const i18n = useTranslation()
+
+  const { reservationsEditable, absencesEditable } = useMemo(
+    () => isEditable(modalData.response, reservableRange),
+    [modalData.response, reservableRange]
+  )
+
+  const leftButton = reservationsEditable ? (
+    <Button
+      onClick={onEditReservations}
+      text={i18n.common.edit}
+      data-qa="edit"
+    />
+  ) : undefined
+
+  const rightButton = (
+    <Button
+      primary
+      text={i18n.calendar.newAbsence}
+      onClick={onCreateAbsence}
+      disabled={!absencesEditable}
+      data-qa="create-absence"
+    />
+  )
+
+  return (
+    <DayModal
+      date={modalData.response.date}
+      dateActions={dateActions}
+      rows={modalData.rows}
+      onClose={onClose}
+      leftButton={leftButton}
+      rightButton={rightButton}
+    >
+      {(childIndex) => {
+        const child = modalData.response.children[childIndex]
+        return child.absence !== null ? (
+          <Absence absence={child.absence} />
+        ) : (
+          <Reservations
+            reservations={child.reservations}
+            requiresReservation={child.requiresReservation}
+          />
+        )
+      }}
+    </DayModal>
+  )
+}
+
+function Edit({
+  modalData,
+  onClose,
+  onCancel
+}: {
+  modalData: ModalData
+  dateActions: DateActions
+  onClose: () => void
+  onCancel: () => void
+}) {
+  const i18n = useTranslation()
+
+  const form = useForm(
+    editorForm,
+    () => initialFormState(modalData),
+    i18n.validationErrors
+  )
+  const formElems = useFormElems(form)
+
+  const { mutateAsync: postReservations } = useMutationResult(
+    postReservationsMutation
+  )
+
+  const save = useCallback(() => {
+    const request: DailyReservationRequest[] = form.value()(
+      modalData.response.date
+    )
+    return postReservations(request)
+  }, [form, modalData.response.date, postReservations])
+
+  const leftButton = (
+    <Button onClick={onCancel} text={i18n.common.cancel} data-qa="cancel" />
+  )
+
+  const rightButton = (
+    <AsyncButton
+      primary
+      disabled={!form.isValid()}
+      onClick={save}
+      onSuccess={onCancel}
+      text={i18n.common.save}
+      data-qa="save"
+    />
+  )
+
+  return (
+    <DayModal
+      date={modalData.response.date}
+      dateActions={undefined}
+      rows={modalData.rows}
+      onClose={onClose}
+      leftButton={leftButton}
+      rightButton={rightButton}
+    >
+      {(childIndex) => {
+        const child = modalData.response.children[childIndex]
+        const bind = formElems[childIndex]
+        return child.requiresReservation &&
+          (child.absence === null || child.absence.editable) ? (
+          <EditReservation
+            canAddSecondReservation={child.shiftCare}
+            bind={bind}
+          />
+        ) : child.absence !== null ? (
+          <Absence absence={child.absence} />
+        ) : (
+          <Reservations
+            reservations={child.reservations}
+            requiresReservation={child.requiresReservation}
+          />
+        )
+      }}
+    </DayModal>
+  )
+}
+
+interface DayModalProps {
+  date: LocalDate
+  dateActions: DateActions | undefined
+  rows: ModalRow[]
+  onClose: () => void
+  leftButton: React.ReactNode | undefined
+  rightButton: React.ReactNode
+  children?: ((childIndex: number) => React.ReactNode) | undefined
+}
+
+const DayModal = React.memo(function DayModal({
+  date,
+  dateActions,
+  rows,
+  onClose,
+  leftButton,
+  rightButton,
+  children: renderReservation = () => undefined
+}: DayModalProps) {
+  const i18n = useTranslation()
+  const [lang] = useLang()
 
   return (
     <ModalAccessibilityWrapper>
@@ -180,7 +307,7 @@ export default React.memo(function DayView({
             <div>
               <DayHeader highlight={date.isEqual(LocalDate.todayInSystemTz())}>
                 <ModalCloseButton
-                  close={navigate(close)}
+                  close={onClose}
                   closeLabel={i18n.common.closeModal}
                   data-qa="day-view-close-button"
                 />
@@ -188,8 +315,8 @@ export default React.memo(function DayView({
                   <DayPicker>
                     <IconButton
                       icon={faChevronLeft}
-                      onClick={navigateToPrevDate}
-                      disabled={!previousDate}
+                      onClick={dateActions?.navigateToPreviousDate}
+                      disabled={!dateActions?.navigateToPreviousDate}
                       aria-label={i18n.calendar.previousDay}
                     />
                     <ModalHeader headingComponent={DayOfWeek}>
@@ -197,8 +324,8 @@ export default React.memo(function DayView({
                     </ModalHeader>
                     <IconButton
                       icon={faChevronRight}
-                      onClick={navigateToNextDate}
-                      disabled={!nextDate}
+                      onClick={dateActions?.navigateToNextDate}
+                      disabled={!dateActions?.navigateToNextDate}
                       aria-label={i18n.calendar.nextDay}
                     />
                   </DayPicker>
@@ -206,239 +333,108 @@ export default React.memo(function DayView({
               </DayHeader>
 
               <Gap size="m" sizeOnMobile="s" />
-
-              {relevantChildren.length === 0 ? (
+              {rows.length === 0 ? (
                 <CalendarModalSection data-qa="no-active-placements-msg">
                   {i18n.calendar.noActivePlacements}
                 </CalendarModalSection>
               ) : (
-                <>
-                  {zip(relevantChildren, childStates).map(
-                    ([childWithReservation, childState], childIndex) => {
-                      if (!childWithReservation || !childState) return null
+                rows.map((row, childIndex) => (
+                  <React.Fragment key={row.childId}>
+                    {childIndex !== 0 ? (
+                      <Gap size="zero" sizeOnMobile="s" />
+                    ) : null}
+                    <CalendarModalSection data-qa={`child-${row.childId}`}>
+                      {childIndex !== 0 ? (
+                        <HorizontalLine dashed slim hiddenOnMobile />
+                      ) : null}
+                      <FixedSpaceRow>
+                        <FixedSpaceColumn>
+                          <RoundChildImage
+                            imageId={row.imageId}
+                            fallbackText={(formatFirstName(row) || '?')[0]}
+                            colorIndex={childIndex}
+                            size={48}
+                          />
+                        </FixedSpaceColumn>
+                        <FixedSpaceColumn
+                          spacing="zero"
+                          justifyContent="center"
+                        >
+                          <H2 noMargin data-qa="child-name">
+                            {`${formatFirstName(row)} ${row.lastName}`}
+                          </H2>
+                          {row.duplicateInfo !== undefined && (
+                            <H3 noMargin> {row.duplicateInfo} </H3>
+                          )}
+                        </FixedSpaceColumn>
+                      </FixedSpaceRow>
 
-                      const {
-                        child,
-                        absence,
-                        reservations,
-                        requiresReservation,
-                        attendances,
-                        shiftCare
-                      } = childWithReservation
+                      <Gap size="s" />
 
-                      const showAttendanceWarning =
-                        !editing &&
-                        reservationsAndAttendancesDiffer(
-                          reservations,
-                          attendances
-                        )
+                      <ColoredH3 noMargin>
+                        {i18n.calendar.reservationsAndRealized}
+                      </ColoredH3>
 
-                      const childEvents = events
-                        .map((event) => ({
-                          ...event,
-                          currentAttending: event.attendingChildren?.[
-                            child.id
-                          ]?.find(({ periods }) =>
-                            periods.some((period) => period.includes(date))
-                          )
-                        }))
-                        .filter(
-                          (
-                            event
-                          ): event is CitizenCalendarEvent & {
-                            currentAttending: AttendingChild
-                          } => !!event.currentAttending
-                        )
+                      <Gap size="s" />
 
-                      return (
-                        <React.Fragment key={child.id}>
-                          {childIndex !== 0 ? (
-                            <Gap size="zero" sizeOnMobile="s" />
-                          ) : null}
-                          <CalendarModalSection data-qa={`child-${child.id}`}>
-                            {childIndex !== 0 ? (
-                              <HorizontalLine dashed slim hiddenOnMobile />
-                            ) : null}
-                            <FixedSpaceRow>
-                              <FixedSpaceColumn>
-                                <RoundChildImage
-                                  imageId={child.imageId}
-                                  fallbackText={
-                                    (formatFirstName(child) || '?')[0]
-                                  }
-                                  colorIndex={childIndex}
-                                  size={48}
-                                />
-                              </FixedSpaceColumn>
+                      <ReservationTable>
+                        <LabelLike>{i18n.calendar.reservation}</LabelLike>
+                        <div>{renderReservation(childIndex)}</div>
+                        <LabelLike>{i18n.calendar.realized}</LabelLike>
+                        <div>{row.attendances}</div>
+                      </ReservationTable>
+                      {row.showAttendanceWarning && (
+                        <AlertBox
+                          message={i18n.calendar.attendanceWarning}
+                          wide
+                        />
+                      )}
+
+                      {row.events.length > 0 && (
+                        <>
+                          <MobileOnly>
+                            <HorizontalLine dashed slim />
+                          </MobileOnly>
+                          <Gap size="m" sizeOnMobile="zero" />
+                          <ColoredH3 noMargin>{i18n.calendar.events}</ColoredH3>
+                          <Gap size="s" />
+                          <FixedSpaceColumn spacing="s">
+                            {row.events.map((event) => (
                               <FixedSpaceColumn
-                                spacing="zero"
-                                justifyContent="center"
+                                spacing="xxs"
+                                key={event.id}
+                                data-qa={`event-${event.id}`}
                               >
-                                <H2 noMargin data-qa="child-name">
-                                  {`${formatFirstName(child)} ${
-                                    child.lastName
-                                  }`}
-                                </H2>
-                                {duplicateChildInfo[child.id] !== undefined && (
-                                  <H3 noMargin>
-                                    {duplicateChildInfo[child.id]}
-                                  </H3>
-                                )}
+                                <LabelLike data-qa="event-title">
+                                  {event.title} /{' '}
+                                  {event.currentAttending.type === 'unit'
+                                    ? event.currentAttending.unitName
+                                    : event.currentAttending.type === 'group'
+                                    ? event.currentAttending.groupName
+                                    : row.firstName}
+                                </LabelLike>
+                                <P noMargin data-qa="event-description">
+                                  {event.description}
+                                </P>
                               </FixedSpaceColumn>
-                            </FixedSpaceRow>
-
-                            <Gap size="s" />
-
-                            <ColoredH3 noMargin>
-                              {i18n.calendar.reservationsAndRealized}
-                            </ColoredH3>
-
-                            <Gap size="s" />
-
-                            <ReservationTable>
-                              <LabelLike>{i18n.calendar.reservation}</LabelLike>
-                              <div>
-                                {editing &&
-                                requiresReservation &&
-                                (!absence || absence.editable) ? (
-                                  <EditReservation
-                                    canAddSecondReservation={
-                                      shiftCare && !reservations[1]
-                                    }
-                                    childState={childState}
-                                  />
-                                ) : absence ? (
-                                  <Absence absence={absence} />
-                                ) : (
-                                  <Reservations
-                                    reservations={reservations}
-                                    requiresReservation={requiresReservation}
-                                  />
-                                )}
-                              </div>
-                              <LabelLike>{i18n.calendar.realized}</LabelLike>
-                              <div>
-                                {attendances.length > 0
-                                  ? attendances.map(
-                                      ({ startTime, endTime }) => {
-                                        const start = startTime.format()
-                                        const end = endTime?.format() ?? ''
-                                        return (
-                                          <div key={`${start}-${end}`}>
-                                            {start} – {end}
-                                          </div>
-                                        )
-                                      }
-                                    )
-                                  : '–'}
-                              </div>
-                            </ReservationTable>
-                            {showAttendanceWarning && (
-                              <AlertBox
-                                message={i18n.calendar.attendanceWarning}
-                                wide
-                              />
-                            )}
-
-                            {childEvents.length > 0 && (
-                              <>
-                                <MobileOnly>
-                                  <HorizontalLine dashed slim />
-                                </MobileOnly>
-                                <Gap size="m" sizeOnMobile="zero" />
-                                <ColoredH3 noMargin>
-                                  {i18n.calendar.events}
-                                </ColoredH3>
-                                <Gap size="s" />
-                                <FixedSpaceColumn spacing="s">
-                                  {childEvents.map((event) => (
-                                    <FixedSpaceColumn
-                                      spacing="xxs"
-                                      key={event.id}
-                                      data-qa={`event-${event.id}`}
-                                    >
-                                      <LabelLike data-qa="event-title">
-                                        {event.title} /{' '}
-                                        {event.currentAttending.type === 'unit'
-                                          ? event.currentAttending.unitName
-                                          : event.currentAttending.type ===
-                                            'group'
-                                          ? event.currentAttending.groupName
-                                          : child.firstName}
-                                      </LabelLike>
-                                      <P noMargin data-qa="event-description">
-                                        {event.description}
-                                      </P>
-                                    </FixedSpaceColumn>
-                                  ))}
-                                </FixedSpaceColumn>
-                              </>
-                            )}
-                          </CalendarModalSection>
-                        </React.Fragment>
-                      )
-                    }
-                  )}
-                </>
+                            ))}
+                          </FixedSpaceColumn>
+                        </>
+                      )}
+                    </CalendarModalSection>
+                  </React.Fragment>
+                ))
               )}
-
-              {confirmationModal ? (
-                <InfoModal
-                  title={i18n.common.saveConfirmation}
-                  close={confirmationModal.close}
-                  resolve={{
-                    action: confirmationModal.resolve,
-                    label: i18n.common.save
-                  }}
-                  reject={{
-                    action: confirmationModal.reject,
-                    label: i18n.common.discard
-                  }}
-                />
-              ) : null}
 
               <Gap size="L" sizeOnMobile="s" />
             </div>
 
-            {relevantChildren.length > 0 && (
+            {leftButton || rightButton ? (
               <ButtonFooter>
-                {reservationsEditable ? (
-                  editing ? (
-                    <Button
-                      disabled={saving}
-                      onClick={stopEditing}
-                      text={i18n.common.cancel}
-                      data-qa="cancel"
-                    />
-                  ) : (
-                    <Button
-                      onClick={startEditing}
-                      text={i18n.common.edit}
-                      data-qa="edit"
-                    />
-                  )
-                ) : (
-                  <EmptyButtonFooterElement />
-                )}
-                {editing ? (
-                  <Button
-                    primary
-                    disabled={saving || !editorState.isValid()}
-                    onClick={save}
-                    text={i18n.common.save}
-                    data-qa="save"
-                  />
-                ) : (
-                  <Button
-                    primary
-                    text={i18n.calendar.newAbsence}
-                    onClick={onCreateAbsence}
-                    disabled={!absencesEditable}
-                    data-qa="create-absence"
-                  />
-                )}
+                {leftButton ?? <EmptyButtonFooterElement />}
+                {rightButton}
               </ButtonFooter>
-            )}
+            ) : null}
           </BottomFooterContainer>
         </CalendarModalBackground>
       </PlainModal>
@@ -446,13 +442,145 @@ export default React.memo(function DayView({
   )
 })
 
+interface ModalData {
+  response: ReservationResponseDay
+  rows: ModalRow[]
+  dateIndex: number
+}
+
+interface ModalRow {
+  childId: string
+  firstName: string
+  lastName: string
+  imageId: string | null
+  duplicateInfo: string | undefined
+  attendances: React.ReactNode
+  showAttendanceWarning: boolean
+  events: ModalRowEvent[]
+}
+
+interface ModalRowEvent extends CitizenCalendarEvent {
+  currentAttending: AttendingChild
+}
+
+function computeModalData(
+  date: LocalDate,
+  reservationsResponse: ReservationsResponse,
+  events: CitizenCalendarEvent[],
+  i18n: Translations
+): ModalData | undefined {
+  const index = reservationsResponse.days.findIndex((reservation) =>
+    date.isEqual(reservation.date)
+  )
+  if (index === -1) {
+    return undefined
+  }
+
+  const response = reservationsResponse.days[index]
+
+  const duplicateChildInfo = getDuplicateChildInfo(
+    reservationsResponse.children,
+    i18n
+  )
+
+  const rows = response.children.flatMap((child) => {
+    const person = reservationsResponse.children.find(
+      (c) => c.id === child.childId
+    )
+    if (person === undefined) {
+      // Should not happen
+      return []
+    }
+    return {
+      childId: child.childId,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      imageId: person.imageId,
+      duplicateInfo: duplicateChildInfo[child.childId],
+      attendances:
+        child.attendances.length > 0
+          ? child.attendances.map(({ startTime, endTime }) => {
+              const start = startTime.format()
+              const end = endTime?.format() ?? ''
+              return (
+                <div key={`${start}-${end}`}>
+                  {start} – {end}
+                </div>
+              )
+            })
+          : '–',
+      showAttendanceWarning: reservationsAndAttendancesDiffer(
+        child.reservations,
+        child.attendances
+      ),
+      events: events.flatMap((event) => {
+        const currentAttending = event.attendingChildren?.[child.childId]?.find(
+          ({ periods }) => periods.some((period) => period.includes(date))
+        )
+        return currentAttending === undefined
+          ? []
+          : [{ ...event, currentAttending }]
+      })
+    }
+  })
+
+  return {
+    response,
+    rows,
+    dateIndex: index
+  }
+}
+
+interface DateActions {
+  navigateToPreviousDate: (() => void) | undefined
+  navigateToNextDate: (() => void) | undefined
+}
+
+function findAdjacentDates(
+  selectDate: (date: LocalDate) => void,
+  reservationsResponse: ReservationsResponse,
+  todayIndex: number | undefined
+): DateActions {
+  if (todayIndex === undefined) {
+    return { navigateToPreviousDate: undefined, navigateToNextDate: undefined }
+  }
+  const previousDate = reservationsResponse.days[todayIndex - 1]?.date
+  const nextDate = reservationsResponse.days[todayIndex + 1]?.date
+  return {
+    navigateToPreviousDate: () => selectDate(previousDate),
+    navigateToNextDate: () => selectDate(nextDate)
+  }
+}
+
+function isEditable(
+  responseDay: ReservationResponseDay,
+  reservableRange: FiniteDateRange
+): { reservationsEditable: boolean; absencesEditable: boolean } {
+  const today = LocalDate.todayInSystemTz()
+
+  const anyChildReservable = responseDay.children.some(
+    (child) => child.requiresReservation
+  )
+  const allChildrenHaveUneditableAbsence = responseDay.children.every(
+    (child) => child.absence && !child.absence.editable
+  )
+  const reservationsEditable =
+    reservableRange.includes(responseDay.date) &&
+    anyChildReservable &&
+    !allChildrenHaveUneditableAbsence
+  const absencesEditable =
+    anyChildReservable && responseDay.date.isEqualOrAfter(today)
+
+  return { reservationsEditable, absencesEditable }
+}
+
 const childForm = object({
   childId: value<UUID>(),
   reservations: array(localTimeRange),
   absent: boolean()
 })
 
-function childFormState({
+function initialChildFormState({
   childId,
   reservations,
   absence
@@ -502,132 +630,20 @@ const editorForm = mapped(
       })
 )
 
-function editorFormState(
-  childrenWithReservations: ReservationResponseDayChild[]
-): StateOf<typeof editorForm> {
-  return childrenWithReservations.map(childFormState)
-}
-
-function useEditState(
-  date: LocalDate,
-  childrenWithReservations: ReservationResponseDayChild[],
-  reservableRange: FiniteDateRange
-) {
-  const t = useTranslation()
-  const today = LocalDate.todayInSystemTz()
-
-  const anyChildReservable =
-    childrenWithReservations !== undefined &&
-    childrenWithReservations.some((child) => child.requiresReservation)
-  const allChildrenHaveUneditableAbsence = childrenWithReservations.every(
-    (child) => child.absence && !child.absence.editable
-  )
-  const reservationsEditable =
-    reservableRange.includes(date) &&
-    anyChildReservable &&
-    !allChildrenHaveUneditableAbsence
-  const absencesEditable = anyChildReservable && date.isEqualOrAfter(today)
-
-  const [editing, { on: startEditing, off: stopEditing }] = useBoolean(false)
-
-  const initialEditorState = useMemo(
-    () => editorFormState(childrenWithReservations),
-    [childrenWithReservations]
-  )
-
-  const editorState = useForm(
-    editorForm,
-    () => initialEditorState,
-    t.validationErrors
-  )
-
-  // TODO: Reset component state properly by unmount+mount
-  const set = editorState.set
-  useEffect(() => set(initialEditorState), [initialEditorState, set])
-
-  const stateIsValid = editorState.isValid()
-
-  const { mutateAsync: postReservations, isLoading: saving } = useMutation(
-    postReservationsMutation
-  )
-
-  const save = useCallback(() => {
-    const request: DailyReservationRequest[] = editorState.value()(date)
-    return postReservations(request).then(() => stopEditing())
-  }, [date, editorState, postReservations, stopEditing])
-
-  const [confirmationModal, setConfirmationModal] = useState<{
-    close: () => void
-    resolve: () => void
-    reject: () => void
-  }>()
-
-  const navigate = useCallback(
-    (callback: () => void) => () => {
-      if (!editing) return callback()
-
-      const stateHasBeenModified = !zip(
-        initialEditorState,
-        editorState.state
-      ).every(
-        ([initial, current]) =>
-          initial &&
-          current &&
-          reservationsEqual(initial.reservations, current.reservations)
-      )
-      if (!stateHasBeenModified) return callback()
-
-      setConfirmationModal({
-        close: () => setConfirmationModal(undefined),
-        resolve: () => {
-          setConfirmationModal(undefined)
-          void save().then(() => callback())
-        },
-        reject: () => {
-          stopEditing()
-          setConfirmationModal(undefined)
-          callback()
-        }
-      })
-    },
-    [editing, editorState.state, initialEditorState, save, stopEditing]
-  )
-
-  return {
-    reservationsEditable,
-    absencesEditable,
-    editing,
-    startEditing,
-    editorState,
-    stateIsValid,
-    saving,
-    save,
-    navigate,
-    confirmationModal,
-    stopEditing
-  }
-}
-
-function reservationsEqual(
-  values1: { startTime: string; endTime: string }[],
-  values2: { startTime: string; endTime: string }[]
-) {
-  return zip(values1, values2).every(([value1, value2]) => {
-    if (!value1 || !value2) return false
-    return value1.startTime === value2.startTime
-  })
+function initialFormState(day: ModalData): StateOf<typeof editorForm> {
+  return day.response.children.map(initialChildFormState)
 }
 
 const EditReservation = React.memo(function EditReservation({
   canAddSecondReservation,
-  childState
+  bind
 }: {
   canAddSecondReservation: boolean
-  childState: BoundForm<typeof childForm>
+  bind: BoundForm<typeof childForm>
 }) {
   const t = useTranslation()
 
-  const reservations = useFormField(childState, 'reservations')
+  const reservations = useFormField(bind, 'reservations')
   const updateReservations = reservations.update
 
   const addSecondReservation = useCallback(() => {
@@ -815,8 +831,7 @@ const ReservationStatus = styled.span`
 const ButtonFooter = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: ${defaultMargins.L};
-  padding-top: 0;
+  padding: 0 ${defaultMargins.L} ${defaultMargins.L} ${defaultMargins.L};
 
   @media (max-width: ${tabletMin}) {
     margin-top: 0;
