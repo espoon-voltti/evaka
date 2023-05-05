@@ -192,6 +192,9 @@ class EspooConfig {
                     GET("/decisions", route(EspooBiPoc.getDecisions))
                     GET("/service-need-options", route(EspooBiPoc.getServiceNeedOptions))
                     GET("/service-needs", route(EspooBiPoc.getServiceNeeds))
+                    GET("/fee-decisions", route(EspooBiPoc.getFeeDecisions))
+                    GET("/fee-decision-children", route(EspooBiPoc.getFeeDecisionChildren))
+                    GET("/voucher-value-decisions", route(EspooBiPoc.getVoucherValueDecisions))
                 }
             }
         } else {

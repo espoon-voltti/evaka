@@ -12,6 +12,8 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
@@ -141,4 +143,39 @@ data class BiServiceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val shiftCare: Boolean,
+)
+
+data class BiFeeDecision(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val decisionNumber: Long?,
+    val status: FeeDecisionStatus,
+    val type: FeeDecisionType,
+    val familySize: Int,
+    val validFrom: LocalDate,
+    val validTo: LocalDate,
+)
+
+data class BiFeeDecisionChild(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val feeDecision: UUID,
+    val placementUnit: UUID,
+    val serviceNeedDescription: String,
+    val finalFee: Int,
+)
+
+data class BiVoucherValueDecision(
+    val id: UUID,
+    val updated: HelsinkiDateTime,
+    val decisionNumber: Long?,
+    val status: FeeDecisionStatus,
+    val type: FeeDecisionType,
+    val familySize: Int,
+    val validFrom: LocalDate,
+    val validTo: LocalDate,
+    val placementUnit: UUID,
+    val serviceNeedFeeDescription: String,
+    val serviceNeedVoucherValueDescription: String,
+    val finalCoPayment: Int,
 )

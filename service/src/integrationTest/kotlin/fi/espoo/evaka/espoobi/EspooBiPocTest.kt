@@ -14,6 +14,23 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
+import fi.espoo.evaka.invoicing.data.upsertValueDecisions
+import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
+import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
+import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
+import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.AbsenceId
@@ -23,12 +40,14 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -55,6 +74,7 @@ import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -139,6 +159,25 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getServiceNeeds() {
         val id = db.transaction { it.insertTestServiceNeed() }
         assertSingleRowContainingId(EspooBiPoc.getServiceNeeds, id)
+    }
+
+    @Test
+    fun getFeeDecisions() {
+        val id = db.transaction { it.insertTestFeeDecision() }
+        assertSingleRowContainingId(EspooBiPoc.getFeeDecisions, id)
+    }
+
+    @Test
+    fun getFeeDecisionChildren() {
+        val feeDecisionId = db.transaction { it.insertTestFeeDecision() }
+        // We intentionally test for *fee decision id*, not the child row id
+        assertSingleRowContainingId(EspooBiPoc.getFeeDecisionChildren, feeDecisionId)
+    }
+
+    @Test
+    fun getVoucherValueDecisions() {
+        val id = db.transaction { it.insertTestVoucherValueDecision() }
+        assertSingleRowContainingId(EspooBiPoc.getVoucherValueDecisions, id)
     }
 
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
@@ -269,4 +308,107 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
             period = FiniteDateRange.ofMonth(2019, Month.JANUARY),
             optionId = insertTestServiceNeedOption(),
         )
+
+    private fun Database.Transaction.insertTestFeeDecision() =
+        FeeDecisionId(UUID.randomUUID()).also { id ->
+            upsertFeeDecisions(
+                listOf(
+                    FeeDecision(
+                        id = id,
+                        children =
+                            listOf(
+                                FeeDecisionChild(
+                                    child =
+                                        ChildWithDateOfBirth(
+                                            id = insertTestChild(),
+                                            dateOfBirth = LocalDate.of(2020, 1, 1),
+                                        ),
+                                    placement =
+                                        FeeDecisionPlacement(
+                                            unitId = insertTestDaycare(),
+                                            type = PlacementType.DAYCARE,
+                                        ),
+                                    serviceNeed =
+                                        FeeDecisionServiceNeed(
+                                            feeCoefficient = BigDecimal.ONE,
+                                            contractDaysPerMonth = null,
+                                            descriptionFi = "",
+                                            descriptionSv = "",
+                                            missing = false,
+                                        ),
+                                    baseFee = 10_000,
+                                    siblingDiscount = 0,
+                                    fee = 10_000,
+                                    finalFee = 10_000,
+                                    feeAlterations = emptyList(),
+                                    childIncome = null,
+                                )
+                            ),
+                        headOfFamilyId = insertTestPerson(DevPerson()),
+                        validDuring = DateRange.ofMonth(2019, Month.JANUARY),
+                        status = FeeDecisionStatus.SENT,
+                        decisionNumber = 999L,
+                        decisionType = FeeDecisionType.NORMAL,
+                        partnerId = null,
+                        headOfFamilyIncome = null,
+                        partnerIncome = null,
+                        familySize = 1,
+                        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(1),
+                        difference = setOf(FeeDecisionDifference.PLACEMENT),
+                    )
+                )
+            )
+        }
+
+    private fun Database.Transaction.insertTestVoucherValueDecision() =
+        VoucherValueDecisionId(UUID.randomUUID()).also { id ->
+            upsertValueDecisions(
+                listOf(
+                    VoucherValueDecision(
+                        id = id,
+                        validFrom = LocalDate.of(2022, 1, 1),
+                        validTo = LocalDate.of(2022, 2, 1),
+                        headOfFamilyId = insertTestPerson(DevPerson()),
+                        status = VoucherValueDecisionStatus.SENT,
+                        decisionNumber = 999L,
+                        decisionType = VoucherValueDecisionType.NORMAL,
+                        partnerId = null,
+                        headOfFamilyIncome = null,
+                        partnerIncome = null,
+                        childIncome = null,
+                        familySize = 1,
+                        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(1),
+                        child =
+                            ChildWithDateOfBirth(
+                                id = insertTestChild(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                            ),
+                        placement =
+                            VoucherValueDecisionPlacement(
+                                unitId = insertTestDaycare(),
+                                type = PlacementType.DAYCARE,
+                            ),
+                        serviceNeed =
+                            VoucherValueDecisionServiceNeed(
+                                feeCoefficient = BigDecimal.ONE,
+                                voucherValueCoefficient = BigDecimal.ONE,
+                                feeDescriptionFi = "",
+                                feeDescriptionSv = "",
+                                voucherValueDescriptionFi = "",
+                                voucherValueDescriptionSv = "",
+                                missing = false,
+                            ),
+                        baseCoPayment = 1,
+                        siblingDiscount = 0,
+                        coPayment = 1,
+                        feeAlterations = listOf(),
+                        finalCoPayment = 1,
+                        baseValue = 1,
+                        assistanceNeedCoefficient = BigDecimal.ONE,
+                        voucherValue = 1,
+                        difference = setOf(VoucherValueDecisionDifference.PLACEMENT)
+                    )
+                )
+            )
+        }
 }

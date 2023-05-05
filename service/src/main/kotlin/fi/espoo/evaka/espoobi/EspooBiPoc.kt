@@ -157,6 +157,46 @@ FROM service_need
 """
             )
         }
+
+    val getFeeDecisions =
+        streamingCsvRoute<BiFeeDecision> {
+            sql(
+                """
+SELECT
+  id, updated, decision_number, status, decision_type AS type, family_size,
+  lower(valid_during) AS valid_from, upper(valid_during) - 1 AS valid_to
+FROM fee_decision
+WHERE status != 'DRAFT'
+"""
+            )
+        }
+
+    val getFeeDecisionChildren =
+        streamingCsvRoute<BiFeeDecisionChild> {
+            sql(
+                """
+SELECT
+  id, updated, fee_decision_id AS fee_decision, placement_unit_id AS placement_unit,
+  service_need_description_fi AS service_need_description, final_fee
+FROM fee_decision_child
+"""
+            )
+        }
+
+    val getVoucherValueDecisions =
+        streamingCsvRoute<BiVoucherValueDecision> {
+            sql(
+                """
+SELECT
+    id, updated, decision_number, status, decision_type AS type, family_size, valid_from, valid_to,
+    placement_unit_id AS placement_unit, service_need_fee_description_fi AS service_need_fee_description,
+    service_need_voucher_value_description_fi AS service_need_voucher_value_description,
+    final_co_payment
+FROM voucher_value_decision
+WHERE status != 'DRAFT'
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =
