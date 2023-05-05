@@ -109,24 +109,25 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   const { data: questionnaire } = useQuery(activeQuestionnaireQuery)
 
-  // const firstReservableDate = useMemo(() => {
-  //   if (data.isSuccess) {
-  //     const allReservableDateRanges = Object.keys(
-  //       data.value.reservableDays
-  //     ).flatMap((childId) => data.value.reservableDays[childId])
-  //
-  //     // First reservable day that has no reservations
-  //     const firstReservableEmptyDate = data.value.dailyData.find(
-  //       (day) =>
-  //         allReservableDateRanges.find((range) => range.includes(day.date)) &&
-  //         day.children.length == 0
-  //     )
-  //     return firstReservableEmptyDate?.date ?? null
-  //   } else {
-  //     return LocalDate.todayInSystemTz()
-  //   }
-  // }, [data])
-  const firstReservableDate = null
+  const firstReservableDate = useMemo(() => {
+    if (data.isSuccess) {
+      // First reservable day that has no reservations
+      const firstReservableEmptyDate = data.value.days.find(
+        (day) =>
+          data.value.reservableRange.includes(day.date) &&
+          day.children.length > 0 &&
+          day.children.some(
+            (child) =>
+              child.requiresReservation &&
+              child.reservations.length === 0 &&
+              !child.absence
+          )
+      )
+      return firstReservableEmptyDate?.date ?? null
+    } else {
+      return null
+    }
+  }, [data])
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
