@@ -62,7 +62,7 @@ export namespace Question {
     label: string
     options: MultiselectOption[]
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.document.Question.CheckboxQuestion
   */
@@ -71,7 +71,7 @@ export namespace Question {
     id: string
     label: string
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.document.Question.TextQuestion
   */
