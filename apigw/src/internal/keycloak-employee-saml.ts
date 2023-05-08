@@ -13,7 +13,7 @@ import { EvakaSessionUser } from '../shared/auth'
 
 const Profile = z.object({
   id: z.string(),
-  email: z.string(),
+  email: z.string().optional(),
   firstName: z.string(),
   lastName: z.string()
 })
