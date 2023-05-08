@@ -1394,16 +1394,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     testChild_1.firstName,
                     testChild_1.lastName,
                     testChild_1.dateOfBirth,
-                    listOf(
-                        DaycareBasics(
-                            id = testDaycare.id,
-                            name = testDaycare.name,
-                            area = testArea.name,
-                            providerType = testDaycare.providerType,
-                            enabledPilotFeatures = testDaycare.enabledPilotFeatures.toList(),
-                            language = testDaycare.language
-                        )
-                    ),
+                    listOf(testDaycare.name),
                     listOf(),
                     FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
                 )

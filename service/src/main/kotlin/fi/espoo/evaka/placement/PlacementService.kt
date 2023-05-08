@@ -606,17 +606,9 @@ SELECT
 FROM backup_care bc
 JOIN person c ON bc.child_id = c.id
 JOIN LATERAL (
-  SELECT coalesce(jsonb_agg(DISTINCT jsonb_build_object(
-    'id', u.id,
-    'name', u.name,
-    'area', ca.name,
-    'providerType', u.provider_type,
-    'enabledPilotFeatures', u.enabled_pilot_features,
-    'language', u.language
-  )), '[]'::jsonb) AS units
+  SELECT coalesce(jsonb_agg(DISTINCT u.name), '[]'::jsonb) AS units
   FROM placement p
   JOIN daycare u ON u.id = p.unit_id
-  JOIN care_area ca ON ca.id = u.care_area_id
   WHERE p.child_id = bc.child_id
     AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
 ) p ON TRUE
@@ -694,7 +686,7 @@ data class MissingGroupPlacement(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
-    @Json val fromUnits: List<DaycareBasics>, // for backup care
+    @Json val fromUnits: List<String>, // for backup care
     @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
     val gap: FiniteDateRange
 )

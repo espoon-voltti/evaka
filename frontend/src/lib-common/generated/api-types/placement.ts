@@ -118,7 +118,7 @@ export interface MissingGroupPlacement {
   childId: UUID
   dateOfBirth: LocalDate
   firstName: string
-  fromUnits: DaycareBasics[]
+  fromUnits: string[]
   gap: FiniteDateRange
   lastName: string
   placementId: UUID

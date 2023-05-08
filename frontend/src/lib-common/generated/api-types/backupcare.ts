@@ -8,7 +8,6 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
-import { DaycareBasics } from './placement'
 import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
 
@@ -92,7 +91,7 @@ export interface NewBackupCare {
 */
 export interface UnitBackupCare {
   child: BackupCareChild
-  fromUnits: DaycareBasics[]
+  fromUnits: string[]
   group: BackupCareGroup | null
   id: UUID
   missingServiceNeedDays: number

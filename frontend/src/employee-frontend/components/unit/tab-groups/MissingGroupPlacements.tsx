@@ -70,7 +70,7 @@ function renderMissingGroupPlacementRow(
         <FixedSpaceColumn spacing="xs" alignItems="flex-start">
           <CareTypeChip type={placementType ?? 'backup-care'} />
           {missingPlacement.fromUnits.map((unit) => (
-            <Light key={unit.id}>{unit.name}</Light>
+            <Light key={unit}>{unit}</Light>
           ))}
         </FixedSpaceColumn>
       </Td>

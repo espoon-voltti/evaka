@@ -620,7 +620,7 @@ export default React.memo(function Group({
                             />
                             {'fromUnits' in placement &&
                               placement.fromUnits.map((unit) => (
-                                <Light key={unit.id}>{unit.name}</Light>
+                                <Light key={unit}>{unit}</Light>
                               ))}
                           </FixedSpaceColumn>
                         </Td>
