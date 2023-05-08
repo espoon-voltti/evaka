@@ -2807,7 +2807,12 @@ export const fi = {
         : 'Lisää merkinnät valituille...'
     },
     notOperationDay: 'Ei toimintapäivä',
-    absence: 'Poissaolo'
+    absence: 'Poissaolo',
+    reservation: 'Varaus',
+    present: 'Läsnä',
+    guardian: 'Huoltaja',
+    notAGuardian: 'Muu kuin huoltaja',
+    dailyServiceTime: 'Sopimusaika'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',

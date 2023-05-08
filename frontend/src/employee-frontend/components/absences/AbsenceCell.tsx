@@ -7,8 +7,10 @@ import styled, { css } from 'styled-components'
 
 import {
   AbsenceCategory,
-  AbsenceWithModifierInfo
+  AbsenceWithModifierInfo,
+  ChildReservation
 } from 'lib-common/generated/api-types/daycare'
+import { HelsinkiDateTimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -196,6 +198,8 @@ interface AbsenceCellProps {
   categories: AbsenceCategory[] | undefined
   absences: AbsenceWithModifierInfo[] | undefined
   backupCare: boolean
+  reservations: ChildReservation[]
+  dailyServiceTimes: HelsinkiDateTimeRange[]
 }
 
 export default React.memo(function AbsenceCell({
@@ -206,7 +210,9 @@ export default React.memo(function AbsenceCell({
   date,
   categories,
   absences = [],
-  backupCare
+  backupCare,
+  reservations,
+  dailyServiceTimes
 }: AbsenceCellProps) {
   const { i18n } = useTranslation()
 
@@ -219,6 +225,32 @@ export default React.memo(function AbsenceCell({
     () => selectedCells.some(({ id: selectedId }) => selectedId === id),
     [id, selectedCells]
   )
+
+  const attendanceDayTooltipText: string | undefined = useMemo(() => {
+    const reservationsText = reservations
+      .map((res) => {
+        const reservationText =
+          res.reservation.type === 'TIMES'
+            ? `${
+                i18n.absences.reservation
+              } ${res.reservation.startTime.format()} - ${res.reservation.endTime.format()}`
+            : i18n.absences.present
+        const userTypeText =
+          res.createdByEvakaUserType === 'CITIZEN'
+            ? i18n.absences.guardian
+            : i18n.absences.notAGuardian
+        return `${reservationText} \n ${userTypeText}`
+      })
+      .join('\n')
+    const dailyServiceTimesText = dailyServiceTimes.map(
+      (dst) =>
+        `${i18n.absences.dailyServiceTime} ${dst.start
+          .toLocalTime()
+          .format()} - ${dst.end.toLocalTime().format()}`
+    )
+    const fullText = [reservationsText, dailyServiceTimesText].join('\n')
+    return fullText.trim().length > 0 ? fullText : undefined
+  }, [i18n, reservations, dailyServiceTimes])
 
   const tooltipText = useMemo(
     () =>
@@ -239,8 +271,8 @@ export default React.memo(function AbsenceCell({
           )
         : isMissingHolidayReservation
         ? i18n.absences.missingHolidayReservation
-        : undefined,
-    [absences, backupCare, i18n, isMissingHolidayReservation]
+        : attendanceDayTooltipText,
+    [absences, backupCare, i18n, isMissingHolidayReservation, attendanceDayTooltipText]
   )
 
   const toggle = useCallback(

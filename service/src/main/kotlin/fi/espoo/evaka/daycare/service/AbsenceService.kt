@@ -77,13 +77,20 @@ fun getAbsencesInGroupByMonth(
     val children =
         placementList.map { (child, placements) ->
             val placementDateRanges = placements.map { it.dateRange }
+            val absenceDates = absenceList[child.id]?.map { it.date }?.toSet() ?: setOf()
+
+            val possibleAttendanceDates =
+                placementDateRanges
+                    .flatMap { it.dates() }
+                    .filterNot { absenceDates.contains(it) }
+                    .filter { setOfOperationalDays.contains(it) }
+
             val supplementedReservations =
                 supplementReservationsWithDailyServiceTimes(
-                    placementDateRanges,
-                    setOfOperationalDays,
+                    possibleAttendanceDates,
                     reservations[child.id],
                     dailyServiceTimes[child.id]?.map { it.times },
-                    absenceList[child.id]
+                    absenceDates
                 )
 
             AbsenceChild(
@@ -110,7 +117,13 @@ fun getAbsencesInGroupByMonth(
                 attendanceTotalHours =
                     attendances[child.id]
                         ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
-                        ?.let { sumOfHours(it, placementDateRanges, range) }
+                        ?.let { sumOfHours(it, placementDateRanges, range) },
+                reservations = reservations[child.id] ?: emptyList(),
+                dailyServiceTimes =
+                    dailyServiceTimesToPerDateTimeRanges(
+                        possibleAttendanceDates,
+                        dailyServiceTimes[child.id]?.map { it.times } ?: emptyList()
+                    )
             )
         }
 
@@ -216,14 +229,11 @@ private fun getMissingHolidayReservations(
 }
 
 private fun supplementReservationsWithDailyServiceTimes(
-    placementDateRanges: List<FiniteDateRange>,
-    unitOperationalDays: Set<LocalDate>,
+    possibleAttendanceDates: List<LocalDate>,
     reservations: List<ChildReservation>?,
     dailyServiceTimesList: List<DailyServiceTimesValue>?,
-    absences: List<AbsenceWithModifierInfo>?
+    absenceDates: Set<LocalDate>
 ): List<HelsinkiDateTimeRange> {
-    val absenceDates = absences?.map { it.date }?.toSet() ?: setOf()
-
     val reservationRanges =
         reservations
             ?.flatMap {
@@ -263,35 +273,8 @@ private fun supplementReservationsWithDailyServiceTimes(
         if (dailyServiceTimesList.isNullOrEmpty()) {
             listOf()
         } else {
-            placementDateRanges
-                .flatMap { it.dates() }
-                .filterNot { reservedDates.contains(it) }
-                .filterNot { absenceDates.contains(it) }
-                .filter { unitOperationalDays.contains(it) }
-                .mapNotNull { date ->
-                    val dailyServiceTimes =
-                        dailyServiceTimesList.find { it.validityPeriod.includes(date) }
-                            ?: return@mapNotNull null
-
-                    val times =
-                        when (dailyServiceTimes) {
-                            is DailyServiceTimesValue.RegularTimes ->
-                                dailyServiceTimes.regularTimes.start to
-                                    dailyServiceTimes.regularTimes.end
-                            is DailyServiceTimesValue.IrregularTimes -> {
-                                val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
-                                if (times != null) times.start to times.end else null
-                            }
-                            is DailyServiceTimesValue.VariableTimes -> null
-                        }
-
-                    times?.let { (start, end) ->
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(date, start),
-                            HelsinkiDateTime.of(if (end < start) date.plusDays(1) else date, end)
-                        )
-                    }
-                }
+            val dates = possibleAttendanceDates.filterNot { reservedDates.contains(it) }
+            dailyServiceTimesToPerDateTimeRanges(dates, dailyServiceTimesList)
         }
 
     return (reservationRanges + dailyServiceTimeRanges)
@@ -306,6 +289,35 @@ private fun supplementReservationsWithDailyServiceTimes(
                 else -> timeRanges + timeRange
             }
         }
+}
+
+private fun dailyServiceTimesToPerDateTimeRanges(
+    dates: List<LocalDate>,
+    dailyServiceTimesList: List<DailyServiceTimesValue>
+): List<HelsinkiDateTimeRange> {
+    return dates.mapNotNull { date ->
+        val dailyServiceTimes =
+            dailyServiceTimesList.find { it.validityPeriod.includes(date) }
+                ?: return@mapNotNull null
+
+        val times =
+            when (dailyServiceTimes) {
+                is DailyServiceTimesValue.RegularTimes ->
+                    dailyServiceTimes.regularTimes.start to dailyServiceTimes.regularTimes.end
+                is DailyServiceTimesValue.IrregularTimes -> {
+                    val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
+                    if (times != null) times.start to times.end else null
+                }
+                is DailyServiceTimesValue.VariableTimes -> null
+            }
+
+        times?.let { (start, end) ->
+            HelsinkiDateTimeRange(
+                HelsinkiDateTime.of(date, start),
+                HelsinkiDateTime.of(if (end < start) date.plusDays(1) else date, end)
+            )
+        }
+    }
 }
 
 private fun sumOfHours(
@@ -360,7 +372,9 @@ data class AbsenceChild(
     val backupCares: Map<LocalDate, Boolean>,
     val missingHolidayReservations: List<LocalDate>,
     val reservationTotalHours: Int?,
-    val attendanceTotalHours: Int?
+    val attendanceTotalHours: Int?,
+    val reservations: List<ChildReservation>,
+    val dailyServiceTimes: List<HelsinkiDateTimeRange>
 )
 
 data class Child(

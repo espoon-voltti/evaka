@@ -277,6 +277,8 @@ describe('Unit group calendar', () => {
         childReservations.missingHolidayReservations(child1Fixture.id).count(),
       5
     )
+
+    //    await page.pause()
   })
 
   test('Missing holiday reservations are not shown if reservation deadline has passed', async () => {
