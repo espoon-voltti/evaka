@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -48,7 +49,7 @@ class OutdatedIncomeNotifications(
         val guardiansForInitialNotification =
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
-                    DateRange(clock.today(), clock.today().plusWeeks(4)),
+                    FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                     IncomeNotificationType.INITIAL_EMAIL
                 )
                 .map { it.guardianId }
@@ -56,7 +57,7 @@ class OutdatedIncomeNotifications(
         val guardiansForReminderNotification =
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
-                    DateRange(clock.today(), clock.today().plusWeeks(2)),
+                    FiniteDateRange(clock.today(), clock.today().plusWeeks(2)),
                     IncomeNotificationType.REMINDER_EMAIL
                 )
                 .filter { !guardiansForInitialNotification.contains(it.guardianId) }
@@ -65,7 +66,7 @@ class OutdatedIncomeNotifications(
         val guardiansForExpirationNotification =
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
-                    DateRange(clock.today(), clock.today()),
+                    FiniteDateRange(clock.today(), clock.today()),
                     IncomeNotificationType.EXPIRED_EMAIL
                 )
                 .filter { !guardiansForInitialNotification.contains(it.guardianId) }

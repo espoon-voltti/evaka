@@ -8,8 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.service.expiringIncomes
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -37,7 +37,7 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
                     )
                     it.expiringIncomes(
                             clock.today(),
-                            DateRange(clock.today(), clock.today().plusWeeks(4)),
+                            FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                             null,
                             user.id
                         )
