@@ -29,8 +29,11 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H3, Label } from 'lib-components/typography'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { H3, Label, Light } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
@@ -604,13 +607,22 @@ export default React.memo(function Group({
                           </FixedSpaceRow>
                         </Td>
                         <Td data-qa="placement-type">
-                          <CareTypeChip
-                            type={
-                              'type' in placement
-                                ? placement.type
-                                : 'backup-care'
-                            }
-                          />
+                          <FixedSpaceColumn
+                            spacing="xs"
+                            alignItems="flex-start"
+                          >
+                            <CareTypeChip
+                              type={
+                                'type' in placement
+                                  ? placement.type
+                                  : 'backup-care'
+                              }
+                            />
+                            {'fromUnits' in placement &&
+                              placement.fromUnits.map((unit) => (
+                                <Light key={unit.id}>{unit.name}</Light>
+                              ))}
+                          </FixedSpaceColumn>
                         </Td>
                         <Td data-qa="placement-subtype">
                           {'type' in placement ? (

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.placement.DaycareBasics
 import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
@@ -33,6 +34,7 @@ data class UnitBackupCare(
     @Nested("child_") val child: BackupCareChild,
     @Nested("group_") val group: BackupCareGroup?,
     val period: FiniteDateRange,
+    @Json val fromUnits: List<DaycareBasics>,
     @Json val serviceNeeds: Set<ServiceNeed>,
     val missingServiceNeedDays: Int
 )

@@ -50,6 +50,7 @@ SELECT
   group_id,
   daycare_group.name AS group_name,
   daterange(backup_care.start_date, backup_care.end_date, '[]') AS period,
+  placement.units AS from_units,
   '[]' AS service_needs,
   days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need AS missingServiceNeedDays
 FROM backup_care
@@ -67,6 +68,21 @@ JOIN person
 ON person.id = child_id
 LEFT JOIN daycare_group
 ON daycare_group.id = group_id
+JOIN LATERAL (
+  SELECT coalesce(jsonb_agg(DISTINCT jsonb_build_object(
+    'id', u.id,
+    'name', u.name,
+    'area', ca.name,
+    'providerType', u.provider_type,
+    'enabledPilotFeatures', u.enabled_pilot_features,
+    'language', u.language
+  )), '[]'::jsonb) AS units
+  FROM placement p
+  JOIN daycare u ON u.id = p.unit_id
+  JOIN care_area ca ON ca.id = u.care_area_id
+  WHERE p.child_id = backup_care.child_id
+    AND daterange(p.start_date, p.end_date, '[]') && daterange(backup_care.start_date, backup_care.end_date, '[]')
+) placement ON TRUE
 WHERE unit_id = :daycareId
 AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
 """

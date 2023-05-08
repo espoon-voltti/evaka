@@ -15,7 +15,11 @@ import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { Light } from 'lib-components/typography'
 import { Translations } from 'lib-customizations/employee'
 import { faArrowRight } from 'lib-icons'
 
@@ -63,7 +67,12 @@ function renderMissingGroupPlacementRow(
         </FixedSpaceRow>
       </Td>
       <Td data-qa="placement-type">
-        <CareTypeChip type={placementType ?? 'backup-care'} />
+        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+          <CareTypeChip type={placementType ?? 'backup-care'} />
+          {missingPlacement.fromUnits.map((unit) => (
+            <Light key={unit.id}>{unit.name}</Light>
+          ))}
+        </FixedSpaceColumn>
       </Td>
       <Td data-qa="placement-subtype">
         {placementType && (
