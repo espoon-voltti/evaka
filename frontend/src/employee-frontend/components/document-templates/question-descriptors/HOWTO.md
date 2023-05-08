@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2017-2023 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
 # Adding a new question type
 
 1. Duplicate some existing QuestionDescriptor file and change the implementation

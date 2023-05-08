@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { string } from 'lib-common/form/fields'
 import { array, object, validated } from 'lib-common/form/form'
 import { BoundForm, useForm } from 'lib-common/form/hooks'
