@@ -456,8 +456,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }
         assertEquals(2, incomes.size)
         assertEquals(IncomeEffect.INCOMPLETE, incomes[0].effect)
-        val firstOfNextMonth = clock.today().plusDays(1).plusMonths(1).withDayOfMonth(1)
-        assertEquals(firstOfNextMonth, incomes[0].validFrom)
+        val firstDayAfterExpiration = clock.today().plusDays(1)
+        assertEquals(firstDayAfterExpiration, incomes[0].validFrom)
 
         val feeFecisions = db.read { it.findFeeDecisionsForHeadOfFamily(guardianId, null, null) }
         assertEquals(1, feeFecisions.size)

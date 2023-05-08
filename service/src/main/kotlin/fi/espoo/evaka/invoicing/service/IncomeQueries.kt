@@ -43,7 +43,6 @@ fun Database.Read.expiringIncomes(
     checkForExistingRecentIncomeNotificationType: IncomeNotificationType? = null,
     guardianId: PersonId? = null
 ): List<GuardianIncomeExpirationDate> {
-
     val existingRecentIncomeNotificationQuery =
         """
     SELECT 1 FROM income_notification 

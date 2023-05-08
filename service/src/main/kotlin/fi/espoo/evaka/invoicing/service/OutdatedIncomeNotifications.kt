@@ -153,12 +153,9 @@ AND email IS NOT NULL
             it.createIncomeNotification(msg.guardianId, msg.type)
 
             val firstDayAfterExpiration = clock.today().plusDays(1)
-            val validFrom =
-                if (firstDayAfterExpiration.dayOfMonth == 1) firstDayAfterExpiration
-                else firstDayAfterExpiration.plusMonths(1).withDayOfMonth(1)
             if (
                 msg.type == IncomeNotificationType.EXPIRED_EMAIL &&
-                    !it.personHasActiveIncomeOnDate(msg.guardianId, validFrom)
+                    !it.personHasActiveIncomeOnDate(msg.guardianId, firstDayAfterExpiration)
             ) {
                 it.upsertIncome(
                     clock = clock,
@@ -169,7 +166,7 @@ AND email IS NOT NULL
                             personId = msg.guardianId,
                             effect = IncomeEffect.INCOMPLETE,
                             updatedBy = AuthenticatedUser.SystemInternalUser.toString(),
-                            validFrom = validFrom,
+                            validFrom = firstDayAfterExpiration,
                             validTo = null,
                             data = emptyMap(),
                             notes = "Created automatically because previous income expired"
@@ -182,7 +179,7 @@ AND email IS NOT NULL
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             msg.guardianId,
-                            DateRange(validFrom, null)
+                            DateRange(firstDayAfterExpiration, null)
                         )
                     ),
                     runAt = clock.now()
