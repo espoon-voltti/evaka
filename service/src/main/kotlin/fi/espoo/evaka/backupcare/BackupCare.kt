@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.backupcare
 
-import fi.espoo.evaka.placement.DaycareBasics
 import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId

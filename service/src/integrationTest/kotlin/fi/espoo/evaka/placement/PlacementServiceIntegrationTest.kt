@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
