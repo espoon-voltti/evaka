@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
@@ -113,17 +114,13 @@ FROM (
     JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> t::date
     JOIN daycare d ON p.unit_id = d.id
     WHERE date_part('isodow', t::date) = ANY(d.operation_days) 
+        AND p.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
         AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
         AND (d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR NOT EXISTS (
             SELECT 1
             FROM holiday h
             WHERE t::date = h.date
         ))
-        AND EXISTS (
-            SELECT 1
-            FROM service_need sn
-            WHERE sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
-        )
         AND NOT EXISTS (
             SELECT 1
             FROM attendance_reservation ar

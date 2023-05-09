@@ -22,6 +22,23 @@ enum class PlacementType : DatabaseEnum {
     TEMPORARY_DAYCARE_PART_DAY,
     SCHOOL_SHIFT_CARE;
 
+    fun requiresAttendanceReservations(): Boolean =
+        when (this) {
+            CLUB -> false
+            DAYCARE -> true
+            DAYCARE_PART_TIME -> true
+            DAYCARE_FIVE_YEAR_OLDS -> true
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> true
+            PRESCHOOL -> false
+            PRESCHOOL_DAYCARE -> true
+            PRESCHOOL_CLUB -> true
+            PREPARATORY -> false
+            PREPARATORY_DAYCARE -> true
+            TEMPORARY_DAYCARE -> true
+            TEMPORARY_DAYCARE_PART_DAY -> true
+            SCHOOL_SHIFT_CARE -> true
+        }
+
     fun isInvoiced(): Boolean =
         when (this) {
             CLUB -> false
@@ -62,5 +79,7 @@ enum class PlacementType : DatabaseEnum {
     companion object {
         val temporary = listOf(TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY)
         val invoiced = values().filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
+        val requiringAttendanceReservations =
+            values().filter { it.requiresAttendanceReservations() }
     }
 }
