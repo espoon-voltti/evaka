@@ -210,47 +210,11 @@ describe('Employee - unit ACL', () => {
     await unitInfoPage.mobileAcl.addMobileDevice('Testilaite')
     await unitInfoPage.mobileAcl.assertDeviceExists('Testilaite')
   })
-
-  test('Temporary employee selector is hidden in supervisor acl', async () => {
-    await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, daycareId)
-    const unitInfoPage = await unitPage.openUnitInformation()
-
-    await unitInfoPage.supervisorAcl.assertTemporaryEmployeeHidden()
-  })
-
-  test('Temporary employee selector is hidden in special education teacher acl', async () => {
-    await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, daycareId)
-    const unitInfoPage = await unitPage.openUnitInformation()
-
-    await unitInfoPage.specialEducationTeacherAcl.assertTemporaryEmployeeHidden()
-  })
-
-  test('Temporary employee selector is hidden in early childhood education secretary acl', async () => {
-    await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, daycareId)
-    const unitInfoPage = await unitPage.openUnitInformation()
-
-    await unitInfoPage.earlyChildhoodEducationSecretary.assertTemporaryEmployeeHidden()
-  })
-
-  test('Temporary employee selector is hidden in staff acl', async () => {
-    await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, daycareId)
-    const unitInfoPage = await unitPage.openUnitInformation()
-
-    await unitInfoPage.staffAcl.assertTemporaryEmployeeHidden()
-  })
 })
 
-describe('Employee - unit ACL - temporary employee enabled', () => {
+describe('Employee - unit ACL - temporary employee', () => {
   beforeEach(async () => {
-    page = await Page.open({
-      employeeCustomizations: {
-        featureFlags: { experimental: { temporaryEmployee: true } }
-      }
-    })
+    page = await Page.open()
   })
 
   test('Temporary employee selector is hidden in supervisor acl', async () => {
