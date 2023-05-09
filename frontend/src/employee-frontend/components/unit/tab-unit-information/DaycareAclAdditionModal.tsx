@@ -33,7 +33,6 @@ import {
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { H1, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 
@@ -159,7 +158,7 @@ export default React.memo(function DaycareAclAdditionModal({
         <Centered>
           <H1 noMargin>{i18n.unit.accessControl.addDaycareAclModal.title}</H1>
         </Centered>
-        {featureFlags.experimental?.temporaryEmployee && role === 'STAFF' && (
+        {role === 'STAFF' && (
           <FormControl>
             <FieldLabel>
               {`${i18n.unit.accessControl.addDaycareAclModal.employees} *`}
