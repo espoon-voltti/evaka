@@ -35,7 +35,8 @@ const features: Features = {
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: true,
       fosterParents: true,
-      serviceWorkerMessaging: true
+      serviceWorkerMessaging: true,
+      temporaryEmployee: true
     }
   },
   staging: {
@@ -59,7 +60,8 @@ const features: Features = {
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: true,
       fosterParents: true,
-      serviceWorkerMessaging: true
+      serviceWorkerMessaging: true,
+      temporaryEmployee: true
     }
   },
   prod: {
@@ -83,7 +85,8 @@ const features: Features = {
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: false,
       fosterParents: true,
-      serviceWorkerMessaging: true
+      serviceWorkerMessaging: true,
+      temporaryEmployee: true
     }
   }
 }
