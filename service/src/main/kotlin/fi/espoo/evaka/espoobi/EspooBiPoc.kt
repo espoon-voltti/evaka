@@ -13,7 +13,7 @@ import org.springframework.web.servlet.function.ServerResponse
 object EspooBiPoc {
     val getAreas =
         streamingCsvRoute<BiArea> { sql("""
-SELECT id, updated, name
+SELECT id, created, updated, name
 FROM care_area
 """) }
 
@@ -22,7 +22,7 @@ FROM care_area
             sql(
                 """
 SELECT
-    daycare.id, updated, care_area_id AS area, daycare.name, provider_type, cost_center,
+    daycare.id, created, updated, care_area_id AS area, daycare.name, provider_type, cost_center,
     'CLUB' = ANY(type) AS club, 'PRESCHOOL' = ANY(type) AS preschool, 'PREPARATORY_EDUCATION' = ANY(type) AS preparatory_education,
     (CASE WHEN 'GROUP_FAMILY' = ANY(type) THEN 'GROUP_FAMILY'
           WHEN 'FAMILY' = ANY(type) THEN 'FAMILY'
@@ -48,7 +48,7 @@ FROM daycare_group
             sql(
                 """
 SELECT
-    id, updated, date_of_birth AS birth_date, language, language_at_home,
+    id, created, updated, date_of_birth AS birth_date, language, language_at_home,
     restricted_details_enabled AS vtj_non_disclosure, postal_code, post_office
 FROM child
 JOIN person USING (id)
@@ -60,12 +60,12 @@ JOIN person USING (id)
         streamingCsvRoute<BiPlacement> {
             sql(
                 """
-SELECT id, updated, child_id AS child, unit_id AS unit, start_date, end_date, FALSE AS is_backup, type
+SELECT id, created, updated, child_id AS child, unit_id AS unit, start_date, end_date, FALSE AS is_backup, type
 FROM placement
 
 UNION ALL
 
-SELECT id, updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
+SELECT id, created, updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
 FROM backup_care
 """
             )
@@ -75,12 +75,12 @@ FROM backup_care
         streamingCsvRoute<BiGroupPlacement> {
             sql(
                 """
-SELECT id, updated, daycare_placement_id AS placement, daycare_group_id AS "group", start_date, end_date
+SELECT id, created, updated, daycare_placement_id AS placement, daycare_group_id AS "group", start_date, end_date
 FROM daycare_group_placement
 
 UNION ALL
 
-SELECT id, updated, id AS placement, group_id AS "group", start_date, end_date
+SELECT id, created, updated, id AS placement, group_id AS "group", start_date, end_date
 FROM backup_care
 WHERE group_id IS NOT NULL
 """
@@ -101,7 +101,7 @@ FROM absence
         streamingCsvRoute<BiGroupCaretakerAllocation> {
             sql(
                 """
-SELECT id, group_id AS "group", updated, amount, start_date, end_date
+SELECT id, created, updated, group_id AS "group", amount, start_date, end_date
 FROM daycare_caretaker
 """
             )
@@ -112,7 +112,7 @@ FROM daycare_caretaker
             sql(
                 """
 SELECT
-    a.id, a.updated, a.type, a.transferapplication, a.origin, a.status, a.additionaldaycareapplication, a.sentdate,
+    a.id, a.created, a.updated, a.type, a.transferapplication, a.origin, a.status, a.additionaldaycareapplication, a.sentdate,
     (
       SELECT array_agg(e::UUID)
       FROM jsonb_array_elements_text(document -> 'apply' -> 'preferredUnits') e
@@ -132,7 +132,7 @@ WHERE status != 'CREATED'
         streamingCsvRoute<BiDecision> {
             sql(
                 """
-SELECT id, updated, application_id AS application, sent_date, status, type, start_date, end_date
+SELECT id, created, updated, application_id AS application, sent_date, status, type, start_date, end_date
 FROM decision
 """
             )
@@ -142,7 +142,7 @@ FROM decision
         streamingCsvRoute<BiServiceNeedOption> {
             sql(
                 """
-SELECT id, updated, name_fi AS name, valid_placement_type
+SELECT id, created, updated, name_fi AS name, valid_placement_type
 FROM service_need_option
 """
             )
@@ -152,7 +152,7 @@ FROM service_need_option
         streamingCsvRoute<BiServiceNeed> {
             sql(
                 """
-SELECT id, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care
+SELECT id, created, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care
 FROM service_need
 """
             )
@@ -163,7 +163,7 @@ FROM service_need
             sql(
                 """
 SELECT
-  id, updated, decision_number, status, decision_type AS type, family_size,
+  id, created, updated, decision_number, status, decision_type AS type, family_size,
   lower(valid_during) AS valid_from, upper(valid_during) - 1 AS valid_to
 FROM fee_decision
 WHERE status != 'DRAFT'
@@ -176,7 +176,7 @@ WHERE status != 'DRAFT'
             sql(
                 """
 SELECT
-  id, updated, fee_decision_id AS fee_decision, placement_unit_id AS placement_unit,
+  id, created, updated, fee_decision_id AS fee_decision, placement_unit_id AS placement_unit,
   service_need_description_fi AS service_need_description, final_fee
 FROM fee_decision_child
 """
@@ -188,7 +188,7 @@ FROM fee_decision_child
             sql(
                 """
 SELECT
-    id, updated, decision_number, status, decision_type AS type, family_size, valid_from, valid_to,
+    id, created, updated, decision_number, status, decision_type AS type, family_size, valid_from, valid_to,
     placement_unit_id AS placement_unit, service_need_fee_description_fi AS service_need_fee_description,
     service_need_voucher_value_description_fi AS service_need_voucher_value_description,
     final_co_payment

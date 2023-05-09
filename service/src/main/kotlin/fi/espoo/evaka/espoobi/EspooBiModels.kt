@@ -22,10 +22,16 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
-data class BiArea(val id: UUID, val updated: HelsinkiDateTime, val name: String)
+data class BiArea(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val name: String
+)
 
 data class BiUnit(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val area: UUID,
     val name: String,
@@ -57,6 +63,7 @@ data class BiGroup(
 
 data class BiChild(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val birthDate: LocalDate,
     val language: String?,
@@ -68,6 +75,7 @@ data class BiChild(
 
 data class BiPlacement(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val child: UUID,
     val unit: UUID,
@@ -79,6 +87,7 @@ data class BiPlacement(
 
 data class BiGroupPlacement(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val placement: UUID,
     val group: UUID,
@@ -96,8 +105,9 @@ data class BiAbsence(
 
 data class BiGroupCaretakerAllocation(
     val id: UUID,
-    val group: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
+    val group: UUID,
     val amount: BigDecimal,
     val startDate: LocalDate,
     val endDate: LocalDate?
@@ -105,6 +115,7 @@ data class BiGroupCaretakerAllocation(
 
 data class BiApplication(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val type: ApplicationType,
     val transferApplication: Boolean,
@@ -121,6 +132,7 @@ data class BiApplication(
 
 data class BiDecision(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val application: UUID,
     val sentDate: LocalDate,
@@ -132,6 +144,7 @@ data class BiDecision(
 
 data class BiServiceNeedOption(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val name: String,
     val validPlacementType: PlacementType,
@@ -139,6 +152,7 @@ data class BiServiceNeedOption(
 
 data class BiServiceNeed(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val option: UUID,
     val placement: UUID,
@@ -149,6 +163,7 @@ data class BiServiceNeed(
 
 data class BiFeeDecision(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val decisionNumber: Long?,
     val status: FeeDecisionStatus,
@@ -160,6 +175,7 @@ data class BiFeeDecision(
 
 data class BiFeeDecisionChild(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val feeDecision: UUID,
     val placementUnit: UUID,
@@ -169,6 +185,7 @@ data class BiFeeDecisionChild(
 
 data class BiVoucherValueDecision(
     val id: UUID,
+    val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val decisionNumber: Long?,
     val status: FeeDecisionStatus,
