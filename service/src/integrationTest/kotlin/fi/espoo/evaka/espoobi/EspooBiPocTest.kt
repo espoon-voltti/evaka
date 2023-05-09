@@ -33,20 +33,15 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
-import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -131,19 +126,45 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getGroupPlacements() {
-        val id = db.transaction { it.insertTestGroupPlacement() }
+        val id =
+            db.transaction {
+                it.insertTestDaycare().let { daycare ->
+                    it.insertTestDaycareGroupPlacement(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = it.insertTestPlacement(daycare),
+                            daycareGroupId = it.insertTestGroup(daycare),
+                        )
+                    )
+                }
+            }
         assertSingleRowContainingId(EspooBiPoc.getGroupPlacements, id)
     }
 
     @Test
     fun getAbsences() {
-        val id = db.transaction { it.insertTestAbsence() }
+        val id =
+            db.transaction {
+                it.insertTestAbsence(
+                    DevAbsence(
+                        childId = it.insertTestChild(),
+                        date = LocalDate.of(2020, 1, 1),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                    )
+                )
+            }
         assertSingleRowContainingId(EspooBiPoc.getAbsences, id)
     }
 
     @Test
     fun getGroupCaretakerAllocations() {
-        val id = db.transaction { it.insertTestGroupCaretakerAllocation() }
+        val id =
+            db.transaction {
+                it.insertTestDaycareCaretaker(
+                    DevDaycareCaretaker(
+                        groupId = it.insertTestGroup(),
+                    )
+                )
+            }
         assertSingleRowContainingId(EspooBiPoc.getGroupCaretakerAllocations, id)
     }
 
@@ -155,7 +176,21 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getDecisions() {
-        val id = db.transaction { it.insertTestDecision() }
+        val id =
+            db.transaction {
+                val daycare = it.insertTestDaycare()
+                it.insertTestDecision(
+                    TestDecision(
+                        applicationId = it.insertTestApplicationWithForm(daycare),
+                        createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                        startDate = LocalDate.of(2019, 3, 1),
+                        endDate = LocalDate.of(2019, 4, 1),
+                        type = DecisionType.DAYCARE,
+                        unitId = daycare,
+                        status = DecisionStatus.ACCEPTED,
+                    )
+                )
+            }
         assertSingleRowContainingId(EspooBiPoc.getDecisions, id)
     }
 
@@ -167,7 +202,15 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getServiceNeeds() {
-        val id = db.transaction { it.insertTestServiceNeed() }
+        val id =
+            db.transaction {
+                it.insertTestServiceNeed(
+                    confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    placementId = it.insertTestPlacement(),
+                    period = FiniteDateRange.ofMonth(2019, Month.JANUARY),
+                    optionId = it.insertTestServiceNeedOption(),
+                )
+            }
         assertSingleRowContainingId(EspooBiPoc.getServiceNeeds, id)
     }
 
@@ -252,30 +295,6 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
         insertTestPlacement(
             DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare())
         )
-    private fun Database.Transaction.insertTestGroupPlacement(): GroupPlacementId =
-        insertTestDaycare().let { daycare ->
-            insertTestDaycareGroupPlacement(
-                DevDaycareGroupPlacement(
-                    daycarePlacementId = insertTestPlacement(daycare),
-                    daycareGroupId = insertTestGroup(daycare),
-                )
-            )
-        }
-    private fun Database.Transaction.insertTestAbsence(): AbsenceId =
-        insertTestAbsence(
-            DevAbsence(
-                childId = insertTestChild(),
-                date = LocalDate.of(2020, 1, 1),
-                absenceCategory = AbsenceCategory.BILLABLE,
-            )
-        )
-
-    private fun Database.Transaction.insertTestGroupCaretakerAllocation(): DaycareCaretakerId =
-        insertTestDaycareCaretaker(
-            DevDaycareCaretaker(
-                groupId = insertTestGroup(),
-            )
-        )
 
     private fun Database.Transaction.insertTestApplicationWithForm(
         daycare: DaycareId? = null
@@ -305,21 +324,6 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
 
-    private fun Database.Transaction.insertTestDecision(): DecisionId {
-        val daycare = insertTestDaycare()
-        return insertTestDecision(
-            TestDecision(
-                applicationId = insertTestApplicationWithForm(daycare),
-                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                startDate = LocalDate.of(2019, 3, 1),
-                endDate = LocalDate.of(2019, 4, 1),
-                type = DecisionType.DAYCARE,
-                unitId = daycare,
-                status = DecisionStatus.ACCEPTED,
-            )
-        )
-    }
-
     private fun Database.Transaction.insertTestServiceNeedOption(): ServiceNeedOptionId =
         ServiceNeedOptionId(UUID.randomUUID()).also {
             insertServiceNeedOption(
@@ -347,14 +351,6 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
-
-    private fun Database.Transaction.insertTestServiceNeed(): ServiceNeedId =
-        insertTestServiceNeed(
-            confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-            placementId = insertTestPlacement(),
-            period = FiniteDateRange.ofMonth(2019, Month.JANUARY),
-            optionId = insertTestServiceNeedOption(),
-        )
 
     private fun Database.Transaction.insertTestFeeDecision() =
         FeeDecisionId(UUID.randomUUID()).also { id ->
