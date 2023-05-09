@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.shared.IncomeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
 import java.time.LocalDate
@@ -39,7 +39,7 @@ data class GuardianIncomeExpirationDate(val guardianId: PersonId, val expiration
 
 fun Database.Read.expiringIncomes(
     today: LocalDate,
-    checkForExpirationRange: DateRange,
+    checkForExpirationRange: FiniteDateRange,
     checkForExistingRecentIncomeNotificationType: IncomeNotificationType? = null,
     guardianId: PersonId? = null
 ): List<GuardianIncomeExpirationDate> {
@@ -61,7 +61,7 @@ WITH latest_income AS (
 ), expiring_income_with_billable_placement_day_after_expiration AS (
     SELECT DISTINCT i.person_id, i.valid_to
     FROM placement pl
-    JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> upper(:checkForExpirationRange)
+    JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :dayAfterExpiration
     JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
     JOIN guardian g ON g.child_id = pl.child_id
     JOIN latest_income i ON i.person_id = g.guardian_id
@@ -72,15 +72,17 @@ SELECT person_id AS guardian_id, valid_to AS expiration_date
 FROM expiring_income_with_billable_placement_day_after_expiration expiring_income 
 WHERE NOT EXISTS (
     SELECT 1 FROM income_statement
-    WHERE person_id = expiring_income.person_id AND created > :today - INTERVAL '1 month'
-        AND (end_date IS NULL OR UPPER(:checkForExpirationRange) <= end_date)
+    WHERE person_id = expiring_income.person_id
+        AND (end_date IS NULL OR :dayAfterExpiration <= end_date)
+        AND handler_id IS NULL
 ) 
 ${if (checkForExistingRecentIncomeNotificationType != null) " AND NOT EXISTS ($existingRecentIncomeNotificationQuery)" else ""}                
 ${if (guardianId != null) " AND person_id = :guardianId" else ""}
     """
                 .trimIndent()
         )
-        .bind("checkForExpirationRange", checkForExpirationRange)
+        .bind("checkForExpirationRange", checkForExpirationRange.asDateRange())
+        .bind("dayAfterExpiration", checkForExpirationRange.end.plusDays(1))
         .bind("notificationType", checkForExistingRecentIncomeNotificationType)
         .bind("today", today)
         .applyIf(checkForExistingRecentIncomeNotificationType != null) {

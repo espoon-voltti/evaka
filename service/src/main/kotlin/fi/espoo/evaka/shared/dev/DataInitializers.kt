@@ -580,14 +580,15 @@ data class DevIncomeStatement(
     val personId: PersonId,
     val startDate: LocalDate,
     val type: IncomeStatementType,
-    val grossEstimatedMonthlyIncome: Int
+    val grossEstimatedMonthlyIncome: Int,
+    val handlerId: EmployeeId? = null
 )
 
 fun Database.Transaction.insertIncomeStatement(incomeStatement: DevIncomeStatement) =
     createUpdate(
             """
-INSERT INTO income_statement (id, person_id, start_date, type, gross_estimated_monthly_income)
-VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome)
+INSERT INTO income_statement (id, person_id, start_date, type, gross_estimated_monthly_income, handler_id)
+VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome, :handlerId)
     """
                 .trimIndent()
         )
