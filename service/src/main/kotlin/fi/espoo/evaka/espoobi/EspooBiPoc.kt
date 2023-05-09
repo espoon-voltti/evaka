@@ -28,9 +28,8 @@ SELECT
           WHEN 'FAMILY' = ANY(type) THEN 'FAMILY'
           WHEN 'CENTRE' = ANY(type) THEN 'DAYCARE'
      END) AS daycare,
-     opening_date, closing_date, language, um.name AS unit_manager_name, round_the_clock
+     opening_date, closing_date, language, unit_manager_name, round_the_clock
 FROM daycare
-LEFT JOIN unit_manager um on daycare.unit_manager_id = um.id
 """
             )
         }

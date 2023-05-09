@@ -125,11 +125,10 @@ SELECT
   coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
   finance_decision_handler.last_name AS finance_decision_handler_last_name,
   finance_decision_handler.created AS finance_decision_handler_created,
-  um.name AS unit_manager_name, um.email AS unit_manager_email, um.phone AS unit_manager_phone,
+  unit_manager_name, unit_manager_email, unit_manager_phone,
   ca.name AS care_area_name, ca.short_name AS care_area_short_name,
   daycare.operation_times
 FROM daycare
-LEFT JOIN unit_manager um ON daycare.unit_manager_id = um.id
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
 WHERE ${predicate(predicate.forTable("daycare"))}
@@ -198,13 +197,8 @@ fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId 
     createUpdate(
             // language=SQL
             """
-WITH insert_manager AS (
-  INSERT INTO unit_manager DEFAULT VALUES
-  RETURNING id
-)
-INSERT INTO daycare (name, care_area_id, unit_manager_id)
-SELECT :name, :areaId, insert_manager.id
-FROM insert_manager
+INSERT INTO daycare (name, care_area_id)
+SELECT :name, :areaId
 """
         )
         .bind("name", name)
@@ -215,14 +209,13 @@ FROM insert_manager
 
 fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
     createUpdate(
-            // language=SQL
             """
-UPDATE unit_manager
+UPDATE daycare
 SET
-  name = :name,
-  email = :email,
-  phone = :phone
-WHERE id = (SELECT unit_manager_id FROM daycare WHERE id = :daycareId)
+  unit_manager_name = :name,
+  unit_manager_email = :email,
+  unit_manager_phone = :phone
+WHERE id = :daycareId
 """
         )
         .bind("daycareId", daycareId)
@@ -381,10 +374,9 @@ fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
     createQuery(
             // language=SQL
             """
-    SELECT coalesce(m.name, '') AS name, coalesce(m.email, '') AS email, coalesce(m.phone, '') AS phone
-    FROM unit_manager m
-    JOIN daycare u ON m.id = u.unit_manager_id
-    WHERE u.id = :unitId
+    SELECT unit_manager_name AS name, unit_manager_phone AS phone, unit_manager_email AS email
+    FROM daycare
+    WHERE id = :unitId
     """
                 .trimIndent()
         )

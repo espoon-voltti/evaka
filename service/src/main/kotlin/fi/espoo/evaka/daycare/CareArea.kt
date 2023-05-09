@@ -78,7 +78,7 @@ data class FinanceDecisionHandler(
     val lastName: String
 )
 
-data class UnitManager(val name: String?, val email: String?, val phone: String?)
+data class UnitManager(val name: String, val email: String, val phone: String)
 
 data class DaycareDecisionCustomization(
     val daycareName: String,

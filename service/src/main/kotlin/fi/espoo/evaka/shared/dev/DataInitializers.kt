@@ -141,17 +141,13 @@ fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): DaycareId =
     insertTestDataRow(
             daycare,
             """
-WITH insert_unit_manager AS (
-  INSERT INTO unit_manager (name) VALUES (:unitManager.name)
-  RETURNING id
-)
 INSERT INTO daycare (
   id, name, opening_date, closing_date, care_area_id, type, daycare_apply_period, preschool_apply_period, club_apply_period, provider_type,
   capacity, language, ghost_unit, upload_to_varda, upload_children_to_varda, upload_to_koski, invoiced_by_municipality, cost_center,
   additional_info, phone, email, url,
   street_address, postal_code, post_office,
   location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
-  unit_manager_id,
+  unit_manager_name, unit_manager_phone, unit_manager_email,
   decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
   oph_unit_oid, oph_organizer_oid, round_the_clock, operation_times, enabled_pilot_features,
   finance_decision_handler, business_id, iban, provider_id
@@ -161,7 +157,7 @@ INSERT INTO daycare (
   :additionalInfo, :phone, :email, :url,
   :visitingAddress.streetAddress, :visitingAddress.postalCode, :visitingAddress.postOffice,
   :location, :mailingAddress.streetAddress, :mailingAddress.poBox, :mailingAddress.postalCode, :mailingAddress.postOffice,
-  (SELECT id FROM insert_unit_manager),
+  :unitManager.name, :unitManager.phone, :unitManager.email,
   :decisionCustomization.daycareName, :decisionCustomization.preschoolName, :decisionCustomization.handler, :decisionCustomization.handlerAddress,
   :ophUnitOid, :ophOrganizerOid, :roundTheClock, :operationTimes, :enabledPilotFeatures::pilot_feature[], :financeDecisionHandler,
   :businessId, :iban, :providerId

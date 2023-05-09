@@ -225,13 +225,12 @@ SELECT
     decision_preschool_name AS preschoolDecisionName,
     decision_handler, 
     decision_handler_address,
-    m.name AS manager,
+    unit_manager_name AS manager,
     street_address, 
     postal_code, 
     post_office,
     u.phone,
     provider_type
 FROM daycare u
-LEFT JOIN unit_manager m ON u.unit_manager_id = m.id
     """
         .trimIndent()

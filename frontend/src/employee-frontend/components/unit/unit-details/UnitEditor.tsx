@@ -373,9 +373,9 @@ function validateForm(
     postOffice: form.mailingAddress.postOffice.trim() || null
   }
   const unitManager = {
-    name: form.unitManager.name.trim() || null,
-    email: form.unitManager.email.trim() || null,
-    phone: form.unitManager.phone.trim() || null
+    name: form.unitManager.name.trim(),
+    email: form.unitManager.email.trim(),
+    phone: form.unitManager.phone.trim()
   }
   const decisionCustomization = {
     daycareName: form.decisionCustomization.daycareName.trim(),

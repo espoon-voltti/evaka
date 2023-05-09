@@ -1646,7 +1646,7 @@ data class DevDaycare(
         VisitingAddress(streetAddress = "Joku katu 9", postalCode = "02100", postOffice = "ESPOO"),
     val location: Coordinate? = null,
     val mailingAddress: MailingAddress = MailingAddress(),
-    val unitManager: UnitManager = UnitManager(name = "Unit Manager", phone = null, email = null),
+    val unitManager: UnitManager = UnitManager(name = "Unit Manager", phone = "", email = ""),
     val decisionCustomization: DaycareDecisionCustomization =
         DaycareDecisionCustomization(
             daycareName = name,

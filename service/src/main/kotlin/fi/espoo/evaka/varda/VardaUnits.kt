@@ -78,8 +78,8 @@ fun getNewOrStaleUnits(
             daycare.mailing_po_box AS mailingStreetAddress,
             daycare.mailing_postal_code AS mailingPostalCode,
             daycare.mailing_post_office AS mailingPostOffice,
-            unit_manager.phone AS phoneNumber,
-            unit_manager.email AS email,
+            daycare.unit_manager_phone AS phoneNumber,
+            daycare.unit_manager_email AS email,
             daycare.capacity AS capacity,
             daycare.provider_type AS unitProviderType,
             daycare.type AS unitType,
@@ -90,7 +90,6 @@ fun getNewOrStaleUnits(
             :sourceSystem AS sourceSystem
         FROM daycare
         LEFT JOIN varda_unit ON varda_unit.evaka_daycare_id = daycare.id
-        LEFT JOIN unit_manager ON daycare.unit_manager_id = unit_manager.id
         WHERE daycare.upload_to_varda IS TRUE
             AND (
                 daycare.updated > varda_unit.uploaded_at OR
