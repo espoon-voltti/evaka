@@ -31,7 +31,7 @@ export default React.memo(function DocumentTemplatesPage() {
         <H1>{t.title}</H1>
         <AddButtonRow
           onClick={() => setTemplateModalOpen(true)}
-          text="Lisää uusi"
+          text={i18n.documentTemplates.templatesPage.add}
         />
         {templateModalOpen && (
           <TemplateModal onClose={() => setTemplateModalOpen(false)} />
@@ -41,10 +41,10 @@ export default React.memo(function DocumentTemplatesPage() {
             <Table>
               <Thead>
                 <Tr>
-                  <Th>Nimi</Th>
-                  <Th>Tyyppi</Th>
-                  <Th>Voimassa</Th>
-                  <Th>Tila</Th>
+                  <Th>{i18n.documentTemplates.templatesPage.name}</Th>
+                  <Th>{i18n.documentTemplates.templatesPage.type}</Th>
+                  <Th>{i18n.documentTemplates.templatesPage.validity}</Th>
+                  <Th>{i18n.documentTemplates.templatesPage.status}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -55,9 +55,13 @@ export default React.memo(function DocumentTemplatesPage() {
                         {template.name}
                       </Link>
                     </Td>
-                    <Td>Ei määritelty</Td>
+                    <Td>Ei määritelty (TODO)</Td>
                     <Td>{template.validity.format()}</Td>
-                    <Td>{template.published ? 'Julkaistu' : 'Luonnos'}</Td>
+                    <Td>
+                      {template.published
+                        ? i18n.documentTemplates.templatesPage.published
+                        : i18n.documentTemplates.templatesPage.draft}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

@@ -11,7 +11,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
-import { templateSectionForm } from '../forms'
+import { templateSectionForm } from '../templates'
 
 interface Props {
   initialState?: StateOf<typeof templateSectionForm>
@@ -42,7 +42,11 @@ export default React.memo(function TemplateSectionModal({
 
   return (
     <AsyncFormModal
-      title={initialState ? 'Muokkaa osiota' : 'Uusi osio'}
+      title={
+        initialState
+          ? i18n.documentTemplates.templateEditor.titleEditSection
+          : i18n.documentTemplates.templateEditor.titleNewSection
+      }
       resolveAction={() => onSave(form.state)}
       onSuccess={onCancel}
       resolveLabel={i18n.common.confirm}
@@ -50,7 +54,7 @@ export default React.memo(function TemplateSectionModal({
       rejectLabel={i18n.common.cancel}
       resolveDisabled={!form.isValid()}
     >
-      <Label>Otsikko</Label>
+      <Label>{i18n.documentTemplates.templateEditor.sectionName}</Label>
       <InputFieldF bind={label} hideErrorsBeforeTouched />
     </AsyncFormModal>
   )

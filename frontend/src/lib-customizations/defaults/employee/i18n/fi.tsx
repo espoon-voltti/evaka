@@ -3707,10 +3707,40 @@ export const fi = {
   },
   documentTemplates: {
     title: 'Lomakepohjat (beta)',
+    templatesPage: {
+      add: 'Luo uusi',
+      name: 'Nimi',
+      type: 'Tyyppi',
+      validity: 'Voimassa',
+      status: 'Tila',
+      published: 'Julkaistu',
+      draft: 'Luonnos'
+    },
+    templateModal: {
+      title: 'Uusi lomakepohja',
+      name: 'Nimi',
+      validity: 'Voimassa ajalla'
+    },
+    templateEditor: {
+      addSection: 'Uusi osio',
+      titleNewSection: 'Uusi osio',
+      titleEditSection: 'Muokkaa osiota',
+      sectionName: 'Otsikko',
+      addQuestion: 'Uusi osio',
+      titleNewQuestion: 'Uusi kysymys',
+      titleEditQuestion: 'Muokkaa kysymystä',
+      moveUp: 'Siirrä ylös',
+      moveDown: 'Siirrä alas',
+      readyToPublish: 'Valmis julkaistavaksi'
+    },
     questionTypes: {
       TEXT: 'Tekstikenttä',
       CHECKBOX: 'Rasti',
       CHECKBOX_GROUP: 'Monivalinta'
+    },
+    templateQuestions: {
+      label: 'Otsikko',
+      options: 'Vaihtoehdot'
     }
   },
   vasuTemplates: {

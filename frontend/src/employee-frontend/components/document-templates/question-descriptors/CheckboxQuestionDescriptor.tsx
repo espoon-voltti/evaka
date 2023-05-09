@@ -5,8 +5,8 @@
 import React from 'react'
 
 import { string } from 'lib-common/form/fields'
-import { object, validated, value } from 'lib-common/form/form'
-import { useFormFields } from 'lib-common/form/hooks'
+import { mapped, object, validated, value } from 'lib-common/form/form'
+import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
 import { Question } from 'lib-common/generated/api-types/document'
@@ -15,67 +15,128 @@ import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 
-import { QuestionDescriptor, QuestionType, BoundViewProps } from './types'
+import { useTranslation } from '../../../state/i18n'
+
+import {
+  AnsweredQuestion,
+  DocumentQuestionDescriptor,
+  QuestionType,
+  TemplateQuestionDescriptor
+} from './types'
 
 const questionType: QuestionType = 'CHECKBOX'
 
 type ApiQuestion = Question.CheckboxQuestion
 
-type AnswerType = boolean
-
-const getAnswerInitialValue = (): AnswerType => false
-
-const form = object({
+const templateForm = object({
   id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty),
-  answer: value<AnswerType>()
+  label: validated(string(), nonEmpty)
 })
 
-const getInitialState = (question?: ApiQuestion): StateOf<typeof form> => ({
+type TemplateForm = typeof templateForm
+
+const getTemplateInitialValues = (
+  question?: ApiQuestion
+): StateOf<TemplateForm> => ({
   id: question?.id ?? crypto.randomUUID(),
-  label: question?.label ?? '',
-  answer: getAnswerInitialValue()
+  label: question?.label ?? ''
 })
 
-const View = React.memo(function View({ bind }: BoundViewProps<typeof form>) {
-  const { label, answer } = useFormFields(bind)
-  return <CheckboxF bind={answer} label={label.state} disabled={false} />
+type Answer = boolean
+
+const getAnswerInitialValue = (): Answer => false
+
+const questionForm = mapped(
+  object({
+    template: templateForm,
+    answer: value<Answer>()
+  }),
+  (output): AnsweredQuestion<Answer> => ({
+    questionId: output.template.id,
+    answer: output.answer
+  })
+)
+
+type QuestionForm = typeof questionForm
+
+const View = React.memo(function View({
+  bind,
+  readOnly
+}: {
+  bind: BoundForm<QuestionForm>
+  readOnly: boolean
+}) {
+  const { template, answer } = useFormFields(bind)
+  const { label } = useFormFields(template)
+  return <CheckboxF bind={answer} label={label.state} disabled={readOnly} />
 })
 
-const ReadOnlyView = React.memo(function ReadOnlyView({
+const Preview = React.memo(function Preview({
   bind
-}: BoundViewProps<typeof form>) {
-  const { label, answer } = useFormFields(bind)
-  return <CheckboxF bind={answer} label={label.state} disabled={true} />
+}: {
+  bind: BoundForm<TemplateForm>
+}) {
+  const { i18n } = useTranslation()
+  const mockBind = useForm(
+    questionForm,
+    () => ({
+      template: bind.state,
+      answer: getAnswerInitialValue()
+    }),
+    i18n.validationErrors
+  )
+
+  return <View bind={mockBind} readOnly={false} />
 })
 
 const TemplateView = React.memo(function TemplateView({
   bind
-}: BoundViewProps<typeof form>) {
+}: {
+  bind: BoundForm<TemplateForm>
+}) {
+  const { i18n } = useTranslation()
   const { label } = useFormFields(bind)
 
   return (
     <FixedSpaceColumn>
-      <Label>Otsikko</Label>
+      <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
       <InputFieldF bind={label} hideErrorsBeforeTouched />
     </FixedSpaceColumn>
   )
 })
 
-const questionDescriptor: QuestionDescriptor<typeof form, ApiQuestion> = {
-  form,
-  getInitialState,
-  View,
-  ReadOnlyView,
-  TemplateView,
-  serialize: ({ answer: _, ...rest }: StateOf<typeof form>): ApiQuestion => ({
-    type: questionType,
-    ...rest
+const templateQuestionDescriptor: TemplateQuestionDescriptor<
+  typeof questionType,
+  typeof templateForm,
+  ApiQuestion
+> = {
+  form: templateForm,
+  getInitialState: (question?: ApiQuestion) => ({
+    branch: questionType,
+    state: getTemplateInitialValues(question)
   }),
-  deserialize: (q: ApiQuestion): StateOf<typeof form> => ({
-    ...q,
-    answer: getAnswerInitialValue()
-  })
+  Component: TemplateView,
+  PreviewComponent: Preview
 }
 
-export default questionDescriptor
+const documentQuestionDescriptor: DocumentQuestionDescriptor<
+  typeof questionType,
+  typeof questionForm,
+  ApiQuestion,
+  Answer
+> = {
+  form: questionForm,
+  getInitialState: (question: ApiQuestion, answer?: Answer) => ({
+    branch: questionType,
+    state: {
+      template: getTemplateInitialValues(question),
+      answer: answer ?? getAnswerInitialValue()
+    }
+  }),
+  Component: View
+}
+
+export default {
+  template: templateQuestionDescriptor,
+  document: documentQuestionDescriptor
+}

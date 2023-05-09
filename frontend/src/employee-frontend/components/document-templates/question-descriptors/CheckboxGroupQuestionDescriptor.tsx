@@ -7,8 +7,13 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { string } from 'lib-common/form/fields'
-import { array, object, validated, value } from 'lib-common/form/form'
-import { BoundForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import { array, mapped, object, validated, value } from 'lib-common/form/form'
+import {
+  BoundForm,
+  useForm,
+  useFormElems,
+  useFormFields
+} from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
 import { Question } from 'lib-common/generated/api-types/document'
@@ -22,45 +27,83 @@ import {
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { QuestionDescriptor, QuestionType, BoundViewProps } from './types'
+import { useTranslation } from '../../../state/i18n'
+
+import {
+  AnsweredQuestion,
+  DocumentQuestionDescriptor,
+  QuestionType,
+  TemplateQuestionDescriptor
+} from './types'
 
 const questionType: QuestionType = 'CHECKBOX_GROUP'
 
 type ApiQuestion = Question.CheckboxGroupQuestion
-
-type AnswerType = string[]
-
-const getAnswerInitialValue = (): AnswerType => []
 
 const optionForm = object({
   id: validated(string(), nonEmpty),
   label: validated(string(), nonEmpty)
 })
 
-const form = object({
+const templateForm = object({
   id: validated(string(), nonEmpty),
   label: validated(string(), nonEmpty),
   options: validated(array(optionForm), (arr) =>
     arr.length > 0 ? undefined : 'required'
-  ),
-  answer: value<AnswerType>()
+  )
 })
 
-const getInitialState = (question?: ApiQuestion): StateOf<typeof form> => ({
+type TemplateForm = typeof templateForm
+
+const getTemplateInitialValues = (
+  question?: ApiQuestion
+): StateOf<TemplateForm> => ({
   id: question?.id ?? crypto.randomUUID(),
   label: question?.label ?? '',
-  options: question?.options ?? [],
-  answer: getAnswerInitialValue()
+  options: question?.options ?? []
 })
+
+type Answer = string[]
+
+const getAnswerInitialValue = (): Answer => []
+
+const questionForm = mapped(
+  object({
+    template: templateForm,
+    answer: value<Answer>()
+  }),
+  (output): AnsweredQuestion<Answer> => ({
+    questionId: output.template.id,
+    answer: output.answer
+  })
+)
+
+type QuestionForm = typeof questionForm
 
 const GroupIndentation = styled.div`
   margin-left: ${defaultMargins.s};
 `
 
-const View = React.memo(function View({ bind }: BoundViewProps<typeof form>) {
-  const { label, options, answer } = useFormFields(bind)
+const View = React.memo(function View({
+  bind,
+  readOnly
+}: {
+  bind: BoundForm<QuestionForm>
+  readOnly: boolean
+}) {
+  const { template, answer } = useFormFields(bind)
+  const { label, options } = useFormFields(template)
   const optionElems = useFormElems(options)
-  return (
+  const selected = answer.state.map(
+    (answer) => optionElems.find((opt) => opt.state.id === answer)?.state?.label
+  )
+
+  return readOnly ? (
+    <FixedSpaceColumn>
+      <Label>{label.state}</Label>
+      <div>{selected.length > 0 ? selected.join(', ') : '-'}</div>
+    </FixedSpaceColumn>
+  ) : (
     <FixedSpaceColumn>
       <Label>{label.state}</Label>
       <GroupIndentation>
@@ -84,21 +127,22 @@ const View = React.memo(function View({ bind }: BoundViewProps<typeof form>) {
   )
 })
 
-const ReadOnlyView = React.memo(function ReadOnlyView({
+const Preview = React.memo(function Preview({
   bind
-}: BoundViewProps<typeof form>) {
-  const { label, options, answer } = useFormFields(bind)
-  const optionElems = useFormElems(options)
-  const selected = answer.state.map(
-    (answer) => optionElems.find((opt) => opt.state.id === answer)?.state?.label
+}: {
+  bind: BoundForm<TemplateForm>
+}) {
+  const { i18n } = useTranslation()
+  const mockBind = useForm(
+    questionForm,
+    () => ({
+      template: bind.state,
+      answer: getAnswerInitialValue()
+    }),
+    i18n.validationErrors
   )
 
-  return (
-    <FixedSpaceColumn>
-      <Label>{label.state}</Label>
-      <div>{selected.length > 0 ? selected.join(', ') : '-'}</div>
-    </FixedSpaceColumn>
-  )
+  return <View bind={mockBind} readOnly={false} />
 })
 
 const OptionView = React.memo(function OptionView({
@@ -108,30 +152,38 @@ const OptionView = React.memo(function OptionView({
   bind: BoundForm<typeof optionForm>
   onDelete: () => void
 }) {
+  const { i18n } = useTranslation()
   const { label } = useFormFields(bind)
 
   return (
     <FixedSpaceRow>
       <InputFieldF bind={label} hideErrorsBeforeTouched />
-      <IconButton icon={faTrash} aria-label="Poista" onClick={onDelete} />
+      <IconButton
+        icon={faTrash}
+        aria-label={i18n.common.remove}
+        onClick={onDelete}
+      />
     </FixedSpaceRow>
   )
 })
 
 const TemplateView = React.memo(function TemplateView({
   bind
-}: BoundViewProps<typeof form>) {
+}: {
+  bind: BoundForm<TemplateForm>
+}) {
+  const { i18n } = useTranslation()
   const { label, options } = useFormFields(bind)
   const optionElems = useFormElems(options)
 
   return (
     <FixedSpaceColumn>
       <FixedSpaceColumn>
-        <Label>Otsikko</Label>
+        <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
         <InputFieldF bind={label} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
       <FixedSpaceColumn>
-        <Label>Vaihtoehdot</Label>
+        <Label>{i18n.documentTemplates.templateQuestions.options}</Label>
         {optionElems.map((opt) => (
           <FixedSpaceRow key={opt.state.id}>
             <OptionView
@@ -146,7 +198,7 @@ const TemplateView = React.memo(function TemplateView({
         ))}
         <IconButton
           icon={faPlus}
-          aria-label="Lisää"
+          aria-label={i18n.common.add}
           onClick={() => {
             options.update((old) => [
               ...old,
@@ -162,20 +214,38 @@ const TemplateView = React.memo(function TemplateView({
   )
 })
 
-const questionDescriptor: QuestionDescriptor<typeof form, ApiQuestion> = {
-  form,
-  getInitialState,
-  View,
-  ReadOnlyView,
-  TemplateView,
-  serialize: ({ answer: _, ...rest }: StateOf<typeof form>): ApiQuestion => ({
-    type: questionType,
-    ...rest
+const templateQuestionDescriptor: TemplateQuestionDescriptor<
+  typeof questionType,
+  typeof templateForm,
+  ApiQuestion
+> = {
+  form: templateForm,
+  getInitialState: (question?: ApiQuestion) => ({
+    branch: questionType,
+    state: getTemplateInitialValues(question)
   }),
-  deserialize: (q: ApiQuestion): StateOf<typeof form> => ({
-    ...q,
-    answer: getAnswerInitialValue()
-  })
+  Component: TemplateView,
+  PreviewComponent: Preview
 }
 
-export default questionDescriptor
+const documentQuestionDescriptor: DocumentQuestionDescriptor<
+  typeof questionType,
+  typeof questionForm,
+  ApiQuestion,
+  Answer
+> = {
+  form: questionForm,
+  getInitialState: (question: ApiQuestion, answer?: Answer) => ({
+    branch: questionType,
+    state: {
+      template: getTemplateInitialValues(question),
+      answer: answer ?? getAnswerInitialValue()
+    }
+  }),
+  Component: View
+}
+
+export default {
+  template: templateQuestionDescriptor,
+  document: documentQuestionDescriptor
+}

@@ -52,7 +52,7 @@ export default React.memo(function TemplateModal({ onClose }: Props) {
 
   return (
     <AsyncFormModal
-      title="Uusi lomakepohja"
+      title={i18n.documentTemplates.templateModal.title}
       resolveAction={() => createDocumentTemplate(form.value())}
       onSuccess={onClose}
       resolveLabel={i18n.common.confirm}
@@ -60,10 +60,10 @@ export default React.memo(function TemplateModal({ onClose }: Props) {
       rejectLabel={i18n.common.cancel}
       resolveDisabled={!form.isValid()}
     >
-      <Label>Nimi</Label>
+      <Label>{i18n.documentTemplates.templateModal.name}</Label>
       <InputFieldF bind={name} hideErrorsBeforeTouched />
       <Gap />
-      <Label>Käytössä ajalla</Label>
+      <Label>{i18n.documentTemplates.templateModal.validity}</Label>
       <DateRangePickerF bind={validity} locale={lang} />
     </AsyncFormModal>
   )

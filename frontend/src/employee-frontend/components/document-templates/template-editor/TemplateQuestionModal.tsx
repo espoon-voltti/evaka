@@ -12,16 +12,16 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 import TextQuestionDescriptor from '../question-descriptors/TextQuestionDescriptor'
+import { questionTypes } from '../question-descriptors/types'
 import {
-  getQuestionInitialStateByType,
-  questionForm,
-  questionTypes,
-  TemplateQuestionConfigView
-} from '../question-descriptors/questions'
+  getTemplateQuestionInitialStateByType,
+  TemplateQuestionConfigView,
+  templateQuestionForm
+} from '../templates'
 
 interface Props {
-  initialState?: StateOf<typeof questionForm>
-  onSave: (state: StateOf<typeof questionForm>) => void
+  initialState?: StateOf<typeof templateQuestionForm>
+  onSave: (state: StateOf<typeof templateQuestionForm>) => void
   onCancel: () => void
 }
 
@@ -34,18 +34,18 @@ export default React.memo(function TemplateQuestionModal({
 
   // form contents are copied so that original is not changed when clicking cancel
   const form = useForm(
-    questionForm,
-    () =>
-      initialState ?? {
-        branch: 'TEXT' as const,
-        state: TextQuestionDescriptor.getInitialState()
-      },
+    templateQuestionForm,
+    () => initialState ?? TextQuestionDescriptor.template.getInitialState(),
     i18n.validationErrors
   )
 
   return (
     <AsyncFormModal
-      title={initialState ? 'Muokkaa kysymystä' : 'Uusi kysymys'}
+      title={
+        initialState
+          ? i18n.documentTemplates.templateEditor.titleEditQuestion
+          : i18n.documentTemplates.templateEditor.titleNewQuestion
+      }
       resolveAction={() => onSave(form.state)}
       onSuccess={onCancel}
       resolveLabel={i18n.common.confirm}
@@ -59,7 +59,7 @@ export default React.memo(function TemplateQuestionModal({
         getItemLabel={(item) => i18n.documentTemplates.questionTypes[item]}
         onChange={(branch) => {
           if (branch !== null) {
-            form.set(getQuestionInitialStateByType(branch))
+            form.set(getTemplateQuestionInitialStateByType(branch))
           }
         }}
       />

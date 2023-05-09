@@ -17,7 +17,8 @@ import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { templateSectionForm } from '../forms'
+import { useTranslation } from '../../../state/i18n'
+import { templateSectionForm } from '../templates'
 
 import TemplateQuestionModal from './TemplateQuestionModal'
 import TemplateQuestionView from './TemplateQuestionView'
@@ -72,6 +73,7 @@ export default React.memo(function TemplateSectionView({
   last,
   readOnly
 }: Props) {
+  const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [creatingQuestion, setCreatingQuestion] = useState(false)
   const { label, questions } = useFormFields(bind)
@@ -85,29 +87,29 @@ export default React.memo(function TemplateSectionView({
           <FixedSpaceRow className="section-actions">
             <IconButton
               icon={faPlus}
-              aria-label="Lisää kysymys"
+              aria-label={i18n.documentTemplates.templateEditor.addQuestion}
               onClick={() => setCreatingQuestion(true)}
             />
             <IconButton
               icon={faPen}
-              aria-label="Muokkaa"
+              aria-label={i18n.common.edit}
               onClick={() => setEditing(true)}
             />
             <IconButton
               icon={faArrowUp}
-              aria-label="Siirrä ylös"
+              aria-label={i18n.documentTemplates.templateEditor.moveUp}
               disabled={first}
               onClick={onMoveUp}
             />
             <IconButton
               icon={faArrowDown}
-              aria-label="Siirrä alas"
+              aria-label={i18n.documentTemplates.templateEditor.moveDown}
               disabled={last}
               onClick={onMoveDown}
             />
             <IconButton
               icon={faTrash}
-              aria-label="Poista"
+              aria-label={i18n.common.remove}
               disabled={questionElems.length > 0}
               onClick={onDelete}
             />

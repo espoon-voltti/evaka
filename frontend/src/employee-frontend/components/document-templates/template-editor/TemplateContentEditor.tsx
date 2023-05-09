@@ -23,14 +23,10 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 import {
-  deserializeDocumentTemplateContentToTemplateContentForm,
-  serializeTemplateContentFormToDocumentTemplateContent,
-  templateContentForm
-} from '../forms'
-import {
   publishDocumentTemplateMutation,
   updateDocumentTemplateContentMutation
 } from '../queries'
+import { getTemplateFormInitialState, templateContentForm } from '../templates'
 
 import TemplateSectionModal from './TemplateSectionModal'
 import TemplateSectionView from './TemplateSectionView'
@@ -61,8 +57,7 @@ export default React.memo(function TemplateContentEditor({
 
   const form = useForm(
     templateContentForm,
-    () =>
-      deserializeDocumentTemplateContentToTemplateContentForm(templateContent),
+    () => getTemplateFormInitialState(templateContent),
     {
       ...i18n.validationErrors
     }
@@ -99,7 +94,7 @@ export default React.memo(function TemplateContentEditor({
 
         {!readOnly && (
           <AddButtonRow
-            text="Uusi osio"
+            text={i18n.documentTemplates.templateEditor.addSection}
             onClick={() => setCreatingSection(true)}
           />
         )}
@@ -126,7 +121,7 @@ export default React.memo(function TemplateContentEditor({
           {!readOnly && (
             <FixedSpaceRow alignItems="center">
               <Checkbox
-                label="Valmis julkaistavaksi"
+                label={i18n.documentTemplates.templateEditor.readyToPublish}
                 checked={readyToPublish}
                 onChange={setReadyToPublish}
               />
@@ -137,10 +132,7 @@ export default React.memo(function TemplateContentEditor({
                 onClick={() =>
                   updateDocumentTemplateContent({
                     id: templateId,
-                    content:
-                      serializeTemplateContentFormToDocumentTemplateContent(
-                        form.state
-                      )
+                    content: form.value()
                   }).then((res) =>
                     readyToPublish ? publishDocumentTemplate(templateId) : res
                   )

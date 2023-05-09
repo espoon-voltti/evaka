@@ -4,21 +4,25 @@
 
 import React from 'react'
 
-import { BoundForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import {
+  BoundForm,
+  useForm,
+  useFormElems,
+  useFormFields
+} from 'lib-common/form/hooks'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../state/i18n'
+
 import {
+  documentForm,
+  DocumentQuestionView,
   documentSectionForm,
-  serializeDocumentAnswers,
-  useTemplateContentAsForm
-} from './forms'
-import {
-  DocumentQuestionReadOnlyView,
-  DocumentQuestionView
-} from './question-descriptors/questions'
+  getDocumentFormInitialState
+} from './documents'
 
 interface Props {
   templateContent: DocumentTemplateContent
@@ -29,7 +33,12 @@ export default React.memo(function DocumentView({
   templateContent,
   readOnly
 }: Props) {
-  const bind = useTemplateContentAsForm(templateContent)
+  const { i18n } = useTranslation()
+  const bind = useForm(
+    documentForm,
+    () => getDocumentFormInitialState(templateContent),
+    i18n.validationErrors
+  )
   const sectionElems = useFormElems(bind)
 
   return (
@@ -48,7 +57,7 @@ export default React.memo(function DocumentView({
       <Gap size="XL" />
       <Label>JSON that would be sent to backend</Label>
       <div style={{ fontFamily: 'monospace' }}>
-        {JSON.stringify(serializeDocumentAnswers(bind))}
+        {JSON.stringify(bind.value())}
       </div>
     </div>
   )
@@ -68,19 +77,13 @@ const DocumentSectionView = React.memo(function DocumentSectionView({
     <div>
       <H2>{label.state}</H2>
       <FixedSpaceColumn>
-        {questionElems.map((question) =>
-          readOnly ? (
-            <DocumentQuestionReadOnlyView
-              bind={question}
-              key={question.state.state.id}
-            />
-          ) : (
-            <DocumentQuestionView
-              bind={question}
-              key={question.state.state.id}
-            />
-          )
-        )}
+        {questionElems.map((question) => (
+          <DocumentQuestionView
+            bind={question}
+            key={question.state.state.template.id}
+            readOnly={readOnly}
+          />
+        ))}
       </FixedSpaceColumn>
     </div>
   )

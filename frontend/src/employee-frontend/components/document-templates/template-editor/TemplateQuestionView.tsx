@@ -11,10 +11,8 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 
-import {
-  DocumentQuestionView,
-  questionForm
-} from '../question-descriptors/questions'
+import { useTranslation } from '../../../state/i18n'
+import { templateQuestionForm, TemplateQuestionPreview } from '../templates'
 
 import TemplateQuestionModal from './TemplateQuestionModal'
 
@@ -38,7 +36,7 @@ const Wrapper = styled.div<{ $readOnly: boolean }>`
 `
 
 interface Props {
-  bind: BoundForm<typeof questionForm>
+  bind: BoundForm<typeof templateQuestionForm>
   onMoveUp: () => void
   onMoveDown: () => void
   onDelete: () => void
@@ -56,33 +54,38 @@ export default React.memo(function TemplateQuestionView({
   last,
   readOnly
 }: Props) {
+  const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
 
   return (
     <Wrapper $readOnly={readOnly}>
       <FixedSpaceRow justifyContent="space-between" alignItems="start">
-        <DocumentQuestionView bind={bind} />
+        <TemplateQuestionPreview bind={bind} />
 
         {!readOnly && (
           <FixedSpaceRow className="question-actions">
             <IconButton
               icon={faPen}
-              aria-label="Muokkaa"
+              aria-label={i18n.common.edit}
               onClick={() => setEditing(true)}
             />
             <IconButton
               icon={faArrowUp}
-              aria-label="Siirrä ylös"
+              aria-label={i18n.documentTemplates.templateEditor.moveUp}
               disabled={first}
               onClick={onMoveUp}
             />
             <IconButton
               icon={faArrowDown}
-              aria-label="Siirrä alas"
+              aria-label={i18n.documentTemplates.templateEditor.moveDown}
               disabled={last}
               onClick={onMoveDown}
             />
-            <IconButton icon={faTrash} aria-label="Poista" onClick={onDelete} />
+            <IconButton
+              icon={faTrash}
+              aria-label={i18n.common.remove}
+              onClick={onDelete}
+            />
           </FixedSpaceRow>
         )}
         {editing && (
