@@ -195,6 +195,9 @@ class EspooConfig {
                     GET("/fee-decisions", route(EspooBiPoc.getFeeDecisions))
                     GET("/fee-decision-children", route(EspooBiPoc.getFeeDecisionChildren))
                     GET("/voucher-value-decisions", route(EspooBiPoc.getVoucherValueDecisions))
+                    GET("/curriculum-templates", route(EspooBiPoc.getCurriculumTemplates))
+                    GET("/curriculum-documents", route(EspooBiPoc.getCurriculumDocuments))
+                    GET("/pedagogical-documents", route(EspooBiPoc.getPedagogicalDocuments))
                 }
             }
         } else {

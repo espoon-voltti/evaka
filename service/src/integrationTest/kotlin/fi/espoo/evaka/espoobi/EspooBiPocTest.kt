@@ -44,6 +44,7 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -57,9 +58,11 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.insertPedagogicalDocument
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -76,6 +79,13 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.vasu.CurriculumType
+import fi.espoo.evaka.vasu.VasuLanguage
+import fi.espoo.evaka.vasu.getDefaultVasuContent
+import fi.espoo.evaka.vasu.getVasuTemplate
+import fi.espoo.evaka.vasu.insertVasuDocument
+import fi.espoo.evaka.vasu.insertVasuTemplate
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.Month
@@ -178,6 +188,43 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getVoucherValueDecisions() {
         val id = db.transaction { it.insertTestVoucherValueDecision() }
         assertSingleRowContainingId(EspooBiPoc.getVoucherValueDecisions, id)
+    }
+
+    @Test
+    fun getCurriculumTemplates() {
+        val id = db.transaction { it.insertTestCurriculumTemplate() }
+        assertSingleRowContainingId(EspooBiPoc.getCurriculumTemplates, id)
+    }
+
+    @Test
+    fun getCurriculumDocuments() {
+        val id =
+            db.transaction {
+                it.insertTestCurriculumTemplate().let { templateId ->
+                    val template = it.getVasuTemplate(templateId)!!
+                    it.insertVasuDocument(
+                        MockEvakaClock(2022, 1, 1, 12, 0),
+                        childId = it.insertTestChild(),
+                        template = template
+                    )
+                }
+            }
+        assertSingleRowContainingId(EspooBiPoc.getCurriculumDocuments, id)
+    }
+
+    @Test
+    fun getPedagogicalDocuments() {
+        val id =
+            db.transaction {
+                it.insertPedagogicalDocument(
+                    DevPedagogicalDocument(
+                        id = PedagogicalDocumentId(UUID.randomUUID()),
+                        childId = it.insertTestChild(),
+                        description = "Test"
+                    )
+                )
+            }
+        assertSingleRowContainingId(EspooBiPoc.getPedagogicalDocuments, id)
     }
 
     private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
@@ -411,4 +458,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
+
+    private fun Database.Transaction.insertTestCurriculumTemplate() =
+        insertVasuTemplate(
+            "Template",
+            valid = FiniteDateRange.ofMonth(2022, Month.JANUARY),
+            type = CurriculumType.DAYCARE,
+            language = VasuLanguage.FI,
+            content = getDefaultVasuContent(VasuLanguage.FI)
+        )
 }

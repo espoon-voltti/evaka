@@ -197,6 +197,39 @@ WHERE status != 'DRAFT'
 """
             )
         }
+
+    val getCurriculumTemplates =
+        streamingCsvRoute<BiCurriculumTemplate> {
+            sql(
+                """
+SELECT
+    id, created, updated, lower(valid) AS valid_from, upper(valid) - 1 AS valid_to, type, language, name
+FROM curriculum_template
+"""
+            )
+        }
+
+    val getCurriculumDocuments =
+        streamingCsvRoute<BiCurriculumDocument> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, template_id AS template
+FROM curriculum_document
+"""
+            )
+        }
+
+    val getPedagogicalDocuments =
+        streamingCsvRoute<BiPedagogicalDocument> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child
+FROM pedagogical_document
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =

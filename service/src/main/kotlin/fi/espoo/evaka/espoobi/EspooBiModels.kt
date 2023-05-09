@@ -16,6 +16,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.vasu.CurriculumType
+import fi.espoo.evaka.vasu.VasuLanguage
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -178,4 +180,30 @@ data class BiVoucherValueDecision(
     val serviceNeedFeeDescription: String,
     val serviceNeedVoucherValueDescription: String,
     val finalCoPayment: Int,
+)
+
+data class BiCurriculumTemplate(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val validFrom: LocalDate,
+    val validTo: LocalDate,
+    val type: CurriculumType,
+    val language: VasuLanguage,
+    val name: String,
+)
+
+data class BiCurriculumDocument(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val template: UUID,
+)
+
+data class BiPedagogicalDocument(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
 )
