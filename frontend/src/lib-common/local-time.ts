@@ -5,6 +5,7 @@
 import { format, parse } from 'date-fns'
 import isInteger from 'lodash/isInteger'
 
+import { isValidTime } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
 import { Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
@@ -124,7 +125,16 @@ export default class LocalTime implements Ordered<LocalTime> {
     throw new RangeError(`Invalid time ${text}`)
   }
 
-  static tryParse(text: string, pattern = 'HH:mm'): LocalTime | undefined {
+  static tryParse(textHHmm: string): LocalTime | undefined {
+    return isValidTime(textHHmm)
+      ? this.tryParseWithPattern(textHHmm, 'HH:mm')
+      : undefined
+  }
+
+  static tryParseWithPattern(
+    text: string,
+    pattern = 'HH:mm'
+  ): LocalTime | undefined {
     const timestamp = parse(text, pattern, new Date(1970, 0, 1))
     return LocalTime.tryCreate(
       timestamp.getHours(),
@@ -134,7 +144,7 @@ export default class LocalTime implements Ordered<LocalTime> {
     )
   }
   static parse(text: string, pattern = 'HH:mm'): LocalTime {
-    const result = LocalTime.tryParse(text, pattern)
+    const result = LocalTime.tryParseWithPattern(text, pattern)
     if (!result) {
       throw new RangeError(`Invalid time ${text}`)
     }

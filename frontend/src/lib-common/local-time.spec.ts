@@ -31,8 +31,9 @@ describe('LocalTime', () => {
     expect(LocalTime.parse('1:2', 'HH:mm').isEqual(expected)).toBeTruthy()
   })
   it('fails to parse invalid HH:mm input', () => {
-    expect(LocalTime.tryParse('01:62', 'HH:mm')).toBeUndefined()
-    expect(LocalTime.tryParse('01:00:999', 'HH:mm')).toBeUndefined()
+    expect(LocalTime.tryParse('01:62')).toBeUndefined()
+    expect(LocalTime.tryParse('01:00:999')).toBeUndefined()
+    expect(LocalTime.tryParse('9:15')).toBeUndefined()
   })
   it('has property getters for each part of the time', () => {
     const parts = [1, 2, 3, 123456789] as const

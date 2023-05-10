@@ -209,14 +209,14 @@ describe('validateEditState', () => {
         id: null,
         type: 'PRESENT',
         groupId: 'group1',
-        arrived: '7:00',
+        arrived: '07:00',
         departed: ''
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group2',
-        arrived: '8:00',
+        arrived: '08:00',
         departed: ''
       }
     ])
@@ -256,7 +256,7 @@ describe('validateEditState', () => {
         id: 'id1',
         type: 'PRESENT',
         groupId: 'group1',
-        arrived: '8:00',
+        arrived: '08:00',
         departed: '07:00'
       },
       {
@@ -308,14 +308,14 @@ describe('validateEditState', () => {
         id: 'id1',
         type: 'PRESENT',
         groupId: null,
-        arrived: '8:00',
-        departed: '9:00'
+        arrived: '08:00',
+        departed: '09:00'
       },
       {
         id: 'id2',
         type: 'OVERTIME',
         groupId: null,
-        arrived: '9:00',
+        arrived: '09:00',
         departed: '10:00'
       },
       {
