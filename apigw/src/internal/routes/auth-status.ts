@@ -122,7 +122,11 @@ export default toRequestHandler(async (req, res) => {
       !eq(sessionUser.allScopedRoles, allScopedRoles)
     ) {
       await fromCallback((cb) =>
-        req.logIn({ ...sessionUser, globalRoles, allScopedRoles }, cb)
+        req.logIn(
+          { ...sessionUser, globalRoles, allScopedRoles },
+          { session: true, keepSessionInfo: true },
+          cb
+        )
       )
     }
     await saveSession(req)
