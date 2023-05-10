@@ -16,6 +16,7 @@ export interface DocumentTemplate {
   id: UUID
   name: string
   published: boolean
+  type: DocumentType
   validity: DateRange
 }
 
@@ -31,6 +32,7 @@ export interface DocumentTemplateContent {
 */
 export interface DocumentTemplateCreateRequest {
   name: string
+  type: DocumentType
   validity: DateRange
 }
 
@@ -41,8 +43,16 @@ export interface DocumentTemplateSummary {
   id: UUID
   name: string
   published: boolean
+  type: DocumentType
   validity: DateRange
 }
+
+/**
+* Generated from fi.espoo.evaka.document.DocumentType
+*/
+export type DocumentType =
+  | 'PEDAGOGICAL_REPORT'
+  | 'PEDAGOGICAL_ASSESSMENT'
 
 /**
 * Generated from fi.espoo.evaka.document.MultiselectOption

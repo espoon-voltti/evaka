@@ -3707,6 +3707,10 @@ export const fi = {
   },
   documentTemplates: {
     title: 'Lomakepohjat (beta)',
+    documentTypes: {
+      PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
+      PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio'
+    },
     templatesPage: {
       add: 'Luo uusi',
       name: 'Nimi',
@@ -3719,6 +3723,7 @@ export const fi = {
     templateModal: {
       title: 'Uusi lomakepohja',
       name: 'Nimi',
+      type: 'Tyyppi',
       validity: 'Voimassa ajalla'
     },
     templateEditor: {

@@ -34,19 +34,30 @@ data class Section(val id: String, val label: String, val questions: List<Questi
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 
+enum class DocumentType {
+    PEDAGOGICAL_REPORT,
+    PEDAGOGICAL_ASSESSMENT
+}
+
 data class DocumentTemplate(
     val id: DocumentTemplateId,
     val name: String,
+    val type: DocumentType,
     val validity: DateRange,
     val published: Boolean,
     @Json val content: DocumentTemplateContent
 )
 
-data class DocumentTemplateCreateRequest(val name: String, val validity: DateRange)
+data class DocumentTemplateCreateRequest(
+    val name: String,
+    val type: DocumentType,
+    val validity: DateRange
+)
 
 data class DocumentTemplateSummary(
     val id: DocumentTemplateId,
     val name: String,
+    val type: DocumentType,
     val validity: DateRange,
     val published: Boolean
 )

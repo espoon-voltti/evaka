@@ -55,7 +55,9 @@ export default React.memo(function DocumentTemplatesPage() {
                         {template.name}
                       </Link>
                     </Td>
-                    <Td>Ei määritelty (TODO)</Td>
+                    <Td>
+                      {i18n.documentTemplates.documentTypes[template.type]}
+                    </Td>
                     <Td>{template.validity.format()}</Td>
                     <Td>
                       {template.published

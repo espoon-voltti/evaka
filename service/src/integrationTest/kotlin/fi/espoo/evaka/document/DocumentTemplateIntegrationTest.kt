@@ -48,6 +48,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     val testCreationRequest =
         DocumentTemplateCreateRequest(
             name = "test",
+            type = DocumentType.PEDAGOGICAL_ASSESSMENT,
             validity = DateRange(LocalDate.of(2022, 7, 1), null)
         )
 
@@ -76,6 +77,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DocumentTemplateSummary(
                     id = created.id,
                     name = created.name,
+                    type = DocumentType.PEDAGOGICAL_ASSESSMENT,
                     validity = created.validity,
                     published = false
                 )
@@ -164,11 +166,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 created.id,
-                DocumentTemplateCreateRequest(name = "another", validity = newValidity)
+                DocumentTemplateCreateRequest(
+                    name = "another",
+                    type = DocumentType.PEDAGOGICAL_REPORT,
+                    validity = newValidity
+                )
             )
 
         assertNotEquals(created.id, copy.id)
         assertEquals("another", copy.name)
+        assertEquals(DocumentType.PEDAGOGICAL_REPORT, copy.type)
         assertEquals(newValidity, copy.validity)
         assertEquals(false, copy.published)
         assertEquals(testContent, copy.content)

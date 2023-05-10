@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { localOpenEndedDateRange, string } from 'lib-common/form/fields'
-import { object, required, validated } from 'lib-common/form/form'
+import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonEmpty } from 'lib-common/form/validators'
+import { DocumentType } from 'lib-common/generated/api-types/document'
 import { useMutationResult } from 'lib-common/query'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -20,6 +22,7 @@ import { createDocumentTemplateMutation } from '../queries'
 
 const documentTemplateForm = object({
   name: validated(string(), nonEmpty),
+  type: required(oneOf<DocumentType>()),
   validity: required(localOpenEndedDateRange)
 })
 
@@ -34,10 +37,26 @@ export default React.memo(function TemplateModal({ onClose }: Props) {
     createDocumentTemplateMutation
   )
 
+  const options = useMemo(
+    () =>
+      ['PEDAGOGICAL_REPORT' as const, 'PEDAGOGICAL_ASSESSMENT' as const].map(
+        (option) => ({
+          domValue: option,
+          value: option,
+          label: i18n.documentTemplates.documentTypes[option]
+        })
+      ),
+    [i18n.documentTemplates]
+  )
+
   const form = useForm(
     documentTemplateForm,
     () => ({
       name: '',
+      type: {
+        domValue: 'PEDAGOGICAL_ASSESSMENT',
+        options
+      },
       validity: {
         startDate: null,
         endDate: null
@@ -48,7 +67,7 @@ export default React.memo(function TemplateModal({ onClose }: Props) {
     }
   )
 
-  const { name, validity } = useFormFields(form)
+  const { name, type, validity } = useFormFields(form)
 
   return (
     <AsyncFormModal
@@ -62,6 +81,9 @@ export default React.memo(function TemplateModal({ onClose }: Props) {
     >
       <Label>{i18n.documentTemplates.templateModal.name}</Label>
       <InputFieldF bind={name} hideErrorsBeforeTouched />
+      <Gap />
+      <Label>{i18n.documentTemplates.templateModal.type}</Label>
+      <SelectF bind={type} />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.validity}</Label>
       <DateRangePickerF bind={validity} locale={lang} />
