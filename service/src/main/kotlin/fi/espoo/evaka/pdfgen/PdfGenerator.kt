@@ -220,6 +220,8 @@ class PdfGenerator(
         val hasChildIncome =
             decision.children.any { it.childIncome != null && it.childIncome.total > 0 }
 
+        val distinctPlacementTypes = decision.children.map { it.placementType }.distinct()
+
         return mapOf(
                 "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
                 "decisionNumber" to decision.decisionNumber,
@@ -236,6 +238,7 @@ class PdfGenerator(
                 "partnerIncomeEffect" to
                     (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
                 "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
+                "distinctPlacementTypes" to distinctPlacementTypes,
                 "parts" to
                     decision.children.map {
                         FeeDecisionPdfPart(
