@@ -6,6 +6,7 @@ package fi.espoo.evaka.application.utils
 
 /**
  * Helper to force when to exhaust options. E.g.
+ *
  * ```
  * when(sealed) {
  *  is Sealed.Class -> doSomething()

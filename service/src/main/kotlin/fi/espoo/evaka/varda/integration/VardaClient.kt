@@ -464,7 +464,7 @@ class VardaClient(
      * API token refreshes are only attempted once and don't count as a try of the original request.
      *
      * TODO: Make API token usage thread-safe. Now nothing prevents another thread from invalidating
-     * the token about to be used by another thread.
+     *   the token about to be used by another thread.
      */
     private fun Request.authenticatedResponseStringWithRetries(
         maxTries: Int = 3

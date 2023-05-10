@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.db
 /**
  * Marker interface for enums that have a corresponding enum type in PostgreSQL. The enum class
  * should implement this interface, and provide *one* sqlType for the entire class. Example:
- *
  * ```
  * enum class MyEnum {
  *   A, B;

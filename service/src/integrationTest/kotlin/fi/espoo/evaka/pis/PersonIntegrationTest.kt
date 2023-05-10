@@ -74,15 +74,13 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
      * NOTE: If this test fails you have likely added a new table referencing person/child.
      *
      * Ask yourself what should happen if person is merged to another person and fix accordingly.
-     *
      * 1) if data should be transferred to the other person
      * - fix this test to include the new reference
      * - add new translation to duplicate people report on employee-frontend
-     *
      * 2) if data does not need to be transferred but can be deleted
      * - edit the query in getTransferablePersonReferences to exclude this table
      * - edit deleteEmptyPerson in MergeService so that the row is deleted before trying to delete
-     * person
+     *   person
      */
     @Test
     fun `getTransferablePersonReferences returns references to person and child tables`() {

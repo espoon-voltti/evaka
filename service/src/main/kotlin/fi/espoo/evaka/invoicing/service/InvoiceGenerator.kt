@@ -526,8 +526,8 @@ fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
     val sql =
-    // language=sql
-    """
+        // language=sql
+        """
 WITH invoiced_placement AS (
     SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
 )

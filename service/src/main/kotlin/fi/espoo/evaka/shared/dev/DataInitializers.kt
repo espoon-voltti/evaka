@@ -113,7 +113,6 @@ fun Database.Transaction.ensureDevData() {
 
 /**
  * Insert one row of data to the database.
- *
  * * all fields from `row` are bound separately as parameters
  * * SQL must return "id" column of type UUID
  */
