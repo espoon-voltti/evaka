@@ -7,7 +7,7 @@ import passportSaml, {
   Strategy as SamlStrategy
 } from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client'
-import { samlLogoutFunction, toSamlLoginFunction } from '../shared/saml'
+import { createSamlStrategy } from '../shared/saml'
 import { z } from 'zod'
 import { EvakaSessionUser } from '../shared/auth'
 
@@ -21,11 +21,7 @@ const Profile = z.object({
 export function createKeycloakEmployeeSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
-  return new SamlStrategy(
-    config,
-    toSamlLoginFunction(Profile, verifyKeycloakProfile),
-    samlLogoutFunction()
-  )
+  return createSamlStrategy(config, Profile, verifyKeycloakProfile)
 }
 
 async function verifyKeycloakProfile(

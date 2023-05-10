@@ -17,6 +17,7 @@ import { readFileSync } from 'fs'
 import certificates, { TrustedCertificates } from '../certificates'
 import express, { Request } from 'express'
 import path from 'path'
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -57,16 +58,16 @@ export function createSamlConfig(
   }
 }
 
-export function toSamlLoginFunction(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: z.ZodObject<any>,
-  verify: (profile: Profile) => Promise<EvakaSessionUser>
-): VerifyWithRequest {
-  return (_req, profile, done) => {
+export function createSamlStrategy(
+  config: SamlConfig,
+  profileSchema: z.AnyZodObject,
+  login: (profile: Profile) => Promise<EvakaSessionUser>
+): SamlStrategy {
+  const loginVerify: VerifyWithRequest = (req, profile, done) => {
     if (!profile) {
       done(new Error('No SAML profile'))
     } else {
-      const parseResult = schema.safeParse(profile)
+      const parseResult = profileSchema.safeParse(profile)
       if (!parseResult.success) {
         logWarn(
           `SAML profile parsing failed: ${parseResult.error.message}`,
@@ -77,7 +78,7 @@ export function toSamlLoginFunction(
           parseResult.error
         )
       }
-      verify(profile)
+      login(profile)
         .then((user) => {
           // Despite what the typings say, passport-saml assumes
           // we give it back a valid Profile, including at least some of these
@@ -96,12 +97,9 @@ export function toSamlLoginFunction(
         .catch(done)
     }
   }
-}
-
-export function samlLogoutFunction(): VerifyWithRequest {
-  return (_req, profile, done) => {
+  const logoutVerify: VerifyWithRequest = (req, profile, done) =>
     done(null, profile ?? undefined)
-  }
+  return new SamlStrategy(config, loginVerify, logoutVerify)
 }
 
 export function parseRelayState(req: express.Request): string | undefined {

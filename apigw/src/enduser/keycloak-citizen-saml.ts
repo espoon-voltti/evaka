@@ -8,17 +8,13 @@ import passportSaml, {
   Strategy as SamlStrategy
 } from '@node-saml/passport-saml'
 import { citizenLogin } from '../shared/service-client'
-import { samlLogoutFunction, toSamlLoginFunction } from '../shared/saml'
+import { createSamlStrategy } from '../shared/saml'
 import { EvakaSessionUser } from '../shared/auth'
 
 export function createKeycloakCitizenSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
-  return new SamlStrategy(
-    config,
-    toSamlLoginFunction(Profile, verifyKeycloakProfile),
-    samlLogoutFunction()
-  )
+  return createSamlStrategy(config, Profile, verifyKeycloakProfile)
 }
 
 const Profile = z.object({

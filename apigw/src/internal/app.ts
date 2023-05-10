@@ -7,7 +7,7 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createAdSamlStrategy from './ad-saml'
+import { createAdSamlStrategy } from './ad-saml'
 import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml'
 import {
   appCommit,

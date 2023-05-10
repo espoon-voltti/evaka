@@ -9,7 +9,7 @@ import passportSaml, {
 } from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client'
 import { Config } from '../shared/config'
-import { samlLogoutFunction, toSamlLoginFunction } from '../shared/saml'
+import { createSamlStrategy } from '../shared/saml'
 import { EvakaSessionUser } from '../shared/auth'
 
 const AD_GIVEN_NAME_KEY =
@@ -45,7 +45,7 @@ async function verifyProfile(
   }
 }
 
-export default function createAdStrategy(
+export function createAdSamlStrategy(
   config: Config['ad'],
   samlConfig: SamlConfig
 ): SamlStrategy {
@@ -56,9 +56,7 @@ export default function createAdStrategy(
     [AD_EMAIL_KEY]: z.string().optional(),
     [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
   })
-  return new SamlStrategy(
-    samlConfig,
-    toSamlLoginFunction(Profile, (profile) => verifyProfile(config, profile)),
-    samlLogoutFunction()
+  return createSamlStrategy(samlConfig, Profile, (profile) =>
+    verifyProfile(config, profile)
   )
 }
