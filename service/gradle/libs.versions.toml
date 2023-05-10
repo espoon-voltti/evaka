@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [versions]
-flyway = "9.14.1"
+flyway = "9.17.0"
 java = "17"
 kotlin = "1.8.21"
 kotlinter = "3.13.0"
