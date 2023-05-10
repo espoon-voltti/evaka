@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.time.LocalDate
 
 /**
  * A timeline is basically an immutable set of dates, but provides simple read/write operations that
@@ -59,6 +60,8 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
         ranges.fold(this) { timeline, range -> timeline.remove(range) }
 
     fun contains(range: FiniteDateRange) = this.ranges.any { it.contains(range) }
+
+    fun includes(date: LocalDate) = this.ranges.any { it.includes(date) }
 
     fun intersection(other: Timeline): Timeline {
         val iterA = this.ranges.iterator()
