@@ -450,12 +450,6 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             BASE_IMAGE=${{ needs.service.outputs.builder_image }}
 
-      - name: Run service OWASP tests
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          docker run --rm ${{ steps.build.outputs.image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
-
       - name: Run service tests for fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         shell: bash
@@ -466,6 +460,34 @@ jobs:
       - name: Docker cleanup
         if: always()
         uses: espoon-voltti/voltti-actions/docker-cleanup@master
+
+  owasp:
+    needs:
+      - service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_REGISTRY_ROLE }}
+          role-duration-seconds: 1200
+
+      - name: Login to Amazon ECR
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Run service OWASP tests
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        shell: bash
+        run: |
+          docker run --rm ${{ needs.service.outputs.builder_image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
   service-integration-test:
     needs:
