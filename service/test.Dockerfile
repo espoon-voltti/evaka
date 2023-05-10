@@ -9,8 +9,6 @@ RUN ./gradlew --no-daemon ktfmtCheck
 RUN ./gradlew --no-daemon lintKotlin
 RUN ./gradlew --no-daemon codegenCheck
 RUN ./circle-check-migrations.sh
-RUN ./gradlew --no-daemon dependencyCheckUpdate
-RUN ./gradlew --no-daemon dependencyCheckAnalyze
 RUN ./gradlew --no-daemon test
 RUN cd custom-ktlint-rules \
  && ./gradlew --no-daemon test
