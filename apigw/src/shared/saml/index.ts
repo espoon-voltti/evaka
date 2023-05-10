@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
+import { isEqual } from 'lodash'
 import {
   CacheProvider,
   Profile,
   SAML,
   SamlConfig,
+  Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
 import { logError, logWarn } from '../logging'
@@ -17,7 +19,6 @@ import { readFileSync } from 'fs'
 import certificates, { TrustedCertificates } from '../certificates'
 import express, { Request } from 'express'
 import path from 'path'
-import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -58,6 +59,17 @@ export function createSamlConfig(
   }
 }
 
+// A subset of SAML Profile fields that are expected to be present in Profile
+// *and* req.user in valid SAML sessions
+function samlProfileId({
+  issuer,
+  sessionIndex,
+  nameID,
+  nameIDFormat
+}: Profile) {
+  return { issuer, sessionIndex, nameID, nameIDFormat }
+}
+
 export function createSamlStrategy(
   config: SamlConfig,
   profileSchema: z.AnyZodObject,
@@ -95,7 +107,19 @@ export function createSamlStrategy(
       .catch(done)
   }
   const logoutVerify: VerifyWithRequest = (req, profile, done) =>
-    done(null, profile ?? undefined)
+    (async () => {
+      if (!profile) return undefined
+      if (req.user) {
+        const reqUser = req.user as Profile
+        const reqId = samlProfileId(reqUser)
+        const profileId = samlProfileId(profile)
+        if (isEqual(reqId, profileId)) {
+          return reqUser
+        }
+      }
+    })()
+      .then((user) => done(null, user))
+      .catch((err) => done(err))
   return new SamlStrategy(config, loginVerify, logoutVerify)
 }
 
