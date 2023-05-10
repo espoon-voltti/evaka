@@ -60,7 +60,7 @@ dependencies {
         api("org.yaml:snakeyaml:1.33")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.14.2"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.15.0"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.36.0"))
     api(platform(libs.kotlin.bom))
