@@ -64,38 +64,35 @@ export function createSamlStrategy(
   login: (profile: Profile) => Promise<EvakaSessionUser>
 ): SamlStrategy {
   const loginVerify: VerifyWithRequest = (req, profile, done) => {
-    if (!profile) {
-      done(new Error('No SAML profile'))
-    } else {
-      const parseResult = profileSchema.safeParse(profile)
-      if (!parseResult.success) {
-        logWarn(
-          `SAML profile parsing failed: ${parseResult.error.message}`,
-          undefined,
-          {
-            issuer: profile.issuer
-          },
-          parseResult.error
-        )
-      }
-      login(profile)
-        .then((user) => {
-          // Despite what the typings say, passport-saml assumes
-          // we give it back a valid Profile, including at least some of these
-          // SAML-specific fields
-          const samlUser: EvakaSessionUser & Profile = {
-            ...user,
-            issuer: profile.issuer,
-            nameID: profile.nameID,
-            nameIDFormat: profile.nameIDFormat,
-            nameQualifier: profile.nameQualifier,
-            spNameQualifier: profile.spNameQualifier,
-            sessionIndex: profile.sessionIndex
-          }
-          done(null, samlUser)
-        })
-        .catch(done)
+    if (!profile) return done(null, undefined)
+    const parseResult = profileSchema.safeParse(profile)
+    if (!parseResult.success) {
+      logWarn(
+        `SAML profile parsing failed: ${parseResult.error.message}`,
+        undefined,
+        {
+          issuer: profile.issuer
+        },
+        parseResult.error
+      )
     }
+    login(profile)
+      .then((user) => {
+        // Despite what the typings say, passport-saml assumes
+        // we give it back a valid Profile, including at least some of these
+        // SAML-specific fields
+        const samlUser: EvakaSessionUser & Profile = {
+          ...user,
+          issuer: profile.issuer,
+          nameID: profile.nameID,
+          nameIDFormat: profile.nameIDFormat,
+          nameQualifier: profile.nameQualifier,
+          spNameQualifier: profile.spNameQualifier,
+          sessionIndex: profile.sessionIndex
+        }
+        done(null, samlUser)
+      })
+      .catch(done)
   }
   const logoutVerify: VerifyWithRequest = (req, profile, done) =>
     done(null, profile ?? undefined)
