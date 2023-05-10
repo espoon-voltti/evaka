@@ -8,13 +8,11 @@ import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { boolean, localTimeRange } from 'lib-common/form/fields'
 import { array, mapped, object, value } from 'lib-common/form/form'
 import {
   BoundForm,
   useBoolean,
   useForm,
-  useFormElem,
   useFormElems,
   useFormField
 } from 'lib-common/form/hooks'
@@ -28,10 +26,8 @@ import {
   DailyReservationRequest,
   Reservation,
   ReservationResponseDay,
-  ReservationResponseDayChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
@@ -62,7 +58,7 @@ import {
 } from 'lib-components/molecules/modals/BaseModal'
 import { H1, H2, H3, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faChevronLeft, faChevronRight, faPlus, faTrash } from 'lib-icons'
+import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { Translations, useLang, useTranslation } from '../localization'
@@ -70,8 +66,14 @@ import { Translations, useLang, useTranslation } from '../localization'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { RoundChildImage } from './RoundChildImages'
-import TimeRangeInput from './TimeRangeInput'
 import { postReservationsMutation } from './queries'
+import { Day } from './reservation-modal/TimeInputs'
+import {
+  day,
+  HolidayPeriodInfo,
+  resetDay,
+  toDailyReservationRequest
+} from './reservation-modal/form'
 
 interface Props {
   date: LocalDate
@@ -80,6 +82,7 @@ interface Props {
   onClose: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
+  holidayPeriods: HolidayPeriodInfo[]
 }
 
 export default React.memo(function DayView({
@@ -88,7 +91,8 @@ export default React.memo(function DayView({
   selectDate,
   onClose,
   openAbsenceModal,
-  events
+  events,
+  holidayPeriods
 }: Props) {
   const i18n = useTranslation()
 
@@ -121,7 +125,7 @@ export default React.memo(function DayView({
   ) : editing ? (
     <Edit
       modalData={modalData}
-      dateActions={dateActions}
+      holidayPeriods={holidayPeriods}
       onClose={onClose}
       onCancel={edit.off}
     />
@@ -167,15 +171,14 @@ function View({
     />
   ) : undefined
 
-  const rightButton = (
+  const rightButton = absencesEditable ? (
     <Button
       primary
       text={i18n.calendar.newAbsence}
       onClick={onCreateAbsence}
-      disabled={!absencesEditable}
       data-qa="create-absence"
     />
-  )
+  ) : undefined
 
   return (
     <DayModal
@@ -203,11 +206,12 @@ function View({
 
 function Edit({
   modalData,
+  holidayPeriods,
   onClose,
   onCancel
 }: {
   modalData: ModalData
-  dateActions: DateActions
+  holidayPeriods: HolidayPeriodInfo[]
   onClose: () => void
   onCancel: () => void
 }) {
@@ -215,21 +219,28 @@ function Edit({
 
   const form = useForm(
     editorForm,
-    () => initialFormState(modalData),
+    () =>
+      initialFormState(
+        modalData,
+        holidayPeriods.find((p) => p.period.includes(modalData.response.date))
+      ),
     i18n.validationErrors
   )
   const formElems = useFormElems(form)
 
+  const [showAllErrors, useShowAllErrors] = useBoolean(false)
   const { mutateAsync: postReservations } = useMutationResult(
     postReservationsMutation
   )
 
   const save = useCallback(() => {
-    const request: DailyReservationRequest[] = form.value()(
-      modalData.response.date
-    )
-    return postReservations(request)
-  }, [form, modalData.response.date, postReservations])
+    if (!form.isValid()) {
+      useShowAllErrors.on()
+      return undefined
+    } else {
+      return postReservations(form.value()(modalData.response.date))
+    }
+  }, [form, modalData.response.date, postReservations, useShowAllErrors])
 
   const leftButton = (
     <Button onClick={onCancel} text={i18n.common.cancel} data-qa="cancel" />
@@ -238,7 +249,6 @@ function Edit({
   const rightButton = (
     <AsyncButton
       primary
-      disabled={!form.isValid()}
       onClick={save}
       onSuccess={onCancel}
       text={i18n.common.save}
@@ -258,18 +268,11 @@ function Edit({
       {(childIndex) => {
         const child = modalData.response.children[childIndex]
         const bind = formElems[childIndex]
-        return child.requiresReservation &&
-          (child.absence === null || child.absence.editable) ? (
+        return (
           <EditReservation
             canAddSecondReservation={child.shiftCare}
+            showAllErrors={showAllErrors}
             bind={bind}
-          />
-        ) : child.absence !== null ? (
-          <Absence absence={child.absence} />
-        ) : (
-          <Reservations
-            reservations={child.reservations}
-            requiresReservation={child.requiresReservation}
           />
         )
       }}
@@ -429,7 +432,7 @@ const DayModal = React.memo(function DayModal({
               <Gap size="L" sizeOnMobile="s" />
             </div>
 
-            {leftButton || rightButton ? (
+            {rows.length > 0 && (leftButton || rightButton) ? (
               <ButtonFooter>
                 {leftButton ?? <EmptyButtonFooterElement />}
                 {rightButton}
@@ -558,44 +561,31 @@ function isEditable(
 ): { reservationsEditable: boolean; absencesEditable: boolean } {
   const today = LocalDate.todayInSystemTz()
 
-  const anyChildReservable = responseDay.children.some(
-    (child) => child.requiresReservation
-  )
   const allChildrenHaveUneditableAbsence = responseDay.children.every(
     (child) => child.absence && !child.absence.editable
   )
   const reservationsEditable =
     reservableRange.includes(responseDay.date) &&
-    anyChildReservable &&
     !allChildrenHaveUneditableAbsence
   const absencesEditable =
-    anyChildReservable && responseDay.date.isEqualOrAfter(today)
+    responseDay.date.isEqualOrAfter(today) && !allChildrenHaveUneditableAbsence
 
   return { reservationsEditable, absencesEditable }
 }
 
 const childForm = object({
   childId: value<UUID>(),
-  reservations: array(localTimeRange),
-  absent: boolean()
+  day
 })
 
-function initialChildFormState({
-  childId,
-  reservations,
-  absence
-}: ReservationResponseDayChild): StateOf<typeof childForm> {
-  const withTimes = reservations.filter(reservationHasTimes)
+function initialChildFormState(
+  childId: UUID,
+  child: ReservationResponseDay,
+  holidayPeriod: HolidayPeriodInfo | undefined
+): StateOf<typeof childForm> {
   return {
     childId,
-    reservations:
-      withTimes.length > 0
-        ? withTimes.map((reservation) => ({
-            startTime: reservation.startTime.format(),
-            endTime: reservation.endTime.format()
-          }))
-        : [{ startTime: '', endTime: '' }],
-    absent: absence !== null
+    day: resetDay(holidayPeriod?.isOpen ?? false, [child], [childId])
   }
 }
 
@@ -604,89 +594,39 @@ const editorForm = mapped(
   // The output value is a function that creates an array DailyReservationRequest given the date
   (output) =>
     (date: LocalDate): DailyReservationRequest[] =>
-      output.map(({ childId, reservations, absent }) => {
-        const res: TimeRange[] = reservations.flatMap(
-          (reservation) => reservation ?? []
-        )
-        return res.length === 0 && absent
-          ? {
-              type: 'ABSENT',
-              childId,
-              date
-            }
-          : res.length === 0
-          ? {
-              type: 'NOTHING',
-              childId,
-              date
-            }
-          : {
-              type: 'RESERVATIONS',
-              childId,
-              date,
-              reservation: res[0],
-              secondReservation: res[1] ?? null
-            }
-      })
+      output.flatMap(
+        ({ childId, day }) =>
+          toDailyReservationRequest(childId, date, day) ?? []
+      )
 )
 
-function initialFormState(day: ModalData): StateOf<typeof editorForm> {
-  return day.response.children.map(initialChildFormState)
+function initialFormState(
+  day: ModalData,
+  holidayPeriod: HolidayPeriodInfo | undefined
+): StateOf<typeof editorForm> {
+  return day.response.children.map((child) =>
+    initialChildFormState(child.childId, day.response, holidayPeriod)
+  )
 }
 
 const EditReservation = React.memo(function EditReservation({
+  bind,
   canAddSecondReservation,
-  bind
+  showAllErrors
 }: {
-  canAddSecondReservation: boolean
   bind: BoundForm<typeof childForm>
+  canAddSecondReservation: boolean
+  showAllErrors: boolean
 }) {
-  const t = useTranslation()
-
-  const reservations = useFormField(bind, 'reservations')
-  const updateReservations = reservations.update
-
-  const addSecondReservation = useCallback(() => {
-    updateReservations((prev) => [...prev, { startTime: '', endTime: '' }])
-  }, [updateReservations])
-
-  const removeSecondReservation = useCallback(() => {
-    updateReservations((prev) => prev.slice(0, 1))
-  }, [updateReservations])
-
-  const firstReservation = useFormElem(reservations, 0)
-  const secondReservation = useFormElem(reservations, 1)
-
-  if (firstReservation === undefined) {
-    throw new Error('BUG: At least one reservation expected')
-  }
-
+  const day = useFormField(bind, 'day')
   return (
-    <FixedSpaceColumn>
-      <FixedSpaceRow alignItems="center">
-        <TimeRangeInput bind={firstReservation} data-qa="first-reservation" />
-        {canAddSecondReservation && (
-          <IconButton
-            icon={faPlus}
-            onClick={addSecondReservation}
-            aria-label={t.common.add}
-          />
-        )}
-      </FixedSpaceRow>
-      {secondReservation !== undefined ? (
-        <FixedSpaceRow alignItems="center">
-          <TimeRangeInput
-            bind={secondReservation}
-            data-qa="second-reservation"
-          />
-          <IconButton
-            icon={faTrash}
-            onClick={removeSecondReservation}
-            aria-label={t.common.delete}
-          />
-        </FixedSpaceRow>
-      ) : null}
-    </FixedSpaceColumn>
+    <Day
+      bind={day}
+      label={undefined}
+      showAllErrors={showAllErrors}
+      allowExtraTimeRange={canAddSecondReservation}
+      dataQaPrefix="edit-reservation"
+    />
   )
 })
 

@@ -95,7 +95,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
-  const upcomingHolidayPeriods = useMemo(() => {
+  const holidayPeriodInfo = useMemo(() => {
     const today = mockToday() ?? LocalDate.todayInSystemTz()
     return holidayPeriods.map((periods) =>
       periods
@@ -136,8 +136,8 @@ const CalendarPage = React.memo(function CalendarPage() {
       <DailyServiceTimeNotifications />
 
       {renderResult(
-        combine(data, events, upcomingHolidayPeriods),
-        ([response, events, upcomingHolidayPeriods]) => (
+        combine(data, events, holidayPeriodInfo),
+        ([response, events, holidayPeriodInfo]) => (
           <div data-qa="calendar-page" data-isloading={isLoading(data)}>
             <CalendarNotifications calendarDays={response.days} />
             <MobileAndTablet>
@@ -183,6 +183,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                 onClose={closeModal}
                 openAbsenceModal={openAbsenceModal}
                 events={events}
+                holidayPeriods={holidayPeriodInfo}
               />
             )}
             {modalState?.type === 'pickAction' && (
@@ -202,7 +203,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   modalState.initialRange?.start ?? firstReservableDate
                 }
                 initialEnd={modalState.initialRange?.end ?? null}
-                upcomingHolidayPeriods={upcomingHolidayPeriods}
+                holidayPeriods={holidayPeriodInfo}
               />
             )}
             {modalState?.type === 'absences' && (

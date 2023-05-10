@@ -60,7 +60,7 @@ interface Props {
   reservationsResponse: ReservationsResponse
   initialStart: LocalDate | null
   initialEnd: LocalDate | null
-  upcomingHolidayPeriods: HolidayPeriodInfo[]
+  holidayPeriods: HolidayPeriodInfo[]
 }
 
 export default React.memo(function ReservationModal({
@@ -69,7 +69,7 @@ export default React.memo(function ReservationModal({
   reservationsResponse,
   initialStart,
   initialEnd,
-  upcomingHolidayPeriods
+  holidayPeriods
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -81,8 +81,8 @@ export default React.memo(function ReservationModal({
   } = reservationsResponse
 
   const dayProperties = useMemo(
-    () => new DayProperties(calendarDays, upcomingHolidayPeriods),
-    [calendarDays, upcomingHolidayPeriods]
+    () => new DayProperties(calendarDays, holidayPeriods),
+    [calendarDays, holidayPeriods]
   )
   const form = useForm(
     reservationForm,
@@ -238,9 +238,7 @@ export default React.memo(function ReservationModal({
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
 
-                <HolidayPeriodInfoBox
-                  upcomingHolidayPeriods={upcomingHolidayPeriods}
-                />
+                <HolidayPeriodInfoBox upcomingHolidayPeriods={holidayPeriods} />
 
                 <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
                 <Gap size="xxs" />

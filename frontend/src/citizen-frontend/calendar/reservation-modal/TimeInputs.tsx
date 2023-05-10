@@ -22,7 +22,7 @@ import { day, emptyTimeRange, noTimes, times } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
-  label: React.ReactNode
+  label: React.ReactNode | undefined
   showAllErrors: boolean
   allowExtraTimeRange: boolean
   dataQaPrefix?: string
@@ -87,7 +87,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
   // Empty reservations array => absent
   return state.length === 0 ? (
     <FixedSpaceRow fullWidth alignItems="center">
-      <LeftCell>{label}</LeftCell>
+      {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
       <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
       <RightCell>
         <IconButton
@@ -132,7 +132,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case undefined:
       return (
         <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell>{label}</LeftCell>
+          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell />
           <RightCell />
         </FixedSpaceRow>
@@ -141,7 +141,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       return (
         <>
           <FixedSpaceRow fullWidth alignItems="center">
-            <LeftCell>{label}</LeftCell>
+            {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
             <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
             <RightCell>
               <InfoButton
@@ -172,7 +172,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case 'holiday':
       return (
         <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell>{label}</LeftCell>
+          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.holiday}</MiddleCell>
           <RightCell />
         </FixedSpaceRow>
@@ -210,7 +210,7 @@ export const Times = React.memo(function Times({
   return (
     <>
       <FixedSpaceRow fullWidth alignItems="center">
-        <LeftCell>{label}</LeftCell>
+        {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
         <MiddleCell>
           <TimeRangeInput
             bind={firstTimeRange}
@@ -245,7 +245,7 @@ export const Times = React.memo(function Times({
       </FixedSpaceRow>
       {secondTimeRange !== undefined ? (
         <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell />
+          {label !== undefined ? <LeftCell /> : null}
           <MiddleCell>
             <TimeRangeInput
               bind={secondTimeRange}
@@ -278,7 +278,7 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
 
   return (
     <FixedSpaceRow fullWidth alignItems="center">
-      <LeftCell>{label}</LeftCell>
+      {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
       <MiddleCell narrow>
         <Radio
           checked={bind.state === 'present'}

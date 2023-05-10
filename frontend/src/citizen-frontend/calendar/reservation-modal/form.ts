@@ -107,7 +107,7 @@ export const timesUnion = union({
   irregularTimes
 })
 
-function toDailyReservationRequest(
+export function toDailyReservationRequest(
   childId: UUID,
   date: LocalDate,
   day: DayOutput
@@ -422,7 +422,7 @@ export function resetTimes(
   }
 }
 
-function resetDay(
+export function resetDay(
   isOpenHolidayPeriod: boolean,
   calendarDays: ReservationResponseDay[],
   selectedChildren: UUID[]
