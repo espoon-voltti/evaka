@@ -83,7 +83,6 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
         createSamlRouter({
           strategyName: 'suomifi',
           strategy: createSuomiFiStrategy(suomifiSamlConfig),
-          samlConfig: suomifiSamlConfig,
           sessionType: 'enduser'
         })
       )
@@ -100,7 +99,6 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
       createSamlRouter({
         strategyName: 'evaka-customer',
         strategy: createKeycloakCitizenSamlStrategy(keycloakCitizenConfig),
-        samlConfig: keycloakCitizenConfig,
         sessionType: 'enduser'
       })
     )

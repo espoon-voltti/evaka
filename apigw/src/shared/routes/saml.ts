@@ -4,7 +4,7 @@
 
 import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
-import passportSaml, { SamlConfig } from '@node-saml/passport-saml'
+import passportSaml from '@node-saml/passport-saml'
 import { createLogoutToken } from '../auth'
 import { gatewayRole, nodeEnv } from '../config'
 import { toMiddleware, toRequestHandler } from '../express'
@@ -50,7 +50,6 @@ function getRedirectUrl(req: express.Request): string {
 export interface SamlEndpointConfig {
   strategyName: string
   strategy: passportSaml.Strategy
-  samlConfig: SamlConfig
   sessionType: SessionType
 }
 
