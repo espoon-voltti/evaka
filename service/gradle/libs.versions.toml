@@ -5,7 +5,7 @@
 [versions]
 flyway = "9.14.1"
 java = "17"
-kotlin = "1.8.10"
+kotlin = "1.8.21"
 kotlinter = "3.13.0"
 ktfmt = "0.11.0"
 ktlint = "0.47.1"
