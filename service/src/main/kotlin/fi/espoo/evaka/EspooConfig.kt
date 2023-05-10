@@ -183,6 +183,21 @@ class EspooConfig {
                     GET("/children", route(EspooBiPoc.getChildren))
                     GET("/placements", route(EspooBiPoc.getPlacements))
                     GET("/group-placements", route(EspooBiPoc.getGroupPlacements))
+                    GET("/absences", route(EspooBiPoc.getAbsences))
+                    GET(
+                        "/group-caretaker-allocations",
+                        route(EspooBiPoc.getGroupCaretakerAllocations)
+                    )
+                    GET("/applications", route(EspooBiPoc.getApplications))
+                    GET("/decisions", route(EspooBiPoc.getDecisions))
+                    GET("/service-need-options", route(EspooBiPoc.getServiceNeedOptions))
+                    GET("/service-needs", route(EspooBiPoc.getServiceNeeds))
+                    GET("/fee-decisions", route(EspooBiPoc.getFeeDecisions))
+                    GET("/fee-decision-children", route(EspooBiPoc.getFeeDecisionChildren))
+                    GET("/voucher-value-decisions", route(EspooBiPoc.getVoucherValueDecisions))
+                    GET("/curriculum-templates", route(EspooBiPoc.getCurriculumTemplates))
+                    GET("/curriculum-documents", route(EspooBiPoc.getCurriculumDocuments))
+                    GET("/pedagogical-documents", route(EspooBiPoc.getPedagogicalDocuments))
                 }
             }
         } else {

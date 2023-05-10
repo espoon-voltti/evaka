@@ -107,6 +107,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -402,7 +403,7 @@ class DevApi(
                         evakaClock.today(),
                         decision.applicationId,
                         decision.unitId,
-                        decision.type.toString(),
+                        decision.type,
                         decision.startDate,
                         decision.endDate
                     )
@@ -1448,19 +1449,8 @@ RETURNING id
         db.connect { dbc -> dbc.transaction { it.insertCalendarEventAttendee(body) } }
 
     @PostMapping("/absence")
-    fun addAbsence(db: Database, @RequestBody body: DevAbsenceBody) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate(
-                        """
-            INSERT INTO absence (child_id, date, absence_type, modified_by, category)
-            VALUES (:childId, :date, :absenceType, :modifiedBy, :absenceCategory)
-            """
-                    )
-                    .bindKotlin(body)
-                    .execute()
-            }
-        }
+    fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
+        db.connect { dbc -> dbc.transaction { it.insertTestAbsence(body) } }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1989,15 +1979,26 @@ data class DevCalendarEventAttendee(
     val childId: ChildId?
 )
 
-data class DevAbsenceBody(
+data class DevAbsence(
+    val id: UUID = UUID.randomUUID(),
     val childId: ChildId,
     val date: LocalDate,
-    val absenceType: AbsenceType,
+    val absenceType: AbsenceType = AbsenceType.OTHER_ABSENCE,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val absenceCategory: AbsenceCategory,
-    val modifiedBy: PersonId
+    val questionnaireId: HolidayQuestionnaireId? = null,
 )
 
 data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
+
+data class DevDaycareCaretaker(
+    val id: DaycareCaretakerId = DaycareCaretakerId(UUID.randomUUID()),
+    val groupId: GroupId,
+    val amount: BigDecimal = BigDecimal.ZERO,
+    val startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    val endDate: LocalDate? = null
+)
 
 data class Citizen(
     val ssn: String,

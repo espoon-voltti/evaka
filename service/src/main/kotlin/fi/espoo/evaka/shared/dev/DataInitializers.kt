@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -1454,3 +1455,23 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         )
         .bindKotlin(guardian)
         .execute()
+
+fun Database.Transaction.insertTestAbsence(absence: DevAbsence) =
+    insertTestDataRow(
+            absence,
+            """
+INSERT INTO absence (id, child_id, date, absence_type, modified_at, modified_by, category, questionnaire_id)
+VALUES (:id, :childId, :date, :absenceType, :modifiedAt, :modifiedBy, :absenceCategory, :questionnaireId)
+"""
+        )
+        .let(::AbsenceId)
+
+fun Database.Transaction.insertTestDaycareCaretaker(row: DevDaycareCaretaker) =
+    insertTestDataRow(
+            row,
+            """
+INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
+VALUES (:id, :groupId, :amount, :startDate, :endDate)
+"""
+        )
+        .let(::DaycareCaretakerId)

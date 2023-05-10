@@ -26,6 +26,7 @@ fun printCsvField(value: Any?): String =
         is LocalDate -> value.format(DateTimeFormatter.ISO_LOCAL_DATE)
         is HelsinkiDateTime ->
             value.toZonedDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        is List<*> -> value.joinToString(",")
         is Enum<*> -> value.name
         else -> error("Unsupported CSV field type ${value.javaClass}")
     }
