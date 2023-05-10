@@ -378,6 +378,7 @@ data class KoskiActiveDataRaw(
         val longestEce =
             Timeline.of(extendedCompulsoryEducation)
                 .intersection(Timeline.of(placementSpan))
+                .ranges()
                 .maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
         val longestTransportBenefit =

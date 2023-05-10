@@ -9,6 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -19,9 +20,11 @@ import java.lang.reflect.Type
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
+import java.text.ParsePosition
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Optional
 import java.util.UUID
 import java.util.function.Function
@@ -51,6 +54,20 @@ val dateRangeArgumentFactory =
             type = "daterange"
             if (it != null) {
                 value = "[${it.start},${it.end ?: ""}]"
+            }
+        }
+    }
+
+val timelineArgumentFactory =
+    pgObjectArgumentFactory<Timeline> {
+        PGobject().apply {
+            type = "datemultirange"
+            if (it != null) {
+                value =
+                    it.ranges().joinToString(separator = ",", prefix = "{", postfix = "}") { range
+                        ->
+                        "[${range.start},${range.end}]"
+                    }
             }
         }
     }
@@ -135,29 +152,112 @@ val databaseEnumArgumentFactory =
         }
     }
 
-val finiteDateRangeColumnMapper = PgObjectColumnMapper {
-    assert(it.type == "daterange")
-    it.value?.let { value ->
-        val parts = value.trim('[', ')').split(',')
-        val start = LocalDate.parse(parts[0])
-        val end = LocalDate.parse(parts[1]).minusDays(1)
-        FiniteDateRange(start, end)
+private class Parser(private var text: CharSequence) {
+    fun peekChar(): Char? = this.text.firstOrNull()
+    fun parseChar(): Char =
+        (this.text.firstOrNull() ?: error("Unexpected end of text")).also {
+            this.text = this.text.drop(1)
+        }
+    fun parseDate(): LocalDate {
+        val position = ParsePosition(0)
+        return DateTimeFormatter.ISO_DATE.parse(text, position).query(LocalDate::from).also {
+            this.text = this.text.drop(position.index)
+        }
+    }
+
+    private data class RawRange<Element : Any>(
+        val lower: Element?,
+        val lowerInclusive: Boolean,
+        val upper: Element?,
+        val upperInclusive: Boolean
+    )
+
+    private fun <T : Any> parseRange(parseElement: (parser: Parser) -> T): RawRange<T> {
+        val lowerInclusive =
+            when (val char = parseChar()) {
+                '[' -> true
+                '(' -> false
+                else -> error("Expected '[' or '(', got $char")
+            }
+        val lower =
+            when (peekChar()) {
+                ',' -> null
+                else -> parseElement(this)
+            }
+        when (val char = parseChar()) {
+            ',' -> {}
+            else -> error("Expected comma, got $char")
+        }
+        val upper =
+            when (peekChar()) {
+                ']',
+                ')' -> null
+                else -> parseElement(this)
+            }
+        val upperInclusive =
+            when (val char = parseChar()) {
+                ']' -> true
+                ')' -> false
+                else -> error("Expected ']' or ')', got $char")
+            }
+        return RawRange(lower, lowerInclusive, upper, upperInclusive)
+    }
+
+    fun parseFiniteDateRange(): FiniteDateRange =
+        parseRange { it.parseDate() }
+            .let { range ->
+                checkNotNull(range.lower) { "FiniteDateRange lower must not be null" }
+                checkNotNull(range.upper) { "FiniteDateRange upper must not be null" }
+                FiniteDateRange(
+                    start = range.lower.let { if (range.lowerInclusive) it else it.plusDays(1) },
+                    end = range.upper.let { if (range.upperInclusive) it else it.minusDays(1) },
+                )
+            }
+
+    fun parseDateRange(): DateRange =
+        parseRange { it.parseDate() }
+            .let { range ->
+                checkNotNull(range.lower) { "DateRange lower must not be null" }
+                DateRange(
+                    start = range.lower.let { if (range.lowerInclusive) it else it.plusDays(1) },
+                    end = range.upper?.let { if (range.upperInclusive) it else it.minusDays(1) },
+                )
+            }
+
+    fun <T : Any> parseMultiRange(parseRange: (parser: Parser) -> T): List<T> {
+        when (val char = parseChar()) {
+            '{' -> {}
+            else -> error("Expected '{', got $char")
+        }
+        val result = mutableListOf<T>()
+        while (true) {
+            when (peekChar()) {
+                ',' -> parseChar()
+                '}' -> break
+            }
+            result.add(parseRange(this))
+        }
+        when (val char = parseChar()) {
+            '}' -> {}
+            else -> error("Expected '}', got $char")
+        }
+        return result
     }
 }
 
-val dateRangeColumnMapper = PgObjectColumnMapper {
-    assert(it.type == "daterange")
-    it.value?.let { value ->
-        val parts = value.trim('[', ')').split(',')
-        val start = LocalDate.parse(parts[0])
-        val end =
-            if (parts[1].isNotEmpty()) {
-                LocalDate.parse(parts[1]).minusDays(1)
-            } else {
-                null
-            }
-        DateRange(start, end)
-    }
+val timelineColumnMapper = PgObjectColumnMapper { obj ->
+    assert(obj.type == "datemultirange")
+    obj.value?.let(::Parser)?.parseMultiRange { it.parseFiniteDateRange() }?.let { Timeline.of(it) }
+}
+
+val finiteDateRangeColumnMapper = PgObjectColumnMapper { obj ->
+    assert(obj.type == "daterange")
+    obj.value?.let(::Parser)?.parseFiniteDateRange()
+}
+
+val dateRangeColumnMapper = PgObjectColumnMapper { obj ->
+    assert(obj.type == "daterange")
+    obj.value?.let(::Parser)?.parseDateRange()
 }
 
 val timeRangeColumnMapper = PgObjectColumnMapper {

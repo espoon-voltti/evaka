@@ -17,8 +17,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
  *
  * Note: this implementation is *very* inefficient
  */
-data class Timeline private constructor(private val ranges: List<FiniteDateRange>) :
-    Iterable<FiniteDateRange> by ranges {
+data class Timeline private constructor(private val ranges: List<FiniteDateRange>) {
     constructor() : this(emptyList())
 
     fun add(range: FiniteDateRange) =
@@ -35,6 +34,7 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
                 Timeline(result)
             }
 
+    fun addAll(other: Timeline) = addAll(other.ranges())
     fun addAll(ranges: Iterable<FiniteDateRange>) =
         ranges.fold(this) { timeline, range -> timeline.add(range) }
     fun addAll(ranges: Sequence<FiniteDateRange>) =
@@ -52,6 +52,7 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
                 Timeline(result)
             }
 
+    fun removeAll(other: Timeline) = removeAll(other.ranges())
     fun removeAll(ranges: Iterable<FiniteDateRange>) =
         ranges.fold(this) { timeline, range -> timeline.remove(range) }
     fun removeAll(ranges: Sequence<FiniteDateRange>) =
@@ -60,8 +61,8 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
     fun contains(range: FiniteDateRange) = this.ranges.any { it.contains(range) }
 
     fun intersection(other: Timeline): Timeline {
-        val iterA = this.iterator()
-        val iterB = other.iterator()
+        val iterA = this.ranges.iterator()
+        val iterB = other.ranges.iterator()
         var a = if (iterA.hasNext()) iterA.next() else null
         var b = if (iterB.hasNext()) iterB.next() else null
         val ranges = mutableListOf<FiniteDateRange>()
@@ -76,13 +77,13 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
         return Timeline(ranges)
     }
 
-    fun ranges() = this.ranges.asSequence()
-    fun gaps() =
+    fun ranges(): Sequence<FiniteDateRange> = this.ranges.asSequence()
+    fun gaps(): Sequence<FiniteDateRange> =
         this.ranges().windowed(2).map { pair ->
             FiniteDateRange(pair[0].end.plusDays(1), pair[1].start.minusDays(1))
         }
 
-    fun spanningRange() =
+    fun spanningRange(): FiniteDateRange? =
         this.ranges.firstOrNull()?.let { first ->
             this.ranges.lastOrNull()?.let { last -> FiniteDateRange(first.start, last.end) }
         }

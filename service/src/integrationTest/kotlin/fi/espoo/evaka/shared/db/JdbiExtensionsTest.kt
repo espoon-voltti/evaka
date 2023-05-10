@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Month
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -181,6 +183,44 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             ),
             result.values
         )
+    }
+
+    @Test
+    fun testTimeline() {
+        val input =
+            Timeline.of(
+                FiniteDateRange.ofMonth(2020, Month.JANUARY),
+                FiniteDateRange.ofMonth(2020, Month.FEBRUARY),
+                FiniteDateRange.ofMonth(2020, Month.APRIL),
+            )
+
+        val match =
+            db.read {
+                it.checkMatch(
+                    """
+SELECT :input = datemultirange(
+    daterange('2020-01-01', '2020-01-31', '[]'),
+    daterange('2020-02-01', '2020-02-29', '[]'),
+    daterange('2020-04-01', '2020-04-30', '[]')
+)""",
+                    input
+                )
+            }
+        assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+    }
+
+    @Test
+    fun testNullTimeline() {
+        data class QueryResult(val value: Timeline?)
+
+        val result =
+            db.read {
+                it.createQuery("SELECT NULL::datemultirange AS value").mapTo<QueryResult>().single()
+            }
+        assertNull(result.value)
     }
 
     @Test
