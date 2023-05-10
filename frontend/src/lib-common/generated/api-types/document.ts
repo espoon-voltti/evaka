@@ -9,6 +9,40 @@ import DateRange from '../../date-range'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
+*/
+export interface AnsweredQuestion {
+  answer: unknown
+  questionId: string
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocument
+*/
+export interface ChildDocument {
+  childId: UUID
+  content: DocumentContent
+  id: UUID
+  published: boolean
+  template: DocumentTemplate
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
+*/
+export interface ChildDocumentCreateRequest {
+  childId: UUID
+  templateId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.DocumentContent
+*/
+export interface DocumentContent {
+  answers: AnsweredQuestion[]
+}
+
+/**
 * Generated from fi.espoo.evaka.document.DocumentTemplate
 */
 export interface DocumentTemplate {

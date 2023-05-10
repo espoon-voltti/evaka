@@ -7,6 +7,7 @@ import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import {
+  getActiveDocumentTemplateSummaries,
   getDocumentTemplate,
   getDocumentTemplateSummaries,
   postDocumentTemplate,
@@ -22,6 +23,11 @@ const queryKeys = createQueryKeys('documentTemplates', {
 
 export const documentTemplateSummariesQuery = query({
   api: getDocumentTemplateSummaries,
+  queryKey: queryKeys.documentTemplateSummaries
+})
+
+export const activeDocumentTemplateSummariesQuery = query({
+  api: getActiveDocumentTemplateSummaries,
   queryKey: queryKeys.documentTemplateSummaries
 })
 

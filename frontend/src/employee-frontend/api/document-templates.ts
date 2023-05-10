@@ -38,6 +38,19 @@ export async function getDocumentTemplateSummaries(): Promise<
     )
 }
 
+export async function getActiveDocumentTemplateSummaries(): Promise<
+  DocumentTemplateSummary[]
+> {
+  return client
+    .get<JsonOf<DocumentTemplateSummary[]>>('/document-templates/active')
+    .then((res) =>
+      res.data.map((template) => ({
+        ...template,
+        validity: DateRange.parseJson(template.validity)
+      }))
+    )
+}
+
 export async function getDocumentTemplate(id: UUID): Promise<DocumentTemplate> {
   return client
     .get<JsonOf<DocumentTemplate>>(`/document-templates/${id}`)

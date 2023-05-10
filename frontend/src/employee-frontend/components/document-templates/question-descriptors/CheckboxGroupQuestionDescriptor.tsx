@@ -16,7 +16,10 @@ import {
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
-import { Question } from 'lib-common/generated/api-types/document'
+import {
+  AnsweredQuestion,
+  Question
+} from 'lib-common/generated/api-types/document'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -30,7 +33,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 
 import {
-  AnsweredQuestion,
   DocumentQuestionDescriptor,
   QuestionType,
   TemplateQuestionDescriptor
@@ -72,7 +74,7 @@ const questionForm = mapped(
     template: templateForm,
     answer: value<Answer>()
   }),
-  (output): AnsweredQuestion<Answer> => ({
+  (output): AnsweredQuestion => ({
     questionId: output.template.id,
     answer: output.answer
   })

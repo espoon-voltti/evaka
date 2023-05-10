@@ -67,6 +67,28 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
             .also { Audit.DocumentTemplateRead.log() }
     }
 
+    @GetMapping("/active")
+    fun getActiveTemplates(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<DocumentTemplateSummary> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_DOCUMENT_TEMPLATE
+                    )
+                    tx.getTemplateSummaries().filter {
+                        it.published && it.validity.includes(clock.today())
+                    }
+                }
+            }
+            .also { Audit.DocumentTemplateRead.log() }
+    }
+
     @GetMapping("/{templateId}")
     fun getTemplate(
         db: Database,

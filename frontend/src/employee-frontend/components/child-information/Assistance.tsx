@@ -17,6 +17,7 @@ import { useTranslation } from '../../state/i18n'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
+import ChildDocuments from './ChildDocuments'
 
 export interface Props {
   id: UUID
@@ -47,6 +48,12 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
           <>
             <HorizontalLine dashed slim />
             <AssistanceAction id={id} />
+          </>
+        )}
+        {permittedActions.has('READ_CHILD_DOCUMENT') && (
+          <>
+            <HorizontalLine dashed slim />
+            <ChildDocuments childId={id} />
           </>
         )}
         {featureFlags.experimental?.assistanceNeedDecisions &&

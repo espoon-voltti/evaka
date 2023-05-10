@@ -17,19 +17,6 @@ export const questionTypes: QuestionType[] = [
   'CHECKBOX_GROUP'
 ]
 
-export interface AnsweredQuestion<ANSWER> {
-  questionId: string
-  answer: ANSWER
-}
-
-export interface AnsweredSection {
-  answers: AnsweredQuestion<unknown>[]
-}
-
-export interface AnsweredDocument {
-  answers: AnsweredQuestion<unknown>[]
-}
-
 export interface TemplateQuestionDescriptor<
   Key extends QuestionType,
   TemplateForm extends AnyForm,

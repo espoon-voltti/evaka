@@ -9,7 +9,10 @@ import { mapped, object, validated, value } from 'lib-common/form/form'
 import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
-import { Question } from 'lib-common/generated/api-types/document'
+import {
+  AnsweredQuestion,
+  Question
+} from 'lib-common/generated/api-types/document'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
@@ -17,7 +20,6 @@ import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 
 import {
-  AnsweredQuestion,
   DocumentQuestionDescriptor,
   QuestionType,
   TemplateQuestionDescriptor
@@ -50,7 +52,7 @@ const questionForm = mapped(
     template: templateForm,
     answer: value<Answer>()
   }),
-  (output): AnsweredQuestion<Answer> => ({
+  (output): AnsweredQuestion => ({
     questionId: output.template.id,
     answer: output.answer
   })

@@ -8,6 +8,7 @@ import { queryKeysNamespace } from 'lib-common/query'
 
 export type QueryKeyPrefix =
   | 'applications'
+  | 'childInformation'
   | 'documentTemplates'
   | 'holidayPeriods'
 

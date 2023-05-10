@@ -9,6 +9,7 @@ import { array, mapped, object, union } from 'lib-common/form/form'
 import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import {
+  DocumentContent,
   DocumentTemplateContent,
   Question
 } from 'lib-common/generated/api-types/document'
@@ -16,7 +17,6 @@ import {
 import CheckboxGroupQuestionDescriptor from './question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from './question-descriptors/CheckboxQuestionDescriptor'
 import TextQuestionDescriptor from './question-descriptors/TextQuestionDescriptor'
-import { AnsweredDocument, AnsweredSection } from './question-descriptors/types'
 
 export const documentQuestionForm = union({
   TEXT: TextQuestionDescriptor.document.form,
@@ -30,14 +30,14 @@ export const documentSectionForm = mapped(
     label: string(),
     questions: array(documentQuestionForm)
   }),
-  (output): AnsweredSection => ({
+  (output): DocumentContent => ({
     answers: output.questions.map((it) => it.value)
   })
 )
 
 export const documentForm = mapped(
   array(documentSectionForm),
-  (output): AnsweredDocument => ({
+  (output): DocumentContent => ({
     answers: output.flatMap((section) => section.answers)
   })
 )
