@@ -21,7 +21,7 @@ import type {
   AuthenticateOptions,
   RequestWithUser
 } from '@node-saml/passport-saml/lib/types'
-import { parseRelayState, tryParseProfile } from '../saml'
+import { parseRelayState } from '../saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -174,9 +174,7 @@ function createLogoutHandler({
 export default function createSamlRouter(
   endpointConfig: SamlEndpointConfig
 ): Router {
-  const { strategyName, strategy, samlConfig } = endpointConfig
-  // For parsing SAML messages outside the strategy
-  const saml = new SAML(samlConfig)
+  const { strategyName, strategy } = endpointConfig
 
   passport.use(strategyName, strategy)
 
@@ -187,13 +185,6 @@ export default function createSamlRouter(
       `evaka.saml.${strategyName}.sign_out`,
       req,
       'Logout callback called'
-    )
-    const profile = await tryParseProfile(req, saml)
-    await logoutExpress(
-      req,
-      res,
-      endpointConfig.sessionType,
-      profile?.nameID && createLogoutToken(profile.nameID, profile.sessionIndex)
     )
   })
 
