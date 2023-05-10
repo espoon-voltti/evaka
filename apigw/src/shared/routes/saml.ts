@@ -149,7 +149,6 @@ function createLogoutHandler({
     )
     try {
       const redirectUrl = await fromCallback<string | null>((cb) =>
-        // passport-saml logout requires req.user to be present, despite what the typings claim
         req.user ? strategy.logout(req as RequestWithUser, cb) : cb(null, null)
       )
       logDebug('Logging user out from passport.', req)
