@@ -7,8 +7,8 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -44,6 +43,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -86,20 +86,14 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertServiceNeedOption(snDefaultDaycare)
             child = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardian, childId = child))
-            val placementId =
-                tx.insertTestPlacement(
-                    DevPlacement(
-                        childId = child,
-                        unitId = daycareId,
-                        startDate = checkedRange.start,
-                        endDate = checkedRange.end
-                    )
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = child,
+                    unitId = daycareId,
+                    startDate = checkedRange.start,
+                    endDate = checkedRange.end,
+                    type = PlacementType.DAYCARE
                 )
-            tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(unitSupervisor.raw),
-                placementId = placementId,
-                period = checkedRange,
-                optionId = snDefaultDaycare.id
             )
         }
     }
@@ -151,8 +145,15 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
-    fun `reminder is not sent when child has no service need`() {
-        db.transaction { tx -> tx.createUpdate("TRUNCATE service_need").execute() }
+    fun `reminder is not sent when child 's placement does not require reservations`() {
+        val placementType = PlacementType.PRESCHOOL
+        assertFalse(placementType.requiresAttendanceReservations())
+
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE placement SET type = :type")
+                .bind("type", placementType)
+                .execute()
+        }
         assertEquals(emptyList(), getReminderRecipients())
     }
 
