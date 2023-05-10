@@ -7,11 +7,11 @@ plugins {
 }
 
 object Version {
-    const val bouncyCastle = "1.72"
+    const val bouncyCastle = "1.73"
     const val cxf = "4.0.1"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
-    const val mockito = "5.1.1"
+    const val mockito = "5.3.1"
     const val openTracing = "0.33.0"
 }
 
@@ -45,9 +45,9 @@ dependencies {
         api("org.apache.wss4j:wss4j-ws-security-dom:3.0.0")
         api("org.bouncycastle:bcpkix-jdk18on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk18on:${Version.bouncyCastle}")
-        api("org.flywaydb:flyway-core:${libs.versions.flyway}")
+        api("org.flywaydb:flyway-core:${libs.versions.flyway.get()}")
         api("org.glassfish.jaxb:jaxb-runtime:4.0.1")
-        api("org.jetbrains:annotations:24.0.0")
+        api("org.jetbrains:annotations:24.0.1")
         api("org.mockito:mockito-core:${Version.mockito}")
         api("org.mockito:mockito-junit-jupiter:${Version.mockito}")
         api("org.mockito.kotlin:mockito-kotlin:4.1.0")
@@ -64,7 +64,7 @@ dependencies {
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.36.0"))
     api(platform(libs.kotlin.bom))
-    api(platform("org.junit:junit-bom:5.9.2"))
+    api(platform("org.junit:junit-bom:5.9.3"))
     api(platform(libs.spring.boot.dependencies))
     api(platform("software.amazon.awssdk:bom:2.20.63"))
 }
