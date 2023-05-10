@@ -296,6 +296,12 @@ function buildLoginResponse(
         <saml:Attribute Name="urn:oid:1.2.246.21">
           <saml:AttributeValue>010101-999X</saml:AttributeValue>
         </saml:Attribute>
+        <saml:Attribute Name="urn:oid:2.5.4.42">
+          <saml:AttributeValue>Etunimi</saml:AttributeValue>
+        </saml:Attribute>
+        <saml:Attribute Name="urn:oid:2.5.4.4">
+          <saml:AttributeValue>Sukunimi</saml:AttributeValue>
+        </saml:Attribute>
       </saml:AttributeStatement>
       <saml:AuthnStatement
           AuthnInstant="${issueInstant}"

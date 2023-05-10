@@ -12,12 +12,14 @@ import {
   VerifyWithRequest
 } from '@node-saml/passport-saml'
 import { logError, logWarn } from '../logging'
-import { EvakaSessionUser } from '../auth'
+import { createLogoutToken, EvakaSessionUser } from '../auth'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config'
 import { readFileSync } from 'fs'
 import certificates, { TrustedCertificates } from '../certificates'
 import express from 'express'
 import path from 'path'
+import { logoutWithOnlyToken } from '../session'
+import { fromCallback } from '../promise-utils'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -60,14 +62,10 @@ export function createSamlConfig(
 
 // A subset of SAML Profile fields that are expected to be present in Profile
 // *and* req.user in valid SAML sessions
-function samlProfileId({
-  issuer,
-  sessionIndex,
-  nameID,
-  nameIDFormat
-}: Profile) {
-  return { issuer, sessionIndex, nameID, nameIDFormat }
-}
+const SamlProfileId = z.object({
+  nameID: z.string(),
+  sessionIndex: z.string().optional()
+})
 
 export function createSamlStrategy(
   config: SamlConfig,
@@ -108,13 +106,28 @@ export function createSamlStrategy(
   const logoutVerify: VerifyWithRequest = (req, profile, done) =>
     (async () => {
       if (!profile) return undefined
-      if (req.user) {
-        const reqUser = req.user as Profile
-        const reqId = samlProfileId(reqUser)
-        const profileId = samlProfileId(profile)
-        if (isEqual(reqId, profileId)) {
-          return reqUser
+      const profileId = SamlProfileId.safeParse(profile)
+      if (!profileId.success) return undefined
+      if (!req.user) {
+        // We're possibly doing SLO without a real session (e.g. browser has
+        // 3rd party cookies disabled). We need to retrieve the session data
+        // and recreate req.user for this request
+        const logoutToken = createLogoutToken(
+          profile.nameID,
+          profile.sessionIndex
+        )
+        const user = await logoutWithOnlyToken(logoutToken)
+        if (user) {
+          // Set req.user for *this request only*
+          await fromCallback((cb) =>
+            req.login(user, { session: false, keepSessionInfo: false }, cb)
+          )
         }
+      }
+      const reqUser: Partial<Profile> = (req.user ?? {}) as Partial<Profile>
+      const reqId = SamlProfileId.safeParse(reqUser)
+      if (reqId.success && isEqual(reqId.data, profileId.data)) {
+        return reqUser
       }
     })()
       .then((user) => done(null, user))

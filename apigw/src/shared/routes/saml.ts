@@ -4,7 +4,7 @@
 
 import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
-import passportSaml, { SAML, SamlConfig } from '@node-saml/passport-saml'
+import passportSaml, { SamlConfig } from '@node-saml/passport-saml'
 import { createLogoutToken } from '../auth'
 import { gatewayRole, nodeEnv } from '../config'
 import { toMiddleware, toRequestHandler } from '../express'
@@ -180,7 +180,7 @@ export default function createSamlRouter(
 
   const loginHandler = createLoginHandler(endpointConfig)
   const logoutHandler = createLogoutHandler(endpointConfig)
-  const logoutCallback = toMiddleware(async (req, res) => {
+  const logoutCallback = toMiddleware(async (req) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out`,
       req,

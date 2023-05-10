@@ -15,7 +15,6 @@ import { RedisClient } from 'redis'
 import AsyncRedisClient from './async-redis-client'
 import { cookieSecret, sessionTimeoutMinutes, useSecureCookies } from './config'
 import { LogoutToken, toMiddleware } from './express'
-import { logDebug } from './logging'
 import { fromCallback } from './promise-utils'
 
 export type SessionType = 'enduser' | 'employee'
@@ -112,44 +111,47 @@ export async function saveLogoutToken(
   await asyncRedisClient.set(key, req.session.id, 'EX', ttlSeconds)
 }
 
-async function consumeLogoutToken(
-  req: express.Request,
-  logoutToken?: LogoutToken['value']
-): Promise<void> {
-  // Prefer an explicit token from e.g. a SAMLRequest but fall back to the
-  // logoutToken from the session in case
-  // a) this wasn't a SAMLRequest
-  // b) it's malformed
-  // to ensure the logout token is deleted from the store even in non-SLO cases.
-  const token = logoutToken || req.session?.logoutToken?.value
-  if (!token) {
-    logDebug("Can't consume logout request without a logout token, ignoring")
-    return
-  }
-
+export async function logoutWithOnlyToken(
+  logoutToken: LogoutToken['value']
+): Promise<unknown | undefined> {
   if (!asyncRedisClient) return
-  const key = logoutKey(token)
-  const sid = await asyncRedisClient.get(key)
+  if (!logoutToken) return
+  const sid = await asyncRedisClient.get(logoutKey(logoutToken))
+  if (!sid) return
+  const session = await asyncRedisClient.get(sessionKey(sid))
+  await asyncRedisClient.del(sessionKey(sid), logoutKey(logoutToken))
+  if (!session) return
+  const user = JSON.parse(session)?.passport?.user
+  if (!user) return
+  return user
+}
+
+export async function consumeLogoutToken(token: LogoutToken['value']) {
+  if (!asyncRedisClient) return
+  // TODO: use Redis getdel operation once the client supports it
+  const sid = await asyncRedisClient.get(logoutKey(token))
   if (sid) {
     // Ensure both session and logout keys are cleared in case no cookies were
     // available -> no req.session was available to be deleted.
-    await asyncRedisClient.del(sessionKey(sid), key)
+    await asyncRedisClient.del(sessionKey(sid), logoutKey(token))
   }
 }
 
 export async function logoutExpress(
   req: express.Request,
   res: express.Response,
-  sessionType: SessionType,
-  logoutToken?: LogoutToken['value']
+  sessionType: SessionType
 ) {
+  res.clearCookie(sessionCookie(sessionType))
   await fromCallback((cb) => req.logout(cb))
-  await consumeLogoutToken(req, logoutToken)
+  const logoutToken = req.session?.logoutToken?.value
+  if (logoutToken) {
+    await consumeLogoutToken(logoutToken)
+  }
   if (req.session) {
     const session = req.session
     await fromCallback((cb) => session.destroy(cb))
   }
-  res.clearCookie(sessionCookie(sessionType))
 }
 
 export async function saveSession(req: express.Request) {
