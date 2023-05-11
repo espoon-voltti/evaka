@@ -70,7 +70,10 @@ describe('resetTimes', () => {
           weekDayRange: undefined,
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }
       })
@@ -100,7 +103,10 @@ describe('resetTimes', () => {
           weekDayRange: [2, 2],
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }
       })
@@ -130,7 +136,10 @@ describe('resetTimes', () => {
           weekDayRange: [1, 5],
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }
       })
@@ -159,7 +168,10 @@ describe('resetTimes', () => {
           weekDayRange: [1, 7],
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }
       })
@@ -216,7 +228,10 @@ describe('resetTimes', () => {
           weekDayRange: [1, 5],
           day: {
             branch: 'reservation',
-            state: [{ startTime: '08:00', endTime: '16:00' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '08:00', endTime: '16:00' }]
+            }
           }
         }
       })
@@ -234,7 +249,10 @@ describe('resetTimes', () => {
           weekDayRange: [1, 5],
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }
       })
@@ -384,7 +402,10 @@ describe('resetTimes', () => {
           weekDayRange: [1, 5],
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }
       })
@@ -626,7 +647,10 @@ describe('resetTimes', () => {
             weekDay: 2,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -657,7 +681,10 @@ describe('resetTimes', () => {
           weekDay,
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }))
       })
@@ -686,7 +713,10 @@ describe('resetTimes', () => {
           weekDay,
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }))
       })
@@ -738,7 +768,7 @@ describe('resetTimes', () => {
           weekDay,
           day: {
             branch: 'reservation',
-            state: [] // empty reservations array means absent
+            state: { branch: 'absent', state: true }
           }
         }))
       })
@@ -757,35 +787,47 @@ describe('resetTimes', () => {
             weekDay: 1,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 2,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 3,
             day: {
               branch: 'reservation',
-              state: [] // this day has an absence for all children
+              state: { branch: 'absent', state: true } // this day has an absence for all children
             }
           },
           {
             weekDay: 4,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 5,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -857,14 +899,20 @@ describe('resetTimes', () => {
             weekDay: 1,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 2,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
@@ -879,14 +927,20 @@ describe('resetTimes', () => {
             weekDay: 4,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 5,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -955,35 +1009,50 @@ describe('resetTimes', () => {
             weekDay: 1,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:05', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:05', endTime: '16:00' }]
+              }
             }
           },
           {
             weekDay: 2,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:10', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:10', endTime: '16:00' }]
+              }
             }
           },
           {
             weekDay: 3,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:15', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:15', endTime: '16:00' }]
+              }
             }
           },
           {
             weekDay: 4,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:20', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:20', endTime: '16:00' }]
+              }
             }
           },
           {
             weekDay: 5,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:25', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:25', endTime: '16:00' }]
+              }
             }
           }
         ]
@@ -1003,14 +1072,20 @@ describe('resetTimes', () => {
             weekDay: 1,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 2,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
@@ -1018,21 +1093,30 @@ describe('resetTimes', () => {
             day: {
               // This day has a common reservation for all children
               branch: 'reservation',
-              state: [{ startTime: '08:15', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:15', endTime: '16:00' }]
+              }
             }
           },
           {
             weekDay: 4,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 5,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -1175,14 +1259,20 @@ describe('resetTimes', () => {
             weekDay: 2,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             weekDay: 3,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -1253,7 +1343,10 @@ describe('resetTimes', () => {
           weekDay,
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }))
       })
@@ -1725,7 +1818,13 @@ describe('resetTimes', () => {
         state: selectedRangeWeekDays.map((date) => ({
           date,
           day: date.isEqual(tuesday)
-            ? { branch: 'reservation', state: [{ startTime: '', endTime: '' }] }
+            ? {
+                branch: 'reservation',
+                state: {
+                  branch: 'timeRanges',
+                  state: [{ startTime: '', endTime: '' }]
+                }
+              }
             : { branch: 'readOnly', state: undefined }
         }))
       })
@@ -1753,7 +1852,10 @@ describe('resetTimes', () => {
           date,
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }))
       })
@@ -1781,7 +1883,10 @@ describe('resetTimes', () => {
           date,
           day: {
             branch: 'reservation',
-            state: [{ startTime: '', endTime: '' }]
+            state: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
           }
         }))
       })
@@ -1984,35 +2089,47 @@ describe('resetTimes', () => {
             date: rangeWeekDays[0],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:00', endTime: '16:00' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:00', endTime: '16:00' }]
+              }
             }
           },
           {
             date: rangeWeekDays[1],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             date: rangeWeekDays[2],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             date: rangeWeekDays[3],
             day: {
               branch: 'reservation',
-              state: []
+              state: { branch: 'absent', state: true }
             }
           },
           {
             date: rangeWeekDays[4],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
@@ -2023,7 +2140,10 @@ describe('resetTimes', () => {
             date: rangeWeekDays[6],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
@@ -2100,14 +2220,20 @@ describe('resetTimes', () => {
             date: tuesday,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             date: wednesday,
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -2356,7 +2482,10 @@ describe('resetTimes', () => {
                   date: selectedRangeWeekDays[1],
                   day: {
                     branch: 'reservation',
-                    state: [{ startTime: '08:15', endTime: '13:45' }]
+                    state: {
+                      branch: 'timeRanges',
+                      state: [{ startTime: '08:15', endTime: '13:45' }]
+                    }
                   }
                 }
               ]
@@ -2378,21 +2507,30 @@ describe('resetTimes', () => {
             date: selectedRangeWeekDays[0],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             date: selectedRangeWeekDays[1],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '08:15', endTime: '13:45' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '08:15', endTime: '13:45' }]
+              }
             }
           },
           {
             date: selectedRangeWeekDays[2],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
@@ -2421,7 +2559,10 @@ describe('resetTimes', () => {
                   date: selectedRangeWeekDays[1],
                   day: {
                     branch: 'reservation',
-                    state: [{ startTime: '08:15', endTime: '13:45' }]
+                    state: {
+                      branch: 'timeRanges',
+                      state: [{ startTime: '08:15', endTime: '13:45' }]
+                    }
                   }
                 }
               ]
@@ -2443,21 +2584,30 @@ describe('resetTimes', () => {
             date: selectedRangeWeekDays[0],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             date: selectedRangeWeekDays[1],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           },
           {
             date: selectedRangeWeekDays[2],
             day: {
               branch: 'reservation',
-              state: [{ startTime: '', endTime: '' }]
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
             }
           }
         ]
