@@ -604,6 +604,54 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `reservations without times can be added if reservations are not required (removes absences)`() {
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.PRESCHOOL, // <-- reservations are not required
+                startDate = monday,
+                endDate = monday.plusYears(1)
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                monday,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Present(
+                        childId = testChild_1.id,
+                        date = monday,
+                    )
+                )
+            )
+        }
+
+        // then
+        val data =
+            db.read {
+                it.getReservationsCitizen(monday, testAdult_1.id, FiniteDateRange(monday, monday))
+            }
+        val reservations =
+            data.flatMap { dailyData -> dailyData.children.flatMap { child -> child.reservations } }
+        val absences =
+            data.flatMap { dailyData -> dailyData.children.map { child -> child.absence } }
+        assertEquals(0, reservations.size)
+        assertEquals(0, absences.size)
+    }
+
+    @Test
     fun `reservations without times can be added to open holiday period`() {
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)

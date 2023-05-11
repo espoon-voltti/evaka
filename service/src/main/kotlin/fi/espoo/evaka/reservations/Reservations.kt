@@ -144,6 +144,27 @@ fun createReservationsAndAbsences(
 
     val validated =
         requests
+            .map { request ->
+                when (request) {
+                    is DailyReservationRequest.Reservations,
+                    is DailyReservationRequest.Present -> {
+                        // Don't create reservations for children whose placement type doesn't
+                        // require them
+                        val reservable =
+                            placements[request.childId]
+                                ?.find { it.range.includes(request.date) }
+                                ?.type
+                                ?.requiresAttendanceReservations()
+                                ?: false
+                        if (!reservable) {
+                            DailyReservationRequest.Nothing(request.childId, request.date)
+                        } else {
+                            request
+                        }
+                    }
+                    else -> request
+                }
+            }
             .mapNotNull { request ->
                 val isOpenHolidayPeriod = openHolidayPeriodDates.contains(request.date)
                 val isClosedHolidayPeriod = closedHolidayPeriodDates.contains(request.date)
@@ -182,27 +203,6 @@ fun createReservationsAndAbsences(
                         throw BadRequest("Reservations outside holiday periods must have times")
                     }
                     request
-                }
-            }
-            .map { request ->
-                when (request) {
-                    is DailyReservationRequest.Reservations,
-                    is DailyReservationRequest.Present -> {
-                        // Don't create reservations for children whose placement type doesn't
-                        // require them
-                        val reservable =
-                            placements[request.childId]
-                                ?.find { it.range.includes(request.date) }
-                                ?.type
-                                ?.requiresAttendanceReservations()
-                                ?: false
-                        if (!reservable) {
-                            DailyReservationRequest.Nothing(request.childId, request.date)
-                        } else {
-                            request
-                        }
-                    }
-                    else -> request
                 }
             }
             .map { request ->
