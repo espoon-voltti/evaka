@@ -7,10 +7,7 @@ import { useCallback, useState } from 'react'
 import { Loading, Result, Success } from 'lib-common/api'
 import { ChildDailyRecords } from 'lib-common/api-types/reservations'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import {
-  DailyReservationRequest,
-  Reservation
-} from 'lib-common/generated/api-types/reservations'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -191,13 +188,10 @@ export function useUnitReservationEditState(
 
       const filtered = reservations
         .filter(({ startTime, endTime }) => startTime && endTime)
-        .map(
-          ({ startTime, endTime }): Reservation => ({
-            type: 'TIMES',
-            startTime: LocalTime.parse(startTime),
-            endTime: LocalTime.parse(endTime)
-          })
-        )
+        .map(({ startTime, endTime }) => ({
+          start: LocalTime.parse(startTime),
+          end: LocalTime.parse(endTime)
+        }))
 
       const reservationRequest: DailyReservationRequest =
         filtered.length === 0

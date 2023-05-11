@@ -32,6 +32,7 @@ import {
   ReservationResponseDayChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutation } from 'lib-common/query'
@@ -220,6 +221,7 @@ export default React.memo(function DayView({
                         child,
                         absence,
                         reservations,
+                        requiresReservation,
                         attendances,
                         shiftCare
                       } = childWithReservation
@@ -296,7 +298,9 @@ export default React.memo(function DayView({
                             <ReservationTable>
                               <LabelLike>{i18n.calendar.reservation}</LabelLike>
                               <div>
-                                {editing && (!absence || absence.editable) ? (
+                                {editing &&
+                                requiresReservation &&
+                                (!absence || absence.editable) ? (
                                   <EditReservation
                                     canAddSecondReservation={
                                       shiftCare && !reservations[1]
@@ -306,7 +310,10 @@ export default React.memo(function DayView({
                                 ) : absence ? (
                                   <Absence absence={absence} />
                                 ) : (
-                                  <Reservations reservations={reservations} />
+                                  <Reservations
+                                    reservations={reservations}
+                                    requiresReservation={requiresReservation}
+                                  />
                                 )}
                               </div>
                               <LabelLike>{i18n.calendar.realized}</LabelLike>
@@ -470,20 +477,12 @@ const editorForm = mapped(
   (output) =>
     (date: LocalDate): DailyReservationRequest[] =>
       output.map(({ childId, reservations, absent }) => {
-        const res: Reservation[] = reservations.flatMap((reservation) =>
-          reservation
-            ? [
-                {
-                  type: 'TIMES',
-                  startTime: reservation.startTime,
-                  endTime: reservation.endTime
-                }
-              ]
-            : []
+        const res: TimeRange[] = reservations.flatMap(
+          (reservation) => reservation ?? []
         )
         return res.length === 0 && absent
           ? {
-              type: 'ABSENCE',
+              type: 'ABSENT',
               childId,
               date
             }
@@ -517,7 +516,9 @@ function useEditState(
   const t = useTranslation()
   const today = LocalDate.todayInSystemTz()
 
-  const anyChildReservable = childrenWithReservations !== undefined
+  const anyChildReservable =
+    childrenWithReservations !== undefined &&
+    childrenWithReservations.some((child) => child.requiresReservation)
   const allChildrenHaveUneditableAbsence = childrenWithReservations.every(
     (child) => child.absence && !child.absence.editable
   )
@@ -720,9 +721,11 @@ const Absence = React.memo(function Absence({
 })
 
 const Reservations = React.memo(function Reservations({
-  reservations
+  reservations,
+  requiresReservation
 }: {
   reservations: Reservation[]
+  requiresReservation: boolean
 }) {
   const i18n = useTranslation()
 
@@ -746,10 +749,14 @@ const Reservations = React.memo(function Reservations({
         )
         .join(', ')}
     </span>
-  ) : (
+  ) : requiresReservation ? (
     <ReservationStatus data-qa="no-reservations">
-      {i18n.calendar.noReservation}
+      {i18n.calendar.missingReservation}
     </ReservationStatus>
+  ) : (
+    <span data-qa="reservation-not-required">
+      {i18n.calendar.reservationNotRequired}
+    </span>
   )
 })
 

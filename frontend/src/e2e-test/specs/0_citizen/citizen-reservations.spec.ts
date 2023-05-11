@@ -145,13 +145,12 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       reservations
     )
 
-    await weekdays.reduce(async (promise, index) => {
-      await promise
+    for (const index of weekdays) {
       await calendarPage.assertReservations(
         firstReservationDay.addDays(index),
         [reservations[index]]
       )
-    }, Promise.resolve())
+    }
   })
 
   test('Citizen cannot create reservation on day where staff has marked an absence', async () => {
@@ -352,13 +351,12 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       reservations
     )
 
-    await weekdays.reduce(async (promise, index) => {
-      await promise
+    for (const index of weekdays) {
       await calendarPage.assertReservations(
         firstReservationDay.addDays(index),
         [reservations[index]]
       )
-    }, Promise.resolve())
+    }
   })
 })
 

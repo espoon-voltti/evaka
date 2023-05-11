@@ -255,15 +255,14 @@ describe('Unit group calendar', () => {
       childId: child1Fixture.id,
       date: holidayPeriodStart.addDays(1),
       reservation: {
-        type: 'TIMES',
-        startTime: LocalTime.of(8, 0),
-        endTime: LocalTime.of(14, 0)
+        start: LocalTime.of(8, 0),
+        end: LocalTime.of(14, 0)
       },
       secondReservation: null
     }).save()
     // Absence on the third day
     await Fixture.attendanceReservation({
-      type: 'ABSENCE',
+      type: 'ABSENT',
       childId: child1Fixture.id,
       date: holidayPeriodStart.addDays(2)
     }).save()

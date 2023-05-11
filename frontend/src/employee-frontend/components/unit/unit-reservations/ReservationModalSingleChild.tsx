@@ -34,7 +34,7 @@ import {
 } from 'lib-common/form/types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { Repetition, timeRangeToTimes } from 'lib-common/reservations'
+import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -69,9 +69,7 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz().addYears(1)
 )
 
-export const times = mapped(array(required(localTimeRange)), (output) =>
-  output.map(timeRangeToTimes)
-)
+export const times = array(required(localTimeRange))
 
 const weekDay = chained(
   object({

@@ -11,7 +11,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
-import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.ReservationControllerCitizen
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
@@ -90,6 +89,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 endDate = placementEnd,
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
+
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
@@ -352,19 +352,18 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     dailyServiceTimesValidity.start.minusDays(1),
-                    Reservation.Times(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 ),
                 // Inside the validity period
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     dailyServiceTimesValidity.start,
-                    Reservation.Times(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 ),
                 // Inside the validity period AND inside a holiday period
-                DailyReservationRequest.Reservations(
+                DailyReservationRequest.Present(
                     testChild_1.id,
                     dailyServiceTimesValidity.start.plusDays(7),
-                    Reservation.NoTimes
                 )
             )
         )

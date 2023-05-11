@@ -6,12 +6,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import {
-  BoundForm,
-  BoundFormState,
-  useFormElem,
-  useFormUnion
-} from 'lib-common/form/hooks'
+import { BoundForm, useFormElem, useFormUnion } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -23,7 +18,7 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, times } from './form'
+import { day, emptyTimeRange, noTimes, times } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
@@ -64,8 +59,8 @@ export const Day = React.memo(function Day({
           onFocus={onFocus}
         />
       )
-    case 'holidayReservation':
-      return <HolidayReservation bind={form} label={label} />
+    case 'reservationNoTimes':
+      return <ReservationNoTimes bind={form} label={label} />
   }
 })
 
@@ -119,7 +114,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
 })
 
 interface ReadOnlyDayProps {
-  mode: 'not-editable' | 'holiday' | undefined
+  mode: 'notEditable' | 'holiday' | undefined
   label: React.ReactNode
   dataQaPrefix?: string
 }
@@ -142,7 +137,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
           <RightCell />
         </FixedSpaceRow>
       )
-    case 'not-editable':
+    case 'notEditable':
       return (
         <>
           <FixedSpaceRow fullWidth alignItems="center">
@@ -272,14 +267,15 @@ export const Times = React.memo(function Times({
   )
 })
 
-export function HolidayReservation({
+export const ReservationNoTimes = React.memo(function ReservationNoTimes({
   bind,
   label
 }: {
-  bind: BoundFormState<'present' | 'absent'>
+  bind: BoundForm<typeof noTimes>
   label: React.ReactNode
 }) {
   const i18n = useTranslation()
+
   return (
     <FixedSpaceRow fullWidth alignItems="center">
       <LeftCell>{label}</LeftCell>
@@ -301,7 +297,7 @@ export function HolidayReservation({
       </RightCell>
     </FixedSpaceRow>
   )
-}
+})
 
 const LeftCell = styled.div`
   width: 80px;

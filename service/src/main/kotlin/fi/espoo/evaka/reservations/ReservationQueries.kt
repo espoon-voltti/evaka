@@ -14,10 +14,12 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
@@ -120,14 +122,15 @@ fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRa
         .execute()
 }
 
+data class ReservationInsert(val childId: ChildId, val date: LocalDate, val range: TimeRange?)
+
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
-    requests: List<DailyReservationRequest.Reservations>
+    reservations: List<ReservationInsert>
 ): List<AttendanceReservationId> {
-    return requests.flatMap { request ->
-        listOfNotNull(request.reservation, request.secondReservation).mapNotNull { res ->
-            createQuery(
-                    """
+    return reservations.mapNotNull {
+        createQuery(
+                """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
         SELECT :childId, :date, :start, :end, :userId
         FROM realized_placement_all(:date) rp
@@ -140,21 +143,19 @@ fun Database.Transaction.insertValidReservations(
         ON CONFLICT DO NOTHING
         RETURNING id
         """
-                )
-                .bind("userId", userId)
-                .bind("childId", request.childId)
-                .bind("date", request.date)
-                .let {
-                    when (res) {
-                        is Reservation.Times ->
-                            it.bind("start", res.startTime).bind("end", res.endTime)
-                        is Reservation.NoTimes ->
-                            it.bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
-                    }
+            )
+            .bind("userId", userId)
+            .bind("childId", it.childId)
+            .bind("date", it.date)
+            .run {
+                if (it.range == null) {
+                    bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
+                } else {
+                    bind("start", it.range.start).bind("end", it.range.end)
                 }
-                .mapTo<AttendanceReservationId>()
-                .singleOrNull()
-        }
+            }
+            .mapTo<AttendanceReservationId>()
+            .singleOrNull()
     }
 }
 
@@ -194,18 +195,18 @@ fun Database.Read.getUnitReservations(
 
 fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,
-    period: DateRange
+    range: DateRange
 ): List<LocalDate> {
     return createQuery(
             """
         SELECT date
         FROM attendance_reservation
-        WHERE between_start_and_end(:period, date)
+        WHERE between_start_and_end(:range, date)
         AND child_id = :childId
         AND (start_time IS NULL OR start_time != '00:00'::time)  -- filter out overnight reservations
         """
         )
-        .bind("period", period)
+        .bind("range", range)
         .bind("childId", childId)
         .mapTo<LocalDate>()
         .list()
@@ -335,11 +336,16 @@ data class ReservationChild(
 )
 
 fun Database.Read.getReservationChildren(
-    childIds: Set<ChildId>,
+    guardianId: PersonId,
     today: LocalDate
 ): List<ReservationChild> {
     return createQuery(
             """
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :guardianId
+    UNION
+    SELECT child_id FROM foster_parent WHERE parent_id = :guardianId AND valid_during @> :today
+)
 SELECT
     p.id,
     p.first_name,
@@ -355,86 +361,107 @@ SELECT
     ) AS upcoming_placement_type
 FROM person p
 LEFT JOIN child_images ci ON ci.child_id = p.id
-WHERE p.id = ANY (:childIds)
+WHERE p.id = ANY (SELECT child_id FROM children)
 ORDER BY p.date_of_birth, p.duplicate_of
         """
         )
-        .bind("childIds", childIds)
+        .bind("guardianId", guardianId)
         .bind("today", today)
         .mapTo<ReservationChild>()
         .list()
 }
 
 data class ReservationPlacement(
-    val isBackup: Boolean,
     val childId: ChildId,
-    val startDate: LocalDate,
-    val endDate: LocalDate,
+    val range: FiniteDateRange,
+    val type: PlacementType,
     val operationDays: Set<Int>,
-    val hasContractDays: Boolean
-)
-
-data class ReservationPlacements(
-    val backupPlacements: List<ReservationPlacement>,
-    val regularPlacements: List<ReservationPlacement>
 )
 
 fun Database.Read.getReservationPlacements(
-    guardianId: PersonId,
-    today: LocalDate,
+    childIds: Set<ChildId>,
     range: FiniteDateRange
-): Map<ChildId, ReservationPlacements> {
+): Map<ChildId, List<ReservationPlacement>> {
     return createQuery(
             """
-WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :guardianId
-    UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :guardianId AND valid_during @> :today
-)
 SELECT
-    FALSE AS is_backup,
     pl.child_id,
-    pl.start_date,
-    pl.end_date,
-    u.operation_days,
-    coalesce(sno.contract_days_per_month, sno_default.contract_days_per_month) IS NOT NULL AS has_contract_days
+    daterange(pl.start_date, pl.end_date, '[]') * :range AS range,
+    pl.type,
+    u.operation_days
 FROM placement pl
 JOIN daycare u ON pl.unit_id = u.id
-LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') && :range
-LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-LEFT JOIN service_need_option sno_default ON sno_default.valid_placement_type = pl.type AND sno_default.default_option
 WHERE
-    pl.child_id = ANY (SELECT child_id FROM children) AND
+    pl.child_id = ANY (:childIds) AND
     daterange(pl.start_date, pl.end_date, '[]') && :range AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
+"""
+        )
+        .bind("childIds", childIds)
+        .bind("range", range)
+        .mapTo<ReservationPlacement>()
+        .groupBy { it.childId }
+}
 
-UNION ALL
+data class ReservationBackupPlacement(
+    val childId: ChildId,
+    val range: FiniteDateRange,
+    val operationDays: Set<Int>,
+)
 
+fun Database.Read.getReservationBackupPlacements(
+    childIds: Set<ChildId>,
+    range: FiniteDateRange
+): Map<ChildId, List<ReservationBackupPlacement>> {
+    return createQuery(
+            """
 SELECT
-    TRUE AS is_backup,
     bc.child_id,
-    bc.start_date,
-    bc.end_date,
-    u.operation_days,
-    FALSE AS has_contract_days
+    daterange(bc.start_date, bc.end_date, '[]') * :range AS range,
+    u.operation_days
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
+
 WHERE
-    bc.child_id = ANY (SELECT child_id FROM children) AND
+    bc.child_id = ANY (:childIds) AND
     daterange(bc.start_date, bc.end_date, '[]') && :range AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
         )
-        .bind("guardianId", guardianId)
-        .bind("today", today)
+        .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ReservationPlacement>()
+        .mapTo<ReservationBackupPlacement>()
         .groupBy { it.childId }
-        .mapValues { (_, placements) ->
-            val (backupPlacements, regularPlacements) = placements.partition { it.isBackup }
-            ReservationPlacements(
-                backupPlacements = backupPlacements,
-                regularPlacements = regularPlacements
-            )
-        }
+}
+
+private data class ChildContractDays(
+    val childId: ChildId,
+    val contractDays: Timeline,
+)
+
+fun Database.Read.getReservationContractDayRanges(
+    childIds: Set<PersonId>,
+    range: FiniteDateRange
+): Map<ChildId, Timeline> {
+    return createQuery(
+            """
+            SELECT
+                pl.child_id,
+                range_agg(daterange(sn.start_date, sn.end_date, '[]') * :range) AS contract_days
+            FROM placement pl
+            JOIN service_need sn ON sn.placement_id = pl.id
+            JOIN service_need_option sno ON sno.id = sn.option_id
+            LEFT JOIN service_need_option sno_default ON sno_default.valid_placement_type = pl.type AND sno_default.default_option
+            WHERE
+                pl.child_id = ANY(:childIds) AND
+                daterange(pl.start_date, pl.end_date, '[]') && :range AND
+                daterange(sn.start_date, sn.end_date, '[]') && :range AND
+                COALESCE(sno.contract_days_per_month, sno_default.contract_days_per_month) IS NOT NULL
+            GROUP BY child_id
+            """
+        )
+        .bind("childIds", childIds)
+        .bind("range", range)
+        .mapTo<ChildContractDays>()
+        .associate { it.childId to it.contractDays }
 }
