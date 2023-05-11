@@ -142,30 +142,18 @@ fun createReservationsAndAbsences(
     val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
     val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
 
+    val isReservableChild = { req: DailyReservationRequest ->
+        placements[req.childId]
+            ?.find { it.range.includes(req.date) }
+            ?.type
+            ?.requiresAttendanceReservations()
+            ?: false
+    }
+
     val validated =
         requests
-            .map { request ->
-                when (request) {
-                    is DailyReservationRequest.Reservations,
-                    is DailyReservationRequest.Present -> {
-                        // Don't create reservations for children whose placement type doesn't
-                        // require them
-                        val reservable =
-                            placements[request.childId]
-                                ?.find { it.range.includes(request.date) }
-                                ?.type
-                                ?.requiresAttendanceReservations()
-                                ?: false
-                        if (!reservable) {
-                            DailyReservationRequest.Nothing(request.childId, request.date)
-                        } else {
-                            request
-                        }
-                    }
-                    else -> request
-                }
-            }
             .mapNotNull { request ->
+                val isReservable = isReservableChild(request)
                 val isOpenHolidayPeriod = openHolidayPeriodDates.contains(request.date)
                 val isClosedHolidayPeriod = closedHolidayPeriodDates.contains(request.date)
 
@@ -174,7 +162,7 @@ fun createReservationsAndAbsences(
                     request
                 } else if (isClosedHolidayPeriod) {
                     // Only reservations with times are allowed on closed holiday periods
-                    if (request is DailyReservationRequest.Present) {
+                    if (isReservable && request is DailyReservationRequest.Present) {
                         throw BadRequest("Reservations in closed holiday periods must have times")
                     }
                     if (isCitizen) {
@@ -188,7 +176,8 @@ fun createReservationsAndAbsences(
                             (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
                         if (
                             request is DailyReservationRequest.Reservations &&
-                                (!hasReservation || hasAbsence)
+                                (!hasReservation || hasAbsence) ||
+                                request is DailyReservationRequest.Present && hasAbsence
                         ) {
                             null
                         } else {
@@ -199,10 +188,25 @@ fun createReservationsAndAbsences(
                     }
                 } else {
                     // Not a holiday period - only reservations with times are allowed
-                    if (request is DailyReservationRequest.Present) {
+                    if (isReservable && request is DailyReservationRequest.Present) {
                         throw BadRequest("Reservations outside holiday periods must have times")
                     }
                     request
+                }
+            }
+            .map { request ->
+                when (request) {
+                    is DailyReservationRequest.Reservations,
+                    is DailyReservationRequest.Present -> {
+                        // Don't create reservations for children whose placement type doesn't
+                        // require them
+                        if (!isReservableChild(request)) {
+                            DailyReservationRequest.Nothing(request.childId, request.date)
+                        } else {
+                            request
+                        }
+                    }
+                    else -> request
                 }
             }
             .map { request ->
