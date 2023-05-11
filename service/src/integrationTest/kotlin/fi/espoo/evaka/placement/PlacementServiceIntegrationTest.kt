@@ -8,11 +8,13 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -1335,7 +1337,65 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     testChild_1.lastName,
                     testChild_1.dateOfBirth,
                     listOf(),
+                    listOf(),
                     FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1))
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `only missing backup care group placements after evaka launch are included`() {
+        val evakaLaunch = LocalDate.of(2020, 3, 1)
+        val backupCareId =
+            db.transaction { tx ->
+                val placement =
+                    tx.insertPlacement(
+                        PlacementType.DAYCARE,
+                        testChild_1.id,
+                        testDaycare.id,
+                        evakaLaunch.minusYears(1),
+                        evakaLaunch.plusYears(1)
+                    )
+                tx.insertTestDaycareGroupPlacement(
+                    placement.id,
+                    groupId1,
+                    startDate = placement.startDate,
+                    endDate = placement.endDate
+                )
+                tx.insertTestBackUpCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = evakaLaunch.minusYears(1),
+                    endDate = evakaLaunch.minusDays(1)
+                )
+                val backupCareId = BackupCareId(UUID.randomUUID())
+                tx.insertTestBackUpCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = evakaLaunch,
+                    endDate = evakaLaunch.plusYears(1),
+                    id = backupCareId
+                )
+                backupCareId
+            }
+
+        val result = db.read { tx -> getMissingGroupPlacements(tx, testDaycare2.id) }
+        assertEquals(
+            listOf(
+                MissingGroupPlacement(
+                    PlacementId(backupCareId.raw),
+                    null,
+                    true,
+                    FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
+                    testChild_1.id,
+                    testChild_1.firstName,
+                    testChild_1.lastName,
+                    testChild_1.dateOfBirth,
+                    listOf(testDaycare.name),
+                    listOf(),
+                    FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
                 )
             ),
             result

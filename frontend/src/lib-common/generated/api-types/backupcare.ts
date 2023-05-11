@@ -91,6 +91,7 @@ export interface NewBackupCare {
 */
 export interface UnitBackupCare {
   child: BackupCareChild
+  fromUnits: string[]
   group: BackupCareGroup | null
   id: UUID
   missingServiceNeedDays: number

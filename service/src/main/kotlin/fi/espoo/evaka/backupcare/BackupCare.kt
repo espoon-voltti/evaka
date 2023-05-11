@@ -33,6 +33,7 @@ data class UnitBackupCare(
     @Nested("child_") val child: BackupCareChild,
     @Nested("group_") val group: BackupCareGroup?,
     val period: FiniteDateRange,
+    @Json val fromUnits: List<String>,
     @Json val serviceNeeds: Set<ServiceNeed>,
     val missingServiceNeedDays: Int
 )

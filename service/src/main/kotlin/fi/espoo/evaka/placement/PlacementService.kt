@@ -567,6 +567,7 @@ SELECT
     c.first_name,
     c.last_name,
     c.date_of_birth,
+    '[]' AS from_units,
     sn.service_needs
 FROM missing_group_placement p
 JOIN person c ON p.child_id = c.id
@@ -600,9 +601,17 @@ SELECT
     bc.child_id,
     c.first_name,
     c.last_name,
-    c.date_of_birth
+    c.date_of_birth,
+    p.units AS from_units
 FROM backup_care bc
 JOIN person c ON bc.child_id = c.id
+JOIN LATERAL (
+  SELECT coalesce(jsonb_agg(DISTINCT u.name), '[]'::jsonb) AS units
+  FROM placement p
+  JOIN daycare u ON u.id = p.unit_id
+  WHERE p.child_id = bc.child_id
+    AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
+) p ON TRUE
 WHERE bc.unit_id = :unitId AND bc.group_id IS NULL
     AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:evakaLaunch, NULL)
 """
@@ -677,6 +686,7 @@ data class MissingGroupPlacement(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
+    @Json val fromUnits: List<String>, // for backup care
     @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
     val gap: FiniteDateRange
 )

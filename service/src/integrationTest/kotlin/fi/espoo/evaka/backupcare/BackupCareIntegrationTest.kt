@@ -189,6 +189,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         ),
                     group = BackupCareGroup(id = groupId, name = groupName),
                     period = period,
+                    fromUnits = listOf(testDaycare2.name),
                     serviceNeeds = setOf(),
                     missingServiceNeedDays =
                         ChronoUnit.DAYS.between(backupCareStart, serviceNeedPeriod.start).toInt()
