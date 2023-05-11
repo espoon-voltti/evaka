@@ -226,31 +226,41 @@ export default React.memo(function AbsenceCell({
     [id, selectedCells]
   )
 
-  const attendanceDayTooltipText: string | undefined = useMemo(() => {
-    const reservationsText = reservations
-      .map((res) => {
-        const reservationText =
-          res.reservation.type === 'TIMES'
-            ? `${
-                i18n.absences.reservation
-              } ${res.reservation.startTime.format()} - ${res.reservation.endTime.format()}`
-            : i18n.absences.present
-        const userTypeText =
-          res.createdByEvakaUserType === 'CITIZEN'
-            ? i18n.absences.guardian
-            : i18n.absences.notAGuardian
-        return `${reservationText} \n ${userTypeText}`
-      })
-      .join('\n')
-    const dailyServiceTimesText = dailyServiceTimes.map(
-      (dst) =>
-        `${i18n.absences.dailyServiceTime} ${dst.start
+  const attendanceDayTooltipElements = useMemo(() => {
+    const reservationElements = reservations.map((res, index) => {
+      const reservationText =
+        res.reservation.type === 'TIMES'
+          ? `${
+              i18n.absences.reservation
+            } ${res.reservation.startTime.format()} - ${res.reservation.endTime.format()}`
+          : i18n.absences.present
+      const userTypeText =
+        res.createdByEvakaUserType === 'CITIZEN'
+          ? i18n.absences.guardian
+          : i18n.absences.notAGuardian
+      return (
+        <Fragment key={index}>
+          {reservationText}
+          <br />
+          {userTypeText}
+        </Fragment>
+      )
+    })
+    const dailyServiceTimeElements = dailyServiceTimes.map((dst, index) => (
+      <Fragment key={index}>
+        {`${i18n.absences.dailyServiceTime} ${dst.start
           .toLocalTime()
-          .format()} - ${dst.end.toLocalTime().format()}`
+          .format()} - ${dst.end.toLocalTime().format()}`}
+      </Fragment>
+    ))
+    return (
+      <div data-qa={`attendance-tooltip-${date.toString()}`}>
+        {reservationElements}
+        {reservationElements.length > 0 && <br />}
+        {dailyServiceTimeElements}
+      </div>
     )
-    const fullText = [reservationsText, dailyServiceTimesText].join('\n')
-    return fullText.trim().length > 0 ? fullText : undefined
-  }, [i18n, reservations, dailyServiceTimes])
+  }, [i18n, reservations, dailyServiceTimes, date])
 
   const tooltipText = useMemo(
     () =>
@@ -271,8 +281,14 @@ export default React.memo(function AbsenceCell({
           )
         : isMissingHolidayReservation
         ? i18n.absences.missingHolidayReservation
-        : attendanceDayTooltipText,
-    [absences, backupCare, i18n, isMissingHolidayReservation, attendanceDayTooltipText]
+        : attendanceDayTooltipElements,
+    [
+      absences,
+      backupCare,
+      i18n,
+      isMissingHolidayReservation,
+      attendanceDayTooltipElements
+    ]
   )
 
   const toggle = useCallback(

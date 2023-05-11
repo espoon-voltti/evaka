@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -249,6 +250,28 @@ describe('Unit group calendar', () => {
       })
       .save()
 
+    await Fixture.dailyServiceTime(child1Fixture.id)
+      .with({
+        validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
+        type: 'REGULAR',
+        regularTimes: {
+          start: LocalTime.of(8, 0),
+          end: LocalTime.of(16, 0)
+        }
+      })
+      .save()
+
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.subDays(1),
+      reservation: {
+        start: LocalTime.of(11, 0),
+        end: LocalTime.of(13, 0)
+      },
+      secondReservation: null
+    }).save()
+
     // Reservation on the second day
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
@@ -277,8 +300,71 @@ describe('Unit group calendar', () => {
         childReservations.missingHolidayReservations(child1Fixture.id).count(),
       5
     )
+  })
 
-    //    await page.pause()
+  test('Tooltip for attendance is shown', async () => {
+    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
+    const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+        reservationDeadline: LocalDate.of(2023, 3, 1)
+      })
+      .save()
+
+    await Fixture.dailyServiceTime(child1Fixture.id)
+      .with({
+        validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
+        type: 'REGULAR',
+        regularTimes: {
+          start: LocalTime.of(8, 0),
+          end: LocalTime.of(16, 0)
+        }
+      })
+      .save()
+
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.subDays(1),
+      reservation: {
+        start: LocalTime.of(11, 0),
+        end: LocalTime.of(13, 0)
+      },
+      secondReservation: null
+    }).save()
+
+    // Reservation on the second day
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.addDays(1),
+      reservation: {
+        start: LocalTime.of(8, 0),
+        end: LocalTime.of(14, 0)
+      },
+      secondReservation: null
+    }).save()
+    // Absence on the third day
+    await Fixture.attendanceReservation({
+      type: 'ABSENT',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.addDays(2)
+    }).save()
+
+    await loadUnitAttendancesSection()
+
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(holidayPeriodStart)
+    await calendarPage.selectMode('month')
+    const date = LocalDate.of(2023, 3, 8)
+    const absenceCell = page.findByDataQa(
+      `absence-cell-${child1Fixture.id}-${date.toString()}`
+    )
+    await absenceCell.hover()
+    await page
+      .findByDataQa(`attendance-tooltip-${date.toString()}`)
+      .assertText((text) => text.includes('Sopimusaika 08:00 - 16:00'))
   })
 
   test('Missing holiday reservations are not shown if reservation deadline has passed', async () => {

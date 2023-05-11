@@ -306,7 +306,6 @@ export class UnitChildReservationsTable extends Element {
     this.findByDataQa(`reservation-${date.formatIso()}-${row}`)
   #attendanceCell = (date: LocalDate, row: number) =>
     this.findByDataQa(`attendance-${date.formatIso()}-${row}`)
-
   #ellipsisMenu = (childId: UUID) =>
     this.findByDataQa(`ellipsis-menu-${childId}`)
   #editInline = this.findByDataQa('menu-item-edit-row')
