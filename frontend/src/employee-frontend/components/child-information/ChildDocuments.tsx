@@ -1,9 +1,10 @@
 import { faFile } from 'Icons'
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import {
-  ChildDocument,
+  ChildDocumentSummary,
   DocumentType
 } from 'lib-common/generated/api-types/document'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -23,9 +24,10 @@ import { childDocumentsQuery, createChildDocumentMutation } from './queries'
 const ChildDocuments = React.memo(function ChildDocuments({
   documents
 }: {
-  documents: ChildDocument[]
+  documents: ChildDocumentSummary[]
 }) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
 
   return (
     <Table>
@@ -44,12 +46,10 @@ const ChildDocuments = React.memo(function ChildDocuments({
               <IconButton
                 icon={faFile}
                 aria-label="Avaa lomake"
-                onClick={() => undefined}
+                onClick={() => navigate(`/child-documents/${document.id}`)}
               />
             </Td>
-            <Td>
-              {i18n.documentTemplates.documentTypes[document.template.type]}
-            </Td>
+            <Td>{i18n.documentTemplates.documentTypes[document.type]}</Td>
             <Td>{document.published ? 'Julkaistu' : 'Luonnos'}</Td>
           </Tr>
         ))}
@@ -64,6 +64,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   childId: UUID
 }) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
   const documentsResult = useQueryResult(childDocumentsQuery(childId))
   const documentTemplatesResult = useQueryResult(
     activeDocumentTemplateSummariesQuery
@@ -96,6 +97,10 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                   createChildDocument({
                     childId,
                     templateId: templatesOfType[0].id // TODO: selecting if multiple
+                  }).then((res) => {
+                    if (res.isSuccess) {
+                      navigate(`/child-documents/${res.value}`)
+                    }
                   })
                 }
                 disabled={templatesOfType.length < 1 || submitting}

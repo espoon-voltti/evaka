@@ -44,6 +44,7 @@ export const fi = {
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu',
     vasuTemplates: 'Vasu-pohjat',
+    childDocument: 'Lapsen pedagoginen lomake',
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa'
   },
   common: {

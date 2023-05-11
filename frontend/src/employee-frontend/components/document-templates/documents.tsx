@@ -9,6 +9,7 @@ import { array, mapped, object, union } from 'lib-common/form/form'
 import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import {
+  AnsweredQuestion,
   DocumentContent,
   DocumentTemplateContent,
   Question
@@ -76,22 +77,38 @@ export const DocumentQuestionView = React.memo(function DocumentQuestionView({
   }
 })
 
-export const getDocumentQuestionInitialState = (question: Question) => {
+export const getDocumentQuestionInitialState = (
+  question: Question,
+  answeredQuestion?: AnsweredQuestion
+) => {
   switch (question.type) {
     case 'TEXT':
-      return TextQuestionDescriptor.document.getInitialState(question)
+      return TextQuestionDescriptor.document.getInitialState(
+        question,
+        answeredQuestion ? (answeredQuestion.answer as string) : undefined
+      )
     case 'CHECKBOX':
-      return CheckboxQuestionDescriptor.document.getInitialState(question)
+      return CheckboxQuestionDescriptor.document.getInitialState(
+        question,
+        answeredQuestion ? (answeredQuestion.answer as boolean) : undefined
+      )
     case 'CHECKBOX_GROUP':
-      return CheckboxGroupQuestionDescriptor.document.getInitialState(question)
+      return CheckboxGroupQuestionDescriptor.document.getInitialState(
+        question,
+        answeredQuestion ? (answeredQuestion.answer as string[]) : undefined
+      )
   }
 }
 
 export const getDocumentFormInitialState = (
-  templateContent: DocumentTemplateContent
+  templateContent: DocumentTemplateContent,
+  content?: DocumentContent
 ): StateOf<typeof documentForm> =>
   templateContent.sections.map((section) => ({
     id: section.id,
     label: section.label,
-    questions: section.questions.map(getDocumentQuestionInitialState)
+    questions: section.questions.map((question) => {
+      const answer = content?.answers?.find((a) => a.questionId === question.id)
+      return getDocumentQuestionInitialState(question, answer)
+    })
   }))

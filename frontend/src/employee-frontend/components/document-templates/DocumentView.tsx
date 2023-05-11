@@ -4,41 +4,22 @@
 
 import React from 'react'
 
-import {
-  BoundForm,
-  useForm,
-  useFormElems,
-  useFormFields
-} from 'lib-common/form/hooks'
-import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
+import { BoundForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { H2, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-
-import { useTranslation } from '../../state/i18n'
+import { H2 } from 'lib-components/typography'
 
 import {
   documentForm,
   DocumentQuestionView,
-  documentSectionForm,
-  getDocumentFormInitialState
+  documentSectionForm
 } from './documents'
 
 interface Props {
-  templateContent: DocumentTemplateContent
+  bind: BoundForm<typeof documentForm>
   readOnly?: boolean
 }
 
-export default React.memo(function DocumentView({
-  templateContent,
-  readOnly
-}: Props) {
-  const { i18n } = useTranslation()
-  const bind = useForm(
-    documentForm,
-    () => getDocumentFormInitialState(templateContent),
-    i18n.validationErrors
-  )
+export default React.memo(function DocumentView({ bind, readOnly }: Props) {
   const sectionElems = useFormElems(bind)
 
   return (
@@ -52,13 +33,6 @@ export default React.memo(function DocumentView({
           />
         ))}
       </FixedSpaceColumn>
-
-      {/*TODO: Remove the debug stuff below*/}
-      <Gap size="XL" />
-      <Label>JSON that would be sent to backend</Label>
-      <div style={{ fontFamily: 'monospace' }}>
-        {JSON.stringify(bind.value())}
-      </div>
     </div>
   )
 })
@@ -67,7 +41,7 @@ interface DocumentSectionProps {
   bind: BoundForm<typeof documentSectionForm>
   readOnly: boolean
 }
-const DocumentSectionView = React.memo(function DocumentSectionView({
+export const DocumentSectionView = React.memo(function DocumentSectionView({
   bind,
   readOnly
 }: DocumentSectionProps) {

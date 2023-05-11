@@ -51,7 +51,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam(required = true) childId: PersonId
-    ): List<ChildDocument> {
+    ): List<ChildDocumentSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -73,7 +73,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ChildDocument {
+    ): ChildDocumentDetails {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -126,7 +126,19 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {
-        // TODO
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.PUBLISH,
+                        documentId
+                    )
+                    tx.publishChildDocument(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentPublish.log(targetId = documentId) }
     }
 
     @DeleteMapping("/{documentId}")

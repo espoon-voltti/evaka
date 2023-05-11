@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import DateRange from '../../date-range'
+import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
 /**
@@ -17,14 +18,13 @@ export interface AnsweredQuestion {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocument
+* Generated from fi.espoo.evaka.document.childdocument.ChildBasics
 */
-export interface ChildDocument {
-  childId: UUID
-  content: DocumentContent
+export interface ChildBasics {
+  dateOfBirth: LocalDate | null
+  firstName: string
   id: UUID
-  published: boolean
-  template: DocumentTemplate
+  lastName: string
 }
 
 /**
@@ -33,6 +33,26 @@ export interface ChildDocument {
 export interface ChildDocumentCreateRequest {
   childId: UUID
   templateId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDetails
+*/
+export interface ChildDocumentDetails {
+  child: ChildBasics
+  content: DocumentContent
+  id: UUID
+  published: boolean
+  template: DocumentTemplate
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentSummary
+*/
+export interface ChildDocumentSummary {
+  id: UUID
+  published: boolean
+  type: DocumentType
 }
 
 /**
