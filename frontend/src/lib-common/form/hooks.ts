@@ -56,20 +56,27 @@ export function useForm<F extends AnyForm>(
   initialState: () => StateOf<F>,
   errorDict: Record<Exclude<ErrorOf<F>, ObjectFieldError>, string>,
   options: {
-    onUpdate?: (prevState: StateOf<F>, nextState: StateOf<F>, form: F) => StateOf<F>
+    onUpdate?: (
+      prevState: StateOf<F>,
+      nextState: StateOf<F>,
+      form: F
+    ) => StateOf<F>
   } = {}
 ): BoundForm<F> {
   const onUpdateRef = useRef(options.onUpdate)
   onUpdateRef.current = options.onUpdate
 
   const [state, setState] = useState(initialState)
-  const update = useCallback((fn: (prev: StateOf<F>) => StateOf<F>) => {
-    setState((prev) => {
-      const next = fn(prev)
-      const onUpdate = onUpdateRef.current
-      return onUpdate ? onUpdate(prev, next, form) : next
-    })
-  }, [form])
+  const update = useCallback(
+    (fn: (prev: StateOf<F>) => StateOf<F>) => {
+      setState((prev) => {
+        const next = fn(prev)
+        const onUpdate = onUpdateRef.current
+        return onUpdate ? onUpdate(prev, next, form) : next
+      })
+    },
+    [form]
+  )
   const set = useCallback((value: StateOf<F>) => {
     setState(value)
   }, [])
@@ -408,7 +415,6 @@ function validationHelpers<Output, Error, State>(
 }
 
 export interface UseBoolean {
-  value: boolean
   update: (fn: (value: boolean) => boolean) => void
   set: (value: boolean) => void
   toggle: () => void
@@ -418,15 +424,14 @@ export interface UseBoolean {
 
 export function useBoolean(initialState: boolean): [boolean, UseBoolean] {
   const { state, update, set } = useForm(boolean(), () => initialState, {})
+  const toggle = useCallback(() => update((v) => !v), [update])
+  const on = useCallback(() => set(true), [set])
+  const off = useCallback(() => set(false), [set])
   return [
     state,
-    {
-      value: state,
-      update,
-      set,
-      toggle: useCallback(() => update((v) => !v), [update]),
-      on: useCallback(() => set(true), [set]),
-      off: useCallback(() => set(false), [set])
-    }
+    useMemo(
+      () => ({ update, set, toggle, on, off }),
+      [off, on, set, toggle, update]
+    )
   ]
 }
