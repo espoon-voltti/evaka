@@ -23,31 +23,9 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Light } from 'lib-components/typography'
 
-import { useTranslation } from '../localization'
+import { Translations, useTranslation } from '../localization'
 
 import RoundChildImages, { ChildImageData } from './RoundChildImages'
-
-type DailyChildGroupElementType =
-  | 'attendance'
-  | 'reservation-no-times'
-  | 'reservation'
-  | 'absent'
-  | 'missing-reservation'
-  | 'absent-free'
-  | 'reservation-not-required'
-
-interface DailyChildGroupElement {
-  type: DailyChildGroupElementType
-  text?: string
-  childId: UUID
-}
-
-interface GroupedDailyChildren {
-  type: DailyChildGroupElementType
-  text?: string
-  childIds: UUID[]
-  key: string
-}
 
 export const Reservations = React.memo(function Reservations({
   data,
@@ -90,17 +68,7 @@ export const Reservations = React.memo(function Reservations({
               className={group.type}
               data-qa="reservation-text"
             >
-              {group.type === 'reservation-no-times'
-                ? i18n.calendar.reservationNoTimes
-                : group.type === 'missing-reservation'
-                ? i18n.calendar.missingReservation
-                : group.type === 'absent'
-                ? i18n.calendar.absent
-                : group.type === 'absent-free'
-                ? i18n.calendar.absentFree
-                : group.type === 'reservation-not-required'
-                ? i18n.calendar.reservationNoTimes
-                : group.text}
+              {groupText(group, i18n)}
             </GroupedElementText>
           </FixedSpaceRow>
         ))}
@@ -123,6 +91,27 @@ const GroupedElementText = styled.div`
     color: ${(p) => p.theme.colors.accents.a2orangeDark};
   }
 `
+
+type DailyChildGroupElementType =
+  | 'attendance'
+  | 'reservation'
+  | 'present'
+  | 'absent'
+  | 'missing-reservation'
+  | 'absent-free'
+
+interface DailyChildGroupElement {
+  type: DailyChildGroupElementType
+  text?: string
+  childId: UUID
+}
+
+interface GroupedDailyChildren {
+  type: DailyChildGroupElementType
+  text?: string
+  childIds: UUID[]
+  key: string
+}
 
 const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
   Object.entries(
@@ -159,7 +148,7 @@ const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
             // In theory, we could have reservations with and without times, but in practice this shouldn't happen
             return {
               childId: child.childId,
-              type: 'reservation-no-times'
+              type: 'present'
             }
           }
 
@@ -178,7 +167,7 @@ const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
         if (!child.requiresReservation) {
           return {
             childId: child.childId,
-            type: 'reservation-not-required'
+            type: 'present'
           }
         }
 
@@ -197,3 +186,19 @@ const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
       key
     })
   )
+
+function groupText(group: GroupedDailyChildren, i18n: Translations) {
+  switch (group.type) {
+    case 'attendance':
+    case 'reservation':
+      return group.text
+    case 'present':
+      return i18n.calendar.reservationNoTimes
+    case 'absent':
+      return i18n.calendar.absent
+    case 'missing-reservation':
+      return i18n.calendar.missingReservation
+    case 'absent-free':
+      return i18n.calendar.absentFree
+  }
+}
