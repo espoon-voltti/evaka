@@ -32,6 +32,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
+import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -60,6 +61,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -164,7 +166,8 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody decisionIds: List<VoucherValueDecisionId>
+        @RequestBody decisionIds: List<VoucherValueDecisionId>,
+        @RequestParam decisionHandlerId: EmployeeId?
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -182,6 +185,7 @@ class VoucherValueDecisionController(
                     evakaEnv = evakaEnv,
                     now = clock.now(),
                     ids = decisionIds,
+                    decisionHandlerId = decisionHandlerId,
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
             }
@@ -311,6 +315,7 @@ fun sendVoucherValueDecisions(
     evakaEnv: EvakaEnv,
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>,
+    decisionHandlerId: EmployeeId?,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
     tx.lockValueDecisions(ids)
@@ -330,6 +335,8 @@ fun sendVoucherValueDecisions(
             "voucherValueDecisions.confirmation.tooFarInFuture"
         )
     }
+
+    decisionHandlerId?.let { validateFinanceDecisionHandler(tx, it) }
 
     val conflicts =
         decisions
@@ -368,6 +375,7 @@ fun sendVoucherValueDecisions(
         validIds,
         user.id,
         now,
+        decisionHandlerId,
         alwaysUseDaycareFinanceDecisionHandler
     )
     asyncJobRunner.plan(

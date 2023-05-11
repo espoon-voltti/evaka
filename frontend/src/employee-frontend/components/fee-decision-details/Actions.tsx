@@ -8,6 +8,7 @@ import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { featureFlags } from 'lib-customizations/employee'
 
 import {
   confirmFeeDecisions,
@@ -23,6 +24,7 @@ interface Props {
   modified: boolean
   setModified: (value: boolean) => void
   newDecisionType: string
+  onHandlerSelectModal: () => void
 }
 
 const Actions = React.memo(function Actions({
@@ -31,7 +33,8 @@ const Actions = React.memo(function Actions({
   loadDecision,
   modified,
   setModified,
-  newDecisionType
+  newDecisionType,
+  onHandlerSelectModal
 }: Props) {
   const { i18n } = useTranslation()
   const updateType = useCallback(
@@ -69,14 +72,24 @@ const Actions = React.memo(function Actions({
             disabled={!modified}
             data-qa="decision-actions-save"
           />
-          <AsyncButton
-            primary
-            text={i18n.feeDecisions.buttons.createDecision(1)}
-            onClick={confirmDecision}
-            onSuccess={loadDecision}
-            disabled={modified}
-            data-qa="decision-actions-confirm-decision"
-          />
+          {featureFlags.financeDecisionHandlerSelect ? (
+            <Button
+              primary
+              text={i18n.feeDecisions.buttons.createDecision(1)}
+              disabled={modified}
+              onClick={() => onHandlerSelectModal()}
+              data-qa="open-decision-handler-select-modal"
+            />
+          ) : (
+            <AsyncButton
+              primary
+              text={i18n.feeDecisions.buttons.createDecision(1)}
+              onClick={confirmDecision}
+              onSuccess={loadDecision}
+              disabled={modified}
+              data-qa="decision-actions-confirm-decision"
+            />
+          )}
         </>
       ) : null}
       {isWaiting ? (

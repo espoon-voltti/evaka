@@ -136,6 +136,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(draft.id),
                 testDecisionMaker_1.id,
                 approvedAt = HelsinkiDateTime.now(),
+                null,
                 false,
                 false
             )
@@ -202,6 +203,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(draft.id),
                 testDecisionMaker_1.id,
                 approvedAt = HelsinkiDateTime.now(),
+                null,
                 true,
                 forceUseDaycareHandler
             )
@@ -231,6 +233,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 decisions.map { it.id },
                 testDecisionMaker_1.id,
                 approvedAt = HelsinkiDateTime.now(),
+                null,
                 false,
                 false
             )

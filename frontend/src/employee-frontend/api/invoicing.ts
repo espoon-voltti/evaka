@@ -36,6 +36,7 @@ import {
   VoucherValueDecisionStatus,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -81,11 +82,34 @@ interface AbsenceParams {
   month: number
 }
 
+export async function getSelectableFinanceDecisionHandlers(): Promise<
+  Result<Employee[]>
+> {
+  return client
+    .get<JsonOf<Employee[]>>('/finance-decisions/selectable-handlers')
+    .then((res) =>
+      Success.of(
+        res.data.map((data) => ({
+          ...data,
+          created: HelsinkiDateTime.parseIso(data.created),
+          updated:
+            data.updated !== null
+              ? HelsinkiDateTime.parseIso(data.updated)
+              : null
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function confirmFeeDecisions(
-  feeDecisionIds: string[]
+  feeDecisionIds: string[],
+  decisionHandlerId?: UUID
 ): Promise<Result<void>> {
   return client
-    .post<void>('/fee-decisions/confirm', feeDecisionIds)
+    .post<void>('/fee-decisions/confirm', feeDecisionIds, {
+      params: { decisionHandlerId }
+    })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -214,10 +238,11 @@ export async function getVoucherValueDecision(
 }
 
 export async function sendVoucherValueDecisions(
-  ids: string[]
+  ids: string[],
+  decisionHandlerId?: UUID
 ): Promise<Result<void>> {
   return client
-    .post<void>('/value-decisions/send', ids)
+    .post<void>('/value-decisions/send', ids, { params: { decisionHandlerId } })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

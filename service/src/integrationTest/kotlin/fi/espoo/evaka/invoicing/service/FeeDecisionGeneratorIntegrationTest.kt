@@ -3786,7 +3786,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             RealEvakaClock(),
-            listOf(decisions.get(0).id)
+            listOf(decisions.get(0).id),
+            null
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -3859,7 +3860,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             RealEvakaClock(),
-            listOf(firstDecision.id)
+            listOf(firstDecision.id),
+            null
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())

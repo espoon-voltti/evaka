@@ -30,11 +30,13 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -69,6 +71,7 @@ class FeeDecisionService(
         user: AuthenticatedUser.Employee,
         ids: List<FeeDecisionId>,
         confirmDateTime: HelsinkiDateTime,
+        decisionHandlerId: EmployeeId?,
         alwaysUseDaycareFinanceDecisionHandler: Boolean
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
@@ -90,6 +93,7 @@ class FeeDecisionService(
                 "feeDecisions.confirmation.tooFarInFuture"
             )
         }
+        decisionHandlerId?.let { validateFinanceDecisionHandler(tx, it) }
 
         val (conflicts, waitingForSending) =
             decisions
@@ -151,12 +155,14 @@ class FeeDecisionService(
             approvedBy = user.id,
             isRetroactive = true,
             approvedAt = approvedAt,
+            decisionHandlerId = decisionHandlerId,
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
         )
         tx.approveFeeDecisionDraftsForSending(
             otherValidDecisions.map { it.id },
             approvedBy = user.id,
             approvedAt = approvedAt,
+            decisionHandlerId = decisionHandlerId,
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
         )
 

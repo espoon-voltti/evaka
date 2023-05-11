@@ -140,6 +140,7 @@ export default React.memo(function VoucherValueDecisionHeading({
           ...(financeDecisionHandlerFirstName && financeDecisionHandlerLastName
             ? [
                 {
+                  dataQa: 'decision-handler',
                   label: i18n.valueDecision.decisionHandlerName,
                   value: `${financeDecisionHandlerFirstName} ${financeDecisionHandlerLastName}`
                 }

@@ -7,6 +7,8 @@ import styled from 'styled-components'
 
 import { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { confirmFeeDecisions } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
@@ -23,13 +25,15 @@ type Props = {
   checkedIds: string[]
   clearChecked: () => void
   loadDecisions: () => void
+  onHandlerSelectModal: () => void
 }
 
 const Actions = React.memo(function Actions({
   statuses,
   checkedIds,
   clearChecked,
-  loadDecisions
+  loadDecisions,
+  onHandlerSelectModal
 }: Props) {
   const { i18n } = useTranslation()
   const [error, setError] = useState<string>()
@@ -42,25 +46,35 @@ const Actions = React.memo(function Actions({
           {i18n.feeDecisions.buttons.checked(checkedIds.length)}
         </CheckedRowsInfo>
       ) : null}
-      <AsyncButton
-        primary
-        text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
-        disabled={checkedIds.length === 0}
-        onClick={() => confirmFeeDecisions(checkedIds)}
-        onSuccess={() => {
-          setError(undefined)
-          clearChecked()
-          loadDecisions()
-        }}
-        onFailure={(result) => {
-          setError(
-            result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
-              ? i18n.feeDecisions.buttons.errors.WAITING_FOR_MANUAL_SENDING
-              : i18n.common.error.unknown
-          )
-        }}
-        data-qa="confirm-decisions"
-      />
+      {featureFlags.financeDecisionHandlerSelect ? (
+        <Button
+          primary
+          text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
+          disabled={checkedIds.length === 0}
+          onClick={() => onHandlerSelectModal()}
+          data-qa="open-decision-handler-select-modal"
+        />
+      ) : (
+        <AsyncButton
+          primary
+          text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
+          disabled={checkedIds.length === 0}
+          onClick={() => confirmFeeDecisions(checkedIds)}
+          onSuccess={() => {
+            setError(undefined)
+            clearChecked()
+            loadDecisions()
+          }}
+          onFailure={(result) => {
+            setError(
+              result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
+                ? i18n.feeDecisions.buttons.errors.WAITING_FOR_MANUAL_SENDING
+                : i18n.common.error.unknown
+            )
+          }}
+          data-qa="confirm-decisions"
+        />
+      )}
     </StickyActionBar>
   ) : null
 })

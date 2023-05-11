@@ -15,11 +15,13 @@ import { Gap } from 'lib-components/white-space'
 
 import {
   getVoucherValueDecisions,
+  sendVoucherValueDecisions,
   VoucherValueDecisionSearchParams
 } from '../../api/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
+import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
@@ -32,6 +34,7 @@ export type PagedValueDecisions = {
 }
 
 export default React.memo(function VoucherValueDecisionsPage() {
+  const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] =
     useState<VoucherValueDecisionSortParam>('HEAD_OF_FAMILY')
@@ -110,8 +113,30 @@ export default React.memo(function VoucherValueDecisionsPage() {
     }
   }, [decisions, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const checkedIds = Object.keys(checkedState.checked).filter(
+    (id) => !!checkedState.checked[id]
+  )
+
   return (
     <Container data-qa="voucher-value-decisions-page">
+      {showHandlerSelectModal && (
+        <FinanceDecisionHandlerSelectModal
+          onResolve={async (decisionHandlerId) => {
+            const result = await sendVoucherValueDecisions(
+              checkedIds,
+              decisionHandlerId
+            )
+            if (result.isSuccess) {
+              checkedState.clearChecked()
+              loadDecisions()
+              setShowHandlerSelectModal(false)
+            }
+            return result
+          }}
+          onReject={() => setShowHandlerSelectModal(false)}
+          checkedIds={checkedIds}
+        />
+      )}
       <ContentArea opaque>
         <VoucherValueDecisionFilters />
       </ContentArea>
@@ -139,11 +164,10 @@ export default React.memo(function VoucherValueDecisionsPage() {
       </ContentArea>
       <VoucherValueDecisionActions
         statuses={searchFilters.statuses}
-        checkedIds={Object.keys(checkedState.checked).filter(
-          (id) => !!checkedState.checked[id]
-        )}
+        checkedIds={checkedIds}
         clearChecked={checkedState.clearChecked}
         loadDecisions={loadDecisions}
+        onHandlerSelectModal={() => setShowHandlerSelectModal(true)}
       />
     </Container>
   )

@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 enum class FeeDecisionSortParam {
@@ -125,7 +126,8 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody feeDecisionIds: List<FeeDecisionId>
+        @RequestBody feeDecisionIds: List<FeeDecisionId>,
+        @RequestParam decisionHandlerId: EmployeeId?
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -142,6 +144,7 @@ class FeeDecisionController(
                         user,
                         feeDecisionIds,
                         clock.now(),
+                        decisionHandlerId,
                         featureConfig.alwaysUseDaycareFinanceDecisionHandler
                     )
                 asyncJobRunner.plan(

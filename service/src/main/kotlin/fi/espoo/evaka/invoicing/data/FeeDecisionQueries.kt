@@ -596,6 +596,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
     ids: List<FeeDecisionId>,
     approvedBy: EmployeeId,
     approvedAt: HelsinkiDateTime,
+    decisionHandlerId: EmployeeId?,
     isRetroactive: Boolean = false,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
@@ -615,6 +616,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
             decision_number = nextval('fee_decision_number_sequence'),
             approved_by_id = :approvedBy,
             decision_handler_id = CASE
+                WHEN :decisionHandlerId IS NOT NULL THEN :decisionHandlerId
                 WHEN :alwaysUseDaycareFinanceDecisionHandler = true AND youngest_child.finance_decision_handler_id IS NOT NULL 
                     THEN youngest_child.finance_decision_handler_id
                 WHEN :isRetroactive = true THEN :approvedBy
@@ -637,6 +639,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
             .bind("approvedBy", approvedBy)
             .bind("isRetroactive", isRetroactive)
             .bind("approvedAt", approvedAt)
+            .bind("decisionHandlerId", decisionHandlerId)
             .bind("alwaysUseDaycareFinanceDecisionHandler", alwaysUseDaycareFinanceDecisionHandler)
             .add()
     }
