@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testAdult_1
@@ -308,12 +309,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     DailyReservationRequest.Reservations(
                         child,
                         monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         child,
                         tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             }
@@ -398,9 +399,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     monday,
-                    Reservation.Times(startTime, endTime),
+                    TimeRange(startTime, endTime),
                 ),
-                DailyReservationRequest.Absence(
+                DailyReservationRequest.Absent(
                     testChild_1.id,
                     tuesday,
                 )
@@ -455,12 +456,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     DailyReservationRequest.Reservations(
                         child,
                         mockToday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         child,
                         mockToday.plusDays(1),
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             }

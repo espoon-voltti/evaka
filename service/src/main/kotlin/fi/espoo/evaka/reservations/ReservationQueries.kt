@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
@@ -121,14 +122,15 @@ fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRa
         .execute()
 }
 
+data class ReservationInsert(val childId: ChildId, val date: LocalDate, val range: TimeRange?)
+
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
-    requests: List<DailyReservationRequest.Reservations>
+    reservations: List<ReservationInsert>
 ): List<AttendanceReservationId> {
-    return requests.flatMap { request ->
-        listOfNotNull(request.reservation, request.secondReservation).mapNotNull { res ->
-            createQuery(
-                    """
+    return reservations.mapNotNull {
+        createQuery(
+                """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
         SELECT :childId, :date, :start, :end, :userId
         FROM realized_placement_all(:date) rp
@@ -141,21 +143,19 @@ fun Database.Transaction.insertValidReservations(
         ON CONFLICT DO NOTHING
         RETURNING id
         """
-                )
-                .bind("userId", userId)
-                .bind("childId", request.childId)
-                .bind("date", request.date)
-                .let {
-                    when (res) {
-                        is Reservation.Times ->
-                            it.bind("start", res.startTime).bind("end", res.endTime)
-                        is Reservation.NoTimes ->
-                            it.bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
-                    }
+            )
+            .bind("userId", userId)
+            .bind("childId", it.childId)
+            .bind("date", it.date)
+            .run {
+                if (it.range == null) {
+                    bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
+                } else {
+                    bind("start", it.range.start).bind("end", it.range.end)
                 }
-                .mapTo<AttendanceReservationId>()
-                .singleOrNull()
-        }
+            }
+            .mapTo<AttendanceReservationId>()
+            .singleOrNull()
     }
 }
 

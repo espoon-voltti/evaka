@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from '../finite-date-range'
+import { TimeRange } from '../generated/api-types/shared'
 import LocalDate from '../local-date'
 import LocalTime from '../local-time'
 
@@ -67,7 +68,7 @@ export const localTimeRange = transformed(
     startTime,
     endTime
   }): ValidationResult<
-    { startTime: LocalTime; endTime: LocalTime } | undefined,
+    TimeRange | undefined,
     ObjectFieldError | 'timeFormat'
   > => {
     if (startTime === undefined && endTime === undefined) {
@@ -81,7 +82,7 @@ export const localTimeRange = transformed(
     ) {
       return ValidationError.of('timeFormat')
     } else {
-      return ValidationSuccess.of({ startTime, endTime })
+      return ValidationSuccess.of({ start: startTime, end: endTime })
     }
   }
 )

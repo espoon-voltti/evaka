@@ -32,6 +32,7 @@ import {
   ReservationResponseDayChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutation } from 'lib-common/query'
@@ -476,20 +477,12 @@ const editorForm = mapped(
   (output) =>
     (date: LocalDate): DailyReservationRequest[] =>
       output.map(({ childId, reservations, absent }) => {
-        const res: Reservation[] = reservations.flatMap((reservation) =>
-          reservation
-            ? [
-                {
-                  type: 'TIMES',
-                  startTime: reservation.startTime,
-                  endTime: reservation.endTime
-                }
-              ]
-            : []
+        const res: TimeRange[] = reservations.flatMap(
+          (reservation) => reservation ?? []
         )
         return res.length === 0 && absent
           ? {
-              type: 'ABSENCE',
+              type: 'ABSENT',
               childId,
               date
             }

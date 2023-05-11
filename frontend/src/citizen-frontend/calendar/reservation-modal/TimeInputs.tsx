@@ -6,12 +6,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import {
-  BoundForm,
-  useFormElem,
-  useFormField,
-  useFormUnion
-} from 'lib-common/form/hooks'
+import { BoundForm, useFormElem, useFormUnion } from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -119,7 +114,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
 })
 
 interface ReadOnlyDayProps {
-  mode: 'not-editable' | 'not-required' | 'holiday' | undefined
+  mode: 'notEditable' | 'holiday' | undefined
   label: React.ReactNode
   dataQaPrefix?: string
 }
@@ -142,7 +137,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
           <RightCell />
         </FixedSpaceRow>
       )
-    case 'not-editable':
+    case 'notEditable':
       return (
         <>
           <FixedSpaceRow fullWidth alignItems="center">
@@ -173,14 +168,6 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
             </FixedSpaceRow>
           )}
         </>
-      )
-    case 'not-required':
-      return (
-        <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell>{label}</LeftCell>
-          <MiddleCell>{i18n.calendar.reservationNotRequired}</MiddleCell>
-          <RightCell />
-        </FixedSpaceRow>
       )
     case 'holiday':
       return (
@@ -288,23 +275,22 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
   label: React.ReactNode
 }) {
   const i18n = useTranslation()
-  const selection = useFormField(bind, 'selection')
 
   return (
     <FixedSpaceRow fullWidth alignItems="center">
       <LeftCell>{label}</LeftCell>
       <MiddleCell narrow>
         <Radio
-          checked={selection.state === 'present'}
-          onChange={() => selection.set('present')}
+          checked={bind.state === 'present'}
+          onChange={() => bind.set('present')}
           label={i18n.calendar.reservationModal.present}
           ariaLabel={i18n.calendar.reservationModal.present}
         />
       </MiddleCell>
       <RightCell>
         <Radio
-          checked={selection.state === 'absent'}
-          onChange={() => selection.set('absent')}
+          checked={bind.state === 'absent'}
+          onChange={() => bind.set('absent')}
           label={i18n.calendar.reservationModal.absent}
           ariaLabel={i18n.calendar.reservationModal.absent}
         />

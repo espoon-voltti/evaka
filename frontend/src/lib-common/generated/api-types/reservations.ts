@@ -10,6 +10,7 @@ import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { PlacementType } from './placement'
+import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
 /**
@@ -31,10 +32,10 @@ export interface AbsenceRequest {
 
 export namespace DailyReservationRequest {
   /**
-  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absence
+  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absent
   */
-  export interface Absence {
-    type: 'ABSENCE'
+  export interface Absent {
+    type: 'ABSENT'
     childId: UUID
     date: LocalDate
   }
@@ -49,21 +50,30 @@ export namespace DailyReservationRequest {
   }
   
   /**
+  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Present
+  */
+  export interface Present {
+    type: 'PRESENT'
+    childId: UUID
+    date: LocalDate
+  }
+  
+  /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Reservations
   */
   export interface Reservations {
     type: 'RESERVATIONS'
     childId: UUID
     date: LocalDate
-    reservation: Reservation
-    secondReservation: Reservation | null
+    reservation: TimeRange
+    secondReservation: TimeRange | null
   }
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.DailyReservationRequest
 */
-export type DailyReservationRequest = DailyReservationRequest.Absence | DailyReservationRequest.Nothing | DailyReservationRequest.Reservations
+export type DailyReservationRequest = DailyReservationRequest.Absent | DailyReservationRequest.Nothing | DailyReservationRequest.Present | DailyReservationRequest.Reservations
 
 
 /**

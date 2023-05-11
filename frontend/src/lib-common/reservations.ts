@@ -65,14 +65,6 @@ export function validateTimeRange(
   return { startTime, endTime }
 }
 
-export function timeRangeToTimes(timeRange: TimeRange): Reservation.Times {
-  return {
-    type: 'TIMES' as const,
-    startTime: timeRange.startTime,
-    endTime: timeRange.endTime
-  }
-}
-
 export function parseReservation(
   reservation: JsonOf<Reservation>
 ): Reservation {

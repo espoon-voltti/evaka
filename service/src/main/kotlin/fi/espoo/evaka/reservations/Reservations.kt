@@ -17,8 +17,16 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
+
+private fun TimeRange.convertMidnightEndTime() =
+    if (this.end == LocalTime.of(0, 0)) {
+        this.copy(end = LocalTime.of(23, 59))
+    } else {
+        this
+    }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface DailyReservationRequest {
@@ -29,12 +37,9 @@ sealed interface DailyReservationRequest {
     data class Reservations(
         override val childId: ChildId,
         override val date: LocalDate,
-        val reservation: Reservation,
-        val secondReservation: Reservation? = null
+        val reservation: TimeRange,
+        val secondReservation: TimeRange? = null
     ) : DailyReservationRequest {
-        fun hasTimes() =
-            reservation is Reservation.Times &&
-                (secondReservation == null || secondReservation is Reservation.Times)
         fun convertMidnightEndTime() =
             this.copy(
                 reservation = reservation.convertMidnightEndTime(),
@@ -42,8 +47,14 @@ sealed interface DailyReservationRequest {
             )
     }
 
-    @JsonTypeName("ABSENCE")
-    data class Absence(
+    @JsonTypeName("PRESENT")
+    data class Present(
+        override val childId: ChildId,
+        override val date: LocalDate,
+    ) : DailyReservationRequest
+
+    @JsonTypeName("ABSENT")
+    data class Absent(
         override val childId: ChildId,
         override val date: LocalDate,
     ) : DailyReservationRequest
@@ -94,13 +105,6 @@ sealed class Reservation : Comparable<Reservation> {
                 throw IllegalArgumentException("Both start and end times must be null or not null")
             }
     }
-
-    fun convertMidnightEndTime() =
-        if (this is Times && this.endTime == LocalTime.of(0, 0)) {
-            this.copy(endTime = LocalTime.of(23, 59))
-        } else {
-            this
-        }
 }
 
 data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
@@ -149,7 +153,7 @@ fun createReservationsAndAbsences(
                     request
                 } else if (isClosedHolidayPeriod) {
                     // Only reservations with times are allowed on closed holiday periods
-                    if (request is DailyReservationRequest.Reservations && !request.hasTimes()) {
+                    if (request is DailyReservationRequest.Present) {
                         throw BadRequest("Reservations in closed holiday periods must have times")
                     }
                     if (isCitizen) {
@@ -174,7 +178,7 @@ fun createReservationsAndAbsences(
                     }
                 } else {
                     // Not a holiday period - only reservations with times are allowed
-                    if (request is DailyReservationRequest.Reservations && !request.hasTimes()) {
+                    if (request is DailyReservationRequest.Present) {
                         throw BadRequest("Reservations outside holiday periods must have times")
                     }
                     request
@@ -182,7 +186,8 @@ fun createReservationsAndAbsences(
             }
             .map { request ->
                 when (request) {
-                    is DailyReservationRequest.Reservations -> {
+                    is DailyReservationRequest.Reservations,
+                    is DailyReservationRequest.Present -> {
                         // Don't create reservations for children whose placement type doesn't
                         // require them
                         val reservable =
@@ -214,11 +219,18 @@ fun createReservationsAndAbsences(
     val upsertedReservations =
         tx.insertValidReservations(
             user.evakaUserId,
-            validated.filterIsInstance<DailyReservationRequest.Reservations>()
+            validated.filterIsInstance<DailyReservationRequest.Reservations>().flatMap { res ->
+                listOfNotNull(res.reservation, res.secondReservation).map {
+                    ReservationInsert(res.childId, res.date, it)
+                }
+            } +
+                validated.filterIsInstance<DailyReservationRequest.Present>().map {
+                    ReservationInsert(it.childId, it.date, null)
+                }
         )
 
     val absences =
-        validated.filterIsInstance<DailyReservationRequest.Absence>().map {
+        validated.filterIsInstance<DailyReservationRequest.Absent>().map {
             AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE)
         }
     val upsertedAbsences =

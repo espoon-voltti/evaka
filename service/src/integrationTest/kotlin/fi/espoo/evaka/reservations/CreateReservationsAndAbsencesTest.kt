@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -75,12 +76,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -128,18 +129,18 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         // Only tuesday has a placement that requires reservations
                         date = tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = wednesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -186,12 +187,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -237,12 +238,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday.minusDays(1),
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -290,12 +291,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -354,7 +355,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                 )
             )
@@ -492,12 +493,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Nothing(
                         childId = testChild_1.id,
@@ -553,12 +554,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = tuesday,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -574,7 +575,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = monday,
-                        Reservation.Times(LocalTime.of(12, 0), endTime),
+                        TimeRange(LocalTime.of(12, 0), endTime),
                     )
                 )
             )
@@ -627,10 +628,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday,
                 citizenUser,
                 listOf(
-                    DailyReservationRequest.Reservations(
+                    DailyReservationRequest.Present(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        Reservation.NoTimes,
                     )
                 )
             )
@@ -682,10 +682,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     monday,
                     citizenUser,
                     listOf(
-                        DailyReservationRequest.Reservations(
+                        DailyReservationRequest.Present(
                             childId = testChild_1.id,
                             date = holidayPeriodStart,
-                            Reservation.NoTimes,
                         )
                     )
                 )
@@ -700,10 +699,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     monday,
                     citizenUser,
                     listOf(
-                        DailyReservationRequest.Reservations(
+                        DailyReservationRequest.Present(
                             childId = testChild_1.id,
                             date = holidayPeriodEnd.plusDays(1),
-                            Reservation.NoTimes,
                         )
                     )
                 )
@@ -749,12 +747,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart.plusDays(1),
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -821,7 +819,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
@@ -892,7 +890,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
-                        Reservation.Times(startTime, endTime),
+                        TimeRange(startTime, endTime),
                     )
                 )
             )
