@@ -102,8 +102,10 @@ export default React.memo(function StaffMarkArrivedPage() {
     [groupId, staffMember, unitInfoResponse]
   )
 
-  const isValidTimeString = (time: string) =>
-    LocalTime.tryParse(time) ? true : false
+  const isValidTimeString = useMemo(
+    () => (LocalTime.tryParseWithPattern(time, 'HH:mm') ? true : false),
+    [time]
+  )
 
   useEffect(() => {
     if (
@@ -133,17 +135,17 @@ export default React.memo(function StaffMarkArrivedPage() {
   const selectedTimeDiffFromPlannedStartOfDayMinutes = useMemo(
     () =>
       firstPlannedStartOfTheDay &&
-      isValidTimeString(time) &&
+      isValidTimeString &&
       differenceInMinutes(
         HelsinkiDateTime.now().withTime(LocalTime.parse(time)).toSystemTzDate(),
         firstPlannedStartOfTheDay.toSystemTzDate()
       ),
-    [firstPlannedStartOfTheDay, time]
+    [firstPlannedStartOfTheDay, time, isValidTimeString]
   )
 
   const selectedTimeIsWithin30MinsFromNow = useMemo(() => {
     return (
-      isValidTimeString(time) &&
+      isValidTimeString &&
       Math.abs(
         differenceInMinutes(
           HelsinkiDateTime.now()
@@ -153,7 +155,7 @@ export default React.memo(function StaffMarkArrivedPage() {
         )
       ) <= 30
     )
-  }, [time, now])
+  }, [time, now, isValidTimeString])
 
   const hasPlan = useMemo(
     () => firstPlannedStartOfTheDay != null,
@@ -176,7 +178,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     () =>
       staffMember
         .map((staff) => {
-          const parsedTime = LocalTime.tryParse(time)
+          const parsedTime = LocalTime.tryParseWithPattern(time, 'HH:mm')
           if (!parsedTime || !staff?.spanningPlan) return []
           const arrived = HelsinkiDateTime.fromLocal(
             LocalDate.todayInHelsinkiTz(),
@@ -264,7 +266,7 @@ export default React.memo(function StaffMarkArrivedPage() {
             const confirmDisabled =
               pinLocked ||
               !pinSet ||
-              !isValidTimeString(time) ||
+              !isValidTimeString ||
               pinCode.join('').trim().length < 4 ||
               !selectedTimeIsWithin30MinsFromNow ||
               !attendanceGroup ||
