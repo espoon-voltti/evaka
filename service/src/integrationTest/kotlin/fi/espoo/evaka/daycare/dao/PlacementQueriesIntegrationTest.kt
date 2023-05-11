@@ -7,40 +7,54 @@ package fi.espoo.evaka.daycare.dao
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getDaycarePlacements
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestCareArea
+import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import java.time.LocalDate
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    // data from migration scripts
-    val childId = UUID.fromString("2b929594-13ab-4042-9b13-74e84921e6f0")
-    val daycareId = DaycareId(UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c"))
+    private lateinit var daycareId: DaycareId
+    private lateinit var placementId: PlacementId
+    private lateinit var childId: ChildId
 
-    val placementId = UUID.randomUUID()
-    val placementStart = LocalDate.now().plusDays(300)
-    val placementEnd = placementStart.plusDays(200)
+    private val placementStart = LocalDate.now().plusDays(300)
+    private val placementEnd = placementStart.plusDays(200)
 
     @BeforeEach
     fun setUp() {
-        val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
         db.transaction { tx ->
-            tx.execute(legacyDataSql)
-            tx.execute(
-                // language=sql
-                """
-                INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
-                VALUES ('$placementId', '${PlacementType.DAYCARE}'::placement_type, '$childId', '$daycareId', '$placementStart', '$placementEnd')
-                """
-                    .trimIndent()
-            )
+            val areaId = tx.insertTestCareArea(DevCareArea())
+            daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            childId =
+                tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(id = it)) }
+            placementId =
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        type = PlacementType.DAYCARE,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
         }
     }
 
     @Test
-    fun `get daycare placements returns correct data`() =
+    fun `get daycare placements returns correct data`() {
         db.read { h ->
             val placements = h.getDaycarePlacements(daycareId, null, null, null)
             assertThat(placements).hasSize(1)
@@ -51,6 +65,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertThat(placement.startDate).isEqualTo(placementStart)
             assertThat(placement.endDate).isEqualTo(placementEnd)
         }
+    }
 
     /*
     search:       ------------------------------------------------------
@@ -58,13 +73,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #01`() =
+    fun `get daycare placements overlap test #01`() {
         db.read { h ->
             val fromDate = null
             val toDate = null
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:       -----------e
@@ -72,13 +88,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #02`() =
+    fun `get daycare placements overlap test #02`() {
         db.read { h ->
             val fromDate = null
             val toDate = placementStart.minusDays(100)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
+    }
 
     /*
     search:       ---------------------------e
@@ -86,13 +103,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #03`() =
+    fun `get daycare placements overlap test #03`() {
         db.read { h ->
             val fromDate = null
             val toDate = placementStart.plusDays(100)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:       --------------------------------------------e
@@ -100,13 +118,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #04`() =
+    fun `get daycare placements overlap test #04`() {
         db.read { h ->
             val fromDate = null
             val toDate = placementEnd.plusDays(100)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                s---------------------------------------------
@@ -114,13 +133,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #05`() =
+    fun `get daycare placements overlap test #05`() {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = null
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                                  s----------------------------
@@ -128,13 +148,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #06`() =
+    fun `get daycare placements overlap test #06`() {
         db.read { h ->
             val fromDate = placementStart.plusDays(100)
             val toDate = null
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                                            s-----------------
@@ -142,13 +163,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #07`() =
+    fun `get daycare placements overlap test #07`() {
         db.read { h ->
             val fromDate = placementEnd.plusDays(100)
             val toDate = null
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
+    }
 
     /*
     search:                s---e
@@ -156,13 +178,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #08`() =
+    fun `get daycare placements overlap test #08`() {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementStart.minusDays(1)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
+    }
 
     /*
     search:                s---------------e
@@ -170,13 +193,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #09`() =
+    fun `get daycare placements overlap test #09`() {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementStart.plusDays(100)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                s------e     (boundary value / inclusive test)
@@ -184,13 +208,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #09b`() =
+    fun `get daycare placements overlap test #09b`() {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementStart
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                                 s-----------e
@@ -198,13 +223,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #10`() =
+    fun `get daycare placements overlap test #10`() {
         db.read { h ->
             val fromDate = placementStart.plusDays(100)
             val toDate = placementEnd.plusDays(100)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                                        s---e  (test boundary case)
@@ -212,13 +238,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #11`() =
+    fun `get daycare placements overlap test #11`() {
         db.read { h ->
             val fromDate = placementEnd
             val toDate = placementEnd.plusDays(150)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 
     /*
     search:                                            s---e
@@ -226,13 +253,14 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #12`() =
+    fun `get daycare placements overlap test #12`() {
         db.read { h ->
             val fromDate = placementEnd.plusDays(1)
             val toDate = placementEnd.plusDays(150)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
+    }
 
     /*
     search:                s--------------------------------e
@@ -240,11 +268,12 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #13`() =
+    fun `get daycare placements overlap test #13`() {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementEnd.plusDays(100)
             val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
+    }
 }
