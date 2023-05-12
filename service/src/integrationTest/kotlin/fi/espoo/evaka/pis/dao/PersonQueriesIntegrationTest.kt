@@ -24,16 +24,9 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    @BeforeEach
-    fun setUp() {
-        val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
-        db.transaction { it.execute(legacyDataSql) }
-    }
-
     @Test
     fun `creating an empty person sets their date of birth to current date`() =
         db.transaction { tx ->
