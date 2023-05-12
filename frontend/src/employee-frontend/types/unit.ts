@@ -84,10 +84,8 @@ export interface UnitChildrenCapacityFactors {
   assistanceNeedFactor: number
 }
 
-export function formatTimeRange(value?: TimeRange): JsonOf<TimeRange> {
-  return value
-    ? { start: value.start.format(), end: value.end.format() }
-    : { start: '', end: '' }
+export function formatTimeRange(value: TimeRange): JsonOf<TimeRange> {
+  return { start: value.start.format(), end: value.end.format() }
 }
 
 export function parseTimeRange(range: JsonOf<TimeRange>): TimeRange {

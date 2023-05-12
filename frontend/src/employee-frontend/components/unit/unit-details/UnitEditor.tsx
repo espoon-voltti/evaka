@@ -86,7 +86,6 @@ interface FormData {
   decisionCustomization: UnitDecisionCustomization
   ophUnitOid: string
   ophOrganizerOid: string
-  operationDays: DayOfWeek[]
   operationTimes: EditableTimeRange[]
   businessId: string
   iban: string
@@ -315,7 +314,7 @@ function validateTimeRange(
 
   const errors: RangeValidationResult = {}
 
-  if (!start && end) {
+  if (!start || start.length === 0) {
     errors.start = 'timeRequired'
   }
 
@@ -323,7 +322,7 @@ function validateTimeRange(
     errors.start = errors.start ?? time(start)
   }
 
-  if (!end && start) {
+  if (!end || end.length === 0) {
     errors.end = 'timeRequired'
   }
 
@@ -491,7 +490,7 @@ function validateForm(
 
   let operationTimes: (TimeRange | null)[] = []
   const rangeErrors = form.operationTimes.map((tr) =>
-    tr ? validateTimeRange(tr) : {}
+    tr ? validateTimeRange(tr, true) : {}
   )
   if (!rangeErrors.some((r) => r.start || r.end)) {
     operationTimes = form.operationTimes.map((tr) =>
@@ -651,7 +650,6 @@ function toFormData(unit: Unit | undefined): FormData {
       phone: unit?.unitManager?.phone ?? '',
       email: unit?.unitManager?.email ?? ''
     },
-    operationDays: unit?.operationDays ?? [],
     operationTimes: (unit?.operationTimes ?? emptyOperationWeek).map((range) =>
       range ? formatTimeRange(range) : null
     ),
@@ -1106,32 +1104,28 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
         <FixedSpaceColumn spacing="xs">
-          {([1, 2, 3, 4, 5, 6, 7] as const).map((day) => {
-            const timesToday = form.operationTimes[day - 1]
+          {form.operationTimes.map((timesToday, index) => {
+            const dayOfWeek = (index + 1) as DayOfWeek
             return (
               <FixedSpaceRow
-                key={`"weekday-${day}"`}
+                key={`"weekday-${dayOfWeek}"`}
                 spacing="s"
                 alignItems="center"
               >
                 <FixedDayLabel>
-                  {i18n.unitEditor.label.operationDay[day]}
+                  {i18n.unitEditor.label.operationDay[dayOfWeek]}
                 </FixedDayLabel>
                 <Checkbox
                   disabled={!props.editable}
-                  checked={form.operationDays.some(
-                    (selectedDay) => selectedDay == day
-                  )}
+                  checked={timesToday != null}
                   hiddenLabel={true}
                   label=""
-                  data-qa={`operation-day-${day}`}
+                  data-qa={`operation-day-${dayOfWeek}`}
                   onChange={(checked) => {
-                    if (!checked) form.operationTimes[day - 1] = null
+                    const newOpTimes = [...form.operationTimes]
+                    newOpTimes[index] = checked ? emptyTimeRange : null
                     updateForm({
-                      operationDays: checked
-                        ? [...form.operationDays, day as DayOfWeek]
-                        : form.operationDays.filter((d) => d != day),
-                      operationTimes: form.operationTimes
+                      operationTimes: newOpTimes
                     })
                   }}
                 />
@@ -1139,18 +1133,18 @@ export default function UnitEditor(props: Props): JSX.Element {
                   <TimeRangeInput
                     value={timesToday ?? emptyTimeRange}
                     onChange={(value) => {
-                      form.operationTimes[day - 1] = value
+                      const newOpTimes = [...form.operationTimes]
+                      newOpTimes[index] = value
                       updateForm({
-                        operationTimes: form.operationTimes,
-                        operationDays: [...form.operationDays, day as DayOfWeek]
+                        operationTimes: newOpTimes
                       })
                     }}
-                    error={validationErrors.rangeErrors[day - 1]}
-                    dataQaPrefix={`${day}`}
+                    error={validationErrors.rangeErrors[index]}
+                    dataQaPrefix={`${dayOfWeek}`}
                     hideErrorsBeforeTouched={false}
                   />
                 ) : (
-                  <div data-qa={`unit-timerange-detail-${day}`}>
+                  <div data-qa={`unit-timerange-detail-${dayOfWeek}`}>
                     {timesToday?.start && timesToday?.end
                       ? `${timesToday.start} - ${timesToday.end}`
                       : ''}
