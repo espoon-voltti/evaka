@@ -15,122 +15,118 @@ import {
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
+import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-describe('Citizen calendar (desktop)', () => {
-  citizenCalendarTests('desktop')
-})
+const e: EnvType[] = ['desktop', 'mobile']
 
-describe('Citizen calendar (mobile)', () => {
-  citizenCalendarTests('mobile')
-})
+let page: Page
+let header: CitizenHeader
+let calendarPage: CitizenCalendarPage
+let children: PersonDetail[]
+const today = LocalDate.of(2022, 1, 5)
 
-function citizenCalendarTests(env: 'desktop' | 'mobile') {
-  let page: Page
-  let header: CitizenHeader
-  let calendarPage: CitizenCalendarPage
-  let children: PersonDetail[]
-  const today = LocalDate.of(2022, 1, 5)
+const groupEventId = uuidv4()
+const unitEventId = uuidv4()
+const individualEventId = uuidv4()
 
-  const groupEventId = uuidv4()
-  const unitEventId = uuidv4()
-  const individualEventId = uuidv4()
+let jariId: UUID
 
-  let jariId: UUID
-
-  beforeEach(async () => {
-    await resetDatabase()
-    const fixtures = await initializeAreaAndPersonData()
-    children = [
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserChildFixtureKaarina,
-      fixtures.enduserChildFixturePorriHatterRestricted
-    ]
-    jariId = fixtures.enduserChildFixtureJari.id
-    const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
-    await insertDaycarePlacementFixtures(
-      children.map((child) =>
-        createDaycarePlacementFixture(
-          placementIds.get(child.id) ?? '',
-          child.id,
-          fixtures.daycareFixture.id,
-          today.formatIso(),
-          today.addYears(1).formatIso()
-        )
+beforeEach(async () => {
+  await resetDatabase()
+  const fixtures = await initializeAreaAndPersonData()
+  children = [
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserChildFixtureKaarina,
+    fixtures.enduserChildFixturePorriHatterRestricted
+  ]
+  jariId = fixtures.enduserChildFixtureJari.id
+  const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
+  await insertDaycarePlacementFixtures(
+    children.map((child) =>
+      createDaycarePlacementFixture(
+        placementIds.get(child.id) ?? '',
+        child.id,
+        fixtures.daycareFixture.id,
+        today.formatIso(),
+        today.addYears(1).formatIso()
       )
     )
+  )
 
-    const daycareGroup = await Fixture.daycareGroup()
+  const daycareGroup = await Fixture.daycareGroup()
+    .with({
+      daycareId: fixtures.daycareFixture.id,
+      name: 'Group 1'
+    })
+    .save()
+
+  for (const child of children) {
+    await Fixture.groupPlacement()
       .with({
-        daycareId: fixtures.daycareFixture.id,
-        name: 'Group 1'
+        startDate: today.formatIso(),
+        endDate: today.addYears(1).formatIso(),
+        daycareGroupId: daycareGroup.data.id,
+        daycarePlacementId: placementIds.get(child.id) ?? ''
       })
       .save()
+  }
 
-    for (const child of children) {
-      await Fixture.groupPlacement()
-        .with({
-          startDate: today.formatIso(),
-          endDate: today.addYears(1).formatIso(),
-          daycareGroupId: daycareGroup.data.id,
-          daycarePlacementId: placementIds.get(child.id) ?? ''
-        })
-        .save()
-    }
+  const { data: groupEvent } = await Fixture.calendarEvent()
+    .with({
+      id: groupEventId,
+      title: 'Group-wide event',
+      description: 'Whole group',
+      period: new FiniteDateRange(today, today)
+    })
+    .save()
 
-    const { data: groupEvent } = await Fixture.calendarEvent()
-      .with({
-        id: groupEventId,
-        title: 'Group-wide event',
-        description: 'Whole group',
-        period: new FiniteDateRange(today, today)
-      })
-      .save()
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: groupEvent.id,
+      unitId: fixtures.daycareFixture.id,
+      groupId: daycareGroup.data.id
+    })
+    .save()
 
-    await Fixture.calendarEventAttendee()
-      .with({
-        calendarEventId: groupEvent.id,
-        unitId: fixtures.daycareFixture.id,
-        groupId: daycareGroup.data.id
-      })
-      .save()
+  const { data: individualEvent } = await Fixture.calendarEvent()
+    .with({
+      id: individualEventId,
+      title: 'Individual event',
+      description: 'Just Jari',
+      period: new FiniteDateRange(today, today)
+    })
+    .save()
 
-    const { data: individualEvent } = await Fixture.calendarEvent()
-      .with({
-        id: individualEventId,
-        title: 'Individual event',
-        description: 'Just Jari',
-        period: new FiniteDateRange(today, today)
-      })
-      .save()
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: individualEvent.id,
+      unitId: fixtures.daycareFixture.id,
+      groupId: daycareGroup.data.id,
+      childId: fixtures.enduserChildFixtureJari.id
+    })
+    .save()
 
-    await Fixture.calendarEventAttendee()
-      .with({
-        calendarEventId: individualEvent.id,
-        unitId: fixtures.daycareFixture.id,
-        groupId: daycareGroup.data.id,
-        childId: fixtures.enduserChildFixtureJari.id
-      })
-      .save()
+  const { data: unitEvent } = await Fixture.calendarEvent()
+    .with({
+      id: unitEventId,
+      title: 'Unit event',
+      description: 'For everyone in the unit',
+      period: new FiniteDateRange(today.addDays(1), today.addDays(2))
+    })
+    .save()
 
-    const { data: unitEvent } = await Fixture.calendarEvent()
-      .with({
-        id: unitEventId,
-        title: 'Unit event',
-        description: 'For everyone in the unit',
-        period: new FiniteDateRange(today.addDays(1), today.addDays(2))
-      })
-      .save()
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: unitEvent.id,
+      unitId: fixtures.daycareFixture.id
+    })
+    .save()
+})
 
-    await Fixture.calendarEventAttendee()
-      .with({
-        calendarEventId: unitEvent.id,
-        unitId: fixtures.daycareFixture.id
-      })
-      .save()
-
+describe.each(e)('Citizen calendar (%s)', (env) => {
+  beforeEach(async () => {
     const viewport =
       env === 'mobile'
         ? { width: 375, height: 812 }
@@ -193,4 +189,4 @@ function citizenCalendarTests(env: 'desktop' | 'mobile') {
 
     await dayView.close()
   })
-}
+})

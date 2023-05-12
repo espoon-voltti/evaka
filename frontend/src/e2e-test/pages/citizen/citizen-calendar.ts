@@ -481,10 +481,10 @@ class DayViewEditor extends Element {
     endTime: string
   ) {
     const child = this.#childSection(childId)
-    await new TextInput(child.findByDataQa('first-reservation-start')).fill(
-      startTime
-    )
-    await new TextInput(child.findByDataQa('first-reservation-end')).fill(
+    await new TextInput(
+      child.findByDataQa('edit-reservation-time-0-start')
+    ).fill(startTime)
+    await new TextInput(child.findByDataQa('edit-reservation-time-0-end')).fill(
       endTime
     )
   }
@@ -545,6 +545,7 @@ class HolidayModal extends Element {
 
 class DayModal {
   constructor(private readonly page: Page) {}
+
   childName = this.page.findAllByDataQa('child-name')
   closeModal = this.page.findByDataQa('day-view-close-button')
 }

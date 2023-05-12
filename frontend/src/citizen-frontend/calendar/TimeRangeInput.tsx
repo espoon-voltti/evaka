@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import classNames from 'classnames'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
-import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
-import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
+import UnderRowStatusIcon, { InfoStatus } from 'lib-components/atoms/StatusIcon'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../localization'
 
@@ -42,7 +41,7 @@ export default React.memo(function TimeRangeInputF({
   const inputInfo = bind.inputInfo()
 
   return (
-    <>
+    <div>
       <TimeRangeWrapper>
         <TimeInputF
           bind={startTime}
@@ -63,14 +62,14 @@ export default React.memo(function TimeRangeInputF({
         />
       </TimeRangeWrapper>
       {inputInfo !== undefined && (!hideErrorsBeforeTouched || bothTouched) ? (
-        <InputFieldUnderRow className={classNames(inputInfo.status)}>
+        <ErrorRow $status={inputInfo.status}>
           <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
             {inputInfo.text}
           </span>
           <UnderRowStatusIcon status={inputInfo?.status} />
-        </InputFieldUnderRow>
+        </ErrorRow>
       ) : undefined}
-    </>
+    </div>
   )
 })
 
@@ -83,4 +82,17 @@ const TimeRangeWrapper = styled.div`
     justify-content: center;
     padding-top: 8px;
   }
+`
+
+const ErrorRow = styled.div<{ $status: InfoStatus | undefined }>`
+  font-size: 1rem;
+  line-height: 1rem;
+  margin-top: ${defaultMargins.xxs};
+
+  color: ${(p) =>
+    p.$status === 'success'
+      ? p.theme.colors.accents.a1greenDark
+      : p.$status === 'warning'
+      ? p.theme.colors.accents.a2orangeDark
+      : p.theme.colors.grayscale.g70};
 `

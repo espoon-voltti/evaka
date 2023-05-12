@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
@@ -15,6 +17,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
@@ -23,6 +27,8 @@ import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -35,8 +41,10 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
-class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true) {
+class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
 
     private val monday = LocalDate.of(2021, 8, 23)
     private val tuesday = monday.plusDays(1)
@@ -536,6 +544,86 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `irregular daily service times absences are not overwritten`() {
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = monday,
+                endDate = wednesday
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
+        }
+
+        dailyServiceTimesController.postDailyServiceTimes(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf()),
+            MockEvakaClock(HelsinkiDateTime.of(monday.minusDays(1), LocalTime.of(12, 0))),
+            testChild_1.id,
+            DailyServiceTimesValue.IrregularTimes(
+                validityPeriod = DateRange(monday, null),
+                // absences are generated for null days
+                monday = null,
+                tuesday = null,
+                wednesday = null,
+                thursday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                friday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                saturday = null,
+                sunday = null,
+            )
+        )
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                monday,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = monday,
+                        TimeRange(startTime, endTime),
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = testChild_1.id,
+                        date = tuesday,
+                    ),
+                    DailyReservationRequest.Nothing(
+                        childId = testChild_1.id,
+                        date = wednesday,
+                    ),
+                )
+            )
+        }
+
+        // then 3 non-editable absences are left
+        val absences =
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
+                .flatMap { dailyData ->
+                    dailyData.children.map { child ->
+                        Triple(dailyData.date, child.absence, child.absenceEditable)
+                    }
+                }
+        assertEquals(
+            listOf(
+                Triple(monday, AbsenceType.OTHER_ABSENCE, false),
+                Triple(tuesday, AbsenceType.OTHER_ABSENCE, false),
+                Triple(wednesday, AbsenceType.OTHER_ABSENCE, false),
+            ),
+            absences
+        )
+    }
+
+    @Test
     fun `previous reservation is overwritten`() {
         // given
         db.transaction {
@@ -802,6 +890,73 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = holidayPeriodStart.plusDays(1),
                         TimeRange(startTime, endTime),
                     )
+                )
+            )
+        }
+
+        // then
+        val reservationData =
+            db.read {
+                it.getReservationsCitizen(
+                    monday,
+                    testAdult_1.id,
+                    holidayPeriod,
+                )
+            }
+        val allReservations =
+            reservationData.flatMap { dailyData ->
+                dailyData.children.flatMap { child -> child.reservations }
+            }
+        val absenceDates =
+            reservationData.flatMap { dailyData ->
+                if (dailyData.children.any { child -> child.absence != null })
+                    listOf(dailyData.date)
+                else emptyList()
+            }
+        assertEquals(0, allReservations.size)
+        assertEquals(listOf(holidayPeriodStart), absenceDates)
+    }
+
+    @Test
+    fun `citizen cannot override absences in closed holiday periods when reservations are not required`() {
+        val holidayPeriodStart = monday.plusMonths(1)
+        val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
+        val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
+
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.PRESCHOOL, // <-- reservations not required
+                startDate = monday,
+                endDate = monday.plusYears(1)
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertAbsences(
+                citizenUser.evakaUserId,
+                listOf(
+                    AbsenceInsert(
+                        childId = testChild_1.id,
+                        date = holidayPeriodStart,
+                        absenceType = AbsenceType.OTHER_ABSENCE,
+                    )
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                monday,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Present(
+                        childId = testChild_1.id,
+                        date = holidayPeriodStart,
+                    ),
                 )
             )
         }

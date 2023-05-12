@@ -5,6 +5,8 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -16,6 +18,8 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -24,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -48,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
+    @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
 
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
@@ -295,6 +301,96 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children = emptyList()
                         )
+                    )
+            ),
+            res
+        )
+    }
+
+    @Test
+    fun `irregular daily service time absences are non-editable`() {
+        db.transaction { tx ->
+            tx.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
+        }
+
+        dailyServiceTimesController.postDailyServiceTimes(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf()),
+            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
+            testChild_1.id,
+            DailyServiceTimesValue.IrregularTimes(
+                validityPeriod = DateRange(mockToday.plusDays(1), null),
+                monday = null,
+                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                wednesday = null,
+                thursday = null,
+                friday = null,
+                saturday = null,
+                sunday = null,
+            )
+        )
+
+        val res = getReservations(FiniteDateRange(monday, tuesday))
+
+        assertEquals(
+            ReservationsResponse(
+                reservableRange =
+                    FiniteDateRange(
+                        LocalDate.of(2021, 11, 8), // Next week's monday
+                        LocalDate.of(2022, 8, 31),
+                    ),
+                includesWeekends = false,
+                children =
+                    // Sorted by date of birth, oldest child first
+                    listOf(
+                        ReservationChild(
+                            id = testChild_2.id,
+                            firstName = testChild_2.firstName,
+                            lastName = testChild_2.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.DAYCARE,
+                        ),
+                        ReservationChild(
+                            id = testChild_1.id,
+                            firstName = testChild_1.firstName,
+                            lastName = testChild_1.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                        ),
+                    ),
+                days =
+                    listOf(
+                        ReservationResponseDay(
+                            date = monday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                        dayChild(
+                                            testChild_1.id,
+                                            absence =
+                                                AbsenceInfo(
+                                                    AbsenceType.OTHER_ABSENCE,
+                                                    editable = false
+                                                )
+                                        ),
+                                        dayChild(testChild_2.id, contractDays = true),
+                                    )
+                                    .sortedBy { it.childId }
+                        ),
+                        ReservationResponseDay(
+                            date = tuesday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                        dayChild(testChild_1.id),
+                                        dayChild(testChild_2.id, contractDays = true),
+                                    )
+                                    .sortedBy { it.childId }
+                        ),
                     )
             ),
             res

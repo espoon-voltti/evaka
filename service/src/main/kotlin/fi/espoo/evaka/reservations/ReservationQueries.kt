@@ -305,7 +305,7 @@ LEFT JOIN LATERAL (
 LEFT JOIN LATERAL (
     SELECT
         a.absence_type,
-        (a.absence_type <> 'FREE_ABSENCE' AND eu.type <> 'EMPLOYEE') AS absence_editable
+        (a.absence_type <> 'FREE_ABSENCE' AND eu.type = 'CITIZEN') AS absence_editable
     FROM absence a
     JOIN evaka_user eu ON eu.id = a.modified_by
     WHERE

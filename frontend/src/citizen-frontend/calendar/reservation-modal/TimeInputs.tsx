@@ -18,11 +18,11 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, noTimes, times } from './form'
+import { day, emptyTimeRange, noTimes, timeRanges, reservation } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
-  label: React.ReactNode
+  label: React.ReactNode | undefined
   showAllErrors: boolean
   allowExtraTimeRange: boolean
   dataQaPrefix?: string
@@ -65,7 +65,7 @@ export const Day = React.memo(function Day({
 })
 
 interface ReservationTimesProps {
-  bind: BoundForm<typeof times>
+  bind: BoundForm<typeof reservation>
   label: React.ReactNode
   showAllErrors: boolean
   allowExtraTimeRange: boolean
@@ -82,35 +82,43 @@ const ReservationTimes = React.memo(function ReservationTimes({
   onFocus
 }: ReservationTimesProps) {
   const i18n = useTranslation()
-  const { set, state } = bind
+  const { set } = bind
 
-  // Empty reservations array => absent
-  return state.length === 0 ? (
-    <FixedSpaceRow fullWidth alignItems="center">
-      <LeftCell>{label}</LeftCell>
-      <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
-      <RightCell>
-        <IconButton
-          data-qa={dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined}
-          icon={fasUserMinus}
-          onClick={() => {
-            set([emptyTimeRange])
-          }}
-          aria-label={i18n.calendar.absentDisable}
+  const { branch, form } = useFormUnion(bind)
+
+  switch (branch) {
+    case 'absent':
+      return (
+        <FixedSpaceRow fullWidth alignItems="center">
+          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+          <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
+          <RightCell>
+            <IconButton
+              data-qa={
+                dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
+              }
+              icon={fasUserMinus}
+              onClick={() => {
+                set({ branch: 'timeRanges', state: [emptyTimeRange] })
+              }}
+              aria-label={i18n.calendar.absentDisable}
+            />
+          </RightCell>
+        </FixedSpaceRow>
+      )
+    case 'timeRanges':
+      return (
+        <TimeRanges
+          bind={form}
+          label={label}
+          showAllErrors={showAllErrors}
+          onAbsent={() => set({ branch: 'absent', state: true })}
+          allowExtraTimeRange={allowExtraTimeRange}
+          dataQaPrefix={dataQaPrefix}
+          onFocus={onFocus}
         />
-      </RightCell>
-    </FixedSpaceRow>
-  ) : (
-    <Times
-      bind={bind}
-      label={label}
-      showAllErrors={showAllErrors}
-      allowAbsence
-      allowExtraTimeRange={allowExtraTimeRange}
-      dataQaPrefix={dataQaPrefix}
-      onFocus={onFocus}
-    />
-  )
+      )
+  }
 })
 
 interface ReadOnlyDayProps {
@@ -132,7 +140,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case undefined:
       return (
         <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell>{label}</LeftCell>
+          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell />
           <RightCell />
         </FixedSpaceRow>
@@ -141,7 +149,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       return (
         <>
           <FixedSpaceRow fullWidth alignItems="center">
-            <LeftCell>{label}</LeftCell>
+            {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
             <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
             <RightCell>
               <InfoButton
@@ -172,7 +180,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case 'holiday':
       return (
         <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell>{label}</LeftCell>
+          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.holiday}</MiddleCell>
           <RightCell />
         </FixedSpaceRow>
@@ -180,25 +188,25 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
   }
 })
 
-interface TimesProps {
-  bind: BoundForm<typeof times>
+interface TimeRangesProps {
+  bind: BoundForm<typeof timeRanges>
   label: React.ReactNode
   showAllErrors: boolean
-  allowAbsence?: boolean
   allowExtraTimeRange: boolean
   dataQaPrefix?: string
+  onAbsent?: () => void
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
-export const Times = React.memo(function Times({
+const TimeRanges = React.memo(function Times({
   bind,
   label,
   showAllErrors,
-  allowAbsence = false,
   allowExtraTimeRange,
   dataQaPrefix,
+  onAbsent,
   onFocus
-}: TimesProps) {
+}: TimeRangesProps) {
   const i18n = useTranslation()
   const firstTimeRange = useFormElem(bind, 0)
   const secondTimeRange = useFormElem(bind, 1)
@@ -210,7 +218,7 @@ export const Times = React.memo(function Times({
   return (
     <>
       <FixedSpaceRow fullWidth alignItems="center">
-        <LeftCell>{label}</LeftCell>
+        {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
         <MiddleCell>
           <TimeRangeInput
             bind={firstTimeRange}
@@ -221,13 +229,13 @@ export const Times = React.memo(function Times({
         </MiddleCell>
         <RightCell>
           <FixedSpaceRow>
-            {allowAbsence ? (
+            {onAbsent !== undefined ? (
               <IconButton
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
                 }
                 icon={faUserMinus}
-                onClick={() => bind.set([])}
+                onClick={onAbsent}
                 aria-label={i18n.calendar.absentEnable}
               />
             ) : null}
@@ -245,7 +253,7 @@ export const Times = React.memo(function Times({
       </FixedSpaceRow>
       {secondTimeRange !== undefined ? (
         <FixedSpaceRow fullWidth alignItems="center">
-          <LeftCell />
+          {label !== undefined ? <LeftCell /> : null}
           <MiddleCell>
             <TimeRangeInput
               bind={secondTimeRange}
@@ -278,7 +286,7 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
 
   return (
     <FixedSpaceRow fullWidth alignItems="center">
-      <LeftCell>{label}</LeftCell>
+      {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
       <MiddleCell narrow>
         <Radio
           checked={bind.state === 'present'}
