@@ -9,13 +9,40 @@ import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
+export namespace AnsweredQuestion {
+  /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.CheckboxAnswer
+  */
+  export interface CheckboxAnswer {
+    type: 'CHECKBOX'
+    answer: boolean
+    questionId: string
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.CheckboxGroupAnswer
+  */
+  export interface CheckboxGroupAnswer {
+    type: 'CHECKBOX_GROUP'
+    answer: string[]
+    questionId: string
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.TextAnswer
+  */
+  export interface TextAnswer {
+    type: 'TEXT'
+    answer: string
+    questionId: string
+  }
+}
+
 /**
 * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
 */
-export interface AnsweredQuestion {
-  answer: unknown
-  questionId: string
-}
+export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.TextAnswer
+
 
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildBasics

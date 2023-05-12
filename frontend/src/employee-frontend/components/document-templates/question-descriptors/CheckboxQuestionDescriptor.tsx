@@ -55,7 +55,8 @@ const questionForm = mapped(
   }),
   (output): AnsweredQuestion => ({
     questionId: output.template.id,
-    answer: output.answer
+    answer: output.answer,
+    type: questionType
   })
 )
 

@@ -10,22 +10,34 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.json.Json
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed interface Question {
-    val id: String
+enum class QuestionType {
+    TEXT,
+    CHECKBOX,
+    CHECKBOX_GROUP
+}
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type"
+)
+sealed class Question(val type: QuestionType) {
+    abstract val id: String
 
     @JsonTypeName("TEXT")
-    data class TextQuestion(override val id: String, val label: String) : Question
+    data class TextQuestion(override val id: String, val label: String) :
+        Question(QuestionType.TEXT)
 
     @JsonTypeName("CHECKBOX")
-    data class CheckboxQuestion(override val id: String, val label: String) : Question
+    data class CheckboxQuestion(override val id: String, val label: String) :
+        Question(QuestionType.CHECKBOX)
 
     @JsonTypeName("CHECKBOX_GROUP")
     data class CheckboxGroupQuestion(
         override val id: String,
         val label: String,
         val options: List<MultiselectOption>
-    ) : Question
+    ) : Question(QuestionType.CHECKBOX_GROUP)
 }
 
 data class MultiselectOption(val id: String, val label: String)

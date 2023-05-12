@@ -1,7 +1,10 @@
 package fi.espoo.evaka.document.childdocument
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
@@ -9,9 +12,31 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
-data class AnsweredQuestion(val questionId: String, val answer: Any)
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type"
+)
+sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
+    abstract val questionId: String
+    abstract val answer: Answer
 
-@Json data class DocumentContent(val answers: List<AnsweredQuestion>)
+    @JsonTypeName("TEXT")
+    data class TextAnswer(override val questionId: String, override val answer: String) :
+        AnsweredQuestion<String>(QuestionType.TEXT)
+
+    @JsonTypeName("CHECKBOX")
+    data class CheckboxAnswer(override val questionId: String, override val answer: Boolean) :
+        AnsweredQuestion<Boolean>(QuestionType.CHECKBOX)
+
+    @JsonTypeName("CHECKBOX_GROUP")
+    data class CheckboxGroupAnswer(
+        override val questionId: String,
+        override val answer: List<String>
+    ) : AnsweredQuestion<List<String>>(QuestionType.CHECKBOX_GROUP)
+}
+
+@Json data class DocumentContent(val answers: List<AnsweredQuestion<*>>)
 
 data class ChildDocumentSummary(
     val id: ChildDocumentId,

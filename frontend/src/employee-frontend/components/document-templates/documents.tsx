@@ -83,20 +83,29 @@ export const getDocumentQuestionInitialState = (
 ) => {
   switch (question.type) {
     case 'TEXT':
-      return TextQuestionDescriptor.document.getInitialState(
-        question,
-        answeredQuestion ? (answeredQuestion.answer as string) : undefined
-      )
+      if (answeredQuestion?.type === question.type) {
+        return TextQuestionDescriptor.document.getInitialState(
+          question,
+          answeredQuestion.answer
+        )
+      }
+      return TextQuestionDescriptor.document.getInitialState(question)
     case 'CHECKBOX':
-      return CheckboxQuestionDescriptor.document.getInitialState(
-        question,
-        answeredQuestion ? (answeredQuestion.answer as boolean) : undefined
-      )
+      if (answeredQuestion?.type === question.type) {
+        return CheckboxQuestionDescriptor.document.getInitialState(
+          question,
+          answeredQuestion.answer
+        )
+      }
+      return CheckboxQuestionDescriptor.document.getInitialState(question)
     case 'CHECKBOX_GROUP':
-      return CheckboxGroupQuestionDescriptor.document.getInitialState(
-        question,
-        answeredQuestion ? (answeredQuestion.answer as string[]) : undefined
-      )
+      if (answeredQuestion?.type === question.type) {
+        return CheckboxGroupQuestionDescriptor.document.getInitialState(
+          question,
+          answeredQuestion.answer
+        )
+      }
+      return CheckboxGroupQuestionDescriptor.document.getInitialState(question)
   }
 }
 

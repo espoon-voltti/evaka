@@ -1,6 +1,7 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -107,15 +108,35 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         Action.ChildDocument.UPDATE,
                         documentId
                     )
-                    tx.getChildDocument(documentId)?.also {
-                        if (it.published)
-                            throw BadRequest("Cannot update contents of published document")
-                    }
-                        ?: throw NotFound("Document $documentId not found")
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
+                    if (document.published)
+                        throw BadRequest("Cannot update contents of published document")
+
+                    validateContentAgainstTemplate(body, document.template.content)
 
                     tx.updateDraftChildDocumentContent(documentId, body)
                 }
                 .also { Audit.ChildDocumentUpdateContent.log(targetId = documentId) }
+        }
+    }
+
+    private fun validateContentAgainstTemplate(
+        documentContent: DocumentContent,
+        templateContent: DocumentTemplateContent
+    ) {
+        val questions = templateContent.sections.flatMap { it.questions }
+        val valid =
+            documentContent.answers.all { answeredQuestion ->
+                questions.any { question ->
+                    question.id == answeredQuestion.questionId &&
+                        question.type == answeredQuestion.type
+                }
+            }
+        if (!valid) {
+            throw BadRequest("Answered questions and template do not match")
         }
     }
 
