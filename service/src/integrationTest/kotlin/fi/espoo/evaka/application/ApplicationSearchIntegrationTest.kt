@@ -38,8 +38,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -68,28 +66,6 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 attachment = true
             )
         createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
-        createApplication(
-            testChild_4,
-            testAdult_1,
-            type = ApplicationType.PRESCHOOL,
-            connectedDaycare = true,
-            serviceNeedOption = null // service need option disabled (=espoo)
-        )
-        createApplication(
-            testChild_5,
-            testAdult_1,
-            type = ApplicationType.PRESCHOOL,
-            connectedDaycare = true,
-            serviceNeedOption =
-                ofServiceNeedOption(snPreschoolDaycare45) // service need option enabled (=tampere)
-        )
-        createApplication(
-            testChild_6,
-            testAdult_1,
-            type = ApplicationType.PRESCHOOL,
-            connectedDaycare = true,
-            serviceNeedOption = ofServiceNeedOption(snPreschoolClub45)
-        )
     }
 
     @Test
@@ -99,7 +75,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT)
             )
-        assertEquals(6, summary.total)
+        assertEquals(3, summary.total)
     }
 
     @Test
@@ -128,6 +104,34 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `application summary can be filtered by preschool types`() {
+        val noServiceNeed =
+            createApplication(
+                testChild_4,
+                testAdult_1,
+                type = ApplicationType.PRESCHOOL,
+                connectedDaycare = true,
+                serviceNeedOption = null // service need option disabled (=espoo)
+            )
+        val preschoolDaycare =
+            createApplication(
+                testChild_5,
+                testAdult_1,
+                type = ApplicationType.PRESCHOOL,
+                connectedDaycare = true,
+                serviceNeedOption =
+                    ofServiceNeedOption(
+                        snPreschoolDaycare45
+                    ) // service need option enabled (=tampere)
+            )
+        val preschoolClub =
+            createApplication(
+                testChild_6,
+                testAdult_1,
+                type = ApplicationType.PRESCHOOL,
+                connectedDaycare = true,
+                serviceNeedOption = ofServiceNeedOption(snPreschoolClub45)
+            )
+
         fun getPreschoolApplications(vararg preschoolTypes: ApplicationPreschoolTypeToggle) =
             getApplicationSummaries(
                     type = ApplicationTypeToggle.PRESCHOOL,
@@ -135,63 +139,56 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     preschoolType = preschoolTypes.toSet()
                 )
                 .data
+                .map { it.id }
 
-        assertThat(getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE))
-            .extracting({ it.type }, { it.serviceNeed?.validPlacementType })
-            .containsExactlyInAnyOrder(
-                Tuple(ApplicationType.PRESCHOOL, null),
-                Tuple(ApplicationType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE)
-            )
-        assertThat(getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB))
-            .extracting({ it.type }, { it.serviceNeed?.validPlacementType })
-            .containsExactly(Tuple(ApplicationType.PRESCHOOL, PlacementType.PRESCHOOL_CLUB))
-        assertThat(getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()))
-            .extracting({ it.type }, { it.serviceNeed?.validPlacementType })
-            .containsExactlyInAnyOrder(
-                Tuple(ApplicationType.PRESCHOOL, null),
-                Tuple(ApplicationType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE),
-                Tuple(ApplicationType.PRESCHOOL, PlacementType.PRESCHOOL_CLUB)
-            )
+        assertEquals(
+            listOf(noServiceNeed, preschoolDaycare).sorted(),
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE).sorted(),
+        )
+        assertEquals(
+            listOf(preschoolClub),
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB)
+        )
+        assertEquals(
+            listOf(noServiceNeed, preschoolDaycare, preschoolClub).sorted(),
+            getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()).sorted()
+        )
     }
 
     @Test
     fun `getChildApplicationSummaries returns only given child's applications`() {
-        assertThat(
-                applicationControllerV2.getChildApplicationSummaries(
-                    dbInstance(),
-                    serviceWorker,
-                    now,
-                    testChild_1.id
-                )
-            )
-            .extracting<ChildId> { it.childId }
-            .containsExactly(testChild_1.id)
+        assertEquals(
+            listOf(testChild_1.id),
+            applicationControllerV2
+                .getChildApplicationSummaries(dbInstance(), serviceWorker, now, testChild_1.id)
+                .map { it.childId }
+        )
     }
 
     @Test
     fun `getChildApplicationSummaries returns empty list with child without applications`() {
-        assertThat(
-                applicationControllerV2.getChildApplicationSummaries(
-                    dbInstance(),
-                    serviceWorker,
-                    now,
-                    testChild_7.id
-                )
+        assertEquals(
+            listOf(),
+            applicationControllerV2.getChildApplicationSummaries(
+                dbInstance(),
+                serviceWorker,
+                now,
+                testChild_7.id
             )
-            .isEmpty()
+        )
     }
 
     @Test
     fun `getChildApplicationSummaries returns empty list with unknown child id`() {
-        assertThat(
-                applicationControllerV2.getChildApplicationSummaries(
-                    dbInstance(),
-                    serviceWorker,
-                    now,
-                    ChildId(UUID.randomUUID())
-                )
+        assertEquals(
+            listOf(),
+            applicationControllerV2.getChildApplicationSummaries(
+                dbInstance(),
+                serviceWorker,
+                now,
+                ChildId(UUID.randomUUID())
             )
-            .isEmpty()
+        )
     }
 
     @Test
