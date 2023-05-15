@@ -4,12 +4,8 @@
 
 import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
-import passportSaml, {
-  AuthenticateOptions,
-  SAML,
-  SamlConfig
-} from 'passport-saml'
-import { createLogoutToken, EvakaSessionUser } from '../auth'
+import passportSaml from '@node-saml/passport-saml'
+import { createLogoutToken } from '../auth'
 import { gatewayRole, nodeEnv } from '../config'
 import { toMiddleware, toRequestHandler } from '../express'
 import { logAuditEvent, logDebug } from '../logging'
@@ -21,8 +17,11 @@ import {
   SessionType
 } from '../session'
 import { parseDescriptionFromSamlError } from '../saml/error-utils'
-import type { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
-import { parseRelayState, tryParseProfile } from '../saml'
+import type {
+  AuthenticateOptions,
+  RequestWithUser
+} from '@node-saml/passport-saml/lib/types'
+import { parseRelayState } from '../saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -51,7 +50,6 @@ function getRedirectUrl(req: express.Request): string {
 export interface SamlEndpointConfig {
   strategyName: string
   strategy: passportSaml.Strategy
-  samlConfig: SamlConfig
   sessionType: SessionType
 }
 
@@ -74,7 +72,7 @@ function createLoginHandler({
       (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         err: any,
-        user: (EvakaSessionUser & passportSaml.Profile) | undefined
+        user: (Express.User & passportSaml.Profile) | undefined
       ) => {
         if (err || !user) {
           const description =
@@ -150,7 +148,6 @@ function createLogoutHandler({
     )
     try {
       const redirectUrl = await fromCallback<string | null>((cb) =>
-        // passport-saml logout requires req.user to be present, despite what the typings claim
         req.user ? strategy.logout(req as RequestWithUser, cb) : cb(null, null)
       )
       logDebug('Logging user out from passport.', req)
@@ -176,26 +173,17 @@ function createLogoutHandler({
 export default function createSamlRouter(
   endpointConfig: SamlEndpointConfig
 ): Router {
-  const { strategyName, strategy, samlConfig } = endpointConfig
-  // For parsing SAML messages outside the strategy
-  const saml = new SAML(samlConfig)
+  const { strategyName, strategy } = endpointConfig
 
   passport.use(strategyName, strategy)
 
   const loginHandler = createLoginHandler(endpointConfig)
   const logoutHandler = createLogoutHandler(endpointConfig)
-  const logoutCallback = toMiddleware(async (req, res) => {
+  const logoutCallback = toMiddleware(async (req) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out`,
       req,
       'Logout callback called'
-    )
-    const profile = await tryParseProfile(req, saml)
-    await logoutExpress(
-      req,
-      res,
-      endpointConfig.sessionType,
-      profile?.nameID && createLogoutToken(profile.nameID, profile.sessionIndex)
     )
   })
 

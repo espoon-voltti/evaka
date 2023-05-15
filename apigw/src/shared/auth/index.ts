@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
-import { Profile } from 'passport-saml'
+import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client'
 
 const auditEventGatewayId =

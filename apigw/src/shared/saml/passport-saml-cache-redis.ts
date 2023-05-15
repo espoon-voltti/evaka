@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { CacheItem, CacheProvider } from 'passport-saml'
+import type { CacheItem, CacheProvider } from '@node-saml/passport-saml'
 import type { RedisClient } from 'redis'
 import { fromCallback } from '../promise-utils'
 
@@ -40,10 +40,6 @@ export default function redisCacheProvider(
   }
 
   return {
-    // cacheKeys and options required in the type but never used
-    cacheKeys: {},
-    options: { keyExpirationPeriodMs: ttlSeconds * 1000 },
-
     getAsync: (key) =>
       fromCallback((callback) => client.get(`${keyPrefix}${key}`, callback)),
     saveAsync: (key, value) =>

@@ -18,6 +18,7 @@ import { GatewayTester } from '../test/gateway-tester'
 import redisMock from 'redis-mock'
 import { DevCitizen } from '../dev-api'
 import { CitizenUser } from '../service-client'
+import { ValidateInResponseTo } from '@node-saml/node-saml'
 
 const mockUser: DevCitizen & CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
@@ -76,7 +77,7 @@ describe('SAML Single Logout', () => {
           issuer: SP_ISSUER,
           publicCert: 'config/test-cert/slo-test-idp-cert.pem',
           privateCert: 'config/test-cert/saml-private.pem',
-          validateInResponseTo: false,
+          validateInResponseTo: ValidateInResponseTo.never,
           decryptAssertions: false
         }
       }
@@ -294,6 +295,12 @@ function buildLoginResponse(
       <saml:AttributeStatement>
         <saml:Attribute Name="urn:oid:1.2.246.21">
           <saml:AttributeValue>010101-999X</saml:AttributeValue>
+        </saml:Attribute>
+        <saml:Attribute Name="urn:oid:2.5.4.42">
+          <saml:AttributeValue>Etunimi</saml:AttributeValue>
+        </saml:Attribute>
+        <saml:Attribute Name="urn:oid:2.5.4.4">
+          <saml:AttributeValue>Sukunimi</saml:AttributeValue>
         </saml:Attribute>
       </saml:AttributeStatement>
       <saml:AuthnStatement

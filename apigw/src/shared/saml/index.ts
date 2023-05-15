@@ -3,21 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
+import { isEqual } from 'lodash'
 import {
   CacheProvider,
   Profile,
-  SAML,
   SamlConfig,
-  VerifiedCallback,
-  VerifyWithoutRequest
-} from 'passport-saml'
+  Strategy as SamlStrategy,
+  VerifyWithRequest
+} from '@node-saml/passport-saml'
 import { logError, logWarn } from '../logging'
-import { EvakaSessionUser } from '../auth'
+import { createLogoutToken, EvakaSessionUser } from '../auth'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config'
 import { readFileSync } from 'fs'
 import certificates, { TrustedCertificates } from '../certificates'
-import express, { Request } from 'express'
+import express from 'express'
 import path from 'path'
+import { logoutWithOnlyToken } from '../session'
+import { fromCallback } from '../promise-utils'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -52,49 +54,89 @@ export function createSamlConfig(
     logoutUrl: config.logoutUrl,
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
-    validateInResponseTo: config.validateInResponseTo
+    validateInResponseTo: config.validateInResponseTo,
+    passReqToCallback: true,
+    // When *both* wantXXXXSigned settings are false, passport-saml still
+    // requires at least the whole response *or* the assertion to be signed, so
+    // these settings don't introduce a security problem
+    wantAssertionsSigned: false,
+    wantAuthnResponseSigned: false
   }
 }
 
-export function toSamlVerifyFunction(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: z.ZodObject<any>,
-  verify: (profile: Profile) => Promise<EvakaSessionUser>
-): VerifyWithoutRequest {
-  return (profile: Profile | null | undefined, done: VerifiedCallback) => {
-    if (!profile) {
-      done(new Error('No SAML profile'))
-    } else {
-      const parseResult = schema.safeParse(profile)
-      if (!parseResult.success) {
-        logWarn(
-          `SAML profile parsing failed: ${parseResult.error.message}`,
-          undefined,
-          {
-            issuer: profile.issuer
-          },
-          parseResult.error
-        )
-      }
-      verify(profile)
-        .then((user) => {
-          // Despite what the typings say, passport-saml assumes
-          // we give it back a valid Profile, including at least some of these
-          // SAML-specific fields
-          const samlUser: EvakaSessionUser & Profile = {
-            ...user,
-            issuer: profile.issuer,
-            nameID: profile.nameID,
-            nameIDFormat: profile.nameIDFormat,
-            nameQualifier: profile.nameQualifier,
-            spNameQualifier: profile.spNameQualifier,
-            sessionIndex: profile.sessionIndex
-          }
-          done(null, samlUser)
-        })
-        .catch(done)
+// A subset of SAML Profile fields that are expected to be present in Profile
+// *and* req.user in valid SAML sessions
+const SamlProfileId = z.object({
+  nameID: z.string(),
+  sessionIndex: z.string().optional()
+})
+
+export function createSamlStrategy(
+  config: SamlConfig,
+  profileSchema: z.AnyZodObject,
+  login: (profile: Profile) => Promise<EvakaSessionUser>
+): SamlStrategy {
+  const loginVerify: VerifyWithRequest = (req, profile, done) => {
+    if (!profile) return done(null, undefined)
+    const parseResult = profileSchema.safeParse(profile)
+    if (!parseResult.success) {
+      logWarn(
+        `SAML profile parsing failed: ${parseResult.error.message}`,
+        undefined,
+        {
+          issuer: profile.issuer
+        },
+        parseResult.error
+      )
     }
+    login(profile)
+      .then((user) => {
+        // Despite what the typings say, passport-saml assumes
+        // we give it back a valid Profile, including at least some of these
+        // SAML-specific fields
+        const samlUser: EvakaSessionUser & Profile = {
+          ...user,
+          issuer: profile.issuer,
+          nameID: profile.nameID,
+          nameIDFormat: profile.nameIDFormat,
+          nameQualifier: profile.nameQualifier,
+          spNameQualifier: profile.spNameQualifier,
+          sessionIndex: profile.sessionIndex
+        }
+        done(null, samlUser)
+      })
+      .catch(done)
   }
+  const logoutVerify: VerifyWithRequest = (req, profile, done) =>
+    (async () => {
+      if (!profile) return undefined
+      const profileId = SamlProfileId.safeParse(profile)
+      if (!profileId.success) return undefined
+      if (!req.user) {
+        // We're possibly doing SLO without a real session (e.g. browser has
+        // 3rd party cookies disabled). We need to retrieve the session data
+        // and recreate req.user for this request
+        const logoutToken = createLogoutToken(
+          profile.nameID,
+          profile.sessionIndex
+        )
+        const user = await logoutWithOnlyToken(logoutToken)
+        if (user) {
+          // Set req.user for *this request only*
+          await fromCallback((cb) =>
+            req.login(user, { session: false, keepSessionInfo: false }, cb)
+          )
+        }
+      }
+      const reqUser: Partial<Profile> = (req.user ?? {}) as Partial<Profile>
+      const reqId = SamlProfileId.safeParse(reqUser)
+      if (reqId.success && isEqual(reqId.data, profileId.data)) {
+        return reqUser
+      }
+    })()
+      .then((user) => done(null, user))
+      .catch((err) => done(err))
+  return new SamlStrategy(config, loginVerify, logoutVerify)
 }
 
 export function parseRelayState(req: express.Request): string | undefined {
@@ -115,34 +157,4 @@ export function parseRelayState(req: express.Request): string | undefined {
   if (relayState) logError('Invalid RelayState in request', req)
 
   return undefined
-}
-
-/**
- * If request is a SAMLRequest, parse, validate and return the Profile from it.
- * @param saml Config must match active strategy's config
- */
-export async function tryParseProfile(
-  req: Request,
-  saml: SAML
-): Promise<Profile | undefined> {
-  let profile: Profile | null | undefined
-
-  // NOTE: This duplicate parsing can be removed if passport-saml ever exposes
-  // an alternative for passport.authenticate() that either lets us hook into
-  // it before any redirects or separate XML parsing and authentication methods.
-  if (req.query?.SAMLRequest) {
-    // Redirects have signatures in the original query parameter
-    const dummyOrigin = 'http://evaka'
-    const originalQuery = new URL(req.url, dummyOrigin).search.replace(
-      /^\?/,
-      ''
-    )
-    profile = (await saml.validateRedirectAsync(req.query, originalQuery))
-      .profile
-  } else if (req.body?.SAMLRequest) {
-    // POST logout callbacks have the signature in the message body directly
-    profile = (await saml.validatePostRequestAsync(req.body)).profile
-  }
-
-  return profile || undefined
 }

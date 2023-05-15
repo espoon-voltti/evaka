@@ -7,7 +7,7 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createSuomiFiStrategy from './suomi-fi-saml'
+import { createSuomiFiStrategy } from './suomi-fi-saml'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -83,7 +83,6 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
         createSamlRouter({
           strategyName: 'suomifi',
           strategy: createSuomiFiStrategy(suomifiSamlConfig),
-          samlConfig: suomifiSamlConfig,
           sessionType: 'enduser'
         })
       )
@@ -100,7 +99,6 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
       createSamlRouter({
         strategyName: 'evaka-customer',
         strategy: createKeycloakCitizenSamlStrategy(keycloakCitizenConfig),
-        samlConfig: keycloakCitizenConfig,
         sessionType: 'enduser'
       })
     )

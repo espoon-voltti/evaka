@@ -7,7 +7,7 @@ import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createAdSamlStrategy from './ad-saml'
+import { createAdSamlStrategy } from './ad-saml'
 import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml'
 import {
   appCommit,
@@ -108,16 +108,17 @@ export default function internalGwApp(
     if (config.ad.type === 'mock') {
       router.use('/auth/saml', createDevAdRouter())
     } else if (config.ad.type === 'saml') {
-      const adSamlConfig = createSamlConfig(
-        config.ad.saml,
-        redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-      )
       router.use(
         '/auth/saml',
         createSamlRouter({
           strategyName: 'ead',
-          strategy: createAdSamlStrategy(config.ad, adSamlConfig),
-          samlConfig: adSamlConfig,
+          strategy: createAdSamlStrategy(
+            config.ad,
+            createSamlConfig(
+              config.ad.saml,
+              redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+            )
+          ),
           sessionType: 'employee'
         })
       )
@@ -134,7 +135,6 @@ export default function internalGwApp(
       createSamlRouter({
         strategyName: 'evaka',
         strategy: createKeycloakEmployeeSamlStrategy(keycloakEmployeeConfig),
-        samlConfig: keycloakEmployeeConfig,
         sessionType: 'employee'
       })
     )

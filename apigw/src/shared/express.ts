@@ -5,6 +5,7 @@
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
 import { EvakaSessionUser } from './auth'
+import passportSaml from '@node-saml/passport-saml'
 
 export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
@@ -63,11 +64,9 @@ declare global {
     interface Request {
       traceId?: string
       spanId?: string
+      samlLogoutRequest: passportSaml.Profile
     }
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface User extends EvakaSessionUser {
-      // this is a hack needed for passport-saml compatibility
-      issuer?: string
-    }
+    interface User extends EvakaSessionUser {}
   }
 }

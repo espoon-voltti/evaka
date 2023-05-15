@@ -874,6 +874,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@node-saml/node-saml@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "@node-saml/node-saml@npm:4.0.4"
+  dependencies:
+    "@types/debug": ^4.1.7
+    "@types/passport": ^1.0.11
+    "@types/xml-crypto": ^1.4.2
+    "@types/xml-encryption": ^1.2.1
+    "@types/xml2js": ^0.4.11
+    "@xmldom/xmldom": ^0.8.6
+    debug: ^4.3.4
+    xml-crypto: ^3.0.1
+    xml-encryption: ^3.0.2
+    xml2js: ^0.5.0
+    xmlbuilder: ^15.1.1
+  checksum: f56f56dad68b6b6b03642186879e3a2f63108d63dea6a5912dd2e997dff668372e72fbbdbaa3d676c30e054c9646cd0f1937e23a02af499863ccfef353a673e0
+  languageName: node
+  linkType: hard
+
+"@node-saml/passport-saml@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "@node-saml/passport-saml@npm:4.0.3"
+  dependencies:
+    "@node-saml/node-saml": ^4.0.4
+    "@types/express": ^4.17.14
+    "@types/passport": ^1.0.11
+    "@types/passport-strategy": ^0.2.35
+    passport: ^0.6.0
+    passport-strategy: ^1.0.0
+  checksum: 9c283b1fb32fb4cddeb2605bea9a83a9df5d6468f61bba3e07b1e1f9d96ccc921008a1f4b991e7ea147dbd7dedaa9645e091c2b60f6b1e57f917cc35440c35e7
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -1144,6 +1177,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/debug@npm:^4.1.7":
+  version: 4.1.7
+  resolution: "@types/debug@npm:4.1.7"
+  dependencies:
+    "@types/ms": "*"
+  checksum: 0a7b89d8ed72526858f0b61c6fd81f477853e8c4415bb97f48b1b5545248d2ae389931680b94b393b993a7cfe893537a200647d93defe6d87159b96812305adc
+  languageName: node
+  linkType: hard
+
 "@types/express-http-proxy@npm:^1.6.3":
   version: 1.6.3
   resolution: "@types/express-http-proxy@npm:1.6.3"
@@ -1153,14 +1195,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^4.17.18":
-  version: 4.17.28
-  resolution: "@types/express-serve-static-core@npm:4.17.28"
+"@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^4.17.33":
+  version: 4.17.33
+  resolution: "@types/express-serve-static-core@npm:4.17.33"
   dependencies:
     "@types/node": "*"
     "@types/qs": "*"
     "@types/range-parser": "*"
-  checksum: 826489811a5b371c10f02443b4ca894ffc05813bfdf2b60c224f5c18ac9a30a2e518cb9ef9fdfcaa2a1bb17f8bfa4ed1859ccdb252e879c9276271b4ee2df5a9
+  checksum: dce580d16b85f207445af9d4053d66942b27d0c72e86153089fa00feee3e96ae336b7bedb31ed4eea9e553c99d6dd356ed6e0928f135375d9f862a1a8015adf2
   languageName: node
   linkType: hard
 
@@ -1173,15 +1215,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*":
-  version: 4.17.13
-  resolution: "@types/express@npm:4.17.13"
+"@types/express@npm:*, @types/express@npm:^4.17.14":
+  version: 4.17.17
+  resolution: "@types/express@npm:4.17.17"
   dependencies:
     "@types/body-parser": "*"
-    "@types/express-serve-static-core": ^4.17.18
+    "@types/express-serve-static-core": ^4.17.33
     "@types/qs": "*"
     "@types/serve-static": "*"
-  checksum: 12a2a0e6c4b993fc0854bec665906788aea0d8ee4392389d7a98a5de1eefdd33c9e1e40a91f3afd274011119c506f7b4126acb97fae62ae20b654974d44cba12
+  checksum: 0196dacc275ac3ce89d7364885cb08e7fb61f53ca101f65886dbf1daf9b7eb05c0943e2e4bbd01b0cc5e50f37e0eea7e4cbe97d0304094411ac73e1b7998f4da
   languageName: node
   linkType: hard
 
@@ -1259,6 +1301,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ms@npm:*":
+  version: 0.7.31
+  resolution: "@types/ms@npm:0.7.31"
+  checksum: daadd354aedde024cce6f5aa873fefe7b71b22cd0e28632a69e8b677aeb48ae8caa1c60e5919bb781df040d116b01cb4316335167a3fc0ef6a63fa3614c0f6da
+  languageName: node
+  linkType: hard
+
 "@types/node-forge@npm:^1.3.2":
   version: 1.3.2
   resolution: "@types/node-forge@npm:1.3.2"
@@ -1285,12 +1334,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport@npm:*, @types/passport@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "@types/passport@npm:1.0.7"
+"@types/passport@npm:*, @types/passport@npm:^1.0.11, @types/passport@npm:^1.0.12":
+  version: 1.0.12
+  resolution: "@types/passport@npm:1.0.12"
   dependencies:
     "@types/express": "*"
-  checksum: 1b78fbbb589774a2d9794449e039d590c21fefd6b3f0a5cc911e2a79bac85f363121cfdc330d15840879abeb4fb2d68d521111e595bded0f5dc4356bf8dba3ec
+  checksum: 2bce41b248566d8c2aeafcb38f105e3521d42a572e92da9edc5eb669f1b3cb02e5911c9d124191f67d432b677562a885b6ad7f56320c712df1e87ba7619eb8a4
   languageName: node
   linkType: hard
 
@@ -1456,6 +1505,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/xml-encryption@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "@types/xml-encryption@npm:1.2.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: abfc6d779e1674c268258296e9c03b307cb80383c5d598c0cda1ad75dc901b8d4104b5818990086b08bac199dbe7374706913a29c58cf614a741847f912854f1
+  languageName: node
+  linkType: hard
+
 "@types/xml2js@npm:^0.4.11":
   version: 0.4.11
   resolution: "@types/xml2js@npm:0.4.11"
@@ -1602,10 +1660,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.7.0, @xmldom/xmldom@npm:^0.7.6, @xmldom/xmldom@npm:^0.7.9":
-  version: 0.7.10
-  resolution: "@xmldom/xmldom@npm:0.7.10"
-  checksum: faeb5efd208f25643e469b9807b4b1bfe4f9c19540f0a24b4bb1c748cee6ee44ec441048820f9100987d1ee075f2e2bfc28e535cae5024d4566bb62b0a42be13
+"@xmldom/xmldom@npm:^0.8.5, @xmldom/xmldom@npm:^0.8.6":
+  version: 0.8.7
+  resolution: "@xmldom/xmldom@npm:0.8.7"
+  checksum: 593d4429c2281ee7799adcb6ff8604b68cf30ce0721537e3e380287b423e67c7ac197d90987f932b4fd3febc409ded8435706e7f90fbba6e22e08740477341d1
   languageName: node
   linkType: hard
 
@@ -2928,6 +2986,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "evaka-api-gateways@workspace:."
   dependencies:
+    "@node-saml/node-saml": ^4.0.4
+    "@node-saml/passport-saml": ^4.0.3
     "@types/connect-redis": ^0.0.20
     "@types/cookie-parser": ^1.4.3
     "@types/csurf": ^1.11.2
@@ -2938,7 +2998,7 @@ __metadata:
     "@types/lodash": ^4.14.192
     "@types/node": ^18.15.11
     "@types/node-forge": ^1.3.2
-    "@types/passport": ^1.0.7
+    "@types/passport": ^1.0.12
     "@types/passport-strategy": ^0.2.35
     "@types/pino-http": ^5.8.1
     "@types/pino-pretty": ^5.0.0
@@ -2981,8 +3041,7 @@ __metadata:
     nock: ^13.3.0
     node-forge: ^1.3.1
     nodemon: ^2.0.22
-    passport: ^0.5.2
-    passport-saml: 3.2.4
+    passport: ^0.6.0
     pino: ^8.11.0
     pino-http: ^8.3.3
     pino-pretty: ^10.0.0
@@ -2999,7 +3058,7 @@ __metadata:
     ts-node: ^10.9.1
     typescript: ^5.0.3
     uuid: ^9.0.0
-    xml-crypto: 2.1.5
+    xml-crypto: ^3.0.1
     xml2js: ^0.5.0
     zod: ^3.21.4
   languageName: unknown
@@ -5267,21 +5326,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-saml@npm:3.2.4":
-  version: 3.2.4
-  resolution: "passport-saml@npm:3.2.4"
-  dependencies:
-    "@xmldom/xmldom": ^0.7.6
-    debug: ^4.3.2
-    passport-strategy: ^1.0.0
-    xml-crypto: ^2.1.3
-    xml-encryption: ^2.0.0
-    xml2js: ^0.4.23
-    xmlbuilder: ^15.1.1
-  checksum: 8e885af4d44c2d862b2ea0d051ab2a36bc6f9a70e62f90daf7ce4eefd126ac2ab4d5fc070693eba05f5e1be248af23fa018611bbfa7fad31708371f387f5dd77
-  languageName: node
-  linkType: hard
-
 "passport-strategy@npm:1.x.x, passport-strategy@npm:^1.0.0":
   version: 1.0.0
   resolution: "passport-strategy@npm:1.0.0"
@@ -5289,13 +5333,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport@npm:^0.5.2":
-  version: 0.5.2
-  resolution: "passport@npm:0.5.2"
+"passport@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "passport@npm:0.6.0"
   dependencies:
     passport-strategy: 1.x.x
     pause: 0.0.1
-  checksum: be17a64a069f412299dea342fea1f4c755aea66fcd71e9422c5e254be18b069a39b00d141e4c63fb852f1bfea6030e8e170593d7f0db5c197fddec781e9e8de4
+    utils-merge: ^1.0.1
+  checksum: ef932ad671d50de34765c7a53cd1e058d8331a82a6df09265a9c6c1168911aee4a7b5215803d0101110ab7f317e096b4954ca7e18fb2c33b9929f0bd17dbe159
   languageName: node
   linkType: hard
 
@@ -6740,7 +6785,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.0.1":
+"utils-merge@npm:1.0.1, utils-merge@npm:^1.0.1":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: c81095493225ecfc28add49c106ca4f09cdf56bc66731aa8dabc2edbbccb1e1bfe2de6a115e5c6a380d3ea166d1636410b62ef216bb07b3feb1cfde1d95d5080
@@ -6854,34 +6899,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:2.1.5, xml-crypto@npm:^2.1.3":
-  version: 2.1.5
-  resolution: "xml-crypto@npm:2.1.5"
+"xml-crypto@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "xml-crypto@npm:3.0.1"
   dependencies:
-    "@xmldom/xmldom": ^0.7.9
+    "@xmldom/xmldom": ^0.8.5
     xpath: 0.0.32
-  checksum: 387ed6aa812f9ea7fb33385bd3e934042152ee9a97870f28ebfa5c7931eee23a7a2d36ca35916fbe5eadd65163ce9483db661cf3f569c9177773e8efa1acfa37
+  checksum: e0310375a08617c65d8cabe1d3ecb54e797b1f5138f445d0ff4ab0525e35618174c58a9db3987d820546ac4df6b04408e986a233baf293cf82a0d38ef3fca808
   languageName: node
   linkType: hard
 
-"xml-encryption@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "xml-encryption@npm:2.0.0"
+"xml-encryption@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "xml-encryption@npm:3.0.2"
   dependencies:
-    "@xmldom/xmldom": ^0.7.0
+    "@xmldom/xmldom": ^0.8.5
     escape-html: ^1.0.3
     xpath: 0.0.32
-  checksum: a454445704c5e3aa3f992128c413c02f3c00c346cb0d63b01beae4b6a341cfc0a52a0219ccec47dcce250e336ba7b09d95909913b1f199ca43604961a00a1995
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:^0.4.23":
-  version: 0.4.23
-  resolution: "xml2js@npm:0.4.23"
-  dependencies:
-    sax: ">=0.6.0"
-    xmlbuilder: ~11.0.0
-  checksum: ca0cf2dfbf6deeaae878a891c8fbc0db6fd04398087084edf143cdc83d0509ad0fe199b890f62f39c4415cf60268a27a6aed0d343f0658f8779bd7add690fa98
+  checksum: aac1b987d5de5becfc747c88c3a656c00799a153ab541078b875a69e1ac1f1c2f29bf85f22eab6a78382dc2919f79401a916cc392aba7994475919e0695893eb
   languageName: node
   linkType: hard
 

@@ -188,7 +188,7 @@ async function includeXsrfTokenInRequest(
     ...config,
     headers: {
       ...config.headers,
-      'XSRF-TOKEN': cookie.value
+      'X-XSRF-TOKEN': cookie.value
     }
   }
 }
