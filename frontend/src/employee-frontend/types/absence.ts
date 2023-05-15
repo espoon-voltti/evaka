@@ -65,6 +65,7 @@ export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
   reservations: json.reservations.map((res) => ({
     ...res,
     date: LocalDate.parseIso(res.date),
+    created: HelsinkiDateTime.parseIso(res.created),
     reservation:
       res.reservation.type === 'TIMES'
         ? {

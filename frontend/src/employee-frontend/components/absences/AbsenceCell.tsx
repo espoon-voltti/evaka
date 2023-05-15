@@ -237,12 +237,12 @@ export default React.memo(function AbsenceCell({
       const userTypeText =
         res.createdByEvakaUserType === 'CITIZEN'
           ? i18n.absences.guardian
-          : i18n.absences.notAGuardian
+          : i18n.absences.staff
       return (
         <Fragment key={index}>
           {reservationText}
           <br />
-          {userTypeText}
+          {res.created.toLocalDate().format()} {userTypeText}
         </Fragment>
       )
     })
@@ -253,13 +253,14 @@ export default React.memo(function AbsenceCell({
           .format()} - ${dst.end.toLocalTime().format()}`}
       </Fragment>
     ))
-    return (
+    return reservationElements.length > 0 ||
+      dailyServiceTimeElements.length > 0 ? (
       <div data-qa={`attendance-tooltip-${date.toString()}`}>
         {reservationElements}
         {reservationElements.length > 0 && <br />}
         {dailyServiceTimeElements}
       </div>
-    )
+    ) : undefined
   }, [i18n, reservations, dailyServiceTimes, date])
 
   const tooltipText = useMemo(

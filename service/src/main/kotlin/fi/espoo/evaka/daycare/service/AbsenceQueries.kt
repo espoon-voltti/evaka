@@ -351,7 +351,8 @@ data class ChildReservation(
     val childId: ChildId,
     val date: LocalDate,
     val reservation: Reservation,
-    val createdByEvakaUserType: EvakaUserType
+    val createdByEvakaUserType: EvakaUserType,
+    val created: HelsinkiDateTime
 )
 
 fun Database.Read.getGroupReservations(
@@ -363,7 +364,7 @@ fun Database.Read.getGroupReservations(
 WITH all_placements AS (
   $placementsQuery
 )
-SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type
+SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type, r.created AS created_date
 FROM attendance_reservation r
 JOIN evaka_user e ON r.created_by = e.id
 WHERE between_start_and_end(:dateRange, r.date)
@@ -381,7 +382,8 @@ AND EXISTS (
                 row.mapColumn("child_id"),
                 row.mapColumn("date"),
                 Reservation.fromLocalTimes(row.mapColumn("start_time"), row.mapColumn("end_time")),
-                row.mapColumn("created_by_evaka_user_type")
+                row.mapColumn("created_by_evaka_user_type"),
+                row.mapColumn("created_date")
             )
         }
         .toList()

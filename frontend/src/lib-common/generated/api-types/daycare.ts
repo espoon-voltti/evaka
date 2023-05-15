@@ -221,6 +221,7 @@ export interface Child {
 */
 export interface ChildReservation {
   childId: UUID
+  created: HelsinkiDateTime
   createdByEvakaUserType: EvakaUserType
   date: LocalDate
   reservation: Reservation

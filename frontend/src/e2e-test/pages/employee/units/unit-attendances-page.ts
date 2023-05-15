@@ -24,6 +24,12 @@ import {
 export class UnitCalendarPage {
   constructor(private readonly page: Page) {}
 
+  absenceCell = (childId: UUID, date: LocalDate) =>
+    this.page.findByDataQa(`absence-cell-${childId}-${date.toString()}`)
+
+  attendanceToolTip = (date: LocalDate) =>
+    this.page.findByDataQa(`attendance-tooltip-${date.toString()}`)
+
   get attendancesSection() {
     return new UnitAttendancesSection(this.page)
   }
@@ -306,6 +312,7 @@ export class UnitChildReservationsTable extends Element {
     this.findByDataQa(`reservation-${date.formatIso()}-${row}`)
   #attendanceCell = (date: LocalDate, row: number) =>
     this.findByDataQa(`attendance-${date.formatIso()}-${row}`)
+
   #ellipsisMenu = (childId: UUID) =>
     this.findByDataQa(`ellipsis-menu-${childId}`)
   #editInline = this.findByDataQa('menu-item-edit-row')

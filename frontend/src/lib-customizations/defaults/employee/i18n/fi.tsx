@@ -2811,7 +2811,7 @@ export const fi = {
     reservation: 'Varaus',
     present: 'Läsnä',
     guardian: 'Huoltaja',
-    notAGuardian: 'Muu kuin huoltaja',
+    staff: 'Henkilökunta',
     dailyServiceTime: 'Sopimusaika'
   },
   placementDraft: {

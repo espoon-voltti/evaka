@@ -312,9 +312,10 @@ describe('Unit group calendar', () => {
       })
       .save()
 
+    const dailyServiceTimeStart = holidayPeriodStart.subDays(5)
     await Fixture.dailyServiceTime(child1Fixture.id)
       .with({
-        validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
+        validityPeriod: new DateRange(dailyServiceTimeStart, null),
         type: 'REGULAR',
         regularTimes: {
           start: LocalTime.of(8, 0),
@@ -323,10 +324,11 @@ describe('Unit group calendar', () => {
       })
       .save()
 
+    const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1)
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
-      date: holidayPeriodStart.subDays(1),
+      date: attendanceReservationBeforeHolidayDate,
       reservation: {
         start: LocalTime.of(11, 0),
         end: LocalTime.of(13, 0)
@@ -334,11 +336,13 @@ describe('Unit group calendar', () => {
       secondReservation: null
     }).save()
 
+    const attendanceReservationDuringHolidayDate = holidayPeriodStart.addDays(1)
+
     // Reservation on the second day
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
-      date: holidayPeriodStart.addDays(1),
+      date: attendanceReservationDuringHolidayDate,
       reservation: {
         start: LocalTime.of(8, 0),
         end: LocalTime.of(14, 0)
@@ -357,14 +361,38 @@ describe('Unit group calendar', () => {
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(holidayPeriodStart)
     await calendarPage.selectMode('month')
-    const date = LocalDate.of(2023, 3, 8)
-    const absenceCell = page.findByDataQa(
-      `absence-cell-${child1Fixture.id}-${date.toString()}`
-    )
-    await absenceCell.hover()
-    await page
-      .findByDataQa(`attendance-tooltip-${date.toString()}`)
+    await calendarPage
+      .absenceCell(child1Fixture.id, dailyServiceTimeStart)
+      .hover()
+    await calendarPage
+      .attendanceToolTip(dailyServiceTimeStart)
       .assertText((text) => text.includes('Sopimusaika 08:00 - 16:00'))
+
+    await calendarPage
+      .absenceCell(child1Fixture.id, attendanceReservationBeforeHolidayDate)
+      .hover()
+    await calendarPage
+      .attendanceToolTip(attendanceReservationBeforeHolidayDate)
+      .assertText((text) => {
+        return (
+          text.includes('Varaus 11:00 - 13:00') &&
+          text.includes('15.05.2023 Henkilökunta') &&
+          text.includes('Sopimusaika 08:00 - 16:00')
+        )
+      })
+
+    await calendarPage
+      .absenceCell(child1Fixture.id, attendanceReservationDuringHolidayDate)
+      .hover()
+    await calendarPage
+      .attendanceToolTip(attendanceReservationDuringHolidayDate)
+      .assertText((text) => {
+        return (
+          text.includes('Varaus 08:00 - 14:00') &&
+          text.includes('15.05.2023 Henkilökunta') &&
+          text.includes('Sopimusaika 08:00 - 16:00')
+        )
+      })
   })
 
   test('Missing holiday reservations are not shown if reservation deadline has passed', async () => {
