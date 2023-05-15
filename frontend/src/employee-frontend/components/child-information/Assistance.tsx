@@ -50,12 +50,13 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
             <AssistanceAction id={id} />
           </>
         )}
-        {permittedActions.has('READ_CHILD_DOCUMENT') && (
-          <>
-            <HorizontalLine dashed slim />
-            <ChildDocuments childId={id} />
-          </>
-        )}
+        {featureFlags.experimental?.childDocuments &&
+          permittedActions.has('READ_CHILD_DOCUMENT') && (
+            <>
+              <HorizontalLine dashed slim />
+              <ChildDocuments childId={id} />
+            </>
+          )}
         {featureFlags.experimental?.assistanceNeedDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
             <>

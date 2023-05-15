@@ -207,6 +207,11 @@ interface BaseFeatureFlags {
      * Enable support for duplicating a child as a new SSN-less person
      */
     personDuplicate?: boolean
+
+    /**
+     * Enable support for new template editor and child documents
+     */
+    childDocuments?: boolean
   }
 }
 
