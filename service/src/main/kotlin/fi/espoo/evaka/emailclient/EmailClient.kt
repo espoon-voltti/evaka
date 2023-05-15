@@ -5,6 +5,7 @@
 package fi.espoo.evaka.emailclient
 
 import mu.KotlinLogging
+import org.unbescape.html.HtmlEscape
 import software.amazon.awssdk.services.ses.SesClient
 import software.amazon.awssdk.services.ses.model.AccountSendingPausedException
 import software.amazon.awssdk.services.ses.model.Body
@@ -34,6 +35,18 @@ class EmailClient(
         logger.info { "Sending email (traceId: $traceId)" }
 
         if (validateToAddress(traceId, toAddress) && checkWhitelist(toAddress)) {
+            val html =
+                """
+<!DOCTYPE html>
+<html>
+<head>
+<title>${HtmlEscape.escapeHtml5(content.subject)}</title>
+</head>
+<body>
+${content.html}
+</body>
+</html>
+"""
             try {
                 val request =
                     SendEmailRequest.builder()
@@ -42,12 +55,7 @@ class EmailClient(
                             Message.builder()
                                 .body(
                                     Body.builder()
-                                        .html(
-                                            Content.builder()
-                                                .charset(charset)
-                                                .data(content.html)
-                                                .build()
-                                        )
+                                        .html(Content.builder().charset(charset).data(html).build())
                                         .text(
                                             Content.builder()
                                                 .charset(charset)
