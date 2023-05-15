@@ -30,8 +30,8 @@ import java.time.LocalDate
 
 fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecision>) {
     val sql =
-    // language=sql
-    """
+        // language=sql
+        """
 INSERT INTO voucher_value_decision (
     id,
     status,
@@ -400,8 +400,8 @@ NOT EXISTS (
             else null
         )
     val sql =
-    // language=sql
-    """
+        // language=sql
+        """
 SELECT
     count(*) OVER () AS count,
     decision.id,

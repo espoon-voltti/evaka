@@ -26,15 +26,16 @@ private val logger = KotlinLogging.logger {}
 /**
  * Response status sent to throttle a requester. A Retry-After header might be included to this
  * response indicating how long to wait before making a new request.
+ *
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429">MDN: 429 Too Many
- * Requests</a>
+ *   Requests</a>
  */
 val Response.isTooManyRequests
     get() = statusCode == 429
 
 /**
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After">MDN:
- * Retry-After</a>
+ *   Retry-After</a>
  */
 val Headers.Companion.RETRY_AFTER: String
     get() = "Retry-After"
@@ -53,12 +54,11 @@ fun AuthenticatedRequest.token(token: String): Request {
  * response. Throws an [IllegalStateException] if a non-throttled response isn't received after all
  * retries.
  *
- * TODO: Set a maximum wait time TODO: Support http-date format Retry-After headers, not only
- * delay-seconds
- *
+ * @return [ResponseResultOf] The response result of [String]
  * @note This is a synchronous execution and can not be cancelled
  *
- * @return [ResponseResultOf] The response result of [String]
+ * TODO: Set a maximum wait time TODO: Support http-date format Retry-After headers, not only
+ *   delay-seconds
  */
 fun Request.responseStringWithRetries(
     remainingTries: Int = 5,

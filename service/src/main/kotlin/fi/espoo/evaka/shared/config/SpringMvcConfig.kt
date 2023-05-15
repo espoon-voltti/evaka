@@ -35,13 +35,12 @@ import org.springframework.web.servlet.function.ServerRequest
 
 /**
  * Adds support for using the following types as REST function parameters:
- *
  * - `Database`: a request-scoped database instance
  * - `Database.Connection`: a request-scoped database connection, closed automatically at request
- * completion (regardless of success or failure)
+ *   completion (regardless of success or failure)
  * - `AuthenticatedUser`: user performing the request
  * - `ExternalId`: an external id, is automatically parsed from a string value (e.g. path variable /
- * query parameter, depending on annotations)
+ *   query parameter, depending on annotations)
  * - `Id<*>`: a type-safe identifier, which is serialized/deserialized as UUID (= string)
  */
 @Configuration
