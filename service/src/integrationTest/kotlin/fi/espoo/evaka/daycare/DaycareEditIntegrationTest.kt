@@ -20,10 +20,12 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -31,6 +33,8 @@ import org.junit.jupiter.api.Test
 
 class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val standardOpTime =
+        TimeRange(start = LocalTime.parse("08:00"), end = LocalTime.parse("18:00"))
     private val fields =
         DaycareFields(
             name = "Uusi päiväkoti",
@@ -78,7 +82,16 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 ),
             ophUnitOid = "1.2.3.4.5",
             ophOrganizerOid = "1.22.33.44.55",
-            operationDays = setOf(1, 2, 3, 4, 5),
+            operationTimes =
+                listOf(
+                    standardOpTime,
+                    standardOpTime,
+                    standardOpTime,
+                    standardOpTime,
+                    standardOpTime,
+                    null,
+                    null
+                ),
             financeDecisionHandlerId = null,
             roundTheClock = false,
             businessId = "Y-123456789",
@@ -157,5 +170,11 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(fields.decisionCustomization, daycare.decisionCustomization)
         assertEquals(fields.ophOrganizerOid, daycare.ophOrganizerOid)
         assertEquals(fields.ophUnitOid, daycare.ophUnitOid)
+        assertEquals(fields.operationTimes, daycare.operationTimes)
+        val calculatedOpDays =
+            fields.operationTimes
+                .mapIndexedNotNull { index, tr -> if (tr != null) index + 1 else null }
+                .toSet()
+        assertEquals(calculatedOpDays, daycare.operationDays)
     }
 }

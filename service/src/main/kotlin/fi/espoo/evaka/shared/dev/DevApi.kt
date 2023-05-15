@@ -1657,7 +1657,16 @@ data class DevDaycare(
     val ophUnitOid: String? = "1.2.3.4.5",
     val ophOrganizerOid: String? = "1.2.3.4.5",
     val roundTheClock: Boolean? = false,
-    val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5),
+    val operationTimes: List<TimeRange?> =
+        listOf(
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            null,
+            null
+        ),
     val enabledPilotFeatures: Set<PilotFeature> = setOf(),
     val financeDecisionHandler: EmployeeId? = null,
     val businessId: String = "",

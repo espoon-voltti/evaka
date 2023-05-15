@@ -70,9 +70,11 @@ interface ValidationErrors {
   sunday?: RangeValidationResult
 }
 
-interface RangeValidationResult {
-  start?: ErrorKey
-  end?: ErrorKey
+export type RangeErrorKey = ErrorKey | 'timeRangeNotLinear'
+
+export interface RangeValidationResult {
+  start?: RangeErrorKey
+  end?: RangeErrorKey
 }
 
 function validateFormData(formData: FormState): ValidationResult {
@@ -536,13 +538,15 @@ interface TimeRangeInputProps {
   onChange: (value: JsonOf<TimeRange>) => void
   error: RangeValidationResult | undefined
   dataQaPrefix: string
+  hideErrorsBeforeTouched?: boolean
 }
 
-const TimeRangeInput = React.memo(function TimeRangeInput({
+export const TimeRangeInput = React.memo(function TimeRangeInput({
   value,
   onChange,
   error,
-  dataQaPrefix
+  dataQaPrefix,
+  hideErrorsBeforeTouched = true
 }: TimeRangeInputProps) {
   const { i18n } = useTranslation()
 
@@ -561,7 +565,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
               }
             : undefined
         }
-        hideErrorsBeforeTouched
+        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       />
       <span> – </span>
       <TimeInput
@@ -577,7 +581,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
               }
             : undefined
         }
-        hideErrorsBeforeTouched
+        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
       />
     </>
   )

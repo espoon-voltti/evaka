@@ -6,7 +6,10 @@ import mapValues from 'lodash/mapValues'
 
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
-import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
+import {
+  parseDailyServiceTimes,
+  parseIsoTimeRange
+} from 'lib-common/api-types/daily-service-times'
 import {
   ChildDailyRecords,
   UnitAttendanceReservations,
@@ -73,7 +76,12 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
       : null,
     clubApplyPeriod: unit.clubApplyPeriod
       ? DateRange.parseJson(unit.clubApplyPeriod)
-      : null
+      : null,
+    operationTimes: unit.operationTimes
+      ? unit.operationTimes.map((item) =>
+          item ? parseIsoTimeRange(item) : null
+        )
+      : []
   }
 }
 

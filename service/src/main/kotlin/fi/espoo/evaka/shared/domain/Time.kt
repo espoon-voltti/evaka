@@ -225,4 +225,8 @@ fun LocalDate.isWeekend() =
 
 fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)
 
-data class TimeRange(val start: LocalTime, val end: LocalTime)
+data class TimeRange(val start: LocalTime, val end: LocalTime) {
+    fun toDbString(): String {
+        return "(${this.start},${this.end})"
+    }
+}

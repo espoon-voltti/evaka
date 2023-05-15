@@ -55,10 +55,12 @@ import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 /*
@@ -214,6 +216,18 @@ val testGhostUnitDaycare =
         invoicedByMunicipality = false
     )
 
+val allDayTimeRange = TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59"))
+val allWeekOpTimes =
+    listOf(
+        allDayTimeRange,
+        allDayTimeRange,
+        allDayTimeRange,
+        allDayTimeRange,
+        allDayTimeRange,
+        allDayTimeRange,
+        allDayTimeRange
+    )
+
 val testRoundTheClockDaycare =
     DevDaycare(
         id = DaycareId(UUID.randomUUID()),
@@ -221,7 +235,7 @@ val testRoundTheClockDaycare =
         areaId = testArea.id,
         type = setOf(CareType.CENTRE),
         roundTheClock = true,
-        operationDays = setOf(1, 2, 3, 4, 5, 6, 7)
+        operationTimes = allWeekOpTimes
     )
 
 val testDaycareGroup =

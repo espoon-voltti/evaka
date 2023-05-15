@@ -145,6 +145,12 @@ export class UnitDetailsPage {
     await this.#unitName.assertTextEquals(expectedName)
   }
 
+  async assertTimeRangeByDay(dayNumber: number, expectedTime: string) {
+    await this.page
+      .find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
+      .assertTextEquals(expectedTime)
+  }
+
   readonly #unitManagerName = this.page.find('[data-qa="unit-manager-name"]')
   readonly #unitManagerPhone = this.page.find('[data-qa="unit-manager-phone"]')
   readonly #unitManagerEmail = this.page.find('[data-qa="unit-manager-email"]')
@@ -168,6 +174,25 @@ export class UnitEditor {
     this.page.find('[data-qa="unit-name-input"]')
   )
   readonly #areaSelect = new Combobox(this.page.find('[data-qa="area-select"]'))
+
+  #timeInput(dayNumber: number, startEnd: 'start' | 'end') {
+    return new TextInput(this.page.find(`[data-qa="${dayNumber}-${startEnd}"]`))
+  }
+
+  #timeCheckBox(dayNumber: number) {
+    return new Checkbox(
+      this.page.find(`[data-qa="operation-day-${dayNumber}"]`)
+    )
+  }
+
+  async fillDayTimeRange(dayNumber: number, start: string, end: string) {
+    await this.#timeInput(dayNumber, 'start').fill(start)
+    await this.#timeInput(dayNumber, 'end').fill(end)
+  }
+
+  async clearDayTimeRange(dayNumber: number) {
+    await this.#timeCheckBox(dayNumber).uncheck()
+  }
 
   #careTypeCheckbox(type: CareType) {
     return new Checkbox(

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.holidayperiod.createHolidayPeriod
@@ -35,6 +36,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.dev.updateDaycareOperationTimes
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -516,13 +518,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `group operational days include holidays if the unit is operational on every weekday`() {
         val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
         val epiphany2020 = LocalDate.of(2020, 1, 6)
+
         db.transaction {
             it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020)
-            it.execute(
-                "UPDATE daycare SET operation_days = ? WHERE id = ?",
-                arrayOf(1, 2, 3, 4, 5, 6, 7),
-                daycareId
-            )
+            it.updateDaycareOperationTimes(daycareId, allWeekOpTimes)
         }
         val result =
             db.read {

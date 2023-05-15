@@ -80,7 +80,7 @@ export function parseDailyServiceTimes(
   }
 }
 
-function parseIsoTimeRange(range: JsonOf<TimeRange>): TimeRange {
+export function parseIsoTimeRange(range: JsonOf<TimeRange>): TimeRange {
   return {
     start: LocalTime.parseIso(range.start),
     end: LocalTime.parseIso(range.end)

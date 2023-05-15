@@ -27,6 +27,7 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -114,6 +115,11 @@ import {
   insertReservationFixtures
 } from './index'
 
+export const fullDayTimeRange: TimeRange = {
+  start: LocalTime.MIN,
+  end: LocalTime.parse('23:59')
+}
+
 export const careAreaFixture: CareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
   name: 'Superkeskus',
@@ -149,6 +155,15 @@ export const clubFixture: Daycare = {
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
   providerType: 'MUNICIPAL',
   operationDays: [1, 2, 3, 4, 5],
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
   roundTheClock: true,
   enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
   businessId: '',
@@ -171,6 +186,15 @@ export const daycareFixture: Daycare = {
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
   operationDays: [1, 2, 3, 4, 5],
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
   roundTheClock: true,
   location: {
     lat: 60.20377343765089,
@@ -204,6 +228,15 @@ export const daycare2Fixture: Daycare = {
   decisionHandlerAddress: 'Käsittelijän 2 osoite',
   providerType: 'MUNICIPAL',
   operationDays: [1, 2, 3, 4, 5, 6, 7],
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange
+  ],
   roundTheClock: true,
   location: {
     lat: 60.20350901607783,
@@ -231,6 +264,15 @@ export const daycareFixturePrivateVoucher: Daycare = {
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'PRIVATE_SERVICE_VOUCHER',
   operationDays: [1, 2, 3, 4, 5],
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
   roundTheClock: true,
   location: {
     lat: 60.20377343765089,
@@ -265,6 +307,15 @@ export const preschoolFixture: Daycare = {
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
   operationDays: [1, 2, 3, 4, 5],
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
   roundTheClock: true,
   location: {
     lat: 60.2040261560435,
@@ -1083,6 +1134,15 @@ export class Fixture {
       decisionHandlerAddress: `decisionHandlerAddress_${id}`,
       providerType: 'MUNICIPAL',
       operationDays: [1, 2, 3, 4, 5],
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ],
       roundTheClock: true,
       enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
       businessId: '',

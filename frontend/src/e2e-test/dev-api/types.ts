@@ -72,6 +72,7 @@ export interface Daycare {
     | 'PRIVATE_SERVICE_VOUCHER'
     | 'EXTERNAL_PURCHASED'
   operationDays: number[]
+  operationTimes: (TimeRange | null)[]
   roundTheClock: boolean
   language?: Language
   location?: Coordinate | null
