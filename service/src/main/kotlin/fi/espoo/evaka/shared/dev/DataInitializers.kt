@@ -348,13 +348,14 @@ fun Database.Transaction.insertTestApplication(
     childId: ChildId,
     otherGuardianId: PersonId? = null,
     hideFromGuardian: Boolean = false,
+    additionalDaycareApplication: Boolean = false,
     transferApplication: Boolean = false,
     allowOtherGuardianAccess: Boolean = true
 ): ApplicationId {
     createUpdate(
             """
-            INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication, allow_other_guardian_access)
-            VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication, :allowOtherGuardianAccess)
+            INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
+            VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :additionalDaycareApplication, :transferApplication, :allowOtherGuardianAccess)
             """
         )
         .bind("id", id)
@@ -366,6 +367,7 @@ fun Database.Transaction.insertTestApplication(
         .bind("childId", childId)
         .bind("otherGuardianId", otherGuardianId)
         .bind("hideFromGuardian", hideFromGuardian)
+        .bind("additionalDaycareApplication", additionalDaycareApplication)
         .bind("transferApplication", transferApplication)
         .bind("allowOtherGuardianAccess", allowOtherGuardianAccess)
         .execute()

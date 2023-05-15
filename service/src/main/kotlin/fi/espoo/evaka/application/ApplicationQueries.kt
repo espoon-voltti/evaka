@@ -244,7 +244,7 @@ fun Database.Read.fetchApplicationSummaries(
             if (type != ApplicationTypeToggle.ALL) "a.type = :documentType" else null,
             if (type == ApplicationTypeToggle.PRESCHOOL) {
                 data class PreschoolFlags(
-                    val preparatory: Boolean,
+                    val preparatory: Boolean?,
                     val connectedDaycare: Boolean,
                     val additionalDaycareApplication: Boolean,
                     val serviceNeedOptionType: PlacementType? = null
@@ -292,23 +292,31 @@ fun Database.Read.fetchApplicationSummaries(
                                     )
                                 DAYCARE_ONLY ->
                                     PreschoolFlags(
-                                        preparatory = false,
+                                        preparatory = null,
                                         connectedDaycare = true,
                                         additionalDaycareApplication = true
                                     )
                             }.run {
-                                """
-                                    ((f.document->'careDetails'->>'preparatory')::boolean, (f.document->>'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)
-                                    ${
-                                    when (serviceNeedOptionType) {
-                                        null -> ""
-                                        PlacementType.PRESCHOOL_DAYCARE -> "AND (f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR f.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
-                                        PlacementType.PRESCHOOL_CLUB -> "AND f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
-                                        else -> throw Error("Unsupported preschool type: $serviceNeedOptionType")
-                                    }
-                                }
-                                """
-                                    .trimIndent()
+                                listOfNotNull(
+                                        preparatory?.let {
+                                            "(f.document->'careDetails'->>'preparatory')::boolean = $preparatory"
+                                        },
+                                        "(f.document->>'connectedDaycare')::boolean = $connectedDaycare",
+                                        "a.additionalDaycareApplication = $additionalDaycareApplication",
+                                        serviceNeedOptionType?.let { pt ->
+                                            when (pt) {
+                                                PlacementType.PRESCHOOL_DAYCARE ->
+                                                    "(f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR f.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
+                                                PlacementType.PRESCHOOL_CLUB ->
+                                                    "f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
+                                                else ->
+                                                    throw Error(
+                                                        "Unsupported preschool type: $serviceNeedOptionType"
+                                                    )
+                                            }
+                                        }
+                                    )
+                                    .joinToString(prefix = "(", separator = " AND ", postfix = ")")
                             }
                         }
                 }

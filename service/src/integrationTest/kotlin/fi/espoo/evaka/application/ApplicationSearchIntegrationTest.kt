@@ -131,6 +131,25 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 connectedDaycare = true,
                 serviceNeedOption = ofServiceNeedOption(snPreschoolClub45)
             )
+        val preschoolAdditionalDaycare =
+            createApplication(
+                testChild_7,
+                testAdult_1,
+                type = ApplicationType.PRESCHOOL,
+                connectedDaycare = true,
+                additionalDaycareApplication = true,
+                serviceNeedOption = null,
+            )
+        val preparatoryAdditionalDaycare =
+            createApplication(
+                testChild_7,
+                testAdult_1,
+                type = ApplicationType.PRESCHOOL,
+                connectedDaycare = true,
+                preparatory = true,
+                additionalDaycareApplication = true,
+                serviceNeedOption = null,
+            )
 
         fun getPreschoolApplications(vararg preschoolTypes: ApplicationPreschoolTypeToggle) =
             getApplicationSummaries(
@@ -150,7 +169,18 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB)
         )
         assertEquals(
-            listOf(noServiceNeed, preschoolDaycare, preschoolClub).sorted(),
+            listOf(preschoolAdditionalDaycare, preparatoryAdditionalDaycare),
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.DAYCARE_ONLY)
+        )
+        assertEquals(
+            listOf(
+                    noServiceNeed,
+                    preschoolDaycare,
+                    preschoolClub,
+                    preschoolAdditionalDaycare,
+                    preparatoryAdditionalDaycare
+                )
+                .sorted(),
             getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()).sorted()
         )
     }
@@ -283,11 +313,18 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         urgent: Boolean = false,
         extendedCare: Boolean = false,
         connectedDaycare: Boolean = false,
+        preparatory: Boolean = false,
+        additionalDaycareApplication: Boolean = false,
         serviceNeedOption: ServiceNeedOption? = null
     ): ApplicationId {
         val applicationId =
             db.transaction { tx ->
-                tx.insertTestApplication(childId = child.id, guardianId = guardian.id, type = type)
+                tx.insertTestApplication(
+                        childId = child.id,
+                        guardianId = guardian.id,
+                        type = type,
+                        additionalDaycareApplication = additionalDaycareApplication
+                    )
                     .also { id ->
                         val form =
                             DaycareFormV0.fromApplication2(
@@ -301,6 +338,13 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                                 .copy(extendedCare = extendedCare)
                                 .copy(connectedDaycare = connectedDaycare)
                                 .copy(serviceNeedOption = serviceNeedOption)
+                                .let {
+                                    if (preparatory)
+                                        it.copy(
+                                            careDetails = it.careDetails.copy(preparatory = true)
+                                        )
+                                    else it
+                                }
                         tx.insertTestApplicationForm(id, form)
                     }
             }
