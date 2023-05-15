@@ -115,9 +115,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
         <ContentArea opaque>
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceColumn>
-              <H1 noMargin>
-                {i18n.documentTemplates.documentTypes[document.template.type]}
-              </H1>
+              <H1 noMargin>{document.template.name}</H1>
               <H2 noMargin>
                 {document.child.firstName} {document.child.lastName} (
                 {document.child.dateOfBirth?.format()})
@@ -148,20 +146,23 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceRow alignItems="center">
               {preview || document.published ? (
-                <Button text="Poistu" onClick={goBack} />
+                <Button text={i18n.common.goBack} onClick={goBack} />
               ) : (
                 <Button
-                  text="Poistu ja tallenna luonnoksena"
+                  text={i18n.common.goBack}
                   onClick={() => save(bind.value()).then(goBack)}
                 />
               )}
               {preview && !document.published && (
-                <Button text="Muokkaa" onClick={() => setPreview(false)} />
+                <Button
+                  text={i18n.common.edit}
+                  onClick={() => setPreview(false)}
+                />
               )}
               {!preview && (
                 <FixedSpaceRow alignItems="center" spacing="xs">
                   <span>
-                    Tallennettu{' '}
+                    {i18n.common.saved}{' '}
                     {formatInTimeZone(
                       lastSaved.timestamp,
                       'Europe/Helsinki',
@@ -174,7 +175,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
             </FixedSpaceRow>
             {!preview && (
               <Button
-                text="Esikatsele"
+                text={i18n.childInformation.childDocuments.editor.preview}
                 primary
                 onClick={() => setPreview(true)}
                 disabled={dirty}
@@ -182,7 +183,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
             )}
             {preview && !document.published && (
               <Button
-                text="Julkaise huoltajalle"
+                text={i18n.childInformation.childDocuments.editor.publish}
                 primary
                 onClick={publishAndGoBack}
               />

@@ -10,7 +10,6 @@ import { Question } from 'lib-common/generated/api-types/document'
 
 export type QuestionType = Question['type']
 
-// TODO: could be part of generated types?
 export const questionTypes: QuestionType[] = [
   'TEXT',
   'CHECKBOX',

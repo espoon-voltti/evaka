@@ -37,9 +37,9 @@ const ChildDocuments = React.memo(function ChildDocuments({
     <Table>
       <Thead>
         <Tr>
-          <Th>Lomake</Th>
-          <Th>Tyyppi</Th>
-          <Th>Tila</Th>
+          <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+          <Th>{i18n.childInformation.childDocuments.table.type}</Th>
+          <Th>{i18n.childInformation.childDocuments.table.status}</Th>
           <Th />
         </Tr>
       </Thead>
@@ -49,12 +49,16 @@ const ChildDocuments = React.memo(function ChildDocuments({
             <Td>
               <IconButton
                 icon={faFile}
-                aria-label="Avaa lomake"
+                aria-label={i18n.childInformation.childDocuments.table.open}
                 onClick={() => navigate(`/child-documents/${document.id}`)}
               />
             </Td>
             <Td>{i18n.documentTemplates.documentTypes[document.type]}</Td>
-            <Td>{document.published ? 'Julkaistu' : 'Luonnos'}</Td>
+            <Td>
+              {document.published
+                ? i18n.childInformation.childDocuments.table.published
+                : i18n.childInformation.childDocuments.table.draft}
+            </Td>
           </Tr>
         ))}
       </Tbody>
@@ -88,7 +92,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
         <FixedSpaceColumn>
           {types.map((type) => {
             const templatesOfType = templates.filter(
-              (template) => template.type === type // TODO: filtering by unit language?
+              (template) => template.type === type
             )
             return (
               <AddButtonRow

@@ -734,6 +734,20 @@ export const fi = {
           'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.'
       }
     },
+    childDocuments: {
+      table: {
+        document: 'Lomake',
+        type: 'Tyyppi',
+        status: 'Tila',
+        open: 'Avaa lomake',
+        published: 'Julkaistu',
+        draft: 'Luonnos'
+      },
+      editor: {
+        preview: 'Esikatsele',
+        publish: 'Julkaise huoltajalle'
+      }
+    },
     assistanceNeedDecision: {
       pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
       annulmentReason: 'Päätöksen mitätöinnin perustelu',
