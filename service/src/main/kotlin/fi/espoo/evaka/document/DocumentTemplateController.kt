@@ -5,6 +5,9 @@
 package fi.espoo.evaka.document
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.placement.getChildPlacementUnitLanguage
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -71,7 +75,8 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     fun getActiveTemplates(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
+        @RequestParam childId: ChildId
     ): List<DocumentTemplateSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -81,8 +86,11 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_DOCUMENT_TEMPLATE
                     )
+                    val placementLanguage = tx.getChildPlacementUnitLanguage(childId, clock.today())
                     tx.getTemplateSummaries().filter {
-                        it.published && it.validity.includes(clock.today())
+                        it.published &&
+                            it.validity.includes(clock.today()) &&
+                            (placementLanguage != Language.sv || it.language == DocumentLanguage.SV)
                     }
                 }
             }

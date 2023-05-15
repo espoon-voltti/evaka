@@ -15,9 +15,12 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -106,13 +109,32 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
     <div>
       <Container>
         <ContentArea opaque>
-          <H1>
-            {document.child.firstName} {document.child.lastName} (
-            {document.child.dateOfBirth?.format()})
-          </H1>
-          <H2>
-            {i18n.documentTemplates.documentTypes[document.template.type]}
-          </H2>
+          <FixedSpaceRow justifyContent="space-between" alignItems="center">
+            <FixedSpaceColumn>
+              <H1 noMargin>
+                {i18n.documentTemplates.documentTypes[document.template.type]}
+              </H1>
+              <H2 noMargin>
+                {document.child.firstName} {document.child.lastName} (
+                {document.child.dateOfBirth?.format()})
+              </H2>
+            </FixedSpaceColumn>
+            <FixedSpaceColumn
+              spacing="xxs"
+              justifyContent="start"
+              alignItems="flex-end"
+            >
+              {document.template.confidential && (
+                <strong>
+                  {i18n.documentTemplates.templateEditor.confidential}
+                </strong>
+              )}
+              {!!document.template.legalBasis && (
+                <span>{document.template.legalBasis}</span>
+              )}
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <Gap size="XXL" />
           <DocumentView bind={bind} readOnly={preview} />
         </ContentArea>
       </Container>

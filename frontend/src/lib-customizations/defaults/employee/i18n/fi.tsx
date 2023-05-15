@@ -3712,10 +3712,15 @@ export const fi = {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio'
     },
+    languages: {
+      FI: 'Suomenkielinen',
+      SV: 'Ruotsinkielinen'
+    },
     templatesPage: {
       add: 'Luo uusi',
       name: 'Nimi',
       type: 'Tyyppi',
+      language: 'Kieli',
       validity: 'Voimassa',
       status: 'Tila',
       published: 'Julkaistu',
@@ -3724,10 +3729,16 @@ export const fi = {
     templateModal: {
       title: 'Uusi lomakepohja',
       name: 'Nimi',
-      type: 'Tyyppi',
+      type: 'Lomakkeen tyyppi',
+      language: 'Lomakkeen kieli',
+      confidential: 'Lomake on salassapidettävä',
+      legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',
       validity: 'Voimassa ajalla'
     },
     templateEditor: {
+      language: 'Kieli',
+      legalBasis: 'Lakiperuste',
+      confidential: 'Salassapidettävä',
       addSection: 'Uusi osio',
       titleNewSection: 'Uusi osio',
       titleEditSection: 'Muokkaa osiota',

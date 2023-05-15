@@ -43,6 +43,7 @@ export default React.memo(function DocumentTemplatesPage() {
                 <Tr>
                   <Th>{i18n.documentTemplates.templatesPage.name}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.type}</Th>
+                  <Th>{i18n.documentTemplates.templatesPage.language}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.validity}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.status}</Th>
                 </Tr>
@@ -57,6 +58,9 @@ export default React.memo(function DocumentTemplatesPage() {
                     </Td>
                     <Td>
                       {i18n.documentTemplates.documentTypes[template.type]}
+                    </Td>
+                    <Td>
+                      {i18n.documentTemplates.languages[template.language]}
                     </Td>
                     <Td>{template.validity.format()}</Td>
                     <Td>

@@ -67,7 +67,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   const navigate = useNavigate()
   const documentsResult = useQueryResult(childDocumentsQuery(childId))
   const documentTemplatesResult = useQueryResult(
-    activeDocumentTemplateSummariesQuery
+    activeDocumentTemplateSummariesQuery(childId)
   )
   const { mutateAsync: createChildDocument, isLoading: submitting } =
     useMutationResult(createChildDocumentMutation)

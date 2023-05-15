@@ -11,8 +11,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest): DocumentTemplate {
     return createQuery(
             """
-        INSERT INTO document_template (name, type, validity, content) 
-        VALUES (:name, :type, :validity, :content::jsonb)
+        INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, content) 
+        VALUES (:name, :type, :language, :confidential, :legalBasis, :validity, :content::jsonb)
         RETURNING *
     """
                 .trimIndent()
@@ -29,8 +29,8 @@ fun Database.Transaction.duplicateTemplate(
 ): DocumentTemplate {
     return createQuery(
             """
-        INSERT INTO document_template (name, type, validity, content) 
-        SELECT :name, :type, :validity, content FROM document_template WHERE id = :id
+        INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, content) 
+        SELECT :name, :type, :language, :confidential, :legalBasis, :validity, content FROM document_template WHERE id = :id
         RETURNING *
     """
                 .trimIndent()
@@ -44,7 +44,7 @@ fun Database.Transaction.duplicateTemplate(
 fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
     return createQuery(
             """
-        SELECT id, name, type, validity, published
+        SELECT id, name, type, language, validity, published
         FROM document_template
     """
                 .trimIndent()

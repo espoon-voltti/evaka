@@ -90,11 +90,21 @@ export interface DocumentContent {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.DocumentLanguage
+*/
+export type DocumentLanguage =
+  | 'FI'
+  | 'SV'
+
+/**
 * Generated from fi.espoo.evaka.document.DocumentTemplate
 */
 export interface DocumentTemplate {
+  confidential: boolean
   content: DocumentTemplateContent
   id: UUID
+  language: DocumentLanguage
+  legalBasis: string
   name: string
   published: boolean
   type: DocumentType
@@ -112,6 +122,9 @@ export interface DocumentTemplateContent {
 * Generated from fi.espoo.evaka.document.DocumentTemplateCreateRequest
 */
 export interface DocumentTemplateCreateRequest {
+  confidential: boolean
+  language: DocumentLanguage
+  legalBasis: string
   name: string
   type: DocumentType
   validity: DateRange
@@ -122,6 +135,7 @@ export interface DocumentTemplateCreateRequest {
 */
 export interface DocumentTemplateSummary {
   id: UUID
+  language: DocumentLanguage
   name: string
   published: boolean
   type: DocumentType

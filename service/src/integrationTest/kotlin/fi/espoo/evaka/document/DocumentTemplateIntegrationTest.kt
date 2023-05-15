@@ -5,14 +5,24 @@
 package fi.espoo.evaka.document
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestCareArea
+import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -49,6 +59,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         DocumentTemplateCreateRequest(
             name = "test",
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+            language = DocumentLanguage.FI,
+            confidential = true,
+            legalBasis = "§42",
             validity = DateRange(LocalDate.of(2022, 7, 1), null)
         )
 
@@ -59,6 +72,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 tx.insertTestEmployee(DevEmployee()).let {
                     AuthenticatedUser.Employee(it, setOf(UserRole.ADMIN))
                 }
+            tx.insertTestCareArea(testArea)
+            tx.insertTestDaycare(testDaycare.copy(language = Language.sv))
+            tx.insertTestPerson(testChild_1)
+            tx.insertTestChild(DevChild(testChild_1.id))
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = now.today(),
+                endDate = now.today().plusDays(5)
+            )
         }
     }
 
@@ -68,6 +91,10 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
 
         assertEquals(testCreationRequest.name, created.name)
+        assertEquals(testCreationRequest.type, created.type)
+        assertEquals(testCreationRequest.language, created.language)
+        assertEquals(testCreationRequest.confidential, created.confidential)
+        assertEquals(testCreationRequest.legalBasis, created.legalBasis)
         assertEquals(testCreationRequest.validity, created.validity)
         assertEquals(DocumentTemplateContent(sections = emptyList()), created.content)
 
@@ -77,7 +104,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DocumentTemplateSummary(
                     id = created.id,
                     name = created.name,
-                    type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+                    type = created.type,
+                    language = created.language,
                     validity = created.validity,
                     published = false
                 )
@@ -169,6 +197,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DocumentTemplateCreateRequest(
                     name = "another",
                     type = DocumentType.PEDAGOGICAL_REPORT,
+                    language = DocumentLanguage.SV,
+                    confidential = false,
+                    legalBasis = "",
                     validity = newValidity
                 )
             )
@@ -176,10 +207,102 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertNotEquals(created.id, copy.id)
         assertEquals("another", copy.name)
         assertEquals(DocumentType.PEDAGOGICAL_REPORT, copy.type)
+        assertEquals(DocumentLanguage.SV, copy.language)
+        assertEquals(false, copy.confidential)
+        assertEquals("", copy.legalBasis)
         assertEquals(newValidity, copy.validity)
         assertEquals(false, copy.published)
         assertEquals(testContent, copy.content)
         assertEquals(copy, controller.getTemplate(dbInstance(), employeeUser, now, copy.id))
+    }
+
+    @Test
+    fun `active templates endpoint returns valid templates`() {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = DocumentLanguage.SV,
+                    validity = DateRange(now.today(), null)
+                )
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        assertEquals(1, active.size)
+        assertEquals(template.id, active.first().id)
+    }
+
+    @Test
+    fun `active templates endpoint does not return draft templates`() {
+        controller.createTemplate(
+            dbInstance(),
+            employeeUser,
+            now,
+            testCreationRequest.copy(
+                language = DocumentLanguage.SV,
+                validity = DateRange(now.today(), null)
+            )
+        )
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        assertTrue(active.isEmpty())
+    }
+
+    @Test
+    fun `active templates endpoint does not return future templates`() {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = DocumentLanguage.SV,
+                    validity = DateRange(now.today().plusDays(1), null)
+                )
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        assertTrue(active.isEmpty())
+    }
+
+    @Test
+    fun `active templates endpoint does not return expired templates`() {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = DocumentLanguage.SV,
+                    validity = DateRange(now.today().minusDays(10), now.today().minusDays(1))
+                )
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        assertTrue(active.isEmpty())
+    }
+
+    @Test
+    fun `active templates endpoint does not return templates in finnish when placement unit is swedish`() {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = DocumentLanguage.FI,
+                    validity = DateRange(now.today(), null)
+                )
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        assertTrue(active.isEmpty())
     }
 
     @Test

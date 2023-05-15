@@ -51,10 +51,18 @@ enum class DocumentType {
     PEDAGOGICAL_ASSESSMENT
 }
 
+enum class DocumentLanguage {
+    FI,
+    SV
+}
+
 data class DocumentTemplate(
     val id: DocumentTemplateId,
     val name: String,
     val type: DocumentType,
+    val language: DocumentLanguage,
+    val confidential: Boolean,
+    val legalBasis: String,
     val validity: DateRange,
     val published: Boolean,
     @Json val content: DocumentTemplateContent
@@ -63,6 +71,9 @@ data class DocumentTemplate(
 data class DocumentTemplateCreateRequest(
     val name: String,
     val type: DocumentType,
+    val language: DocumentLanguage,
+    val confidential: Boolean,
+    val legalBasis: String,
     val validity: DateRange
 )
 
@@ -70,6 +81,7 @@ data class DocumentTemplateSummary(
     val id: DocumentTemplateId,
     val name: String,
     val type: DocumentType,
+    val language: DocumentLanguage,
     val validity: DateRange,
     val published: Boolean
 )

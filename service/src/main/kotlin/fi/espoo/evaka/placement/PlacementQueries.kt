@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.backupcare.deleteOrMoveConflictingBackupCares
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -946,3 +947,17 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
         .bind("range", range)
         .mapTo<Boolean>()
         .one()
+
+fun Database.Read.getChildPlacementUnitLanguage(childId: ChildId, date: LocalDate): Language? =
+    createQuery(
+            """
+            SELECT d.language
+            FROM placement pl
+            JOIN daycare d on d.id = pl.unit_id
+            WHERE pl.child_id = :childId AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+        """
+        )
+        .bind("childId", childId)
+        .bind("date", date)
+        .mapTo<Language>()
+        .firstOrNull()

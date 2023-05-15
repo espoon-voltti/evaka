@@ -7,9 +7,8 @@ import { useNavigate } from 'react-router-dom'
 
 import { swapElements } from 'lib-common/array'
 import { useForm, useFormElems, useFormField } from 'lib-common/form/hooks'
-import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
+import { DocumentTemplate } from 'lib-common/generated/api-types/document'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -19,9 +18,11 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
+import LabelValueList from '../../common/LabelValueList'
 import {
   publishDocumentTemplateMutation,
   updateDocumentTemplateContentMutation
@@ -32,14 +33,12 @@ import TemplateSectionModal from './TemplateSectionModal'
 import TemplateSectionView from './TemplateSectionView'
 
 interface Props {
-  templateId: UUID
-  templateContent: DocumentTemplateContent
+  template: DocumentTemplate
   readOnly: boolean
 }
 
 export default React.memo(function TemplateContentEditor({
-  templateId,
-  templateContent,
+  template,
   readOnly
 }: Props) {
   const { i18n } = useTranslation()
@@ -57,7 +56,7 @@ export default React.memo(function TemplateContentEditor({
 
   const form = useForm(
     templateContentForm,
-    () => getTemplateFormInitialState(templateContent),
+    () => getTemplateFormInitialState(template.content),
     {
       ...i18n.validationErrors
     }
@@ -68,6 +67,25 @@ export default React.memo(function TemplateContentEditor({
   return (
     <div>
       <ContentArea opaque>
+        <H1>{template.name}</H1>
+        <LabelValueList
+          spacing="small"
+          contents={[
+            {
+              label: i18n.documentTemplates.templateEditor.language,
+              value: i18n.documentTemplates.languages[template.language]
+            },
+            {
+              label: i18n.documentTemplates.templateEditor.legalBasis,
+              value: template.legalBasis
+            },
+            {
+              label: i18n.documentTemplates.templateEditor.confidential,
+              value: template.confidential ? i18n.common.yes : i18n.common.no
+            }
+          ]}
+        />
+        <Gap />
         <FixedSpaceColumn spacing="L">
           {sectionElems.map((section, index) => (
             <TemplateSectionView
@@ -131,10 +149,10 @@ export default React.memo(function TemplateContentEditor({
                 data-qa="save-template"
                 onClick={() =>
                   updateDocumentTemplateContent({
-                    id: templateId,
+                    id: template.id,
                     content: form.value()
                   }).then((res) =>
-                    readyToPublish ? publishDocumentTemplate(templateId) : res
+                    readyToPublish ? publishDocumentTemplate(template.id) : res
                   )
                 }
                 onSuccess={() => navigate('/document-templates')}
