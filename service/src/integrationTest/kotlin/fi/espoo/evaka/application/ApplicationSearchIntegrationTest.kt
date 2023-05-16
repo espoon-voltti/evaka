@@ -169,8 +169,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB)
         )
         assertEquals(
-            listOf(preschoolAdditionalDaycare, preparatoryAdditionalDaycare),
-            getPreschoolApplications(ApplicationPreschoolTypeToggle.DAYCARE_ONLY)
+            listOf(preschoolAdditionalDaycare, preparatoryAdditionalDaycare).sorted(),
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.DAYCARE_ONLY).sorted()
         )
         assertEquals(
             listOf(
