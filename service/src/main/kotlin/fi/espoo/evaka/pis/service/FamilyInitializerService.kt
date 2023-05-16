@@ -243,13 +243,13 @@ class FamilyInitializerService(
             }
             try {
                 tx.subTransaction {
-                    tx.createParentship(
+/*                    tx.createParentship(
                         childId = child.id,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
                         endDate = endDate,
                         conflict = false
-                    )
+                    )*/
                 }
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
@@ -259,13 +259,13 @@ class FamilyInitializerService(
                         logger.warn(
                             "Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)"
                         )
-                        tx.createParentship(
+/*                        tx.createParentship(
                             childId = child.id,
                             headOfChildId = headOfChildId,
                             startDate = startDate,
                             endDate = endDate,
                             conflict = true
-                        )
+                        )*/
                     }
                     else -> throw e
                 }
@@ -293,13 +293,13 @@ class FamilyInitializerService(
         } else {
             try {
                 tx.subTransaction {
-                    tx.createPartnership(
+/*                    tx.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,
                         startDate = startDate,
                         endDate = null,
                         conflict = false
-                    )
+                    )*/
                 }
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
@@ -309,13 +309,13 @@ class FamilyInitializerService(
                         logger.warn(
                             "Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)"
                         )
-                        tx.createPartnership(
+/*                        tx.createPartnership(
                             personId1 = personId1,
                             personId2 = personId2,
                             startDate = startDate,
                             endDate = null,
                             conflict = true
-                        )
+                        )*/
                     }
                     else -> throw e
                 }

@@ -54,6 +54,7 @@ class ParentshipController(
                     )
                     parentshipService.createParentship(
                         it,
+                        user,
                         clock,
                         body.childId,
                         body.headOfChildId,
@@ -152,6 +153,7 @@ class ParentshipController(
                 accessControl.requirePermissionFor(it, user, clock, Action.Parentship.UPDATE, id)
                 parentshipService.updateParentshipDuration(
                     it,
+                    user,
                     clock,
                     id,
                     body.startDate,
@@ -216,7 +218,7 @@ class ParentshipController(
                     )
                 }
 
-                parentshipService.deleteParentship(tx, clock, id)
+                parentshipService.deleteParentship(tx, user, clock, id)
             }
         }
         Audit.ParentShipsDelete.log(targetId = id)

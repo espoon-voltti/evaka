@@ -59,6 +59,7 @@ class PartnershipsController(
                     partnershipService
                         .createPartnership(
                             tx,
+                            user,
                             body.person1Id,
                             body.person2Id,
                             body.startDate,
@@ -153,6 +154,7 @@ class PartnershipsController(
                         ?: throw NotFound("No partnership found with id $partnershipId")
                 partnershipService.updatePartnershipDuration(
                     tx,
+                    user,
                     partnershipId,
                     body.startDate,
                     body.endDate
@@ -227,7 +229,7 @@ class PartnershipsController(
                     Action.Partnership.DELETE,
                     partnershipId
                 )
-                partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
+                partnershipService.deletePartnership(tx, user, partnershipId)?.also { partnership ->
                     asyncJobRunner.plan(
                         tx,
                         partnership.partners.map {

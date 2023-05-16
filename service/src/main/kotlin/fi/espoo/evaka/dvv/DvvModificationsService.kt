@@ -170,7 +170,7 @@ class DvvModificationsService(
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
             )
-            .forEach { tx.updatePartnershipDuration(it.partnershipId, it.startDate, dateOfDeath) }
+            //.forEach { tx.updatePartnershipDuration(it.partnershipId, it.startDate, dateOfDeath) }
 
         tx.getParentships(
                 headOfChildId = personId,
@@ -178,7 +178,7 @@ class DvvModificationsService(
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
             )
-            .forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
+        //.forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
 
         tx.getParentships(
                 headOfChildId = null,
@@ -186,7 +186,7 @@ class DvvModificationsService(
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
             )
-            .forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
+        //.forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
     }
 
     private fun handleRestrictedInfo(

@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -31,6 +32,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
 
     fun createParentship(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
         clock: EvakaClock,
         childId: ChildId,
         headOfChildId: PersonId,
@@ -41,7 +43,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             validateDates(child.dateOfBirth, startDate, endDate)
         }
         return try {
-            tx.createParentship(childId, headOfChildId, startDate, endDate, false).also {
+            tx.createParentship(user, childId, headOfChildId, startDate, endDate, false).also {
                 tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate)
             }
         } catch (e: Exception) {
@@ -51,6 +53,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
 
     fun updateParentshipDuration(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
         clock: EvakaClock,
         id: ParentshipId,
         startDate: LocalDate,
@@ -60,7 +63,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
-            val success = tx.updateParentshipDuration(id, startDate, endDate)
+            val success = tx.updateParentshipDuration(user, id, startDate, endDate)
             if (!success) throw NotFound("No parentship found with id $id")
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -94,9 +97,9 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun deleteParentship(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId) {
+    fun deleteParentship(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, id: ParentshipId) {
         val parentship = tx.getParentship(id)
-        val success = tx.deleteParentship(id)
+        val success = tx.deleteParentship(user, id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
         with(parentship) { tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate) }

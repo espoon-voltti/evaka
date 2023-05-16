@@ -4,10 +4,13 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.financelog.LogOperation
+import fi.espoo.evaka.financelog.logPartnership
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -97,6 +100,7 @@ fun Database.Read.getPartnersForPerson(
 }
 
 fun Database.Transaction.createPartnership(
+    user: AuthenticatedUser,
     personId1: PersonId,
     personId2: PersonId,
     startDate: LocalDate,
@@ -136,9 +140,11 @@ fun Database.Transaction.createPartnership(
         .bind("conflict", conflict)
         .map(toPartnership("p1", "p2"))
         .first()
+        .also { logPartnership(user, LogOperation.INSERT, it.id) }
 }
 
 fun Database.Transaction.updatePartnershipDuration(
+    user: AuthenticatedUser,
     id: PartnershipId,
     startDate: LocalDate,
     endDate: LocalDate?
@@ -152,12 +158,15 @@ fun Database.Transaction.updatePartnershipDuration(
         """
             .trimIndent()
 
+    logPartnership(user, LogOperation.DELETE, id)
     return createQuery(sql)
         .bind("id", id)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<PartnershipId>()
-        .firstOrNull() != null
+        .firstOrNull()
+        .let { it != null }
+        .also { success -> if(success) logPartnership(user, LogOperation.INSERT, id) }
 }
 
 fun Database.Transaction.retryPartnership(id: PartnershipId) {
@@ -167,10 +176,11 @@ fun Database.Transaction.retryPartnership(id: PartnershipId) {
     createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
+fun Database.Transaction.deletePartnership(user: AuthenticatedUser, id: PartnershipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_partner WHERE partnership_id = :id RETURNING partnership_id"
 
+    logPartnership(user, LogOperation.DELETE, id)
     return createQuery(sql).bind("id", id).mapTo<PartnershipId>().firstOrNull() != null
 }
 

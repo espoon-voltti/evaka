@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.retryPartnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.NotFound
@@ -22,13 +23,14 @@ import org.springframework.stereotype.Service
 class PartnershipService {
     fun createPartnership(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
         personId1: PersonId,
         personId2: PersonId,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
         return try {
-            tx.createPartnership(personId1, personId2, startDate, endDate)
+            tx.createPartnership(user, personId1, personId2, startDate, endDate)
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
         }
@@ -36,12 +38,13 @@ class PartnershipService {
 
     fun updatePartnershipDuration(
         tx: Database.Transaction,
+        user: AuthenticatedUser,
         partnershipId: PartnershipId,
         startDate: LocalDate,
         endDate: LocalDate?
     ) {
         try {
-            val success = tx.updatePartnershipDuration(partnershipId, startDate, endDate)
+            val success = tx.updatePartnershipDuration(user, partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -58,8 +61,8 @@ class PartnershipService {
         }
     }
 
-    fun deletePartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
-        return tx.getPartnership(partnershipId)?.also { tx.deletePartnership(partnershipId) }
+    fun deletePartnership(tx: Database.Transaction, user: AuthenticatedUser, partnershipId: PartnershipId): Partnership? {
+        return tx.getPartnership(partnershipId)?.also { tx.deletePartnership(user, partnershipId) }
     }
 }
 

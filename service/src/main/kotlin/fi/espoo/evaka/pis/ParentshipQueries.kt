@@ -4,11 +4,14 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.financelog.LogOperation
+import fi.espoo.evaka.financelog.logParentship
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -71,6 +74,7 @@ fun Database.Read.getParentships(
 }
 
 fun Database.Transaction.createParentship(
+    user: AuthenticatedUser,
     childId: ChildId,
     headOfChildId: PersonId,
     startDate: LocalDate,
@@ -103,9 +107,11 @@ fun Database.Transaction.createParentship(
         .bind("conflict", conflict)
         .map(toParentship("child", "head"))
         .first()
+        .also { logParentship(user, LogOperation.INSERT, it.id) }
 }
 
 fun Database.Transaction.updateParentshipDuration(
+    user: AuthenticatedUser,
     id: ParentshipId,
     startDate: LocalDate,
     endDate: LocalDate
@@ -113,11 +119,14 @@ fun Database.Transaction.updateParentshipDuration(
     // language=sql
     val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
 
+    logParentship(user, LogOperation.DELETE, id)
     return createUpdate(sql)
         .bind("id", id)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .execute() > 0
+        .execute()
+        .let { it > 0 }
+        .also { success -> if(success) logParentship(user, LogOperation.INSERT, id) }
 }
 
 fun Database.Transaction.retryParentship(id: ParentshipId) {
@@ -126,10 +135,11 @@ fun Database.Transaction.retryParentship(id: ParentshipId) {
     createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
+fun Database.Transaction.deleteParentship(user: AuthenticatedUser, id: ParentshipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
 
+    logParentship(user, LogOperation.DELETE, id)
     return createQuery(sql).bind("id", id).mapTo<ParentshipId>().firstOrNull() != null
 }
 
