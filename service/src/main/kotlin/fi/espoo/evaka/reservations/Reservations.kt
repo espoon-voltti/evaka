@@ -174,14 +174,20 @@ fun createReservationsAndAbsences(
                             )
                         val hasAbsence =
                             (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
-                        if (
-                            request is DailyReservationRequest.Reservations &&
-                                (!hasReservation || hasAbsence) ||
-                                request is DailyReservationRequest.Present && hasAbsence
-                        ) {
-                            null
-                        } else {
+
+                        val isAllowed =
+                            when (request) {
+                                is DailyReservationRequest.Reservations ->
+                                    hasReservation && !hasAbsence
+                                is DailyReservationRequest.Present -> hasReservation && !hasAbsence
+                                is DailyReservationRequest.Absent -> true
+                                is DailyReservationRequest.Nothing -> false
+                            }
+
+                        if (isAllowed) {
                             request
+                        } else {
+                            null
                         }
                     } else {
                         request

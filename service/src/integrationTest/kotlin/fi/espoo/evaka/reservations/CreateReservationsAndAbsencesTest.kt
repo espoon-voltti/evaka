@@ -868,6 +868,11 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
+                    ),
+                    AbsenceInsert(
+                        childId = testChild_1.id,
+                        date = holidayPeriodStart.plusDays(1),
+                        absenceType = AbsenceType.OTHER_ABSENCE,
                     )
                 )
             )
@@ -885,9 +890,13 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = holidayPeriodStart,
                         TimeRange(startTime, endTime),
                     ),
-                    DailyReservationRequest.Reservations(
+                    DailyReservationRequest.Nothing(
                         childId = testChild_1.id,
                         date = holidayPeriodStart.plusDays(1),
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = holidayPeriodStart.plusDays(2),
                         TimeRange(startTime, endTime),
                     )
                 )
@@ -914,7 +923,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 else emptyList()
             }
         assertEquals(0, allReservations.size)
-        assertEquals(listOf(holidayPeriodStart), absenceDates)
+        assertEquals(listOf(holidayPeriodStart, holidayPeriodStart.plusDays(1)), absenceDates)
     }
 
     @Test
