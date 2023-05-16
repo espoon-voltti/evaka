@@ -555,9 +555,9 @@ export interface UnitGroupDetails {
 * Generated from fi.espoo.evaka.daycare.UnitManager
 */
 export interface UnitManager {
-  email: string | null
-  name: string | null
-  phone: string | null
+  email: string
+  name: string
+  phone: string
 }
 
 /**

@@ -135,7 +135,7 @@ RETURNING id, void_date IS NOT NULL AS voided
                 ksr.study_right_oid,
                 d.language AS daycare_language,
                 d.provider_type AS daycare_provider_type,
-                um.name AS approver_name,
+                unit_manager_name AS approver_name,
                 nullif(pr.social_security_number, '') ssn,
                 nullif(pr.oph_person_oid, '') person_oid,
                 pr.first_name,
@@ -145,7 +145,6 @@ RETURNING id, void_date IS NOT NULL AS voided
             JOIN koski_active_study_right(:today) kasr
             ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
             JOIN daycare d ON ksr.unit_id = d.id
-            JOIN unit_manager um ON d.unit_manager_id = um.id
             JOIN person pr ON ksr.child_id = pr.id
             LEFT JOIN LATERAL (
                 SELECT array_agg(date ORDER BY date) AS holidays

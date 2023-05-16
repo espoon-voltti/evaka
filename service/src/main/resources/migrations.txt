@@ -318,3 +318,4 @@ V318__employee_temporary_in_unit_id.sql
 V319__holiday_period_reservation_deadline_notnull.sql
 V320__fee_thresholds_preschool_club.sql
 V321__daycare_operation_times.sql
+V322__move_unit_manager.sql
