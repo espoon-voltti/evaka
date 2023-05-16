@@ -15,7 +15,6 @@ type Features = {
 const features: Features = {
   default: {
     citizenShiftCareAbsence: true,
-    citizenContractDayAbsence: false,
     assistanceActionOther: true,
     daycareApplication: {
       dailyTimes: true
@@ -46,7 +45,6 @@ const features: Features = {
   },
   staging: {
     citizenShiftCareAbsence: true,
-    citizenContractDayAbsence: false,
     assistanceActionOther: true,
     daycareApplication: {
       dailyTimes: true
@@ -76,7 +74,6 @@ const features: Features = {
   },
   prod: {
     citizenShiftCareAbsence: true,
-    citizenContractDayAbsence: false,
     assistanceActionOther: true,
     daycareApplication: {
       dailyTimes: true

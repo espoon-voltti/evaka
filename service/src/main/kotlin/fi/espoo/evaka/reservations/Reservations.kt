@@ -134,6 +134,7 @@ fun createReservationsAndAbsences(
 
     val childIds = requests.map { it.childId }.toSet()
     val placements = tx.getReservationPlacements(childIds, reservationsRange)
+    val contractDayRanges = tx.getReservationContractDayRanges(childIds, reservationsRange)
     val childReservationDates =
         tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)
     val childAbsenceDates = tx.getAbsenceDatesForChildrenInRange(childIds, reservationsRange)
@@ -241,7 +242,12 @@ fun createReservationsAndAbsences(
 
     val absences =
         validated.filterIsInstance<DailyReservationRequest.Absent>().map {
-            AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE)
+            val hasContractDays = contractDayRanges[it.childId]?.includes(it.date) ?: false
+            AbsenceInsert(
+                it.childId,
+                it.date,
+                if (hasContractDays) AbsenceType.PLANNED_ABSENCE else AbsenceType.OTHER_ABSENCE
+            )
         }
     val upsertedAbsences =
         if (absences.isNotEmpty()) {
