@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS old_daycare_acl_view;
+
 ALTER TABLE daycare
     ADD COLUMN unit_manager_name text NOT NULL DEFAULT '',
     ADD COLUMN unit_manager_phone text NOT NULL DEFAULT '',
