@@ -93,7 +93,7 @@ export function RestrictedToolbar({
   return (
     <TitleRow>
       <Title>
-        <RestrictedTitle noMargin>{title}</RestrictedTitle>
+        <H4 noMargin>{title}</H4>
         <Gap size="s" horizontal />
         <H4 noMargin>{subtitle}</H4>
       </Title>
@@ -103,10 +103,6 @@ export function RestrictedToolbar({
     </TitleRow>
   )
 }
-
-const RestrictedTitle = styled(H4)`
-  font-style: italic;
-`
 
 const StatusContainer = styled.div`
   margin-right: 38px;

@@ -243,7 +243,7 @@ export default React.memo(function PlacementRow({
 
   return placement.isRestrictedFromUser ? (
     <RestrictedToolbar
-      title={i18n.childInformation.placements.restrictedName}
+      title={placement.daycare.name}
       subtitle={`${placement.startDate.format()} - ${placement.endDate.format()}`}
       statusLabel={getStatusLabelByDateRange(placement)}
     />
