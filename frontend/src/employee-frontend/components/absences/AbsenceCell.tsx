@@ -226,8 +226,16 @@ export default React.memo(function AbsenceCell({
     [id, selectedCells]
   )
 
-  const attendanceDayTooltipElements = useMemo(() => {
-    const reservationElements = reservations.map((res, index) => {
+  const dailyServiceTimeTooltip = dailyServiceTimes.map((dst, index) => (
+    <Fragment key={index}>
+      {`${i18n.absences.dailyServiceTime} ${dst.start
+        .toLocalTime()
+        .format()} - ${dst.end.toLocalTime().format()}`}
+    </Fragment>
+  ))
+
+  const attendanceDayTooltip = useMemo(() => {
+    const reservationTooltip = reservations.map((res, index) => {
       const reservationText =
         res.reservation.type === 'TIMES'
           ? `${
@@ -246,51 +254,61 @@ export default React.memo(function AbsenceCell({
         </Fragment>
       )
     })
-    const dailyServiceTimeElements = dailyServiceTimes.map((dst, index) => (
-      <Fragment key={index}>
-        {`${i18n.absences.dailyServiceTime} ${dst.start
-          .toLocalTime()
-          .format()} - ${dst.end.toLocalTime().format()}`}
-      </Fragment>
-    ))
-    return reservationElements.length > 0 ||
-      dailyServiceTimeElements.length > 0 ? (
-      <div data-qa={`attendance-tooltip-${date.toString()}`}>
-        {reservationElements}
-        {reservationElements.length > 0 && <br />}
-        {dailyServiceTimeElements}
+    return reservationTooltip.length > 0 ||
+      dailyServiceTimeTooltip.length > 0 ? (
+      <div>
+        {reservationTooltip}
+        {reservationTooltip.length > 0 && <br />}
+        {dailyServiceTimeTooltip}
       </div>
     ) : undefined
-  }, [i18n, reservations, dailyServiceTimes, date])
+  }, [i18n, reservations, dailyServiceTimeTooltip])
 
-  const tooltipText = useMemo(
-    () =>
-      backupCare
-        ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
-        : absences.length > 0
-        ? absences.map(
-            ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
-              <Fragment key={index}>
-                {index !== 0 && <br />}
-                {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
-                <br />
-                {`${modifiedAt.toLocalDate().format()} ${
-                  i18n.absences.modifiedByType[modifiedByType]
-                }`}
-              </Fragment>
-            )
+  const missingHolidayReservationTooltip = useMemo(() => {
+    return (
+      <Fragment>
+        {i18n.absences.missingHolidayReservation}
+        {dailyServiceTimeTooltip.length > 0 && (
+          <Fragment>
+            <br />
+            {dailyServiceTimeTooltip}
+          </Fragment>
+        )}
+      </Fragment>
+    )
+  }, [i18n, dailyServiceTimeTooltip])
+
+  const tooltipText = useMemo(() => {
+    const tooltip = backupCare
+      ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
+      : absences.length > 0
+      ? absences.map(
+          ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
+            <Fragment key={index}>
+              {index !== 0 && <br />}
+              {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
+              <br />
+              {`${modifiedAt.toLocalDate().format()} ${
+                i18n.absences.modifiedByType[modifiedByType]
+              }`}
+            </Fragment>
           )
-        : isMissingHolidayReservation
-        ? i18n.absences.missingHolidayReservation
-        : attendanceDayTooltipElements,
-    [
-      absences,
-      backupCare,
-      i18n,
-      isMissingHolidayReservation,
-      attendanceDayTooltipElements
-    ]
-  )
+        )
+      : isMissingHolidayReservation
+      ? missingHolidayReservationTooltip
+      : attendanceDayTooltip
+    return tooltip ? (
+      <div data-qa={`attendance-tooltip-${date.toString()}`}>{tooltip}</div>
+    ) : undefined
+  }, [
+    absences,
+    backupCare,
+    i18n,
+    date,
+    isMissingHolidayReservation,
+    attendanceDayTooltip,
+    missingHolidayReservationTooltip
+  ])
 
   const toggle = useCallback(
     (cellParts: CellPart[]) => toggleCellSelection(id, cellParts),

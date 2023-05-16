@@ -30,12 +30,31 @@ export class UnitCalendarPage {
   attendanceToolTip = (date: LocalDate) =>
     this.page.findByDataQa(`attendance-tooltip-${date.toString()}`)
 
+  nextWeek = this.page.findByDataQa('next-week')
+
   get attendancesSection() {
     return new UnitAttendancesSection(this.page)
   }
 
   get calendarEventsSection() {
     return new UnitCalendarEventsSection(this.page)
+  }
+
+  async assertDayTooltip(
+    childId: UUID,
+    date: LocalDate,
+    expectedTexts: string[]
+  ) {
+    await this.absenceCell(childId, date).hover()
+    if (expectedTexts.length > 0) {
+      await this.attendanceToolTip(date).assertText((text) =>
+        text
+          .replace(/\s/g, '')
+          .includes(expectedTexts.join('').replace(/\s/g, ''))
+      )
+    } else {
+      await this.attendanceToolTip(date).waitUntilHidden()
+    }
   }
 
   async selectMode(mode: 'week' | 'month') {

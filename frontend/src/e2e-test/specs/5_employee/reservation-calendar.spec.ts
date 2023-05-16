@@ -361,38 +361,50 @@ describe('Unit group calendar', () => {
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(holidayPeriodStart)
     await calendarPage.selectMode('month')
-    await calendarPage
-      .absenceCell(child1Fixture.id, dailyServiceTimeStart)
-      .hover()
-    await calendarPage
-      .attendanceToolTip(dailyServiceTimeStart)
-      .assertText((text) => text.includes('Sopimusaika 08:00 - 16:00'))
 
-    await calendarPage
-      .absenceCell(child1Fixture.id, attendanceReservationBeforeHolidayDate)
-      .hover()
-    await calendarPage
-      .attendanceToolTip(attendanceReservationBeforeHolidayDate)
-      .assertText((text) => {
-        return (
-          text.includes('Varaus 11:00 - 13:00') &&
-          text.includes('15.05.2023 Henkilökunta') &&
-          text.includes('Sopimusaika 08:00 - 16:00')
-        )
-      })
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      dailyServiceTimeStart,
+      ['Sopimusaika 08:00 - 16:00']
+    )
 
-    await calendarPage
-      .absenceCell(child1Fixture.id, attendanceReservationDuringHolidayDate)
-      .hover()
-    await calendarPage
-      .attendanceToolTip(attendanceReservationDuringHolidayDate)
-      .assertText((text) => {
-        return (
-          text.includes('Varaus 08:00 - 14:00') &&
-          text.includes('15.05.2023 Henkilökunta') &&
-          text.includes('Sopimusaika 08:00 - 16:00')
-        )
-      })
+    const todayStr = LocalDate.todayInHelsinkiTz().format('dd.MM.yyyy')
+
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      attendanceReservationBeforeHolidayDate,
+      [
+        'Varaus 11:00 - 13:00',
+        `${todayStr} Henkilökunta`,
+        'Sopimusaika 08:00 - 16:00'
+      ]
+    )
+
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      attendanceReservationDuringHolidayDate,
+      [
+        'Varaus 08:00 - 14:00',
+        `${todayStr} Henkilökunta`,
+        'Sopimusaika 08:00 - 16:00'
+      ]
+    )
+
+    await calendarPage.assertDayTooltip(child1Fixture.id, holidayPeriodStart, [
+      'Huoltaja ei ole vahvistanut loma-ajan varausta',
+      'Sopimusaika 08:00 - 16:00'
+    ])
+
+    await calendarPage.assertDayTooltip(child1Fixture.id, backupCareEndDate, [
+      'Lapsi varasijoitettuna muualla'
+    ])
+
+    await calendarPage.nextWeek.click()
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      placementEndDate.addDays(1),
+      []
+    )
   })
 
   test('Missing holiday reservations are not shown if reservation deadline has passed', async () => {
