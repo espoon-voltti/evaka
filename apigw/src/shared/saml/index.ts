@@ -10,7 +10,7 @@ import {
   Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
-import { logError, logWarn } from '../logging'
+import { logError, logInfo, logWarn } from '../logging'
 import { createLogoutToken, EvakaSessionUser } from '../auth'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config'
 import { readFileSync } from 'fs'
@@ -116,6 +116,11 @@ export function createSamlStrategy(
         profile.sessionIndex
       )
       const sessionUser = await logoutWithOnlyToken(logoutToken)
+      logInfo('SAML logout', req, {
+        sessionUser,
+        logoutToken,
+        profile
+      })
       if (!req.user) {
         // We're possibly doing SLO without a real session (e.g. browser has
         // 3rd party cookies disabled). We need to recreate req.user for *this request only*
