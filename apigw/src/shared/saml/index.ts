@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
-import { isEqual } from 'lodash'
 import {
   CacheProvider,
   Profile,
@@ -112,27 +111,25 @@ export function createSamlStrategy(
       if (!profile) return undefined
       const profileId = SamlProfileId.safeParse(profile)
       if (!profileId.success) return undefined
+      const logoutToken = createLogoutToken(
+        profile.nameID,
+        profile.sessionIndex
+      )
+      const sessionUser = await logoutWithOnlyToken(logoutToken)
       if (!req.user) {
         // We're possibly doing SLO without a real session (e.g. browser has
-        // 3rd party cookies disabled). We need to retrieve the session data
-        // and recreate req.user for this request
-        const logoutToken = createLogoutToken(
-          profile.nameID,
-          profile.sessionIndex
-        )
-        const user = await logoutWithOnlyToken(logoutToken)
-        if (user) {
-          // Set req.user for *this request only*
+        // 3rd party cookies disabled). We need to recreate req.user for *this request only*
+        if (sessionUser) {
           await fromCallback((cb) =>
-            req.login(user, { session: false, keepSessionInfo: false }, cb)
+            req.login(
+              sessionUser,
+              { session: false, keepSessionInfo: false },
+              cb
+            )
           )
         }
       }
-      const reqUser: Partial<Profile> = (req.user ?? {}) as Partial<Profile>
-      const reqId = SamlProfileId.safeParse(reqUser)
-      if (reqId.success && isEqual(reqId.data, profileId.data)) {
-        return reqUser
-      }
+      return sessionUser as (EvakaSessionUser & Profile) | undefined
     })()
       .then((user) => done(null, user))
       .catch((err) => done(err))
