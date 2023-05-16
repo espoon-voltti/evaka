@@ -16,6 +16,7 @@ import AsyncRedisClient from './async-redis-client'
 import { cookieSecret, sessionTimeoutMinutes, useSecureCookies } from './config'
 import { LogoutToken, toMiddleware } from './express'
 import { fromCallback } from './promise-utils'
+import { logInfo } from './logging'
 
 export type SessionType = 'enduser' | 'employee'
 
@@ -112,16 +113,26 @@ export async function saveLogoutToken(
 }
 
 export async function logoutWithOnlyToken(
+  req: express.Request,
   logoutToken: LogoutToken['value']
 ): Promise<unknown | undefined> {
   if (!asyncRedisClient) return
   if (!logoutToken) return
   const sid = await asyncRedisClient.get(logoutKey(logoutToken))
   if (!sid) return
+  logInfo('SAML logout 2', req, {
+    sid
+  })
   const session = await asyncRedisClient.get(sessionKey(sid))
+  logInfo('SAML logout 3', req, {
+    session
+  })
   await asyncRedisClient.del(sessionKey(sid), logoutKey(logoutToken))
   if (!session) return
   const user = JSON.parse(session)?.passport?.user
+  logInfo('SAML logout 4', req, {
+    user
+  })
   if (!user) return
   return user
 }

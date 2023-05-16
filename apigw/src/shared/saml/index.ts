@@ -115,7 +115,7 @@ export function createSamlStrategy(
         profile.nameID,
         profile.sessionIndex
       )
-      const sessionUser = await logoutWithOnlyToken(logoutToken)
+      const sessionUser = await logoutWithOnlyToken(req, logoutToken)
       logInfo('SAML logout', req, {
         sessionUser,
         logoutToken,
