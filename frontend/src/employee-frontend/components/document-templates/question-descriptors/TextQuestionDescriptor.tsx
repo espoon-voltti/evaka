@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 import { string } from 'lib-common/form/fields'
@@ -101,14 +101,25 @@ const Preview = React.memo(function Preview({
   bind: BoundForm<TemplateForm>
 }) {
   const { i18n } = useTranslation()
-  const mockBind = useForm(
-    questionForm,
+
+  const getInitialPreviewState = useCallback(
     () => ({
       template: bind.state,
       answer: getAnswerInitialValue()
     }),
+    [bind.state]
+  )
+
+  const mockBind = useForm(
+    questionForm,
+    getInitialPreviewState,
     i18n.validationErrors
   )
+
+  const { set } = mockBind
+  useEffect(() => {
+    set(getInitialPreviewState())
+  }, [getInitialPreviewState, set])
 
   return <View bind={mockBind} readOnly={false} />
 })
