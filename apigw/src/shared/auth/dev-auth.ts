@@ -55,7 +55,7 @@ export function createDevAuthRouter({
 
   const router = Router()
 
-  router.get('/login', loginFormHandler)
+  router.get('/login', toRequestHandler(loginFormHandler))
   router.post(
     `/login/callback`,
     urlencoded({ extended: false }), // needed to parse the POSTed form
