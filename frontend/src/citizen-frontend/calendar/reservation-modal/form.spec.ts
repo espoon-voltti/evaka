@@ -69,11 +69,8 @@ describe('resetTimes', () => {
         state: {
           weekDayRange: undefined,
           day: {
-            branch: 'reservation',
-            state: {
-              branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
-            }
+            branch: 'readOnly',
+            state: undefined
           }
         }
       })
