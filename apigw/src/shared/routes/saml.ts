@@ -95,12 +95,7 @@ function createLoginHandler({
           return res.redirect(`${getDefaultPageUrl(req)}?loginError=true`)
         }
         ;(async () => {
-          if (req.session) {
-            const session = req.session
-            await fromCallback<void>((cb) => session.regenerate(cb))
-          }
           await fromCallback<void>((cb) => req.logIn(user, cb))
-          await saveSession(req)
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in`,
             req,
