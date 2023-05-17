@@ -135,7 +135,7 @@ data class BiDecision(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val application: UUID,
-    val sentDate: LocalDate,
+    val sentDate: LocalDate?,
     val status: DecisionStatus,
     val type: DecisionType,
     val startDate: LocalDate,
