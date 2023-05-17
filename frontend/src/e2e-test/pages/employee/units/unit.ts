@@ -412,10 +412,12 @@ export class EmployeeRowEditModal extends Modal {
   pinCode = new TextInput(this.find('[data-qa="pin-code"]'))
 
   async setFirstName(firstName: string) {
+    await this.firstName.waitUntilVisible()
     await this.firstName.fill(firstName)
   }
 
   async setLastName(lastName: string) {
+    await this.lastName.waitUntilVisible()
     await this.lastName.fill(lastName)
   }
 
@@ -430,6 +432,7 @@ export class EmployeeRowEditModal extends Modal {
   }
 
   async setCoefficient(value: boolean) {
+    await this.coefficientCheckbox.waitUntilVisible()
     if (value) {
       await this.coefficientCheckbox.check()
     } else {
@@ -438,6 +441,7 @@ export class EmployeeRowEditModal extends Modal {
   }
 
   async setPinCode(pinCode: string) {
+    await this.pinCode.waitUntilVisible()
     await this.pinCode.fill(pinCode)
   }
 
