@@ -10,7 +10,7 @@ import {
   getMobileDevice,
   UUID
 } from '../../shared/service-client'
-import { saveSession } from '../../shared/session'
+import { saveLogoutToken, saveSession } from '../../shared/session'
 import { fromCallback } from '../../shared/promise-utils'
 import { appCommit } from '../../shared/config'
 import { logout } from '../../shared/auth'
@@ -129,8 +129,15 @@ export default toRequestHandler(async (req, res) => {
           cb
         )
       )
+      // Passport has unfortunately regenerated our session, so we need to
+      // update the logout token, which still points to the old session ID
+      await saveLogoutToken(req)
+      // No need to save session here, because passport has done that for us
+    } else {
+      // Explicitly save the session, since we may have changed the CSRF secret
+      // earlier in the request flow
+      await saveSession(req)
     }
-    await saveSession(req)
     status = {
       loggedIn: true,
       user,
