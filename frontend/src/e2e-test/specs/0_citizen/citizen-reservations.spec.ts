@@ -358,6 +358,139 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       )
     }
   })
+
+  test('Citizen cannot create daily reservation outside unit opening hours, validation errors shown', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    // This should be a friday
+    const reservationDay = today.addDays(16)
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.deselectAllChildren()
+    await reservationsModal.selectChild(
+      fixtures.enduserChildFixturePorriHatterRestricted.id
+    )
+
+    const reservation1 = {
+      startTime: '00:00',
+      endTime: '23:59',
+      childIds: [fixtures.enduserChildFixturePorriHatterRestricted.id]
+    }
+
+    await reservationsModal.fillDailyReservationInfo(
+      new FiniteDateRange(reservationDay, reservationDay),
+      reservation1.startTime,
+      reservation1.endTime,
+      reservation1.childIds
+    )
+
+    await reservationsModal.assertSendButtonDisabled(true)
+    await reservationsModal.assertDailyInputValidationWarningVisible('start', 0)
+    await reservationsModal.assertDailyInputValidationWarningVisible('end', 0)
+  })
+
+  test('Citizen cannot create weekly reservation outside unit opening hours, validation errors shown', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    // This should be a monday
+    const reservationDay = today.addDays(19)
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.deselectAllChildren()
+    await reservationsModal.selectChild(
+      fixtures.enduserChildFixturePorriHatterRestricted.id
+    )
+
+    //Reservations should cover entire work week from monday to friday
+    const reservations = [0, 1, 2, 3, 4].map(() => ({
+      startTime: '00:00',
+      endTime: '23:59',
+      childIds: [fixtures.enduserChildFixturePorriHatterRestricted.id]
+    }))
+
+    await reservationsModal.fillWeeklyReservationInfo(
+      new FiniteDateRange(reservationDay, reservationDay.addDays(4)),
+      reservations
+    )
+
+    await reservationsModal.assertSendButtonDisabled(true)
+    await reservationsModal.assertWeeklyInputValidationWarningVisible(
+      'start',
+      4,
+      0
+    )
+    await reservationsModal.assertWeeklyInputValidationWarningVisible(
+      'end',
+      4,
+      0
+    )
+  })
+
+  test('Citizen cannot create irregular reservation outside unit opening hours, validation errors shown', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    // This should be a friday
+    const reservationDay = today.addDays(16)
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.deselectAllChildren()
+    await reservationsModal.selectChild(
+      fixtures.enduserChildFixturePorriHatterRestricted.id
+    )
+
+    const reservation1 = {
+      startTime: '00:00',
+      endTime: '23:59',
+      childIds: [fixtures.enduserChildFixturePorriHatterRestricted.id]
+    }
+
+    await reservationsModal.fillIrregularReservationInfo(
+      new FiniteDateRange(reservationDay, reservationDay),
+      [
+        {
+          date: reservationDay,
+          startTime: reservation1.startTime,
+          endTime: reservation1.endTime
+        }
+      ]
+    )
+
+    await reservationsModal.assertSendButtonDisabled(true)
+    await reservationsModal.assertIrregularInputValidationWarningVisible(
+      'start',
+      0,
+      reservationDay
+    )
+    await reservationsModal.assertIrregularInputValidationWarningVisible(
+      'end',
+      0,
+      reservationDay
+    )
+  })
+
+  test('Citizen cannot edit calendar reservation from day view to end up outside unit opening hours, validation errors shown', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    // This should be a friday
+    const reservationDay = today.addDays(16)
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    const editor = await dayView.edit()
+    await editor.fillReservationTimes(
+      fixtures.enduserChildFixturePorriHatterRestricted.id,
+      '00:00',
+      '23:59'
+    )
+
+    await editor.findByDataQa('save').assertDisabled(true)
+    await editor
+      .findByDataQa('edit-reservation-time-0-start-info')
+      .waitUntilVisible()
+    await editor
+      .findByDataQa('edit-reservation-time-0-end-info')
+      .waitUntilVisible()
+  })
 })
 
 describe('Citizen calendar child visibility', () => {

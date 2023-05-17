@@ -6,7 +6,11 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { localDateRange, localTimeRange, string } from 'lib-common/form/fields'
+import {
+  localDateRange,
+  localTimeRangeWithUnitTimes,
+  string
+} from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -25,18 +29,38 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import { Translations } from 'lib-customizations/citizen'
 
-export const emptyTimeRange: StateOf<typeof localTimeRange> = {
-  startTime: '',
-  endTime: ''
+export type UnitTimeInfo = {
+  unitTimeRange: TimeRange | null
+  hasVariedUnitTimes: boolean
+}
+
+interface Dictionary<T> {
+  [index: string]: T
+}
+
+export const emptyTimeRange: StateOf<typeof localTimeRangeWithUnitTimes> = {
+  startTime: {
+    value: '',
+    unitStartTime: null,
+    unitEndTime: null,
+    hasVariedUnitTimes: false
+  },
+  endTime: {
+    value: '',
+    unitStartTime: null,
+    unitEndTime: null,
+    hasVariedUnitTimes: false
+  }
 }
 
 export const timeRanges = mapped(
   array(
-    validated(localTimeRange, (output) =>
+    validated(localTimeRangeWithUnitTimes, (output) =>
       // 00:00 is not a valid end time
       output !== undefined && output.end.hour === 0 && output.end.minute === 0
         ? 'timeFormat'
@@ -317,11 +341,27 @@ export function resetTimes(
     const holidayPeriodState =
       dayProperties.holidayPeriodStateForRange(selectedRange)
 
+    const dailyUnitTimes = calendarDaysInRange.map((d) =>
+      d.children
+        .filter((c) => selectedChildren.includes(c.childId))
+        .map((c) => c.unitOperationTime)
+    )
+
+    const unitTimeInfo = {
+      unitTimeRange: getMinimalOverlappingRange(dailyUnitTimes.flat()),
+      hasVariedUnitTimes: hasVariedDailyUnitTimes(dailyUnitTimes)
+    }
+
     return {
       branch: 'dailyTimes',
       state: {
         weekDayRange,
-        day: resetDay(holidayPeriodState, calendarDaysInRange, selectedChildren)
+        day: resetDay(
+          holidayPeriodState,
+          calendarDaysInRange,
+          selectedChildren,
+          unitTimeInfo
+        )
       }
     }
   } else if (repetition === 'WEEKLY') {
@@ -332,6 +372,10 @@ export function resetTimes(
     const holidayPeriodState =
       dayProperties.holidayPeriodStateForRange(selectedRange)
 
+    const unitTimeOverlapByDayOfWeek = getCommonUnitTimeRangesByDayOfWeek(
+      calendarDaysInRange,
+      selectedChildren
+    )
     const weeklyTimes = includedWeekDays.map(
       (dayOfWeek): StateOf<typeof weekDay> => {
         const dayOfWeekDays = groupedDays[dayOfWeek]
@@ -345,12 +389,24 @@ export function resetTimes(
         const relevantCalendarDays = calendarDaysInRange.filter(({ date }) =>
           dayOfWeekDays.some((d) => d.isEqual(date))
         )
+
+        const dailyUnitTimes = relevantCalendarDays.map((d) =>
+          d.children
+            .filter((c) => selectedChildren.includes(c.childId))
+            .map((c) => c.unitOperationTime)
+        )
+        const weekDayUnitTimeInfo = {
+          unitTimeRange: unitTimeOverlapByDayOfWeek[dayOfWeek],
+          hasVariedUnitTimes: hasVariedDailyUnitTimes(dailyUnitTimes)
+        }
+
         return {
           weekDay: dayOfWeek,
           day: resetDay(
             holidayPeriodState,
             relevantCalendarDays,
-            selectedChildren
+            selectedChildren,
+            weekDayUnitTimeInfo
           )
         }
       }
@@ -375,12 +431,21 @@ export function resetTimes(
           if (existing) return existing
         }
 
+        const dailyUnitTimes = calendarDay.children
+          .filter((c) => selectedChildren.includes(c.childId))
+          .map((c) => c.unitOperationTime)
+
+        const irregularDayUnitTimeInfo = {
+          unitTimeRange: getMinimalOverlappingRange(dailyUnitTimes),
+          hasVariedUnitTimes: hasVariedDailyUnitTimes([dailyUnitTimes])
+        }
         return {
           date: rangeDate,
           day: resetDay(
             dayProperties.holidayPeriodStateForDate(rangeDate),
             [calendarDay],
-            selectedChildren
+            selectedChildren,
+            irregularDayUnitTimeInfo
           )
         }
       }
@@ -397,7 +462,8 @@ export function resetTimes(
 export function resetDay(
   holidayPeriodState: 'open' | 'closed' | undefined,
   calendarDays: ReservationResponseDay[],
-  selectedChildren: UUID[]
+  selectedChildren: UUID[],
+  info: UnitTimeInfo
 ): StateOf<typeof day> {
   const reservationNotRequired = reservationNotRequiredForAnyChild(
     calendarDays,
@@ -448,7 +514,7 @@ export function resetDay(
         branch: 'reservation',
         state: {
           branch: 'timeRanges',
-          state: bindUnboundedTimeRanges(commonTimeRanges)
+          state: bindUnboundedTimeRanges(commonTimeRanges, info)
         }
       }
     }
@@ -463,7 +529,7 @@ export function resetDay(
 
   return holidayPeriodState === 'open' || reservationNotRequired
     ? { branch: 'reservationNoTimes', state: 'notSet' }
-    : emptyDay
+    : getEmptyDayWithUnitTimes(info)
 }
 
 const holidayWithNoChildrenInShiftCare = (
@@ -477,6 +543,23 @@ const holidayWithNoChildrenInShiftCare = (
         (child) => !child.shiftCare || !selectedChildren.includes(child.childId)
       )
   )
+
+const hasVariedDailyUnitTimes = (dailyUnitTimes: (TimeRange | null)[][]) =>
+  dailyUnitTimes
+    .map(
+      (daily) =>
+        daily.length === 1 ||
+        daily.every((t) => {
+          if (!daily[0]) {
+            return !t
+          } else if (t) {
+            return (
+              daily[0].start.isEqual(t.start) && daily[0].end.isEqual(t.end)
+            )
+          } else return false
+        })
+    )
+    .some((d) => !d)
 
 const hasReservationsForEveryChild = (
   calendarDays: ReservationResponseDay[],
@@ -549,11 +632,12 @@ const reservationNotRequiredForAnyChild = (
   )
 
 const bindUnboundedTimeRanges = (
-  ranges: TimeRange[]
-): StateOf<typeof localTimeRange>[] => {
+  ranges: TimeRange[],
+  info: UnitTimeInfo
+): StateOf<typeof localTimeRangeWithUnitTimes>[] => {
   const formatted = ranges.map(({ start, end }) => ({
-    startTime: start.format(),
-    endTime: end.format()
+    startTime: createTimeInputState(start.format(), info),
+    endTime: createTimeInputState(end.format(), info)
   }))
 
   if (ranges.length === 1 || ranges.length === 2) {
@@ -589,6 +673,78 @@ const getCommonTimeRanges = (
 }
 
 type HolidayPeriodState = 'open' | 'closed' | undefined
+
+const getMinimalOverlappingRange = (
+  ranges: (TimeRange | null)[]
+): TimeRange | null => {
+  let minValue: { start?: LocalTime; end?: LocalTime } | null = {}
+  ranges.forEach((r) => {
+    if (minValue === null) return
+    const { start, end } = minValue
+    if (r === null) {
+      minValue = null
+    } else {
+      if (!start || start.isBefore(r.start)) {
+        minValue.start = r.start
+      }
+      if (!end || end.isAfter(r.end)) {
+        minValue.end = r.end
+      }
+    }
+  })
+
+  return minValue.start && minValue.end
+    ? { start: minValue.start, end: minValue.end }
+    : null
+}
+
+const getCommonUnitTimeRangesByDayOfWeek = (
+  dayInRange: ReservationResponseDay[],
+  selectedChildIds: string[]
+) => {
+  const weeklyTimes: Dictionary<TimeRange | null> = {}
+
+  dayInRange.forEach((day) => {
+    const dayOfWeek = day.date.getIsoDayOfWeek()
+    const allChildUnitTimes = day.children
+      .filter((c) => selectedChildIds.includes(c.childId))
+      .map((child) => child.unitOperationTime)
+
+    const dailyTime = weeklyTimes[dayOfWeek]
+    const dailyMinimum = getMinimalOverlappingRange(allChildUnitTimes)
+
+    if (!dailyMinimum || dailyTime === undefined) {
+      weeklyTimes[dayOfWeek] = dailyMinimum
+    } else if (dailyTime && dailyMinimum) {
+      weeklyTimes[dayOfWeek] = getMinimalOverlappingRange([
+        dailyTime,
+        dailyMinimum
+      ])
+    }
+  })
+
+  return weeklyTimes
+}
+
+const getEmptyDayWithUnitTimes = (info: UnitTimeInfo): StateOf<typeof day> => ({
+  branch: 'reservation',
+  state: {
+    branch: 'timeRanges',
+    state: [
+      {
+        startTime: createTimeInputState('', info),
+        endTime: createTimeInputState('', info)
+      }
+    ]
+  }
+})
+
+const createTimeInputState = (value: string, info: UnitTimeInfo) => ({
+  value,
+  unitStartTime: info.unitTimeRange?.start ?? null,
+  unitEndTime: info.unitTimeRange?.end ?? null,
+  hasVariedUnitTimes: info.hasVariedUnitTimes
+})
 
 export class DayProperties {
   // Does any child have shift care?

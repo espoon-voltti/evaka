@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import groupBy from 'lodash/groupBy'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -28,6 +29,7 @@ import {
   ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
@@ -260,6 +262,7 @@ function Edit({
     <AsyncButton
       primary
       onClick={save}
+      disabled={!form.isValid()}
       onSuccess={onCancel}
       text={i18n.common.save}
       data-qa="save"
@@ -393,9 +396,13 @@ const DayModal = React.memo(function DayModal({
                       <Gap size="s" />
 
                       <ReservationTable>
-                        <LabelLike>{i18n.calendar.reservation}</LabelLike>
+                        <NonGridLabelLike>
+                          {i18n.calendar.reservation}
+                        </NonGridLabelLike>
                         {renderReservation(childIndex)}
-                        <LabelLike>{i18n.calendar.realized}</LabelLike>
+                        <NonGridLabelLike>
+                          {i18n.calendar.realized}
+                        </NonGridLabelLike>
                         <div>{row.attendances}</div>
                       </ReservationTable>
                       {row.showAttendanceWarning && (
@@ -472,6 +479,7 @@ interface ModalRow {
   attendances: React.ReactNode
   showAttendanceWarning: boolean
   events: ModalRowEvent[]
+  unitTimes: TimeRange | null
 }
 
 interface ModalRowEvent extends CitizenCalendarEvent {
@@ -499,6 +507,8 @@ function computeModalData(
     i18n
   )
 
+  const unitTimesByChild = groupBy(response.children, (item) => item.childId)
+
   const rows = response.children.flatMap((child) => {
     const person = reservationsResponse.children.find(
       (c) => c.id === child.childId
@@ -508,6 +518,8 @@ function computeModalData(
       // Should not happen
       return []
     }
+
+    const unitTimes = unitTimesByChild[child.childId]
 
     return {
       childId: child.childId,
@@ -538,7 +550,8 @@ function computeModalData(
         return currentAttending === undefined
           ? []
           : [{ ...event, currentAttending }]
-      })
+      }),
+      unitTimes: unitTimes ? unitTimes[0].unitOperationTime : null
     }
   })
 
@@ -596,11 +609,15 @@ const childForm = object({
 function initialChildFormState(
   childId: UUID,
   child: ReservationResponseDay,
-  holidayPeriod: HolidayPeriodInfo | undefined
+  holidayPeriod: HolidayPeriodInfo | undefined,
+  unitTimes: (TimeRange | null)[]
 ): StateOf<typeof childForm> {
   return {
     childId,
-    day: resetDay(holidayPeriod?.state, [child], [childId])
+    day: resetDay(holidayPeriod?.state, [child], [childId], {
+      unitTimeRange: unitTimes[0],
+      hasVariedUnitTimes: false
+    })
   }
 }
 
@@ -620,7 +637,14 @@ function initialFormState(
   holidayPeriod: HolidayPeriodInfo | undefined
 ): StateOf<typeof editorForm> {
   return day.response.children.map((child) =>
-    initialChildFormState(child.childId, day.response, holidayPeriod)
+    initialChildFormState(
+      child.childId,
+      day.response,
+      holidayPeriod,
+      day.rows
+        .filter((row) => row.childId === child.childId)
+        .map((row) => row.unitTimes)
+    )
   )
 }
 
@@ -803,6 +827,7 @@ const ButtonFooter = styled.div`
     // Fit more text to the buttons
     & > ${StyledButton} {
       padding: 0;
+      width: 100%;
     }
   }
 `
@@ -814,12 +839,24 @@ const EmptyButtonFooterElement = styled.div`
 `
 
 const ReservationTable = styled.div`
-  display: grid;
-  grid-template-columns: 42% 58%;
-  grid-auto-rows: minmax(38px, max-content);
-  row-gap: ${defaultMargins.xxs};
+  @media not all and (max-width: ${tabletMin}) {
+    display: grid;
+    grid-template-columns: 35% 65%;
+    grid-auto-rows: minmax(38px, max-content);
+    row-gap: ${defaultMargins.xxs};
+  }
+
+  @media (max-width: ${tabletMin}) {
+    margin-left: ${defaultMargins.xs};
+  }
 `
 
 const Colspan2 = styled.div`
   grid-column: 1 / span 2;
+`
+
+const NonGridLabelLike = styled(LabelLike)`
+  @media (max-width: ${tabletMin}) {
+    margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
+  }
 `

@@ -74,6 +74,39 @@ export const localOpenEndedDateRange = transformed(
   }
 )
 
+export const localTimeWithUnitTimes = transformed(
+  object({
+    value: string(),
+    unitStartTime: value<LocalTime | null>(),
+    unitEndTime: value<LocalTime | null>(),
+    hasVariedUnitTimes: boolean()
+  }),
+  (
+    v
+  ): ValidationResult<
+    LocalTime | undefined,
+    | 'timeFormat'
+    | 'outsideUnitOperationTime'
+    | 'outsideCombinedUnitOperationTime'
+  > => {
+    if (v.value === '') return ValidationSuccess.of(undefined)
+    const parsed = LocalTime.tryParse(v.value)
+    if (parsed === undefined) {
+      return ValidationError.of('timeFormat')
+    } else if (
+      !v.unitStartTime ||
+      !v.unitEndTime ||
+      parsed.isBefore(v.unitStartTime) ||
+      parsed.isAfter(v.unitEndTime)
+    ) {
+      return v.hasVariedUnitTimes
+        ? ValidationError.of('outsideCombinedUnitOperationTime')
+        : ValidationError.of('outsideUnitOperationTime')
+    }
+    return ValidationSuccess.of(parsed)
+  }
+)
+
 export const localTime = transformed(
   string(),
   (s): ValidationResult<LocalTime | undefined, 'timeFormat'> => {
@@ -83,6 +116,34 @@ export const localTime = transformed(
       return ValidationError.of('timeFormat')
     }
     return ValidationSuccess.of(parsed)
+  }
+)
+
+export const localTimeRangeWithUnitTimes = transformed(
+  object({
+    startTime: localTimeWithUnitTimes,
+    endTime: localTimeWithUnitTimes
+  }),
+  ({
+    startTime,
+    endTime
+  }): ValidationResult<
+    TimeRange | undefined,
+    ObjectFieldError | 'timeFormat' | 'outsideUnitOperationTime'
+  > => {
+    if (startTime === undefined && endTime === undefined) {
+      return ValidationSuccess.of(undefined)
+    }
+    if (
+      startTime === undefined ||
+      endTime === undefined ||
+      // Allow midnight as the end time, even though it's "before" all other times
+      (endTime.isBefore(startTime) && !endTime.isEqual(midnight))
+    ) {
+      return ValidationError.of('timeFormat')
+    } else {
+      return ValidationSuccess.of({ start: startTime, end: endTime })
+    }
   }
 )
 

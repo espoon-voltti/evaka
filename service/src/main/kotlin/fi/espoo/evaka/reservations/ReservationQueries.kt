@@ -376,6 +376,7 @@ data class ReservationPlacement(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationDays: Set<Int>,
+    val operationTimes: List<TimeRange>
 )
 
 fun Database.Read.getReservationPlacements(
@@ -388,7 +389,8 @@ SELECT
     pl.child_id,
     daterange(pl.start_date, pl.end_date, '[]') * :range AS range,
     pl.type,
-    u.operation_days
+    u.operation_days,
+    u.operation_times
 FROM placement pl
 JOIN daycare u ON pl.unit_id = u.id
 WHERE
@@ -418,7 +420,8 @@ fun Database.Read.getReservationBackupPlacements(
 SELECT
     bc.child_id,
     daterange(bc.start_date, bc.end_date, '[]') * :range AS range,
-    u.operation_days
+    u.operation_days,
+    u.operation_times
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 

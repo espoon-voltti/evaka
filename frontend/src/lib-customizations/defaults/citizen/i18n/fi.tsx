@@ -2145,6 +2145,8 @@ export default {
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu',
+    outsideUnitOperationTime: 'Yksikön aukiolo ylittyy',
+    outsideCombinedUnitOperationTime: 'Yksikön aukiolo ylittyy',
     ...components.datePicker.validationErrors
   },
   placement: {

@@ -2166,6 +2166,8 @@ const sv: Translations = {
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',
     unselectableDate: 'Ogiltigt datum',
+    outsideUnitOperationTime: 'Utanför enhetens öppettid',
+    outsideCombinedUnitOperationTime: 'Utanför enhetens öppettid',
     ...components.datePicker.validationErrors
   },
   placement: {

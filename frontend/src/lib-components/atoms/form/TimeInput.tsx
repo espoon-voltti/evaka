@@ -5,7 +5,9 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import { localTimeWithUnitTimes } from 'lib-common/form/fields'
 import { BoundFormState } from 'lib-common/form/hooks'
+import { StateOf } from 'lib-common/form/types'
 import { autocomplete } from 'lib-common/time'
 
 import InputField, { TextInputProps } from './InputField'
@@ -55,6 +57,32 @@ const TimeInput = React.memo(function TimeInput({
   )
 })
 
+const TimeInputWide = React.memo(function TimeInput({
+  value,
+  onChange,
+  onFocus,
+  ...props
+}: TimeInputProps) {
+  const onChangeWithAutocomplete = useCallback(
+    (v: string) => onChange(autocomplete(value, v)),
+    [value, onChange]
+  )
+
+  return (
+    <ScalingInput
+      {...props}
+      value={value}
+      onChange={onChangeWithAutocomplete}
+      type="text"
+      inputMode="numeric"
+      onFocus={(event) => {
+        event.target.select()
+        onFocus?.(event)
+      }}
+    />
+  )
+})
+
 export default TimeInput
 
 const ShorterInput = styled(InputField)`
@@ -63,6 +91,17 @@ const ShorterInput = styled(InputField)`
 
   input {
     font-size: 1em;
+  }
+`
+
+const ScalingInput = styled(InputField)`
+  div.warning {
+    line-height: 1.125rem;
+  }
+
+  input {
+    font-size: 1em;
+    min-width: 80px;
   }
 `
 
@@ -84,3 +123,24 @@ export const TimeInputF = React.memo(function TimeInputF({
     />
   )
 })
+
+export interface TimeInputFWithUnitTimesProps
+  extends Omit<TimeInputProps, 'value' | 'onChange'> {
+  bind: BoundFormState<StateOf<typeof localTimeWithUnitTimes>>
+}
+
+export const TimeInputFWithUnitTimes = React.memo(
+  function TimeInputFWithUnitTimes({
+    bind: { state, set, inputInfo },
+    ...props
+  }: TimeInputFWithUnitTimesProps) {
+    return (
+      <TimeInputWide
+        {...props}
+        value={state.value}
+        onChange={(newValue) => set({ ...state, value: newValue })}
+        info={'info' in props ? props.info : inputInfo()}
+      />
+    )
+  }
+)
