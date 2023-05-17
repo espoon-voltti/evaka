@@ -11,6 +11,7 @@ import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client'
 import passport, { AuthenticateCallback } from 'passport'
 import { fromCallback } from '../promise-utils'
+import { consumeLogoutToken, sessionCookie, SessionType } from '../session'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -121,4 +122,31 @@ export const authenticate = async (
 export const login = async (
   req: express.Request,
   user: Express.User
-): Promise<void> => await fromCallback<void>((cb) => req.logIn(user, cb))
+): Promise<void> => {
+  await fromCallback<void>((cb) => req.logIn(user, cb))
+  // Passport has now regenerated the active session and saved it, so we have a
+  // guarantee that the session ID has changed and Redis has stored the new session data
+}
+
+export const logout = async (
+  sessionType: SessionType,
+  req: express.Request,
+  res: express.Response
+): Promise<void> => {
+  // Pre-emptively clear the cookie, so even if something fails later, we
+  // will end up clearing the cookie in the response
+  res.clearCookie(sessionCookie(sessionType))
+
+  await fromCallback<void>((cb) => req.logOut(cb))
+  // Passport has now saved the previous session with null user and regenerated
+  // the active session, so we have a guarantee that the ID has changed and
+  // the old session data in Redis no longer includes the user
+
+  const logoutToken = req.session?.logoutToken?.value
+  if (logoutToken) {
+    await consumeLogoutToken(logoutToken)
+  }
+  await fromCallback((cb) =>
+    req.session ? req.session.destroy(cb) : cb(undefined)
+  )
+}

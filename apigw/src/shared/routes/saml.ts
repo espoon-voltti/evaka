@@ -5,12 +5,12 @@
 import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
 import passportSaml from '@node-saml/passport-saml'
-import { createLogoutToken } from '../auth'
+import { createLogoutToken, login, logout } from '../auth'
 import { gatewayRole, nodeEnv } from '../config'
 import { toMiddleware, toRequestHandler } from '../express'
 import { logAuditEvent, logDebug } from '../logging'
 import { fromCallback } from '../promise-utils'
-import { logoutExpress, saveLogoutToken, SessionType } from '../session'
+import { saveLogoutToken, SessionType } from '../session'
 import { parseDescriptionFromSamlError } from '../saml/error-utils'
 import type {
   AuthenticateOptions,
@@ -90,7 +90,7 @@ function createLoginHandler({
           return res.redirect(`${getDefaultPageUrl(req)}?loginError=true`)
         }
         ;(async () => {
-          await fromCallback<void>((cb) => req.logIn(user, cb))
+          await login(req, user)
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in`,
             req,
@@ -141,7 +141,7 @@ function createLogoutHandler({
         req.user ? strategy.logout(req as RequestWithUser, cb) : cb(null, null)
       )
       logDebug('Logging user out from passport.', req)
-      await logoutExpress(req, res, sessionType)
+      await logout(sessionType, req, res)
       res.redirect(redirectUrl ?? getDefaultPageUrl(req))
     } catch (err) {
       logAuditEvent(

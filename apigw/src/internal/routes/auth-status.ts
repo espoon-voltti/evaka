@@ -10,9 +10,10 @@ import {
   getMobileDevice,
   UUID
 } from '../../shared/service-client'
-import { logoutExpress, saveSession } from '../../shared/session'
+import { saveSession } from '../../shared/session'
 import { fromCallback } from '../../shared/promise-utils'
 import { appCommit } from '../../shared/config'
+import { logout } from '../../shared/auth'
 
 interface AuthStatus {
   loggedIn: boolean
@@ -140,7 +141,7 @@ export default toRequestHandler(async (req, res) => {
     }
   } else {
     if (sessionUser) {
-      await logoutExpress(req, res, 'employee')
+      await logout('employee', req, res)
     }
     status = {
       loggedIn: false,

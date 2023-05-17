@@ -62,7 +62,7 @@ export function refreshLogoutToken() {
 
 /**
  * Save a logout token for a user session to be consumed during logout.
- * Provide the same token during logout to logoutExpress to consume it.
+ * Provide the same token during logout to consume it.
  *
  * The token must be a value generated from values available in a logout request
  * without any cookies, as many browsers will disable 3rd party cookies by
@@ -134,23 +134,6 @@ export async function consumeLogoutToken(token: LogoutToken['value']) {
     // Ensure both session and logout keys are cleared in case no cookies were
     // available -> no req.session was available to be deleted.
     await asyncRedisClient.del(sessionKey(sid), logoutKey(token))
-  }
-}
-
-export async function logoutExpress(
-  req: express.Request,
-  res: express.Response,
-  sessionType: SessionType
-) {
-  res.clearCookie(sessionCookie(sessionType))
-  await fromCallback((cb) => req.logout(cb))
-  const logoutToken = req.session?.logoutToken?.value
-  if (logoutToken) {
-    await consumeLogoutToken(logoutToken)
-  }
-  if (req.session) {
-    const session = req.session
-    await fromCallback((cb) => session.destroy(cb))
   }
 }
 

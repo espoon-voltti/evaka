@@ -4,11 +4,10 @@
 
 import passport, { Strategy } from 'passport'
 import { Request, Router, urlencoded } from 'express'
-import { EvakaSessionUser, authenticate, login } from './index'
+import { authenticate, EvakaSessionUser, login, logout } from './index'
 import { AsyncRequestHandler, toRequestHandler } from '../express'
-import { logoutExpress, SessionType } from '../session'
+import { SessionType } from '../session'
 import { parseRelayState } from '../saml'
-import { logDebug } from '../logging'
 
 export interface DevAuthRouterOptions {
   root: string
@@ -67,8 +66,7 @@ export function createDevAuthRouter({
   router.get(
     `/logout`,
     toRequestHandler(async (req, res) => {
-      logDebug('Logging user out from passport.', req)
-      await logoutExpress(req, res, sessionType)
+      await logout(sessionType, req, res)
       res.redirect(root)
     })
   )

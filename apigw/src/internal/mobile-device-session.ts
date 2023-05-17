@@ -11,14 +11,13 @@ import {
   toMiddleware,
   toRequestHandler
 } from '../shared/express'
-import { fromCallback } from '../shared/promise-utils'
 import {
   employeePinLogin,
   identifyMobileDevice,
   MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client'
-import { saveSession } from '../shared/session'
+import { login } from '../shared/auth'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -38,18 +37,12 @@ async function mobileLogin(
   res: express.Response,
   device: MobileDeviceIdentity
 ) {
-  await fromCallback((cb) =>
-    req.logIn(
-      {
-        id: device.id,
-        globalRoles: [],
-        allScopedRoles: ['MOBILE'],
-        userType: 'MOBILE'
-      },
-      cb
-    )
-  )
-  await saveSession(req)
+  await login(req, {
+    id: device.id,
+    globalRoles: [],
+    allScopedRoles: ['MOBILE'],
+    userType: 'MOBILE'
+  })
   // Unconditionally refresh long-term cookie on each login to refresh expiry
   // time and make it a "rolling" cookie
   res.cookie(mobileLongTermCookieName, device.longTermToken, {
