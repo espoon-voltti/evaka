@@ -10,12 +10,7 @@ import { gatewayRole, nodeEnv } from '../config'
 import { toMiddleware, toRequestHandler } from '../express'
 import { logAuditEvent, logDebug } from '../logging'
 import { fromCallback } from '../promise-utils'
-import {
-  logoutExpress,
-  saveLogoutToken,
-  saveSession,
-  SessionType
-} from '../session'
+import { logoutExpress, saveLogoutToken, SessionType } from '../session'
 import { parseDescriptionFromSamlError } from '../saml/error-utils'
 import type {
   AuthenticateOptions,

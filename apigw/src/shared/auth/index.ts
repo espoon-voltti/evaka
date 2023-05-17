@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { concat } from 'lodash'
-import { NextFunction, Request, Response } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
 import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client'
+import passport, { AuthenticateCallback } from 'passport'
+import { fromCallback } from '../promise-utils'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -102,3 +104,21 @@ export function createLogoutToken(
 ) {
   return `${nameID}:::${sessionIndex}`
 }
+
+export const authenticate = async (
+  strategyName: string,
+  req: express.Request,
+  res: express.Response
+): Promise<Express.User | undefined> =>
+  await new Promise<Express.User | undefined>((resolve, reject) => {
+    const cb: AuthenticateCallback = (err, user) =>
+      err ? reject(err) : resolve(user || undefined)
+    const next: express.NextFunction = (err) =>
+      err ? reject(err) : resolve(undefined)
+    passport.authenticate(strategyName, cb)(req, res, next)
+  })
+
+export const login = async (
+  req: express.Request,
+  user: Express.User
+): Promise<void> => await fromCallback<void>((cb) => req.logIn(user, cb))
