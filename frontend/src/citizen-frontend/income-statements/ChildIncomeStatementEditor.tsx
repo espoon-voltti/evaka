@@ -69,7 +69,11 @@ export default React.memo(function ChildIncomeStatementEditor() {
 
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
   const initialEditorState = useInitialEditorState(childId, incomeStatementId)
-  if (state.isLoading && initialEditorState.isSuccess) {
+  if (
+    state.isLoading &&
+    initialEditorState.isSuccess &&
+    !initialEditorState.isReloading
+  ) {
     setState(initialEditorState)
   }
 
