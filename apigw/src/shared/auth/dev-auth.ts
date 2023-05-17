@@ -25,14 +25,6 @@ class DevStrategy extends Strategy {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   authenticate(req: Request, _options?: any): any {
-    const shouldRedirect = !req.url.startsWith('/login/callback')
-
-    if (shouldRedirect) {
-      return this.redirect(
-        `${req.baseUrl}/login?RelayState=${req.query.RelayState}`
-      )
-    }
-
     this.verifyUser(req)
       .then((user) => this.success(user))
       .catch((err) => this.error(err))
