@@ -29,10 +29,6 @@ class DevStrategy extends Strategy {
       .then((user) => this.success(user))
       .catch((err) => this.error(err))
   }
-
-  logout(req: Request, cb: (err: Error | null, url?: string | null) => void) {
-    cb(null, null)
-  }
 }
 
 export function createDevAuthRouter({
