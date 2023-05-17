@@ -16,6 +16,7 @@ import {
 } from 'lib-common/generated/api-types/document'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
@@ -32,7 +33,8 @@ type ApiQuestion = Question.TextQuestion
 
 const templateForm = object({
   id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty)
+  label: validated(string(), nonEmpty),
+  infoText: string()
 })
 
 type TemplateForm = typeof templateForm
@@ -41,7 +43,8 @@ const getTemplateInitialValues = (
   question?: ApiQuestion
 ): StateOf<TemplateForm> => ({
   id: question?.id ?? uuidv4(),
-  label: question?.label ?? ''
+  label: question?.label ?? '',
+  infoText: question?.infoText ?? ''
 })
 
 type Answer = string
@@ -69,22 +72,26 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
+  const { i18n } = useTranslation()
   const { template, answer } = useFormFields(bind)
-  const { label } = useFormFields(template)
+  const { label, infoText } = useFormFields(template)
   return readOnly ? (
-    <div>
-      <FixedSpaceColumn>
-        <Label>{label.state}</Label>
-        <span>{answer.state}</span>
-      </FixedSpaceColumn>
-    </div>
+    <FixedSpaceColumn>
+      <Label>{label.state}</Label>
+      <span>{answer.state}</span>
+    </FixedSpaceColumn>
   ) : (
-    <div>
-      <FixedSpaceColumn>
+    <FixedSpaceColumn fullWidth>
+      <ExpandingInfo
+        info={infoText.value()}
+        width="full"
+        ariaLabel=""
+        closeLabel={i18n.common.close}
+      >
         <Label>{label.state}</Label>
-        <InputFieldF bind={answer} readonly={false} width="L" />
-      </FixedSpaceColumn>
-    </div>
+      </ExpandingInfo>
+      <InputFieldF bind={answer} readonly={false} width="L" />
+    </FixedSpaceColumn>
   )
 })
 
@@ -112,13 +119,19 @@ const TemplateView = React.memo(function TemplateView({
   bind: BoundForm<TemplateForm>
 }) {
   const { i18n } = useTranslation()
-  const { label } = useFormFields(bind)
+  const { label, infoText } = useFormFields(bind)
 
   return (
-    <>
-      <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
-      <InputFieldF bind={label} hideErrorsBeforeTouched />
-    </>
+    <FixedSpaceColumn>
+      <FixedSpaceColumn>
+        <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
+        <InputFieldF bind={label} hideErrorsBeforeTouched />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn>
+        <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
+        <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+      </FixedSpaceColumn>
+    </FixedSpaceColumn>
   )
 })
 

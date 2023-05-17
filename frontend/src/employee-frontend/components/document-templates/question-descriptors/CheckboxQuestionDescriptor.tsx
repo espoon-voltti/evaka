@@ -17,6 +17,7 @@ import {
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
@@ -33,7 +34,8 @@ type ApiQuestion = Question.CheckboxQuestion
 
 const templateForm = object({
   id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty)
+  label: validated(string(), nonEmpty),
+  infoText: string()
 })
 
 type TemplateForm = typeof templateForm
@@ -42,7 +44,8 @@ const getTemplateInitialValues = (
   question?: ApiQuestion
 ): StateOf<TemplateForm> => ({
   id: question?.id ?? uuidv4(),
-  label: question?.label ?? ''
+  label: question?.label ?? '',
+  infoText: question?.infoText ?? ''
 })
 
 type Answer = boolean
@@ -70,9 +73,19 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
+  const { i18n } = useTranslation()
   const { template, answer } = useFormFields(bind)
-  const { label } = useFormFields(template)
-  return <CheckboxF bind={answer} label={label.state} disabled={readOnly} />
+  const { label, infoText } = useFormFields(template)
+  return (
+    <ExpandingInfo
+      info={infoText.value()}
+      width="full"
+      ariaLabel=""
+      closeLabel={i18n.common.close}
+    >
+      <CheckboxF bind={answer} label={label.state} disabled={readOnly} />
+    </ExpandingInfo>
+  )
 })
 
 const Preview = React.memo(function Preview({
@@ -99,12 +112,18 @@ const TemplateView = React.memo(function TemplateView({
   bind: BoundForm<TemplateForm>
 }) {
   const { i18n } = useTranslation()
-  const { label } = useFormFields(bind)
+  const { label, infoText } = useFormFields(bind)
 
   return (
     <FixedSpaceColumn>
-      <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
-      <InputFieldF bind={label} hideErrorsBeforeTouched />
+      <FixedSpaceColumn>
+        <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
+        <InputFieldF bind={label} hideErrorsBeforeTouched />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn>
+        <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
+        <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+      </FixedSpaceColumn>
     </FixedSpaceColumn>
   )
 })

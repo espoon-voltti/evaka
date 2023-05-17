@@ -164,6 +164,7 @@ export namespace Question {
   export interface CheckboxGroupQuestion {
     type: 'CHECKBOX_GROUP'
     id: string
+    infoText: string
     label: string
     options: MultiselectOption[]
   }
@@ -174,6 +175,7 @@ export namespace Question {
   export interface CheckboxQuestion {
     type: 'CHECKBOX'
     id: string
+    infoText: string
     label: string
   }
   
@@ -183,6 +185,7 @@ export namespace Question {
   export interface TextQuestion {
     type: 'TEXT'
     id: string
+    infoText: string
     label: string
   }
 }
