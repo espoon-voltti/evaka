@@ -137,12 +137,13 @@ export const logout = async (
   // will end up clearing the cookie in the response
   res.clearCookie(sessionCookie(sessionType))
 
+  const logoutToken = req.session?.logoutToken?.value
+
   await fromCallback<void>((cb) => req.logOut(cb))
   // Passport has now saved the previous session with null user and regenerated
   // the active session, so we have a guarantee that the ID has changed and
   // the old session data in Redis no longer includes the user
 
-  const logoutToken = req.session?.logoutToken?.value
   if (logoutToken) {
     await consumeLogoutToken(logoutToken)
   }
