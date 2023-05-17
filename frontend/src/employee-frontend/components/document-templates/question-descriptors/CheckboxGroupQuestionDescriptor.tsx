@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faPlus, faTrash } from 'Icons'
-import React, { useCallback, useEffect } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -149,13 +149,12 @@ const Preview = React.memo(function Preview({
 }) {
   const { i18n } = useTranslation()
 
-  const getInitialPreviewState = useCallback(
-    () => ({
-      template: bind.state,
-      answer: getAnswerInitialValue()
-    }),
-    [bind.state]
-  )
+  const [prevBindState, setPrevBindState] = useState(bind.state)
+
+  const getInitialPreviewState = () => ({
+    template: bind.state,
+    answer: getAnswerInitialValue()
+  })
 
   const mockBind = useForm(
     questionForm,
@@ -163,10 +162,10 @@ const Preview = React.memo(function Preview({
     i18n.validationErrors
   )
 
-  const { set } = mockBind
-  useEffect(() => {
-    set(getInitialPreviewState())
-  }, [getInitialPreviewState, set])
+  if (bind.state !== prevBindState) {
+    mockBind.set(getInitialPreviewState())
+    setPrevBindState(bind.state)
+  }
 
   return <View bind={mockBind} readOnly={false} />
 })
