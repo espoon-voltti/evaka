@@ -6,7 +6,11 @@ import { QueryClient } from '@tanstack/react-query'
 
 import { queryKeysNamespace } from 'lib-common/query'
 
-export type QueryKeyPrefix = 'applications' | 'holidayPeriods'
+export type QueryKeyPrefix =
+  | 'applications'
+  | 'childInformation'
+  | 'documentTemplates'
+  | 'holidayPeriods'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

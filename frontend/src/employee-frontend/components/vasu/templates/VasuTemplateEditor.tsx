@@ -25,6 +25,7 @@ import {
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
+import { swapElements } from 'lib-common/array'
 import {
   CurriculumType,
   VasuSection,
@@ -921,12 +922,3 @@ const AddNewContainer = styled.div<{ showOnHover: boolean }>`
   `
       : ''}
 `
-
-function swapElements<T>(arr: T[], index1: number, index2: number): T[] {
-  const arrayCopy = [...arr]
-  ;[arrayCopy[index1], arrayCopy[index2]] = [
-    arrayCopy[index2],
-    arrayCopy[index1]
-  ]
-  return arrayCopy
-}

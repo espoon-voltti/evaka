@@ -169,6 +169,10 @@ class SystemController(
                                 units = permittedGlobalActions.contains(Action.Global.UNITS_PAGE),
                                 createUnits =
                                     permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
+                                documentTemplates =
+                                    permittedGlobalActions.contains(
+                                        Action.Global.DOCUMENT_TEMPLATES_PAGE
+                                    ),
                                 vasuTemplates =
                                     permittedGlobalActions.contains(
                                         Action.Global.VASU_TEMPLATES_PAGE

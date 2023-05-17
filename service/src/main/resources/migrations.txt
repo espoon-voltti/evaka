@@ -319,3 +319,5 @@ V319__holiday_period_reservation_deadline_notnull.sql
 V320__fee_thresholds_preschool_club.sql
 V321__daycare_operation_times.sql
 V322__move_unit_manager.sql
+V323__create_document_template.sql
+V324__create_child_document.sql

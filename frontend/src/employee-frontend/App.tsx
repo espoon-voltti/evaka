@@ -41,10 +41,13 @@ import UnitPage from './components/UnitPage'
 import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
+import ChildDocumentEditor from './components/child-documents/ChildDocumentEditor'
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
+import DocumentTemplatesPage from './components/document-templates/template-editor/DocumentTemplatesPage'
+import TemplateEditorPage from './components/document-templates/template-editor/TemplateEditorPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import EmployeePreferredFirstNamePage from './components/employee/EmployeePreferredFirstNamePage'
 import EmployeePage from './components/employees/EmployeePage'
@@ -654,6 +657,30 @@ export default function App() {
                       element={
                         <EmployeeRoute title={i18n.titles.vasuTemplates}>
                           <VasuTemplateEditor />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/document-templates"
+                      element={
+                        <EmployeeRoute title={i18n.titles.documentTemplates}>
+                          <DocumentTemplatesPage />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/document-templates/:templateId"
+                      element={
+                        <EmployeeRoute title={i18n.titles.documentTemplates}>
+                          <TemplateEditorPage />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/child-documents/:documentId"
+                      element={
+                        <EmployeeRoute title={i18n.titles.childDocument}>
+                          <ChildDocumentEditor />
                         </EmployeeRoute>
                       }
                     />

@@ -19,6 +19,7 @@ export const fi = {
     customers: 'Asiakastiedot',
     placementDraft: 'Sijoitushahmotelma',
     decision: 'Päätöksen teko ja lähetys',
+    documentTemplates: 'Lomakepohjat',
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
@@ -43,6 +44,7 @@ export const fi = {
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu',
     vasuTemplates: 'Vasu-pohjat',
+    childDocument: 'Lapsen pedagoginen lomake',
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa'
   },
   common: {
@@ -730,6 +732,20 @@ export const fi = {
           'Tukitoimet menevät päällekkäin toisen ajanjakson alkupäivämäärän kanssa.',
         autoCutWarning:
           'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.'
+      }
+    },
+    childDocuments: {
+      table: {
+        document: 'Lomake',
+        type: 'Tyyppi',
+        status: 'Tila',
+        open: 'Avaa lomake',
+        published: 'Julkaistu',
+        draft: 'Luonnos'
+      },
+      editor: {
+        preview: 'Esikatsele',
+        publish: 'Julkaise huoltajalle'
       }
     },
     assistanceNeedDecision: {
@@ -3702,6 +3718,60 @@ export const fi = {
           reject: 'Peruuta'
         }
       }
+    }
+  },
+  documentTemplates: {
+    title: 'Lomakepohjat (beta)',
+    documentTypes: {
+      PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
+      PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio'
+    },
+    languages: {
+      FI: 'Suomenkielinen',
+      SV: 'Ruotsinkielinen'
+    },
+    templatesPage: {
+      add: 'Luo uusi',
+      name: 'Nimi',
+      type: 'Tyyppi',
+      language: 'Kieli',
+      validity: 'Voimassa',
+      status: 'Tila',
+      published: 'Julkaistu',
+      draft: 'Luonnos'
+    },
+    templateModal: {
+      title: 'Uusi lomakepohja',
+      name: 'Nimi',
+      type: 'Lomakkeen tyyppi',
+      language: 'Lomakkeen kieli',
+      confidential: 'Lomake on salassapidettävä',
+      legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',
+      validity: 'Voimassa ajalla'
+    },
+    templateEditor: {
+      language: 'Kieli',
+      legalBasis: 'Lakiperuste',
+      confidential: 'Salassapidettävä',
+      addSection: 'Uusi osio',
+      titleNewSection: 'Uusi osio',
+      titleEditSection: 'Muokkaa osiota',
+      sectionName: 'Otsikko',
+      addQuestion: 'Uusi osio',
+      titleNewQuestion: 'Uusi kysymys',
+      titleEditQuestion: 'Muokkaa kysymystä',
+      moveUp: 'Siirrä ylös',
+      moveDown: 'Siirrä alas',
+      readyToPublish: 'Valmis julkaistavaksi'
+    },
+    questionTypes: {
+      TEXT: 'Tekstikenttä',
+      CHECKBOX: 'Rasti',
+      CHECKBOX_GROUP: 'Monivalinta'
+    },
+    templateQuestions: {
+      label: 'Otsikko',
+      options: 'Vaihtoehdot'
     }
   },
   vasuTemplates: {

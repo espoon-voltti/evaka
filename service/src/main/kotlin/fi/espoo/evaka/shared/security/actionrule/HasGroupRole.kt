@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -157,6 +158,19 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementGroupOfChildOfChildDocument() =
+        rule<ChildDocumentId> { user, now ->
+            sql(
+                """
+SELECT child_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM child_document
+JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
     fun inPlacementGroupOfChildOfVasuDocument() =
         rule<VasuDocumentId> { user, now ->
             sql(

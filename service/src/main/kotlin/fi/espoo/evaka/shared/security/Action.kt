@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
@@ -23,6 +24,7 @@ import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -81,6 +83,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
         ),
+        DOCUMENT_TEMPLATES_PAGE(HasGlobalRole(ADMIN)),
         EMPLOYEES_PAGE(HasGlobalRole(ADMIN)),
         FINANCE_BASICS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         FINANCE_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -141,6 +144,11 @@ sealed interface Action {
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY
                 )
                 .inAnyUnit()
+        ),
+        CREATE_DOCUMENT_TEMPLATE(HasGlobalRole(ADMIN)),
+        READ_DOCUMENT_TEMPLATE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit()
         ),
         CREATE_VASU_TEMPLATE(HasGlobalRole(ADMIN)),
         READ_VASU_TEMPLATE(
@@ -904,6 +912,24 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
         ),
+        CREATE_CHILD_DOCUMENT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChild(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChild()
+        ),
+        READ_CHILD_DOCUMENT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChild(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChild()
+        ),
         CREATE_VASU_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
@@ -1050,6 +1076,18 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
+    enum class DocumentTemplate(
+        override vararg val defaultRules: ScopedActionRule<in DocumentTemplateId>
+    ) : ScopedAction<DocumentTemplateId> {
+        READ(HasGlobalRole(ADMIN)),
+        COPY(HasGlobalRole(ADMIN)),
+        UPDATE(HasGlobalRole(ADMIN)),
+        DELETE(HasGlobalRole(ADMIN));
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
     enum class Employee(override vararg val defaultRules: ScopedActionRule<in EmployeeId>) :
         ScopedAction<EmployeeId> {
         READ(
@@ -1732,6 +1770,41 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
+    enum class ChildDocument(
+        override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>
+    ) : ScopedAction<ChildDocumentId> {
+        READ(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChildOfChildDocument()
+        ),
+        UPDATE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChildOfChildDocument()
+        ),
+        PUBLISH(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChildOfChildDocument()
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
     enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) :
         ScopedAction<VasuDocumentId> {
         READ(

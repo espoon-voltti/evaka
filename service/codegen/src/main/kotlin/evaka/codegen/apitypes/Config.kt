@@ -21,7 +21,8 @@ private val standardTsMapping: Map<String, String> =
         "java.math.BigDecimal" to "number",
         "kotlin.Boolean" to "boolean",
         "java.time.OffsetDateTime" to "Date",
-        "java.net.URI" to "string"
+        "java.net.URI" to "string",
+        "kotlin.Any" to "unknown"
     )
 
 private val customClassesMapping: Map<String, TSMapping> =

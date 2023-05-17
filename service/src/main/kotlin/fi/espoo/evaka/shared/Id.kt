@@ -33,6 +33,7 @@ sealed interface DatabaseTable {
     sealed class CalendarEvent : DatabaseTable
     sealed class ChildConsent : DatabaseTable
     sealed class ChildDailyNote : DatabaseTable
+    sealed class ChildDocument : DatabaseTable
     sealed class ChildImage : DatabaseTable
     sealed class ChildStickyNote : DatabaseTable
     sealed class GroupNote : DatabaseTable
@@ -40,6 +41,7 @@ sealed interface DatabaseTable {
     sealed class DailyServicesTimeNotification : DatabaseTable
     sealed class DaycareCaretaker : DatabaseTable
     sealed class Decision : DatabaseTable
+    sealed class DocumentTemplate : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class EvakaUser : DatabaseTable
     sealed class FeeAlteration : DatabaseTable
@@ -132,6 +134,8 @@ typealias ChildConsentId = Id<DatabaseTable.ChildConsent>
 
 typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 
+typealias ChildDocumentId = Id<DatabaseTable.ChildDocument>
+
 typealias ChildImageId = Id<DatabaseTable.ChildImage>
 
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
@@ -145,6 +149,8 @@ typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServicesTimeNot
 typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
 
 typealias DecisionId = Id<DatabaseTable.Decision>
+
+typealias DocumentTemplateId = Id<DatabaseTable.DocumentTemplate>
 
 typealias EmployeeId = Id<DatabaseTable.Employee>
 
