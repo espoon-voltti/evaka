@@ -55,7 +55,7 @@ export function refreshLogoutToken() {
     const logoutExpires = new Date(req.session.logoutToken.expiresAt)
     // Logout token should always expire at least 30 minutes later than the session
     if (differenceInMinutes(logoutExpires, sessionExpires) < 30) {
-      await saveLogoutToken(req, req.session.idpProvider)
+      await saveLogoutToken(req)
     }
   })
 }
@@ -77,16 +77,12 @@ export function refreshLogoutToken() {
  */
 export async function saveLogoutToken(
   req: express.Request,
-  strategyName: string | null | undefined,
   logoutToken?: string
 ): Promise<void> {
   if (!req.session) return
 
   const token = logoutToken || req.session.logoutToken?.value
   if (!token) return
-
-  // Persist in session to allow custom logic per strategy
-  req.session.idpProvider = strategyName
 
   if (!asyncRedisClient) return
   const now = new Date()

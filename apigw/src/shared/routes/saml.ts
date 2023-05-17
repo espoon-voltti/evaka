@@ -100,11 +100,14 @@ function createLoginHandler({
           if (!user.nameID) {
             throw new Error('User unexpectedly missing nameID property')
           }
+
+          // Persist in session to allow custom logic per strategy
+          req.session.idpProvider = strategyName
           await saveLogoutToken(
             req,
-            strategyName,
             createLogoutToken(user.nameID, user.sessionIndex)
           )
+
           const redirectUrl = getRedirectUrl(req)
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
