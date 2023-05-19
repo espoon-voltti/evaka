@@ -17,4 +17,4 @@ export const attachmentType = [
   'CHILD_INCOME'
 ] as const
 
-export type AttachmentType = typeof attachmentType[number]
+export type AttachmentType = (typeof attachmentType)[number]

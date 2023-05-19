@@ -12,7 +12,7 @@ export const incomeCoefficients = [
   'YEARLY'
 ] as const
 
-export type IncomeCoefficient = typeof incomeCoefficients[number]
+export type IncomeCoefficient = (typeof incomeCoefficients)[number]
 
 export const incomeEffects = [
   'MAX_FEE_ACCEPTED',
@@ -20,7 +20,7 @@ export const incomeEffects = [
   'INCOME'
 ] as const
 
-export type IncomeEffect = typeof incomeEffects[number]
+export type IncomeEffect = (typeof incomeEffects)[number]
 
 export type IncomeValue = {
   amount: number

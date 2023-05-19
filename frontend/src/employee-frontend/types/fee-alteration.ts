@@ -17,4 +17,4 @@ export interface PartialFeeAlteration {
 
 export const feeAlterationTypes = ['DISCOUNT', 'INCREASE', 'RELIEF'] as const
 
-export type FeeAlterationType = typeof feeAlterationTypes[number]
+export type FeeAlterationType = (typeof feeAlterationTypes)[number]

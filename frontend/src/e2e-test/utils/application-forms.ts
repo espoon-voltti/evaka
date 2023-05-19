@@ -43,7 +43,7 @@ export const sections = [
   'additionalDetails'
 ] as const
 
-export type Section = typeof sections[number]
+export type Section = (typeof sections)[number]
 
 export type FormInput = Partial<{
   [K in Section]: Partial<ApplicationFormData[K]>
