@@ -95,12 +95,6 @@ export async function saveLogoutToken(
 
   const key = logoutKey(token)
   const ttlSeconds = differenceInSeconds(expires, now)
-  // https://redis.io/commands/expire - Set a timeout on key
-  // Return value:
-  //   1 if the timeout was set
-  //   0 if key does not exist.
-  const ret = await asyncRedisClient.expire(key, ttlSeconds)
-  if (ret === 1) return
   // https://redis.io/commands/set - Set key to hold the string value.
   // Options:
   //   EX seconds -- Set the specified expire time, in seconds.
