@@ -17,9 +17,6 @@
 !service/certificates/
 !service/dd-jmxfetch/
 
-!service/buildSrc/*.kts
-!service/buildSrc/src
-
 !service/codegen/*.kts
 !service/codegen/src
 
@@ -36,7 +33,7 @@
 !service/sficlient/*.kts
 !service/sficlient/src
 
-!evaka-bom/build.gradle.kts
+!evaka-bom/*.kts
 
 !service-lib/*.kts
 !service-lib/src
