@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
-import { eq } from 'lodash'
+import { isEqual } from 'lodash'
 import { toRequestHandler } from '../../shared/express'
 import {
   getEmployeeDetails,
@@ -111,6 +111,13 @@ async function validateUser(
   }
 }
 
+const rolesChanged = (a: string[] | undefined, b: string[] | undefined) =>
+  !isEqual(new Set(a), new Set(b))
+
+const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
+  rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
+  rolesChanged(sessionUser.globalRoles, user.globalRoles)
+
 export default toRequestHandler(async (req, res) => {
   const sessionUser = req.user
   const validUser = sessionUser && (await validateUser(req))
@@ -118,10 +125,7 @@ export default toRequestHandler(async (req, res) => {
   if (validUser) {
     const { user, globalRoles, allScopedRoles } = validUser
     // Refresh roles if necessary
-    if (
-      !eq(sessionUser.globalRoles, globalRoles) ||
-      !eq(sessionUser.allScopedRoles, allScopedRoles)
-    ) {
+    if (userChanged(sessionUser, validUser)) {
       await fromCallback((cb) =>
         req.logIn(
           { ...sessionUser, globalRoles, allScopedRoles },
