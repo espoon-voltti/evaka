@@ -994,6 +994,68 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `citizen cannot remove reservations without times in closed holiday periods when reservations are required`() {
+        val holidayPeriodStart = monday.plusMonths(1)
+        val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
+        val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
+
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday.plusYears(1)
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = holidayPeriodStart,
+                    startTime = null,
+                    endTime = null,
+                    createdBy = citizenUser.evakaUserId,
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                monday,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Nothing(
+                        childId = testChild_1.id,
+                        date = holidayPeriodStart,
+                    ),
+                )
+            )
+        }
+
+        // then
+        val reservationData =
+            db.read {
+                it.getReservationsCitizen(
+                    monday,
+                    testAdult_1.id,
+                    holidayPeriod,
+                )
+            }
+        val allReservations =
+            reservationData.flatMap { dailyData ->
+                dailyData.children.flatMap { child ->
+                    child.reservations.map { child.childId to it }
+                }
+            }
+
+        assertEquals(listOf(testChild_1.id to Reservation.NoTimes), allReservations)
+    }
+
+    @Test
     fun `employee can override absences in closed holiday periods`() {
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)

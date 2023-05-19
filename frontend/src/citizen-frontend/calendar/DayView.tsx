@@ -585,7 +585,7 @@ function initialChildFormState(
 ): StateOf<typeof childForm> {
   return {
     childId,
-    day: resetDay(holidayPeriod?.isOpen ?? false, [child], [childId])
+    day: resetDay(holidayPeriod?.state, [child], [childId])
   }
 }
 

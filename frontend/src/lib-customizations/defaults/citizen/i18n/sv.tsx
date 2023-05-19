@@ -337,6 +337,8 @@ const sv: Translations = {
       end: 'Slutar',
       present: 'Närvarande',
       absent: 'Frånvarande',
+      reservationClosed: 'Registreringen är stängd ',
+      reservationClosedInfo: 'Kontakta personalen om du vill anmäla närvaro',
       saveErrors: {
         failure: 'Kunde inte spara',
         NON_RESERVABLE_DAYS: 'Alla valda dagar kan inte reserveras.'

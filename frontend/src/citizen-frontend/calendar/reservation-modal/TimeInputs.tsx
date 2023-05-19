@@ -122,7 +122,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
 })
 
 interface ReadOnlyDayProps {
-  mode: 'notEditable' | 'holiday' | undefined
+  mode: 'noChildren' | 'absentNotEditable' | 'reservationClosed' | 'holiday'
   label: React.ReactNode
   dataQaPrefix?: string
 }
@@ -137,7 +137,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
   const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
 
   switch (mode) {
-    case undefined:
+    case 'noChildren':
       return (
         <FixedSpaceRow fullWidth alignItems="center">
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
@@ -145,7 +145,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
           <RightCell />
         </FixedSpaceRow>
       )
-    case 'notEditable':
+    case 'absentNotEditable':
       return (
         <>
           <FixedSpaceRow fullWidth alignItems="center">
@@ -170,6 +170,40 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
                 close={onInfoClick}
                 aria-label={i18n.calendar.absenceMarkedByEmployee}
                 info={i18n.calendar.contactStaffToEditAbsence}
+                closeLabel={i18n.common.close}
+                width="full"
+              />
+            </FixedSpaceRow>
+          )}
+        </>
+      )
+    case 'reservationClosed':
+      return (
+        <>
+          <FixedSpaceRow fullWidth alignItems="center">
+            {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+            <MiddleCell>
+              {i18n.calendar.reservationModal.reservationClosed}
+            </MiddleCell>
+            <RightCell>
+              <InfoButton
+                onClick={onInfoClick}
+                aria-label={i18n.common.openExpandingInfo}
+                data-qa="reservation-closed-info-button"
+              />
+            </RightCell>
+          </FixedSpaceRow>
+          {infoOpen && (
+            <FixedSpaceRow fullWidth>
+              <ExpandingInfoBox
+                data-qa={
+                  dataQaPrefix
+                    ? `${dataQaPrefix}-reservation-closed-info-box`
+                    : undefined
+                }
+                close={onInfoClick}
+                aria-label={i18n.calendar.reservationModal.reservationClosed}
+                info={i18n.calendar.reservationModal.reservationClosedInfo}
                 closeLabel={i18n.common.close}
                 width="full"
               />

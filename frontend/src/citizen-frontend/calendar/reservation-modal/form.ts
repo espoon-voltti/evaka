@@ -68,7 +68,9 @@ type DayOutput =
 
 export const day = mapped(
   union({
-    readOnly: value<'notEditable' | 'holiday' | undefined>(),
+    readOnly: value<
+      'noChildren' | 'holiday' | 'absentNotEditable' | 'reservationClosed'
+    >(),
     reservation,
     reservationNoTimes: noTimes
   }),
@@ -240,7 +242,7 @@ function repetitionOptions(i18n: Translations) {
 
 export interface HolidayPeriodInfo {
   period: FiniteDateRange
-  isOpen: boolean
+  state: 'open' | 'closed'
 }
 
 export function initialState(
@@ -312,18 +314,14 @@ export function resetTimes(
         ? [includedWeekDays[0], includedWeekDays[includedWeekDays.length - 1]]
         : undefined
 
-    const isOpenHolidayPeriod =
-      dayProperties.containedInOpenHolidayPeriod(selectedRange)
+    const holidayPeriodState =
+      dayProperties.holidayPeriodStateForRange(selectedRange)
 
     return {
       branch: 'dailyTimes',
       state: {
         weekDayRange,
-        day: resetDay(
-          isOpenHolidayPeriod,
-          calendarDaysInRange,
-          selectedChildren
-        )
+        day: resetDay(holidayPeriodState, calendarDaysInRange, selectedChildren)
       }
     }
   } else if (repetition === 'WEEKLY') {
@@ -331,8 +329,8 @@ export function resetTimes(
       date.getIsoDayOfWeek()
     )
 
-    const isOpenHolidayPeriod =
-      dayProperties.containedInOpenHolidayPeriod(selectedRange)
+    const holidayPeriodState =
+      dayProperties.holidayPeriodStateForRange(selectedRange)
 
     const weeklyTimes = includedWeekDays.map(
       (dayOfWeek): StateOf<typeof weekDay> => {
@@ -340,7 +338,7 @@ export function resetTimes(
         if (!dayOfWeekDays) {
           return {
             weekDay: dayOfWeek,
-            day: { branch: 'readOnly', state: undefined }
+            day: { branch: 'readOnly', state: 'noChildren' }
           }
         }
 
@@ -350,7 +348,7 @@ export function resetTimes(
         return {
           weekDay: dayOfWeek,
           day: resetDay(
-            isOpenHolidayPeriod,
+            holidayPeriodState,
             relevantCalendarDays,
             selectedChildren
           )
@@ -377,10 +375,13 @@ export function resetTimes(
           if (existing) return existing
         }
 
-        const isOpenHolidayPeriod = dayProperties.inOpenHolidayPeriod(rangeDate)
         return {
           date: rangeDate,
-          day: resetDay(isOpenHolidayPeriod, [calendarDay], selectedChildren)
+          day: resetDay(
+            dayProperties.holidayPeriodStateForDate(rangeDate),
+            [calendarDay],
+            selectedChildren
+          )
         }
       }
     )
@@ -394,7 +395,7 @@ export function resetTimes(
 }
 
 export function resetDay(
-  isOpenHolidayPeriod: boolean,
+  holidayPeriodState: 'open' | 'closed' | undefined,
   calendarDays: ReservationResponseDay[],
   selectedChildren: UUID[]
 ): StateOf<typeof day> {
@@ -416,25 +417,28 @@ export function resetDay(
   if (dayChildren.length === 0) {
     return {
       branch: 'readOnly',
-      state: undefined
+      state: 'noChildren'
     }
   }
 
   if (allChildrenAreAbsentNotEditable(calendarDays, selectedChildren)) {
     return {
       branch: 'readOnly',
-      state: 'notEditable'
+      state: 'absentNotEditable'
     }
   }
 
   if (allChildrenAreAbsent(calendarDays, selectedChildren)) {
-    return isOpenHolidayPeriod || reservationNotRequired
+    return holidayPeriodState === 'open' ||
+      (holidayPeriodState === undefined && reservationNotRequired)
       ? { branch: 'reservationNoTimes', state: 'absent' }
+      : holidayPeriodState === 'closed'
+      ? { branch: 'readOnly', state: 'reservationClosed' }
       : { branch: 'reservation', state: { branch: 'absent', state: true } }
   }
 
   if (hasReservationsForEveryChild(calendarDays, selectedChildren)) {
-    if (isOpenHolidayPeriod || reservationNotRequired) {
+    if (holidayPeriodState === 'open' || reservationNotRequired) {
       return { branch: 'reservationNoTimes', state: 'present' }
     }
 
@@ -450,7 +454,14 @@ export function resetDay(
     }
   }
 
-  return isOpenHolidayPeriod || reservationNotRequired
+  if (
+    holidayPeriodState === 'closed' &&
+    hasNoReservationsForSomeChild(calendarDays, selectedChildren)
+  ) {
+    return { branch: 'readOnly', state: 'reservationClosed' }
+  }
+
+  return holidayPeriodState === 'open' || reservationNotRequired
     ? { branch: 'reservationNoTimes', state: 'notSet' }
     : emptyDay
 }
@@ -477,6 +488,22 @@ const hasReservationsForEveryChild = (
         (child) =>
           child.childId === childId &&
           (child.reservations.length > 0 || !child.requiresReservation) &&
+          child.absence === null
+      )
+    )
+  )
+
+const hasNoReservationsForSomeChild = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
+) =>
+  calendarDays.every((day) =>
+    selectedChildren.some((childId) =>
+      day.children.some(
+        (child) =>
+          child.childId === childId &&
+          child.requiresReservation &&
+          child.reservations.length === 0 &&
           child.absence === null
       )
     )
@@ -561,6 +588,8 @@ const getCommonTimeRanges = (
   return undefined
 }
 
+type HolidayPeriodState = 'open' | 'closed' | undefined
+
 export class DayProperties {
   // Does any child have shift care?
   readonly anyChildInShiftCare: boolean
@@ -615,17 +644,15 @@ export class DayProperties {
     )
   }
 
-  inOpenHolidayPeriod(date: LocalDate): boolean {
-    return this.holidayPeriods.some(
-      (holidayPeriod) =>
-        holidayPeriod.isOpen && holidayPeriod.period.includes(date)
-    )
+  holidayPeriodStateForDate(date: LocalDate): HolidayPeriodState {
+    return this.holidayPeriods.find((holidayPeriod) =>
+      holidayPeriod.period.includes(date)
+    )?.state
   }
 
-  containedInOpenHolidayPeriod(dateRange: FiniteDateRange): boolean {
-    return this.holidayPeriods.some(
-      (holidayPeriod) =>
-        holidayPeriod.isOpen && holidayPeriod.period.contains(dateRange)
-    )
+  holidayPeriodStateForRange(dateRange: FiniteDateRange): HolidayPeriodState {
+    return this.holidayPeriods.find((holidayPeriod) =>
+      holidayPeriod.period.contains(dateRange)
+    )?.state
   }
 }

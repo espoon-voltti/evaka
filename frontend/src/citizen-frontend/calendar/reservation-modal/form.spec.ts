@@ -70,7 +70,7 @@ describe('resetTimes', () => {
           weekDayRange: undefined,
           day: {
             branch: 'readOnly',
-            state: undefined
+            state: 'noChildren'
           }
         }
       })
@@ -332,7 +332,7 @@ describe('resetTimes', () => {
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          _  _        | _  _  _  _  _        | _  _  _  _  _
@@ -372,7 +372,7 @@ describe('resetTimes', () => {
             selectedRange.start,
             selectedRange.end.addDays(-1)
           ),
-          isOpen: true
+          state: 'open' as const
         }
       ]
 
@@ -411,7 +411,7 @@ describe('resetTimes', () => {
     it('Open holiday period + absences for all children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          a  a        | a  a  a  a  a        | a  a  a  a  a
@@ -462,7 +462,7 @@ describe('resetTimes', () => {
     it('Open holiday period + absences for some children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          a  a        | a  a  a  a  a        | a  a  a  a  a
@@ -511,7 +511,7 @@ describe('resetTimes', () => {
     it('Open holiday period + reservations for all children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          r  r        | r  r  r  r  r        | r  r  r  r  r
@@ -557,7 +557,7 @@ describe('resetTimes', () => {
     it('Open holiday period + reservations for some children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          r  r        | r  r  r  r  r        | r  r  r  r  r
@@ -877,7 +877,7 @@ describe('resetTimes', () => {
           weekDay,
           day: {
             branch: 'readOnly',
-            state: 'notEditable'
+            state: 'absentNotEditable'
           }
         }))
       })
@@ -917,7 +917,7 @@ describe('resetTimes', () => {
             day: {
               // this day has an employee-marked absence for all children
               branch: 'readOnly',
-              state: 'notEditable'
+              state: 'absentNotEditable'
             }
           },
           {
@@ -1279,7 +1279,7 @@ describe('resetTimes', () => {
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          _  _        | _  _  _  _  _        | _  _  _  _  _
@@ -1316,7 +1316,7 @@ describe('resetTimes', () => {
             selectedRange.start,
             selectedRange.end.addDays(-1)
           ),
-          isOpen: true
+          state: 'open' as const
         }
       ]
 
@@ -1352,7 +1352,7 @@ describe('resetTimes', () => {
     it('Open holiday period + common absences', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          a  a        | a  a  a  a  a        | a  a  a  a  a
@@ -1457,7 +1457,7 @@ describe('resetTimes', () => {
     it('Open holiday period + common absences (marked by employee)', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          a  a        | a  a  a  a  a        | a  a  a  a  a
@@ -1504,7 +1504,7 @@ describe('resetTimes', () => {
           weekDay,
           day: {
             branch: 'readOnly',
-            state: 'notEditable'
+            state: 'absentNotEditable'
           }
         }))
       })
@@ -1538,7 +1538,7 @@ describe('resetTimes', () => {
             day: {
               // This day has an employee-marked absence for all children
               branch: 'readOnly',
-              state: 'notEditable'
+              state: 'absentNotEditable'
             }
           },
           {
@@ -1562,7 +1562,7 @@ describe('resetTimes', () => {
     it('Open holiday period + common reservations', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          r  r        | r  r  r  r  r        | r  r  r  r  r
@@ -1673,7 +1673,7 @@ describe('resetTimes', () => {
     it('Open holiday period + mixed requiresReservation', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          r  r        | _  _  a  r  r        | _  _  a  r  r
@@ -1787,7 +1787,7 @@ describe('resetTimes', () => {
         branch: 'irregularTimes',
         state: selectedRangeWeekDays.map((date) => ({
           date,
-          day: { branch: 'readOnly', state: undefined }
+          day: { branch: 'readOnly', state: 'noChildren' }
         }))
       })
     })
@@ -1822,7 +1822,7 @@ describe('resetTimes', () => {
                   state: [{ startTime: '', endTime: '' }]
                 }
               }
-            : { branch: 'readOnly', state: undefined }
+            : { branch: 'readOnly', state: 'noChildren' }
         }))
       })
     })
@@ -2131,7 +2131,7 @@ describe('resetTimes', () => {
           },
           {
             date: rangeWeekDays[5],
-            day: { branch: 'readOnly', state: 'notEditable' }
+            day: { branch: 'readOnly', state: 'absentNotEditable' }
           },
           {
             date: rangeWeekDays[6],
@@ -2240,7 +2240,7 @@ describe('resetTimes', () => {
     it('Open holiday period + all weekdays are reservable', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          _  _        | _  _  _  _  _        | _  _  _  _  _
@@ -2276,7 +2276,7 @@ describe('resetTimes', () => {
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
       //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, isOpen: true }]
+      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //                      | r  r  r  aa aa       | ae _
@@ -2443,7 +2443,7 @@ describe('resetTimes', () => {
             date: selectedRangeWeekDays[5],
             day: {
               branch: 'readOnly',
-              state: 'notEditable'
+              state: 'absentNotEditable'
             }
           },
           {
@@ -2451,6 +2451,286 @@ describe('resetTimes', () => {
             day: {
               branch: 'reservationNoTimes',
               state: 'notSet'
+            }
+          }
+        ]
+      })
+    })
+
+    it('Closed holiday period + reservations + absences + employee-marked absences', () => {
+      const r: Reservation = { type: 'NO_TIMES' }
+      const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
+      const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
+
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
+      //                      | h  h  h  h  h  h  h  | h  h
+      const holidayPeriods = [
+        { period: selectedRange, state: 'closed' as const }
+      ]
+
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //                      | r  _  r  aa aa       | ae _
+      //                      | r  _  aa aa _        | ae ae
+      const calendarDays: ReservationResponseDay[] = [
+        {
+          date: selectedRangeWeekDays[0],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              reservations: [r]
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              reservations: [r]
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[1],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1'
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2'
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[2],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              reservations: [r]
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              absence: aa
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[3],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              absence: aa
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              absence: aa
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[4],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              absence: aa
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2'
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[5],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              absence: ae
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              absence: ae
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[6],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1'
+            },
+            {
+              ...emptyChild,
+              childId: 'child-2',
+              absence: ae
+            }
+          ]
+        }
+      ]
+
+      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'IRREGULAR',
+          selectedRange,
+          selectedChildren: ['child-1', 'child-2']
+        })
+      ).toEqual({
+        branch: 'irregularTimes',
+        state: [
+          {
+            date: selectedRangeWeekDays[0],
+            day: {
+              branch: 'reservation',
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
+            }
+          },
+          {
+            date: selectedRangeWeekDays[1],
+            day: {
+              branch: 'readOnly',
+              state: 'reservationClosed'
+            }
+          },
+          {
+            date: selectedRangeWeekDays[2],
+            day: {
+              branch: 'reservation',
+              state: {
+                branch: 'timeRanges',
+                state: [{ startTime: '', endTime: '' }]
+              }
+            }
+          },
+          {
+            date: selectedRangeWeekDays[3],
+            day: {
+              branch: 'readOnly',
+              state: 'reservationClosed'
+            }
+          },
+          {
+            date: selectedRangeWeekDays[4],
+            day: {
+              branch: 'readOnly',
+              state: 'reservationClosed'
+            }
+          },
+          {
+            date: selectedRangeWeekDays[5],
+            day: {
+              branch: 'readOnly',
+              state: 'absentNotEditable'
+            }
+          },
+          {
+            date: selectedRangeWeekDays[6],
+            day: {
+              branch: 'readOnly',
+              state: 'reservationClosed'
+            }
+          }
+        ]
+      })
+    })
+
+    it('Closed holiday period + reservation not required + absences', () => {
+      const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
+      const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
+
+      const selectedRange = new FiniteDateRange(monday, wednesday)
+
+      // mo tu we th fr sa su | MO TU WE th fr sa su | mo tu we th fr
+      //                      | h  h  h              |
+      const holidayPeriods = [
+        { period: selectedRange, state: 'closed' as const }
+      ]
+
+      // mo tu we th fr sa su | MO TU WE th fr sa su | mo tu we th fr sa su
+      //                      | aa ae _              |
+      const calendarDays: ReservationResponseDay[] = [
+        {
+          date: selectedRangeWeekDays[0],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              requiresReservation: false,
+              absence: aa
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[1],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              requiresReservation: false,
+              absence: ae
+            }
+          ]
+        },
+        {
+          date: selectedRangeWeekDays[2],
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              requiresReservation: false
+            }
+          ]
+        }
+      ]
+
+      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'IRREGULAR',
+          selectedRange,
+          selectedChildren: [emptyChild.childId]
+        })
+      ).toEqual({
+        branch: 'irregularTimes',
+        state: [
+          {
+            date: selectedRangeWeekDays[0],
+            day: {
+              branch: 'readOnly',
+              state: 'reservationClosed'
+            }
+          },
+          {
+            date: selectedRangeWeekDays[1],
+            day: {
+              branch: 'readOnly',
+              state: 'absentNotEditable'
+            }
+          },
+          {
+            date: selectedRangeWeekDays[2],
+            day: {
+              branch: 'reservationNoTimes',
+              state: 'present'
             }
           }
         ]

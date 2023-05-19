@@ -339,7 +339,9 @@ const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
   upcomingHolidayPeriods: HolidayPeriodInfo[]
 }) {
   const i18n = useTranslation()
-  const openHolidayPeriod = upcomingHolidayPeriods.find(({ isOpen }) => isOpen)
+  const openHolidayPeriod = upcomingHolidayPeriods.find(
+    ({ state }) => state === 'open'
+  )
 
   return openHolidayPeriod ? (
     <InfoBox

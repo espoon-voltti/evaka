@@ -340,6 +340,9 @@ const en: Translations = {
       end: 'End',
       present: 'Present',
       absent: 'Absent',
+      reservationClosed: 'Reservation closed',
+      reservationClosedInfo:
+        'Please contact staff if you want to add an attendance for this day',
       saveErrors: {
         failure: 'Could not save',
         NON_RESERVABLE_DAYS: 'Some of the selected days cannot be reserved'
