@@ -269,11 +269,13 @@ function Edit({
         const child = modalData.response.children[childIndex]
         const bind = formElems[childIndex]
         return (
-          <EditReservation
-            canAddSecondReservation={child.shiftCare}
-            showAllErrors={showAllErrors}
-            bind={bind}
-          />
+          <div>
+            <EditReservation
+              canAddSecondReservation={child.shiftCare}
+              showAllErrors={showAllErrors}
+              bind={bind}
+            />
+          </div>
         )
       }}
     </DayModal>
@@ -382,7 +384,7 @@ const DayModal = React.memo(function DayModal({
 
                       <ReservationTable>
                         <LabelLike>{i18n.calendar.reservation}</LabelLike>
-                        <div>{renderReservation(childIndex)}</div>
+                        {renderReservation(childIndex)}
                         <LabelLike>{i18n.calendar.realized}</LabelLike>
                         <div>{row.attendances}</div>
                       </ReservationTable>
@@ -760,10 +762,6 @@ const DayOfWeek = styled(H1)`
   text-align: center;
 `
 
-const Colspan2 = styled.div`
-  grid-column: 1 / span 2;
-`
-
 const ReservationStatus = styled.span`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
 `
@@ -804,7 +802,11 @@ const EmptyButtonFooterElement = styled.div`
 
 const ReservationTable = styled.div`
   display: grid;
-  grid-template-rows: minmax(38px, max-content) minmax(38px, max-content);
   grid-template-columns: 42% 58%;
+  grid-auto-rows: minmax(38px, max-content);
   row-gap: ${defaultMargins.xxs};
+`
+
+const Colspan2 = styled.div`
+  grid-column: 1 / span 2;
 `
