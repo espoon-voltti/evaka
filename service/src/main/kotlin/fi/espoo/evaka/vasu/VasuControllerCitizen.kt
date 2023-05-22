@@ -118,7 +118,7 @@ class VasuControllerCitizen(
                         id
                     )
                     val doc =
-                        tx.getLatestPublishedVasuDocument(id)
+                        tx.getLatestPublishedVasuDocument(clock.today(), id)
                             ?: throw NotFound("document $id not found")
                     CitizenGetVasuDocumentResponse(
                         vasu = doc.redact(),
