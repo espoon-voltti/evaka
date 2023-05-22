@@ -13,7 +13,7 @@ const views = [
   'archive',
   'thread'
 ] as const
-export type View = typeof views[number]
+export type View = (typeof views)[number]
 
 export const isValidView = (view: string): view is View =>
   views.some((v) => view === v)

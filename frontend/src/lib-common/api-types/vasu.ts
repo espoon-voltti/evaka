@@ -18,7 +18,7 @@ export const vasuQuestionTypes = [
   'STATIC_INFO_SUBSECTION'
 ] as const
 
-export type VasuQuestionType = typeof vasuQuestionTypes[number] | 'PARAGRAPH'
+export type VasuQuestionType = (typeof vasuQuestionTypes)[number] | 'PARAGRAPH'
 
 interface VasuQuestionCommon {
   type: VasuQuestionType

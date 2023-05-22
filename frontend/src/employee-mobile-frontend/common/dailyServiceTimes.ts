@@ -19,7 +19,7 @@ const dayNames = [
   'friday'
 ] as const
 
-type DayName = typeof dayNames[number]
+type DayName = (typeof dayNames)[number]
 
 function getToday(): DayName | undefined {
   // Sunday is 0

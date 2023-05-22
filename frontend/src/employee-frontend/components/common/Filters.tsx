@@ -800,7 +800,7 @@ export const preschoolTypes = [
   'DAYCARE_ONLY'
 ] as const
 
-export type PreschoolType = typeof preschoolTypes[number]
+export type PreschoolType = (typeof preschoolTypes)[number]
 
 interface ApplicationTypeFilterProps {
   toggled: ApplicationTypeToggle

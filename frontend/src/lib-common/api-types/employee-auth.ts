@@ -28,7 +28,7 @@ export const globalRoles = [
   'MESSAGING'
 ] as const
 
-export type GlobalRole = typeof globalRoles[number]
+export type GlobalRole = (typeof globalRoles)[number]
 
 export const scopedRoles = [
   'UNIT_SUPERVISOR',
@@ -37,7 +37,7 @@ export const scopedRoles = [
   'STAFF'
 ] as const
 
-export type ScopedRole = typeof scopedRoles[number]
+export type ScopedRole = (typeof scopedRoles)[number]
 
 export type AdRole = GlobalRole | ScopedRole
 

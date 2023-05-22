@@ -198,9 +198,9 @@ function resetTimes(
   repetition: Repetition,
   selectedRange: FiniteDateRange
 ): {
-  dailyTimes: StateOf<typeof reservationForm['shape']['dailyTimes']>
-  weeklyTimes: StateOf<typeof reservationForm['shape']['weeklyTimes']>
-  irregularTimes: StateOf<typeof reservationForm['shape']['irregularTimes']>
+  dailyTimes: StateOf<(typeof reservationForm)['shape']['dailyTimes']>
+  weeklyTimes: StateOf<(typeof reservationForm)['shape']['weeklyTimes']>
+  irregularTimes: StateOf<(typeof reservationForm)['shape']['irregularTimes']>
 } {
   switch (repetition) {
     case 'DAILY':
