@@ -29,6 +29,15 @@ export namespace AnsweredQuestion {
   }
   
   /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.RadioButtonGroupAnswer
+  */
+  export interface RadioButtonGroupAnswer {
+    type: 'RADIO_BUTTON_GROUP'
+    answer: string | null
+    questionId: string
+  }
+  
+  /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.TextAnswer
   */
   export interface TextAnswer {
@@ -41,7 +50,7 @@ export namespace AnsweredQuestion {
 /**
 * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
 */
-export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.TextAnswer
+export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.TextAnswer
 
 
 /**
@@ -180,6 +189,17 @@ export namespace Question {
   }
   
   /**
+  * Generated from fi.espoo.evaka.document.Question.RadioButtonGroupQuestion
+  */
+  export interface RadioButtonGroupQuestion {
+    type: 'RADIO_BUTTON_GROUP'
+    id: string
+    infoText: string
+    label: string
+    options: MultiselectOption[]
+  }
+  
+  /**
   * Generated from fi.espoo.evaka.document.Question.TextQuestion
   */
   export interface TextQuestion {
@@ -193,7 +213,7 @@ export namespace Question {
 /**
 * Generated from fi.espoo.evaka.document.Question
 */
-export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.TextQuestion
+export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.RadioButtonGroupQuestion | Question.TextQuestion
 
 
 /**

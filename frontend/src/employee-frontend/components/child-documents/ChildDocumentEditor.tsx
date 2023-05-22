@@ -72,8 +72,6 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
     publishChildDocumentMutation
   )
 
-  const debouncedContent = useDebounce(bind.value(), 1000)
-
   const save = useCallback(
     async (content: DocumentContent) => {
       const result = await updateChildDocumentContent({
@@ -88,14 +86,21 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
     [updateChildDocumentContent, document.id]
   )
 
-  useEffect(() => {
-    void save(debouncedContent)
-  }, [debouncedContent, save])
-
-  const dirty = useMemo(
-    () => lastSavedContent !== bind.value(),
-    [lastSavedContent, bind]
+  const saved = useMemo(
+    () => bind.isValid() && lastSavedContent === bind.value(),
+    [bind, lastSavedContent]
   )
+
+  const debouncedValidContent = useDebounce(
+    bind.isValid() ? bind.value() : null,
+    1000
+  )
+
+  useEffect(() => {
+    if (debouncedValidContent !== null) {
+      void save(debouncedValidContent)
+    }
+  }, [debouncedValidContent, save])
 
   const goBack = () => navigate(`/child-information/${document.child.id}`)
 
@@ -169,7 +174,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                       'HH:mm:ss'
                     )}
                   </span>
-                  {dirty && <Spinner size={defaultMargins.m} />}
+                  {!saved && <Spinner size={defaultMargins.m} />}
                 </FixedSpaceRow>
               )}
             </FixedSpaceRow>
@@ -178,7 +183,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 text={i18n.childInformation.childDocuments.editor.preview}
                 primary
                 onClick={() => setPreview(true)}
-                disabled={dirty}
+                disabled={!saved}
               />
             )}
             {preview && !document.published && (

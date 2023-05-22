@@ -13,7 +13,8 @@ export type QuestionType = Question['type']
 export const questionTypes: QuestionType[] = [
   'TEXT',
   'CHECKBOX',
-  'CHECKBOX_GROUP'
+  'CHECKBOX_GROUP',
+  'RADIO_BUTTON_GROUP'
 ]
 
 export interface TemplateQuestionDescriptor<
