@@ -3771,7 +3771,8 @@ export const fi = {
     },
     templateQuestions: {
       label: 'Otsikko',
-      options: 'Vaihtoehdot'
+      options: 'Vaihtoehdot',
+      infoText: 'Ohjeteksti'
     }
   },
   vasuTemplates: {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faPlus, faTrash } from 'Icons'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -28,6 +28,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
@@ -53,7 +54,8 @@ const templateForm = object({
   label: validated(string(), nonEmpty),
   options: validated(array(optionForm), (arr) =>
     arr.length > 0 ? undefined : 'required'
-  )
+  ),
+  infoText: string()
 })
 
 type TemplateForm = typeof templateForm
@@ -63,7 +65,8 @@ const getTemplateInitialValues = (
 ): StateOf<TemplateForm> => ({
   id: question?.id ?? uuidv4(),
   label: question?.label ?? '',
-  options: question?.options ?? []
+  options: question?.options ?? [],
+  infoText: question?.infoText ?? ''
 })
 
 type Answer = string[]
@@ -95,8 +98,9 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
+  const { i18n } = useTranslation()
   const { template, answer } = useFormFields(bind)
-  const { label, options } = useFormFields(template)
+  const { label, infoText, options } = useFormFields(template)
   const optionElems = useFormElems(options)
   const selected = answer.state.map(
     (answer) => optionElems.find((opt) => opt.state.id === answer)?.state?.label
@@ -108,8 +112,15 @@ const View = React.memo(function View({
       <div>{selected.length > 0 ? selected.join(', ') : '-'}</div>
     </FixedSpaceColumn>
   ) : (
-    <FixedSpaceColumn>
-      <Label>{label.state}</Label>
+    <FixedSpaceColumn fullWidth>
+      <ExpandingInfo
+        info={infoText.value()}
+        width="full"
+        ariaLabel=""
+        closeLabel={i18n.common.close}
+      >
+        <Label>{label.state}</Label>
+      </ExpandingInfo>
       <GroupIndentation>
         <FixedSpaceColumn spacing="xs">
           {optionElems.map((option) => (
@@ -137,14 +148,24 @@ const Preview = React.memo(function Preview({
   bind: BoundForm<TemplateForm>
 }) {
   const { i18n } = useTranslation()
+
+  const [prevBindState, setPrevBindState] = useState(bind.state)
+
+  const getInitialPreviewState = () => ({
+    template: bind.state,
+    answer: getAnswerInitialValue()
+  })
+
   const mockBind = useForm(
     questionForm,
-    () => ({
-      template: bind.state,
-      answer: getAnswerInitialValue()
-    }),
+    getInitialPreviewState,
     i18n.validationErrors
   )
+
+  if (bind.state !== prevBindState) {
+    mockBind.set(getInitialPreviewState())
+    setPrevBindState(bind.state)
+  }
 
   return <View bind={mockBind} readOnly={false} />
 })
@@ -177,7 +198,7 @@ const TemplateView = React.memo(function TemplateView({
   bind: BoundForm<TemplateForm>
 }) {
   const { i18n } = useTranslation()
-  const { label, options } = useFormFields(bind)
+  const { label, infoText, options } = useFormFields(bind)
   const optionElems = useFormElems(options)
 
   return (
@@ -187,9 +208,13 @@ const TemplateView = React.memo(function TemplateView({
         <InputFieldF bind={label} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
       <FixedSpaceColumn>
+        <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
+        <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.options}</Label>
         {optionElems.map((opt) => (
-          <FixedSpaceRow key={opt.state.id}>
+          <FixedSpaceRow key={opt.state.id} alignItems="center">
             <OptionView
               bind={opt}
               onDelete={() =>
