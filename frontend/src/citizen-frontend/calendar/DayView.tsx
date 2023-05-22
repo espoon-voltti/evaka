@@ -65,7 +65,11 @@ import { Translations, useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
-import { RoundChildImage } from './RoundChildImages'
+import {
+  ChildImageData,
+  getChildImages,
+  RoundChildImage
+} from './RoundChildImages'
 import { postReservationsMutation } from './queries'
 import { Day } from './reservation-modal/TimeInputs'
 import {
@@ -96,9 +100,15 @@ export default React.memo(function DayView({
 }: Props) {
   const i18n = useTranslation()
 
+  const childImages = useMemo(
+    () => getChildImages(reservationsResponse.children),
+    [reservationsResponse.children]
+  )
+
   const modalData = useMemo(
-    () => computeModalData(date, reservationsResponse, events, i18n),
-    [date, events, i18n, reservationsResponse]
+    () =>
+      computeModalData(date, reservationsResponse, events, childImages, i18n),
+    [childImages, date, events, i18n, reservationsResponse]
   )
   const dateActions = useMemo(
     () =>
@@ -355,9 +365,9 @@ const DayModal = React.memo(function DayModal({
                       <FixedSpaceRow>
                         <FixedSpaceColumn>
                           <RoundChildImage
-                            imageId={row.imageId}
-                            fallbackText={(formatFirstName(row) || '?')[0]}
-                            colorIndex={childIndex}
+                            imageId={row.image.imageId}
+                            fallbackText={row.image.initialLetter}
+                            colorIndex={row.image.colorIndex}
                             size={48}
                           />
                         </FixedSpaceColumn>
@@ -457,7 +467,7 @@ interface ModalRow {
   childId: string
   firstName: string
   lastName: string
-  imageId: string | null
+  image: ChildImageData
   duplicateInfo: string | undefined
   attendances: React.ReactNode
   showAttendanceWarning: boolean
@@ -472,6 +482,7 @@ function computeModalData(
   date: LocalDate,
   reservationsResponse: ReservationsResponse,
   events: CitizenCalendarEvent[],
+  childImages: ChildImageData[],
   i18n: Translations
 ): ModalData | undefined {
   const index = reservationsResponse.days.findIndex((reservation) =>
@@ -492,15 +503,17 @@ function computeModalData(
     const person = reservationsResponse.children.find(
       (c) => c.id === child.childId
     )
-    if (person === undefined) {
+    const image = childImages.find((i) => i.childId === child.childId)
+    if (person === undefined || image === undefined) {
       // Should not happen
       return []
     }
+
     return {
       childId: child.childId,
       firstName: person.firstName,
       lastName: person.lastName,
-      imageId: person.imageId,
+      image,
       duplicateInfo: duplicateChildInfo[child.childId],
       attendances:
         child.attendances.length > 0
