@@ -84,3 +84,7 @@ export async function putDocumentTemplateContent(
 export async function putDocumentTemplatePublish(id: UUID): Promise<void> {
   await client.put(`/document-templates/${id}/publish`)
 }
+
+export async function deleteDocumentTemplate(id: UUID): Promise<void> {
+  await client.delete(`/document-templates/${id}`)
+}

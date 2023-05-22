@@ -10,6 +10,7 @@ import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import {
+  deleteDocumentTemplate,
   getActiveDocumentTemplateSummaries,
   getDocumentTemplate,
   getDocumentTemplateSummaries,
@@ -66,4 +67,9 @@ export const publishDocumentTemplateMutation = mutation({
     queryKeys.documentTemplateSummaries(),
     queryKeys.documentTemplate(id)
   ]
+})
+
+export const deleteDocumentTemplateMutation = mutation({
+  api: (id: string) => deleteDocumentTemplate(id),
+  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })

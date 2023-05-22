@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faCopy } from 'Icons'
+import { faCopy, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -15,9 +15,13 @@ import { H1 } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
-import { documentTemplateSummariesQuery } from '../queries'
+import {
+  deleteDocumentTemplateMutation,
+  documentTemplateSummariesQuery
+} from '../queries'
 
 import TemplateModal from './TemplateModal'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()
@@ -29,7 +33,9 @@ export default React.memo(function DocumentTemplatesPage() {
   >(null)
 
   const templates = useQueryResult(documentTemplateSummariesQuery)
-
+  const { mutateAsync: deleteDocumentTemplate } = useMutationResult(
+    deleteDocumentTemplateMutation
+  )
   return (
     <Container>
       <ContentArea opaque>
@@ -84,14 +90,22 @@ export default React.memo(function DocumentTemplatesPage() {
                         : i18n.documentTemplates.templatesPage.draft}
                     </Td>
                     <Td>
-                      <IconButton
-                        icon={faCopy}
-                        aria-label={i18n.common.copy}
-                        onClick={() => {
-                          setDuplicatingTemplateId(template.id)
-                          setTemplateModalOpen(true)
-                        }}
-                      />
+                      <FixedSpaceRow>
+                        <IconButton
+                          icon={faCopy}
+                          aria-label={i18n.common.copy}
+                          onClick={() => {
+                            setDuplicatingTemplateId(template.id)
+                            setTemplateModalOpen(true)
+                          }}
+                        />
+                        <IconButton
+                          icon={faTrash}
+                          aria-label={i18n.common.remove}
+                          disabled={template.published}
+                          onClick={() => deleteDocumentTemplate(template.id)}
+                        />
+                      </FixedSpaceRow>
                     </Td>
                   </Tr>
                 ))}
