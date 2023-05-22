@@ -81,6 +81,13 @@ export async function putDocumentTemplateContent(
   await client.put(`/document-templates/${id}/content`, content)
 }
 
+export async function putDocumentTemplateValidity(
+  id: UUID,
+  validity: DateRange
+): Promise<void> {
+  await client.put(`/document-templates/${id}/validity`, validity)
+}
+
 export async function putDocumentTemplatePublish(id: UUID): Promise<void> {
   await client.put(`/document-templates/${id}/publish`)
 }

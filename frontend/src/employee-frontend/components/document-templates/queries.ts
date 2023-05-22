@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import {
   DocumentTemplateContent,
   DocumentTemplateCreateRequest
@@ -17,7 +18,8 @@ import {
   postDocumentTemplate,
   postDocumentTemplateDuplicate,
   putDocumentTemplateContent,
-  putDocumentTemplatePublish
+  putDocumentTemplatePublish,
+  putDocumentTemplateValidity
 } from '../../api/document-templates'
 import { createQueryKeys } from '../../query'
 
@@ -55,6 +57,15 @@ export const duplicateDocumentTemplateMutation = mutation({
 export const updateDocumentTemplateContentMutation = mutation({
   api: (arg: { id: UUID; content: DocumentTemplateContent }) =>
     putDocumentTemplateContent(arg.id, arg.content),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.documentTemplateSummaries(),
+    queryKeys.documentTemplate(arg.id)
+  ]
+})
+
+export const updateDocumentTemplateValidityMutation = mutation({
+  api: (arg: { id: UUID; validity: DateRange }) =>
+    putDocumentTemplateValidity(arg.id, arg.validity),
   invalidateQueryKeys: (arg) => [
     queryKeys.documentTemplateSummaries(),
     queryKeys.documentTemplate(arg.id)
