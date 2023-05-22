@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faCopy } from 'Icons'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
@@ -22,6 +24,9 @@ export default React.memo(function DocumentTemplatesPage() {
   const t = i18n.documentTemplates
 
   const [templateModalOpen, setTemplateModalOpen] = useState(false)
+  const [duplicatingTemplateId, setDuplicatingTemplateId] = useState<
+    string | null
+  >(null)
 
   const templates = useQueryResult(documentTemplateSummariesQuery)
 
@@ -30,11 +35,20 @@ export default React.memo(function DocumentTemplatesPage() {
       <ContentArea opaque>
         <H1>{t.title}</H1>
         <AddButtonRow
-          onClick={() => setTemplateModalOpen(true)}
+          onClick={() => {
+            setDuplicatingTemplateId(null)
+            setTemplateModalOpen(true)
+          }}
           text={i18n.documentTemplates.templatesPage.add}
         />
         {templateModalOpen && (
-          <TemplateModal onClose={() => setTemplateModalOpen(false)} />
+          <TemplateModal
+            duplicateFrom={duplicatingTemplateId}
+            onClose={() => {
+              setTemplateModalOpen(false)
+              setDuplicatingTemplateId(null)
+            }}
+          />
         )}
         {renderResult(templates, (data) => (
           <>
@@ -46,6 +60,7 @@ export default React.memo(function DocumentTemplatesPage() {
                   <Th>{i18n.documentTemplates.templatesPage.language}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.validity}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.status}</Th>
+                  <Th />
                 </Tr>
               </Thead>
               <Tbody>
@@ -67,6 +82,16 @@ export default React.memo(function DocumentTemplatesPage() {
                       {template.published
                         ? i18n.documentTemplates.templatesPage.published
                         : i18n.documentTemplates.templatesPage.draft}
+                    </Td>
+                    <Td>
+                      <IconButton
+                        icon={faCopy}
+                        aria-label={i18n.common.copy}
+                        onClick={() => {
+                          setDuplicatingTemplateId(template.id)
+                          setTemplateModalOpen(true)
+                        }}
+                      />
                     </Td>
                   </Tr>
                 ))}

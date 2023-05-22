@@ -25,6 +25,18 @@ export async function postDocumentTemplate(
     }))
 }
 
+export async function postDocumentTemplateDuplicate(
+  id: UUID,
+  data: DocumentTemplateCreateRequest
+): Promise<DocumentTemplate> {
+  return client
+    .post<JsonOf<DocumentTemplate>>(`/document-templates/${id}/duplicate`, data)
+    .then((res) => ({
+      ...res.data,
+      validity: DateRange.parseJson(res.data.validity)
+    }))
+}
+
 export async function getDocumentTemplateSummaries(): Promise<
   DocumentTemplateSummary[]
 > {

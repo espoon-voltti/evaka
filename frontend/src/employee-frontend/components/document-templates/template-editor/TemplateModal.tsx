@@ -26,7 +26,10 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
-import { createDocumentTemplateMutation } from '../queries'
+import {
+  createDocumentTemplateMutation,
+  duplicateDocumentTemplateMutation
+} from '../queries'
 
 const documentTemplateForm = object({
   name: validated(string(), nonEmpty),
@@ -39,13 +42,21 @@ const documentTemplateForm = object({
 
 interface Props {
   onClose: () => void
+  duplicateFrom: string | null
 }
 
-export default React.memo(function TemplateModal({ onClose }: Props) {
+export default React.memo(function TemplateModal({
+  onClose,
+  duplicateFrom
+}: Props) {
   const { i18n, lang } = useTranslation()
 
   const { mutateAsync: createDocumentTemplate } = useMutationResult(
     createDocumentTemplateMutation
+  )
+
+  const { mutateAsync: duplicateDocumentTemplate } = useMutationResult(
+    duplicateDocumentTemplateMutation
   )
 
   const typeOptions = useMemo(
@@ -100,7 +111,11 @@ export default React.memo(function TemplateModal({ onClose }: Props) {
   return (
     <AsyncFormModal
       title={i18n.documentTemplates.templateModal.title}
-      resolveAction={() => createDocumentTemplate(form.value())}
+      resolveAction={() =>
+        duplicateFrom
+          ? duplicateDocumentTemplate({ id: duplicateFrom, data: form.value() })
+          : createDocumentTemplate(form.value())
+      }
       onSuccess={onClose}
       resolveLabel={i18n.common.confirm}
       rejectAction={onClose}

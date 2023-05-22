@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
+import {
+  DocumentTemplateContent,
+  DocumentTemplateCreateRequest
+} from 'lib-common/generated/api-types/document'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -11,6 +14,7 @@ import {
   getDocumentTemplate,
   getDocumentTemplateSummaries,
   postDocumentTemplate,
+  postDocumentTemplateDuplicate,
   putDocumentTemplateContent,
   putDocumentTemplatePublish
 } from '../../api/document-templates'
@@ -38,6 +42,12 @@ export const documentTemplateQuery = query({
 
 export const createDocumentTemplateMutation = mutation({
   api: postDocumentTemplate,
+  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
+})
+
+export const duplicateDocumentTemplateMutation = mutation({
+  api: (arg: { id: UUID; data: DocumentTemplateCreateRequest }) =>
+    postDocumentTemplateDuplicate(arg.id, arg.data),
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
 
