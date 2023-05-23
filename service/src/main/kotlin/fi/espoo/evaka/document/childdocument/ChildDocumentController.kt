@@ -116,7 +116,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
-                    if (document.published)
+                    if (document.publishedAt != null)
                         throw BadRequest("Cannot update contents of published document")
 
                     validateContentAgainstTemplate(body, document.template.content)
@@ -160,7 +160,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         Action.ChildDocument.PUBLISH,
                         documentId
                     )
-                    tx.publishChildDocument(documentId)
+                    tx.publishChildDocument(documentId, clock.now())
                 }
             }
             .also { Audit.ChildDocumentPublish.log(targetId = documentId) }

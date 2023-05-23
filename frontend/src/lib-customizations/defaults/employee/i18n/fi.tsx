@@ -737,7 +737,6 @@ export const fi = {
     childDocuments: {
       table: {
         document: 'Lomake',
-        type: 'Tyyppi',
         status: 'Tila',
         open: 'Avaa lomake',
         published: 'Julkaistu',

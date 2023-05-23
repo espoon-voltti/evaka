@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import DateRange from '../../date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
@@ -78,7 +79,7 @@ export interface ChildDocumentDetails {
   child: ChildBasics
   content: DocumentContent
   id: UUID
-  published: boolean
+  publishedAt: HelsinkiDateTime | null
   template: DocumentTemplate
 }
 
@@ -87,7 +88,7 @@ export interface ChildDocumentDetails {
 */
 export interface ChildDocumentSummary {
   id: UUID
-  published: boolean
+  publishedAt: HelsinkiDateTime | null
   templateName: string
   type: DocumentType
 }

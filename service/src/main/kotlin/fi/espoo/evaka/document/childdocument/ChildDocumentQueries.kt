@@ -7,6 +7,7 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest
@@ -27,7 +28,7 @@ fun Database.Transaction.insertChildDocument(
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
     return createQuery(
             """
-            SELECT cd.id, dt.type, cd.published, dt.name as template_name
+            SELECT cd.id, dt.type, cd.published_at, dt.name as template_name
             FROM child_document cd
             JOIN document_template dt on cd.template_id = dt.id
             WHERE cd.child_id = :childId
@@ -43,7 +44,7 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
             """
             SELECT 
                 cd.id,
-                cd.published,
+                cd.published_at,
                 cd.content,
                 p.id as child_id,
                 p.first_name as child_first_name,
@@ -77,7 +78,7 @@ fun Database.Transaction.updateDraftChildDocumentContent(
             """
             UPDATE child_document
             SET content = :content
-            WHERE id = :id AND NOT published
+            WHERE id = :id AND published_at IS NULL 
         """
         )
         .bind("id", id)
@@ -85,15 +86,16 @@ fun Database.Transaction.updateDraftChildDocumentContent(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.publishChildDocument(id: ChildDocumentId) {
+fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {
     createUpdate(
             """
             UPDATE child_document
-            SET published = true
+            SET published_at = :now
             WHERE id = :id
         """
         )
         .bind("id", id)
+        .bind("now", now)
         .execute()
 }
 
@@ -101,7 +103,7 @@ fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
     createUpdate(
             """
             DELETE FROM child_document
-            WHERE id = :id AND NOT published
+            WHERE id = :id AND published_at IS NULL 
         """
         )
         .bind("id", id)

@@ -62,7 +62,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
       getDocumentFormInitialState(document.template.content, document.content),
     i18n.validationErrors
   )
-  const [preview, setPreview] = useState(document.published)
+  const [preview, setPreview] = useState(document.publishedAt !== null)
   const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
   const [lastSavedContent, setLastSavedContent] = useState(document.content)
   const { mutateAsync: updateChildDocumentContent } = useMutationResult(
@@ -150,7 +150,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
         <Container>
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceRow alignItems="center">
-              {preview || document.published ? (
+              {preview || document.publishedAt ? (
                 <Button text={i18n.common.goBack} onClick={goBack} />
               ) : (
                 <Button
@@ -158,7 +158,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   onClick={() => save(bind.value()).then(goBack)}
                 />
               )}
-              {preview && !document.published && (
+              {preview && !document.publishedAt && (
                 <Button
                   text={i18n.common.edit}
                   onClick={() => setPreview(false)}
@@ -186,7 +186,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 disabled={!saved}
               />
             )}
-            {preview && !document.published && (
+            {preview && !document.publishedAt && (
               <Button
                 text={i18n.childInformation.childDocuments.editor.publish}
                 primary

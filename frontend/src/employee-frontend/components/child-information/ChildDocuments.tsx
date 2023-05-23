@@ -77,7 +77,8 @@ const ChildDocuments = React.memo(function ChildDocuments({
         <Thead>
           <Tr>
             <Th>{i18n.childInformation.childDocuments.table.document}</Th>
-            <Th>{i18n.childInformation.childDocuments.table.type}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.published}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
             <Th>{i18n.childInformation.childDocuments.table.status}</Th>
             <Th />
           </Tr>
@@ -92,14 +93,15 @@ const ChildDocuments = React.memo(function ChildDocuments({
                   onClick={() => navigate(`/child-documents/${document.id}`)}
                 />
               </Td>
-              <Td>{i18n.documentTemplates.documentTypes[document.type]}</Td>
+              <Td>{document.publishedAt?.format() ?? '-'}</Td>
+              <Td>{document.templateName}</Td>
               <Td>
-                {document.published
+                {document.publishedAt
                   ? i18n.childInformation.childDocuments.table.published
                   : i18n.childInformation.childDocuments.table.draft}
               </Td>
               <Td>
-                {!document.published && (
+                {!document.publishedAt && (
                   <IconButton
                     icon={faTrash}
                     aria-label={i18n.common.remove}

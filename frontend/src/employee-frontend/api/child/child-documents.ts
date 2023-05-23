@@ -9,6 +9,7 @@ import {
   ChildDocumentDetails,
   DocumentContent
 } from 'lib-common/generated/api-types/document'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -22,7 +23,14 @@ export async function getChildDocuments(
     .get<JsonOf<ChildDocumentSummary[]>>('/child-documents', {
       params: { childId }
     })
-    .then((res) => res.data)
+    .then((res) =>
+      res.data.map((doc) => ({
+        ...doc,
+        publishedAt: doc.publishedAt
+          ? HelsinkiDateTime.parseIso(doc.publishedAt)
+          : null
+      }))
+    )
 }
 
 export async function getChildDocument(
@@ -32,6 +40,9 @@ export async function getChildDocument(
     .get<JsonOf<ChildDocumentDetails>>(`/child-documents/${id}`)
     .then((res) => ({
       ...res.data,
+      publishedAt: res.data.publishedAt
+        ? HelsinkiDateTime.parseIso(res.data.publishedAt)
+        : null,
       child: {
         ...res.data.child,
         dateOfBirth: LocalDate.parseNullableIso(res.data.child.dateOfBirth)
