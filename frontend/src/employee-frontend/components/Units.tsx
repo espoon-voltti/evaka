@@ -99,30 +99,26 @@ export default React.memo(function Units() {
                 includeClosed ||
                 !unit.closingDate?.isBefore(LocalDate.todayInSystemTz())
             )
-            .map((unit: Unit) => {
-              return (
-                <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
-                  <Td>
-                    <Link to={`/units/${unit.id}`}>{unit.name}</Link>
-                  </Td>
-                  <Td>{unit.area.name}</Td>
-                  <Td>
-                    {unit.visitingAddress.streetAddress &&
-                    unit.visitingAddress.postalCode
-                      ? [
-                          unit.visitingAddress.streetAddress,
-                          unit.visitingAddress.postalCode
-                        ].join(', ')
-                      : unit.visitingAddress.streetAddress}
-                  </Td>
-                  <Td>
-                    {unit.type
-                      .map((type) => i18n.common.types[type])
-                      .join(', ')}
-                  </Td>
-                </Tr>
-              )
-            })
+            .map((unit: Unit) => (
+              <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
+                <Td>
+                  <Link to={`/units/${unit.id}`}>{unit.name}</Link>
+                </Td>
+                <Td>{unit.area.name}</Td>
+                <Td>
+                  {unit.visitingAddress.streetAddress &&
+                  unit.visitingAddress.postalCode
+                    ? [
+                        unit.visitingAddress.streetAddress,
+                        unit.visitingAddress.postalCode
+                      ].join(', ')
+                    : unit.visitingAddress.streetAddress}
+                </Td>
+                <Td>
+                  {unit.type.map((type) => i18n.common.types[type]).join(', ')}
+                </Td>
+              </Tr>
+            ))
         )
         .getOrElse(null),
     [filter, i18n.common.types, includeClosed, units, orderedUnits]

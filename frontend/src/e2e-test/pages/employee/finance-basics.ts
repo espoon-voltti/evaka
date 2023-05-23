@@ -34,11 +34,8 @@ export default class FinanceBasicsPage {
           const expectValueToBe = async (
             key: keyof FeeThresholds,
             expected: string
-          ) => {
-            return expect(await element.find(`[data-qa="${key}"]`).text).toBe(
-              expected
-            )
-          }
+          ) =>
+            expect(await element.find(`[data-qa="${key}"]`).text).toBe(expected)
 
           const formatEuros = (cents: number) => `${formatCents(cents)} €`
           const formatPercents = (decimal: number) =>

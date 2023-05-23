@@ -201,17 +201,15 @@ export default React.memo(function PlacementProposals({
           rejectLabel={i18n.common.cancel}
         >
           <FixedSpaceColumn>
-            {placementPlanRejectReasons.map((option) => {
-              return (
-                <Radio
-                  key={option}
-                  data-qa="proposal-reject-reason"
-                  checked={reason === option}
-                  onChange={() => setReason(option)}
-                  label={i18n.unit.placementProposals.rejectReasons[option]}
-                />
-              )
-            })}
+            {placementPlanRejectReasons.map((option) => (
+              <Radio
+                key={option}
+                data-qa="proposal-reject-reason"
+                checked={reason === option}
+                onChange={() => setReason(option)}
+                label={i18n.unit.placementProposals.rejectReasons[option]}
+              />
+            ))}
             {reason === 'OTHER' && (
               <InputField
                 data-qa="proposal-reject-reason-input"

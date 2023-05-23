@@ -54,11 +54,8 @@ export default React.memo(function MissingHeadOfFamily() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: MissingHeadOfFamilyReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = (row: MissingHeadOfFamilyReportRow): boolean =>
+    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
   useEffect(() => {
     setRows(Loading.of())

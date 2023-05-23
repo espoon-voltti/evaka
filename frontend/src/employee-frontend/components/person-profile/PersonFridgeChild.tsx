@@ -43,11 +43,10 @@ export default React.memo(function PersonFridgeChild({
   const [open, setOpen] = useState(startOpen)
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
 
-  const getFridgeChildById = (id: UUID) => {
-    return fridgeChildren
+  const getFridgeChildById = (id: UUID) =>
+    fridgeChildren
       .map((ps) => ps.find(({ data }) => data.id === id)?.data)
       .getOrElse(undefined)
-  }
 
   return (
     <div>

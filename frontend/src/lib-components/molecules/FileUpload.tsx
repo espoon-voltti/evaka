@@ -246,19 +246,17 @@ const ProgressBarError = styled.div`
   }
 `
 
-const attachmentToFile = (attachment: Attachment): FileObject => {
-  return {
-    id: attachment.id,
-    file: undefined,
-    key: Math.random(),
-    name: attachment.name,
-    contentType: attachment.contentType,
-    progress: 100,
-    error: undefined,
-    uploaded: true,
-    deleteInProgress: false
-  }
-}
+const attachmentToFile = (attachment: Attachment): FileObject => ({
+  id: attachment.id,
+  file: undefined,
+  key: Math.random(),
+  name: attachment.name,
+  contentType: attachment.contentType,
+  progress: 100,
+  error: undefined,
+  uploaded: true,
+  deleteInProgress: false
+})
 
 const defaultAllowedContentTypes = [
   'image/jpeg',
@@ -326,9 +324,8 @@ export default React.memo(function FileUpload({
     event.preventDefault()
   }
 
-  const errorMessage = ({ error }: FileObject) => {
-    return error && i18n.upload.error[error]
-  }
+  const errorMessage = ({ error }: FileObject) =>
+    error && i18n.upload.error[error]
 
   const deleteFile = async (file: FileObject) => {
     setUploadedFiles((old) =>

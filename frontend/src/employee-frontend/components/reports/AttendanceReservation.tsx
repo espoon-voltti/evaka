@@ -146,29 +146,23 @@ export default React.memo(function AttendanceReservation() {
         <Thead sticky>
           <Tr>
             <Th>{groupName}</Th>
-            {dates.map((date) => {
-              return (
-                <Th key={date} colSpan={5} align="center">
-                  {date}
-                </Th>
-              )
-            })}
+            {dates.map((date) => (
+              <Th key={date} colSpan={5} align="center">
+                {date}
+              </Th>
+            ))}
           </Tr>
           <Tr>
             <Th stickyColumn>{i18n.reports.common.clock}</Th>
-            {dates.map((date) => {
-              return (
-                <React.Fragment key={date}>
-                  <Th>{i18n.reports.common.under3y}</Th>
-                  <Th>{i18n.reports.common.over3y}</Th>
-                  <Th>{i18n.reports.common.totalShort}</Th>
-                  <Th>{i18n.reports.attendanceReservation.capacityFactor}</Th>
-                  <Th>
-                    {i18n.reports.attendanceReservation.staffCountRequired}
-                  </Th>
-                </React.Fragment>
-              )
-            })}
+            {dates.map((date) => (
+              <React.Fragment key={date}>
+                <Th>{i18n.reports.common.under3y}</Th>
+                <Th>{i18n.reports.common.over3y}</Th>
+                <Th>{i18n.reports.common.totalShort}</Th>
+                <Th>{i18n.reports.attendanceReservation.capacityFactor}</Th>
+                <Th>{i18n.reports.attendanceReservation.staffCountRequired}</Th>
+              </React.Fragment>
+            ))}
           </Tr>
         </Thead>
         <Tbody>{getTableBody(rowsByTime, autoScrollRef)}</Tbody>

@@ -55,34 +55,32 @@ export default React.memo(function PersonDependants({
             </Thead>
             <Tbody>
               {orderBy(dependants, ['dateOfBirth'], ['asc']).map(
-                (dependant: PersonWithChildrenDTO) => {
-                  return (
-                    <Tr
-                      key={`${dependant.id}`}
-                      data-qa={`table-dependant-row-${dependant.id}`}
-                    >
-                      <NameTd data-qa="dependant-name">
-                        <Link to={`/child-information/${dependant.id}`}>
-                          {formatName(
-                            dependant.firstName,
-                            dependant.lastName,
-                            i18n,
-                            true
-                          )}
-                        </Link>
-                      </NameTd>
-                      <Td data-qa="dependant-ssn">
-                        {dependant.socialSecurityNumber}
-                      </Td>
-                      <Td data-qa="dependant-age">
-                        {getAge(dependant.dateOfBirth)}
-                      </Td>
-                      <Td data-qa="dependant-street-address">
-                        {printableAddresses(dependant.address)}
-                      </Td>
-                    </Tr>
-                  )
-                }
+                (dependant: PersonWithChildrenDTO) => (
+                  <Tr
+                    key={`${dependant.id}`}
+                    data-qa={`table-dependant-row-${dependant.id}`}
+                  >
+                    <NameTd data-qa="dependant-name">
+                      <Link to={`/child-information/${dependant.id}`}>
+                        {formatName(
+                          dependant.firstName,
+                          dependant.lastName,
+                          i18n,
+                          true
+                        )}
+                      </Link>
+                    </NameTd>
+                    <Td data-qa="dependant-ssn">
+                      {dependant.socialSecurityNumber}
+                    </Td>
+                    <Td data-qa="dependant-age">
+                      {getAge(dependant.dateOfBirth)}
+                    </Td>
+                    <Td data-qa="dependant-street-address">
+                      {printableAddresses(dependant.address)}
+                    </Td>
+                  </Tr>
+                )
               )}
             </Tbody>
           </Table>

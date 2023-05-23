@@ -43,8 +43,8 @@ const renderKeyValue = (
   value: string | null,
   dataQa: string,
   phone?: boolean
-) => {
-  return value ? (
+) =>
+  value ? (
     <KeyValue>
       <Key>{label}</Key>
       {phone ? (
@@ -59,7 +59,6 @@ const renderKeyValue = (
       )}
     </KeyValue>
   ) : null
-}
 
 interface Props {
   child: ChildSensitiveInformation

@@ -46,9 +46,7 @@ export default React.memo(function Raw() {
   const mapFloat = (value: number | null) =>
     value?.toString().replace(/\./, ',') ?? null
 
-  const submitPatuReport = () => {
-    return sendPatuReport(filters)
-  }
+  const submitPatuReport = () => sendPatuReport(filters)
 
   return (
     <Container>

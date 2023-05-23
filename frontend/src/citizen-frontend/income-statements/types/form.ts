@@ -120,12 +120,10 @@ function findValidStartDate(existingStartDates: LocalDate[]): LocalDate {
 
 export const initialFormData = (
   existingStartDates: LocalDate[]
-): IncomeStatementForm => {
-  return {
-    ...empty,
-    startDate: findValidStartDate(existingStartDates)
-  }
-}
+): IncomeStatementForm => ({
+  ...empty,
+  startDate: findValidStartDate(existingStartDates)
+})
 
 export function fromIncomeStatement(
   incomeStatement: ApiTypes.IncomeStatement

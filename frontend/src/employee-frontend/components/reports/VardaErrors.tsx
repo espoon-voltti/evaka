@@ -46,11 +46,8 @@ export default React.memo(function VardaErrors() {
       .then(() => setDirty(false))
   }, [dirty])
 
-  const ageInDays = (timestamp: HelsinkiDateTime): number => {
-    return LocalDate.todayInHelsinkiTz().differenceInDays(
-      timestamp.toLocalDate()
-    )
-  }
+  const ageInDays = (timestamp: HelsinkiDateTime): number =>
+    LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
 
   const markChildForResetAndReload = async (childId: string) => {
     setDirty(true)

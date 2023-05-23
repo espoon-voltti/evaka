@@ -82,16 +82,14 @@ type BottomTextProps = {
   onClick: () => void
 }
 
-const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
-  return (
-    <FixedSpaceColumn spacing="3px" onClick={onClick}>
-      <FixedSpaceRow justifyContent="center">{children}</FixedSpaceRow>
-      <FixedSpaceRow justifyContent="space-evenly" alignItems="center">
-        <IconText selected={selected}>{text}</IconText>
-      </FixedSpaceRow>
-    </FixedSpaceColumn>
-  )
-}
+const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
+  <FixedSpaceColumn spacing="3px" onClick={onClick}>
+    <FixedSpaceRow justifyContent="center">{children}</FixedSpaceRow>
+    <FixedSpaceRow justifyContent="space-evenly" alignItems="center">
+      <IconText selected={selected}>{text}</IconText>
+    </FixedSpaceRow>
+  </FixedSpaceColumn>
+)
 
 export type BottomNavbarProps = {
   selected?: NavItem

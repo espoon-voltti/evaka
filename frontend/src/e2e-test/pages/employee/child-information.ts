@@ -435,14 +435,14 @@ export class BackupCaresSection extends Section {
 
   async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
     await this.#backupCares.waitUntilVisible()
-    return this.evaluate((el) => {
-      return Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(
+    return this.evaluate((el) =>
+      Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(
         (row) => ({
           unit: row.querySelector('[data-qa="unit"]')?.textContent ?? '',
           period: row.querySelector('[data-qa="period"]')?.textContent ?? ''
         })
       )
-    })
+    )
   }
 
   async deleteBackupCare(index: number) {

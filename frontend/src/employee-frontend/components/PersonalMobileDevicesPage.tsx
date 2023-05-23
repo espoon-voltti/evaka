@@ -65,56 +65,52 @@ export default React.memo(function PersonalMobileDevicesPage() {
         <H1>{i18n.personalMobileDevices.title}</H1>
         <P>{i18n.personalMobileDevices.infoParagraph1}</P>
         <P>{i18n.personalMobileDevices.infoParagraph2}</P>
-        {renderResult(mobileDevices, (devices) => {
-          return (
-            <>
-              <Table>
-                <Thead>
-                  <Tr>
-                    <Th>{i18n.personalMobileDevices.name}</Th>
-                    <Th align="right" />
+        {renderResult(mobileDevices, (devices) => (
+          <>
+            <Table>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.personalMobileDevices.name}</Th>
+                  <Th align="right" />
+                </Tr>
+              </Thead>
+              <Tbody>
+                {devices.map(({ id, name }) => (
+                  <Tr key={id}>
+                    <Td>{name}</Td>
+                    <Td align="right">
+                      <FixedSpaceRow justifyContent="flex-end" spacing="L">
+                        <IconButton
+                          icon={faPen}
+                          onClick={() =>
+                            setOpenModal({
+                              id,
+                              action: 'rename',
+                              currentName: name
+                            })
+                          }
+                          disabled={openModal !== undefined}
+                          aria-label={i18n.common.edit}
+                        />
+                        <IconButton
+                          icon={faTrash}
+                          onClick={() => setOpenModal({ id, action: 'delete' })}
+                          disabled={openModal !== undefined}
+                          aria-label={i18n.common.remove}
+                        />
+                      </FixedSpaceRow>
+                    </Td>
                   </Tr>
-                </Thead>
-                <Tbody>
-                  {devices.map(({ id, name }) => (
-                    <Tr key={id}>
-                      <Td>{name}</Td>
-                      <Td align="right">
-                        <FixedSpaceRow justifyContent="flex-end" spacing="L">
-                          <IconButton
-                            icon={faPen}
-                            onClick={() =>
-                              setOpenModal({
-                                id,
-                                action: 'rename',
-                                currentName: name
-                              })
-                            }
-                            disabled={openModal !== undefined}
-                            aria-label={i18n.common.edit}
-                          />
-                          <IconButton
-                            icon={faTrash}
-                            onClick={() =>
-                              setOpenModal({ id, action: 'delete' })
-                            }
-                            disabled={openModal !== undefined}
-                            aria-label={i18n.common.remove}
-                          />
-                        </FixedSpaceRow>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-              <Gap size="m" />
-              <AddButton
-                onClick={pairNewDevice}
-                text={i18n.personalMobileDevices.addDevice}
-              />
-            </>
-          )
-        })}
+                ))}
+              </Tbody>
+            </Table>
+            <Gap size="m" />
+            <AddButton
+              onClick={pairNewDevice}
+              text={i18n.personalMobileDevices.addDevice}
+            />
+          </>
+        ))}
       </ContentArea>
       {openModal && openModal.action === 'rename' && (
         <EditNameModal

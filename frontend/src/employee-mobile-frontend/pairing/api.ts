@@ -30,12 +30,10 @@ export function postPairingChallenge(
       challengeKey
     })
     .then((res) => res.data)
-    .then((pairingResponse) => {
-      return {
-        ...pairingResponse,
-        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
-      }
-    })
+    .then((pairingResponse) => ({
+      ...pairingResponse,
+      expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

@@ -64,12 +64,10 @@ function calculateOverLaps(
 ) {
   if (placementDraft.isSuccess) {
     const placements = placementDraft.value.placements.map(
-      (placement: PlacementDraftPlacement) => {
-        return {
-          ...placement,
-          overlap: hasOverlap(placement, placementDraft)
-        }
-      }
+      (placement: PlacementDraftPlacement) => ({
+        ...placement,
+        overlap: hasOverlap(placement, placementDraft)
+      })
     )
     setPlacementDraft(placementDraft.map((draft) => ({ ...draft, placements })))
   }

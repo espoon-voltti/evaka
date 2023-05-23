@@ -285,6 +285,10 @@
         {
           "allowNamedFunctions": true
         }
+      ],
+      "arrow-body-style": [
+        "error",
+        "as-needed"
       ]
     },
     "overrides": [

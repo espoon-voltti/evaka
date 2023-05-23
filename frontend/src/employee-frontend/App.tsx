@@ -773,15 +773,17 @@ function useAuthStatus(): AuthStatusWithRefresh {
     void refreshAuthStatus()
   }, [refreshAuthStatus])
 
-  useEffect(() => {
-    return idleTracker(
-      client,
-      () => {
-        void refreshAuthStatus()
-      },
-      { thresholdInMinutes: 20 }
-    )
-  }, [refreshAuthStatus])
+  useEffect(
+    () =>
+      idleTracker(
+        client,
+        () => {
+          void refreshAuthStatus()
+        },
+        { thresholdInMinutes: 20 }
+      ),
+    [refreshAuthStatus]
+  )
 
   return {
     authStatus,

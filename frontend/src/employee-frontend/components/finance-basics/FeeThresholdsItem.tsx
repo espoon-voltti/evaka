@@ -108,22 +108,20 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
             </Tr>
           </Thead>
           <Tbody>
-            {familySizes.map((n) => {
-              return (
-                <Tr key={n}>
-                  <Td>{n}</Td>
-                  <Td data-qa={`minIncomeThreshold${n}`}>
-                    {formatCents(feeThresholds[`minIncomeThreshold${n}`])} €
-                  </Td>
-                  <Td data-qa={`incomeMultiplier${n}`}>
-                    {feeThresholds[`incomeMultiplier${n}`] * 100} %
-                  </Td>
-                  <Td data-qa={`maxIncomeThreshold${n}`}>
-                    {formatCents(feeThresholds[`maxIncomeThreshold${n}`])} €
-                  </Td>
-                </Tr>
-              )
-            })}
+            {familySizes.map((n) => (
+              <Tr key={n}>
+                <Td>{n}</Td>
+                <Td data-qa={`minIncomeThreshold${n}`}>
+                  {formatCents(feeThresholds[`minIncomeThreshold${n}`])} €
+                </Td>
+                <Td data-qa={`incomeMultiplier${n}`}>
+                  {feeThresholds[`incomeMultiplier${n}`] * 100} %
+                </Td>
+                <Td data-qa={`maxIncomeThreshold${n}`}>
+                  {formatCents(feeThresholds[`maxIncomeThreshold${n}`])} €
+                </Td>
+              </Tr>
+            ))}
           </Tbody>
         </TableWithMargin>
         <ColumnWithMargin>

@@ -30,21 +30,16 @@ export type ApplicationFormDataErrors = {
 export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
   const totalErrors = (
     Object.keys(errors) as (keyof ApplicationFormData)[]
-  ).reduce((acc, section) => {
-    return acc + getErrorCount(errors[section])
-  }, 0)
+  ).reduce((acc, section) => acc + getErrorCount(errors[section]), 0)
   return totalErrors > 0
 }
 
 export const minPreferredStartDate = (
   originalPreferredStartDate: LocalDate | null
-): LocalDate => {
-  return originalPreferredStartDate ?? LocalDate.todayInSystemTz()
-}
+): LocalDate => originalPreferredStartDate ?? LocalDate.todayInSystemTz()
 
-export const maxPreferredStartDate = (): LocalDate => {
-  return LocalDate.todayInSystemTz().addYears(1)
-}
+export const maxPreferredStartDate = (): LocalDate =>
+  LocalDate.todayInSystemTz().addYears(1)
 
 export const isValidPreferredStartDate = (
   date: LocalDate,
@@ -73,12 +68,11 @@ const preferredStartDateValidator =
   (
     val: LocalDate | null,
     err: ErrorKey = 'preferredStartDate'
-  ): ErrorKey | undefined => {
-    return val &&
-      isValidPreferredStartDate(val, originalPreferredStartDate, type, terms)
+  ): ErrorKey | undefined =>
+    val &&
+    isValidPreferredStartDate(val, originalPreferredStartDate, type, terms)
       ? undefined
       : err
-  }
 
 export const validateApplication = (
   apiData: ApplicationDetails,

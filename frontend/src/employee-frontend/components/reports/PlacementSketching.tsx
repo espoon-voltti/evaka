@@ -69,11 +69,8 @@ export default React.memo(function PlacementSketching() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: PlacementSketchingReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.areaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = (row: PlacementSketchingReportRow): boolean =>
+    !(displayFilters.careArea && row.areaName !== displayFilters.careArea)
 
   useEffect(() => {
     setRows(Loading.of())

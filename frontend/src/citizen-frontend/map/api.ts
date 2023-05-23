@@ -143,8 +143,8 @@ export async function fetchUnitsWithDistances(
     .post<JsonOf<ItineraryResponse>>('/api/application/map-api/query', {
       query
     })
-    .then((res) => {
-      return unitsWithStraightDistance.map((unit) => {
+    .then((res) =>
+      unitsWithStraightDistance.map((unit) => {
         const plan = res.data.data[uuidToKey(unit.id)]
         if (!plan)
           return {
@@ -169,7 +169,7 @@ export async function fetchUnitsWithDistances(
           drivingDistance
         }
       })
-    })
+    )
 }
 
 export const fetchDistance = async (

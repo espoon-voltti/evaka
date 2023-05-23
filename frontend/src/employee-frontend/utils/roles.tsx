@@ -13,9 +13,8 @@ export const requireRole = (roles: AdRole[], ...requiresOneOf: AdRole[]) => {
   return requiredRoles.some((role) => roles.includes(role))
 }
 
-export const hasRole = (roles: AdRole[], role: AdRole) => {
-  return roles.some((r) => r === role)
-}
+export const hasRole = (roles: AdRole[], role: AdRole) =>
+  roles.some((r) => r === role)
 
 export const RequireRole = React.memo(function RequireRole({
   oneOf,

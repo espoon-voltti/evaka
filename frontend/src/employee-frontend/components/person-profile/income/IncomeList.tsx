@@ -92,15 +92,14 @@ const IncomeList = React.memo(function IncomeList({
   }
 
   const incomeNotificationsForIncome = React.useCallback(
-    (income: Income) => {
-      return income
+    (income: Income) =>
+      income
         ? incomeNotifications.filter((incomeNotification) =>
             new DateRange(income.validFrom, income.validTo || null).includes(
               incomeNotification.created.toLocalDate()
             )
           )
-        : []
-    },
+        : [],
     [incomeNotifications]
   )
 

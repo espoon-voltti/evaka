@@ -112,11 +112,13 @@ export default React.memo(function HolidayPeriodForm({
     updateHolidayPeriodMutation
   )
 
-  const onSubmit = useCallback(() => {
-    return holidayPeriod !== undefined
-      ? updateHolidayPeriod({ id: holidayPeriod.id, data: form.value() })
-      : createHolidayPeriod(form.value())
-  }, [form, holidayPeriod, createHolidayPeriod, updateHolidayPeriod])
+  const onSubmit = useCallback(
+    () =>
+      holidayPeriod !== undefined
+        ? updateHolidayPeriod({ id: holidayPeriod.id, data: form.value() })
+        : createHolidayPeriod(form.value()),
+    [form, holidayPeriod, createHolidayPeriod, updateHolidayPeriod]
+  )
 
   const hideErrorsBeforeTouched = holidayPeriod === undefined
 
