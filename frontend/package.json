@@ -118,7 +118,7 @@
     "make-error-cause": "^2.3.0",
     "playwright": "^1.25.0",
     "postcss": "^8.4.21",
-    "postcss-loader": "^7.0.2",
+    "postcss-loader": "^7.3.0",
     "postcss-preset-env": "^8.0.1",
     "prettier": "^2.8.8",
     "style-loader": "^3.3.1",
