@@ -152,7 +152,8 @@ class VasuController(
                         id
                     )
                     val doc =
-                        tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
+                        tx.getVasuDocumentMaster(clock.today(), id)
+                            ?: throw NotFound("template $id not found")
 
                     val employeeIds =
                         doc.content.sections.flatMap { section ->
@@ -212,7 +213,9 @@ class VasuController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.VasuDocument.UPDATE, id)
-                val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
+                val vasu =
+                    tx.getVasuDocumentMaster(clock.today(), id)
+                        ?: throw NotFound("vasu $id not found")
                 validateVasuDocumentUpdate(vasu, body)
 
                 val transformedFollowupsVasu =
@@ -378,7 +381,9 @@ class VasuController(
                     }.exhaust()
                 }
 
-                val document = tx.getVasuDocumentMaster(id) ?: throw NotFound("Vasu was not found")
+                val document =
+                    tx.getVasuDocumentMaster(clock.today(), id)
+                        ?: throw NotFound("Vasu was not found")
                 validateStateTransition(
                     eventType = body.eventType,
                     currentState = document.documentState
@@ -390,7 +395,7 @@ class VasuController(
                 }
 
                 if (events.contains(MOVED_TO_CLOSED)) {
-                    tx.freezeVasuPlacements(id)
+                    tx.freezeVasuPlacements(clock.today(), id)
                 }
 
                 val addedEvents =

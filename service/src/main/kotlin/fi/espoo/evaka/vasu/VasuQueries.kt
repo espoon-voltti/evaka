@@ -92,7 +92,7 @@ fun Database.Transaction.insertVasuDocument(
     return documentId
 }
 
-fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
+fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): VasuDocument? {
     // language=sql
     val sql =
         """
@@ -126,14 +126,17 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
 
     return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
         if (document.basics.placements == null) {
-            document.copy(basics = document.basics.copy(placements = getVasuPlacements(id)))
+            document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
         } else {
             document
         }
     }
 }
 
-fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocument? {
+fun Database.Read.getLatestPublishedVasuDocument(
+    today: LocalDate,
+    id: VasuDocumentId
+): VasuDocument? {
     // language=sql
     val sql =
         """
@@ -173,7 +176,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
 
     return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
         if (document.basics.placements == null) {
-            document.copy(basics = document.basics.copy(placements = getVasuPlacements(id)))
+            document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
         } else {
             document
         }
@@ -332,7 +335,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
         .one()
 }
 
-fun Database.Transaction.freezeVasuPlacements(id: VasuDocumentId) {
+fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
         .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
@@ -340,12 +343,15 @@ fun Database.Transaction.freezeVasuPlacements(id: VasuDocumentId) {
         ?.let { basics ->
             createUpdate("UPDATE curriculum_document SET basics = :basics WHERE id = :id")
                 .bind("id", id)
-                .bind("basics", basics.copy(placements = getVasuPlacements(id)))
+                .bind("basics", basics.copy(placements = getVasuPlacements(today, id)))
                 .updateExactlyOne()
         }
 }
 
-private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacement> {
+private fun Database.Read.getVasuPlacements(
+    today: LocalDate,
+    id: VasuDocumentId
+): List<VasuPlacement> {
     return createQuery(
             """
         SELECT 
@@ -360,11 +366,12 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
         JOIN daycare d ON d.id = p.unit_id
         JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND daterange(dgp.start_date, dgp.end_date, '[]') && ct.valid
         JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-        WHERE cd.id = :id
+        WHERE cd.id = :id AND dgp.start_date <= :today
         ORDER BY dgp.start_date
         """
                 .trimIndent()
         )
+        .bind("today", today)
         .bind("id", id)
         .mapTo<VasuPlacement>(qualifiers = emptyArray())
         .list()

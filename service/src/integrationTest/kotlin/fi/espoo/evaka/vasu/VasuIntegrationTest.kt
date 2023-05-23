@@ -20,8 +20,9 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -34,6 +35,7 @@ import fi.espoo.evaka.vasu.VasuDocumentEventType.PUBLISHED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -53,19 +55,23 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var vasuControllerCitizen: VasuControllerCitizen
     @Autowired private lateinit var vasuTemplateController: VasuTemplateController
 
-    lateinit var daycareTemplate: VasuTemplate
-    lateinit var preschoolTemplate: VasuTemplate
+    private lateinit var daycareTemplate: VasuTemplate
+    private lateinit var preschoolTemplate: VasuTemplate
+
+    private val mockToday: LocalDate = LocalDate.of(2023, 5, 22)
+    private lateinit var clock: MockEvakaClock
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        clock = MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0)))
 
         daycareTemplate = let {
             val templateId =
                 postVasuTemplate(
                     VasuTemplateController.CreateTemplateRequest(
                         name = "vasu",
-                        valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
+                        valid = FiniteDateRange(mockToday.minusMonths(2), mockToday.plusYears(1)),
                         type = CurriculumType.DAYCARE,
                         language = VasuLanguage.FI
                     )
@@ -79,7 +85,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 postVasuTemplate(
                     VasuTemplateController.CreateTemplateRequest(
                         name = "vasu",
-                        valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
+                        valid = FiniteDateRange(mockToday, mockToday.plusYears(1)),
                         type = CurriculumType.PRESCHOOL,
                         language = VasuLanguage.FI
                     )
@@ -219,7 +225,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         )
 
-        getVasuDocument(documentId).let { assertEquals(updatedContent, it.content) }
+        assertEquals(updatedContent, getVasuDocument(documentId).content)
     }
 
     @Test
@@ -247,7 +253,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     DevDaycareGroup(daycareId = testDaycare.id, name = "first group")
                 val testDaycareGroup2 =
                     DevDaycareGroup(daycareId = testDaycare.id, name = "second group")
-                val placementStart = LocalDate.now()
+                val testDaycareGroup3 =
+                    DevDaycareGroup(daycareId = testDaycare.id, name = "third group")
+                val placementStart = mockToday.minusMonths(2)
                 val placementEnd = placementStart.plusMonths(9)
                 val placementId =
                     tx.insertTestPlacement(
@@ -269,7 +277,16 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     daycarePlacementId = placementId,
                     groupId = groupId2,
                     startDate = placementStart.plusMonths(1).plusDays(1),
-                    endDate = placementEnd
+                    endDate = placementStart.plusMonths(3),
+                )
+
+                // This group placement is not shown in the document because it starts in the future
+                val groupId3 = tx.insertTestDaycareGroup(testDaycareGroup3)
+                tx.checkAndCreateGroupPlacement(
+                    daycarePlacementId = placementId,
+                    groupId = groupId3,
+                    startDate = placementStart.plusMonths(3).plusDays(1),
+                    endDate = placementEnd,
                 )
                 Pair(groupId1, groupId2)
             }
@@ -293,8 +310,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val testDaycareGroup = DevDaycareGroup(daycareId = testDaycare.id, name = "first group")
             val testDaycareGroup2 =
                 DevDaycareGroup(daycareId = testDaycare2.id, name = "second group")
-            var placementStart = LocalDate.now()
-            var placementEnd = placementStart.plusMonths(1)
+            var placementStart = mockToday.minusMonths(1)
+            var placementEnd = mockToday.minusDays(1)
             val placementId1 =
                 tx.insertTestPlacement(
                     childId = testChild_1.id,
@@ -310,8 +327,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 endDate = placementEnd
             )
 
-            placementStart = placementEnd.plusDays(1)
-            placementEnd = placementStart.plusMonths(1)
+            placementStart = mockToday
+            val placementMiddle = mockToday.plusMonths(1)
+            placementEnd = mockToday.plusMonths(2)
             val placementId2 =
                 tx.insertTestPlacement(
                     childId = testChild_1.id,
@@ -324,6 +342,14 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 daycarePlacementId = placementId2,
                 groupId = groupId2,
                 startDate = placementStart,
+                endDate = placementMiddle
+            )
+
+            // This group placement is not included because it starts in the future
+            tx.checkAndCreateGroupPlacement(
+                daycarePlacementId = placementId2,
+                groupId = groupId2,
+                startDate = placementMiddle.plusDays(1),
                 endDate = placementEnd
             )
         }
@@ -385,12 +411,12 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 childLanguage = childLanguage
             )
         )
-        assertNull(db.read { it.getLatestPublishedVasuDocument(documentId) })
+        assertNull(db.read { it.getLatestPublishedVasuDocument(mockToday, documentId) })
+
+        clock.tick()
         postVasuDocumentState(documentId, VasuController.ChangeDocumentStateRequest(PUBLISHED))
-        assertNotNull(db.read { it.getLatestPublishedVasuDocument(documentId) })
-        getVasuDocument(documentId).let { doc ->
-            assertEquals(listOf(PUBLISHED), doc.events.map { it.eventType })
-        }
+        assertNotNull(db.read { it.getLatestPublishedVasuDocument(mockToday, documentId) })
+        assertEquals(listOf(PUBLISHED), getVasuDocument(documentId).events.map { it.eventType })
 
         // vasu discussion and move to ready
         val contentWithUpdatedDiscussion =
@@ -406,7 +432,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     section.questions.map { question ->
                                         when (question) {
                                             is VasuQuestion.DateQuestion ->
-                                                question.copy(value = LocalDate.now())
+                                                question.copy(value = mockToday)
                                             is VasuQuestion.TextQuestion ->
                                                 question.copy(value = "evvk")
                                             else -> question
@@ -425,6 +451,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 childLanguage = childLanguage
             )
         )
+
+        clock.tick()
         postVasuDocumentState(documentId, VasuController.ChangeDocumentStateRequest(MOVED_TO_READY))
         getVasuDocument(documentId).let { doc ->
             assertNotEquals(updatedContent, doc.content)
@@ -449,7 +477,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     section.questions.map { question ->
                                         when (question) {
                                             is VasuQuestion.DateQuestion ->
-                                                question.copy(value = LocalDate.now())
+                                                question.copy(value = mockToday)
                                             is VasuQuestion.TextQuestion ->
                                                 question.copy(value = "evvk")
                                             else -> question
@@ -468,6 +496,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 childLanguage = childLanguage
             )
         )
+
+        clock.tick()
         postVasuDocumentState(
             documentId,
             VasuController.ChangeDocumentStateRequest(MOVED_TO_REVIEWED)
@@ -482,16 +512,17 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         // other transitions
+        clock.tick()
         postVasuDocumentState(
             documentId,
             VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
         )
         db.read { tx ->
-            val original = tx.getVasuDocumentMaster(documentId)
+            val original = tx.getVasuDocumentMaster(mockToday, documentId)
             val summaries = tx.getVasuDocumentSummaries(duplicateId)
             assertThat(summaries).hasSize(1)
             assertThat(summaries.first().events).hasSize(6)
-            val duplicate = tx.getVasuDocumentMaster(summaries[0].id)
+            val duplicate = tx.getVasuDocumentMaster(mockToday, summaries[0].id)
             assertThat(duplicate)
                 .usingRecursiveComparison()
                 .ignoringFields(
@@ -507,6 +538,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.ChangeDocumentStateRequest(RETURNED_TO_REVIEWED)
         )
+
+        clock.tick()
         postVasuDocumentState(
             documentId,
             VasuController.ChangeDocumentStateRequest(RETURNED_TO_READY)
@@ -533,7 +566,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         )
         db.read {
-            it.getLatestPublishedVasuDocument(documentId).let { doc ->
+            it.getLatestPublishedVasuDocument(mockToday, documentId).let { doc ->
                 assertNotNull(doc)
                 assertEquals(contentWithUpdatedEvaluation, doc.content)
             }
@@ -544,69 +577,52 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId,
         request: VasuController.CreateDocumentRequest
     ): VasuDocumentId {
-        return vasuController.createDocument(
-            dbInstance(),
-            adminUser,
-            RealEvakaClock(),
-            childId,
-            request
-        )
+        return vasuController.createDocument(dbInstance(), adminUser, clock, childId, request)
     }
 
     private fun getVasuSummaries(childId: ChildId): List<VasuDocumentSummary> {
-        return vasuController
-            .getVasuSummariesByChild(dbInstance(), adminUser, RealEvakaClock(), childId)
-            .map { it.data }
+        return vasuController.getVasuSummariesByChild(dbInstance(), adminUser, clock, childId).map {
+            it.data
+        }
     }
 
     private fun getVasuDocument(id: VasuDocumentId): VasuDocument {
-        return vasuController.getDocument(dbInstance(), adminUser, RealEvakaClock(), id).data
+        return vasuController.getDocument(dbInstance(), adminUser, clock, id).data
     }
 
     private fun putVasuDocument(id: VasuDocumentId, request: VasuController.UpdateDocumentRequest) {
-        vasuController.putDocument(dbInstance(), adminUser, RealEvakaClock(), id, request)
+        vasuController.putDocument(dbInstance(), adminUser, clock, id, request)
     }
 
     private fun postVasuDocumentState(
         id: VasuDocumentId,
-        request: VasuController.ChangeDocumentStateRequest
+        request: VasuController.ChangeDocumentStateRequest,
     ) {
-        vasuController.updateDocumentState(dbInstance(), adminUser, RealEvakaClock(), id, request)
+        vasuController.updateDocumentState(dbInstance(), adminUser, clock, id, request)
     }
 
     private fun postVasuTemplate(
         request: VasuTemplateController.CreateTemplateRequest
     ): VasuTemplateId {
-        return vasuTemplateController.postTemplate(
-            dbInstance(),
-            adminUser,
-            RealEvakaClock(),
-            request
-        )
+        return vasuTemplateController.postTemplate(dbInstance(), adminUser, clock, request)
     }
 
     private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
-        vasuTemplateController.putTemplateContent(
-            dbInstance(),
-            adminUser,
-            RealEvakaClock(),
-            id,
-            request
-        )
+        vasuTemplateController.putTemplateContent(dbInstance(), adminUser, clock, id, request)
     }
 
     private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
-        return vasuTemplateController.getTemplate(dbInstance(), adminUser, RealEvakaClock(), id)
+        return vasuTemplateController.getTemplate(dbInstance(), adminUser, clock, id)
     }
 
     private fun deleteVasuTemplate(id: VasuTemplateId) {
-        vasuTemplateController.deleteTemplate(dbInstance(), adminUser, RealEvakaClock(), id)
+        vasuTemplateController.deleteTemplate(dbInstance(), adminUser, clock, id)
     }
 
     private fun givePermissionToShare(
         id: VasuDocumentId,
         user: AuthenticatedUser.Citizen,
     ) {
-        vasuControllerCitizen.givePermissionToShare(dbInstance(), user, RealEvakaClock(), id)
+        vasuControllerCitizen.givePermissionToShare(dbInstance(), user, clock, id)
     }
 }
