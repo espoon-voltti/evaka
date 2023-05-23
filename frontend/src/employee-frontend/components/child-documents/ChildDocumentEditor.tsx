@@ -97,7 +97,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
 
   const debouncedValidContent = useDebounce(
-    bind.isValid() ? bind.value() : null,
+    document.publishedAt === null && bind.isValid() ? bind.value() : null,
     1000
   )
 
