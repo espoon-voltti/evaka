@@ -735,6 +735,7 @@ export const fi = {
       }
     },
     childDocuments: {
+      title: 'Lapsen pedagogiset lomakkeet',
       table: {
         document: 'Lomake',
         status: 'Tila',

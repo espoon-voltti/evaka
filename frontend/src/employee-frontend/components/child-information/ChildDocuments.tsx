@@ -178,9 +178,11 @@ export default React.memo(function ChildDocumentsWrapper({
 }: {
   childId: UUID
 }) {
+  const { i18n } = useTranslation()
+
   return (
     <div>
-      <Title size={4}>Lapsen pedagogiset lomakkeet</Title>
+      <Title size={4}>{i18n.childInformation.childDocuments.title}</Title>
       <ChildDocumentsList childId={childId} />
     </div>
   )
