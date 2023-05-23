@@ -55,14 +55,14 @@ export function refreshLogoutToken() {
     const logoutExpires = new Date(req.session.logoutToken.expiresAt)
     // Logout token should always expire at least 30 minutes later than the session
     if (differenceInMinutes(logoutExpires, sessionExpires) < 30) {
-      await saveLogoutToken(req, req.session.idpProvider)
+      await saveLogoutToken(req)
     }
   })
 }
 
 /**
  * Save a logout token for a user session to be consumed during logout.
- * Provide the same token during logout to logoutExpress to consume it.
+ * Provide the same token during logout to consume it.
  *
  * The token must be a value generated from values available in a logout request
  * without any cookies, as many browsers will disable 3rd party cookies by
@@ -77,16 +77,12 @@ export function refreshLogoutToken() {
  */
 export async function saveLogoutToken(
   req: express.Request,
-  strategyName: string | null | undefined,
   logoutToken?: string
 ): Promise<void> {
   if (!req.session) return
 
   const token = logoutToken || req.session.logoutToken?.value
   if (!token) return
-
-  // Persist in session to allow custom logic per strategy
-  req.session.idpProvider = strategyName
 
   if (!asyncRedisClient) return
   const now = new Date()
@@ -99,12 +95,6 @@ export async function saveLogoutToken(
 
   const key = logoutKey(token)
   const ttlSeconds = differenceInSeconds(expires, now)
-  // https://redis.io/commands/expire - Set a timeout on key
-  // Return value:
-  //   1 if the timeout was set
-  //   0 if key does not exist.
-  const ret = await asyncRedisClient.expire(key, ttlSeconds)
-  if (ret === 1) return
   // https://redis.io/commands/set - Set key to hold the string value.
   // Options:
   //   EX seconds -- Set the specified expire time, in seconds.
@@ -134,23 +124,6 @@ export async function consumeLogoutToken(token: LogoutToken['value']) {
     // Ensure both session and logout keys are cleared in case no cookies were
     // available -> no req.session was available to be deleted.
     await asyncRedisClient.del(sessionKey(sid), logoutKey(token))
-  }
-}
-
-export async function logoutExpress(
-  req: express.Request,
-  res: express.Response,
-  sessionType: SessionType
-) {
-  res.clearCookie(sessionCookie(sessionType))
-  await fromCallback((cb) => req.logout(cb))
-  const logoutToken = req.session?.logoutToken?.value
-  if (logoutToken) {
-    await consumeLogoutToken(logoutToken)
-  }
-  if (req.session) {
-    const session = req.session
-    await fromCallback((cb) => session.destroy(cb))
   }
 }
 

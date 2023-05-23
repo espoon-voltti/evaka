@@ -4,12 +4,10 @@
 
 import passport, { Strategy } from 'passport'
 import { Request, Router, urlencoded } from 'express'
-import { EvakaSessionUser } from './index'
+import { authenticate, EvakaSessionUser, login, logout } from './index'
 import { AsyncRequestHandler, toRequestHandler } from '../express'
-import { fromCallback } from '../promise-utils'
-import { logoutExpress, saveSession, SessionType } from '../session'
+import { SessionType } from '../session'
 import { parseRelayState } from '../saml'
-import { logDebug } from '../logging'
 
 export interface DevAuthRouterOptions {
   root: string
@@ -26,21 +24,9 @@ class DevStrategy extends Strategy {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   authenticate(req: Request, _options?: any): any {
-    const shouldRedirect = !req.url.startsWith('/login/callback')
-
-    if (shouldRedirect) {
-      return this.redirect(
-        `${req.baseUrl}/login?RelayState=${req.query.RelayState}`
-      )
-    }
-
     this.verifyUser(req)
       .then((user) => this.success(user))
       .catch((err) => this.error(err))
-  }
-
-  logout(req: Request, cb: (err: Error | null, url?: string | null) => void) {
-    cb(null, null)
   }
 }
 
@@ -55,47 +41,32 @@ export function createDevAuthRouter({
 
   const router = Router()
 
-  router.get('/login', loginFormHandler)
+  router.get('/login', toRequestHandler(loginFormHandler))
   router.post(
     `/login/callback`,
     urlencoded({ extended: false }), // needed to parse the POSTed form
-    (req, res, next) => {
-      passport.authenticate(
-        strategyName,
-        (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          err: any,
-          user: EvakaSessionUser | undefined
-        ) => {
-          if (err || !user) {
-            return res.redirect(`${root}?loginError=true`)
-          }
-          ;(async () => {
-            if (req.session) {
-              const session = req.session
-              await fromCallback<void>((cb) => session.regenerate(cb))
-            }
-            await fromCallback<void>((cb) => req.logIn(user, cb))
-            await saveSession(req)
-
-            return res.redirect(parseRelayState(req) ?? root)
-          })().catch((err) => {
-            if (!res.headersSent) {
-              res.redirect(`${root}?loginError=true`)
-            } else {
-              next(err)
-            }
-          })
+    toRequestHandler(async (req, res) => {
+      try {
+        const user = await authenticate(strategyName, req, res)
+        if (!user) {
+          res.redirect(`${root}?loginError=true`)
+        } else {
+          await login(req, user)
+          res.redirect(parseRelayState(req) ?? root)
         }
-      )(req, res, next)
-    }
+      } catch (err) {
+        if (!res.headersSent) {
+          res.redirect(`${root}?loginError=true`)
+        }
+        throw err
+      }
+    })
   )
 
   router.get(
     `/logout`,
     toRequestHandler(async (req, res) => {
-      logDebug('Logging user out from passport.', req)
-      await logoutExpress(req, res, sessionType)
+      await logout(sessionType, req, res)
       res.redirect(root)
     })
   )

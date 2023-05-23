@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
-import { eq } from 'lodash'
+import { isEqual } from 'lodash'
 import { toRequestHandler } from '../../shared/express'
 import {
   getEmployeeDetails,
   getMobileDevice,
   UUID
 } from '../../shared/service-client'
-import { logoutExpress, saveSession } from '../../shared/session'
+import { saveLogoutToken, saveSession } from '../../shared/session'
 import { fromCallback } from '../../shared/promise-utils'
 import { appCommit } from '../../shared/config'
+import { logout } from '../../shared/auth'
 
 interface AuthStatus {
   loggedIn: boolean
@@ -110,6 +111,13 @@ async function validateUser(
   }
 }
 
+const rolesChanged = (a: string[] | undefined, b: string[] | undefined) =>
+  !isEqual(new Set(a), new Set(b))
+
+const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
+  rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
+  rolesChanged(sessionUser.globalRoles, user.globalRoles)
+
 export default toRequestHandler(async (req, res) => {
   const sessionUser = req.user
   const validUser = sessionUser && (await validateUser(req))
@@ -117,10 +125,7 @@ export default toRequestHandler(async (req, res) => {
   if (validUser) {
     const { user, globalRoles, allScopedRoles } = validUser
     // Refresh roles if necessary
-    if (
-      !eq(sessionUser.globalRoles, globalRoles) ||
-      !eq(sessionUser.allScopedRoles, allScopedRoles)
-    ) {
+    if (userChanged(sessionUser, validUser)) {
       await fromCallback((cb) =>
         req.logIn(
           { ...sessionUser, globalRoles, allScopedRoles },
@@ -128,8 +133,15 @@ export default toRequestHandler(async (req, res) => {
           cb
         )
       )
+      // Passport has unfortunately regenerated our session, so we need to
+      // update the logout token, which still points to the old session ID
+      await saveLogoutToken(req)
+      // No need to save session here, because passport has done that for us
+    } else {
+      // Explicitly save the session, since we may have changed the CSRF secret
+      // earlier in the request flow
+      await saveSession(req)
     }
-    await saveSession(req)
     status = {
       loggedIn: true,
       user,
@@ -140,7 +152,7 @@ export default toRequestHandler(async (req, res) => {
     }
   } else {
     if (sessionUser) {
-      await logoutExpress(req, res, 'employee')
+      await logout('employee', req, res)
     }
     status = {
       loggedIn: false,
