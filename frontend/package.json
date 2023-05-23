@@ -122,7 +122,7 @@
     "postcss-preset-env": "^8.0.1",
     "prettier": "^2.8.8",
     "style-loader": "^3.3.1",
-    "ts-jest": "^29.0.5",
+    "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.0.0",
