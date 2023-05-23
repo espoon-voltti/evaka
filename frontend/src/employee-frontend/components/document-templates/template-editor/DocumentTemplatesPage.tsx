@@ -54,7 +54,11 @@ const ValidityEditor = React.memo(function ValidityEditor({
 
   return (
     <FixedSpaceRow alignItems="center">
-      <DateRangePickerF bind={boundForm} locale={lang} />
+      <DateRangePickerF
+        bind={boundForm}
+        locale={lang}
+        externalRangeValidation
+      />
       <IconButton
         icon={faCheck}
         aria-label={i18n.common.save}
