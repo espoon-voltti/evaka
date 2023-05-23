@@ -9,15 +9,22 @@ version: 2
 # NOTE: There's no "security updates only" for Docker: https://github.com/dependabot/dependabot-core/issues/1971
 #       and there's no support for OS packages: https://github.com/dependabot/dependabot-core/issues/2129
 updates:
-- package-ecosystem: docker
-  directory: "/service"
-  schedule:
-    interval: weekly
-- package-ecosystem: docker
-  directory: "/apigw"
-  schedule:
-    interval: weekly
-- package-ecosystem: docker
-  directory: "/proxy"
-  schedule:
-    interval: weekly
+  - package-ecosystem: docker
+    directory: "/service"
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: "/apigw"
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: "/proxy"
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
