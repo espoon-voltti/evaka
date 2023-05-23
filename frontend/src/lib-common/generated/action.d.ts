@@ -207,6 +207,13 @@ export type ChildDailyNote =
   | 'DELETE'
   | 'UPDATE'
 
+export type ChildDocument =
+  | 'DELETE'
+  | 'PUBLISH'
+  | 'READ'
+  | 'UNPUBLISH'
+  | 'UPDATE'
+
 export type DailyServiceTime =
   | 'DELETE'
   | 'UPDATE'

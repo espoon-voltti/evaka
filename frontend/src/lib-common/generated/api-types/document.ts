@@ -8,6 +8,7 @@
 import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 
 export namespace AnsweredQuestion {
@@ -91,6 +92,14 @@ export interface ChildDocumentSummary {
   publishedAt: HelsinkiDateTime | null
   templateName: string
   type: DocumentType
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentWithPermittedActions
+*/
+export interface ChildDocumentWithPermittedActions {
+  data: ChildDocumentDetails
+  permittedActions: Action.ChildDocument[]
 }
 
 /**

@@ -78,21 +78,37 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ChildDocumentDetails {
+    ): ChildDocumentWithPermittedActions {
         return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.ChildDocument.READ,
+                    documentId
+                )
+
+                val document =
+                    tx.getChildDocument(documentId)?.also {
+                        Audit.ChildDocumentRead.log(targetId = documentId)
+                    }
+                        ?: throw NotFound("Document $documentId not found")
+
+                val permittedActions =
+                    accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
                         tx,
                         user,
                         clock,
-                        Action.ChildDocument.READ,
                         documentId
                     )
-                    tx.getChildDocument(documentId)
-                }
+
+                ChildDocumentWithPermittedActions(
+                    data = document,
+                    permittedActions = permittedActions
+                )
             }
-            ?.also { Audit.ChildDocumentRead.log(targetId = documentId) }
-            ?: throw NotFound("Document $documentId not found")
+        }
     }
 
     @PutMapping("/{documentId}/content")
@@ -164,6 +180,28 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.ChildDocumentPublish.log(targetId = documentId) }
+    }
+
+    @PutMapping("/{documentId}/unpublish")
+    fun unpublishDocument(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.UNPUBLISH,
+                        documentId
+                    )
+                    tx.unpublishChildDocument(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentUnpublish.log(targetId = documentId) }
     }
 
     @DeleteMapping("/{documentId}")

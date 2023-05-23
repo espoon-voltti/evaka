@@ -91,11 +91,23 @@ fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: Helsinki
             """
             UPDATE child_document
             SET published_at = :now
-            WHERE id = :id
+            WHERE id = :id AND published_at IS NULL
         """
         )
         .bind("id", id)
         .bind("now", now)
+        .execute()
+}
+
+fun Database.Transaction.unpublishChildDocument(id: ChildDocumentId) {
+    createUpdate(
+            """
+            UPDATE child_document
+            SET published_at = NULL
+            WHERE id = :id
+        """
+        )
+        .bind("id", id)
         .execute()
 }
 

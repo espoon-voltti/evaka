@@ -746,7 +746,8 @@ export const fi = {
       removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
       editor: {
         preview: 'Esikatsele',
-        publish: 'Julkaise huoltajalle'
+        publish: 'Julkaise huoltajalle',
+        unpublish: 'Palauta luonnokseksi'
       }
     },
     assistanceNeedDecision: {

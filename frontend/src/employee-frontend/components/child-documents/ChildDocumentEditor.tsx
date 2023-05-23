@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { useForm } from 'lib-common/form/hooks'
 import {
-  ChildDocumentDetails,
+  ChildDocumentWithPermittedActions,
   DocumentContent
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -31,6 +31,7 @@ import { renderResult } from '../async-rendering'
 import {
   childDocumentQuery,
   publishChildDocumentMutation,
+  unpublishChildDocumentMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
 import DocumentView from '../document-templates/DocumentView'
@@ -50,10 +51,11 @@ const ActionBar = styled.div`
 `
 
 const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
-  document
+  documentAndPermissions
 }: {
-  document: ChildDocumentDetails
+  documentAndPermissions: ChildDocumentWithPermittedActions
 }) {
+  const document = documentAndPermissions.data
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const bind = useForm(
@@ -70,6 +72,9 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
   const { mutateAsync: publishChildDocument } = useMutationResult(
     publishChildDocumentMutation
+  )
+  const { mutateAsync: unpublishChildDocument } = useMutationResult(
+    unpublishChildDocumentMutation
   )
 
   const save = useCallback(
@@ -164,6 +169,20 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   onClick={() => setPreview(false)}
                 />
               )}
+              {document.publishedAt &&
+                documentAndPermissions.permittedActions.includes(
+                  'UNPUBLISH'
+                ) && (
+                  <Button
+                    text={i18n.childInformation.childDocuments.editor.unpublish}
+                    onClick={() =>
+                      unpublishChildDocument({
+                        documentId: document.id,
+                        childId: document.child.id
+                      })
+                    }
+                  />
+                )}
               {!preview && (
                 <FixedSpaceRow alignItems="center" spacing="xs">
                   <span>
@@ -204,7 +223,7 @@ export default React.memo(function ChildDocumentEditor() {
   const { documentId } = useNonNullableParams()
   const documentResult = useQueryResult(childDocumentQuery(documentId))
 
-  return renderResult(documentResult, (document) => (
-    <ChildDocumentEditorView document={document} />
+  return renderResult(documentResult, (documentAndPermissions) => (
+    <ChildDocumentEditorView documentAndPermissions={documentAndPermissions} />
   ))
 })
