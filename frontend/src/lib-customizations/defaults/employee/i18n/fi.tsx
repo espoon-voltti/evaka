@@ -3767,13 +3767,15 @@ export const fi = {
     questionTypes: {
       TEXT: 'Tekstikenttä',
       CHECKBOX: 'Rasti',
-      CHECKBOX_GROUP: 'Monivalinta'
+      CHECKBOX_GROUP: 'Monivalinta',
+      RADIO_BUTTON_GROUP: 'Monivalinta (valitse yksi)'
     },
     templateQuestions: {
       label: 'Otsikko',
       options: 'Vaihtoehdot',
       infoText: 'Ohjeteksti'
-    }
+    },
+    noSelection: 'Ei valintaa'
   },
   vasuTemplates: {
     title: 'Opetussuunnitelmapohjat',

@@ -38,6 +38,12 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
         override val questionId: String,
         override val answer: List<String>
     ) : AnsweredQuestion<List<String>>(QuestionType.CHECKBOX_GROUP)
+
+    @JsonTypeName("RADIO_BUTTON_GROUP")
+    data class RadioButtonGroupAnswer(
+        override val questionId: String,
+        override val answer: String?
+    ) : AnsweredQuestion<String?>(QuestionType.RADIO_BUTTON_GROUP)
 }
 
 @Json data class DocumentContent(val answers: List<AnsweredQuestion<*>>)

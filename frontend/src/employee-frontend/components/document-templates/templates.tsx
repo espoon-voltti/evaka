@@ -16,6 +16,7 @@ import {
 
 import CheckboxGroupQuestionDescriptor from './question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from './question-descriptors/CheckboxQuestionDescriptor'
+import RadioButtonGroupQuestionDescriptor from './question-descriptors/RadioButtonGroupQuestionDescriptor'
 import TextQuestionDescriptor from './question-descriptors/TextQuestionDescriptor'
 import { QuestionType } from './question-descriptors/types'
 
@@ -23,7 +24,8 @@ export const templateQuestionForm = mapped(
   union({
     TEXT: TextQuestionDescriptor.template.form,
     CHECKBOX: CheckboxQuestionDescriptor.template.form,
-    CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.template.form
+    CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.template.form,
+    RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.template.form
   }),
   (output): Question => {
     switch (output.branch) {
@@ -38,6 +40,11 @@ export const templateQuestionForm = mapped(
           ...output.value
         }
       case 'CHECKBOX_GROUP':
+        return {
+          type: output.branch,
+          ...output.value
+        }
+      case 'RADIO_BUTTON_GROUP':
         return {
           type: output.branch,
           ...output.value
@@ -73,6 +80,10 @@ export const TemplateQuestionConfigView = React.memo(
         return (
           <CheckboxGroupQuestionDescriptor.template.Component bind={form} />
         )
+      case 'RADIO_BUTTON_GROUP':
+        return (
+          <RadioButtonGroupQuestionDescriptor.template.Component bind={form} />
+        )
     }
   }
 )
@@ -98,6 +109,12 @@ export const TemplateQuestionPreview = React.memo(
             bind={form}
           />
         )
+      case 'RADIO_BUTTON_GROUP':
+        return (
+          <RadioButtonGroupQuestionDescriptor.template.PreviewComponent
+            bind={form}
+          />
+        )
     }
   }
 )
@@ -110,6 +127,10 @@ export const getTemplateQuestionInitialState = (question: Question) => {
       return CheckboxQuestionDescriptor.template.getInitialState(question)
     case 'CHECKBOX_GROUP':
       return CheckboxGroupQuestionDescriptor.template.getInitialState(question)
+    case 'RADIO_BUTTON_GROUP':
+      return RadioButtonGroupQuestionDescriptor.template.getInitialState(
+        question
+      )
   }
 }
 
@@ -121,6 +142,8 @@ export const getTemplateQuestionInitialStateByType = (type: QuestionType) => {
       return CheckboxQuestionDescriptor.template.getInitialState()
     case 'CHECKBOX_GROUP':
       return CheckboxGroupQuestionDescriptor.template.getInitialState()
+    case 'RADIO_BUTTON_GROUP':
+      return RadioButtonGroupQuestionDescriptor.template.getInitialState()
   }
 }
 

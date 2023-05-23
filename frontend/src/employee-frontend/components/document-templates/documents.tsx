@@ -17,12 +17,14 @@ import {
 
 import CheckboxGroupQuestionDescriptor from './question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from './question-descriptors/CheckboxQuestionDescriptor'
+import RadioButtonGroupQuestionDescriptor from './question-descriptors/RadioButtonGroupQuestionDescriptor'
 import TextQuestionDescriptor from './question-descriptors/TextQuestionDescriptor'
 
 export const documentQuestionForm = union({
   TEXT: TextQuestionDescriptor.document.form,
   CHECKBOX: CheckboxQuestionDescriptor.document.form,
-  CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.document.form
+  CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.document.form,
+  RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.document.form
 })
 
 export const documentSectionForm = mapped(
@@ -74,6 +76,13 @@ export const DocumentQuestionView = React.memo(function DocumentQuestionView({
           readOnly={readOnly}
         />
       )
+    case 'RADIO_BUTTON_GROUP':
+      return (
+        <RadioButtonGroupQuestionDescriptor.document.Component
+          bind={form}
+          readOnly={readOnly}
+        />
+      )
   }
 })
 
@@ -106,6 +115,16 @@ export const getDocumentQuestionInitialState = (
         )
       }
       return CheckboxGroupQuestionDescriptor.document.getInitialState(question)
+    case 'RADIO_BUTTON_GROUP':
+      if (answeredQuestion?.type === question.type) {
+        return RadioButtonGroupQuestionDescriptor.document.getInitialState(
+          question,
+          answeredQuestion.answer
+        )
+      }
+      return RadioButtonGroupQuestionDescriptor.document.getInitialState(
+        question
+      )
   }
 }
 

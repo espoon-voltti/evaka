@@ -13,7 +13,8 @@ import org.jdbi.v3.json.Json
 enum class QuestionType {
     TEXT,
     CHECKBOX,
-    CHECKBOX_GROUP
+    CHECKBOX_GROUP,
+    RADIO_BUTTON_GROUP
 }
 
 @JsonTypeInfo(
@@ -42,6 +43,14 @@ sealed class Question(val type: QuestionType) {
         val options: List<MultiselectOption>,
         val infoText: String = ""
     ) : Question(QuestionType.CHECKBOX_GROUP)
+
+    @JsonTypeName("RADIO_BUTTON_GROUP")
+    data class RadioButtonGroupQuestion(
+        override val id: String,
+        val label: String,
+        val options: List<MultiselectOption>,
+        val infoText: String = ""
+    ) : Question(QuestionType.RADIO_BUTTON_GROUP)
 }
 
 data class MultiselectOption(val id: String, val label: String)
