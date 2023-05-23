@@ -142,61 +142,59 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                 partnerships,
                 ['startDate', 'endDate'],
                 ['desc', 'desc']
-              ).map((fridgePartner: Partnership, i: number) => {
-                return fridgePartner.partners
+              ).map((fridgePartner: Partnership, i: number) =>
+                fridgePartner.partners
                   .filter((p) => p.id !== id)
-                  .map((partner: PersonJSON) => {
-                    return (
-                      <Tr
-                        key={`${partner.id}-${i}`}
-                        data-qa="table-fridge-partner-row"
-                      >
-                        <NameTd>
-                          <Link to={`/profile/${partner.id}`}>
-                            {formatName(
-                              partner.firstName,
-                              partner.lastName,
-                              i18n,
-                              true
-                            )}
-                          </Link>
-                        </NameTd>
-                        <Td>{partner.socialSecurityNumber}</Td>
-                        <DateTd>{fridgePartner.startDate.format()}</DateTd>
-                        <DateTd>{fridgePartner.endDate?.format()}</DateTd>
-                        <ButtonsTd>
-                          <Toolbar
-                            dateRange={fridgePartner}
-                            conflict={fridgePartner.conflict}
-                            onRetry={
-                              fridgePartner.conflict
-                                ? () => {
-                                    void retryPartnership(
-                                      fridgePartner.id
-                                    ).then(() => reload())
-                                  }
-                                : undefined
-                            }
-                            onEdit={() => {
-                              setSelectedPartnershipId(fridgePartner.id)
-                              toggleUiMode(
-                                `edit-fridge-partner-${fridgePartner.id}`
-                              )
-                            }}
-                            onDelete={() => {
-                              setSelectedPartnershipId(fridgePartner.id)
-                              toggleUiMode(
-                                `remove-fridge-partner-${fridgePartner.id}`
-                              )
-                            }}
-                            editable={true}
-                            deletable={true}
-                          />
-                        </ButtonsTd>
-                      </Tr>
-                    )
-                  })
-              })}
+                  .map((partner: PersonJSON) => (
+                    <Tr
+                      key={`${partner.id}-${i}`}
+                      data-qa="table-fridge-partner-row"
+                    >
+                      <NameTd>
+                        <Link to={`/profile/${partner.id}`}>
+                          {formatName(
+                            partner.firstName,
+                            partner.lastName,
+                            i18n,
+                            true
+                          )}
+                        </Link>
+                      </NameTd>
+                      <Td>{partner.socialSecurityNumber}</Td>
+                      <DateTd>{fridgePartner.startDate.format()}</DateTd>
+                      <DateTd>{fridgePartner.endDate?.format()}</DateTd>
+                      <ButtonsTd>
+                        <Toolbar
+                          dateRange={fridgePartner}
+                          conflict={fridgePartner.conflict}
+                          onRetry={
+                            fridgePartner.conflict
+                              ? () => {
+                                  void retryPartnership(fridgePartner.id).then(
+                                    () => reload()
+                                  )
+                                }
+                              : undefined
+                          }
+                          onEdit={() => {
+                            setSelectedPartnershipId(fridgePartner.id)
+                            toggleUiMode(
+                              `edit-fridge-partner-${fridgePartner.id}`
+                            )
+                          }}
+                          onDelete={() => {
+                            setSelectedPartnershipId(fridgePartner.id)
+                            toggleUiMode(
+                              `remove-fridge-partner-${fridgePartner.id}`
+                            )
+                          }}
+                          editable={true}
+                          deletable={true}
+                        />
+                      </ButtonsTd>
+                    </Tr>
+                  ))
+              )}
             </Tbody>
           </Table>
         ))}

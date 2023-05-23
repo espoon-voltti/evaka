@@ -80,11 +80,10 @@ export default React.memo(function EmployeeAclRowEditModal({
     [groups]
   )
 
-  const initSelectedGroups = (groupIds: UUID[]) => {
-    return permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+  const initSelectedGroups = (groupIds: UUID[]) =>
+    permittedActions.has('UPDATE_STAFF_GROUP_ACL')
       ? groupOptions.filter((option) => groupIds.includes(option.id))
       : null
-  }
 
   const [formData, setFormData] = useState<EmployeeRowEditFormState>({
     firstName: employeeRow.firstName ?? '',

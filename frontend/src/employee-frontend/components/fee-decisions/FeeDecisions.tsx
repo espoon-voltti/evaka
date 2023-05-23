@@ -103,57 +103,55 @@ const FeeDecisions = React.memo(function FeeDecisions({
   }
 
   const rows = decisions?.isSuccess
-    ? decisions.value.map((item) => {
-        return (
-          <Tr
-            key={item.id}
-            onClick={
-              item.annullingDecision
-                ? undefined
-                : () =>
-                    window.open(
-                      `${getEmployeeUrlPrefix()}/employee/finance/fee-decisions/${
-                        item.id
-                      }`,
-                      '_blank'
-                    )
-            }
-            data-qa="table-fee-decision-row"
-          >
-            <Td>
-              <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+    ? decisions.value.map((item) => (
+        <Tr
+          key={item.id}
+          onClick={
+            item.annullingDecision
+              ? undefined
+              : () =>
+                  window.open(
+                    `${getEmployeeUrlPrefix()}/employee/finance/fee-decisions/${
+                      item.id
+                    }`,
+                    '_blank'
+                  )
+          }
+          data-qa="table-fee-decision-row"
+        >
+          <Td>
+            <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+          </Td>
+          <Td>
+            <ChildrenCell people={item.children} />
+          </Td>
+          <Td>
+            {item.annullingDecision
+              ? `${i18n.feeDecisions.table.annullingDecision} `
+              : ''}
+            {item.validDuring.format()}
+          </Td>
+          <Td>{formatCents(item.finalPrice)}</Td>
+          <Td>{item.decisionNumber}</Td>
+          <Td>{item.created.toLocalDate().format()}</Td>
+          <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
+          <Td>
+            <FeeDecisionDifferenceIcons difference={item.difference} />
+          </Td>
+          <Td>{i18n.feeDecision.status[item.status]}</Td>
+          {showCheckboxes ? (
+            <Td onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                label={item.id}
+                hiddenLabel
+                checked={!!checked[item.id]}
+                onChange={() => toggleChecked(item.id)}
+                data-qa="toggle-decision"
+              />
             </Td>
-            <Td>
-              <ChildrenCell people={item.children} />
-            </Td>
-            <Td>
-              {item.annullingDecision
-                ? `${i18n.feeDecisions.table.annullingDecision} `
-                : ''}
-              {item.validDuring.format()}
-            </Td>
-            <Td>{formatCents(item.finalPrice)}</Td>
-            <Td>{item.decisionNumber}</Td>
-            <Td>{item.created.toLocalDate().format()}</Td>
-            <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
-            <Td>
-              <FeeDecisionDifferenceIcons difference={item.difference} />
-            </Td>
-            <Td>{i18n.feeDecision.status[item.status]}</Td>
-            {showCheckboxes ? (
-              <Td onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  label={item.id}
-                  hiddenLabel
-                  checked={!!checked[item.id]}
-                  onChange={() => toggleChecked(item.id)}
-                  data-qa="toggle-decision"
-                />
-              </Td>
-            ) : null}
-          </Tr>
-        )
-      })
+          ) : null}
+        </Tr>
+      ))
     : null
 
   return (

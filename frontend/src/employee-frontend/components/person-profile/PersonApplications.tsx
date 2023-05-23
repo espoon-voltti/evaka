@@ -67,52 +67,50 @@ export default React.memo(function PersonApplications({
                 applications,
                 ['preferredStartDate', 'preferredUnitName'],
                 ['desc', 'desc']
-              ).map((application: PersonApplicationSummary) => {
-                return (
-                  <Tr
-                    key={`${application.applicationId}`}
-                    data-qa="table-application-row"
-                  >
-                    <NameTd data-qa="application-child-name">
-                      <Link to={`/child-information/${application.childId}`}>
-                        {application.childName}
-                      </Link>
-                    </NameTd>
-                    <Td data-qa="application-preferred-unit-id">
-                      <Link to={`/units/${application.preferredUnitId ?? ''}`}>
-                        {application.preferredUnitName}
-                      </Link>
-                    </Td>
-                    <DateTd data-qa="application-start-date">
-                      {application.preferredStartDate?.format()}
-                    </DateTd>
-                    <DateTd data-qa="application-sent-date">
-                      {application.sentDate?.format()}
-                    </DateTd>
-                    <Td data-qa="application-type">
-                      {
-                        i18n.personProfile.application.types[
-                          inferApplicationType(application)
-                        ]
-                      }
-                    </Td>
-                    <StatusTd>
-                      {i18n.personProfile.application.statuses[
-                        application.status
-                      ] ?? application.status}
-                    </StatusTd>
-                    <Td>
-                      <Link to={`/applications/${application.applicationId}`}>
-                        <IconButton
-                          onClick={() => undefined}
-                          icon={faFileAlt}
-                          aria-label={i18n.personProfile.application.open}
-                        />
-                      </Link>
-                    </Td>
-                  </Tr>
-                )
-              })}
+              ).map((application: PersonApplicationSummary) => (
+                <Tr
+                  key={`${application.applicationId}`}
+                  data-qa="table-application-row"
+                >
+                  <NameTd data-qa="application-child-name">
+                    <Link to={`/child-information/${application.childId}`}>
+                      {application.childName}
+                    </Link>
+                  </NameTd>
+                  <Td data-qa="application-preferred-unit-id">
+                    <Link to={`/units/${application.preferredUnitId ?? ''}`}>
+                      {application.preferredUnitName}
+                    </Link>
+                  </Td>
+                  <DateTd data-qa="application-start-date">
+                    {application.preferredStartDate?.format()}
+                  </DateTd>
+                  <DateTd data-qa="application-sent-date">
+                    {application.sentDate?.format()}
+                  </DateTd>
+                  <Td data-qa="application-type">
+                    {
+                      i18n.personProfile.application.types[
+                        inferApplicationType(application)
+                      ]
+                    }
+                  </Td>
+                  <StatusTd>
+                    {i18n.personProfile.application.statuses[
+                      application.status
+                    ] ?? application.status}
+                  </StatusTd>
+                  <Td>
+                    <Link to={`/applications/${application.applicationId}`}>
+                      <IconButton
+                        onClick={() => undefined}
+                        icon={faFileAlt}
+                        aria-label={i18n.personProfile.application.open}
+                      />
+                    </Link>
+                  </Td>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         ))}

@@ -132,9 +132,9 @@ const reservationForm = mapped(
             .flatMap((value) => (value !== undefined ? [value] : []))
         case 'IRREGULAR':
           return output.irregularTimes
-            .filter((irregularDay) => {
-              return output.dateRange.includes(irregularDay.date)
-            })
+            .filter((irregularDay) =>
+              output.dateRange.includes(irregularDay.date)
+            )
             .map((irregularDay) => ({
               type: 'RESERVATIONS' as const,
               childId,
@@ -240,9 +240,10 @@ export default React.memo(function ReservationModalSingleChild({
 }: Props) {
   const { i18n, lang } = useTranslation()
 
-  const includedDays = useMemo(() => {
-    return [1, 2, 3, 4, 5, 6, 7].filter((day) => operationalDays.includes(day))
-  }, [operationalDays])
+  const includedDays = useMemo(
+    () => [1, 2, 3, 4, 5, 6, 7].filter((day) => operationalDays.includes(day)),
+    [operationalDays]
+  )
 
   const form = useForm(
     reservationForm,

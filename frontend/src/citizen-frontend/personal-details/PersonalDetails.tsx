@@ -85,9 +85,10 @@ export default React.memo(function PersonalDetails() {
     []
   )
 
-  const save = useCallback(async () => {
-    return await updatePersonalData(form.value())
-  }, [form])
+  const save = useCallback(
+    async () => await updatePersonalData(form.value()),
+    [form]
+  )
 
   const formWrapper = (children: React.ReactNode) =>
     editing ? (

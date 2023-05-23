@@ -357,11 +357,10 @@ function IncomeAttachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) => {
-      return (await deleteAttachment(id)).map(() => {
+    async (id: UUID) =>
+      (await deleteAttachment(id)).map(() => {
         onDeleted(id)
-      })
-    },
+      }),
     [onDeleted]
   )
 

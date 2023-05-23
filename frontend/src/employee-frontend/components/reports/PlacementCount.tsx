@@ -93,12 +93,9 @@ export default React.memo(function PlacementCount() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: PlacementCountAreaResult): boolean => {
-    return (
-      displayFilters.careAreas.length === 0 ||
-      displayFilters.careAreas.map((ca) => ca.areaId).includes(row.areaId)
-    )
-  }
+  const displayFilter = (row: PlacementCountAreaResult): boolean =>
+    displayFilters.careAreas.length === 0 ||
+    displayFilters.careAreas.map((ca) => ca.areaId).includes(row.areaId)
 
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
 
@@ -110,19 +107,17 @@ export default React.memo(function PlacementCount() {
 
   const countTotalsFromAreaResults = (
     filteredAreaResults: PlacementCountAreaResult[]
-  ) => {
-    return filteredAreaResults.reduce(
-      (sum, current) => {
-        return {
-          placementCount: sum.placementCount + current.placementCount,
-          placementCountUnder3v:
-            sum.placementCountUnder3v + current.placementCountUnder3v,
-          placementCount3vAndOver:
-            sum.placementCount3vAndOver + current.placementCount3vAndOver,
-          calculatedPlacements:
-            sum.calculatedPlacements + current.calculatedPlacements
-        }
-      },
+  ) =>
+    filteredAreaResults.reduce(
+      (sum, current) => ({
+        placementCount: sum.placementCount + current.placementCount,
+        placementCountUnder3v:
+          sum.placementCountUnder3v + current.placementCountUnder3v,
+        placementCount3vAndOver:
+          sum.placementCount3vAndOver + current.placementCount3vAndOver,
+        calculatedPlacements:
+          sum.calculatedPlacements + current.calculatedPlacements
+      }),
       {
         placementCount: 0,
         placementCount3vAndOver: 0,
@@ -130,7 +125,6 @@ export default React.memo(function PlacementCount() {
         calculatedPlacements: 0.0
       }
     )
-  }
 
   const { fullAreaResults, filteredAreaResults, filteredTotals } = useMemo(
     () =>
@@ -153,27 +147,23 @@ export default React.memo(function PlacementCount() {
   )
 
   const extractCsvRows = (): CsvReportRow[] => {
-    const areaRows = filteredAreaResults.flatMap((areaResult) => {
-      return [
-        ...areaResult.daycareResults.map((daycareResult) => {
-          return {
-            ...daycareResult,
-            calculatedPlacements:
-              daycareResult.calculatedPlacements.toLocaleString('fi-FI'),
-            areaName: areaResult.areaName
-          }
-        }),
-        {
-          areaName: areaResult.areaName,
-          daycareName: null,
-          placementCount: areaResult.placementCount,
-          placementCountUnder3v: areaResult.placementCountUnder3v,
-          placementCount3vAndOver: areaResult.placementCount3vAndOver,
-          calculatedPlacements:
-            areaResult.calculatedPlacements.toLocaleString('fi-FI')
-        }
-      ]
-    })
+    const areaRows = filteredAreaResults.flatMap((areaResult) => [
+      ...areaResult.daycareResults.map((daycareResult) => ({
+        ...daycareResult,
+        calculatedPlacements:
+          daycareResult.calculatedPlacements.toLocaleString('fi-FI'),
+        areaName: areaResult.areaName
+      })),
+      {
+        areaName: areaResult.areaName,
+        daycareName: null,
+        placementCount: areaResult.placementCount,
+        placementCountUnder3v: areaResult.placementCountUnder3v,
+        placementCount3vAndOver: areaResult.placementCount3vAndOver,
+        calculatedPlacements:
+          areaResult.calculatedPlacements.toLocaleString('fi-FI')
+      }
+    ])
 
     return areaRows.length > 0
       ? [
@@ -266,18 +256,20 @@ export default React.memo(function PlacementCount() {
           <FilterLabel>{i18n.reports.placementCount.careArea}</FilterLabel>
           <Wrapper>
             <MultiSelect
-              options={fullAreaResults.map((ar) => {
-                return { areaId: ar.areaId, areaName: ar.areaName }
-              })}
+              options={fullAreaResults.map((ar) => ({
+                areaId: ar.areaId,
+                areaName: ar.areaName
+              }))}
               onChange={(selections) =>
                 setDisplayFilters({
                   ...displayFilters,
                   careAreas: selections
                 })
               }
-              value={filteredAreaResults.map((ar) => {
-                return { areaId: ar.areaId, areaName: ar.areaName }
-              })}
+              value={filteredAreaResults.map((ar) => ({
+                areaId: ar.areaId,
+                areaName: ar.areaName
+              }))}
               getOptionId={(careArea) => careArea.areaId}
               getOptionLabel={(careArea) => careArea.areaName}
               placeholder={i18n.reports.placementCount.noCareAreasFound}

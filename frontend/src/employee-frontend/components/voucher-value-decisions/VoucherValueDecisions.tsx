@@ -99,60 +99,56 @@ export default React.memo(function VoucherValueDecisions({
   }
 
   const rows = decisions?.isSuccess
-    ? decisions.value.map((item) => {
-        return (
-          <Tr
-            key={item.id}
-            onClick={
-              item.annullingDecision
-                ? undefined
-                : () =>
-                    window.open(
-                      `${getEmployeeUrlPrefix()}/employee/finance/value-decisions/${
-                        item.id
-                      }`,
-                      '_blank'
-                    )
-            }
-            data-qa="table-value-decision-row"
-          >
-            <Td>
-              <NameWithSsn {...item.headOfFamily} i18n={i18n} />
-            </Td>
-            <Td>
-              <ChildrenCell people={[item.child]} />
-            </Td>
-            <Td>
-              {item.annullingDecision
-                ? `${i18n.valueDecisions.table.annullingDecision} `
-                : ''}
-              {`${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
-            </Td>
-            <Td>{formatCents(item.voucherValue)}</Td>
-            <Td>{formatCents(item.finalCoPayment)}</Td>
-            <Td>{item.decisionNumber}</Td>
-            <Td>{item.created.toLocalDate().format()}</Td>
-            <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
-            <Td>
-              <VoucherValueDecisionDifferenceIcons
-                difference={item.difference}
+    ? decisions.value.map((item) => (
+        <Tr
+          key={item.id}
+          onClick={
+            item.annullingDecision
+              ? undefined
+              : () =>
+                  window.open(
+                    `${getEmployeeUrlPrefix()}/employee/finance/value-decisions/${
+                      item.id
+                    }`,
+                    '_blank'
+                  )
+          }
+          data-qa="table-value-decision-row"
+        >
+          <Td>
+            <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+          </Td>
+          <Td>
+            <ChildrenCell people={[item.child]} />
+          </Td>
+          <Td>
+            {item.annullingDecision
+              ? `${i18n.valueDecisions.table.annullingDecision} `
+              : ''}
+            {`${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
+          </Td>
+          <Td>{formatCents(item.voucherValue)}</Td>
+          <Td>{formatCents(item.finalCoPayment)}</Td>
+          <Td>{item.decisionNumber}</Td>
+          <Td>{item.created.toLocalDate().format()}</Td>
+          <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
+          <Td>
+            <VoucherValueDecisionDifferenceIcons difference={item.difference} />
+          </Td>
+          <Td>{i18n.valueDecision.status[item.status]}</Td>
+          {showCheckboxes ? (
+            <Td onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                label={item.id}
+                hiddenLabel
+                checked={!!checked[item.id]}
+                onChange={() => toggleChecked(item.id)}
+                data-qa="toggle-decision"
               />
             </Td>
-            <Td>{i18n.valueDecision.status[item.status]}</Td>
-            {showCheckboxes ? (
-              <Td onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  label={item.id}
-                  hiddenLabel
-                  checked={!!checked[item.id]}
-                  onChange={() => toggleChecked(item.id)}
-                  data-qa="toggle-decision"
-                />
-              </Td>
-            ) : null}
-          </Tr>
-        )
-      })
+          ) : null}
+        </Tr>
+      ))
     : null
 
   return (

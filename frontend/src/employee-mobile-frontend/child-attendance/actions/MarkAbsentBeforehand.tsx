@@ -86,12 +86,12 @@ export default React.memo(function MarkAbsentBeforehand() {
     [childId, endDate, startDate, unitId]
   )
 
-  const canSave = useMemo(() => {
-    return (
+  const canSave = useMemo(
+    () =>
       isAfter(new Date(startDate), subDays(mockNow() ?? new Date(), 1)) &&
-      isBefore(new Date(startDate), addDays(new Date(endDate), 1))
-    )
-  }, [endDate, startDate])
+      isBefore(new Date(startDate), addDays(new Date(endDate), 1)),
+    [endDate, startDate]
+  )
 
   const createAbsence = useCallback(async () => {
     if (selectedAbsenceType) {

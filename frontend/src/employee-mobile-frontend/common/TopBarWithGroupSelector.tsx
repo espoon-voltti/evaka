@@ -37,16 +37,20 @@ export default React.memo(function TopBarWithGroupSelector({
   const { user } = useContext(UserContext)
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const topBarProps = useMemo(() => {
-    return combine(user, unitInfoResponse)
-      .map(([user, unitInfo]) => {
-        const title = unitInfo.name
-        const onBack =
-          user && user.unitIds.length > 1 ? () => navigate('/units') : undefined
-        return { title, onBack }
-      })
-      .getOrElse({ title: '' })
-  }, [navigate, user, unitInfoResponse])
+  const topBarProps = useMemo(
+    () =>
+      combine(user, unitInfoResponse)
+        .map(([user, unitInfo]) => {
+          const title = unitInfo.name
+          const onBack =
+            user && user.unitIds.length > 1
+              ? () => navigate('/units')
+              : undefined
+          return { title, onBack }
+        })
+        .getOrElse({ title: '' }),
+    [navigate, user, unitInfoResponse]
+  )
 
   const groups: GroupInfo[] = useMemo(
     () =>

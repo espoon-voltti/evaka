@@ -112,10 +112,8 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           </Tooltip>
         </FixedSpaceRow>
       </ChildNameTd>
-      {dateCols.map((date) => {
-        return operationDays.some((operationDay) =>
-          operationDay.isEqual(date)
-        ) ? (
+      {dateCols.map((date) =>
+        operationDays.some((operationDay) => operationDay.isEqual(date)) ? (
           <AbsenceTd
             key={`${child.id}${date.formatIso()}`}
             $isToday={date.isToday()}
@@ -137,7 +135,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
             <DisabledCell />
           </td>
         )
-      })}
+      )}
       {emptyCols.map((item) => (
         <td key={item}>
           <DisabledCell />

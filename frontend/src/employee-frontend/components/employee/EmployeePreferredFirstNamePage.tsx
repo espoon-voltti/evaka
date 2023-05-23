@@ -47,19 +47,17 @@ export default React.memo(function EmployeePreferredFirstNamePage({
     }
   }, [preferredFirstName])
 
-  const onSave = () => {
-    return setEmployeePreferredFirstName({
+  const onSave = () =>
+    setEmployeePreferredFirstName({
       preferredFirstName: selectedPreferredFirstName
     }).then(loadPreferredFirstName)
-  }
 
-  const disableConfirm = () => {
-    return preferredFirstName.isSuccess
+  const disableConfirm = () =>
+    preferredFirstName.isSuccess
       ? preferredFirstName.value.preferredFirstName != null &&
-          preferredFirstName.value.preferredFirstName ==
-            selectedPreferredFirstName
+        preferredFirstName.value.preferredFirstName ==
+          selectedPreferredFirstName
       : false
-  }
 
   return (
     <Container>

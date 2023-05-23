@@ -47,22 +47,24 @@ export default React.memo(function SearchInput({
     addressOptionsQuery(debouncedInputString)
   )
 
-  const unitOptions = useMemo(() => {
-    return allUnits
-      .map((units) =>
-        units.map((u) => ({
-          unit: {
-            id: u.id,
-            name: u.name
-          },
-          streetAddress: u.streetAddress,
-          postalCode: u.postalCode,
-          postOffice: u.postOffice,
-          coordinates: u.location ?? { lat: 0, lon: 0 }
-        }))
-      )
-      .getOrElse([])
-  }, [allUnits])
+  const unitOptions = useMemo(
+    () =>
+      allUnits
+        .map((units) =>
+          units.map((u) => ({
+            unit: {
+              id: u.id,
+              name: u.name
+            },
+            streetAddress: u.streetAddress,
+            postalCode: u.postalCode,
+            postOffice: u.postOffice,
+            coordinates: u.location ?? { lat: 0, lon: 0 }
+          }))
+        )
+        .getOrElse([]),
+    [allUnits]
+  )
 
   const filteredUnitOptions = useMemo(() => {
     if (debouncedInputString.length < 3) return []
@@ -72,9 +74,10 @@ export default React.memo(function SearchInput({
     )
   }, [unitOptions, debouncedInputString])
 
-  const options = useMemo(() => {
-    return [...filteredUnitOptions, ...addressOptions.getOrElse([])]
-  }, [filteredUnitOptions, addressOptions])
+  const options = useMemo(
+    () => [...filteredUnitOptions, ...addressOptions.getOrElse([])],
+    [filteredUnitOptions, addressOptions]
+  )
 
   const clearSelection = useCallback(() => {
     setInputString('')

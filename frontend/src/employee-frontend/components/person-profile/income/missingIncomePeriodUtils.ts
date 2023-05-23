@@ -38,14 +38,15 @@ export const getMissingIncomePeriodsString = (
     )
     .filter((r): r is FiniteDateRange => !!r)
     // only keep date ranges that overlap with some placement range
-    .reduce<FiniteDateRange[]>((ranges, range) => {
-      return [
+    .reduce<FiniteDateRange[]>(
+      (ranges, range) => [
         ...ranges,
         ...placementRanges
           .map((r) => r.intersection(range))
           .filter((r): r is FiniteDateRange => !!r)
-      ]
-    }, [])
+      ],
+      []
+    )
 
   const formattedPeriods = mergeDateRanges(missingIncomeRanges).map((range) =>
     range.formatCompact()

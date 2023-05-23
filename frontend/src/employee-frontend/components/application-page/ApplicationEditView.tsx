@@ -212,14 +212,13 @@ export default React.memo(function ApplicationEditView({
       return res
     })
 
-  const validationErrorInfo = (field: string): InputInfo | undefined => {
-    return errors[field]
+  const validationErrorInfo = (field: string): InputInfo | undefined =>
+    errors[field]
       ? {
           text: errors[field],
           status: 'warning'
         }
       : undefined
-  }
 
   const updateServiceNeed = (partTime: boolean) => {
     let serviceNeedOption = serviceNeed?.serviceNeedOption

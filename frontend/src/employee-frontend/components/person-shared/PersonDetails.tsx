@@ -175,9 +175,7 @@ export default React.memo(function PersonDetails({
   }, [person, editing])
 
   // clear ui mode when dismounting component
-  useEffect(() => {
-    return clearUiMode
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => clearUiMode, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const powerEditing = editing && person.socialSecurityNumber == null
 

@@ -55,11 +55,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
+    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
   useEffect(() => {
     setReport(Loading.of())

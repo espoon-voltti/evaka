@@ -58,34 +58,32 @@ const PersonDecisions = React.memo(function PersonDecisions({
                 decisions,
                 ['startDate', 'preferredUnitName'],
                 ['desc', 'desc']
-              ).map((decision: Decision) => {
-                return (
-                  <Tr key={`${decision.id}`} data-qa="table-decision-row">
-                    <NameTd data-qa="decision-child-name">
-                      <Link to={`/child-information/${decision.childId}`}>
-                        {decision.childName}
-                      </Link>
-                    </NameTd>
-                    <Td data-qa="decision-preferred-unit-id">
-                      <Link to={`/units/${decision.unit.id}`}>
-                        {decision.unit.name}
-                      </Link>
-                    </Td>
-                    <DateTd data-qa="decision-start-date">
-                      {decision.startDate.format()}
-                    </DateTd>
-                    <DateTd data-qa="decision-sent-date">
-                      {decision.sentDate?.format() ?? ''}
-                    </DateTd>
-                    <Td data-qa="decision-type">
-                      {i18n.personProfile.application.types[decision.type]}
-                    </Td>
-                    <StatusTd data-qa="decision-status">
-                      {i18n.personProfile.decision.statuses[decision.status]}
-                    </StatusTd>
-                  </Tr>
-                )
-              })}
+              ).map((decision: Decision) => (
+                <Tr key={`${decision.id}`} data-qa="table-decision-row">
+                  <NameTd data-qa="decision-child-name">
+                    <Link to={`/child-information/${decision.childId}`}>
+                      {decision.childName}
+                    </Link>
+                  </NameTd>
+                  <Td data-qa="decision-preferred-unit-id">
+                    <Link to={`/units/${decision.unit.id}`}>
+                      {decision.unit.name}
+                    </Link>
+                  </Td>
+                  <DateTd data-qa="decision-start-date">
+                    {decision.startDate.format()}
+                  </DateTd>
+                  <DateTd data-qa="decision-sent-date">
+                    {decision.sentDate?.format() ?? ''}
+                  </DateTd>
+                  <Td data-qa="decision-type">
+                    {i18n.personProfile.application.types[decision.type]}
+                  </Td>
+                  <StatusTd data-qa="decision-status">
+                    {i18n.personProfile.decision.statuses[decision.status]}
+                  </StatusTd>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         ))}

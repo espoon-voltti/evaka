@@ -206,9 +206,9 @@ export const reservationForm = mapped(
           }
           case 'irregularTimes':
             return output.times.value
-              .filter((irregularDay) => {
-                return output.dateRange.includes(irregularDay.date)
-              })
+              .filter((irregularDay) =>
+                output.dateRange.includes(irregularDay.date)
+              )
               .flatMap(
                 ({ date, day }) =>
                   toDailyReservationRequest(childId, date, day) ?? []

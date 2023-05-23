@@ -53,20 +53,18 @@ export default React.memo(function PersonInvoices({
             </Thead>
             <Tbody>
               {orderBy(invoices, ['sentAt'], ['desc']).map(
-                (invoice: Invoice) => {
-                  return (
-                    <Tr key={`${invoice.id}`} data-qa="table-invoice-row">
-                      <Td>
-                        <Link to={`/finance/invoices/${invoice.id}`}>
-                          Lasku{' '}
-                          {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
-                        </Link>
-                      </Td>
-                      <Td>{formatCents(invoice.totalPrice)}</Td>
-                      <StatusTd>{i18n.invoice.status[invoice.status]}</StatusTd>
-                    </Tr>
-                  )
-                }
+                (invoice: Invoice) => (
+                  <Tr key={`${invoice.id}`} data-qa="table-invoice-row">
+                    <Td>
+                      <Link to={`/finance/invoices/${invoice.id}`}>
+                        Lasku{' '}
+                        {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
+                      </Link>
+                    </Td>
+                    <Td>{formatCents(invoice.totalPrice)}</Td>
+                    <StatusTd>{i18n.invoice.status[invoice.status]}</StatusTd>
+                  </Tr>
+                )
               )}
             </Tbody>
           </Table>

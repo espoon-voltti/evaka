@@ -707,12 +707,10 @@ export async function postPairing(
   return client
     .post<JsonOf<PairingResponse>>(`/pairings`, data)
     .then((res) => res.data)
-    .then((pairingResponse) => {
-      return {
-        ...pairingResponse,
-        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
-      }
-    })
+    .then((pairingResponse) => ({
+      ...pairingResponse,
+      expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -728,12 +726,10 @@ export async function postPairingResponse(
       responseKey
     })
     .then((res) => res.data)
-    .then((pairingResponse) => {
-      return {
-        ...pairingResponse,
-        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
-      }
-    })
+    .then((pairingResponse) => ({
+      ...pairingResponse,
+      expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -872,19 +868,17 @@ const toChildDayRows = (
 
 const deserializeUnitServiceNeedInfo = (
   info: JsonOf<UnitServiceNeedInfo>
-): UnitServiceNeedInfo => {
-  return {
-    ...info,
-    groups: info.groups.map((group) => ({
-      ...group,
-      childInfos: group.childInfos.map((cinfo) => ({
-        ...cinfo,
-        validDuring: FiniteDateRange.parseJson(cinfo.validDuring)
-      }))
-    })),
-    ungrouped: info.ungrouped.map((uci) => ({
-      ...uci,
-      validDuring: FiniteDateRange.parseJson(uci.validDuring)
+): UnitServiceNeedInfo => ({
+  ...info,
+  groups: info.groups.map((group) => ({
+    ...group,
+    childInfos: group.childInfos.map((cinfo) => ({
+      ...cinfo,
+      validDuring: FiniteDateRange.parseJson(cinfo.validDuring)
     }))
-  }
-}
+  })),
+  ungrouped: info.ungrouped.map((uci) => ({
+    ...uci,
+    validDuring: FiniteDateRange.parseJson(uci.validDuring)
+  }))
+})

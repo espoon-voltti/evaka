@@ -92,11 +92,8 @@ export default React.memo(function StartingPlacements() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: StartingPlacementsRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = (row: StartingPlacementsRow): boolean =>
+    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
   useEffect(() => {
     setRows(Loading.of())

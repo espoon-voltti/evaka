@@ -85,15 +85,12 @@ export default React.memo(function PreferredStartSubSection({
       return result
     })
 
-  const showDaycare4MonthWarning = (): boolean => {
-    return (
-      type === 'DAYCARE' &&
-      formData.preferredStartDate !== null &&
-      formData.preferredStartDate.isBefore(
-        LocalDate.todayInSystemTz().addMonths(4)
-      )
+  const showDaycare4MonthWarning = (): boolean =>
+    type === 'DAYCARE' &&
+    formData.preferredStartDate !== null &&
+    formData.preferredStartDate.isBefore(
+      LocalDate.todayInSystemTz().addMonths(4)
     )
-  }
 
   return (
     <>

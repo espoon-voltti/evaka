@@ -53,12 +53,11 @@ export async function getServiceNeedOptions(): Promise<
 
 const deserializeServiceNeedOptions = (
   options: JsonOf<ServiceNeedOption[]>
-): ServiceNeedOption[] => {
-  return options.map((option) => ({
+): ServiceNeedOption[] =>
+  options.map((option) => ({
     ...option,
     updated: HelsinkiDateTime.parseIso(option.updated)
   }))
-}
 
 export async function getServiceNeedOptionPublicInfos(
   placementTypes: PlacementType[]

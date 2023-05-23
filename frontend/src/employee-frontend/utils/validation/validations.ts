@@ -25,9 +25,8 @@ export const timeRegex = /^(([0-1][0-9])|(2[0-4])):[0-5][0-9]$/
 
 export const isTimeValid = (value: string) => timeRegex.test(value)
 
-export const allPropertiesTrue = (obj: Record<string, unknown>) => {
-  return Object.values(obj).every((propValue) => propValue === true)
-}
+export const allPropertiesTrue = (obj: Record<string, unknown>) =>
+  Object.values(obj).every((propValue) => propValue === true)
 
 export function isDateRangeInverted(dateRange: DateRange): boolean {
   return (
@@ -46,9 +45,7 @@ export function isDateRangeOverlappingWithExisting(
 export const isDateRangeValid = (
   startDate: LocalDate,
   endDate: LocalDate | null
-) => {
-  return !endDate || !endDate.isBefore(startDate)
-}
+) => !endDate || !endDate.isBefore(startDate)
 
 export interface FieldErrors {
   [error: string]: boolean

@@ -143,8 +143,8 @@ export default React.memo(function StaffMarkArrivedPage() {
     [firstPlannedStartOfTheDay, time, isValidTimeString]
   )
 
-  const selectedTimeIsWithin30MinsFromNow = useMemo(() => {
-    return (
+  const selectedTimeIsWithin30MinsFromNow = useMemo(
+    () =>
       isValidTimeString &&
       Math.abs(
         differenceInMinutes(
@@ -153,9 +153,9 @@ export default React.memo(function StaffMarkArrivedPage() {
             .toSystemTzDate(),
           now
         )
-      ) <= 30
-    )
-  }, [time, now, isValidTimeString])
+      ) <= 30,
+    [time, now, isValidTimeString]
+  )
 
   const hasPlan = useMemo(
     () => firstPlannedStartOfTheDay != null,

@@ -59,17 +59,15 @@ type Message = Omit<
 const messageToUpdatableDraftWithAccount = (
   m: Message,
   recipients: { key: string; text: string }[]
-): Draft => {
-  return {
-    content: m.content,
-    urgent: m.urgent,
-    recipientIds: recipients.map(({ key }) => key),
-    recipientNames: recipients.map(({ text }) => text),
-    title: m.title,
-    type: m.type,
-    accountId: m.sender.value
-  }
-}
+): Draft => ({
+  content: m.content,
+  urgent: m.urgent,
+  recipientIds: recipients.map(({ key }) => key),
+  recipientNames: recipients.map(({ text }) => text),
+  title: m.title,
+  type: m.type,
+  accountId: m.sender.value
+})
 
 const getEmptyMessage = (sender: SelectOption, title: string): Message => ({
   sender,

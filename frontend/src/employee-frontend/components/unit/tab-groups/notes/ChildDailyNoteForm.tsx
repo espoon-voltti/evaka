@@ -41,10 +41,8 @@ interface ChildDailyNoteFormData
   sleepingMinutes: string
 }
 
-const initialFormData = (
-  note: ChildDailyNote | null
-): ChildDailyNoteFormData => {
-  return note
+const initialFormData = (note: ChildDailyNote | null): ChildDailyNoteFormData =>
+  note
     ? {
         ...note,
         sleepingHours: note.sleepingMinutes
@@ -63,7 +61,6 @@ const initialFormData = (
         sleepingMinutes: '',
         sleepingNote: null
       }
-}
 
 const formDataToRequestBody = (
   form: ChildDailyNoteFormData

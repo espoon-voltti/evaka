@@ -56,51 +56,49 @@ export default React.memo(function UnitList() {
                   presentStaffOther,
                   totalStaff,
                   utilization
-                }) => {
-                  return (
-                    <UnitContainer
-                      key={id}
-                      to={`/units/${id}`}
-                      data-qa={`unit-${id}`}
-                    >
-                      <FixedSpaceColumn spacing="s" fullWidth>
-                        <H2 noMargin>{name}</H2>
-                        <UnitRow spacing="m">
-                          <div>
-                            <Stat data-qa="child-count">
-                              {presentChildren}/{totalChildren}
-                            </Stat>
-                            <StatDesc>{i18n.units.children}</StatDesc>
-                          </div>
-                          <div>
-                            <Stat data-qa="staff-count">
-                              {presentStaff}
-                              {presentStaffOther ? (
-                                <OtherStaff>+{presentStaffOther}</OtherStaff>
-                              ) : null}
-                              /{totalStaff}
-                            </Stat>
-                            <StatDesc>{i18n.units.staff}</StatDesc>
-                          </div>
-                          <div>
-                            <Stat data-qa="utilization">
-                              {utilization.toFixed
-                                ? utilization.toFixed(1)
-                                : utilization}{' '}
-                              %
-                            </Stat>
-                            <StatDesc>{i18n.units.utilization}</StatDesc>
-                          </div>
-                        </UnitRow>
-                      </FixedSpaceColumn>
-                      <FontAwesomeIcon
-                        icon={faChevronRight}
-                        size="lg"
-                        color={colors.main.m2}
-                      />
-                    </UnitContainer>
-                  )
-                }
+                }) => (
+                  <UnitContainer
+                    key={id}
+                    to={`/units/${id}`}
+                    data-qa={`unit-${id}`}
+                  >
+                    <FixedSpaceColumn spacing="s" fullWidth>
+                      <H2 noMargin>{name}</H2>
+                      <UnitRow spacing="m">
+                        <div>
+                          <Stat data-qa="child-count">
+                            {presentChildren}/{totalChildren}
+                          </Stat>
+                          <StatDesc>{i18n.units.children}</StatDesc>
+                        </div>
+                        <div>
+                          <Stat data-qa="staff-count">
+                            {presentStaff}
+                            {presentStaffOther ? (
+                              <OtherStaff>+{presentStaffOther}</OtherStaff>
+                            ) : null}
+                            /{totalStaff}
+                          </Stat>
+                          <StatDesc>{i18n.units.staff}</StatDesc>
+                        </div>
+                        <div>
+                          <Stat data-qa="utilization">
+                            {utilization.toFixed
+                              ? utilization.toFixed(1)
+                              : utilization}{' '}
+                            %
+                          </Stat>
+                          <StatDesc>{i18n.units.utilization}</StatDesc>
+                        </div>
+                      </UnitRow>
+                    </FixedSpaceColumn>
+                    <FontAwesomeIcon
+                      icon={faChevronRight}
+                      size="lg"
+                      color={colors.main.m2}
+                    />
+                  </UnitContainer>
+                )
               )}
             </FixedSpaceColumn>
           </ContentArea>

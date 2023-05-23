@@ -95,15 +95,14 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
 
   const openGroupsToStringList = (
     openGroups: Record<string, boolean>
-  ): string => {
-    return Object.keys(openGroups)
+  ): string =>
+    Object.keys(openGroups)
       .reduce(
         (prev: string[], cur: string) =>
           openGroups[cur] == true ? prev.concat(cur) : prev,
         []
       )
       .join(',')
-  }
 
   useEffect(() => {
     const openList = openGroupsToStringList(openGroups)

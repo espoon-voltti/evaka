@@ -458,11 +458,10 @@ function EmployeeAttachments({
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) => {
-      return (await deleteAttachment(id)).map(() => {
+    async (id: UUID) =>
+      (await deleteAttachment(id)).map(() => {
         onDeleted(id)
-      })
-    },
+      }),
     [onDeleted]
   )
 
@@ -549,9 +548,7 @@ function Row({
 }
 
 function makeYesNo(i18n: Translations) {
-  return (value: boolean): string => {
-    return value ? i18n.common.yes : i18n.common.no
-  }
+  return (value: boolean): string => (value ? i18n.common.yes : i18n.common.no)
 }
 
 const LabelColumn = styled(Label)<{ light?: boolean }>`

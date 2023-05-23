@@ -42,11 +42,8 @@ export default React.memo(function ChildrenInDifferentAddress() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: ChildrenInDifferentAddressReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = (row: ChildrenInDifferentAddressReportRow): boolean =>
+    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
   useEffect(() => {
     setRows(Loading.of())

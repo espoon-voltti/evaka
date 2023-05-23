@@ -742,18 +742,14 @@ export default function UnitEditor(props: Props): JSX.Element {
     ? (label: string) => `${label}*`
     : (label: string) => label
 
-  const isMunicipalOrPurchasedOrServiceVoucherUnit = () => {
-    return (
-      form.providerType === 'MUNICIPAL' ||
-      form.providerType === 'PURCHASED' ||
-      form.providerType === 'PRIVATE_SERVICE_VOUCHER' ||
-      form.providerType === 'MUNICIPAL_SCHOOL'
-    )
-  }
+  const isMunicipalOrPurchasedOrServiceVoucherUnit = () =>
+    form.providerType === 'MUNICIPAL' ||
+    form.providerType === 'PURCHASED' ||
+    form.providerType === 'PRIVATE_SERVICE_VOUCHER' ||
+    form.providerType === 'MUNICIPAL_SCHOOL'
 
-  const checkFormValidation = (): boolean => {
-    return validationErrors.formErrors.length === 0
-  }
+  const checkFormValidation = (): boolean =>
+    validationErrors.formErrors.length === 0
 
   return (
     <form action="#" data-qa="unit-editor-container">
@@ -921,94 +917,90 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
         <FixedSpaceColumn>
-          {canApplyTypes.map(({ type, checkboxI18n, field, period }) => {
-            return (
-              <div key={type}>
-                <Checkbox
-                  disabled={!props.editable}
-                  label={i18n.unitEditor.field[checkboxI18n]}
-                  checked={period !== null}
-                  onChange={(canApply) => {
-                    updateForm({
-                      [field]: canApply
-                        ? { start: LocalDate.todayInSystemTz(), end: null }
-                        : null
-                    })
-                  }}
-                  data-qa={`application-type-checkbox-${type.toUpperCase()}`}
-                />
-                {period != null && (
-                  <>
-                    <Gap size="xs" />
-                    <IndentCheckboxLabel>
-                      <FixedSpaceRow alignItems="center">
-                        <div>{i18n.unitEditor.field.applyPeriod}</div>
-                        <div>
-                          {props.editable ? (
-                            <DatePickerDeprecated
-                              date={
-                                period?.start ?? LocalDate.todayInSystemTz()
+          {canApplyTypes.map(({ type, checkboxI18n, field, period }) => (
+            <div key={type}>
+              <Checkbox
+                disabled={!props.editable}
+                label={i18n.unitEditor.field[checkboxI18n]}
+                checked={period !== null}
+                onChange={(canApply) => {
+                  updateForm({
+                    [field]: canApply
+                      ? { start: LocalDate.todayInSystemTz(), end: null }
+                      : null
+                  })
+                }}
+                data-qa={`application-type-checkbox-${type.toUpperCase()}`}
+              />
+              {period != null && (
+                <>
+                  <Gap size="xs" />
+                  <IndentCheckboxLabel>
+                    <FixedSpaceRow alignItems="center">
+                      <div>{i18n.unitEditor.field.applyPeriod}</div>
+                      <div>
+                        {props.editable ? (
+                          <DatePickerDeprecated
+                            date={period?.start ?? LocalDate.todayInSystemTz()}
+                            onChange={(startDate) => {
+                              if (
+                                !period ||
+                                (period.end !== null &&
+                                  period.end.isBefore(startDate))
+                              ) {
+                                return
                               }
-                              onChange={(startDate) => {
-                                if (
-                                  !period ||
-                                  (period.end !== null &&
-                                    period.end.isBefore(startDate))
-                                ) {
-                                  return
-                                }
 
-                                updateForm({
-                                  [field]: {
-                                    start: startDate,
-                                    end: period?.end
-                                  }
-                                })
-                              }}
-                            />
-                          ) : (
-                            period.start.format()
-                          )}
-                          {' - '}
-                          {props.editable ? (
-                            <DatePickerClearableDeprecated
-                              date={period?.end}
-                              onChange={(endDate) => {
-                                if (!period || endDate.isBefore(period.start)) {
-                                  return
+                              updateForm({
+                                [field]: {
+                                  start: startDate,
+                                  end: period?.end
                                 }
+                              })
+                            }}
+                          />
+                        ) : (
+                          period.start.format()
+                        )}
+                        {' - '}
+                        {props.editable ? (
+                          <DatePickerClearableDeprecated
+                            date={period?.end}
+                            onChange={(endDate) => {
+                              if (!period || endDate.isBefore(period.start)) {
+                                return
+                              }
 
-                                updateForm({
-                                  [field]: {
-                                    start:
-                                      period?.start ??
-                                      LocalDate.todayInSystemTz(),
-                                    end: endDate
-                                  }
-                                })
-                              }}
-                              onCleared={() => {
-                                updateForm({
-                                  [field]: {
-                                    start:
-                                      period?.start ??
-                                      LocalDate.todayInSystemTz(),
-                                    end: null
-                                  }
-                                })
-                              }}
-                            />
-                          ) : (
-                            period.end?.format()
-                          )}
-                        </div>
-                      </FixedSpaceRow>
-                    </IndentCheckboxLabel>
-                  </>
-                )}
-              </div>
-            )
-          })}
+                              updateForm({
+                                [field]: {
+                                  start:
+                                    period?.start ??
+                                    LocalDate.todayInSystemTz(),
+                                  end: endDate
+                                }
+                              })
+                            }}
+                            onCleared={() => {
+                              updateForm({
+                                [field]: {
+                                  start:
+                                    period?.start ??
+                                    LocalDate.todayInSystemTz(),
+                                  end: null
+                                }
+                              })
+                            }}
+                          />
+                        ) : (
+                          period.end?.format()
+                        )}
+                      </div>
+                    </FixedSpaceRow>
+                  </IndentCheckboxLabel>
+                </>
+              )}
+            </div>
+          ))}
         </FixedSpaceColumn>
       </FormPart>
       <FormPart>

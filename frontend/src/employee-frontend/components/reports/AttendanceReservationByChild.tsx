@@ -143,34 +143,27 @@ export default React.memo(function AttendanceReservationByChild() {
         <caption>{groupName}</caption>
         <Thead sticky>
           <Tr>
-            {dates.map((date) => {
-              return (
-                <Th key={date.formatIso()} colSpan={3} align="center">
-                  {date.format(dateFormat, lang)}
-                </Th>
-              )
-            })}
+            {dates.map((date) => (
+              <Th key={date.formatIso()} colSpan={3} align="center">
+                {date.format(dateFormat, lang)}
+              </Th>
+            ))}
           </Tr>
           <Tr>
-            {dates.map((date) => {
-              return (
-                <React.Fragment key={date.formatIso()}>
-                  <Th>{i18n.reports.common.child}</Th>
-                  <Th>
-                    {
-                      i18n.reports.attendanceReservationByChild
-                        .reservationStartTime
-                    }
-                  </Th>
-                  <Th>
-                    {
-                      i18n.reports.attendanceReservationByChild
-                        .reservationEndTime
-                    }
-                  </Th>
-                </React.Fragment>
-              )
-            })}
+            {dates.map((date) => (
+              <React.Fragment key={date.formatIso()}>
+                <Th>{i18n.reports.common.child}</Th>
+                <Th>
+                  {
+                    i18n.reports.attendanceReservationByChild
+                      .reservationStartTime
+                  }
+                </Th>
+                <Th>
+                  {i18n.reports.attendanceReservationByChild.reservationEndTime}
+                </Th>
+              </React.Fragment>
+            ))}
           </Tr>
         </Thead>
         <Tbody>{getTableBody(rows, dates, i18n, theme)}</Tbody>

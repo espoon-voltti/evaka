@@ -33,8 +33,8 @@ export default React.memo(function Attachments({
     async (
       file: File,
       onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) => {
-      return (
+    ) =>
+      (
         await saveIncomeStatementAttachment(
           incomeStatementId,
           file,
@@ -47,17 +47,15 @@ export default React.memo(function Attachments({
           contentType: file.type
         })
         return id
-      })
-    },
+      }),
     [incomeStatementId, onUploaded]
   )
 
   const handleDelete = useCallback(
-    async (id: UUID) => {
-      return (await deleteAttachment(id)).map(() => {
+    async (id: UUID) =>
+      (await deleteAttachment(id)).map(() => {
         onDeleted(id)
-      })
-    },
+      }),
     [onDeleted]
   )
 

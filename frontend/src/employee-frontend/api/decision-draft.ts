@@ -19,19 +19,15 @@ export async function getDecisionDrafts(
 ): Promise<Result<DecisionDraftGroup>> {
   return client
     .get<JsonOf<DecisionDraftGroup>>(`/v2/applications/${id}/decision-drafts`)
-    .then((res) => {
-      return res.data
-    })
-    .then((data) => {
-      return {
-        ...data,
-        decisions: data.decisions.map((decisionDraft) => ({
-          ...decisionDraft,
-          startDate: LocalDate.parseIso(decisionDraft.startDate),
-          endDate: LocalDate.parseIso(decisionDraft.endDate)
-        }))
-      }
-    })
+    .then((res) => res.data)
+    .then((data) => ({
+      ...data,
+      decisions: data.decisions.map((decisionDraft) => ({
+        ...decisionDraft,
+        startDate: LocalDate.parseIso(decisionDraft.startDate),
+        endDate: LocalDate.parseIso(decisionDraft.endDate)
+      }))
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

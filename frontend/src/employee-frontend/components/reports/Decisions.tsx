@@ -50,11 +50,8 @@ export default React.memo(function Decisions() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: DecisionsReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = (row: DecisionsReportRow): boolean =>
+    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
   const loadReport = useRestApi(getDecisionsReport, setRows)
 

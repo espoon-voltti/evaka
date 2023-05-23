@@ -57,11 +57,10 @@ export default React.memo(function MissingServiceNeed() {
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = useCallback(
-    (row: MissingServiceNeedReportRow): boolean => {
-      return !(
+    (row: MissingServiceNeedReportRow): boolean =>
+      !(
         displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-      )
-    },
+      ),
     [displayFilters.careArea]
   )
 

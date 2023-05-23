@@ -181,8 +181,8 @@ export function useInvoicesState() {
     }: {
       invoiceDate: LocalDate
       dueDate: LocalDate
-    }) => {
-      return state.allInvoicesToggle
+    }) =>
+      state.allInvoicesToggle
         ? sendInvoicesByDate(
             invoiceDate,
             dueDate,
@@ -191,8 +191,11 @@ export function useInvoicesState() {
             searchFilters.endDate,
             searchFilters.useCustomDatesForInvoiceSending
           )
-        : sendInvoices(Object.keys(state.checkedInvoices), invoiceDate, dueDate)
-    },
+        : sendInvoices(
+            Object.keys(state.checkedInvoices),
+            invoiceDate,
+            dueDate
+          ),
     [
       state.checkedInvoices,
       state.allInvoicesToggle,

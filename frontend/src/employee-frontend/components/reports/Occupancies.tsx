@@ -116,18 +116,20 @@ function getOccupancyAverage(
   row: OccupancyReportRow,
   dates: Date[]
 ): number | null {
-  const capacitySum = dates.reduce((sum, date) => {
-    return sum + (row.occupancies[toOccupancyKey(date)]?.percentage ?? 0)
-  }, 0)
+  const capacitySum = dates.reduce(
+    (sum, date) =>
+      sum + (row.occupancies[toOccupancyKey(date)]?.percentage ?? 0),
+    0
+  )
 
-  const caretakersSum = dates.reduce((sum, date) => {
-    return (
+  const caretakersSum = dates.reduce(
+    (sum, date) =>
       sum +
       (typeof row.occupancies[toOccupancyKey(date)]?.percentage === 'number'
         ? 1
-        : 0)
-    )
-  }, 0)
+        : 0),
+    0
+  )
 
   if (caretakersSum > 0) {
     return capacitySum / caretakersSum
@@ -140,9 +142,11 @@ function getHeadCountAverage(
   row: OccupancyReportRow,
   dates: Date[]
 ): number | null {
-  const headCountSum = dates.reduce((sum, date) => {
-    return sum + (row.occupancies[toOccupancyKey(date)]?.headcount ?? 0)
-  }, 0)
+  const headCountSum = dates.reduce(
+    (sum, date) =>
+      sum + (row.occupancies[toOccupancyKey(date)]?.headcount ?? 0),
+    0
+  )
 
   if (dates.length > 0) {
     return headCountSum / dates.length

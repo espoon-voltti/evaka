@@ -834,8 +834,8 @@ export function ApplicationTypeFilter({
       <Label>{i18n.applications.list.type}</Label>
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {types.map((id) => {
-          return id != 'PRESCHOOL' ? (
+        {types.map((id) =>
+          id != 'PRESCHOOL' ? (
             <Radio
               key={id}
               label={i18n.applications.types[id]}
@@ -879,7 +879,7 @@ export function ApplicationTypeFilter({
               )}
             </Fragment>
           )
-        })}
+        )}
       </FixedSpaceColumn>
     </>
   )

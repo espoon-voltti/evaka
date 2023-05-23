@@ -234,8 +234,8 @@ export default React.memo(function Group({
     unitChildrenCapacityFactors &&
     unitChildrenCapacityFactors.length > 0
 
-  const formatSleepingTooltipText = (childNote: ChildDailyNote) => {
-    return [
+  const formatSleepingTooltipText = (childNote: ChildDailyNote) =>
+    [
       childNote.sleepingNote
         ? i18n.unit.groups.daycareDailyNote.level[childNote.sleepingNote]
         : null,
@@ -249,7 +249,6 @@ export default React.memo(function Group({
     ]
       .filter((s) => s !== null)
       .join(',')
-  }
 
   const canManageCaretakers =
     permittedActions.has('UPDATE_CARETAKERS') ||

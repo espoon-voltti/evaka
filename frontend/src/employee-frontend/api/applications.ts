@@ -237,29 +237,23 @@ export async function confirmDecisionMailed(
 export function getPlacementDraft(id: UUID): Promise<Result<PlacementDraft>> {
   return client
     .get<JsonOf<PlacementDraft>>(`/v2/applications/${id}/placement-draft`)
-    .then((res) => {
-      return res.data
-    })
-    .then((data) => {
-      return {
-        ...data,
-        child: {
-          ...data.child,
-          dob: LocalDate.parseIso(data.child.dob)
-        },
-        period: FiniteDateRange.parseJson(data.period),
-        preschoolDaycarePeriod: data.preschoolDaycarePeriod
-          ? FiniteDateRange.parseJson(data.preschoolDaycarePeriod)
-          : undefined,
-        placements: data.placements.map((placement) => {
-          return {
-            ...placement,
-            startDate: LocalDate.parseIso(placement.startDate),
-            endDate: LocalDate.parseIso(placement.endDate)
-          }
-        })
-      }
-    })
+    .then((res) => res.data)
+    .then((data) => ({
+      ...data,
+      child: {
+        ...data.child,
+        dob: LocalDate.parseIso(data.child.dob)
+      },
+      period: FiniteDateRange.parseJson(data.period),
+      preschoolDaycarePeriod: data.preschoolDaycarePeriod
+        ? FiniteDateRange.parseJson(data.preschoolDaycarePeriod)
+        : undefined,
+      placements: data.placements.map((placement) => ({
+        ...placement,
+        startDate: LocalDate.parseIso(placement.startDate),
+        endDate: LocalDate.parseIso(placement.endDate)
+      }))
+    }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

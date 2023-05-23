@@ -111,24 +111,26 @@ export const MessageContextProvider = React.memo(
       if (unitId && hasPinLogin) loadAccounts(unitId)
     }, [loadAccounts, unitId, user])
 
-    const groupAccounts: AuthorizedMessageAccount[] = useMemo(() => {
-      return accounts
-        .map((acc) =>
-          acc.filter(
-            ({ account, daycareGroup }) =>
-              account.type === 'GROUP' && daycareGroup?.unitId === unitId
+    const groupAccounts: AuthorizedMessageAccount[] = useMemo(
+      () =>
+        accounts
+          .map((acc) =>
+            acc.filter(
+              ({ account, daycareGroup }) =>
+                account.type === 'GROUP' && daycareGroup?.unitId === unitId
+            )
           )
-        )
-        .getOrElse([])
-    }, [accounts, unitId])
+          .getOrElse([]),
+      [accounts, unitId]
+    )
 
-    const selectedAccount: AuthorizedMessageAccount = useMemo(() => {
-      return (
+    const selectedAccount: AuthorizedMessageAccount = useMemo(
+      () =>
         groupAccounts.find(
           ({ daycareGroup }) => daycareGroup?.id === groupId
-        ) ?? groupAccounts[0]
-      )
-    }, [groupAccounts, groupId])
+        ) ?? groupAccounts[0],
+      [groupAccounts, groupId]
+    )
 
     const [receivedMessages, setReceivedMessages] = useState<
       Result<MessageThread[]>
