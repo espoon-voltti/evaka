@@ -21,3 +21,10 @@ updates:
     directory: "/proxy"
     schedule:
       interval: weekly
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
