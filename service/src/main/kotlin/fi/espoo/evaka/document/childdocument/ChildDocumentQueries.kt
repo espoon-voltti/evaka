@@ -27,7 +27,7 @@ fun Database.Transaction.insertChildDocument(
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
     return createQuery(
             """
-            SELECT cd.id, dt.type, cd.published
+            SELECT cd.id, dt.type, cd.published, dt.name as template_name
             FROM child_document cd
             JOIN document_template dt on cd.template_id = dt.id
             WHERE cd.child_id = :childId
@@ -91,6 +91,17 @@ fun Database.Transaction.publishChildDocument(id: ChildDocumentId) {
             UPDATE child_document
             SET published = true
             WHERE id = :id
+        """
+        )
+        .bind("id", id)
+        .execute()
+}
+
+fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
+    createUpdate(
+            """
+            DELETE FROM child_document
+            WHERE id = :id AND NOT published
         """
         )
         .bind("id", id)

@@ -51,6 +51,7 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
 data class ChildDocumentSummary(
     val id: ChildDocumentId,
     val type: DocumentType,
+    val templateName: String,
     val published: Boolean
 )
 

@@ -65,3 +65,9 @@ export async function putChildDocumentPublish(id: UUID): Promise<void> {
     .put<JsonOf<void>>(`/child-documents/${id}/publish`)
     .then((res) => res.data)
 }
+
+export async function deleteChildDocument(id: UUID): Promise<void> {
+  return client
+    .delete<JsonOf<void>>(`/child-documents/${id}`)
+    .then((res) => res.data)
+}

@@ -173,6 +173,18 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {
-        // TODO
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.DELETE,
+                        documentId
+                    )
+                    tx.deleteChildDocumentDraft(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentDelete.log(targetId = documentId) }
     }
 }

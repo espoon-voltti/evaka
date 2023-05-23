@@ -88,6 +88,7 @@ export interface ChildDocumentDetails {
 export interface ChildDocumentSummary {
   id: UUID
   published: boolean
+  templateName: string
   type: DocumentType
 }
 

@@ -743,6 +743,8 @@ export const fi = {
         published: 'Julkaistu',
         draft: 'Luonnos'
       },
+      addNew: 'Luo uusi',
+      removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
       editor: {
         preview: 'Esikatsele',
         publish: 'Julkaise huoltajalle'
