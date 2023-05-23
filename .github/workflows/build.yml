@@ -51,7 +51,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -64,7 +64,7 @@ jobs:
       - name: Build proxy image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/proxy
@@ -76,7 +76,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -89,7 +89,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -102,7 +102,7 @@ jobs:
       - name: Build keycloak image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/keycloak
@@ -114,7 +114,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -133,7 +133,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -142,7 +142,7 @@ jobs:
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: build
         with:
           registry: ghcr.io/espoon-voltti
@@ -157,7 +157,7 @@ jobs:
 
       - name: Build frontend image builder
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: builder
         with:
           registry: ghcr.io/espoon-voltti
@@ -174,7 +174,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -221,7 +221,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -233,7 +233,7 @@ jobs:
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -249,7 +249,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -292,7 +292,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
   api-gateway:
     runs-on: ubuntu-latest
@@ -302,7 +302,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -314,7 +314,7 @@ jobs:
 
       - name: Build and run API-gateway tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: test
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -329,7 +329,7 @@ jobs:
 
       - name: Build API-gateway image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -364,7 +364,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -376,7 +376,7 @@ jobs:
 
       - name: Build Evaka Service image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -390,7 +390,7 @@ jobs:
 
       - name: Build Evaka Service builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: builder
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -406,7 +406,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -424,7 +424,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-setup@chore/stable-buildx
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -436,7 +436,7 @@ jobs:
 
       - name: Build and run Evaka Service tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-build-registry@chore/stable-buildx
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -459,7 +459,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@acf2402f899c1bff8222785b4d45d04991664804
+        uses: espoon-voltti/voltti-actions/docker-cleanup@chore/stable-buildx
 
   owasp:
     needs:
