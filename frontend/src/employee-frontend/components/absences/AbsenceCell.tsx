@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
 import {
@@ -17,8 +17,9 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
 
-import { useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
+
+import UnitCalendarDayCellTooltip from './UnitCalendarDayCellTooltip'
 
 const cellSize = 20
 
@@ -214,8 +215,6 @@ export default React.memo(function AbsenceCell({
   reservations,
   dailyServiceTimes
 }: AbsenceCellProps) {
-  const { i18n } = useTranslation()
-
   const id = useMemo(() => getCellId(childId, date), [childId, date])
   const isMissingHolidayReservation = useMemo(
     () => missingHolidayReservations.some((d) => d.isEqual(date)),
@@ -226,98 +225,32 @@ export default React.memo(function AbsenceCell({
     [id, selectedCells]
   )
 
-  const dailyServiceTimeTooltip = dailyServiceTimes.map((dst, index) => (
-    <Fragment key={index}>
-      {`${i18n.absences.dailyServiceTime} ${dst.start
-        .toLocalTime()
-        .format()} - ${dst.end.toLocalTime().format()}`}
-    </Fragment>
-  ))
-
-  const attendanceDayTooltip = useMemo(() => {
-    const reservationTooltip = reservations.map((res, index) => {
-      const reservationText =
-        res.reservation.type === 'TIMES'
-          ? `${
-              i18n.absences.reservation
-            } ${res.reservation.startTime.format()} - ${res.reservation.endTime.format()}`
-          : i18n.absences.present
-      const userTypeText =
-        res.createdByEvakaUserType === 'CITIZEN'
-          ? i18n.absences.guardian
-          : i18n.absences.staff
-      return (
-        <Fragment key={index}>
-          {reservationText}
-          <br />
-          {res.created.toLocalDate().format()} {userTypeText}
-        </Fragment>
-      )
-    })
-    return reservationTooltip.length > 0 ||
-      dailyServiceTimeTooltip.length > 0 ? (
-      <div>
-        {reservationTooltip}
-        {reservationTooltip.length > 0 && <br />}
-        {dailyServiceTimeTooltip}
-      </div>
-    ) : undefined
-  }, [i18n, reservations, dailyServiceTimeTooltip])
-
-  const missingHolidayReservationTooltip = useMemo(() => {
-    return (
-      <Fragment>
-        {i18n.absences.missingHolidayReservation}
-        {dailyServiceTimeTooltip.length > 0 && (
-          <Fragment>
-            <br />
-            {dailyServiceTimeTooltip}
-          </Fragment>
-        )}
-      </Fragment>
-    )
-  }, [i18n, dailyServiceTimeTooltip])
-
-  const tooltipText = useMemo(() => {
-    const tooltip = backupCare
-      ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
-      : absences.length > 0
-      ? absences.map(
-          ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
-            <Fragment key={index}>
-              {index !== 0 && <br />}
-              {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
-              <br />
-              {`${modifiedAt.toLocalDate().format()} ${
-                i18n.absences.modifiedByType[modifiedByType]
-              }`}
-            </Fragment>
-          )
-        )
-      : isMissingHolidayReservation
-      ? missingHolidayReservationTooltip
-      : attendanceDayTooltip
-    return tooltip ? (
-      <div data-qa={`attendance-tooltip-${date.toString()}`}>{tooltip}</div>
-    ) : undefined
-  }, [
-    absences,
-    backupCare,
-    i18n,
-    date,
-    isMissingHolidayReservation,
-    attendanceDayTooltip,
-    missingHolidayReservationTooltip
-  ])
-
   const toggle = useCallback(
     (cellParts: CellPart[]) => toggleCellSelection(id, cellParts),
     [id, toggleCellSelection]
   )
 
+  const hasTooltip =
+    backupCare ||
+    isMissingHolidayReservation ||
+    absences.length > 0 ||
+    reservations.length > 0 ||
+    dailyServiceTimes.length > 0
+
   return (
     <Tooltip
-      tooltip={tooltipText}
+      tooltip={
+        hasTooltip ? (
+          <UnitCalendarDayCellTooltip
+            date={date}
+            absences={absences}
+            dailyServiceTimes={dailyServiceTimes}
+            reservations={reservations}
+            backupCare={backupCare}
+            isMissingHolidayReservation={isMissingHolidayReservation}
+          />
+        ) : undefined
+      }
       position="top"
       width="large"
       data-qa="absence-cell-tooltip"
