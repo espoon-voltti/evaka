@@ -140,6 +140,28 @@ Access the frontends at
 - <http://localhost:9099/employee> – Frontend for the employee
 - <http://localhost:9099/employee/mobile> – Frontend for the employee mobile
 
+## Running tests inside docker-compose
+
+To run tests inside `docker-compose` locally.
+
+```sh
+./test-e2e build
+./test-e2e run playwright
+```
+
+### Updating playwright
+
+To update playwright, update version in `frontend/package.json` and `compose/docker-compose.e2e-tests.yml`.
+
+When changes are merged to master: update `playwright` tag:
+
+```sh
+git checkout master
+git pull
+git tag -f playwright
+git push -f --tags
+```
+
 ## Database dump
 
 To dump local database run `./db.sh dump` and restore it with `./db.sh restore`.
