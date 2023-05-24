@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -249,6 +250,28 @@ describe('Unit group calendar', () => {
       })
       .save()
 
+    await Fixture.dailyServiceTime(child1Fixture.id)
+      .with({
+        validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
+        type: 'REGULAR',
+        regularTimes: {
+          start: LocalTime.of(8, 0),
+          end: LocalTime.of(16, 0)
+        }
+      })
+      .save()
+
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.subDays(1),
+      reservation: {
+        start: LocalTime.of(11, 0),
+        end: LocalTime.of(13, 0)
+      },
+      secondReservation: null
+    }).save()
+
     // Reservation on the second day
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
@@ -276,6 +299,111 @@ describe('Unit group calendar', () => {
       () =>
         childReservations.missingHolidayReservations(child1Fixture.id).count(),
       5
+    )
+  })
+
+  test('Tooltip for attendance is shown', async () => {
+    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
+    const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+        reservationDeadline: LocalDate.of(2023, 3, 1)
+      })
+      .save()
+
+    const dailyServiceTimeStart = holidayPeriodStart.subDays(5)
+    await Fixture.dailyServiceTime(child1Fixture.id)
+      .with({
+        validityPeriod: new DateRange(dailyServiceTimeStart, null),
+        type: 'REGULAR',
+        regularTimes: {
+          start: LocalTime.of(8, 0),
+          end: LocalTime.of(16, 0)
+        }
+      })
+      .save()
+
+    const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1)
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: attendanceReservationBeforeHolidayDate,
+      reservation: {
+        start: LocalTime.of(11, 0),
+        end: LocalTime.of(13, 0)
+      },
+      secondReservation: null
+    }).save()
+
+    const attendanceReservationDuringHolidayDate = holidayPeriodStart.addDays(1)
+
+    // Reservation on the second day
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: child1Fixture.id,
+      date: attendanceReservationDuringHolidayDate,
+      reservation: {
+        start: LocalTime.of(8, 0),
+        end: LocalTime.of(14, 0)
+      },
+      secondReservation: null
+    }).save()
+    // Absence on the third day
+    await Fixture.attendanceReservation({
+      type: 'ABSENT',
+      childId: child1Fixture.id,
+      date: holidayPeriodStart.addDays(2)
+    }).save()
+
+    await loadUnitAttendancesSection()
+
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(holidayPeriodStart)
+    await calendarPage.selectMode('month')
+
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      dailyServiceTimeStart,
+      ['Sopimusaika 08:00 - 16:00']
+    )
+
+    const todayStr = LocalDate.todayInHelsinkiTz().format('dd.MM.yyyy')
+
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      attendanceReservationBeforeHolidayDate,
+      [
+        'Varaus 11:00 - 13:00',
+        `${todayStr} Henkilökunta`,
+        'Sopimusaika 08:00 - 16:00'
+      ]
+    )
+
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      attendanceReservationDuringHolidayDate,
+      [
+        'Varaus 08:00 - 14:00',
+        `${todayStr} Henkilökunta`,
+        'Sopimusaika 08:00 - 16:00'
+      ]
+    )
+
+    await calendarPage.assertDayTooltip(child1Fixture.id, holidayPeriodStart, [
+      'Huoltaja ei ole vahvistanut loma-ajan varausta',
+      'Sopimusaika 08:00 - 16:00'
+    ])
+
+    await calendarPage.assertDayTooltip(child1Fixture.id, backupCareEndDate, [
+      'Lapsi varasijoitettuna muualla'
+    ])
+
+    await calendarPage.nextWeek.click()
+    await calendarPage.assertDayTooltip(
+      child1Fixture.id,
+      placementEndDate.addDays(1),
+      []
     )
   })
 

@@ -11,6 +11,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 export const defaultAbsenceType = 'SICKLEAVE'
@@ -56,5 +57,24 @@ export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
   ),
   missingHolidayReservations: json.missingHolidayReservations.map((d) =>
     LocalDate.parseIso(d)
-  )
+  ),
+  dailyServiceTimes: json.dailyServiceTimes.map((d) => ({
+    start: HelsinkiDateTime.parseIso(d.start),
+    end: HelsinkiDateTime.parseIso(d.end)
+  })),
+  reservations: json.reservations.map((res) => ({
+    ...res,
+    date: LocalDate.parseIso(res.date),
+    created: HelsinkiDateTime.parseIso(res.created),
+    reservation:
+      res.reservation.type === 'TIMES'
+        ? {
+            ...res.reservation,
+            startTime: LocalTime.parseIso(res.reservation.startTime),
+            endTime: LocalTime.parseIso(res.reservation.endTime)
+          }
+        : {
+            ...res.reservation
+          }
+  }))
 })

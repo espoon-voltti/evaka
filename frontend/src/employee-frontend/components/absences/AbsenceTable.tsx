@@ -73,7 +73,9 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     backupCares,
     missingHolidayReservations,
     attendanceTotalHours,
-    reservationTotalHours
+    reservationTotalHours,
+    dailyServiceTimes,
+    reservations
   } = absenceChild
 
   const contractDayServiceNeeds = absenceChild.actualServiceNeeds.filter(
@@ -128,6 +130,12 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
               backupCare={backupCares[date.formatIso()] ?? false}
               date={date}
               childId={child.id}
+              reservations={reservations.filter((reservation) =>
+                reservation.date.isEqual(date)
+              )}
+              dailyServiceTimes={dailyServiceTimes.filter((dst) =>
+                dst.start.toLocalDate().isEqual(date)
+              )}
             />
           </AbsenceTd>
         ) : (

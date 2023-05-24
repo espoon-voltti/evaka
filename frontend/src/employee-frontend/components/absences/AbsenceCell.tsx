@@ -2,21 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
 import {
   AbsenceCategory,
-  AbsenceWithModifierInfo
+  AbsenceWithModifierInfo,
+  ChildReservation
 } from 'lib-common/generated/api-types/daycare'
+import { HelsinkiDateTimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
 
-import { useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
+
+import UnitCalendarDayCellTooltip from './UnitCalendarDayCellTooltip'
 
 const cellSize = 20
 
@@ -196,6 +199,8 @@ interface AbsenceCellProps {
   categories: AbsenceCategory[] | undefined
   absences: AbsenceWithModifierInfo[] | undefined
   backupCare: boolean
+  reservations: ChildReservation[]
+  dailyServiceTimes: HelsinkiDateTimeRange[]
 }
 
 export default React.memo(function AbsenceCell({
@@ -206,10 +211,10 @@ export default React.memo(function AbsenceCell({
   date,
   categories,
   absences = [],
-  backupCare
+  backupCare,
+  reservations,
+  dailyServiceTimes
 }: AbsenceCellProps) {
-  const { i18n } = useTranslation()
-
   const id = useMemo(() => getCellId(childId, date), [childId, date])
   const isMissingHolidayReservation = useMemo(
     () => missingHolidayReservations.some((d) => d.isEqual(date)),
@@ -220,37 +225,32 @@ export default React.memo(function AbsenceCell({
     [id, selectedCells]
   )
 
-  const tooltipText = useMemo(
-    () =>
-      backupCare
-        ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
-        : absences.length > 0
-        ? absences.map(
-            ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
-              <Fragment key={index}>
-                {index !== 0 && <br />}
-                {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
-                <br />
-                {`${modifiedAt.toLocalDate().format()} ${
-                  i18n.absences.modifiedByType[modifiedByType]
-                }`}
-              </Fragment>
-            )
-          )
-        : isMissingHolidayReservation
-        ? i18n.absences.missingHolidayReservation
-        : undefined,
-    [absences, backupCare, i18n, isMissingHolidayReservation]
-  )
-
   const toggle = useCallback(
     (cellParts: CellPart[]) => toggleCellSelection(id, cellParts),
     [id, toggleCellSelection]
   )
 
+  const hasTooltip =
+    backupCare ||
+    isMissingHolidayReservation ||
+    absences.length > 0 ||
+    reservations.length > 0 ||
+    dailyServiceTimes.length > 0
+
   return (
     <Tooltip
-      tooltip={tooltipText}
+      tooltip={
+        hasTooltip ? (
+          <UnitCalendarDayCellTooltip
+            date={date}
+            absences={absences}
+            dailyServiceTimes={dailyServiceTimes}
+            reservations={reservations}
+            backupCare={backupCare}
+            isMissingHolidayReservation={isMissingHolidayReservation}
+          />
+        ) : undefined
+      }
       position="top"
       width="large"
       data-qa="absence-cell-tooltip"

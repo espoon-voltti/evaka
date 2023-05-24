@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
@@ -349,7 +350,9 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
 data class ChildReservation(
     val childId: ChildId,
     val date: LocalDate,
-    val reservation: Reservation
+    val reservation: Reservation,
+    val createdByEvakaUserType: EvakaUserType,
+    val created: HelsinkiDateTime
 )
 
 fun Database.Read.getGroupReservations(
@@ -361,7 +364,9 @@ fun Database.Read.getGroupReservations(
 WITH all_placements AS (
   $placementsQuery
 )
-SELECT r.child_id, r.date, r.start_time, r.end_time FROM attendance_reservation r
+SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type, r.created AS created_date
+FROM attendance_reservation r
+JOIN evaka_user e ON r.created_by = e.id
 WHERE between_start_and_end(:dateRange, r.date)
 AND EXISTS (
     SELECT 1 FROM all_placements p
@@ -376,7 +381,9 @@ AND EXISTS (
             ChildReservation(
                 row.mapColumn("child_id"),
                 row.mapColumn("date"),
-                Reservation.fromLocalTimes(row.mapColumn("start_time"), row.mapColumn("end_time"))
+                Reservation.fromLocalTimes(row.mapColumn("start_time"), row.mapColumn("end_time")),
+                row.mapColumn("created_by_evaka_user_type"),
+                row.mapColumn("created_date")
             )
         }
         .toList()

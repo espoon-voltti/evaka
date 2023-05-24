@@ -14,10 +14,12 @@ import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
 import { DaycarePlacementWithDetails } from './placement'
 import { EvakaUserType } from './user'
+import { HelsinkiDateTimeRange } from './shared'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
+import { Reservation } from './reservations'
 import { TerminatedPlacement } from './placement'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
@@ -51,9 +53,11 @@ export interface AbsenceChild {
   attendanceTotalHours: number | null
   backupCares: Record<string, boolean>
   child: Child
+  dailyServiceTimes: HelsinkiDateTimeRange[]
   missingHolidayReservations: LocalDate[]
   placements: Record<string, AbsenceCategory[]>
   reservationTotalHours: number | null
+  reservations: ChildReservation[]
 }
 
 /**
@@ -210,6 +214,17 @@ export interface Child {
   firstName: string
   id: UUID
   lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.ChildReservation
+*/
+export interface ChildReservation {
+  childId: UUID
+  created: HelsinkiDateTime
+  createdByEvakaUserType: EvakaUserType
+  date: LocalDate
+  reservation: Reservation
 }
 
 /**
