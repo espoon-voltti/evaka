@@ -193,128 +193,134 @@ describe('Assistance Need Decisions - Language', () => {
 describe('Assistance Need Decisions - Preview page', () => {
   let assistanceNeedDecisionPreviewPage: AssistanceNeedDecisionPreviewPage
 
-  beforeEach(async () => {
-    page = await Page.open()
-    await employeeLogin(page, serviceWorker)
-    await page.goto(
-      `${
-        config.employeeUrl
-      }/child-information/${childId}/assistance-need-decision/${
-        preFilledAssistanceNeedDecision?.id ?? ''
-      }`
-    )
-    assistanceNeedDecisionPreviewPage = new AssistanceNeedDecisionPreviewPage(
-      page
-    )
+  describe('Service worker', () => {
+    beforeEach(async () => {
+      page = await Page.open()
+      await employeeLogin(page, serviceWorker)
+      await page.goto(
+        `${
+          config.employeeUrl
+        }/child-information/${childId}/assistance-need-decision/${
+          preFilledAssistanceNeedDecision?.id ?? ''
+        }`
+      )
+      assistanceNeedDecisionPreviewPage = new AssistanceNeedDecisionPreviewPage(
+        page
+      )
+    })
+
+    test('Preview shows filled information', async () => {
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.pedagogicalMotivation,
+        'Pedagogical motivation text'
+      )
+      await assistanceNeedDecisionPreviewPage.assertStructuralMotivationOption(
+        'groupAssistant'
+      )
+      await assistanceNeedDecisionPreviewPage.assertStructuralMotivationOption(
+        'smallerGroup'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.structuralMotivationDescription,
+        'Structural motivation description text'
+      )
+      await assistanceNeedDecisionPreviewPage.assertServiceOption(
+        'interpretationAndAssistanceServices'
+      )
+      await assistanceNeedDecisionPreviewPage.assertServiceOption(
+        'partTimeSpecialEd'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.careMotivation,
+        'Care motivation text'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.guardiansHeardOn,
+        '05.04.2020'
+      )
+      await waitUntilEqual(
+        () =>
+          assistanceNeedDecisionPreviewPage.heardGuardian(
+            familyWithTwoGuardians.guardian.id
+          ),
+        `${familyWithTwoGuardians.guardian.lastName} ${familyWithTwoGuardians.guardian.firstName}: Guardian 1 details`
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.otherRepresentativeDetails,
+        'John Doe, 01020304050, via phone'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.viewOfGuardians,
+        'VOG text'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.futureLevelOfAssistance,
+        'Tehostettu tuki'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.startDate,
+        '02.01.2019'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.selectedUnit,
+        `${daycareFixture.name}\n${daycareFixture.streetAddress}\n${daycareFixture.postalCode} ${daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.motivationForDecision,
+        'Motivation for decision text'
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.preparedBy1,
+        `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n010202020202`
+      )
+      await waitUntilEqual(
+        () => assistanceNeedDecisionPreviewPage.decisionMaker,
+        `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
+      )
+    })
+
+    test('Decision can be sent to the decision maker', async () => {
+      await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
+      await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
+        LocalDate.todayInSystemTz().format()
+      )
+      await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
+        'disabled',
+        ''
+      )
+    })
   })
 
-  test('Preview shows filled information', async () => {
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.pedagogicalMotivation,
-      'Pedagogical motivation text'
-    )
-    await assistanceNeedDecisionPreviewPage.assertStructuralMotivationOption(
-      'groupAssistant'
-    )
-    await assistanceNeedDecisionPreviewPage.assertStructuralMotivationOption(
-      'smallerGroup'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.structuralMotivationDescription,
-      'Structural motivation description text'
-    )
-    await assistanceNeedDecisionPreviewPage.assertServiceOption(
-      'interpretationAndAssistanceServices'
-    )
-    await assistanceNeedDecisionPreviewPage.assertServiceOption(
-      'partTimeSpecialEd'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.careMotivation,
-      'Care motivation text'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.guardiansHeardOn,
-      '05.04.2020'
-    )
-    await waitUntilEqual(
-      () =>
-        assistanceNeedDecisionPreviewPage.heardGuardian(
-          familyWithTwoGuardians.guardian.id
-        ),
-      `${familyWithTwoGuardians.guardian.lastName} ${familyWithTwoGuardians.guardian.firstName}: Guardian 1 details`
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.otherRepresentativeDetails,
-      'John Doe, 01020304050, via phone'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.viewOfGuardians,
-      'VOG text'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.futureLevelOfAssistance,
-      'Tehostettu tuki'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.startDate,
-      '02.01.2019'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.selectedUnit,
-      `${daycareFixture.name}\n${daycareFixture.streetAddress}\n${daycareFixture.postalCode} ${daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.motivationForDecision,
-      'Motivation for decision text'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.preparedBy1,
-      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n010202020202`
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPreviewPage.decisionMaker,
-      `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
-    )
-  })
+  describe('Admin', () => {
+    test('Sent decision can be reverted by admin', async () => {
+      const admin = await Fixture.employeeAdmin().save()
 
-  test('Decision can be sent to the decision maker', async () => {
-    await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
-    await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
-      LocalDate.todayInSystemTz().format()
-    )
-    await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
-      'disabled',
-      ''
-    )
-  })
+      page = await Page.open()
+      await employeeLogin(page, admin.data)
 
-  test('Sent decision can be reverted by admin', async () => {
-    const admin = await Fixture.employeeAdmin().save()
-    await employeeLogin(page, admin.data)
+      await page.goto(
+        `${
+          config.employeeUrl
+        }/child-information/${childId}/assistance-need-decision/${
+          preFilledAssistanceNeedDecision?.id ?? ''
+        }`
+      )
+      assistanceNeedDecisionPreviewPage = new AssistanceNeedDecisionPreviewPage(
+        page
+      )
 
-    await page.goto(
-      `${
-        config.employeeUrl
-      }/child-information/${childId}/assistance-need-decision/${
-        preFilledAssistanceNeedDecision?.id ?? ''
-      }`
-    )
-    assistanceNeedDecisionPreviewPage = new AssistanceNeedDecisionPreviewPage(
-      page
-    )
+      await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
+      await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
+        LocalDate.todayInSystemTz().format()
+      )
+      await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
+        'disabled',
+        ''
+      )
 
-    await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
-    await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
-      LocalDate.todayInSystemTz().format()
-    )
-    await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
-      'disabled',
-      ''
-    )
-
-    await assistanceNeedDecisionPreviewPage.revertToUnsent.click()
-    await assistanceNeedDecisionPreviewPage.decisionSentAt.waitUntilHidden()
-    await assistanceNeedDecisionPreviewPage.revertToUnsent.waitUntilHidden()
+      await assistanceNeedDecisionPreviewPage.revertToUnsent.click()
+      await assistanceNeedDecisionPreviewPage.decisionSentAt.waitUntilHidden()
+      await assistanceNeedDecisionPreviewPage.revertToUnsent.waitUntilHidden()
+    })
   })
 })
