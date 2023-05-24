@@ -31,7 +31,6 @@ jobs:
           name: evaka/e2e-playwright
           path: ./compose/e2e
           dockerfile: compose/e2e/playwright.Dockerfile
-          suffix: "-github"
           ecr_type: 'ecr-public'
     outputs:
       image: ${{ steps.build.outputs.image }}
