@@ -154,7 +154,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 7:00, staff 1 arrives
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(7, 0)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(7, 0)) }
             ?.also { assertEquals(0.0, it.childCapacity) }
             ?.also { assertEquals(7.0, it.staffCapacity) }
             ?.also { assertEquals(0.0, it.occupancyRatio) }
@@ -162,7 +162,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 7:45, child 1 arrives
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(7, 45)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(7, 45)) }
             ?.also { assertEquals(child1Capacity, it.childCapacity) }
             ?.also { assertEquals(7.0, it.staffCapacity) }
             ?.also { assertEquals(child1Capacity / (7 * 1), it.occupancyRatio) }
@@ -170,7 +170,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 8:15, children 2 and 3 arrive
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(8, 15)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(8, 15)) }
             ?.also {
                 assertEquals(child1Capacity + child2Capacity + child3Capacity, it.childCapacity)
             }
@@ -185,7 +185,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 8:30, child 4 arrives
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(8, 30)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(8, 30)) }
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
@@ -203,7 +203,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 10:00, staff 2 arrives
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(10, 0)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(10, 0)) }
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
@@ -221,7 +221,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 11:00, staff 3 with zero coefficient arrives, does not affect capacities
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(11, 0)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(11, 0)) }
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
@@ -239,7 +239,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 15:00, staff 3 with zero coefficient departs, does not affect capacities
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(15, 0)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(15, 0)) }
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
@@ -257,7 +257,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 16:30, children 1, 2 and 4 depart
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(16, 30)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(16, 30)) }
             ?.also { assertEquals(child3Capacity, it.childCapacity) }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also { assertEquals(child3Capacity / 10.5, it.occupancyRatio) }
@@ -265,7 +265,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 16:45, staff 1 departs
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(16, 45)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(16, 45)) }
             ?.also { assertEquals(child3Capacity, it.childCapacity) }
             ?.also { assertEquals(3.5, it.staffCapacity) }
             ?.also { assertEquals(child3Capacity / 3.5, it.occupancyRatio) }
@@ -273,7 +273,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // 18:00, staff 2 departs, forgets to mark child 3 departed
         occupancies
-            .find { it.time == HelsinkiDateTime.Companion.of(date, LocalTime.of(18, 0)) }
+            .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(18, 0)) }
             ?.also { assertEquals(child3Capacity, it.childCapacity) }
             ?.also { assertEquals(0.0, it.staffCapacity) }
             ?.also { assertNull(it.occupancyRatio) }
@@ -382,28 +382,12 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertContentEquals(
             listOf(
-                OccupancyPoint(HelsinkiDateTime.Companion.of(date, LocalTime.of(19, 45)), 0.0, 7.0),
-                OccupancyPoint(
-                    HelsinkiDateTime.Companion.of(date, LocalTime.of(20, 45)),
-                    1.75,
-                    7.0
-                ),
-                OccupancyPoint(HelsinkiDateTime.Companion.of(date, LocalTime.of(21, 5)), 2.75, 7.0),
-                OccupancyPoint(
-                    HelsinkiDateTime.Companion.of(tomorrow, LocalTime.of(8, 15)),
-                    1.0,
-                    7.0
-                ),
-                OccupancyPoint(
-                    HelsinkiDateTime.Companion.of(tomorrow, LocalTime.of(8, 50)),
-                    0.0,
-                    7.0
-                ),
-                OccupancyPoint(
-                    HelsinkiDateTime.Companion.of(tomorrow, LocalTime.of(9, 0)),
-                    0.0,
-                    0.0
-                )
+                OccupancyPoint(HelsinkiDateTime.of(date, LocalTime.of(19, 45)), 0.0, 7.0),
+                OccupancyPoint(HelsinkiDateTime.of(date, LocalTime.of(20, 45)), 1.75, 7.0),
+                OccupancyPoint(HelsinkiDateTime.of(date, LocalTime.of(21, 5)), 2.75, 7.0),
+                OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(8, 15)), 1.0, 7.0),
+                OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(8, 50)), 0.0, 7.0),
+                OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)), 0.0, 0.0)
             ),
             occupancies
         )
