@@ -102,7 +102,9 @@ const CalendarPage = React.memo(function CalendarPage() {
         .filter((p) => p.period.end.isEqualOrAfter(today))
         .map((p) => ({
           period: p.period,
-          isOpen: p.reservationDeadline.isEqualOrAfter(today)
+          state: p.reservationDeadline.isEqualOrAfter(today)
+            ? ('open' as const)
+            : ('closed' as const)
         }))
     )
   }, [holidayPeriods])
