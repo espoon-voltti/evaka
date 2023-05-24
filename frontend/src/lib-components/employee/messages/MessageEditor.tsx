@@ -145,7 +145,7 @@ interface Props {
   saveMessageAttachment: (
     draftId: UUID,
     file: File,
-    onUploadProgress: (progressEvent: ProgressEvent) => void
+    onUploadProgress: (percentage: number) => void
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
@@ -287,10 +287,7 @@ export default React.memo(function MessageEditor({
   }, [onSend, message, selectedReceivers, draftId])
 
   const handleAttachmentUpload = useCallback(
-    async (
-      file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) =>
+    async (file: File, onUploadProgress: (percentage: number) => void) =>
       draftId
         ? (await saveMessageAttachment(draftId, file, onUploadProgress)).map(
             (id) => {

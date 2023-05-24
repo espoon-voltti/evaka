@@ -49,7 +49,7 @@ export default React.memo(function PreferredStartSubSection({
 
   const uploadUrgencyAttachment = (
     file: File,
-    onUploadProgress: (progressEvent: ProgressEvent) => void
+    onUploadProgress: (percentage: number) => void
   ): Promise<Result<UUID>> =>
     saveApplicationAttachment(
       applicationId,

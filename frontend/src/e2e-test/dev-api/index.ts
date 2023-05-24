@@ -5,9 +5,9 @@
 import * as fs from 'fs/promises'
 
 import axios, {
-  AxiosRequestConfig,
-  AxiosRequestHeaders,
-  AxiosResponse
+  AxiosHeaders,
+  AxiosResponse,
+  InternalAxiosRequestConfig
 } from 'axios'
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
@@ -108,14 +108,14 @@ export class DevApiError extends BaseError {
   }
 }
 
-function clockHeader(now: HelsinkiDateTime): AxiosRequestHeaders {
-  return {
+function clockHeader(now: HelsinkiDateTime): AxiosHeaders {
+  return new AxiosHeaders({
     EvakaMockedTime: now.formatIso()
-  }
+  })
 }
 
-function formatRequest(config: AxiosRequestConfig): string {
-  if (!config.url) return ''
+function formatRequest(config: InternalAxiosRequestConfig | undefined): string {
+  if (!config || !config.url) return ''
   const url = new URL(config.url, config.baseURL)
   return `${String(config.method)} ${url.pathname}${url.search}${url.hash}`
 }

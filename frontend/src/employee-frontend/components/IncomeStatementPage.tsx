@@ -440,10 +440,7 @@ function EmployeeAttachments({
   const { i18n } = useTranslation()
 
   const handleUpload = useCallback(
-    async (
-      file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) =>
+    async (file: File, onUploadProgress: (percentage: number) => void) =>
       (
         await saveIncomeStatementAttachment(
           incomeStatementId,

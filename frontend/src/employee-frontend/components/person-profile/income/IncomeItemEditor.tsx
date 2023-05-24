@@ -343,10 +343,7 @@ function IncomeAttachments({
   const { i18n } = useTranslation()
 
   const handleUpload = useCallback(
-    async (
-      file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) =>
+    async (file: File, onUploadProgress: (percentage: number) => void) =>
       (await saveIncomeAttachment(incomeId, file, onUploadProgress)).map(
         (id) => {
           onUploaded({ id, name: file.name, contentType: file.type })

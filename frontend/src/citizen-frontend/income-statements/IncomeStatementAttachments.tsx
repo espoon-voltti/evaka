@@ -38,10 +38,7 @@ export default React.memo(function Attachments({
   const t = useTranslation()
 
   const handleUpload = useCallback(
-    async (
-      file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) =>
+    async (file: File, onUploadProgress: (percentage: number) => void) =>
       (
         await saveIncomeStatementAttachment(
           incomeStatementId,

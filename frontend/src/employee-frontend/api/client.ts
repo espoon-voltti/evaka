@@ -17,7 +17,7 @@ if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
     const evakaMockedTime = mockNow()?.toISOString()
     if (evakaMockedTime) {
-      config.headers = { ...config.headers, EvakaMockedTime: evakaMockedTime }
+      config.headers.set('EvakaMockedTime', evakaMockedTime)
     }
     return config
   })

@@ -140,7 +140,7 @@ export async function getReceivers(): Promise<
 async function doSaveAttachment(
   config: { path: string; params?: unknown },
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   const formData = new FormData()
   formData.append('file', file)
@@ -149,7 +149,12 @@ async function doSaveAttachment(
     const { data } = await client.post<UUID>(config.path, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       params: config.params,
-      onUploadProgress
+      onUploadProgress: ({ loaded, total }) =>
+        onUploadProgress(
+          total !== undefined && total !== 0
+            ? Math.round((loaded * 100) / total)
+            : 0
+        )
     })
     return Success.of(data)
   } catch (e) {
@@ -160,7 +165,7 @@ async function doSaveAttachment(
 export const saveMessageAttachment = (
   draftId: UUID,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> =>
   doSaveAttachment(
     { path: `/attachments/messages/${draftId}` },

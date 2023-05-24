@@ -79,7 +79,7 @@ interface FileUploadProps {
   files: Attachment[]
   onUpload: (
     file: File,
-    onUploadProgress: (progressEvent: ProgressEvent) => void
+    onUploadProgress: (percentage: number) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
   getDownloadUrl: (id: UUID, fileName: string) => string
@@ -240,6 +240,7 @@ const ProgressBarDetails = styled.div`
 const ProgressBarError = styled.div`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
   margin-top: 3px;
+
   svg {
     color: ${(p) => p.theme.colors.status.warning};
     margin-left: 8px;
@@ -283,7 +284,7 @@ export const fileIcon = (file: Attachment): IconDefinition => {
   }
 }
 
-const inProgress = (file: FileObject): boolean => file.uploaded === false
+const inProgress = (file: FileObject): boolean => !file.uploaded
 
 export default React.memo(function FileUpload({
   i18n,
@@ -363,7 +364,7 @@ export default React.memo(function FileUpload({
     file: File,
     onUpload: (
       file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
+      onUploadProgress: (percentage: number) => void
     ) => Promise<Result<UUID>>
   ) => {
     const error = file.size > 10000000 ? 'FILE_TOO_LARGE' : undefined
@@ -386,9 +387,8 @@ export default React.memo(function FileUpload({
       return
     }
 
-    const updateProgress = ({ loaded, total }: ProgressEvent) => {
-      const progress = Math.round((loaded / total) * 100)
-      updateUploadedFile({ ...fileObject, progress })
+    const updateProgress = (percentage: number) => {
+      updateUploadedFile({ ...fileObject, progress: percentage })
     }
 
     try {

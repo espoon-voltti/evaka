@@ -92,10 +92,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   }, [endEdit, i18n, id, onReload, pedagogicalDocument, setErrorMessage])
 
   const handleAttachmentUpload = useCallback(
-    async (
-      file: File,
-      onUploadProgress: (progressEvent: ProgressEvent) => void
-    ) => {
+    async (file: File, onUploadProgress: (percentage: number) => void) => {
       setSubmitting(true)
       return (
         await savePedagogicalDocumentAttachment(id, file, onUploadProgress)
