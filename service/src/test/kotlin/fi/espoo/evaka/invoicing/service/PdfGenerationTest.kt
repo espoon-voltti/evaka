@@ -98,6 +98,7 @@ class PdfGenerationTest {
                                 areaId = AreaId(UUID.randomUUID()),
                                 areaName = "Test Area"
                             ),
+                        serviceNeedOptionId = it.serviceNeed.optionId,
                         serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
                         serviceNeedDescriptionFi = it.serviceNeed.descriptionFi,
                         serviceNeedDescriptionSv = it.serviceNeed.descriptionSv,

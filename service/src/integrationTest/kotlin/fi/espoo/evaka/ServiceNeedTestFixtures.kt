@@ -745,6 +745,7 @@ val serviceNeedOptionVoucherValueTestFixtures =
 
 fun ServiceNeedOption.toFeeDecisionServiceNeed() =
     FeeDecisionServiceNeed(
+        optionId = this.id,
         feeCoefficient = this.feeCoefficient,
         contractDaysPerMonth = this.contractDaysPerMonth,
         descriptionFi = this.feeDescriptionFi,

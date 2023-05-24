@@ -910,6 +910,7 @@ export const feeDecisionsFixture = (
         type: 'DAYCARE'
       },
       serviceNeed: {
+        optionId: null,
         feeCoefficient: 1.0,
         contractDaysPerMonth: null,
         descriptionFi: 'palveluntarve',

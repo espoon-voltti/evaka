@@ -145,6 +145,7 @@ export interface FeeDecisionChildDetailed {
   serviceNeedDescriptionSv: string
   serviceNeedFeeCoefficient: number
   serviceNeedMissing: boolean
+  serviceNeedOptionId: UUID | null
   siblingDiscount: number
 }
 
@@ -213,6 +214,7 @@ export interface FeeDecisionServiceNeed {
   descriptionSv: string
   feeCoefficient: number
   missing: boolean
+  optionId: UUID | null
 }
 
 /**

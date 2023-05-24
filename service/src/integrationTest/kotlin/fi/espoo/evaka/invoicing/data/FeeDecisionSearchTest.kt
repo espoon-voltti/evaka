@@ -411,6 +411,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.DAYCARE,
             serviceNeed = serviceNeed?.toFeeDecisionServiceNeed()
                     ?: FeeDecisionServiceNeed(
+                        optionId = serviceNeed?.id,
                         feeCoefficient = BigDecimal.ONE,
                         contractDaysPerMonth = null,
                         descriptionFi = "",

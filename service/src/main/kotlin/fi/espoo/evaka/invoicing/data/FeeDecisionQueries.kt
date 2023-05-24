@@ -68,6 +68,7 @@ SELECT
                 'type', part.placement_type
             ),
             'serviceNeed', json_build_object(
+                'optionId', part.service_need_option_id,
                 'feeCoefficient', part.service_need_fee_coefficient,
                 'contractDaysPerMonth', part.service_need_contract_days_per_month,
                 'descriptionFi', part.service_need_description_fi,
@@ -154,6 +155,7 @@ SELECT
                 'areaName', care_area.name,
                 'language', daycare.language
             ),
+            'serviceNeedOptionId', part.service_need_option_id,
             'serviceNeedFeeCoefficient', part.service_need_fee_coefficient,
             'serviceNeedDescriptionFi', part.service_need_description_fi,
             'serviceNeedDescriptionSv', part.service_need_description_sv,
@@ -260,6 +262,7 @@ private fun Database.Transaction.insertChildren(
             child_date_of_birth,
             placement_unit_id,
             placement_type,
+            service_need_option_id,
             service_need_fee_coefficient,
             service_need_contract_days_per_month,
             service_need_description_fi,
@@ -278,6 +281,7 @@ private fun Database.Transaction.insertChildren(
             :childDateOfBirth,
             :placementUnitId,
             :placementType,
+            :serviceNeedOptionId,
             :serviceNeedFeeCoefficient,
             :serviceNeedContractDaysPerMonth,
             :serviceNeedDescriptionFi,
@@ -303,6 +307,7 @@ private fun Database.Transaction.insertChildren(
                 .bind("childDateOfBirth", child.child.dateOfBirth)
                 .bind("placementUnitId", child.placement.unitId)
                 .bind("placementType", child.placement.type)
+                .bind("serviceNeedOptionId", child.serviceNeed.optionId)
                 .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
                 .bind("serviceNeedContractDaysPerMonth", child.serviceNeed.contractDaysPerMonth)
                 .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)
