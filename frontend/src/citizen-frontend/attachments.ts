@@ -11,7 +11,7 @@ import { API_URL, client } from './api-client'
 async function doSaveAttachment(
   url: string,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   const formData = new FormData()
   formData.append('file', file)
@@ -19,7 +19,12 @@ async function doSaveAttachment(
   try {
     const { data } = await client.post<string>(url, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress
+      onUploadProgress: ({ loaded, total }) =>
+        onUploadProgress(
+          total !== undefined && total !== 0
+            ? Math.round((loaded / total) * 100)
+            : 0
+        )
     })
     return Success.of(data)
   } catch (e) {
@@ -30,7 +35,7 @@ async function doSaveAttachment(
 export async function saveIncomeStatementAttachment(
   incomeStatementId: UUID | undefined,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return doSaveAttachment(
     incomeStatementId
@@ -45,7 +50,7 @@ export async function saveApplicationAttachment(
   applicationId: UUID,
   file: File,
   attachmentType: AttachmentType,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return doSaveAttachment(
     `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`,

@@ -11,7 +11,7 @@ import { API_URL, client } from './client'
 async function doSaveAttachment(
   config: { path: string; params?: unknown },
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   const formData = new FormData()
   formData.append('file', file)
@@ -20,7 +20,12 @@ async function doSaveAttachment(
     const { data } = await client.post<UUID>(config.path, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       params: config.params,
-      onUploadProgress
+      onUploadProgress: ({ loaded, total }) =>
+        onUploadProgress(
+          total !== undefined && total !== 0
+            ? Math.round((loaded * 100) / total)
+            : 0
+        )
     })
     return Success.of(data)
   } catch (e) {
@@ -32,7 +37,7 @@ export async function saveApplicationAttachment(
   applicationId: UUID,
   file: File,
   type: AttachmentType,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return await doSaveAttachment(
     { path: `/attachments/applications/${applicationId}`, params: { type } },
@@ -44,7 +49,7 @@ export async function saveApplicationAttachment(
 export async function saveIncomeStatementAttachment(
   incomeStatementId: UUID,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return await doSaveAttachment(
     { path: `/attachments/income-statements/${incomeStatementId}` },
@@ -56,7 +61,7 @@ export async function saveIncomeStatementAttachment(
 export async function saveIncomeAttachment(
   incomeId: UUID | null,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return await doSaveAttachment(
     {
@@ -70,7 +75,7 @@ export async function saveIncomeAttachment(
 export const saveMessageAttachment = (
   draftId: UUID,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> =>
   doSaveAttachment(
     { path: `/attachments/messages/${draftId}` },
@@ -81,7 +86,7 @@ export const saveMessageAttachment = (
 export const savePedagogicalDocumentAttachment = (
   documentId: UUID,
   file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
+  onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> =>
   doSaveAttachment(
     { path: `/attachments/pedagogical-documents/${documentId}` },

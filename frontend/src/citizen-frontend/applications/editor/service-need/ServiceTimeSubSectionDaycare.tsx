@@ -81,7 +81,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
   const uploadExtendedCareAttachment = (
     file: File,
-    onUploadProgress: (progressEvent: ProgressEvent) => void
+    onUploadProgress: (percentage: number) => void
   ): Promise<Result<UUID>> =>
     saveApplicationAttachment(
       applicationId,
