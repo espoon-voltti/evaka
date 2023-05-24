@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import ReactCrop, { Crop } from 'react-image-crop'
+import React, { SyntheticEvent, useCallback, useEffect, useState } from 'react'
+import ReactCrop, { centerCrop, Crop, makeAspectCrop } from 'react-image-crop'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -21,14 +21,6 @@ import { uploadChildImageMutation } from '../child-attendance/queries'
 import { useTranslation } from '../common/i18n'
 
 import 'react-image-crop/dist/ReactCrop.css'
-
-const defaultCrop: Partial<Crop> = {
-  unit: '%',
-  width: 80,
-  x: 10,
-  y: 10,
-  aspect: 1
-}
 
 interface Props {
   unitId: UUID
@@ -44,10 +36,8 @@ export default React.memo(function ImageEditor({
   onReturn
 }: Props) {
   const { i18n } = useTranslation()
-  const [crop, setCrop] = useState<Partial<Crop>>(defaultCrop)
-  const [completedCrop, setCompletedCrop] = useState<Crop | null>(null)
+  const [crop, setCrop] = useState<Crop>()
   const [imageElem, setImageElem] = useState<HTMLImageElement | null>(null)
-  const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
 
@@ -77,99 +67,53 @@ export default React.memo(function ImageEditor({
     }
   }, [onReturn, navigate])
 
-  const onSave = useCallback(() => {
-    if (!crop || !previewCanvasRef.current) return
-    let canvas = previewCanvasRef.current
-
-    if (canvas.width > 512 || canvas.height > 512) {
-      const resizedCanvas = document.createElement('canvas')
-      resizedCanvas.width = Math.min((canvas.width / canvas.height) * 512, 512)
-      resizedCanvas.height = Math.min((canvas.height / canvas.width) * 512, 512)
-      resizedCanvas
-        .getContext('2d')
-        ?.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height)
-      canvas = resizedCanvas
-    }
-
-    setSubmitting(true)
-
-    return new Promise<Result<void>>((resolve) =>
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const file = new File([blob], 'cropped-image.jpeg', {
-              type: blob.type
-            })
-            resolve(uploadChildImage({ unitId, childId, file }))
-          } else {
-            resolve(Failure.of({ message: 'Could not convert canvas to blob' }))
-          }
-        },
-        'image/jpeg',
-        0.7
+  const onImageLoad = useCallback((e: SyntheticEvent<HTMLImageElement>) => {
+    const image = e.currentTarget
+    setImageElem(image)
+    setCrop(
+      centerCrop(
+        makeAspectCrop(
+          {
+            // You don't need to pass a complete crop into
+            // makeAspectCrop or centerCrop.
+            unit: '%',
+            width: 90
+          },
+          1,
+          image.naturalWidth,
+          image.naturalHeight
+        ),
+        image.naturalWidth,
+        image.naturalHeight
       )
     )
-  }, [uploadChildImage, unitId, childId, crop])
+  }, [])
+
+  const onSave = useCallback(() => {
+    if (!imageElem || !crop) return
+    cropImage(imageElem, crop)
+      .then((file) => uploadChildImage({ unitId, childId, file }))
+      .then(() => Success.of())
+      .catch((e) => Failure.fromError(e))
+  }, [childId, crop, imageElem, unitId, uploadChildImage])
 
   const onSuccess = useCallback(() => {
     setSubmitting(false)
     onReturn()
   }, [onReturn])
 
-  useEffect(() => {
-    if (!completedCrop || !previewCanvasRef.current || !imageElem) {
-      return
-    }
-
-    const canvas = previewCanvasRef.current
-    const crop = completedCrop
-
-    const scaleX = imageElem.naturalWidth / imageElem.width
-    const scaleY = imageElem.naturalHeight / imageElem.height
-    const ctx = canvas.getContext('2d')
-    const pixelRatio = window.devicePixelRatio
-
-    canvas.width = (crop.width ?? 0) * pixelRatio
-    canvas.height = (crop.height ?? 0) * pixelRatio
-
-    if (ctx) {
-      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
-      ctx.imageSmoothingQuality = 'high'
-
-      ctx.drawImage(
-        imageElem,
-        (crop.x ?? 0) * scaleX,
-        (crop.y ?? 0) * scaleY,
-        (crop.width ?? 0) * scaleX,
-        (crop.height ?? 0) * scaleY,
-        0,
-        0,
-        crop.width ?? 0,
-        crop.height ?? 0
-      )
-    }
-  }, [imageElem, completedCrop])
-
   return (
     <div>
       <CropContainer>
         <CropWrapper>
           <ReactCrop
-            src={image}
+            aspect={1}
             crop={crop}
-            onImageLoaded={setImageElem}
             onChange={(c) => setCrop(c)}
-            onComplete={setCompletedCrop}
             circularCrop
-          />
-          <canvas
-            ref={previewCanvasRef}
-            style={{
-              width: 256,
-              height: 256,
-              display: 'none'
-            }}
-          />
+          >
+            <img src={image} onLoad={onImageLoad} alt="" />
+          </ReactCrop>
         </CropWrapper>
       </CropContainer>
       <Gap />
@@ -188,7 +132,7 @@ export default React.memo(function ImageEditor({
             <AsyncButton
               text={i18n.common.save}
               primary
-              disabled={!completedCrop}
+              disabled={crop === undefined}
               onClick={onSave}
               onSuccess={onSuccess}
             />
@@ -266,3 +210,61 @@ const CropWrapper = styled.div`
     height: 64px;
   }
 `
+
+function cropImage(image: HTMLImageElement, crop: Crop): Promise<File> {
+  let canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    throw new Error('Could not get canvas context')
+  }
+
+  const scaleX = image.naturalWidth / image.width
+  const scaleY = image.naturalHeight / image.height
+  const pixelRatio = window.devicePixelRatio
+
+  canvas.width = crop.width * pixelRatio
+  canvas.height = crop.height * pixelRatio
+
+  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+  ctx.imageSmoothingQuality = 'high'
+
+  ctx.drawImage(
+    image,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width,
+    crop.height
+  )
+
+  if (canvas.width > 512 || canvas.height > 512) {
+    const resizedCanvas = document.createElement('canvas')
+    resizedCanvas.width = Math.min((canvas.width / canvas.height) * 512, 512)
+    resizedCanvas.height = Math.min((canvas.height / canvas.width) * 512, 512)
+    resizedCanvas
+      .getContext('2d')
+      ?.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height)
+    canvas = resizedCanvas
+  }
+
+  return new Promise<File>((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(
+            new File([blob], 'cropped-image.jpeg', {
+              type: blob.type
+            })
+          )
+        } else {
+          reject(new Error('Could not convert canvas to blob'))
+        }
+      },
+      'image/jpeg',
+      0.7
+    )
+  )
+}
