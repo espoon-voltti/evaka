@@ -15,7 +15,8 @@ import styled from 'styled-components'
 import {
   AbsenceCategory,
   AbsenceDelete,
-  AbsenceType
+  AbsenceType,
+  AbsenceUpsert
 } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -33,12 +34,7 @@ import {
 } from '../../api/absences'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import {
-  Cell,
-  CellPart,
-  defaultAbsenceType,
-  defaultAbsenceCategories
-} from '../../types/absence'
+import { Cell, CellPart } from '../../types/absence'
 import { renderResult } from '../async-rendering'
 
 import { AbsenceLegend } from './AbsenceLegend'
@@ -62,11 +58,6 @@ export default React.memo(function Absences({
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedCells, setSelectedCells] = useState<Cell[]>([])
-  const [selectedAbsenceType, setSelectedAbsenceType] =
-    useState<AbsenceType | null>(defaultAbsenceType)
-  const [selectedCategories, setSelectedCategories] = useState(
-    defaultAbsenceCategories
-  )
 
   const selectedYear = selectedDate.getYear()
   const selectedMonth = selectedDate.getMonth()
@@ -95,12 +86,15 @@ export default React.memo(function Absences({
     [updateSelectedCells]
   )
 
-  const resetModalState = useCallback(() => {
+  const closeModal = useCallback(() => {
     setSelectedCells([])
-    setSelectedAbsenceType(defaultAbsenceType)
-    setSelectedCategories(defaultAbsenceCategories)
     setModalVisible(false)
-  }, [setSelectedAbsenceType, setSelectedCategories, setSelectedCells])
+  }, [])
+
+  const showCategorySelection = useMemo(
+    () => selectedCells.some(({ parts }) => parts.length > 1),
+    [selectedCells]
+  )
 
   useEffect(() => {
     if (absences.isSuccess) {
@@ -108,78 +102,59 @@ export default React.memo(function Absences({
     }
   }, [absences, setTitle])
 
-  const showCategorySelection = useMemo(
-    () => selectedCells.some(({ parts }) => parts.length > 1),
-    [selectedCells]
+  const updateAbsences = useCallback(
+    (absenceType: AbsenceType | null, absenceCategories: AbsenceCategory[]) => {
+      const selectedParts: CellPart[] = flatMap(
+        selectedCells,
+        ({ parts }) => parts
+      )
+
+      const sentParts =
+        absenceCategories.length > 0
+          ? selectedParts.filter((part) =>
+              absenceCategories.includes(part.category)
+            )
+          : selectedParts
+
+      ;(absenceType === null
+        ? deleteGroupAbsences(
+            groupId,
+            sentParts.map(
+              ({ childId, date, category }): AbsenceDelete => ({
+                childId,
+                date,
+                category
+              })
+            )
+          )
+        : postGroupAbsences(
+            groupId,
+            sentParts.map(
+              ({ childId, date, category }): AbsenceUpsert => ({
+                childId,
+                date,
+                category,
+                absenceType
+              })
+            )
+          )
+      )
+        .then(loadAbsences)
+        .catch((e) => console.error(e))
+        .finally(() => {
+          closeModal()
+        })
+    },
+    [closeModal, groupId, loadAbsences, selectedCells]
   )
-
-  const updateCategories = useCallback((category: AbsenceCategory) => {
-    setSelectedCategories((categories) =>
-      categories.includes(category)
-        ? categories.filter((c) => c !== category)
-        : [...categories, category]
-    )
-  }, [])
-
-  const updateAbsences = useCallback(() => {
-    const selectedParts: CellPart[] = flatMap(
-      selectedCells,
-      ({ parts }) => parts
-    )
-
-    const sentParts = showCategorySelection
-      ? selectedParts.filter((part) =>
-          selectedCategories.includes(part.category)
-        )
-      : selectedParts
-
-    const payload: AbsenceDelete[] = sentParts.map(
-      ({ childId, date, category }) => ({
-        childId,
-        date,
-        category
-      })
-    )
-
-    ;(selectedAbsenceType === null
-      ? deleteGroupAbsences(groupId, payload)
-      : postGroupAbsences(
-          groupId,
-          payload.map((data) => ({
-            ...data,
-            absenceType: selectedAbsenceType
-          }))
-        )
-    )
-      .then(loadAbsences)
-      .catch((e) => console.error(e))
-      .finally(() => {
-        resetModalState()
-      })
-  }, [
-    groupId,
-    loadAbsences,
-    resetModalState,
-    selectedAbsenceType,
-    selectedCategories,
-    selectedCells,
-    showCategorySelection
-  ])
 
   return (
     <div data-qa="absences-page">
       {modalVisible && selectedCells.length > 0 && (
         <AbsenceModal
-          onSave={updateAbsences}
-          saveDisabled={
-            showCategorySelection && selectedCategories.length === 0
-          }
-          onCancel={resetModalState}
-          selectedAbsenceType={selectedAbsenceType}
-          setSelectedAbsenceType={setSelectedAbsenceType}
           showCategorySelection={showCategorySelection}
-          selectedCategories={selectedCategories}
-          updateCategories={updateCategories}
+          onSave={updateAbsences}
+          onClose={closeModal}
         />
       )}
       {renderResult(absences, (absences) => (

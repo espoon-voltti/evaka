@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 
 import {
   AbsenceCategory,
@@ -16,35 +16,47 @@ import { Label } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import { absenceCategories } from '../../types/absence'
+import {
+  absenceCategories,
+  defaultAbsenceCategories,
+  defaultAbsenceType
+} from '../../types/absence'
 
 export default React.memo(function AbsenceModal({
-  onSave,
-  saveDisabled,
-  onCancel,
-  selectedAbsenceType,
-  setSelectedAbsenceType,
   showCategorySelection,
-  selectedCategories,
-  updateCategories
+  onSave,
+  onClose
 }: {
-  onSave: () => void
-  saveDisabled: boolean
-  onCancel: () => void
-  selectedAbsenceType: AbsenceType | null
-  setSelectedAbsenceType: (value: AbsenceType | null) => void
   showCategorySelection: boolean
-  selectedCategories: AbsenceCategory[]
-  updateCategories: (value: AbsenceCategory) => void
+  onSave: (
+    absenceType: AbsenceType | null,
+    absenceCategories: AbsenceCategory[]
+  ) => void
+  onClose: () => void
 }) {
   const { i18n } = useTranslation()
+
+  const [selectedAbsenceType, setSelectedAbsenceType] =
+    useState<AbsenceType | null>(defaultAbsenceType)
+  const [selectedCategories, setSelectedCategories] = useState(
+    defaultAbsenceCategories
+  )
+
+  const updateCategories = useCallback((category: AbsenceCategory) => {
+    setSelectedCategories((categories) =>
+      categories.includes(category)
+        ? categories.filter((c) => c !== category)
+        : [...categories, category]
+    )
+  }, [])
+
   return (
     <FormModal
       title=""
-      resolveAction={onSave}
+      resolveAction={() => onSave(selectedAbsenceType, selectedCategories)}
       resolveLabel={i18n.absences.modal.saveButton}
-      resolveDisabled={saveDisabled}
-      rejectAction={onCancel}
+      resolveDisabled={showCategorySelection && selectedCategories.length === 0}
+      rejectAction={onClose}
       rejectLabel={i18n.absences.modal.cancelButton}
       data-qa="absence-modal"
     >
