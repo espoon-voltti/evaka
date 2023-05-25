@@ -12,6 +12,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
@@ -44,8 +45,12 @@ export default React.memo(function ChildPage() {
               <ContentArea opaque>
                 <ChildHeader child={child} />
               </ContentArea>
-              <Gap size="s" />
-              <ServiceNeedAndDailyServiceTimeSection childId={childId} />
+              {featureFlags.experimental?.childPageServiceNeedSection && (
+                <>
+                  <Gap size="s" />
+                  <ServiceNeedAndDailyServiceTimeSection childId={childId} />
+                </>
+              )}
               {user?.accessibleFeatures.childDocumentation && (
                 <>
                   <Gap size="s" />
