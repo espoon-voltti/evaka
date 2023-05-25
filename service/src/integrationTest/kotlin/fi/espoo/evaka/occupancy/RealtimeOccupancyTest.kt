@@ -27,15 +27,14 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
-    val date = LocalDate.now().minusDays(1)
-    val groupId = GroupId(UUID.randomUUID())
+    private val date = LocalDate.of(2022, 5, 23)
+    private val groupId = GroupId(UUID.randomUUID())
 
     @BeforeEach
     fun setUp() {
@@ -296,7 +295,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = getRealtimeOccupancy()
         val occupancies = result.occupancySeries
         assertEquals(2, occupancies.size)
-        assertEquals(1.0, occupancies.get(0).childCapacity)
+        assertEquals(1.0, occupancies[0].childCapacity)
     }
 
     private fun getRealtimeOccupancy(
@@ -380,7 +379,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         val occupancies = result.occupancySeries
 
-        assertContentEquals(
+        assertEquals(
             listOf(
                 OccupancyPoint(HelsinkiDateTime.of(date, LocalTime.of(19, 45)), 0.0, 7.0),
                 OccupancyPoint(HelsinkiDateTime.of(date, LocalTime.of(20, 45)), 1.75, 7.0),

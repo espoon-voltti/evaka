@@ -25,13 +25,17 @@ data class RealtimeOccupancy(
             }
 
         val attns: List<ChildOccupancyAttendance> =
-            childAttendances.fold(listOf()) { list, child ->
-                if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
-                    list.dropLast(1) + list.last().copy(departed = child.departed)
-                } else {
-                    list + child
+            childAttendances
+                .sortedWith(
+                    compareBy({ it.childId }, { it.arrived }),
+                )
+                .fold(listOf()) { list, child ->
+                    if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
+                        list.dropLast(1) + list.last().copy(departed = child.departed)
+                    } else {
+                        list + child
+                    }
                 }
-            }
         val arrivals = attns.map { child -> ChildCapacityPoint(child.arrived, child.capacity) }
         val departures =
             attns.mapNotNull { child ->
@@ -141,8 +145,9 @@ fun Database.Read.getChildOccupancyAttendances(
     LEFT JOIN service_need_option sno on sn.option_id = sno.id
     LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
     LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> ca.date
-    WHERE ca.unit_id = :unitId AND tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && :timeRange
-    ORDER BY ca.child_id
+    WHERE
+        ca.unit_id = :unitId AND
+        tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && :timeRange
     """
                 .trimIndent()
         )
