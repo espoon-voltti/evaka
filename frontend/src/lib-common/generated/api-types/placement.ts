@@ -15,6 +15,7 @@ import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
+import { Unit } from './children'
 
 /**
 * Generated from fi.espoo.evaka.placement.ChildBasics
@@ -158,18 +159,6 @@ export interface PlacementDraftChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementDraftPlacement
-*/
-export interface PlacementDraftPlacement {
-  childId: UUID
-  endDate: LocalDate
-  id: UUID
-  startDate: LocalDate
-  type: PlacementType
-  unit: PlacementDraftUnit
-}
-
-/**
 * Generated from fi.espoo.evaka.placement.PlacementDraftUnit
 */
 export interface PlacementDraftUnit {
@@ -220,7 +209,7 @@ export interface PlacementPlanDraft {
   child: PlacementDraftChild
   guardianHasRestrictedDetails: boolean
   period: FiniteDateRange
-  placements: PlacementDraftPlacement[]
+  placements: PlacementSummary[]
   preferredUnits: PlacementDraftUnit[]
   preschoolDaycarePeriod: FiniteDateRange | null
   type: PlacementType
@@ -242,6 +231,18 @@ export interface PlacementResponse {
   permittedPlacementActions: Record<string, Action.Placement[]>
   permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
   placements: DaycarePlacementWithDetails[]
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementSummary
+*/
+export interface PlacementSummary {
+  childId: UUID
+  endDate: LocalDate
+  id: UUID
+  startDate: LocalDate
+  type: PlacementType
+  unit: Unit
 }
 
 /**

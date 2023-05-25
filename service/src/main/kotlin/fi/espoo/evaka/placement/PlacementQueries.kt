@@ -37,38 +37,19 @@ WHERE p.id = :id
         .firstOrNull()
 }
 
-fun Database.Read.getPlacementDraftPlacements(childId: ChildId): List<PlacementDraftPlacement> {
-    data class QueryResult(
-        val id: PlacementId,
-        val type: PlacementType,
-        val childId: ChildId,
-        val unitId: DaycareId,
-        val unitName: String,
-        val startDate: LocalDate,
-        val endDate: LocalDate
-    )
+fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> {
     return createQuery(
             """
         SELECT p.id, p.type, p.child_id, d.id AS unit_id, d.name AS unit_name, p.start_date, p.end_date
         FROM placement p
-        LEFT JOIN daycare d on p.unit_id = d.id
+        JOIN daycare d on p.unit_id = d.id
         WHERE p.child_id = :childId
         """
                 .trimIndent()
         )
         .bind("childId", childId)
-        .mapTo<QueryResult>()
+        .mapTo<PlacementSummary>()
         .list()
-        .map { r ->
-            PlacementDraftPlacement(
-                id = r.id,
-                type = r.type,
-                unit = PlacementDraftUnit(r.unitId, r.unitName),
-                childId = r.childId,
-                startDate = r.startDate,
-                endDate = r.endDate
-            )
-        }
 }
 
 fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {

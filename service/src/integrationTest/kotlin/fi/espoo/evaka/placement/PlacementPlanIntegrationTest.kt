@@ -352,7 +352,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
-        placements: List<PlacementDraftPlacement> = emptyList(),
+        placements: List<PlacementSummary> = emptyList(),
         guardianHasRestrictedDetails: Boolean = false
     ) {
         val result =

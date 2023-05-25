@@ -7,7 +7,7 @@ package fi.espoo.evaka.children
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
-import fi.espoo.evaka.placement.getPlacementDraftPlacements
+import fi.espoo.evaka.placement.getPlacementSummary
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.ServiceNeedSummary
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
@@ -80,7 +80,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                 .filter { it.defaultOption }
                 .associateBy({ it.validPlacementType }, { ServiceNeedOptionPublicInfo.of(it) })
         val serviceNeedDateRanges = serviceNeeds.map { FiniteDateRange(it.startDate, it.endDate) }
-        return tx.getPlacementDraftPlacements(childId).flatMap { placement ->
+        return tx.getPlacementSummary(childId).flatMap { placement ->
             val placementRange = FiniteDateRange(placement.startDate, placement.endDate)
             placementRange.complement(serviceNeedDateRanges).map {
                 ServiceNeedSummary(
