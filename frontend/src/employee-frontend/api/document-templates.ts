@@ -25,6 +25,18 @@ export async function postDocumentTemplate(
     }))
 }
 
+export async function postDocumentTemplateDuplicate(
+  id: UUID,
+  data: DocumentTemplateCreateRequest
+): Promise<DocumentTemplate> {
+  return client
+    .post<JsonOf<DocumentTemplate>>(`/document-templates/${id}/duplicate`, data)
+    .then((res) => ({
+      ...res.data,
+      validity: DateRange.parseJson(res.data.validity)
+    }))
+}
+
 export async function getDocumentTemplateSummaries(): Promise<
   DocumentTemplateSummary[]
 > {
@@ -69,6 +81,17 @@ export async function putDocumentTemplateContent(
   await client.put(`/document-templates/${id}/content`, content)
 }
 
+export async function putDocumentTemplateValidity(
+  id: UUID,
+  validity: DateRange
+): Promise<void> {
+  await client.put(`/document-templates/${id}/validity`, validity)
+}
+
 export async function putDocumentTemplatePublish(id: UUID): Promise<void> {
   await client.put(`/document-templates/${id}/publish`)
+}
+
+export async function deleteDocumentTemplate(id: UUID): Promise<void> {
+  await client.delete(`/document-templates/${id}`)
 }

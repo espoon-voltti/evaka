@@ -30,6 +30,7 @@ interface DateRangePickerProps
   startInfo?: InputInfo
   endInfo?: InputInfo
   'data-qa'?: string
+  externalRangeValidation?: boolean
 }
 
 const DateRangePicker = React.memo(function DateRangePicker({
@@ -37,6 +38,7 @@ const DateRangePicker = React.memo(function DateRangePicker({
   end,
   onChange,
   'data-qa': dataQa,
+  externalRangeValidation,
   ...datePickerProps
 }: DateRangePickerProps) {
   const i18n = useTranslations()
@@ -57,7 +59,12 @@ const DateRangePicker = React.memo(function DateRangePicker({
     setInternalStartError(undefined)
     setInternalEndError(undefined)
 
-    if (internalStart && internalEnd && internalStart.isAfter(internalEnd)) {
+    if (
+      !externalRangeValidation &&
+      internalStart &&
+      internalEnd &&
+      internalStart.isAfter(internalEnd)
+    ) {
       setInternalStartError({
         text: i18n.datePicker.validationErrors.dateTooLate,
         status: 'warning'
@@ -75,7 +82,15 @@ const DateRangePicker = React.memo(function DateRangePicker({
     ) {
       onChange(internalStart, internalEnd)
     }
-  }, [i18n, internalStart, internalEnd, onChange, start, end])
+  }, [
+    i18n,
+    internalStart,
+    internalEnd,
+    onChange,
+    externalRangeValidation,
+    start,
+    end
+  ])
 
   const minDateForEnd = useMemo(
     () =>
@@ -142,10 +157,12 @@ export interface DateRangePickerFProps
       endDate: Form<unknown, string, LocalDate | null, unknown>
     }
   >
+  externalRangeValidation?: boolean
 }
 
 export const DateRangePickerF = React.memo(function DateRangePickerF({
   bind,
+  externalRangeValidation,
   ...props
 }: DateRangePickerFProps) {
   const info = bind.inputInfo()
@@ -161,6 +178,7 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
           startDate.set(start)
           endDate.set(end)
         }}
+        externalRangeValidation={externalRangeValidation}
         startInfo={
           'startInfo' in props ? props.startInfo : startDate.inputInfo()
         }

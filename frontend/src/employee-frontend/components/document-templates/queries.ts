@@ -2,17 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
+import DateRange from 'lib-common/date-range'
+import {
+  DocumentTemplateContent,
+  DocumentTemplateCreateRequest
+} from 'lib-common/generated/api-types/document'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import {
+  deleteDocumentTemplate,
   getActiveDocumentTemplateSummaries,
   getDocumentTemplate,
   getDocumentTemplateSummaries,
   postDocumentTemplate,
+  postDocumentTemplateDuplicate,
   putDocumentTemplateContent,
-  putDocumentTemplatePublish
+  putDocumentTemplatePublish,
+  putDocumentTemplateValidity
 } from '../../api/document-templates'
 import { createQueryKeys } from '../../query'
 
@@ -41,9 +48,24 @@ export const createDocumentTemplateMutation = mutation({
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
 
+export const duplicateDocumentTemplateMutation = mutation({
+  api: (arg: { id: UUID; data: DocumentTemplateCreateRequest }) =>
+    postDocumentTemplateDuplicate(arg.id, arg.data),
+  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
+})
+
 export const updateDocumentTemplateContentMutation = mutation({
   api: (arg: { id: UUID; content: DocumentTemplateContent }) =>
     putDocumentTemplateContent(arg.id, arg.content),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.documentTemplateSummaries(),
+    queryKeys.documentTemplate(arg.id)
+  ]
+})
+
+export const updateDocumentTemplateValidityMutation = mutation({
+  api: (arg: { id: UUID; validity: DateRange }) =>
+    putDocumentTemplateValidity(arg.id, arg.validity),
   invalidateQueryKeys: (arg) => [
     queryKeys.documentTemplateSummaries(),
     queryKeys.documentTemplate(arg.id)
@@ -56,4 +78,9 @@ export const publishDocumentTemplateMutation = mutation({
     queryKeys.documentTemplateSummaries(),
     queryKeys.documentTemplate(id)
   ]
+})
+
+export const deleteDocumentTemplateMutation = mutation({
+  api: (id: string) => deleteDocumentTemplate(id),
+  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
