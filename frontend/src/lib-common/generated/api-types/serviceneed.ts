@@ -94,6 +94,16 @@ export interface ServiceNeedOptionSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.serviceneed.ServiceNeedSummary
+*/
+export interface ServiceNeedSummary {
+  endDate: LocalDate
+  option: ServiceNeedOptionPublicInfo | null
+  startDate: LocalDate
+  unitName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.ServiceNeedUpdateRequest
 */
 export interface ServiceNeedUpdateRequest {
