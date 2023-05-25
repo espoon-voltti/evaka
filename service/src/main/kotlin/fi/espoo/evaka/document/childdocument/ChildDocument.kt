@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -27,25 +28,47 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     abstract val questionId: String
     abstract val answer: Answer
 
+    abstract fun isStructurallyValid(question: Question): Boolean
+
     @JsonTypeName("TEXT")
     data class TextAnswer(override val questionId: String, override val answer: String) :
-        AnsweredQuestion<String>(QuestionType.TEXT)
+        AnsweredQuestion<String>(QuestionType.TEXT) {
+        override fun isStructurallyValid(question: Question): Boolean {
+            return question is Question.TextQuestion
+        }
+    }
 
     @JsonTypeName("CHECKBOX")
     data class CheckboxAnswer(override val questionId: String, override val answer: Boolean) :
-        AnsweredQuestion<Boolean>(QuestionType.CHECKBOX)
+        AnsweredQuestion<Boolean>(QuestionType.CHECKBOX) {
+        override fun isStructurallyValid(question: Question): Boolean {
+            return question is Question.CheckboxQuestion
+        }
+    }
 
     @JsonTypeName("CHECKBOX_GROUP")
     data class CheckboxGroupAnswer(
         override val questionId: String,
         override val answer: List<String>
-    ) : AnsweredQuestion<List<String>>(QuestionType.CHECKBOX_GROUP)
+    ) : AnsweredQuestion<List<String>>(QuestionType.CHECKBOX_GROUP) {
+        override fun isStructurallyValid(question: Question): Boolean {
+            if (question !is Question.CheckboxGroupQuestion) return false
+
+            return answer.all { selected -> question.options.any { it.id == selected } }
+        }
+    }
 
     @JsonTypeName("RADIO_BUTTON_GROUP")
     data class RadioButtonGroupAnswer(
         override val questionId: String,
         override val answer: String?
-    ) : AnsweredQuestion<String?>(QuestionType.RADIO_BUTTON_GROUP)
+    ) : AnsweredQuestion<String?>(QuestionType.RADIO_BUTTON_GROUP) {
+        override fun isStructurallyValid(question: Question): Boolean {
+            if (question !is Question.RadioButtonGroupQuestion) return false
+
+            return answer == null || question.options.any { it.id == answer }
+        }
+    }
 }
 
 @Json data class DocumentContent(val answers: List<AnsweredQuestion<*>>)

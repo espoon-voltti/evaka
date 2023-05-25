@@ -43,6 +43,9 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
+import fi.espoo.evaka.document.DocumentLanguage
+import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
@@ -110,6 +113,7 @@ import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeThresholdsId
@@ -2007,6 +2011,18 @@ data class DevDaycareCaretaker(
     val amount: BigDecimal = BigDecimal.ZERO,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate? = null
+)
+
+data class DevDocumentTemplate(
+    val id: DocumentTemplateId = DocumentTemplateId(UUID.randomUUID()),
+    val name: String = "Pedagoginen arvio 2023",
+    val type: DocumentType = DocumentType.PEDAGOGICAL_ASSESSMENT,
+    val language: DocumentLanguage = DocumentLanguage.FI,
+    val confidential: Boolean = true,
+    val legalBasis: String = "§15",
+    val validity: DateRange,
+    val published: Boolean = true,
+    @Json val content: DocumentTemplateContent
 )
 
 data class Citizen(
