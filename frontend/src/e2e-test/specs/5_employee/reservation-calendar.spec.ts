@@ -302,6 +302,28 @@ describe('Unit group calendar', () => {
     )
   })
 
+  test('Missing holiday reservations are shown if reservation deadline has passed', async () => {
+    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
+    const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+        reservationDeadline: mockedToday.subDays(1)
+      })
+      .save()
+
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(holidayPeriodStart)
+
+    await waitUntilEqual(
+      () =>
+        childReservations.missingHolidayReservations(child1Fixture.id).count(),
+      7
+    )
+  })
+
   test('Tooltip for attendance is shown', async () => {
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
@@ -404,32 +426,6 @@ describe('Unit group calendar', () => {
       child1Fixture.id,
       placementEndDate.addDays(1),
       []
-    )
-  })
-
-  test('Missing holiday reservations are not shown if reservation deadline has passed', async () => {
-    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
-    const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: mockedToday.subDays(1)
-      })
-      .save()
-
-    const childReservations = (await loadUnitAttendancesSection())
-      .childReservations
-    await calendarPage.selectMode('week')
-    await calendarPage.changeWeekToDate(holidayPeriodStart)
-
-    await waitUntilEqual(
-      () => childReservations.missingReservations(child1Fixture.id).count(),
-      7
-    )
-    await waitUntilEqual(
-      () =>
-        childReservations.missingHolidayReservations(child1Fixture.id).count(),
-      0
     )
   })
 
