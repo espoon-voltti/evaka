@@ -279,7 +279,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         Audit.StaffAttendanceDepartureExternalCreate.log(targetId = body.attendanceId)
     }
 
-    val ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES = 30L
+    val ALLOWED_TIME_DRIFT_MINUTES = 1
+    val ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES = 30L + ALLOWED_TIME_DRIFT_MINUTES
     val ALLOWED_DIFF_FROM_PLAN_MINUTES = 5L
 
     fun createAttendancesFromArrival(

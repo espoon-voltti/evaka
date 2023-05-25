@@ -79,13 +79,19 @@ export default React.memo(function StaffMarkArrivedPage() {
   const [time, setTime] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
+  const [forceUpdateState, updateState] = useState<boolean>(true)
+  const forceRerender = React.useCallback(
+    () => updateState(!forceUpdateState),
+    [forceUpdateState]
+  )
 
-  const [now, setNow] = useState<Date>(() => mockNow() ?? new Date())
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
     groupId !== 'all' ? groupId : undefined
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
+
+  const getNow = () => mockNow() ?? new Date()
 
   const groupOptions = useMemo(
     () =>
@@ -143,8 +149,8 @@ export default React.memo(function StaffMarkArrivedPage() {
     [firstPlannedStartOfTheDay, time, isValidTimeString]
   )
 
-  const selectedTimeIsWithin30MinsFromNow = useMemo(
-    () =>
+  const selectedTimeIsWithin30MinsFromNow = useCallback(
+    (now: Date) =>
       isValidTimeString &&
       Math.abs(
         differenceInMinutes(
@@ -154,7 +160,7 @@ export default React.memo(function StaffMarkArrivedPage() {
           now
         )
       ) <= 30,
-    [time, now, isValidTimeString]
+    [time, isValidTimeString]
   )
 
   const hasPlan = useMemo(
@@ -268,7 +274,7 @@ export default React.memo(function StaffMarkArrivedPage() {
               !pinSet ||
               !isValidTimeString ||
               pinCode.join('').trim().length < 4 ||
-              !selectedTimeIsWithin30MinsFromNow ||
+              !selectedTimeIsWithin30MinsFromNow(getNow()) ||
               !attendanceGroup ||
               disableConfirmBecauseOfPlan
 
@@ -313,22 +319,21 @@ export default React.memo(function StaffMarkArrivedPage() {
                   <CustomTitle>{i18n.attendances.arrivalTime}</CustomTitle>
                   <TimeInput
                     onChange={setTime}
-                    onFocus={() => setNow(mockNow() ?? new Date())}
                     value={time}
                     data-qa="input-arrived"
                     info={
-                      !selectedTimeIsWithin30MinsFromNow
+                      !selectedTimeIsWithin30MinsFromNow(getNow())
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateBetween(
-                              formatTime(subMinutes(now, 30)),
-                              formatTime(addMinutes(now, 30))
+                              formatTime(subMinutes(getNow(), 30)),
+                              formatTime(addMinutes(getNow(), 30))
                             )
                           }
                         : undefined
                     }
                   />
-                  {!selectedTimeIsWithin30MinsFromNow && (
+                  {!selectedTimeIsWithin30MinsFromNow(getNow()) && (
                     <InfoBoxWrapper>
                       <InfoBox
                         message={i18n.attendances.timeDiffTooBigNotification}
@@ -344,7 +349,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                       setSelectedType={setAttendanceType}
                     />
                   )}
-                  {selectedTimeIsWithin30MinsFromNow &&
+                  {selectedTimeIsWithin30MinsFromNow(getNow()) &&
                     renderResult(groupOptions, (groupOptions) =>
                       groupOptions.length > 1 ? (
                         <>
@@ -379,7 +384,14 @@ export default React.memo(function StaffMarkArrivedPage() {
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}
-                      onClick={confirm}
+                      onClick={() => {
+                        if (selectedTimeIsWithin30MinsFromNow(getNow()))
+                          return confirm()
+                        else {
+                          forceRerender()
+                          return
+                        }
+                      }}
                       onSuccess={() => {
                         reloadStaffAttendance()
                         history.go(-1)
