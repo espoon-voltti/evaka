@@ -339,7 +339,7 @@ export default {
       absent: 'Poissa',
       reservationClosed: 'Ilmoittautuminen päättynyt',
       reservationClosedInfo:
-        'Jos haluat ilmoittaa hoitoajan tälle päivälle, ota yhteyttä henkilökuntaan',
+        'Jos haluat ilmoittaa läsnäoloajan tälle päivälle, ota yhteyttä henkilökuntaan',
       saveErrors: {
         failure: 'Tallennus epäonnistui',
         NON_RESERVABLE_DAYS: 'Joitain valittuja päiviä ei voida varata'
