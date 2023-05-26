@@ -480,6 +480,7 @@ describe('Notes on child departure page', () => {
     await notePage.typeAndSaveStickyNote('This is a group note')
     await notePage.initNewStickyNote()
     await notePage.typeAndSaveStickyNote('This is another group note')
+    await notePage.assertStickyNote('This is another group note', 1)
 
     await page.goto(mobileSignupUrl)
     await listPage.selectComingChildren()
