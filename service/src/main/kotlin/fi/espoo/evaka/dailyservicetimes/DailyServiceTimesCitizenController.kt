@@ -56,18 +56,22 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         @RequestBody body: List<DailyServiceTimeNotificationId>
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.DailyServiceTimeNotification.DISMISS,
-                    body
-                )
-                tx.deleteDailyServiceTimesNotifications(body)
+                dbc.transaction { tx ->
+                    accessControl
+                        .checkPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.DailyServiceTimeNotification.DISMISS,
+                            body
+                        )
+                        .asSequence()
+                        .mapNotNull { (id, permission) -> id.takeIf { permission.isPermitted() } }
+                        .toList()
+                        .also { tx.deleteDailyServiceTimesNotifications(it) }
+                }
             }
-        }
-        Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = body)
+            .also { Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = it) }
     }
 }
 
