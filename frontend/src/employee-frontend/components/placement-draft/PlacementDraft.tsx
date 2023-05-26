@@ -343,7 +343,9 @@ export default React.memo(function PlacementDraft() {
                 <AsyncButton
                   primary
                   disabled={
-                    placement.unitId === undefined || selectedUnitIsGhostUnit
+                    !placement.unitId ||
+                    !placement.period ||
+                    selectedUnitIsGhostUnit
                   }
                   data-qa="send-placement-button"
                   onClick={() => createPlacementPlan(applicationId, placement)}
