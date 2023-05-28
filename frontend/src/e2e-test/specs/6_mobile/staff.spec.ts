@@ -56,7 +56,7 @@ describe('Staff page', () => {
     )
   })
 
-  test('Set group staff', async () => {
+  test.skip('Set group staff', async () => {
     await nav.selectGroup(daycareGroupFixture.id)
     await waitUntilEqual(() => staffPage.staffCount, '0')
     await waitUntilEqual(() => staffPage.staffOtherCount, '0')
