@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { useForm } from 'lib-common/form/hooks'
 import {
-  ChildDocumentDetails,
+  ChildDocumentWithPermittedActions,
   DocumentContent
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -31,6 +31,7 @@ import { renderResult } from '../async-rendering'
 import {
   childDocumentQuery,
   publishChildDocumentMutation,
+  unpublishChildDocumentMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
 import DocumentView from '../document-templates/DocumentView'
@@ -50,10 +51,11 @@ const ActionBar = styled.div`
 `
 
 const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
-  document
+  documentAndPermissions
 }: {
-  document: ChildDocumentDetails
+  documentAndPermissions: ChildDocumentWithPermittedActions
 }) {
+  const document = documentAndPermissions.data
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const bind = useForm(
@@ -62,7 +64,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
       getDocumentFormInitialState(document.template.content, document.content),
     i18n.validationErrors
   )
-  const [preview, setPreview] = useState(document.published)
+  const [preview, setPreview] = useState(document.publishedAt !== null)
   const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
   const [lastSavedContent, setLastSavedContent] = useState(document.content)
   const { mutateAsync: updateChildDocumentContent } = useMutationResult(
@@ -70,6 +72,9 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
   const { mutateAsync: publishChildDocument } = useMutationResult(
     publishChildDocumentMutation
+  )
+  const { mutateAsync: unpublishChildDocument } = useMutationResult(
+    unpublishChildDocumentMutation
   )
 
   const save = useCallback(
@@ -92,7 +97,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
 
   const debouncedValidContent = useDebounce(
-    bind.isValid() ? bind.value() : null,
+    document.publishedAt === null && bind.isValid() ? bind.value() : null,
     1000
   )
 
@@ -150,7 +155,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
         <Container>
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceRow alignItems="center">
-              {preview || document.published ? (
+              {preview || document.publishedAt ? (
                 <Button text={i18n.common.goBack} onClick={goBack} />
               ) : (
                 <Button
@@ -158,12 +163,26 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   onClick={() => save(bind.value()).then(goBack)}
                 />
               )}
-              {preview && !document.published && (
+              {preview && !document.publishedAt && (
                 <Button
                   text={i18n.common.edit}
                   onClick={() => setPreview(false)}
                 />
               )}
+              {document.publishedAt &&
+                documentAndPermissions.permittedActions.includes(
+                  'UNPUBLISH'
+                ) && (
+                  <Button
+                    text={i18n.childInformation.childDocuments.editor.unpublish}
+                    onClick={() =>
+                      unpublishChildDocument({
+                        documentId: document.id,
+                        childId: document.child.id
+                      })
+                    }
+                  />
+                )}
               {!preview && (
                 <FixedSpaceRow alignItems="center" spacing="xs">
                   <span>
@@ -186,7 +205,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 disabled={!saved}
               />
             )}
-            {preview && !document.published && (
+            {preview && !document.publishedAt && (
               <Button
                 text={i18n.childInformation.childDocuments.editor.publish}
                 primary
@@ -204,7 +223,7 @@ export default React.memo(function ChildDocumentEditor() {
   const { documentId } = useNonNullableParams()
   const documentResult = useQueryResult(childDocumentQuery(documentId))
 
-  return renderResult(documentResult, (document) => (
-    <ChildDocumentEditorView document={document} />
+  return renderResult(documentResult, (documentAndPermissions) => (
+    <ChildDocumentEditorView documentAndPermissions={documentAndPermissions} />
   ))
 })

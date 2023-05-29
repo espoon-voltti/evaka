@@ -321,3 +321,4 @@ V321__daycare_operation_times.sql
 V322__move_unit_manager.sql
 V323__create_document_template.sql
 V324__create_child_document.sql
+V325__child_document_published_at.sql

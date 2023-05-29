@@ -6,9 +6,10 @@ import DateRange from 'lib-common/date-range'
 import {
   ChildDocumentSummary,
   ChildDocumentCreateRequest,
-  ChildDocumentDetails,
-  DocumentContent
+  DocumentContent,
+  ChildDocumentWithPermittedActions
 } from 'lib-common/generated/api-types/document'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -22,23 +23,37 @@ export async function getChildDocuments(
     .get<JsonOf<ChildDocumentSummary[]>>('/child-documents', {
       params: { childId }
     })
-    .then((res) => res.data)
+    .then((res) =>
+      res.data.map((doc) => ({
+        ...doc,
+        publishedAt: doc.publishedAt
+          ? HelsinkiDateTime.parseIso(doc.publishedAt)
+          : null
+      }))
+    )
 }
 
 export async function getChildDocument(
   id: UUID
-): Promise<ChildDocumentDetails> {
+): Promise<ChildDocumentWithPermittedActions> {
   return client
-    .get<JsonOf<ChildDocumentDetails>>(`/child-documents/${id}`)
+    .get<JsonOf<ChildDocumentWithPermittedActions>>(`/child-documents/${id}`)
+    .then((res) => res.data)
     .then((res) => ({
-      ...res.data,
-      child: {
-        ...res.data.child,
-        dateOfBirth: LocalDate.parseNullableIso(res.data.child.dateOfBirth)
-      },
-      template: {
-        ...res.data.template,
-        validity: DateRange.parseJson(res.data.template.validity)
+      ...res,
+      data: {
+        ...res.data,
+        publishedAt: res.data.publishedAt
+          ? HelsinkiDateTime.parseIso(res.data.publishedAt)
+          : null,
+        child: {
+          ...res.data.child,
+          dateOfBirth: LocalDate.parseNullableIso(res.data.child.dateOfBirth)
+        },
+        template: {
+          ...res.data.template,
+          validity: DateRange.parseJson(res.data.template.validity)
+        }
       }
     }))
 }
@@ -63,5 +78,17 @@ export async function putChildDocumentContent(
 export async function putChildDocumentPublish(id: UUID): Promise<void> {
   return client
     .put<JsonOf<void>>(`/child-documents/${id}/publish`)
+    .then((res) => res.data)
+}
+
+export async function putChildDocumentUnpublish(id: UUID): Promise<void> {
+  return client
+    .put<JsonOf<void>>(`/child-documents/${id}/unpublish`)
+    .then((res) => res.data)
+}
+
+export async function deleteChildDocument(id: UUID): Promise<void> {
+  return client
+    .delete<JsonOf<void>>(`/child-documents/${id}`)
     .then((res) => res.data)
 }

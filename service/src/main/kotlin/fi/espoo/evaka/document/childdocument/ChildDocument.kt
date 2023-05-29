@@ -12,6 +12,8 @@ import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -51,7 +53,8 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
 data class ChildDocumentSummary(
     val id: ChildDocumentId,
     val type: DocumentType,
-    val published: Boolean
+    val templateName: String,
+    val publishedAt: HelsinkiDateTime?
 )
 
 data class ChildBasics(
@@ -63,10 +66,15 @@ data class ChildBasics(
 
 data class ChildDocumentDetails(
     val id: ChildDocumentId,
-    val published: Boolean,
+    val publishedAt: HelsinkiDateTime?,
     @Json val content: DocumentContent,
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate
+)
+
+data class ChildDocumentWithPermittedActions(
+    val data: ChildDocumentDetails,
+    val permittedActions: Set<Action.ChildDocument>
 )
 
 data class ChildDocumentCreateRequest(val childId: PersonId, val templateId: DocumentTemplateId)

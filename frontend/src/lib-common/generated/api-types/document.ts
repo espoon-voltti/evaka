@@ -6,7 +6,9 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace */
 
 import DateRange from '../../date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 
 export namespace AnsweredQuestion {
@@ -78,7 +80,7 @@ export interface ChildDocumentDetails {
   child: ChildBasics
   content: DocumentContent
   id: UUID
-  published: boolean
+  publishedAt: HelsinkiDateTime | null
   template: DocumentTemplate
 }
 
@@ -87,8 +89,17 @@ export interface ChildDocumentDetails {
 */
 export interface ChildDocumentSummary {
   id: UUID
-  published: boolean
+  publishedAt: HelsinkiDateTime | null
+  templateName: string
   type: DocumentType
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentWithPermittedActions
+*/
+export interface ChildDocumentWithPermittedActions {
+  data: ChildDocumentDetails
+  permittedActions: Action.ChildDocument[]
 }
 
 /**

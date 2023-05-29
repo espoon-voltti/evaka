@@ -10,11 +10,13 @@ import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import {
+  deleteChildDocument,
   getChildDocument,
   getChildDocuments,
   postChildDocument,
   putChildDocumentContent,
-  putChildDocumentPublish
+  putChildDocumentPublish,
+  putChildDocumentUnpublish
 } from '../../api/child/child-documents'
 import { createQueryKeys } from '../../query'
 
@@ -47,6 +49,24 @@ export const updateChildDocumentContentMutation = mutation({
 export const publishChildDocumentMutation = mutation({
   api: (arg: { documentId: UUID; childId: UUID }) =>
     putChildDocumentPublish(arg.documentId),
+  invalidateQueryKeys: ({ childId, documentId }) => [
+    queryKeys.childDocuments(childId),
+    queryKeys.childDocument(documentId)
+  ]
+})
+
+export const unpublishChildDocumentMutation = mutation({
+  api: (arg: { documentId: UUID; childId: UUID }) =>
+    putChildDocumentUnpublish(arg.documentId),
+  invalidateQueryKeys: ({ childId, documentId }) => [
+    queryKeys.childDocuments(childId),
+    queryKeys.childDocument(documentId)
+  ]
+})
+
+export const deleteChildDocumentMutation = mutation({
+  api: (arg: { documentId: UUID; childId: UUID }) =>
+    deleteChildDocument(arg.documentId),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)

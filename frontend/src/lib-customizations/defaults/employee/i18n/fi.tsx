@@ -735,17 +735,20 @@ export const fi = {
       }
     },
     childDocuments: {
+      title: 'Lapsen pedagogiset lomakkeet',
       table: {
         document: 'Lomake',
-        type: 'Tyyppi',
         status: 'Tila',
         open: 'Avaa lomake',
         published: 'Julkaistu',
         draft: 'Luonnos'
       },
+      addNew: 'Luo uusi',
+      removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
       editor: {
         preview: 'Esikatsele',
-        publish: 'Julkaise huoltajalle'
+        publish: 'Julkaise huoltajalle',
+        unpublish: 'Palauta luonnokseksi'
       }
     },
     assistanceNeedDecision: {

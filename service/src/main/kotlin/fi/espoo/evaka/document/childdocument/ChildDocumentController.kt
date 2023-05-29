@@ -78,7 +78,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ChildDocumentDetails {
+    ): ChildDocumentWithPermittedActions {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -88,11 +88,26 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         Action.ChildDocument.READ,
                         documentId
                     )
-                    tx.getChildDocument(documentId)
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
+                    val permittedActions =
+                        accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
+                            tx,
+                            user,
+                            clock,
+                            documentId
+                        )
+
+                    ChildDocumentWithPermittedActions(
+                        data = document,
+                        permittedActions = permittedActions
+                    )
                 }
             }
-            ?.also { Audit.ChildDocumentRead.log(targetId = documentId) }
-            ?: throw NotFound("Document $documentId not found")
+            .also { Audit.ChildDocumentRead.log(targetId = documentId) }
     }
 
     @PutMapping("/{documentId}/content")
@@ -116,7 +131,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
-                    if (document.published)
+                    if (document.publishedAt != null)
                         throw BadRequest("Cannot update contents of published document")
 
                     validateContentAgainstTemplate(body, document.template.content)
@@ -160,10 +175,32 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         Action.ChildDocument.PUBLISH,
                         documentId
                     )
-                    tx.publishChildDocument(documentId)
+                    tx.publishChildDocument(documentId, clock.now())
                 }
             }
             .also { Audit.ChildDocumentPublish.log(targetId = documentId) }
+    }
+
+    @PutMapping("/{documentId}/unpublish")
+    fun unpublishDocument(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.UNPUBLISH,
+                        documentId
+                    )
+                    tx.unpublishChildDocument(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentUnpublish.log(targetId = documentId) }
     }
 
     @DeleteMapping("/{documentId}")
@@ -173,6 +210,18 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {
-        // TODO
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.DELETE,
+                        documentId
+                    )
+                    tx.deleteChildDocumentDraft(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentDelete.log(targetId = documentId) }
     }
 }
