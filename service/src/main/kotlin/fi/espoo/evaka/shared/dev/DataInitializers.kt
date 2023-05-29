@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
@@ -1473,6 +1474,16 @@ VALUES (:id, :groupId, :amount, :startDate, :endDate)
 """
         )
         .let(::DaycareCaretakerId)
+
+fun Database.Transaction.insertTestDocumentTemplate(row: DevDocumentTemplate) =
+    insertTestDataRow(
+            row,
+            """
+INSERT INTO document_template (id, name, type, language, confidential, legal_basis, validity, published, content) 
+VALUES (:id, :name, :type, :language, :confidential, :legalBasis, :validity, :published, :content)
+"""
+        )
+        .let(::DocumentTemplateId)
 
 fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,

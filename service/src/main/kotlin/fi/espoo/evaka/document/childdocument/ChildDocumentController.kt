@@ -6,6 +6,7 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -44,6 +45,12 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         Action.Child.CREATE_CHILD_DOCUMENT,
                         body.childId
                     )
+                    tx.getTemplate(body.templateId)?.also {
+                        if (!it.published || !it.validity.includes(clock.today())) {
+                            throw BadRequest("Invalid template")
+                        }
+                    }
+                        ?: throw NotFound()
                     tx.insertChildDocument(body)
                 }
             }
@@ -151,7 +158,8 @@ class ChildDocumentController(private val accessControl: AccessControl) {
             documentContent.answers.all { answeredQuestion ->
                 questions.any { question ->
                     question.id == answeredQuestion.questionId &&
-                        question.type == answeredQuestion.type
+                        question.type == answeredQuestion.type &&
+                        answeredQuestion.isStructurallyValid(question)
                 }
             }
         if (!valid) {
@@ -219,6 +227,10 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         Action.ChildDocument.DELETE,
                         documentId
                     )
+                    tx.getChildDocument(documentId)?.also {
+                        if (it.publishedAt != null)
+                            throw BadRequest("Can not delete published document")
+                    }
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }
