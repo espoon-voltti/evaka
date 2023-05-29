@@ -218,6 +218,7 @@ export namespace Question {
     id: string
     infoText: string
     label: string
+    multiline: boolean
   }
 }
 

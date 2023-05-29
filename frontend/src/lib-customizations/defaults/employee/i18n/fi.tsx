@@ -3784,7 +3784,8 @@ export const fi = {
     templateQuestions: {
       label: 'Otsikko',
       options: 'Vaihtoehdot',
-      infoText: 'Ohjeteksti'
+      infoText: 'Ohjeteksti',
+      multiline: 'Monirivinen tekstialue'
     },
     noSelection: 'Ei valintaa'
   },

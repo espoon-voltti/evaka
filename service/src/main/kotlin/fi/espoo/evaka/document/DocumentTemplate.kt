@@ -26,8 +26,12 @@ sealed class Question(val type: QuestionType) {
     abstract val id: String
 
     @JsonTypeName("TEXT")
-    data class TextQuestion(override val id: String, val label: String, val infoText: String = "") :
-        Question(QuestionType.TEXT)
+    data class TextQuestion(
+        override val id: String,
+        val label: String,
+        val infoText: String = "",
+        val multiline: Boolean = false
+    ) : Question(QuestionType.TEXT)
 
     @JsonTypeName("CHECKBOX")
     data class CheckboxQuestion(
