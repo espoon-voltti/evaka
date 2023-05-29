@@ -3786,7 +3786,8 @@ export const fi = {
       label: 'Otsikko',
       options: 'Vaihtoehdot',
       infoText: 'Ohjeteksti',
-      multiline: 'Monirivinen tekstialue'
+      multiline: 'Salli monirivinen vastaus',
+      withText: 'Pyydetään lisätietoja'
     },
     noSelection: 'Ei valintaa'
   },

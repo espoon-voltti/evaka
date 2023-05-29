@@ -44,7 +44,7 @@ sealed class Question(val type: QuestionType) {
     data class CheckboxGroupQuestion(
         override val id: String,
         val label: String,
-        val options: List<MultiselectOption>,
+        val options: List<CheckboxGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.CHECKBOX_GROUP)
 
@@ -52,12 +52,18 @@ sealed class Question(val type: QuestionType) {
     data class RadioButtonGroupQuestion(
         override val id: String,
         val label: String,
-        val options: List<MultiselectOption>,
+        val options: List<RadioButtonGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.RADIO_BUTTON_GROUP)
 }
 
-data class MultiselectOption(val id: String, val label: String)
+data class CheckboxGroupQuestionOption(
+    val id: String,
+    val label: String,
+    val withText: Boolean = false
+)
+
+data class RadioButtonGroupQuestionOption(val id: String, val label: String)
 
 data class Section(
     val id: String,

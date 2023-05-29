@@ -19,6 +19,8 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
+data class CheckboxGroupAnswerContent(val optionId: String, val extra: String = "")
+
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -49,12 +51,12 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     @JsonTypeName("CHECKBOX_GROUP")
     data class CheckboxGroupAnswer(
         override val questionId: String,
-        override val answer: List<String>
-    ) : AnsweredQuestion<List<String>>(QuestionType.CHECKBOX_GROUP) {
+        override val answer: List<CheckboxGroupAnswerContent>
+    ) : AnsweredQuestion<List<CheckboxGroupAnswerContent>>(QuestionType.CHECKBOX_GROUP) {
         override fun isStructurallyValid(question: Question): Boolean {
             if (question !is Question.CheckboxGroupQuestion) return false
 
-            return answer.all { selected -> question.options.any { it.id == selected } }
+            return answer.all { selected -> question.options.any { it.id == selected.optionId } }
         }
     }
 

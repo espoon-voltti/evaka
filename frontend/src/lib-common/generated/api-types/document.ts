@@ -26,7 +26,7 @@ export namespace AnsweredQuestion {
   */
   export interface CheckboxGroupAnswer {
     type: 'CHECKBOX_GROUP'
-    answer: string[]
+    answer: CheckboxGroupAnswerContent[]
     questionId: string
   }
   
@@ -54,6 +54,23 @@ export namespace AnsweredQuestion {
 */
 export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.TextAnswer
 
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.CheckboxGroupAnswerContent
+*/
+export interface CheckboxGroupAnswerContent {
+  extra: string
+  optionId: string
+}
+
+/**
+* Generated from fi.espoo.evaka.document.CheckboxGroupQuestionOption
+*/
+export interface CheckboxGroupQuestionOption {
+  id: string
+  label: string
+  withText: boolean
+}
 
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildBasics
@@ -169,14 +186,6 @@ export type DocumentType =
   | 'PEDAGOGICAL_REPORT'
   | 'PEDAGOGICAL_ASSESSMENT'
 
-/**
-* Generated from fi.espoo.evaka.document.MultiselectOption
-*/
-export interface MultiselectOption {
-  id: string
-  label: string
-}
-
 export namespace Question {
   /**
   * Generated from fi.espoo.evaka.document.Question.CheckboxGroupQuestion
@@ -186,7 +195,7 @@ export namespace Question {
     id: string
     infoText: string
     label: string
-    options: MultiselectOption[]
+    options: CheckboxGroupQuestionOption[]
   }
   
   /**
@@ -207,7 +216,7 @@ export namespace Question {
     id: string
     infoText: string
     label: string
-    options: MultiselectOption[]
+    options: RadioButtonGroupQuestionOption[]
   }
   
   /**
@@ -227,6 +236,14 @@ export namespace Question {
 */
 export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.RadioButtonGroupQuestion | Question.TextQuestion
 
+
+/**
+* Generated from fi.espoo.evaka.document.RadioButtonGroupQuestionOption
+*/
+export interface RadioButtonGroupQuestionOption {
+  id: string
+  label: string
+}
 
 /**
 * Generated from fi.espoo.evaka.document.Section

@@ -324,3 +324,4 @@ V324__create_child_document.sql
 V325__child_document_published_at.sql
 V326__fee_decision_service_need_option_id.sql
 V327__add_dw_cost_center.sql
+V328__document_checkbox_group_extra.sql
