@@ -35,8 +35,8 @@ export default React.memo(function AttendanceGroupFilterSelect({
       .filter(
         (group) =>
           (value.type === 'group' && value.id === group.id) ||
-          new DateRange(group.startDate, group.endDate).includes(
-            LocalDate.todayInSystemTz()
+          new DateRange(group.startDate, group.endDate).overlapsWith(
+            new DateRange(LocalDate.todayInHelsinkiTz(), null)
           )
       )
       .map((group) => ({ type: 'group', id: group.id }))
