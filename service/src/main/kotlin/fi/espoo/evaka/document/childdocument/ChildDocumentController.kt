@@ -80,35 +80,34 @@ class ChildDocumentController(private val accessControl: AccessControl) {
         @PathVariable documentId: ChildDocumentId
     ): ChildDocumentWithPermittedActions {
         return db.connect { dbc ->
-            dbc.read { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.ChildDocument.READ,
-                    documentId
-                )
-
-                val document =
-                    tx.getChildDocument(documentId)?.also {
-                        Audit.ChildDocumentRead.log(targetId = documentId)
-                    }
-                        ?: throw NotFound("Document $documentId not found")
-
-                val permittedActions =
-                    accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
+                        Action.ChildDocument.READ,
                         documentId
                     )
 
-                ChildDocumentWithPermittedActions(
-                    data = document,
-                    permittedActions = permittedActions
-                )
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
+                    val permittedActions =
+                        accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
+                            tx,
+                            user,
+                            clock,
+                            documentId
+                        )
+
+                    ChildDocumentWithPermittedActions(
+                        data = document,
+                        permittedActions = permittedActions
+                    )
+                }
             }
-        }
+            .also { Audit.ChildDocumentRead.log(targetId = documentId) }
     }
 
     @PutMapping("/{documentId}/content")
