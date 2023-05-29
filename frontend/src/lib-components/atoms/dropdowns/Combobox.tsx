@@ -42,6 +42,7 @@ const InputWrapper = styled.div`
   align-items: center;
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   ${borderStyles};
+
   &.active {
     border-color: transparent;
   }
@@ -180,8 +181,6 @@ function Combobox<T>(props: ComboboxProps<T>) {
     fullWidth,
     'data-qa': dataQa
   } = props
-  const enabled = !disabled
-
   const defaultFilterItems = useCallback(
     (inputValue: string, items: T[]) => {
       const filter = inputValue.toLowerCase()
@@ -259,11 +258,9 @@ function Combobox<T>(props: ComboboxProps<T>) {
   )
   const {
     isOpen,
-    toggleMenu,
     getInputProps,
     getToggleButtonProps,
     getMenuProps,
-    getComboboxProps,
     getItemProps,
     highlightedIndex,
     setInputValue,
@@ -293,13 +290,9 @@ function Combobox<T>(props: ComboboxProps<T>) {
       <Root
         data-qa={dataQa}
         className={classNames({ active: isOpen, 'full-width': fullWidth })}
-        onClick={enabled ? toggleMenu : undefined}
       >
         <InputWrapper
-          {...getComboboxProps({
-            disabled,
-            className: classNames({ active: isOpen }, props.info?.status)
-          })}
+          className={classNames({ active: isOpen }, props.info?.status)}
         >
           <Input
             {...getInputProps({
@@ -314,7 +307,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
             <>
               <Button
                 data-qa="clear"
-                onClick={enabled ? onClickClear : undefined}
+                onClick={disabled ? undefined : onClickClear}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </Button>
