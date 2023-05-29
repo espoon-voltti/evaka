@@ -22,73 +22,74 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             else -> env.frontendBaseUrlFi
         }
 
-    override fun pendingDecisionNotification(language: Language): EmailContent =
-        EmailContent(
+    override fun pendingDecisionNotification(language: Language): EmailContent {
+        return EmailContent(
             subject =
                 "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             text =
                 """
-            Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
-
-            Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen https://espoonvarhaiskasvatus.fi, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.
-
-            Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000
-
-            -----
-
-            Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
-
-            Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen https://esbosmabarnspedagogik.fi eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
-
-            Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
-
-            -----
-
-            You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
-
-            The person who submitted the application can accept or reject an unanswered decision by logging in to https://espoonvarhaiskasvatus.fi or by sending the completed form on the last page of the decision to the address specified on the page.
-
-            You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
-        """
+                Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
+    
+                Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen ${baseUrl(Language.fi)}, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.
+    
+                Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000
+    
+                -----
+    
+                Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
+    
+                Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen ${baseUrl(Language.sv)} eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
+    
+                Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
+    
+                -----
+    
+                You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
+    
+                The person who submitted the application can accept or reject an unanswered decision by logging in to ${baseUrl(Language.en)} or by sending the completed form on the last page of the decision to the address specified on the page.
+    
+                You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
+            """
                     .trimIndent(),
             html =
                 """
-            <p>
-            Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
-            </p>
-            <p>
-            Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.
-            </p>
-            <p>
-            Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000
-            </p>
-
-            <hr>
-
-            <p>
-            Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
-            </p>
-            <p>
-            Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a> eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
-            </p>
-            <p>
-            Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
-            </p>
-
-            <hr>
-
-            <p>
-            You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
-            </p>
-            <p>
-            The person who submitted the application can accept or reject an unanswered decision by logging in to <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> or by sending the completed form on the last page of the decision to the address specified on the page.
-            </p>
-            <p>
-            You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
-            </p>
-        """
+                <p>
+                Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.
+                </p>
+                <p>
+                Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a>, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.
+                </p>
+                <p>
+                Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000
+                </p>
+    
+                <hr>
+    
+                <p>
+                Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
+                </p>
+                <p>
+                Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a> eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
+                </p>
+                <p>
+                Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
+                </p>
+    
+                <hr>
+    
+                <p>
+                You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.
+                </p>
+                <p>
+                The person who submitted the application can accept or reject an unanswered decision by logging in to <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a> or by sending the completed form on the last page of the decision to the address specified on the page.
+                </p>
+                <p>
+                You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
+                </p>
+            """
                     .trimIndent()
         )
+    }
 
     private val applicationReceivedSubject =
         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
@@ -100,13 +101,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
             Hyvä(t) huoltaja(t),
 
-            Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa https://espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
+            Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${baseUrl(language)} siihen saakka, kunnes se on otettu käsittelyyn.
 
             Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.
 
             Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.
 
-            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä https://espoonvarhaiskasvatus.fi.
+            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${baseUrl(language)}.
 
             Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden.
         """
@@ -115,13 +116,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
             <p>Hyvä(t) huoltaja(t),</p>
 
-            <p>Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+            <p>Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="${baseUrl(language)}">${baseUrl(language)}</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
 
             <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
 
             <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
 
-            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.</p>
+            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="${baseUrl(language)}">${baseUrl(language)}</a>.</p>
 
             <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
         """
@@ -137,11 +138,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
             Lapsenne varhaiskasvatushakemus on vastaanotettu.
 
-            Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa https://espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
+            Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${baseUrl(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.
 
             Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.
 
-            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä https://espoonvarhaiskasvatus.fi.
+            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${baseUrl(Language.fi)}.
 
             Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.
 
@@ -163,11 +164,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
             Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
 
-            Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen https://esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
+            Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${baseUrl(Language.sv)} tills den har tagits upp till behandling.
 
             Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.
 
-            Du kan se och godkänna/förkasta beslutet på https://esbosmabarnspedagogik.fi.
+            Du kan se och godkänna/förkasta beslutet på ${baseUrl(Language.sv)}.
 
             När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
 
@@ -191,11 +192,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
             We have received your child’s application for early childhood education.
 
-            The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at https://espoonvarhaiskasvatus.fi until its processing starts.
+            The application period for early childhood education applications is four (4) months. The guardian who submitted the application can make changes to it at ${baseUrl(Language.en)} until its processing starts.
 
             You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.
 
-            You can see the decision and accept/reject it at https://espoonvarhaiskasvatus.fi.
+            You can see the decision and accept/reject it at ${baseUrl(Language.en)}.
 
             When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.
 
@@ -219,13 +220,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             Lapsenne varhaiskasvatushakemus on vastaanotettu.
             </p>
             <p>
-            Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.
+            Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a> siihen saakka, kunnes se on otettu käsittelyyn.
             </p>
             <p>
             Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.
             </p>
             <p>
-            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.
+            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a>.
             </p>
             <p>
             Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.
@@ -256,13 +257,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
             </p>
             <p>
-            Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.
+            Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a> tills den har tagits upp till behandling.
             </p>
             <p>
             Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.
             </p>
             <p>
-            Du kan se och godkänna/förkasta beslutet på <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a>.
+            Du kan se och godkänna/förkasta beslutet på <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a>.
             </p>
             <p>
             När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.
@@ -296,13 +297,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             We have received your child’s application for early childhood education.
             </p>
             <p>
-            The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> until its processing starts.
+            The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a> until its processing starts.
             </p>
             <p>
             You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.
             </p>
             <p>
-            You can see the decision and accept/reject it at <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.
+            You can see the decision and accept/reject it at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a>.
             </p>
             <p>
             When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.
@@ -340,11 +341,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                     """
                 Hyvä(t) huoltaja(t),
 
-                Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa https://espoonvarhaiskasvatus.fi siihen saakka, kunnes hakemus on otettu käsittelyyn.
+                Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${baseUrl(Language.fi)} siihen saakka, kunnes hakemus on otettu käsittelyyn.
 
                 Päätökset tehdään hakuaikana (tammikuu) saapuneisiin hakemuksiin maaliskuun aikana.
 
-                Päätös on nähtävissä ja hyväksyttävissä/hylättävissä https://espoonvarhaiskasvatus.fi.
+                Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${baseUrl(Language.fi)}.
 
                 Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.
 
@@ -360,11 +361,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
                 Bästa vårdnadshavare,
 
-                Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen https://esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
+                Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${baseUrl(Language.sv)} tills den har tagits upp till behandling.
 
                 Om de ansökningar som kommit in under ansökningstiden (januari) fattas beslut i mars.
 
-                Du kan se och godkänna/förkasta beslutet på adressen https://esbosmabarnspedagogik.fi.
+                Du kan se och godkänna/förkasta beslutet på adressen ${baseUrl(Language.sv)}.
 
                 När du ansöker till ett servicesedeldaghem, kontakta daghemmet direkt senast efter att du lämnat ansökan.
 
@@ -380,11 +381,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
                 Dear guardian(s),
 
-                We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at until its processing starts.
+                We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${baseUrl(Language.en)} until its processing starts.
 
                 The city will make decisions on applications received during the application period (January) in March.
 
-                You can see the decision and accept/reject it at https://espoonvarhaiskasvatus.fi
+                You can see the decision and accept/reject it at ${baseUrl(Language.en)}.
 
                 When applying to a service voucher day care centre, please contact the unit no later than after you have submitted the application.
 
@@ -400,9 +401,9 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 html =
                     """
                 <p>Hyvä(t) huoltaja(t),</p>
-                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
+                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a> siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
                 <p>Päätökset tehdään hakuaikana (tammikuu) saapuneisiin hakemuksiin maaliskuun aikana.</p>
-                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.</p>
+                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a>.</p>
                 <p>Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
                 <p>Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.</p>
                 <p>Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.</p>
@@ -410,9 +411,9 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
                 <hr>
                 <p>Bästa vårdnadshavare,</p>
-                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.</p>
+                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a> tills den har tagits upp till behandling.</p>
                 <p>Om de ansökningar som kommit in under ansökningstiden (januari) fattas beslut i mars.</p>
-                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a>.</p>
+                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a>.</p>
                 <p>När du ansöker till ett servicesedeldaghem, kontakta daghemmet direkt senast efter att du lämnat ansökan.</p>
                 <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
                 <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
@@ -420,9 +421,9 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
                 <hr>
                 <p>Dear guardian(s),</p>
-                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at until its processing starts.</p>
+                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a> until its processing starts.</p>
                 <p>The city will make decisions on applications received during the application period (January) in March.</p>
-                <p>You can see the decision and accept/reject it at <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a></p>
+                <p>You can see the decision and accept/reject it at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a></p>
                 <p>When applying to a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
                 <p>When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.</p>
                 <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
@@ -438,11 +439,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                     """
                 Hyvä(t) huoltaja(t),
 
-                Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa https://espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
+                Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${baseUrl(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.
 
                 Saatte tiedon lapsenne esiopetuspaikasta mahdollisimman pian, huomioiden hakemuksessa oleva aloitustoive ja alueen esiopetuspaikkatilanne.
 
-                Päätös on nähtävissä ja hyväksyttävissä/hylättävissä https://espoonvarhaiskasvatus.fi.
+                Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${baseUrl(Language.fi)}.
 
                 Hakiessanne esiopetusta palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.
 
@@ -462,11 +463,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
                 Bästa vårdnadshavare,
 
-                Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen https://esbosmabarnspedagogik.fi tills den har tagits upp till behandling.
+                Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${baseUrl(Language.sv)} tills den har tagits upp till behandling.
 
                 Du får information om ditt barns förskoleplats så snart som möjligt, med beaktande av önskemålet om startdatum och läget med förskoleplatser i området.
 
-                Du kan se och godkänna/förkasta beslutet på adressen https://esbosmabarnspedagogik.fi.
+                Du kan se och godkänna/förkasta beslutet på adressen ${baseUrl(Language.sv)}.
 
                 När du ansöker om förskoleundervisning i ett servicesedeldaghem, kontakta enheten direkt senast efter att du lämnat ansökan.
 
@@ -486,11 +487,11 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
                 Dear guardian(s),
 
-                We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at https://espoonvarhaiskasvatus.fi until its processing starts.
+                We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${baseUrl(Language.en)} until its processing starts.
 
                 You will be informed of your child’s pre-primary education unit as soon as possible, taking into account the preferred starting date indicated in your application and the availability of pre-primary education places in your area.
 
-                You can see the decision and accept/reject it at https://espoonvarhaiskasvatus.fi.
+                You can see the decision and accept/reject it at ${baseUrl(Language.en)}.
 
                 When applying for pre-primary education at a service voucher day care centre, please contact the unit no later than after you have submitted the application.
 
@@ -510,9 +511,9 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 html =
                     """
                 <p>Hyvä(t) huoltaja(t),</p>
-                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+                <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
                 <p>Saatte tiedon lapsenne esiopetuspaikasta mahdollisimman pian, huomioiden hakemuksessa oleva aloitustoive ja alueen esiopetuspaikkatilanne.</p>
-                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.</p>
+                <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a>.</p>
                 <p>Hakiessanne esiopetusta palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
                 <p>Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.</p>
                 <p>Ympärivuorokautista- tai iltahoitoa hakiessanne, teidän tulee toimittaa molempien samassa taloudessa asuvien huoltajien todistukset työnantajalta vuorotyöstä tai oppilaitoksesta iltaisin tapahtuvasta opiskelusta. Hakemusta käsitellään vuorohoidon hakemuksena vasta kun edellä mainitut todistukset on toimitettu.</p>
@@ -522,9 +523,9 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
                 <hr>
                 <p>Bästa vårdnadshavare,</p>
-                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a> tills den har tagits upp till behandling.</p>
+                <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a> tills den har tagits upp till behandling.</p>
                 <p>Du får information om ditt barns förskoleplats så snart som möjligt, med beaktande av önskemålet om startdatum och läget med förskoleplatser i området.</p>
-                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a>.</p>
+                <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a>.</p>
                 <p>När du ansöker om förskoleundervisning i ett servicesedeldaghem, kontakta enheten direkt senast efter att du lämnat ansökan.</p>
                 <p>Om du valde att ansökan är brådskande, ska du till ansökan bifoga ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst två veckor och börjar den dag då intyget inkommer.</p>
                 <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
@@ -534,9 +535,9 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
                 <hr>
                 <p>Dear guardian(s),</p>
-                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> until its processing starts.</p>
+                <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a> until its processing starts.</p>
                 <p>You will be informed of your child’s pre-primary education unit as soon as possible, taking into account the preferred starting date indicated in your application and the availability of pre-primary education places in your area.</p>
-                <p>You can see the decision and accept/reject it at <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.</p>
+                <p>You can see the decision and accept/reject it at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a>.</p>
                 <p>When applying for pre-primary education at a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
                 <p>If you chose to have your application processed urgently, you will also need to provide a document as proof of sudden employment at a new workplace or a sudden offer of a new study place. In this case, the minimum application period is two (2) weeks and begins from the date on which the required document was received.</p>
                 <p>When applying for round-the-clock or evening care, both guardians living in the same household need to provide a document issued by their employer concerning shift work or a document issued by their educational institution concerning evening studies. Your application will only be processed as an application for round-the-clock care after you have provided the required documents.</p>
@@ -594,7 +595,7 @@ There are missing attendance reservations for the week starting $start. Please m
         
         Lapsellenne on tehty päätös.
         
-        Päätös on nähtävissä eVakassa osoitteessa https://espoonvarhaiskasvatus.fi/.
+        Päätös on nähtävissä eVakassa osoitteessa ${baseUrl(Language.fi)}.
         
         -----
         
@@ -602,7 +603,7 @@ There are missing attendance reservations for the week starting $start. Please m
         
         Beslut har fattats angående ditt barn.
         
-        Beslutet finns att se i eVaka på https://esbosmabarnspedagogik.fi/.
+        Beslutet finns att se i eVaka på ${baseUrl(Language.sv)}.
         
         -----
         
@@ -610,22 +611,22 @@ There are missing attendance reservations for the week starting $start. Please m
         
         A decision has been made regarding your child.
         
-        The decision can be viewed on eVaka at https://espoonvarhaiskasvatus.fi/.
+        The decision can be viewed on eVaka at ${baseUrl(Language.en)}.
     """
                     .trimIndent(),
             html =
                 """
         <p>Hyvä(t) huoltaja(t),</p>
         <p>Lapsellenne on tehty päätös.</p>
-        <p>Päätös on nähtävissä eVakassa osoitteessa <a href="https://espoonvarhaiskasvatus.fi/">https://espoonvarhaiskasvatus.fi/</a>.</p>
+        <p>Päätös on nähtävissä eVakassa osoitteessa <a href="${baseUrl(Language.fi)}">${baseUrl(Language.fi)}</a>.</p>
         <hr>
         <p>Bästa vårdnadshavare,</p>
         <p>Beslut har fattats angående ditt barn.</p>
-        <p>Beslutet finns att se i eVaka på <a href="https://esbosmabarnspedagogik.fi/">https://esbosmabarnspedagogik.fi/</a>.</p>
+        <p>Beslutet finns att se i eVaka på <a href="${baseUrl(Language.sv)}">${baseUrl(Language.sv)}</a>.</p>
         <hr>
         <p>Dear guardian(s),</p>
         <p>A decision has been made regarding your child.</p>
-        <p>The decision can be viewed on eVaka at <a href="https://espoonvarhaiskasvatus.fi/">https://espoonvarhaiskasvatus.fi/</a>.</p>
+        <p>The decision can be viewed on eVaka at <a href="${baseUrl(Language.en)}">${baseUrl(Language.en)}</a>.</p>
     """
                     .trimIndent()
         )
