@@ -6250,9 +6250,9 @@ __metadata:
     webpack-pwa-manifest: ^4.3.0
     yargs: ^17.5.1
   peerDependencies:
-    "@fortawesome/pro-light-svg-icons": ^6.0.0
-    "@fortawesome/pro-regular-svg-icons": ^6.0.0
-    "@fortawesome/pro-solid-svg-icons": ^6.0.0
+    "@fortawesome/pro-light-svg-icons": ^6.4.0
+    "@fortawesome/pro-regular-svg-icons": ^6.4.0
+    "@fortawesome/pro-solid-svg-icons": ^6.4.0
   peerDependenciesMeta:
     "@fortawesome/pro-light-svg-icons":
       optional: true
