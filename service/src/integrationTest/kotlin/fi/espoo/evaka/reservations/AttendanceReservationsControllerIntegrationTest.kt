@@ -75,7 +75,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 UnitAttendanceReservations.OperationalDay(
                     it,
                     isHoliday = false,
-                    isInOpenHolidayPeriod = false
+                    isInHolidayPeriod = false
                 )
             }
             .toList()
@@ -682,7 +682,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     UnitAttendanceReservations.OperationalDay(
                         it,
                         isHoliday = false,
-                        isInOpenHolidayPeriod = true
+                        isInHolidayPeriod = true
                     )
                 }
                 .toList(),
@@ -705,7 +705,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     UnitAttendanceReservations.OperationalDay(
                         it,
                         isHoliday = false,
-                        isInOpenHolidayPeriod = false
+                        isInHolidayPeriod = true
                     )
                 }
                 .toList(),

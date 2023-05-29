@@ -70,12 +70,9 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     val unitName = unit.name
 
                     val holidays = tx.getHolidays(period)
-                    val openHolidayPeriods =
-                        tx.getHolidayPeriodsInRange(period).filter {
-                            it.reservationDeadline >= clock.today()
-                        }
+                    val holidayPeriods = tx.getHolidayPeriodsInRange(period)
                     val operationalDays =
-                        getUnitOperationalDays(period, unit, holidays, openHolidayPeriods)
+                        getUnitOperationalDays(period, unit, holidays, holidayPeriods)
 
                     val effectiveGroupPlacements =
                         tx.getEffectiveGroupPlacementsInRange(unitId, period)
@@ -207,7 +204,7 @@ data class UnitAttendanceReservations(
     data class OperationalDay(
         val date: LocalDate,
         val isHoliday: Boolean,
-        val isInOpenHolidayPeriod: Boolean
+        val isInHolidayPeriod: Boolean
     )
 
     data class GroupAttendanceReservations(
@@ -267,9 +264,9 @@ private fun getUnitOperationalDays(
     period: FiniteDateRange,
     unit: Daycare,
     holidays: Set<LocalDate>,
-    openHolidayPeriods: List<HolidayPeriod>
+    holidayPeriods: List<HolidayPeriod>
 ): List<UnitAttendanceReservations.OperationalDay> {
-    val holidayPeriodDates = openHolidayPeriods.flatMap { it.period.dates() }.toSet()
+    val holidayPeriodDates = holidayPeriods.flatMap { it.period.dates() }.toSet()
     val isRoundTheClockUnit = unit.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
     return period
         .dates()
@@ -278,7 +275,7 @@ private fun getUnitOperationalDays(
             UnitAttendanceReservations.OperationalDay(
                 it,
                 isHoliday = !isRoundTheClockUnit && holidays.contains(it),
-                isInOpenHolidayPeriod = holidayPeriodDates.contains(it)
+                isInHolidayPeriod = holidayPeriodDates.contains(it)
             )
         }
         .toList()
