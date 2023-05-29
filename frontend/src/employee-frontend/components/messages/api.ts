@@ -70,6 +70,7 @@ export async function getReceivedMessages(
         data: data.data.map((d) => deserializeMessageThread(d))
       })
     )
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getArchivedMessages(
