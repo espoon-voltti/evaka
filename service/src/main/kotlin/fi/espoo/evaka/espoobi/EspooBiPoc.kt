@@ -176,6 +176,7 @@ WHERE status != 'DRAFT'
                 """
 SELECT
   id, created, updated, fee_decision_id AS fee_decision, placement_unit_id AS placement_unit,
+  service_need_option_id AS service_need_option,
   service_need_description_fi AS service_need_description, final_fee
 FROM fee_decision_child
 """

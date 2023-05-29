@@ -39,6 +39,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
@@ -4678,6 +4679,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 13 contract days and 1 surplus day in preschool daycare results in a monthly maximum invoice no greater than the preschool daycare maximum (maxContractDaySurplusThreshold = 13)`() {
+        db.transaction { it.insertServiceNeedOption(snPreschoolDaycareContractDays13) }
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
@@ -4742,6 +4744,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice capping to monthly preschool maximum takes sibling discount into account (maxContractDaySurplusThreshold = 13)`() {
+        db.transaction { it.insertServiceNeedOption(snPreschoolDaycareContractDays13) }
+
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 

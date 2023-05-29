@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -88,6 +89,7 @@ data class FeeDecisionChild(
 data class FeeDecisionPlacement(val unitId: DaycareId, val type: PlacementType)
 
 data class FeeDecisionServiceNeed(
+    val optionId: ServiceNeedOptionId?,
     val feeCoefficient: BigDecimal,
     val contractDaysPerMonth: Int?,
     val descriptionFi: String,
@@ -142,7 +144,9 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
             decisionChildrenEquals(d1, d2) { it.childIncome }
     }),
     PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
-    SERVICE_NEED({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.serviceNeed } }),
+    SERVICE_NEED({ d1, d2 ->
+        decisionChildrenEquals(d1, d2) { it.serviceNeed.copy(optionId = null) }
+    }),
     SIBLING_DISCOUNT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.siblingDiscount } }),
     FEE_ALTERATIONS({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.feeAlterations } }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
@@ -245,6 +249,7 @@ data class FeeDecisionChildDetailed(
     val child: PersonDetailed,
     val placementType: PlacementType,
     val placementUnit: UnitData,
+    val serviceNeedOptionId: ServiceNeedOptionId?,
     val serviceNeedFeeCoefficient: BigDecimal,
     val serviceNeedDescriptionFi: String,
     val serviceNeedDescriptionSv: String,

@@ -44,6 +44,7 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed =
                     placementType = child.placement.type,
                     placementUnit =
                         allDaycares.find { it.id == child.placement.unitId }!!.toUnitData(),
+                    serviceNeedOptionId = child.serviceNeed.optionId,
                     serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
                     serviceNeedDescriptionFi = child.serviceNeed.descriptionFi,
                     serviceNeedDescriptionSv = child.serviceNeed.descriptionSv,

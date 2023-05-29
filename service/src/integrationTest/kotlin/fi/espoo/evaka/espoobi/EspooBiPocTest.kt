@@ -354,6 +354,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun Database.Transaction.insertTestFeeDecision() =
         FeeDecisionId(UUID.randomUUID()).also { id ->
+            val serviceNeedOption = insertTestServiceNeedOption()
             upsertFeeDecisions(
                 listOf(
                     FeeDecision(
@@ -373,6 +374,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         ),
                                     serviceNeed =
                                         FeeDecisionServiceNeed(
+                                            optionId = serviceNeedOption,
                                             feeCoefficient = BigDecimal.ONE,
                                             contractDaysPerMonth = null,
                                             descriptionFi = "",

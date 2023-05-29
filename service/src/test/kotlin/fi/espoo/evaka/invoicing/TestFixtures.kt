@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -123,7 +124,14 @@ val testDecisionChild1 =
         child = testChild1,
         placement = FeeDecisionPlacement(DaycareId(UUID.randomUUID()), PlacementType.DAYCARE),
         serviceNeed =
-            FeeDecisionServiceNeed(BigDecimal("1.00"), null, "palveluntarve", "vårdbehövet", false),
+            FeeDecisionServiceNeed(
+                ServiceNeedOptionId(UUID.randomUUID()),
+                BigDecimal("1.00"),
+                null,
+                "palveluntarve",
+                "vårdbehövet",
+                false
+            ),
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,
@@ -137,7 +145,14 @@ val testDecisionChild2 =
         child = testChild2,
         placement = FeeDecisionPlacement(DaycareId(UUID.randomUUID()), PlacementType.DAYCARE),
         serviceNeed =
-            FeeDecisionServiceNeed(BigDecimal("1.00"), null, "palveluntarve", "vårdbehövet", false),
+            FeeDecisionServiceNeed(
+                ServiceNeedOptionId(UUID.randomUUID()),
+                BigDecimal("1.00"),
+                null,
+                "palveluntarve",
+                "vårdbehövet",
+                false
+            ),
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,

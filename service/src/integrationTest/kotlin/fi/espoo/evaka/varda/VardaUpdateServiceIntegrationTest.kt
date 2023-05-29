@@ -1864,6 +1864,7 @@ WHERE sn.id = :serviceNeedId
 
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() =
     FeeDecisionServiceNeed(
+        optionId = this.id,
         feeCoefficient = this.feeCoefficient,
         contractDaysPerMonth = this.contractDaysPerMonth,
         descriptionFi = this.feeDescriptionFi,

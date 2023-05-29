@@ -343,6 +343,7 @@ private fun generateFeeDecisions(
                                 ChildWithDateOfBirth(child.id, child.dateOfBirth),
                                 FeeDecisionPlacement(placement.unitId, placement.type),
                                 FeeDecisionServiceNeed(
+                                    placement.serviceNeed.optionId,
                                     placement.serviceNeed.feeCoefficient,
                                     placement.serviceNeed.contractDaysPerMonth,
                                     placement.serviceNeed.feeDescriptionFi,
