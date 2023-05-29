@@ -13,6 +13,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -76,13 +77,19 @@ export default React.memo(function TemplateSectionView({
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [creatingQuestion, setCreatingQuestion] = useState(false)
-  const { label, questions } = useFormFields(bind)
+  const { label, questions, infoText } = useFormFields(bind)
   const questionElems = useFormElems(questions)
 
   return (
     <Wrapper $readOnly={readOnly}>
       <HeaderRow>
-        <H2>{label.value()}</H2>
+        <ExpandingInfo
+          info={infoText.state}
+          closeLabel={i18n.common.close}
+          ariaLabel=""
+        >
+          <H2>{label.value()}</H2>
+        </ExpandingInfo>
         {!readOnly && (
           <FixedSpaceRow className="section-actions">
             <IconButton

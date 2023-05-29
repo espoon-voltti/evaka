@@ -3768,6 +3768,7 @@ export const fi = {
       titleNewSection: 'Uusi osio',
       titleEditSection: 'Muokkaa osiota',
       sectionName: 'Otsikko',
+      infoText: 'Ohjeteksti',
       addQuestion: 'Uusi osio',
       titleNewQuestion: 'Uusi kysymys',
       titleEditQuestion: 'Muokkaa kysymystä',

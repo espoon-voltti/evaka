@@ -59,7 +59,12 @@ sealed class Question(val type: QuestionType) {
 
 data class MultiselectOption(val id: String, val label: String)
 
-data class Section(val id: String, val label: String, val questions: List<Question>)
+data class Section(
+    val id: String,
+    val label: String,
+    val questions: List<Question>,
+    val infoText: String = ""
+)
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 

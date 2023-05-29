@@ -233,6 +233,7 @@ export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestio
 */
 export interface Section {
   id: string
+  infoText: string
   label: string
   questions: Question[]
 }

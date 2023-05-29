@@ -6,7 +6,10 @@ import React from 'react'
 
 import { BoundForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
+
+import { useTranslation } from '../../state/i18n'
 
 import {
   documentForm,
@@ -45,11 +48,18 @@ export const DocumentSectionView = React.memo(function DocumentSectionView({
   bind,
   readOnly
 }: DocumentSectionProps) {
-  const { label, questions } = useFormFields(bind)
+  const { i18n } = useTranslation()
+  const { label, questions, infoText } = useFormFields(bind)
   const questionElems = useFormElems(questions)
   return (
     <div>
-      <H2>{label.state}</H2>
+      <ExpandingInfo
+        info={infoText.state}
+        closeLabel={i18n.common.close}
+        ariaLabel=""
+      >
+        <H2>{label.value()}</H2>
+      </ExpandingInfo>
       <FixedSpaceColumn>
         {questionElems.map((question) => (
           <DocumentQuestionView
