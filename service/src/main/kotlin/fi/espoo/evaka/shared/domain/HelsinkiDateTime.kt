@@ -18,6 +18,7 @@ import java.time.Month
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
+import java.time.temporal.TemporalAmount
 
 val europeHelsinki: ZoneId = ZoneId.of("Europe/Helsinki")
 
@@ -50,6 +51,7 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     fun minusHours(hours: Long): HelsinkiDateTime = update { it.minusHours(hours) }
     fun minusMinutes(minutes: Long): HelsinkiDateTime = update { it.minusMinutes(minutes) }
     fun minusSeconds(seconds: Long): HelsinkiDateTime = update { it.minusSeconds(seconds) }
+    operator fun minus(duration: TemporalAmount): HelsinkiDateTime = update { it + duration }
 
     fun plusYears(years: Long): HelsinkiDateTime = update { it.plusYears(years) }
     fun plusMonths(months: Long): HelsinkiDateTime = update { it.plusMonths(months) }
@@ -58,6 +60,7 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     fun plusHours(hours: Long): HelsinkiDateTime = update { it.plusHours(hours) }
     fun plusMinutes(minutes: Long): HelsinkiDateTime = update { it.plusMinutes(minutes) }
     fun plusSeconds(seconds: Long): HelsinkiDateTime = update { it.plusSeconds(seconds) }
+    operator fun plus(duration: TemporalAmount): HelsinkiDateTime = update { it + duration }
 
     fun isAfter(other: HelsinkiDateTime): Boolean = this.instant.isAfter(other.instant)
     fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
