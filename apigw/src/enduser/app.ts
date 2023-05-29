@@ -23,12 +23,12 @@ import routes from './routes'
 import mapRoutes from './mapRoutes'
 import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
-import { RedisClient } from 'redis'
 import { Config } from '../shared/config'
 import { createSamlConfig } from '../shared/saml'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis'
 import { createDevSfiRouter } from './dev-sfi-auth'
 import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml'
+import { assertRedisConnection, RedisClient } from '../shared/redis-client'
 
 export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
@@ -50,9 +50,13 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
     })
   )
   app.get('/health', (_, res) => {
-    redisClient.connected !== true && redisClient.ping() !== true
-      ? res.status(503).json({ status: 'DOWN' })
-      : res.status(200).json({ status: 'UP' })
+    assertRedisConnection(redisClient)
+      .then(() => {
+        res.status(200).json({ status: 'UP' })
+      })
+      .catch(() => {
+        res.status(503).json({ status: 'DOWN' })
+      })
   })
   app.use(tracing)
   app.use(cookieParser())

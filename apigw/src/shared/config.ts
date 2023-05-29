@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type redis from 'redis'
+import { RedisClientOptions } from 'redis'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 
 export interface Config {
@@ -28,13 +28,17 @@ export interface Config {
   }
 }
 
-export const toRedisClientOpts = (config: Config): redis.ClientOpts => ({
-  host: config.redis.host,
-  port: config.redis.port,
-  ...(!config.redis.disableSecurity && {
-    tls: { servername: config.redis.tlsServerName },
-    password: config.redis.password
-  })
+export const toRedisClientOpts = (config: Config): RedisClientOptions => ({
+  socket: {
+    host: config.redis.host,
+    port: config.redis.port,
+    ...(config.redis.disableSecurity
+      ? undefined
+      : { tls: true, servername: config.redis.tlsServerName })
+  },
+  ...(config.redis.disableSecurity
+    ? undefined
+    : { password: config.redis.password })
 })
 
 export interface EvakaSamlConfig {
