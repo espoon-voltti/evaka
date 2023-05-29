@@ -70,7 +70,7 @@
     "@types/redis": "^2.8.32",
     "@types/redis-mock": "^0.17.1",
     "@types/source-map-support": "^0.5.6",
-    "@types/split2": "^3.2.1",
+    "@types/split2": "^4.2.0",
     "@types/through2": "^2.0.38",
     "@types/tough-cookie": "^4.0.2",
     "@types/uuid": "^9.0.1",
