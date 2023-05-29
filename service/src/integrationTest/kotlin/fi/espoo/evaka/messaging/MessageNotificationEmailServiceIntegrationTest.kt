@@ -28,13 +28,12 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import java.time.LocalDate
+import java.time.Duration
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -61,10 +60,13 @@ class MessageNotificationEmailServiceIntegrationTest :
     private val employee =
         AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
+    private lateinit var clock: MockEvakaClock
+
     @BeforeEach
     fun beforeEach() {
-        val placementStart = LocalDate.now().minusDays(30)
-        val placementEnd = LocalDate.now().plusDays(30)
+        clock = MockEvakaClock(2023, 1, 1, 12, 0)
+        val placementStart = clock.today().minusDays(30)
+        val placementEnd = clock.today().plusDays(30)
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
@@ -108,7 +110,6 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `notifications are sent to citizens`() {
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val employeeAccount =
             db.read {
                 it.getEmployeeMessageAccountIds(
@@ -162,8 +163,6 @@ class MessageNotificationEmailServiceIntegrationTest :
                 tx.upsertEmployeeMessageAccount(municipalEmployeeId, AccountType.MUNICIPAL)
             }
 
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
-
         postNewThread(
             sender = municipalAccount,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
@@ -172,16 +171,12 @@ class MessageNotificationEmailServiceIntegrationTest :
             MessageType.BULLETIN
         )
 
-        asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
-        )
+        clock.tick(Duration.ofSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
+        asyncJobRunner.runPendingJobsSync(clock)
         assertEquals(0, MockEmailClient.emails.size)
 
-        asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(
-                clock.now().plusSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS)
-            )
-        )
+        clock.tick(Duration.ofSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS))
+        asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(3, MockEmailClient.emails.size)
 
@@ -202,7 +197,6 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `a notification is not sent when the message has been undone`() {
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val employeeAccount =
             db.read {
                 it.getEmployeeMessageAccountIds(
@@ -235,7 +229,6 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `a notification is not sent when the message has been already read`() {
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val employeeAccount =
             db.read {
                 it.getEmployeeMessageAccountIds(

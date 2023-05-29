@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.domain
 
 import java.time.Clock
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -28,8 +29,8 @@ class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
     override fun today(): LocalDate = now.toLocalDate()
     override fun now(): HelsinkiDateTime = now
 
-    fun tick() {
-        now = now.plusSeconds(1)
+    fun tick(duration: Duration = Duration.ofSeconds(1)) {
+        now += duration
     }
 }
 
