@@ -1465,12 +1465,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/split2@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "@types/split2@npm:3.2.1"
+"@types/split2@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "@types/split2@npm:4.2.0"
   dependencies:
     "@types/node": "*"
-  checksum: 3c625ad8bdf937650f8533af85b4de22b21dc474e0867bb36dcf91da8bef0af80e18821736581c22e2d402b8c14548e00d0b5dc885a62feae72a5eec04b36d05
+  checksum: 30f2c59d26dd9692e2f0e2eb8e5282da8d602aacad83a75b41c77ab7377a932739254c188dd1397cfb5894b5458bebf8d305fd7de94b17cd233a4ba0889b7251
   languageName: node
   linkType: hard
 
@@ -3070,7 +3070,7 @@ __metadata:
     "@types/redis": ^2.8.32
     "@types/redis-mock": ^0.17.1
     "@types/source-map-support": ^0.5.6
-    "@types/split2": ^3.2.1
+    "@types/split2": ^4.2.0
     "@types/through2": ^2.0.38
     "@types/tough-cookie": ^4.0.2
     "@types/uuid": ^9.0.1
