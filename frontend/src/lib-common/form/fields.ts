@@ -78,16 +78,13 @@ export const localTimeWithUnitTimes = transformed(
   object({
     value: string(),
     unitStartTime: value<LocalTime | null>(),
-    unitEndTime: value<LocalTime | null>(),
-    hasVariedUnitTimes: boolean()
+    unitEndTime: value<LocalTime | null>()
   }),
   (
     v
   ): ValidationResult<
     LocalTime | undefined,
-    | 'timeFormat'
-    | 'outsideUnitOperationTime'
-    | 'outsideCombinedUnitOperationTime'
+    'timeFormat' | 'outsideUnitOperationTime'
   > => {
     if (v.value === '') return ValidationSuccess.of(undefined)
     const parsed = LocalTime.tryParse(v.value)
@@ -99,9 +96,7 @@ export const localTimeWithUnitTimes = transformed(
       parsed.isBefore(v.unitStartTime) ||
       parsed.isAfter(v.unitEndTime)
     ) {
-      return v.hasVariedUnitTimes
-        ? ValidationError.of('outsideCombinedUnitOperationTime')
-        : ValidationError.of('outsideUnitOperationTime')
+      return ValidationError.of('outsideUnitOperationTime')
     }
     return ValidationSuccess.of(parsed)
   }

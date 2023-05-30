@@ -2068,7 +2068,6 @@ const en: Translations = {
     httpUrl: 'Valid url format is https://example.com',
     unselectableDate: 'Invalid date',
     outsideUnitOperationTime: 'Outside opening hours',
-    outsideCombinedUnitOperationTime: 'Outside opening hours',
     ...components.datePicker.validationErrors
   },
   placement: {

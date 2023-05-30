@@ -9,10 +9,11 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { DayProperties, UnitTimeInfo, resetTimes } from './form'
+import { DayProperties, resetTimes } from './form'
 
 const monday = LocalDate.of(2021, 2, 1)
 const tuesday = monday.addDays(1)
@@ -55,19 +56,17 @@ const emptyChild: ReservationResponseDayChild = {
   }
 }
 
-const buildTimeInputState = (value: string, unitTimeInfo?: UnitTimeInfo) =>
-  unitTimeInfo
+const buildTimeInputState = (value: string, unitTimeRange?: TimeRange | null) =>
+  unitTimeRange !== undefined
     ? {
         value,
-        unitStartTime: unitTimeInfo.unitTimeRange?.start ?? null,
-        unitEndTime: unitTimeInfo.unitTimeRange?.end ?? null,
-        hasVariedUnitTimes: unitTimeInfo.hasVariedUnitTimes
+        unitStartTime: unitTimeRange?.start ?? null,
+        unitEndTime: unitTimeRange?.end ?? null
       }
     : {
         value,
         unitStartTime: emptyChild.unitOperationTime?.start ?? null,
-        unitEndTime: emptyChild.unitOperationTime?.end ?? null,
-        hasVariedUnitTimes: false
+        unitEndTime: emptyChild.unitOperationTime?.end ?? null
       }
 
 describe('resetTimes', () => {
@@ -697,14 +696,8 @@ describe('resetTimes', () => {
                 branch: 'timeRanges',
                 state: [
                   {
-                    startTime: buildTimeInputState('', {
-                      hasVariedUnitTimes: false,
-                      unitTimeRange: null
-                    }),
-                    endTime: buildTimeInputState('', {
-                      hasVariedUnitTimes: false,
-                      unitTimeRange: null
-                    })
+                    startTime: buildTimeInputState('', null),
+                    endTime: buildTimeInputState('', null)
                   }
                 ]
               }
