@@ -56,7 +56,10 @@ const emptyChild: ReservationResponseDayChild = {
   }
 }
 
-const buildTimeInputState = (value: string, unitOperationTimeRange?: TimeRange | null) =>
+const buildTimeInputState = (
+  value: string,
+  unitOperationTimeRange?: TimeRange | null
+) =>
   unitOperationTimeRange !== undefined
     ? {
         value,

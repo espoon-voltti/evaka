@@ -417,7 +417,8 @@ export function resetTimes(
           .filter((c) => selectedChildren.includes(c.childId))
           .map((c) => c.unitOperationTime)
 
-        const unitOperationTimeRange = getMinimalOverlappingRange(dailyUnitTimes)
+        const unitOperationTimeRange =
+          getMinimalOverlappingRange(dailyUnitTimes)
 
         return {
           date: rangeDate,
@@ -494,7 +495,10 @@ export function resetDay(
         branch: 'reservation',
         state: {
           branch: 'timeRanges',
-          state: bindUnboundedTimeRanges(commonTimeRanges, unitOperationTimeRange)
+          state: bindUnboundedTimeRanges(
+            commonTimeRanges,
+            unitOperationTimeRange
+          )
         }
       }
     }
