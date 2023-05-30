@@ -2824,7 +2824,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2841,7 +2846,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
