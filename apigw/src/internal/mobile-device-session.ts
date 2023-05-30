@@ -4,7 +4,6 @@
 
 import express, { CookieOptions } from 'express'
 import { v4 as uuid } from 'uuid'
-import AsyncRedisClient from '../shared/async-redis-client'
 import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config'
 import {
   assertStringProp,
@@ -18,6 +17,7 @@ import {
   validatePairing
 } from '../shared/service-client'
 import { login } from '../shared/auth'
+import { RedisClient } from '../shared/redis-client'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -91,7 +91,7 @@ export const devApiE2ESignup = toRequestHandler(async (req, res) => {
 
 const toMobileEmployeeIdKey = (token: string) => `mobile-employee-id:${token}`
 
-export const pinLoginRequestHandler = (redisClient: AsyncRedisClient) =>
+export const pinLoginRequestHandler = (redisClient: RedisClient) =>
   toRequestHandler(async (req, res) => {
     if (req.user?.userType !== 'MOBILE') return
 
@@ -99,18 +99,15 @@ export const pinLoginRequestHandler = (redisClient: AsyncRedisClient) =>
     const response = await employeePinLogin(req)
 
     const token = uuid()
-    await redisClient.set(
-      toMobileEmployeeIdKey(token),
-      employeeId,
-      'EX',
-      pinSessionTimeoutSeconds
-    )
+    await redisClient.set(toMobileEmployeeIdKey(token), employeeId, {
+      EX: pinSessionTimeoutSeconds
+    })
 
     req.session.employeeIdToken = token
     res.status(200).send(response)
   })
 
-export const pinLogoutRequestHandler = (redisClient: AsyncRedisClient) =>
+export const pinLogoutRequestHandler = (redisClient: RedisClient) =>
   toRequestHandler(async (req, res) => {
     const token = req.session.employeeIdToken
     if (token) {
@@ -122,7 +119,7 @@ export const pinLogoutRequestHandler = (redisClient: AsyncRedisClient) =>
     res.sendStatus(204)
   })
 
-export const checkMobileEmployeeIdToken = (redisClient: AsyncRedisClient) =>
+export const checkMobileEmployeeIdToken = (redisClient: RedisClient) =>
   toMiddleware(async (req) => {
     if (req.user?.userType !== 'MOBILE') return
 

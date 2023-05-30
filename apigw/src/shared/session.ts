@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import connectRedis from 'connect-redis'
+import RedisStore from 'connect-redis'
 import {
   addMinutes,
   differenceInMinutes,
@@ -11,17 +11,14 @@ import {
 } from 'date-fns'
 import express, { CookieOptions } from 'express'
 import session from 'express-session'
-import { RedisClient } from 'redis'
-import AsyncRedisClient from './async-redis-client'
 import { cookieSecret, sessionTimeoutMinutes, useSecureCookies } from './config'
 import { LogoutToken, toMiddleware } from './express'
 import { fromCallback } from './promise-utils'
+import { RedisClient } from './redis-client'
 
 export type SessionType = 'enduser' | 'employee'
 
-const RedisStore = connectRedis(session)
-
-let asyncRedisClient: AsyncRedisClient | undefined
+let redisClient: RedisClient | undefined
 
 const sessionCookieOptions: CookieOptions = {
   path: '/',
@@ -84,7 +81,7 @@ export async function saveLogoutToken(
   const token = logoutToken || req.session.logoutToken?.value
   if (!token) return
 
-  if (!asyncRedisClient) return
+  if (!redisClient) return
   const now = new Date()
   const expires = addMinutes(now, sessionTimeoutMinutes + 60)
   const newToken = {
@@ -98,18 +95,18 @@ export async function saveLogoutToken(
   // https://redis.io/commands/set - Set key to hold the string value.
   // Options:
   //   EX seconds -- Set the specified expire time, in seconds.
-  await asyncRedisClient.set(key, req.session.id, 'EX', ttlSeconds)
+  await redisClient.set(key, req.session.id, { EX: ttlSeconds })
 }
 
 export async function logoutWithOnlyToken(
   logoutToken: LogoutToken['value']
 ): Promise<unknown | undefined> {
-  if (!asyncRedisClient) return
+  if (!redisClient) return
   if (!logoutToken) return
-  const sid = await asyncRedisClient.get(logoutKey(logoutToken))
+  const sid = await redisClient.get(logoutKey(logoutToken))
   if (!sid) return
-  const session = await asyncRedisClient.get(sessionKey(sid))
-  await asyncRedisClient.del(sessionKey(sid), logoutKey(logoutToken))
+  const session = await redisClient.get(sessionKey(sid))
+  await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
   if (!session) return
   const user = JSON.parse(session)?.passport?.user
   if (!user) return
@@ -117,13 +114,13 @@ export async function logoutWithOnlyToken(
 }
 
 export async function consumeLogoutToken(token: LogoutToken['value']) {
-  if (!asyncRedisClient) return
+  if (!redisClient) return
   // TODO: use Redis getdel operation once the client supports it
-  const sid = await asyncRedisClient.get(logoutKey(token))
+  const sid = await redisClient.get(logoutKey(token))
   if (sid) {
     // Ensure both session and logout keys are cleared in case no cookies were
     // available -> no req.session was available to be deleted.
-    await asyncRedisClient.del(sessionKey(sid), logoutKey(token))
+    await redisClient.del([sessionKey(sid), logoutKey(token)])
   }
 }
 
@@ -138,8 +135,8 @@ export const touchSessionMaxAge = toMiddleware(async (req) => {
   req.session?.touch()
 })
 
-export default (sessionType: SessionType, redisClient?: RedisClient) => {
-  asyncRedisClient = redisClient && new AsyncRedisClient(redisClient)
+export default (sessionType: SessionType, redisClientImpl: RedisClient) => {
+  redisClient = redisClientImpl
   return session({
     cookie: {
       ...sessionCookieOptions,
@@ -150,10 +147,6 @@ export default (sessionType: SessionType, redisClient?: RedisClient) => {
     saveUninitialized: false,
     secret: cookieSecret,
     name: sessionCookie(sessionType),
-    store: redisClient
-      ? new RedisStore({
-          client: redisClient
-        })
-      : new session.MemoryStore()
+    store: new RedisStore({ client: redisClient })
   })
 }

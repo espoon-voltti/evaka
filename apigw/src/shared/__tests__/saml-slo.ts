@@ -5,20 +5,18 @@
 import type { AxiosResponse } from 'axios'
 import fs from 'fs'
 import path from 'path'
-import { RedisClient } from 'redis'
 import { Cookie } from 'tough-cookie'
 import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
 import xmldom from '@xmldom/xmldom'
 import zlib from 'zlib'
 import { Config, configFromEnv } from '../config'
-import { fromCallback } from '../promise-utils'
 import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
-import redisMock from 'redis-mock'
 import { DevCitizen } from '../dev-api'
 import { CitizenUser } from '../service-client'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
+import { MockRedisClient } from '../test/mock-redis-client'
 
 const mockUser: DevCitizen & CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
@@ -53,10 +51,8 @@ const IDP_PVK = fs
 
 describe('SAML Single Logout', () => {
   let tester: GatewayTester
-  let redisClient: RedisClient
 
   beforeEach(async () => {
-    redisClient = redisMock.createClient()
     const { default: enduserGwApp } = await import('../../enduser/app')
     const config: Config = {
       ...configFromEnv(),
@@ -82,13 +78,12 @@ describe('SAML Single Logout', () => {
         }
       }
     }
-    const app = enduserGwApp(config, redisClient)
+    const app = enduserGwApp(config, new MockRedisClient())
     tester = await GatewayTester.start(app, 'enduser')
   })
   afterEach(async () => {
     await tester?.afterEach()
     await tester?.stop()
-    await fromCallback((cb) => redisClient?.flushall(cb))
   })
 
   test('reference case (3rd party cookies available)', async () => {

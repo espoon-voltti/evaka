@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { CacheItem, CacheProvider } from '@node-saml/passport-saml'
-import type { RedisClient } from 'redis'
-import { fromCallback } from '../promise-utils'
+import type { CacheProvider } from '@node-saml/passport-saml'
+import { RedisClient } from '../redis-client'
 
 export interface ProviderOptions {
   /**
@@ -33,41 +32,24 @@ export default function redisCacheProvider(
   client: RedisClient,
   options: ProviderOptions
 ): CacheProvider {
-  const { ttlSeconds = 60 * 60, keyPrefix } = { ...options }
+  const { ttlSeconds = 60 * 60, keyPrefix } = options
 
   if (!Number.isInteger(ttlSeconds) || ttlSeconds <= 0) {
     throw new Error('ttlSeconds must be a positive integer')
   }
 
   return {
-    getAsync: (key) =>
-      fromCallback((callback) => client.get(`${keyPrefix}${key}`, callback)),
-    saveAsync: (key, value) =>
-      fromCallback((callback) =>
-        client.get(`${keyPrefix}${key}`, (err, reply) => {
-          if (err) return callback(err, null)
-          if (reply !== null) return callback(null, null)
-
-          const cacheItem: CacheItem = {
-            createdAt: new Date().getTime(),
-            value
-          }
-          return client.set(
-            `${keyPrefix}${key}`,
-            value,
-            'EX',
-            ttlSeconds,
-            (err) => callback(err, cacheItem)
-          )
-        })
-      ),
-    removeAsync: (key) =>
-      fromCallback((callback) =>
-        client.del(`${keyPrefix}${key}`, (err, count) => {
-          if (err) return callback(err, null)
-          if (count === 0) return callback(null, null)
-          return callback(null, key)
-        })
-      )
+    getAsync: (key: string) => client.get(`${keyPrefix}${key}`),
+    saveAsync: async (key: string, value: string) => {
+      const reply = await client.get(`${keyPrefix}${key}`)
+      if (reply !== null) return null
+      await client.set(`${keyPrefix}${key}`, value, { EX: ttlSeconds })
+      return { createdAt: new Date().getTime(), value }
+    },
+    removeAsync: async (key: string) => {
+      const count = await client.del(`${keyPrefix}${key}`)
+      if (count === 0) return null
+      return key
+    }
   }
 }

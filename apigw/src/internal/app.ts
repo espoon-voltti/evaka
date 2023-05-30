@@ -37,13 +37,12 @@ import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
-import AsyncRedisClient from '../shared/async-redis-client'
 import expressBasicAuth from 'express-basic-auth'
 import { cacheControl } from '../shared/middleware/cache-control'
-import { RedisClient } from 'redis'
 import { createSamlConfig } from '../shared/saml'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis'
 import { createDevAdRouter } from './dev-ad-auth'
+import { assertRedisConnection, RedisClient } from '../shared/redis-client'
 
 export default function internalGwApp(
   config: Config,
@@ -68,9 +67,13 @@ export default function internalGwApp(
     })
   )
   app.get('/health', (_, res) => {
-    redisClient.connected !== true && redisClient.ping() !== true
-      ? res.status(503).json({ status: 'DOWN' })
-      : res.status(200).json({ status: 'UP' })
+    assertRedisConnection(redisClient)
+      .then(() => {
+        res.status(200).json({ status: 'UP' })
+      })
+      .catch(() => {
+        res.status(503).json({ status: 'DOWN' })
+      })
   })
   app.use(tracing)
   app.use(session('employee', redisClient))
@@ -150,7 +153,7 @@ export default function internalGwApp(
 
     router.post('/auth/mobile', express.json(), mobileDeviceSession)
 
-    router.use(checkMobileEmployeeIdToken(new AsyncRedisClient(redisClient)))
+    router.use(checkMobileEmployeeIdToken(redisClient))
 
     router.get(
       '/auth/status',
@@ -168,12 +171,12 @@ export default function internalGwApp(
     router.post(
       '/auth/pin-login',
       express.json(),
-      pinLoginRequestHandler(new AsyncRedisClient(redisClient))
+      pinLoginRequestHandler(redisClient)
     )
     router.post(
       '/auth/pin-logout',
       express.json(),
-      pinLogoutRequestHandler(new AsyncRedisClient(redisClient))
+      pinLogoutRequestHandler(redisClient)
     )
 
     router.use(createProxy())

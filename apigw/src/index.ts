@@ -13,7 +13,7 @@ import './tracer'
 import { logError, logInfo } from './shared/logging'
 import enduserGwApp from './enduser/app'
 import internalGwApp from './internal/app'
-import redis from 'redis'
+import * as redis from 'redis'
 
 const config = configFromEnv()
 
@@ -21,6 +21,9 @@ const redisClient = redis.createClient(toRedisClientOpts(config))
 redisClient.on('error', (err) =>
   logError('Redis error', undefined, undefined, err)
 )
+redisClient.connect().catch((err) => {
+  logError('Unable to connect to redis', undefined, undefined, err)
+})
 // Don't prevent the app from exiting if a redis connection is alive.
 redisClient.unref()
 

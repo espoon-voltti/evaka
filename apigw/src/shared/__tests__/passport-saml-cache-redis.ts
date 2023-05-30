@@ -3,33 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { CacheProvider } from '@node-saml/passport-saml'
-import type { RedisClient } from 'redis'
-import redis from 'redis-mock'
 import redisCacheProvider from '../saml/passport-saml-cache-redis'
-import { fromCallback } from '../promise-utils'
+import { MockRedisClient } from '../test/mock-redis-client'
 
 const ttlSeconds = 1
-let redisClient: RedisClient
+let redisClient: MockRedisClient
 let cache: CacheProvider
-jest.mock('redis', () => redis)
-
-beforeAll(() => {
-  redisClient = redis.createClient()
-})
 
 beforeEach(() => {
+  redisClient = new MockRedisClient()
   cache = redisCacheProvider(redisClient, {
     ttlSeconds,
     keyPrefix: 'test-prefix:'
   })
-})
-
-afterEach(async () => {
-  await fromCallback((cb) => redisClient.flushall(cb))
-})
-
-afterAll(() => {
-  redisClient.end()
 })
 
 describe('passport-saml-cache-redis', () => {
@@ -114,14 +100,7 @@ describe('passport-saml-cache-redis', () => {
       await cache.saveAsync('key', 'val')
 
       expect(await cache.getAsync('key')).toBe('val')
-
-      // Unfortunately there's not currently an reasonably easy way to mock
-      // the timer used by redis-mock so actually waiting for the duration of
-      // TTL is necessary.
-      await new Promise((resolve) =>
-        setTimeout(resolve, ttlSeconds * 1.1 * 1000)
-      )
-
+      redisClient.advanceTime(2)
       expect(await cache.getAsync('key')).toBeNull()
     })
   })
