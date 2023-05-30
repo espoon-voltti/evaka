@@ -284,6 +284,7 @@ export interface Daycare {
   costCenter: string | null
   daycareApplyPeriod: DateRange | null
   decisionCustomization: DaycareDecisionCustomization
+  dwCostCenter: string | null
   email: string | null
   enabledPilotFeatures: PilotFeature[]
   financeDecisionHandler: FinanceDecisionHandler | null
@@ -353,6 +354,7 @@ export interface DaycareFields {
   costCenter: string | null
   daycareApplyPeriod: DateRange | null
   decisionCustomization: DaycareDecisionCustomization
+  dwCostCenter: string | null
   email: string | null
   financeDecisionHandlerId: UUID | null
   ghostUnit: boolean

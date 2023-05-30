@@ -143,7 +143,7 @@ fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): DaycareId =
             """
 INSERT INTO daycare (
   id, name, opening_date, closing_date, care_area_id, type, daycare_apply_period, preschool_apply_period, club_apply_period, provider_type,
-  capacity, language, ghost_unit, upload_to_varda, upload_children_to_varda, upload_to_koski, invoiced_by_municipality, cost_center,
+  capacity, language, ghost_unit, upload_to_varda, upload_children_to_varda, upload_to_koski, invoiced_by_municipality, cost_center, dw_cost_center,
   additional_info, phone, email, url,
   street_address, postal_code, post_office,
   location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
@@ -153,7 +153,7 @@ INSERT INTO daycare (
   finance_decision_handler, business_id, iban, provider_id
 ) VALUES (
   :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :daycareApplyPeriod, :preschoolApplyPeriod, :clubApplyPeriod, :providerType,
-  :capacity, :language, :ghostUnit, :uploadToVarda, :uploadChildrenToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter,
+  :capacity, :language, :ghostUnit, :uploadToVarda, :uploadChildrenToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter, :dwCostCenter,
   :additionalInfo, :phone, :email, :url,
   :visitingAddress.streetAddress, :visitingAddress.postalCode, :visitingAddress.postOffice,
   :location, :mailingAddress.streetAddress, :mailingAddress.poBox, :mailingAddress.postalCode, :mailingAddress.postOffice,

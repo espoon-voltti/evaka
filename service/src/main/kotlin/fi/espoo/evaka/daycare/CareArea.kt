@@ -51,6 +51,7 @@ data class Daycare(
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String?,
+    val dwCostCenter: String?,
     @Nested("finance_decision_handler_") val financeDecisionHandler: FinanceDecisionHandler?,
     val additionalInfo: String?,
     val phone: String?,

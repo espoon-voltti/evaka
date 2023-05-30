@@ -1642,6 +1642,7 @@ data class DevDaycare(
     val uploadToKoski: Boolean = true,
     val invoicedByMunicipality: Boolean = true,
     val costCenter: String? = "31500",
+    val dwCostCenter: String? = "dw-test",
     val additionalInfo: String? = null,
     val phone: String? = null,
     val email: String? = null,
