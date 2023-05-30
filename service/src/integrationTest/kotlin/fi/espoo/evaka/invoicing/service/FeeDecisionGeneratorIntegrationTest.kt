@@ -23,6 +23,8 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.oldTestFeeThresholds
 import fi.espoo.evaka.invoicing.testFeeThresholds
+import fi.espoo.evaka.pis.controllers.ParentshipController
+import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
@@ -47,6 +49,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -100,6 +103,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -110,6 +114,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
+    @Autowired private lateinit var parentshipController: ParentshipController
+    @Autowired private lateinit var partnershipsController: PartnershipsController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val mockedNow =
@@ -3833,6 +3839,118 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
+    @Test
+    fun `head of family changes`() {
+        val admin = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN))
+        val period = FiniteDateRange(LocalDate.of(2022, 3, 1), LocalDate.of(2022, 4, 30))
+        insertPlacement(testChild_1.id, period.asDateRange(), DAYCARE, testDaycare.id)
+        parentshipController.createParentship(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            ParentshipController.ParentshipRequest(
+                headOfChildId = testAdult_1.id,
+                childId = testChild_1.id,
+                startDate = period.start,
+                endDate = period.end
+            )
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val parentshipId =
+            parentshipController
+                .getParentships(dbInstance(), admin, RealEvakaClock(), childId = testChild_1.id)
+                .single()
+                .data
+                .id
+
+        getAllFeeDecisions().also { decisions ->
+            assertEquals(1, decisions.size)
+            feeDecisionController.confirmDrafts(
+                dbInstance(),
+                admin,
+                RealEvakaClock(),
+                decisions.map { it.id },
+                null
+            )
+        }
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(FeeDecisionStatus.SENT, getAllFeeDecisions().single().status)
+
+        val dateOfChange = LocalDate.of(2022, 4, 1)
+        parentshipController.updateParentship(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            parentshipId,
+            ParentshipController.ParentshipUpdateRequest(
+                startDate = period.start,
+                endDate = dateOfChange.minusDays(1)
+            )
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        getAllFeeDecisions().also { decisions ->
+            assertEquals(2, decisions.size)
+            assertEquals(1, decisions.filter { it.status == FeeDecisionStatus.SENT }.size)
+            decisions
+                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .let {
+                    assertEquals(dateOfChange, it.validDuring.start)
+                    assertEquals(0, it.totalFee)
+                }
+        }
+
+        partnershipsController.createPartnership(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            PartnershipsController.PartnershipRequest(
+                person1Id = testAdult_1.id,
+                person2Id = testAdult_2.id,
+                startDate = dateOfChange,
+                endDate = null
+            )
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        parentshipController.createParentship(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            ParentshipController.ParentshipRequest(
+                headOfChildId = testAdult_2.id,
+                childId = testChild_1.id,
+                startDate = dateOfChange,
+                endDate = period.end
+            )
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        // Stayed the same
+        getFeeDecisions(testAdult_1.id).also { decisions ->
+            assertEquals(2, decisions.size)
+            assertEquals(1, decisions.filter { it.status == FeeDecisionStatus.SENT }.size)
+            decisions
+                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .let {
+                    assertEquals(dateOfChange, it.validDuring.start)
+                    assertEquals(0, it.totalFee)
+                }
+        }
+
+        getFeeDecisions(testAdult_2.id).also { decisions ->
+            assertEquals(1, decisions.size)
+            decisions
+                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .let {
+                    assertEquals(dateOfChange, it.validDuring.start)
+                    assertNotEquals(0, it.totalFee)
+                }
+        }
+    }
+
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
@@ -3976,10 +4094,15 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
+        return db.read { tx -> tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>() }
+            .shuffled() // randomize order to expose assumptions
+    }
+
+    private fun getFeeDecisions(headOfFamilyId: PersonId): List<FeeDecision> {
+        val headPredicate =
+            Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
         return db.read { tx ->
-                tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().map {
-                    it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
-                }
+                tx.createQuery(feeDecisionQuery(headPredicate)).mapTo<FeeDecision>()
             }
             .shuffled() // randomize order to expose assumptions
     }
