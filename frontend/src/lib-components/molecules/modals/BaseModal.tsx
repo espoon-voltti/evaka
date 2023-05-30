@@ -26,7 +26,7 @@ export interface ModalBaseProps {
   zIndex?: number
   children?: React.ReactNode | React.ReactNodeArray
   'data-qa'?: string
-  wide?: boolean
+  width?: ModalWidth
   padding?: SpacingSize
 }
 
@@ -49,7 +49,7 @@ export default React.memo(function BaseModal(props: Props) {
           mobileFullScreen={props.mobileFullScreen}
           margin="auto"
           data-qa="modal"
-          wide={props.wide}
+          width={props.width}
           padding={props.padding}
         >
           <ModalTitle>
@@ -126,16 +126,23 @@ export const ModalCloseButton = React.memo(function ModalCloseButton({
   )
 })
 
+type ModalWidth = 'normal' | 'wide' | 'extra-wide'
+
 const ModalContainer = styled.div<{
   mobileFullScreen?: boolean
   noPadding?: boolean
   padding?: SpacingSize
   margin: string
-  wide?: boolean
+  width?: ModalWidth
 }>`
   position: relative;
   width: min(
-    ${(p) => (p.wide ? '720px' : '500px')},
+    ${(p) =>
+      p.width === 'extra-wide'
+        ? '1280px'
+        : p.width === 'wide'
+        ? '720px'
+        : '500px'},
     calc(100vw - 2 * ${defaultMargins.xxs})
   );
   max-height: calc(100vh - 2 * ${defaultMargins.s});

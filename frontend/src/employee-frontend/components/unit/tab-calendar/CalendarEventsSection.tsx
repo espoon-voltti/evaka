@@ -730,7 +730,7 @@ const EditEventModal = React.memo(function EditEventModal({
         <BaseModal
           title={i18n.unit.calendar.events.edit.title}
           type="info"
-          wide
+          width="wide"
           close={() => onClose(false)}
           closeLabel={i18n.common.closeModal}
           padding="L"

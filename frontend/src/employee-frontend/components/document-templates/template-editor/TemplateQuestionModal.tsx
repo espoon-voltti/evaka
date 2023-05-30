@@ -55,7 +55,7 @@ export default React.memo(function TemplateQuestionModal({
       rejectAction={onCancel}
       rejectLabel={i18n.common.cancel}
       resolveDisabled={!form.isValid()}
-      wide
+      width="extra-wide"
     >
       <SplitView>
         <FormPanel>
