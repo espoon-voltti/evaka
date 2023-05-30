@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import styled from 'styled-components'
 
 import { useForm } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
 import TextQuestionDescriptor from '../question-descriptors/TextQuestionDescriptor'
@@ -16,7 +18,8 @@ import { questionTypes } from '../question-descriptors/types'
 import {
   getTemplateQuestionInitialStateByType,
   TemplateQuestionConfigView,
-  templateQuestionForm
+  templateQuestionForm,
+  TemplateQuestionPreview
 } from '../templates'
 
 interface Props {
@@ -52,19 +55,42 @@ export default React.memo(function TemplateQuestionModal({
       rejectAction={onCancel}
       rejectLabel={i18n.common.cancel}
       resolveDisabled={!form.isValid()}
+      wide
     >
-      <Select
-        items={questionTypes}
-        selectedItem={form.state.branch}
-        getItemLabel={(item) => i18n.documentTemplates.questionTypes[item]}
-        onChange={(branch) => {
-          if (branch !== null) {
-            form.set(getTemplateQuestionInitialStateByType(branch))
-          }
-        }}
-      />
-      <Gap />
-      <TemplateQuestionConfigView bind={form} />
+      <SplitView>
+        <FormPanel>
+          <Select
+            items={questionTypes}
+            selectedItem={form.state.branch}
+            getItemLabel={(item) => i18n.documentTemplates.questionTypes[item]}
+            onChange={(branch) => {
+              if (branch !== null) {
+                form.set(getTemplateQuestionInitialStateByType(branch))
+              }
+            }}
+          />
+          <Gap />
+          <TemplateQuestionConfigView bind={form} />
+        </FormPanel>
+        <PreviewPanel>
+          <TemplateQuestionPreview bind={form} />
+        </PreviewPanel>
+      </SplitView>
     </AsyncFormModal>
   )
 })
+
+const SplitView = styled.div`
+  display: flex;
+`
+
+const FormPanel = styled.div`
+  width: 50%;
+  padding-right: ${defaultMargins.m};
+  border-right: dashed 1px ${colors.grayscale.g35};
+`
+
+const PreviewPanel = styled.div`
+  width: 50%;
+  padding-left: ${defaultMargins.m};
+`
