@@ -66,7 +66,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
                 )
         val preferredUnits =
             form.preferences.preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) }
-        val placements = tx.getPlacementDraftPlacements(application.childId)
+        val placements = tx.getPlacementSummary(application.childId)
 
         val startDate = maxOf(minStartDate, form.preferences.preferredStartDate!!)
 

@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { getAttachmentUrl } from 'citizen-frontend/attachments'
+import { useUser } from 'citizen-frontend/auth/state'
 import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
 import {
@@ -36,7 +37,8 @@ import {
   faArrowDown,
   faChevronDown,
   faChevronLeft,
-  faChevronUp
+  faChevronUp,
+  faLockAlt
 } from 'lib-icons'
 
 import {
@@ -379,23 +381,11 @@ export default React.memo(function PedagogicalDocumentsSection({
   childId: UUID
 }) {
   const [open, setOpen] = useState(false)
-
-  const pedagogicalDocuments = useQueryResult(
-    pedagogicalDocumentsQuery(childId)
-  )
-  const { mutate: markPedagogicalDocumentAsRead } = useMutation(
-    markPedagogicalDocumentAsReadMutation
-  )
-
+  const t = useTranslation()
   const { data: unreadPedagogicalDocumentsCount } = useQuery(
     unreadPedagogicalDocumentsCountQuery
   )
-
-  const onRead = (doc: PedagogicalDocumentCitizen) => {
-    markPedagogicalDocumentAsRead({ childId, documentId: doc.id })
-  }
-
-  const t = useTranslation()
+  const user = useUser()
 
   return (
     <CollapsibleOrWholePageContainer
@@ -406,13 +396,35 @@ export default React.memo(function PedagogicalDocumentsSection({
       data-qa="collapsible-pedagogical-documents"
       countIndicator={unreadPedagogicalDocumentsCount?.[childId]}
       contentPadding="zero"
+      icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
-      {renderResult(pedagogicalDocuments, (items) => (
-        <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
-      ))}
+      <PedagogicalDocumentsContent childId={childId} />
     </CollapsibleOrWholePageContainer>
   )
 })
+
+const PedagogicalDocumentsContent = React.memo(
+  function PedagogicalDocumentsContent({ childId }: { childId: UUID }) {
+    const pedagogicalDocuments = useQueryResult(
+      pedagogicalDocumentsQuery(childId)
+    )
+    const { mutate: markPedagogicalDocumentAsRead } = useMutation(
+      markPedagogicalDocumentAsReadMutation
+    )
+
+    const onRead = (doc: PedagogicalDocumentCitizen) => {
+      markPedagogicalDocumentAsRead({ childId, documentId: doc.id })
+    }
+
+    return (
+      <>
+        {renderResult(pedagogicalDocuments, (items) => (
+          <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
+        ))}
+      </>
+    )
+  }
+)
 
 const ItemTr = styled(Tr)<{ documentIsRead: boolean }>`
   font-weight: ${(p) =>

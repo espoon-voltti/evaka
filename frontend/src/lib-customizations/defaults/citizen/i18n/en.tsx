@@ -114,6 +114,11 @@ const en: Translations = {
           long: 'Pre-primary education'
         }
       }
+    },
+    tense: {
+      past: 'Past',
+      present: 'Active',
+      future: 'Future'
     }
   },
   header: {
@@ -2145,6 +2150,25 @@ const en: Translations = {
       previousPage: 'Previous page',
       pageCount: (current: number, total: number) =>
         `Page ${current} of ${total}`
+    },
+    serviceNeedAndDailyServiceTime: {
+      title: 'Service need and daily service time'
+    },
+    serviceNeed: {
+      title: 'Service need',
+      validity: 'Validity',
+      description: 'Description',
+      unit: 'Unit',
+      status: 'Status',
+      empty: 'Service need is not defined'
+    },
+    dailyServiceTime: {
+      title: 'Daily service time',
+      validity: 'Validity',
+      description: 'Description',
+      status: 'Status',
+      variableTime: 'Daily time varies',
+      empty: 'Not defined'
     },
     vasu: {
       title: 'Early childhood education and preschool learning plan',

@@ -135,7 +135,7 @@ export default React.memo(function MobileNav() {
                 unreadDecisions={unreadDecisions}
               />
             ) : menuOpen === 'children' ? (
-              <ChildrenMenu user={user} closeMenu={closeMenu} />
+              <ChildrenMenu closeMenu={closeMenu} />
             ) : null}
           </>
         ) : null
@@ -290,18 +290,13 @@ const ChildrenLink = React.memo(function ChildrenLink({
 })
 
 const ChildrenMenu = React.memo(function ChildrenMenu({
-  user,
   closeMenu
 }: {
-  user: User
   closeMenu: () => void
 }) {
   const t = useTranslation()
   const childrenWithOwnPage = useChildrenWithOwnPage()
   const { unreadChildNotifications } = useUnreadChildNotifications()
-  const lock = user.authLevel !== 'STRONG' && (
-    <FontAwesomeIcon icon={faLockAlt} size="xs" />
-  )
   const duplicateChildInfo = getDuplicateChildInfo(
     childrenWithOwnPage,
     t,
@@ -318,7 +313,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
             onClick={closeMenu}
             alignRight
           >
-            {formatFirstName(child)} {child.lastName} {lock}
+            {formatFirstName(child)} {child.lastName}
             {unreadChildNotifications[child.id] ? (
               <CircledChar
                 aria-label={`${unreadChildNotifications[child.id]} ${

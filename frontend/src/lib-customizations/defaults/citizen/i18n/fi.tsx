@@ -111,6 +111,11 @@ export default {
           long: 'Esiopetus'
         }
       }
+    },
+    tense: {
+      past: 'Päättynyt',
+      present: 'Voimassa',
+      future: 'Tuleva'
     }
   },
   header: {
@@ -2175,6 +2180,25 @@ export default {
     noChildren: 'Ei lapsia',
     unreadCount: 'lukematonta',
     childPicture: 'Lapsen kuva',
+    serviceNeedAndDailyServiceTime: {
+      title: 'Palveluntarve ja päivittäinen varhaiskasvatusaika'
+    },
+    serviceNeed: {
+      title: 'Palveluntarve',
+      validity: 'Voimassaoloaika',
+      description: 'Kuvaus',
+      unit: 'Yksikkö',
+      status: 'Tila',
+      empty: 'Palveluntarvetta ei määritelty'
+    },
+    dailyServiceTime: {
+      title: 'Päivittäinen varhaiskasvatusaika',
+      validity: 'Voimassaoloaika',
+      description: 'Kuvaus',
+      status: 'Tila',
+      variableTime: 'Päivittäinen aika vaihtelee',
+      empty: 'Ei määritelty'
+    },
     placementTermination: {
       title: 'Paikan irtisanominen',
       description:

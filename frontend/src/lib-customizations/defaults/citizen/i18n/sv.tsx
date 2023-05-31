@@ -112,6 +112,11 @@ const sv: Translations = {
           long: 'Förskola'
         }
       }
+    },
+    tense: {
+      past: 'Päättynyt (sv)',
+      present: 'Voimassa (sv)',
+      future: 'Tuleva (sv)'
     }
   },
   header: {
@@ -2243,6 +2248,25 @@ const sv: Translations = {
       previousPage: 'Föregående sida',
       pageCount: (current: number, total: number) =>
         `Sida ${current} av ${total}`
+    },
+    serviceNeedAndDailyServiceTime: {
+      title: 'Palveluntarve ja päivittäinen varhaiskasvatusaika (sv)'
+    },
+    serviceNeed: {
+      title: 'Palveluntarve (sv)',
+      validity: 'Voimassaoloaika (sv)',
+      description: 'Kuvaus (sv)',
+      unit: 'Yksikkö (sv)',
+      status: 'Tila (sv)',
+      empty: 'Palveluntarvetta ei määritelty (sv)'
+    },
+    dailyServiceTime: {
+      title: 'Päivittäinen varhaiskasvatusaika (sv)',
+      validity: 'Voimassaoloaika (sv)',
+      description: 'Kuvaus (sv)',
+      status: 'Tila (sv)',
+      variableTime: 'Päivittäinen aika vaihtelee (sv)',
+      empty: 'Ei määritelty (sv)'
     },
     vasu: {
       title: 'Plan för småbarnspedagogik och lärande inom förskoleundervisning',

@@ -352,12 +352,20 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild()
             ),
             READ_PEDAGOGICAL_DOCUMENTS(
-                IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).guardianOfChild(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
             ),
             INSERT_CHILD_CONSENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+            ),
+            READ_SERVICE_NEEDS(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+            ),
+            READ_DAILY_SERVICE_TIMES(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
             );
 
             override fun toString(): String = "${javaClass.name}.$name"

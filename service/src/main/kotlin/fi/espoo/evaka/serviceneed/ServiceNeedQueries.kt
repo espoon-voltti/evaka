@@ -67,6 +67,29 @@ fun Database.Read.getServiceNeedsByUnit(
         .toList()
 }
 
+fun Database.Read.getServiceNeedSummary(childId: ChildId): List<ServiceNeedSummary> {
+    val sql =
+        """
+SELECT
+    sn.start_date,
+    sn.end_date,
+    sno.id AS option_id,
+    sno.name_fi AS option_name_fi,
+    sno.name_sv AS option_name_sv,
+    sno.name_en AS option_name_en,
+    sno.valid_placement_type AS option_valid_placement_type,
+    u.name AS unit_name
+FROM service_need sn
+JOIN service_need_option sno ON sno.id = sn.option_id
+JOIN placement p ON p.id = sn.placement_id
+JOIN daycare u ON u.id = p.unit_id
+WHERE p.child_id = :childId
+"""
+            .trimIndent()
+
+    return createQuery(sql).bind("childId", childId).mapTo<ServiceNeedSummary>().toList()
+}
+
 fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
     // language=sql
     val sql =

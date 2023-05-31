@@ -21,6 +21,7 @@ import { childrenQuery } from './queries'
 import ChildConsentsSection from './sections/consents/ChildConsentsSection'
 import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
 import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
+import ServiceNeedAndDailyServiceTimeSection from './sections/service-need-and-daily-service-time/ServiceNeedAndDailyServiceTimeSection'
 import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 
 export default React.memo(function ChildPage() {
@@ -43,6 +44,8 @@ export default React.memo(function ChildPage() {
               <ContentArea opaque>
                 <ChildHeader child={child} />
               </ContentArea>
+              <Gap size="s" />
+              <ServiceNeedAndDailyServiceTimeSection childId={childId} />
               {user?.accessibleFeatures.childDocumentation && (
                 <>
                   <Gap size="s" />

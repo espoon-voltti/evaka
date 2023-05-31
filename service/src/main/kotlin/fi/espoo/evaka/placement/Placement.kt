@@ -4,11 +4,13 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.children.Unit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 
 data class Placement(
     val id: PlacementId,
@@ -19,4 +21,13 @@ data class Placement(
     val endDate: LocalDate,
     val terminationRequestedDate: LocalDate?,
     val terminationRequestedBy: EvakaUserId?
+)
+
+data class PlacementSummary(
+    val id: PlacementId,
+    val type: PlacementType,
+    val childId: ChildId,
+    @Nested("unit") val unit: Unit,
+    val startDate: LocalDate,
+    val endDate: LocalDate
 )

@@ -135,6 +135,8 @@ enum class Audit(
     ChildVasuDocumentsRead,
     ChildVasuDocumentsReadByGuardian,
     CitizenChildrenRead(securityEvent = true, securityLevel = "high"),
+    CitizenChildServiceNeedRead(securityEvent = true, securityLevel = "high"),
+    CitizenChildDailyServiceTimeRead(securityEvent = true, securityLevel = "high"),
     CitizenLogin(securityEvent = true, securityLevel = "high"),
     DaycareGroupPlacementCreate,
     DaycareGroupPlacementDelete,

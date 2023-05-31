@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -41,17 +40,8 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                         Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS,
                         childId
                     )
-                    val documents =
-                        it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
-                            pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
-                        }
-
-                    if (user.authLevel == CitizenAuthLevel.STRONG) {
-                        documents
-                    } else {
-                        documents.map {
-                            it.copy(attachments = it.attachments.map { it.copy(name = "") })
-                        }
+                    it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
+                        pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                     }
                 }
             }

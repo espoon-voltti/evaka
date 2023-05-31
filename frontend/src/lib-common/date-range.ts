@@ -7,6 +7,8 @@ import FiniteDateRange from './finite-date-range'
 import { JsonOf } from './json'
 import LocalDate from './local-date'
 
+export type Tense = 'past' | 'present' | 'future'
+
 export default class DateRange {
   constructor(readonly start: LocalDate, readonly end: LocalDate | null) {
     if (end && end.isBefore(start)) {
@@ -58,6 +60,16 @@ export default class DateRange {
     }
 
     return !this.start.isAfter(date)
+  }
+
+  tenseAt(date: LocalDate): Tense {
+    if (this.start.isAfter(date)) {
+      return 'future'
+    }
+    if (this.end !== null && this.end.isBefore(date)) {
+      return 'past'
+    }
+    return 'present'
   }
 
   static parseJson(json: JsonOf<DateRange>): DateRange {

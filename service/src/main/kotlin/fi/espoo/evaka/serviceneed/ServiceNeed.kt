@@ -37,6 +37,13 @@ data class ServiceNeed(
     val updated: HelsinkiDateTime
 )
 
+data class ServiceNeedSummary(
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    @Nested("option") val option: ServiceNeedOptionPublicInfo?,
+    val unitName: String
+)
+
 data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)
 
 data class ServiceNeedOptionSummary(
@@ -59,7 +66,18 @@ data class ServiceNeedOptionPublicInfo(
     val nameSv: String,
     val nameEn: String,
     val validPlacementType: PlacementType
-)
+) {
+    companion object {
+        fun of(option: ServiceNeedOption) =
+            ServiceNeedOptionPublicInfo(
+                option.id,
+                option.nameFi,
+                option.nameSv,
+                option.nameEn,
+                option.validPlacementType
+            )
+    }
+}
 
 data class ServiceNeedOption(
     val id: ServiceNeedOptionId,
