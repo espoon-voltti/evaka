@@ -1820,6 +1820,8 @@ export default {
     ),
     addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
+    incomeInstructions:
+      'Toimita tulotiedot vasta, kun lapsesi on saanut varhaiskasvatuspaikkapäätöksen.',
     childIncomeInfo: 'Lapsen tulotietojen voimassaoloaika',
     incomeStatementMissing:
       'Jos lapsellasi on tuloja, ilmoita se tuloselvityksellä.',

@@ -1830,6 +1830,8 @@ const sv: Translations = {
     ),
     addNew: 'Ny inkomstutredning',
     incomeInfo: 'Inkomstuppgifter',
+    incomeInstructions:
+      'Lämnä in en inkomstutredning eftersom din barn har fått platsen inom småbarnspedagogik.',
     childIncomeInfo: 'Giltigheten av barnets inkomstinformation',
     incomeStatementMissing:
       'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',

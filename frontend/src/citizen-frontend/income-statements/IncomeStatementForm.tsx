@@ -333,6 +333,8 @@ const IncomeTypeSelection = React.memo(
               <Gap size="s" />
             </>
           )}
+          <P noMargin>{t.income.incomeInstructions}</P>
+          <Gap size="s" />
           <FixedSpaceRow spacing="XL">
             <div>
               <Label htmlFor="start-date">

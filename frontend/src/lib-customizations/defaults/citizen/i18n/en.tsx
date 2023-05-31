@@ -1735,6 +1735,8 @@ const en: Translations = {
     ),
     addNew: 'New income statement',
     incomeInfo: 'Income information',
+    incomeInstructions:
+      'Please submit an income statement after your child has got the place in early childhood education.',
     childIncomeInfo: "Validity of the child's income information",
     incomeStatementMissing:
       'If your child has income, report it with an income statement.',
