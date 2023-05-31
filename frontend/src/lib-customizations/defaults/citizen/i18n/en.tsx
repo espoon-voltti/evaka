@@ -1011,6 +1011,8 @@ const en: Translations = {
           label: 'Evening and round-the-clock care',
           instructions:
             'Round-the-clock care refers to early childhood education needed on weekends or around the clock. Evening and round-the-clock care is mainly early childhood education taking place outside the weekday hours of 6:30 and 18:00.',
+          instructions2:
+            'If a guardian living in the same household does regular shift work or attends evening studies full-time, they must provide proof of this (a document issued by their employer or the educational institution) together with the application for pre-primary education.  The documents must be dated in the year when the application for pre-primary education is submitted.',
           message: {
             title: 'Evening and round-the-clock care',
             text: 'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'

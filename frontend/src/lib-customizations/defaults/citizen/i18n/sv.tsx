@@ -968,7 +968,9 @@ const sv: Translations = {
         shiftCare: {
           label: 'Kvälls- och skiftvård',
           instructions:
-            'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00. Om ditt barn behöver skiftvård, beskriv behovet i fältet för tilläggsuppgifter.',
+            'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00.',
+          instructions2:
+            'Om en vårdnadshavare som bor i samma hushåll regelbundet utför skiftarbete eller avlägger kvällsstudier som huvudsyssla, ska du bifoga ett intyg över detta (av arbetsgivaren eller en representant för läroanstalten) till ansökan om förskoleundervisning. Dokumenten ska ha registrerats det år då ansökan om förskoleundervisning görs.',
           message: {
             title: 'Kvälls- och skiftvård',
             text: 'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'

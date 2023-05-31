@@ -299,6 +299,12 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
           {formData.shiftCare && (
             <>
+              <Gap size="xxs" />
+
+              <P fitted>
+                {t.applications.editor.serviceNeed.shiftCare.instructions2}
+              </P>
+
               <Gap size="s" />
 
               <P fitted>
