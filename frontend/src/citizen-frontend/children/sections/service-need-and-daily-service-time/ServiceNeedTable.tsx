@@ -27,7 +27,7 @@ export default React.memo(function ServiceNeedTable({
   const t = useTranslation()
 
   return serviceNeeds.length > 0 ? (
-    <Table>
+    <Table data-qa="service-need-table">
       <Thead>
         <Tr>
           <Th minimalWidth>{t.children.serviceNeed.validity}</Th>
@@ -45,15 +45,20 @@ export default React.memo(function ServiceNeedTable({
           )
           const tense = dateRange.tenseAt(LocalDate.todayInHelsinkiTz())
           return (
-            <Tr key={serviceNeed.startDate.formatIso()}>
-              <Td minimalWidth>{dateRange.format()}</Td>
-              <Td>
+            <Tr
+              key={serviceNeed.startDate.formatIso()}
+              data-qa="service-need-table-row"
+            >
+              <Td minimalWidth data-qa="service-need-date-range">
+                {dateRange.format()}
+              </Td>
+              <Td data-qa="service-need-description">
                 {(lang === 'fi' && serviceNeed.option?.nameFi) ||
                   (lang === 'sv' && serviceNeed.option?.nameSv) ||
                   (lang === 'en' && serviceNeed.option?.nameEn) ||
                   ''}
               </Td>
-              <Td>{serviceNeed.unitName}</Td>
+              <Td data-qa="service-need-unit">{serviceNeed.unitName}</Td>
               <Td minimalWidth>
                 <StaticChip color={colorsByTense[tense]}>
                   {t.common.tense[tense]}

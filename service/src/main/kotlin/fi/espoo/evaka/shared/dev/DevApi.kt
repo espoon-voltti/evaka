@@ -1931,7 +1931,7 @@ data class DevDailyServiceTimes(
     val childId: ChildId,
     val type: DailyServiceTimesType = DailyServiceTimesType.REGULAR,
     val validityPeriod: DateRange,
-    val regularTimes: TimeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+    val regularTimes: TimeRange? = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
     val mondayTimes: TimeRange? = null,
     val tuesdayTimes: TimeRange? = null,
     val wednesdayTimes: TimeRange? = null,

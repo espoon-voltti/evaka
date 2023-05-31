@@ -31,7 +31,7 @@ export default React.memo(function DailyServiceTimeTable({
   const t = useTranslation()
 
   return dailyServiceTimes.length > 0 ? (
-    <Table>
+    <Table data-qa="daily-service-time-table">
       <Thead>
         <Tr>
           <Th minimalWidth>{t.children.dailyServiceTime.validity}</Th>
@@ -47,11 +47,14 @@ export default React.memo(function DailyServiceTimeTable({
           const dateRange = dailyServiceTime.times.validityPeriod
           const tense = dateRange.tenseAt(LocalDate.todayInHelsinkiTz())
           return (
-            <Tr key={dailyServiceTime.id}>
-              <Td minimalWidth>
+            <Tr
+              key={dailyServiceTime.id}
+              data-qa="daily-service-time-table-row"
+            >
+              <Td minimalWidth data-qa="daily-service-time-date-range">
                 {dailyServiceTime.times.validityPeriod.format()}
               </Td>
-              <Td>
+              <Td data-qa="daily-service-time-description">
                 <DailyServiceTimeValue value={dailyServiceTime.times} />
               </Td>
               <Td minimalWidth>

@@ -22,9 +22,69 @@ export class CitizenChildPage {
   }
 
   async openCollapsible(
-    collapsible: 'termination' | 'consents' | 'pedagogical-documents' | 'vasu'
+    collapsible:
+      | 'service-need-and-daily-service-time'
+      | 'termination'
+      | 'consents'
+      | 'pedagogical-documents'
+      | 'vasu'
   ) {
     await this.page.findByDataQa(`collapsible-${collapsible}`).click()
+  }
+
+  async assertServiceNeedTable(
+    data: {
+      dateRange: string
+      description: string
+      unit: string
+    }[]
+  ) {
+    if (data.length > 0) {
+      await this.page.findByDataQa('service-need-table').waitUntilVisible()
+      const rows = this.page.findAllByDataQa('service-need-table-row')
+      await rows.assertCount(data.length)
+      await Promise.all(
+        data.map(async (expected, index) => {
+          const row = rows.nth(index)
+          await row
+            .findByDataQa('service-need-date-range')
+            .assertTextEquals(expected.dateRange)
+          await row
+            .findByDataQa('service-need-description')
+            .assertTextEquals(expected.description)
+          await row
+            .findByDataQa('service-need-unit')
+            .assertTextEquals(expected.unit)
+        })
+      )
+    } else {
+      await this.page.findByDataQa('service-need-table').waitUntilHidden()
+    }
+  }
+
+  async assertDailyServiceTimeTable(
+    data: { dateRange: string; description: string }[]
+  ) {
+    if (data.length > 0) {
+      await this.page
+        .findByDataQa('daily-service-time-table')
+        .waitUntilVisible()
+      const rows = this.page.findAllByDataQa('daily-service-time-table-row')
+      await rows.assertCount(data.length)
+      await Promise.all(
+        data.map(async (expected, index) => {
+          const row = rows.nth(index)
+          await row
+            .findByDataQa('daily-service-time-date-range')
+            .assertTextEquals(expected.dateRange)
+          await row
+            .findByDataQa('daily-service-time-description')
+            .assertTextEquals(expected.description)
+        })
+      )
+    } else {
+      await this.page.findByDataQa('daily-service-time-table').waitUntilHidden()
+    }
   }
 
   async assertTerminatablePlacementCount(count: number) {

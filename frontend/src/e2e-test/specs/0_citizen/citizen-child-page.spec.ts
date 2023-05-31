@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import {
   insertApplications,
@@ -15,9 +17,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
+  Fixture,
   applicationFixture,
   applicationFixtureId,
-  Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
 import { DaycarePlacement } from '../../dev-api/types'
@@ -26,7 +28,7 @@ import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
-import { enduserLogin } from '../../utils/user'
+import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -35,17 +37,17 @@ let childPage: CitizenChildPage
 
 const mockedDate = LocalDate.of(2022, 3, 1)
 
-beforeEach(async () => {
-  await resetDatabase()
-  fixtures = await initializeAreaAndPersonData()
-
-  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
-  await enduserLogin(page)
-  header = new CitizenHeader(page)
-  childPage = new CitizenChildPage(page)
-})
-
 describe('Citizen children page', () => {
+  beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+
+    page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+    await enduserLogin(page)
+    header = new CitizenHeader(page)
+    childPage = new CitizenChildPage(page)
+  })
+
   describe('Child page', () => {
     test('Citizen can see its children and navigate to their page', async () => {
       await insertDaycarePlacementFixtures(
@@ -511,6 +513,158 @@ describe('Citizen children page', () => {
       await childPage.saveConsent()
 
       await header.assertUnreadChildrenCount(2)
+    })
+  })
+})
+
+describe('Citizen children page with weak login', () => {
+  beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+
+    page = await Page.open({
+      mockedTime: mockedDate.toSystemTzDate(),
+      citizenCustomizations: {
+        featureFlags: { experimental: { childPageServiceNeedSection: true } }
+      }
+    })
+    await enduserLoginWeak(page)
+    header = new CitizenHeader(page)
+    childPage = new CitizenChildPage(page)
+  })
+
+  describe('Child page', () => {
+    test('Citizen can see its children and their service needs and daily service times', async () => {
+      const daycareSupervisor = await Fixture.employeeUnitSupervisor(
+        fixtures.daycareFixture.id
+      ).save()
+      const serviceNeedOption = await Fixture.serviceNeedOption()
+        .with({
+          validPlacementType: 'DAYCARE',
+          defaultOption: false,
+          nameFi: 'Kokopäiväinen',
+          nameSv: 'Kokopäiväinen (sv)',
+          nameEn: 'Kokopäiväinen (en)'
+        })
+        .save()
+      await Fixture.serviceNeedOption()
+        .with({
+          validPlacementType: 'PRESCHOOL',
+          defaultOption: true,
+          nameFi: 'Esiopetus',
+          nameSv: 'Esiopetus (sv)',
+          nameEn: 'Esiopetus (en)'
+        })
+        .save()
+      const placement = await Fixture.placement()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          unitId: fixtures.daycareFixture.id,
+          type: 'DAYCARE',
+          startDate: mockedDate.subMonths(2).formatIso(),
+          endDate: mockedDate.formatIso()
+        })
+        .save()
+      await Fixture.serviceNeed()
+        .with({
+          placementId: placement.data.id,
+          startDate: mockedDate.subMonths(1).formatIso(),
+          endDate: mockedDate.formatIso(),
+          optionId: serviceNeedOption.data.id,
+          confirmedBy: daycareSupervisor.data.id
+        })
+        .save()
+      await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
+        .with({
+          validityPeriod: new DateRange(
+            mockedDate.subMonths(3),
+            mockedDate.subMonths(2).subDays(1)
+          ),
+          type: 'REGULAR',
+          regularTimes: {
+            start: LocalTime.of(8, 15),
+            end: LocalTime.of(14, 46)
+          }
+        })
+        .save()
+      await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
+        .with({
+          validityPeriod: new DateRange(
+            mockedDate.subMonths(2),
+            mockedDate.subMonths(1).subDays(1)
+          ),
+          type: 'IRREGULAR',
+          regularTimes: null,
+          mondayTimes: {
+            start: LocalTime.of(8, 15),
+            end: LocalTime.of(14, 46)
+          },
+          thursdayTimes: {
+            start: LocalTime.of(7, 46),
+            end: LocalTime.of(16, 32)
+          }
+        })
+        .save()
+      await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
+        .with({
+          validityPeriod: new DateRange(mockedDate.subMonths(1), null),
+          type: 'VARIABLE_TIME',
+          regularTimes: null
+        })
+        .save()
+      await Fixture.placement()
+        .with({
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.preschoolFixture.id,
+          type: 'PRESCHOOL',
+          startDate: mockedDate.subMonths(1).formatIso(),
+          endDate: mockedDate.formatIso()
+        })
+        .save()
+
+      await page.reload()
+      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+      await childPage.assertChildNameIsShown(
+        'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
+      )
+      await childPage.openCollapsible('service-need-and-daily-service-time')
+      await childPage.assertServiceNeedTable([
+        {
+          dateRange: '01.02.2022 - 01.03.2022',
+          description: 'Kokopäiväinen',
+          unit: 'Alkuräjähdyksen päiväkoti'
+        },
+        {
+          dateRange: '01.01.2022 - 31.01.2022',
+          description: '',
+          unit: 'Alkuräjähdyksen päiväkoti'
+        }
+      ])
+      await childPage.assertDailyServiceTimeTable([
+        {
+          dateRange: '01.02.2022 -',
+          description: 'Päivittäinen aika vaihtelee'
+        },
+        {
+          dateRange: '01.01.2022 - 31.01.2022',
+          description: 'Ma 08:15 - 14:46, To 07:46 - 16:32'
+        },
+        {
+          dateRange: '01.12.2021 - 31.12.2021',
+          description: '08:15 - 14:46'
+        }
+      ])
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
+      await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
+      await childPage.openCollapsible('service-need-and-daily-service-time')
+      await childPage.assertServiceNeedTable([
+        {
+          dateRange: '01.02.2022 - 01.03.2022',
+          description: 'Esiopetus',
+          unit: 'Alkuräjähdyksen eskari'
+        }
+      ])
+      await childPage.assertDailyServiceTimeTable([])
     })
   })
 })
