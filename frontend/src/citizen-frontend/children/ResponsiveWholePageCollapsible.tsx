@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
 import FocusLock from 'react-focus-lock'
@@ -22,8 +23,8 @@ import {
   MobileOnly,
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
-import { fontWeights, H2 } from 'lib-components/typography'
-import { defaultMargins, SpacingSize } from 'lib-components/white-space'
+import { H2, fontWeights } from 'lib-components/typography'
+import { SpacingSize, defaultMargins } from 'lib-components/white-space'
 import {
   faArrowLeft,
   faChevronDown,
@@ -100,6 +101,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
               data-qa="count-indicator"
             />
           )}
+          {props.icon && <FontAwesomeIcon icon={props.icon} />}
           <div>
             <TabletAndDesktop>
               <TitleIcon
@@ -114,38 +116,38 @@ export default React.memo(function ResponsiveWholePageCollapsible({
         </FixedSpaceRow>
       </TitleContainer>
       <FocusLock disabled={!open || width >= tabletMinPx}>
-        <ResponsiveCollapsibleContainer open={open}>
-          <MobileOnly>
-            <ResponsiveCollapsibleTitle>
-              <FixedSpaceRow spacing="s">
-                <NonShrinkingIconButton
-                  icon={faArrowLeft}
-                  data-qa="return-collapsible"
-                  onClick={() => toggleOpen()}
-                  aria-label={t.common.return}
-                />
-                <div
-                  tabIndex={isFocusable ? 0 : undefined}
-                  onBlur={() => setIsFocusable(false)}
-                  data-autofocus="true"
-                >
-                  {title}
-                </div>
-              </FixedSpaceRow>
-            </ResponsiveCollapsibleTitle>
-          </MobileOnly>
-          <CollapsibleContainer padding={contentPadding}>
-            {children}
-          </CollapsibleContainer>
-        </ResponsiveCollapsibleContainer>
+        {open && (
+          <ResponsiveCollapsibleContainer>
+            <MobileOnly>
+              <ResponsiveCollapsibleTitle>
+                <FixedSpaceRow spacing="s">
+                  <NonShrinkingIconButton
+                    icon={faArrowLeft}
+                    data-qa="return-collapsible"
+                    onClick={() => toggleOpen()}
+                    aria-label={t.common.return}
+                  />
+                  <div
+                    tabIndex={isFocusable ? 0 : undefined}
+                    onBlur={() => setIsFocusable(false)}
+                    data-autofocus="true"
+                  >
+                    {title}
+                  </div>
+                </FixedSpaceRow>
+              </ResponsiveCollapsibleTitle>
+            </MobileOnly>
+            <CollapsibleContainer padding={contentPadding}>
+              {children}
+            </CollapsibleContainer>
+          </ResponsiveCollapsibleContainer>
+        )}
       </FocusLock>
     </ContentArea>
   )
 })
 
-const ResponsiveCollapsibleContainer = styled.div<{ open: boolean }>`
-  display: ${(props) => (props.open ? 'block' : 'none')};
-
+const ResponsiveCollapsibleContainer = styled.div`
   @media (max-width: ${tabletMin}) {
     position: fixed;
     top: 0;
@@ -155,7 +157,7 @@ const ResponsiveCollapsibleContainer = styled.div<{ open: boolean }>`
     z-index: 29;
     background-color: ${(p) => p.theme.colors.grayscale.g0};
     margin-top: 0;
-    display: ${(props) => (props.open ? 'flex' : 'none')};
+    display: flex;
     flex-direction: column;
   }
 `

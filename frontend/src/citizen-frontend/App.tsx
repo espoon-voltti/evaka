@@ -226,7 +226,7 @@ const Content = React.memo(function Content() {
           <Route
             path="/children/:childId"
             element={
-              <RequireAuth>
+              <RequireAuth strength="WEAK">
                 <ScrollToTop>
                   <ChildPage />
                 </ScrollToTop>

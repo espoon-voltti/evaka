@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -14,16 +14,16 @@ import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faLockAlt,
+  faSignIn,
   farBars,
   farSignOut,
   farXmark,
   fasChevronDown,
-  fasChevronUp,
-  faSignIn
+  fasChevronUp
 } from 'lib-icons'
 
 import { AuthContext, User } from '../auth/state'
@@ -79,7 +79,7 @@ export default React.memo(function DesktopNav({
                 notificationCount={unreadMessagesCount}
               />
             )}
-            <ChildrenMenu user={user} />
+            <ChildrenMenu />
           </>
         ) : null}
       </Nav>
@@ -196,11 +196,7 @@ const Icon = styled(FontAwesomeIcon)`
   font-size: 1.25rem;
 `
 
-const ChildrenMenu = React.memo(function ChildrenMenu({
-  user
-}: {
-  user: User
-}) {
+const ChildrenMenu = React.memo(function ChildrenMenu() {
   const t = useTranslation()
   const location = useLocation()
   const childrenWithOwnPage = useChildrenWithOwnPage()
@@ -210,14 +206,6 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
-  )
-
-  const lockElem = useMemo(
-    () =>
-      user.authLevel !== 'STRONG' && (
-        <FontAwesomeIcon icon={faLockAlt} size="xs" />
-      ),
-    [user]
   )
 
   if (childrenWithOwnPage.length === 0) {
@@ -232,7 +220,6 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
         data-qa="nav-children-desktop"
         text={t.header.nav.children}
         notificationCount={totalUnreadChildNotifications}
-        lockElem={lockElem}
       />
     )
   }
@@ -251,8 +238,6 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
         })}
         onClick={toggleOpen}
         aria-label={`${t.header.nav.children}${
-          lockElem ? `, ${t.header.requiresStrongAuth}` : ''
-        }${
           totalUnreadChildNotifications && totalUnreadChildNotifications > 0
             ? `, ${totalUnreadChildNotifications} ${t.header.notifications}`
             : ''
@@ -261,7 +246,6 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
         role="menuitem"
       >
         {t.header.nav.children}
-        {lockElem}
         {totalUnreadChildNotifications > 0 && (
           <CircledChar
             aria-label={`${totalUnreadChildNotifications} ${t.header.notifications}`}

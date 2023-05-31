@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
+import RequireAuth from 'citizen-frontend/RequireAuth'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
@@ -26,8 +27,8 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { Dimmed, P } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faExclamation } from 'lib-icons'
+import { Gap, defaultMargins } from 'lib-components/white-space'
+import { faExclamation, faLockAlt } from 'lib-icons'
 
 import {
   childVasuSummariesQuery,
@@ -156,11 +157,9 @@ export default React.memo(function VasuAndLeopsSection({
 }: {
   childId: UUID
 }) {
-  const vasus = useQueryResult(childVasuSummariesQuery(childId))
   const i18n = useTranslation()
 
   const [open, setOpen] = useState(false)
-  const [infoOpen, setInfoOpen] = useState(false)
 
   const user = useUser()
 
@@ -177,7 +176,28 @@ export default React.memo(function VasuAndLeopsSection({
       countIndicator={unreadVasuDocumentsCount?.[childId]}
       data-qa="collapsible-vasu"
       contentPadding="zero"
+      icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
+      <RequireAuth>
+        <VasuAndLeopsContent childId={childId} />
+      </RequireAuth>
+    </ResponsiveWholePageCollapsible>
+  )
+})
+
+const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
+  childId
+}: {
+  childId: UUID
+}) {
+  const vasus = useQueryResult(childVasuSummariesQuery(childId))
+  const i18n = useTranslation()
+  const [infoOpen, setInfoOpen] = useState(false)
+
+  const user = useUser()
+
+  return (
+    <>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
@@ -242,6 +262,6 @@ export default React.memo(function VasuAndLeopsSection({
           </>
         )
       )}
-    </ResponsiveWholePageCollapsible>
+    </>
   )
 })

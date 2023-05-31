@@ -4,13 +4,15 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import RequireAuth from 'citizen-frontend/RequireAuth'
+import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { Failure } from 'lib-common/api'
 import {
   ChildConsentType,
   childConsentTypes
 } from 'lib-common/generated/api-types/children'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -18,10 +20,15 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3, LabelLike, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faLockAlt } from 'lib-icons'
 
 import { useTranslation } from '../../../localization'
 
-import { childConsentsQuery, insertChildConsentsMutation } from './queries'
+import {
+  childConsentNotificationsQuery,
+  childConsentsQuery,
+  insertChildConsentsMutation
+} from './queries'
 
 interface ChildConsentsProps {
   childId: UUID
@@ -31,13 +38,41 @@ export default React.memo(function ChildConsentsSection({
   childId
 }: ChildConsentsProps) {
   const t = useTranslation()
+  const [open, setOpen] = useState(false)
+  const user = useUser()
+  const { data: unconsentedCounts } = useQuery(childConsentNotificationsQuery)
+  const unconsentedCount =
+    (unconsentedCounts && unconsentedCounts[childId]) ?? 0
+
+  return (
+    <ResponsiveWholePageCollapsible
+      title={t.children.consent.title}
+      countIndicator={{
+        count: unconsentedCount,
+        ariaLabel: `${unconsentedCount} ${t.children.consent.unconsented}`
+      }}
+      opaque
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      data-qa="collapsible-consents"
+      icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
+    >
+      <RequireAuth>
+        <ChildConsentsContent childId={childId} />
+      </RequireAuth>
+    </ResponsiveWholePageCollapsible>
+  )
+})
+
+const ChildConsentsContent = React.memo(function ChildConsentsContent({
+  childId
+}: ChildConsentsProps) {
+  const t = useTranslation()
 
   const childConsents = useQueryResult(childConsentsQuery)
   const { mutateAsync: insertChildConsents } = useMutationResult(
     insertChildConsentsMutation
   )
-
-  const [open, setOpen] = useState(false)
 
   const consents = useMemo(
     () =>
@@ -48,17 +83,6 @@ export default React.memo(function ChildConsentsSection({
           )
       ),
     [childConsents, childId]
-  )
-
-  const unconsentedCount = useMemo(
-    () =>
-      consents
-        .map(
-          (consents) =>
-            Array.from(consents.values()).filter((v) => v === null).length
-        )
-        .getOrElse(0),
-    [consents]
   )
 
   const [form, setForm] =
@@ -112,17 +136,7 @@ export default React.memo(function ChildConsentsSection({
   if (!consents.map((c) => c.size > 0).getOrElse(true)) return null
 
   return (
-    <ResponsiveWholePageCollapsible
-      title={t.children.consent.title}
-      countIndicator={{
-        count: unconsentedCount,
-        ariaLabel: `${unconsentedCount} ${t.children.consent.unconsented}`
-      }}
-      opaque
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      data-qa="collapsible-consents"
-    >
+    <>
       {form ? (
         <>
           <H3>{t.children.consent.evakaProfilePicture.title}</H3>
@@ -170,6 +184,6 @@ export default React.memo(function ChildConsentsSection({
       ) : (
         <SpinnerSegment />
       )}
-    </ResponsiveWholePageCollapsible>
+    </>
   )
 })
