@@ -522,12 +522,7 @@ describe('Citizen children page with weak login', () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
 
-    page = await Page.open({
-      mockedTime: mockedDate.toSystemTzDate(),
-      citizenCustomizations: {
-        featureFlags: { experimental: { childPageServiceNeedSection: true } }
-      }
-    })
+    page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
     await enduserLoginWeak(page)
     header = new CitizenHeader(page)
     childPage = new CitizenChildPage(page)

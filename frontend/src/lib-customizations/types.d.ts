@@ -212,11 +212,6 @@ interface BaseFeatureFlags {
      * Enable support for new template editor and child documents
      */
     childDocuments?: boolean
-
-    /**
-     * Enable support for service need and daily service time section in child page
-     */
-    childPageServiceNeedSection?: boolean
   }
 }
 
