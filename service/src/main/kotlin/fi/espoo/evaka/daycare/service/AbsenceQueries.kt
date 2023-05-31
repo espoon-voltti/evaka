@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
@@ -18,6 +17,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -234,6 +234,13 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
 AND group_id = :groupId
 """
 
+data class Child(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate
+)
+
 fun Database.Read.getPlacementsByRange(
     groupId: GroupId,
     range: FiniteDateRange
@@ -273,10 +280,10 @@ JOIN person ON child_id = person.id
 fun Database.Read.getAbsencesInGroupByRange(
     groupId: GroupId,
     range: FiniteDateRange
-): List<AbsenceWithModifierInfo> {
+): Map<Pair<ChildId, LocalDate>, List<AbsenceWithModifierInfo>> {
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
+        SELECT a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
         FROM absence a
         LEFT JOIN evaka_user eu ON eu.id = a.modified_by
         WHERE child_id IN (SELECT child_id FROM ($placementsQuery) p)
@@ -287,8 +294,13 @@ fun Database.Read.getAbsencesInGroupByRange(
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("dateRange", range)
-        .mapTo<AbsenceWithModifierInfo>()
-        .list()
+        .map { row ->
+            val childId: ChildId = row.mapColumn("child_id")
+            val date: LocalDate = row.mapColumn("date")
+            val absence: AbsenceWithModifierInfo = row.mapRow()
+            Pair(childId, date) to absence
+        }
+        .groupBy({ it.first }, { it.second })
 }
 
 fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange): List<Absence> {
@@ -328,10 +340,10 @@ fun Database.Read.getAbsenceDatesForChildrenInRange(
 fun Database.Read.getBackupCaresAffectingGroup(
     groupId: GroupId,
     period: FiniteDateRange
-): List<GroupBackupCare> =
+): Map<ChildId, FiniteDateRange> =
     createQuery(
             """
-SELECT bc.id, bc.child_id, daterange(bc.start_date, bc.end_date, '[]') AS period
+SELECT bc.child_id, daterange(bc.start_date, bc.end_date, '[]') AS period
 FROM daycare_group_placement AS gp
 JOIN placement
 ON daycare_placement_id = placement.id
@@ -344,12 +356,12 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         )
         .bind("groupId", groupId)
         .bind("period", period)
-        .mapTo<GroupBackupCare>()
-        .list()
+        .map { row ->
+            row.mapColumn<ChildId>("child_id") to row.mapColumn<FiniteDateRange>("period")
+        }
+        .toMap()
 
 data class ChildReservation(
-    val childId: ChildId,
-    val date: LocalDate,
     val reservation: Reservation,
     val createdByEvakaUserType: EvakaUserType,
     val created: HelsinkiDateTime
@@ -358,8 +370,8 @@ data class ChildReservation(
 fun Database.Read.getGroupReservations(
     groupId: GroupId,
     dateRange: FiniteDateRange
-): List<ChildReservation> =
-    createQuery(
+): Map<Pair<ChildId, LocalDate>, List<ChildReservation>> {
+    return createQuery(
             """
 WITH all_placements AS (
   $placementsQuery
@@ -378,15 +390,21 @@ AND EXISTS (
         .bind("groupId", groupId)
         .bind("dateRange", dateRange)
         .map { row ->
-            ChildReservation(
-                row.mapColumn("child_id"),
-                row.mapColumn("date"),
-                Reservation.fromLocalTimes(row.mapColumn("start_time"), row.mapColumn("end_time")),
-                row.mapColumn("created_by_evaka_user_type"),
-                row.mapColumn("created_date")
-            )
+            val childId: ChildId = row.mapColumn("child_id")
+            val date: LocalDate = row.mapColumn("date")
+            val reservation =
+                ChildReservation(
+                    Reservation.fromLocalTimes(
+                        row.mapColumn("start_time"),
+                        row.mapColumn("end_time")
+                    ),
+                    row.mapColumn("created_by_evaka_user_type"),
+                    row.mapColumn("created_date")
+                )
+            Pair(childId, date) to reservation
         }
-        .toList()
+        .groupBy({ it.first }, { it.second })
+}
 
 data class ChildAttendance(
     val childId: ChildId,

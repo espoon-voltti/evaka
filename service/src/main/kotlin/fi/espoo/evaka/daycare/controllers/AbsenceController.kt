@@ -7,13 +7,13 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceDelete
-import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
+import fi.espoo.evaka.daycare.service.GroupMonthCalendar
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.daycare.service.deleteChildAbsences
-import fi.espoo.evaka.daycare.service.getAbsencesInGroupByMonth
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByMonth
 import fi.espoo.evaka.daycare.service.getFutureAbsencesOfChild
+import fi.espoo.evaka.daycare.service.getGroupMonthCalendar
 import fi.espoo.evaka.daycare.service.upsertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
@@ -35,14 +35,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/absences")
 class AbsenceController(private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
-    fun absencesInGroupByMonth(
+    fun groupMonthCalendar(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
-    ): AbsenceGroup {
+    ): GroupMonthCalendar {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -52,7 +52,7 @@ class AbsenceController(private val accessControl: AccessControl) {
                         Action.Group.READ_ABSENCES,
                         groupId
                     )
-                    getAbsencesInGroupByMonth(it, groupId, year, month)
+                    getGroupMonthCalendar(it, groupId, year, month)
                 }
             }
             .also {

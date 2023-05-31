@@ -14,7 +14,6 @@ import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
 import { DaycarePlacementWithDetails } from './placement'
 import { EvakaUserType } from './user'
-import { HelsinkiDateTimeRange } from './shared'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
@@ -45,39 +44,12 @@ export type AbsenceCategory =
   | 'NONBILLABLE'
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.AbsenceChild
-*/
-export interface AbsenceChild {
-  absences: Record<string, AbsenceWithModifierInfo[]>
-  actualServiceNeeds: ChildServiceNeedInfo[]
-  attendanceTotalHours: number | null
-  backupCares: Record<string, boolean>
-  child: Child
-  dailyServiceTimes: HelsinkiDateTimeRange[]
-  missingHolidayReservations: LocalDate[]
-  placements: Record<string, AbsenceCategory[]>
-  reservationTotalHours: number | null
-  reservations: ChildReservation[]
-}
-
-/**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceDelete
 */
 export interface AbsenceDelete {
   category: AbsenceCategory
   childId: UUID
   date: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.service.AbsenceGroup
-*/
-export interface AbsenceGroup {
-  children: AbsenceChild[]
-  daycareName: string
-  groupId: UUID
-  groupName: string
-  operationDays: LocalDate[]
 }
 
 /**
@@ -109,9 +81,6 @@ export interface AbsenceUpsert {
 export interface AbsenceWithModifierInfo {
   absenceType: AbsenceType
   category: AbsenceCategory
-  childId: UUID
-  date: LocalDate
-  id: UUID
   modifiedAt: HelsinkiDateTime
   modifiedByType: EvakaUserType
 }
@@ -207,23 +176,11 @@ export interface CaretakersResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.Child
-*/
-export interface Child {
-  dateOfBirth: LocalDate
-  firstName: string
-  id: UUID
-  lastName: string
-}
-
-/**
 * Generated from fi.espoo.evaka.daycare.service.ChildReservation
 */
 export interface ChildReservation {
-  childId: UUID
   created: HelsinkiDateTime
   createdByEvakaUserType: EvakaUserType
-  date: LocalDate
   reservation: Reservation
 }
 
@@ -425,6 +382,51 @@ export interface FinanceDecisionHandler {
   firstName: string
   id: UUID
   lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.GroupMonthCalendar
+*/
+export interface GroupMonthCalendar {
+  children: GroupMonthCalendarChild[]
+  daycareName: string
+  days: GroupMonthCalendarDay[]
+  groupId: UUID
+  groupName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.GroupMonthCalendarChild
+*/
+export interface GroupMonthCalendarChild {
+  actualServiceNeeds: ChildServiceNeedInfo[]
+  attendanceTotalHours: number
+  dateOfBirth: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
+  reservationTotalHours: number
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.GroupMonthCalendarDay
+*/
+export interface GroupMonthCalendarDay {
+  children: GroupMonthCalendarDayChild[] | null
+  date: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.GroupMonthCalendarDayChild
+*/
+export interface GroupMonthCalendarDayChild {
+  absenceCategories: AbsenceCategory[]
+  absences: AbsenceWithModifierInfo[]
+  backupCare: boolean
+  childId: UUID
+  dailyServiceTimes: TimeRange | null
+  missingHolidayReservation: boolean
+  reservations: ChildReservation[]
 }
 
 /**

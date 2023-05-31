@@ -22,22 +22,34 @@ import {
   defaultAbsenceType
 } from '../../types/absence'
 
+export type AbsenceUpdate =
+  | {
+      type: 'absence'
+      absenceType: AbsenceType
+      absenceCategories: AbsenceCategory[]
+    }
+  | { type: 'noAbsence'; absenceCategories: AbsenceCategory[] }
+
+type AbsenceTypeState =
+  | { type: 'absence'; absenceType: AbsenceType }
+  | { type: 'noAbsence' }
+
 export default React.memo(function AbsenceModal({
   showCategorySelection,
   onSave,
   onClose
 }: {
   showCategorySelection: boolean
-  onSave: (
-    absenceType: AbsenceType | null,
-    absenceCategories: AbsenceCategory[]
-  ) => void
+  onSave: (value: AbsenceUpdate) => void
   onClose: () => void
 }) {
   const { i18n } = useTranslation()
 
   const [selectedAbsenceType, setSelectedAbsenceType] =
-    useState<AbsenceType | null>(defaultAbsenceType)
+    useState<AbsenceTypeState>({
+      type: 'absence',
+      absenceType: defaultAbsenceType
+    })
   const [selectedCategories, setSelectedCategories] = useState(
     defaultAbsenceCategories
   )
@@ -53,7 +65,12 @@ export default React.memo(function AbsenceModal({
   return (
     <FormModal
       title=""
-      resolveAction={() => onSave(selectedAbsenceType, selectedCategories)}
+      resolveAction={() =>
+        onSave({
+            ...selectedAbsenceType,
+            absenceCategories: selectedCategories
+        })
+      }
       resolveLabel={i18n.absences.modal.saveButton}
       resolveDisabled={showCategorySelection && selectedCategories.length === 0}
       rejectAction={onClose}
@@ -68,16 +85,21 @@ export default React.memo(function AbsenceModal({
               key={index}
               id={absenceType}
               label={i18n.absences.modal.absenceTypes[absenceType]}
-              checked={selectedAbsenceType === absenceType}
-              onChange={() => setSelectedAbsenceType(absenceType)}
+              checked={
+                selectedAbsenceType.type === 'absence' &&
+                selectedAbsenceType.absenceType === absenceType
+              }
+              onChange={() =>
+                setSelectedAbsenceType({ type: 'absence', absenceType })
+              }
               data-qa={`absence-type-${absenceType}`}
             />
           ))}
           <Radio
             id="NO_ABSENCE"
             label={i18n.absences.modal.absenceTypes.NO_ABSENCE}
-            checked={selectedAbsenceType === null}
-            onChange={() => setSelectedAbsenceType(null)}
+            checked={selectedAbsenceType.type === 'noAbsence'}
+            onChange={() => setSelectedAbsenceType({ type: 'noAbsence' })}
             data-qa="absence-type-NO_ABSENCE"
           />
         </FixedSpaceColumn>

@@ -10,7 +10,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
-import fi.espoo.evaka.holidayperiod.createHolidayPeriod
+import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -754,7 +754,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday)
+            it.insertHolidayPeriod(holidayPeriod, monday)
         }
 
         // when
@@ -806,7 +806,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
         }
 
         // when
@@ -860,7 +860,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertAbsences(
                 citizenUser.evakaUserId,
                 listOf(
@@ -942,7 +942,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertAbsences(
                 citizenUser.evakaUserId,
                 listOf(
@@ -1009,7 +1009,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertTestReservation(
                 DevReservation(
                     childId = testChild_1.id,
@@ -1070,7 +1070,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertAbsences(
                 citizenUser.evakaUserId,
                 listOf(
@@ -1141,7 +1141,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.createHolidayPeriod(holidayPeriod, monday.minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertTestReservation(
                 // NoTimes reservation
                 DevReservation(

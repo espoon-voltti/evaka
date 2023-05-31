@@ -2791,7 +2791,8 @@ export const fi = {
         FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',
         FREE_ABSENCE: 'Maksuton poissaolo',
         UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
-        NO_ABSENCE: 'Ei poissaoloa'
+        NO_ABSENCE: 'Ei poissaoloa',
+        MISSING_HOLIDAY_RESERVATION: 'Loma-ajan ilmoitus puuttuu'
       },
       free: 'Maksuton',
       paid: 'Maksullinen',

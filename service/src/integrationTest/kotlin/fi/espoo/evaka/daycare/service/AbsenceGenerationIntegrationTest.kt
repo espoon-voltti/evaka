@@ -12,6 +12,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -407,7 +408,17 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         }
     }
 
-    private fun getAllAbsences(): List<AbsenceWithModifierInfo> {
+    private data class Absence(
+        val id: AbsenceId,
+        val childId: PersonId,
+        val date: LocalDate,
+        val category: AbsenceCategory,
+        val absenceType: AbsenceType,
+        val modifiedByType: EvakaUserType,
+        val modifiedAt: HelsinkiDateTime
+    )
+
+    private fun getAllAbsences(): List<Absence> {
         return db.read {
             it.createQuery(
                     """
@@ -417,7 +428,7 @@ LEFT JOIN evaka_user eu ON eu.id = a.modified_by
 ORDER BY a.date, a.category
 """
                 )
-                .mapTo<AbsenceWithModifierInfo>()
+                .mapTo<Absence>()
                 .list()
         }
     }

@@ -14,6 +14,7 @@ import styled from 'styled-components'
 
 import { isLoading, Result } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
+import { GroupMonthCalendarDay } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
@@ -28,20 +29,20 @@ import { faTimes } from 'lib-icons'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import { useTranslation } from '../../state/i18n'
 
-import { DisabledCell } from './AbsenceCell'
+import { DisabledCell } from './MonthCalendarCell'
 
-type Props = {
+interface Props {
   groupId: string
   selectedDate: LocalDate
+  days: GroupMonthCalendarDay[]
   emptyCols: number[]
-  operationDays: LocalDate[]
 }
 
 export default React.memo(function StaffAttendance({
   groupId,
   selectedDate,
-  emptyCols,
-  operationDays
+  days,
+  emptyCols
 }: Props) {
   const [attendance] = useApiState(() => {
     const year = selectedDate.getYear()
@@ -61,35 +62,28 @@ export default React.memo(function StaffAttendance({
     [groupId]
   )
 
-  const firstOfMonth = LocalDate.of(selectedDate.year, selectedDate.month, 1)
-  const lastOfMonth = firstOfMonth.lastDayOfMonth()
-  const daysOfMonth = LocalDate.range(firstOfMonth, lastOfMonth)
-
   return (
     <StaffAttendanceRow
+      days={days}
       emptyCols={emptyCols}
       groupAttendances={attendance}
       updateAttendance={updateAttendance}
-      daysOfMonth={daysOfMonth}
-      operationDays={operationDays}
     />
   )
 })
 
 interface StaffAttendanceRowProps {
-  groupAttendances: Result<GroupStaffAttendanceForDates>
+  days: GroupMonthCalendarDay[]
   emptyCols: number[]
+  groupAttendances: Result<GroupStaffAttendanceForDates>
   updateAttendance: (date: LocalDate, count: number) => Promise<unknown>
-  daysOfMonth: LocalDate[]
-  operationDays: LocalDate[]
 }
 
 const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
   emptyCols,
+  days,
   groupAttendances,
-  updateAttendance,
-  daysOfMonth,
-  operationDays
+  updateAttendance
 }: StaffAttendanceRowProps) {
   const { i18n } = useTranslation()
 
@@ -102,19 +96,16 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
       )
       .getOrElse(true)
 
-  const isOperational = (date: LocalDate) =>
-    operationDays.some((operationDay) => operationDay.isEqual(date))
-
   return (
     <StaffAttendanceTr>
       <StaffAttendanceTd>{i18n.absences.table.staffRow}</StaffAttendanceTd>
-      {daysOfMonth.map((date) => {
+      {days.map(({ date, children }) => {
         const staffCount = groupAttendances
           .map(({ attendances }) => attendances.get(date.toString()))
           .map((attendance) => attendance?.count)
         return (
           <StaffAttendanceTd key={date.toString()}>
-            {!isOperational(date) ||
+            {!children /* not an operation day */ ||
             !staffCount.isSuccess ||
             isLoading(staffCount) ? (
               <DisabledCell />

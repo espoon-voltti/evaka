@@ -5,13 +5,16 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceCategory,
-  AbsenceChild,
-  AbsenceType
+  AbsenceType,
+  GroupMonthCalendarChild,
+  GroupMonthCalendarDay,
+  GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { parseReservation } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 export const defaultAbsenceType = 'SICKLEAVE'
@@ -19,62 +22,54 @@ export const defaultAbsenceCategories: AbsenceCategory[] = []
 
 export const absenceCategories: AbsenceCategory[] = ['NONBILLABLE', 'BILLABLE']
 
-export interface Cell {
-  id: UUID
-  parts: CellPart[]
-}
-
 type AbsenceTypeWithBackupCare = AbsenceType | 'TEMPORARY_RELOCATION'
 
 export interface CellPart {
-  id: UUID
   childId: UUID
   date: LocalDate
-  absenceType?: AbsenceTypeWithBackupCare
+  absenceType: AbsenceTypeWithBackupCare | undefined
   category: AbsenceCategory
   position: 'left' | 'right'
 }
 
-export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
+export const deserializeGroupMonthCalendarChild = (
+  json: JsonOf<GroupMonthCalendarChild>
+): GroupMonthCalendarChild => ({
   ...json,
-  actualServiceNeeds: json.actualServiceNeeds.map((cdi) => ({
-    ...cdi,
-    validDuring: FiniteDateRange.parseJson(cdi.validDuring)
+  dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+  actualServiceNeeds: json.actualServiceNeeds.map((serviceNeed) => ({
+    ...serviceNeed,
+    validDuring: FiniteDateRange.parseJson(serviceNeed.validDuring)
+  }))
+})
+
+export const deserializeGroupMonthCalendarDay = (
+  json: JsonOf<GroupMonthCalendarDay>
+): GroupMonthCalendarDay => ({
+  date: LocalDate.parseIso(json.date),
+  children: json.children
+    ? json.children.map(deserializeGroupMonthCalendarDayChild)
+    : null
+})
+
+const deserializeGroupMonthCalendarDayChild = (
+  json: JsonOf<GroupMonthCalendarDayChild>
+): GroupMonthCalendarDayChild => ({
+  ...json,
+  dailyServiceTimes:
+    json.dailyServiceTimes !== null
+      ? {
+          start: LocalTime.parseIso(json.dailyServiceTimes.start),
+          end: LocalTime.parseIso(json.dailyServiceTimes.end)
+        }
+      : null,
+  absences: json.absences.map((absence) => ({
+    ...absence,
+    modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
   })),
-  child: {
-    ...json.child,
-    dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
-  },
-  absences: Object.fromEntries(
-    Object.entries(json.absences).map(([date, absences]) => [
-      date,
-      absences.map((absence) => ({
-        ...absence,
-        date: LocalDate.parseIso(absence.date),
-        modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
-      }))
-    ])
-  ),
-  missingHolidayReservations: json.missingHolidayReservations.map((d) =>
-    LocalDate.parseIso(d)
-  ),
-  dailyServiceTimes: json.dailyServiceTimes.map((d) => ({
-    start: HelsinkiDateTime.parseIso(d.start),
-    end: HelsinkiDateTime.parseIso(d.end)
-  })),
-  reservations: json.reservations.map((res) => ({
-    ...res,
-    date: LocalDate.parseIso(res.date),
-    created: HelsinkiDateTime.parseIso(res.created),
-    reservation:
-      res.reservation.type === 'TIMES'
-        ? {
-            ...res.reservation,
-            startTime: LocalTime.parseIso(res.reservation.startTime),
-            endTime: LocalTime.parseIso(res.reservation.endTime)
-          }
-        : {
-            ...res.reservation
-          }
+  reservations: json.reservations.map((reservation) => ({
+    ...reservation,
+    created: HelsinkiDateTime.parseIso(reservation.created),
+    reservation: parseReservation(reservation.reservation)
   }))
 })

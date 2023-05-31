@@ -6,8 +6,8 @@ import { Failure, Result, Success, Response } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import {
   AbsenceDelete,
-  AbsenceGroup,
   AbsenceUpsert,
+  GroupMonthCalendar,
   GroupStaffAttendance,
   StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'
@@ -16,7 +16,10 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { deserializeChild } from '../types/absence'
+import {
+  deserializeGroupMonthCalendarChild,
+  deserializeGroupMonthCalendarDay
+} from '../types/absence'
 
 import { client } from './client'
 
@@ -25,33 +28,23 @@ interface SearchParams {
   month: number
 }
 
-export async function getGroupAbsences(
+export async function getGroupMonthCalendar(
   groupId: UUID,
   params: SearchParams
-): Promise<Result<AbsenceGroup>> {
+): Promise<Result<GroupMonthCalendar>> {
   return client
-    .get<JsonOf<AbsenceGroup>>(`/absences/${groupId}`, { params })
+    .get<JsonOf<GroupMonthCalendar>>(`/absences/${groupId}`, { params })
     .then((res) => res.data)
     .then((data) => ({
       ...data,
-      children: data.children
-        .map(deserializeChild)
-        .sort(({ child: childA }, { child: childB }) => {
-          const lastNameCmp = childA.lastName.localeCompare(
-            childB.lastName,
-            'fi',
-            { ignorePunctuation: true }
-          )
-          return lastNameCmp !== 0
-            ? lastNameCmp
-            : childA.firstName.localeCompare(childB.firstName, 'fi', {
-                ignorePunctuation: true
-              })
-        }),
-      operationDays: data.operationDays.map((date) => LocalDate.parseIso(date))
+      children: data.children.map(deserializeGroupMonthCalendarChild),
+      days: data.days.map(deserializeGroupMonthCalendarDay)
     }))
     .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
+    .catch((e) => {
+      console.error(e)
+      return Failure.fromError(e)
+    })
 }
 
 export async function postGroupAbsences(

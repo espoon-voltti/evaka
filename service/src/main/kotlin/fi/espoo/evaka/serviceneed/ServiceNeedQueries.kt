@@ -419,6 +419,7 @@ FROM backup_care bc
 WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :range
   AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :range
   AND group_id = :groupId
+
 ORDER BY child_id, valid_during
         """
 

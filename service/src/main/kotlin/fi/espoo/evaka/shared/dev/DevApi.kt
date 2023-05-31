@@ -51,7 +51,7 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
 import fi.espoo.evaka.holidayperiod.createFixedPeriodQuestionnaire
-import fi.espoo.evaka.holidayperiod.createHolidayPeriod
+import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
@@ -952,7 +952,7 @@ RETURNING id
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.createHolidayPeriod(body.period, body.reservationDeadline).let {
+                tx.insertHolidayPeriod(body.period, body.reservationDeadline).let {
                     tx.createUpdate("UPDATE holiday_period SET id = :id WHERE id = :prevId")
                         .bind("id", id)
                         .bind("prevId", it.id)

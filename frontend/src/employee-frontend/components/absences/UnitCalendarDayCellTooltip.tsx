@@ -8,7 +8,7 @@ import {
   AbsenceWithModifierInfo,
   ChildReservation
 } from 'lib-common/generated/api-types/daycare'
-import { HelsinkiDateTimeRange } from 'lib-common/generated/api-types/shared'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 
 import { useTranslation } from '../../state/i18n'
@@ -16,7 +16,7 @@ import { useTranslation } from '../../state/i18n'
 interface UnitCalendarMonthlyDayCellTooltipProps {
   date: LocalDate
   absences: AbsenceWithModifierInfo[]
-  dailyServiceTimes: HelsinkiDateTimeRange[]
+  dailyServiceTimes: TimeRange | null
   reservations: ChildReservation[]
   backupCare: boolean
   isMissingHolidayReservation: boolean
@@ -29,18 +29,18 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
   reservations,
   backupCare,
   isMissingHolidayReservation
-}: UnitCalendarMonthlyDayCellTooltipProps): JSX.Element {
+}: UnitCalendarMonthlyDayCellTooltipProps) {
   const { i18n } = useTranslation()
 
   const dailyServiceTimeTooltip = useMemo(
     () =>
-      dailyServiceTimes.map((dst, index) => (
-        <div key={index}>
-          {`${i18n.absences.dailyServiceTime} ${dst.start
-            .toLocalTime()
-            .format()} - ${dst.end.toLocalTime().format()}`}
+      dailyServiceTimes !== null ? (
+        <div>
+          {`${
+            i18n.absences.dailyServiceTime
+          } ${dailyServiceTimes.start.format()} - ${dailyServiceTimes.end.format()}`}
         </div>
-      )),
+      ) : undefined,
     [i18n, dailyServiceTimes]
   )
 
@@ -72,12 +72,12 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
     () => (
       <div>
         {i18n.absences.missingHolidayReservation}
-        {dailyServiceTimeTooltip.length > 0 && (
+        {dailyServiceTimeTooltip !== undefined ? (
           <div>
             <br />
             {dailyServiceTimeTooltip}
           </div>
-        )}
+        ) : undefined}
       </div>
     ),
     [i18n, dailyServiceTimeTooltip]
@@ -112,7 +112,7 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
         absencesTooltip
       ) : isMissingHolidayReservation ? (
         missingHolidayReservationTooltip
-      ) : reservations.length > 0 || dailyServiceTimes.length > 0 ? (
+      ) : reservations.length > 0 || dailyServiceTimes !== null ? (
         <div>
           {reservationTooltip}
           {reservationTooltip.length > 0 && <br />}
