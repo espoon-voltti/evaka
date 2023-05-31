@@ -9,7 +9,7 @@ import DateRange, { Tense } from 'lib-common/date-range'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import { Table, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 
 const colorsByTense: Record<Tense, string> = {
@@ -36,37 +36,39 @@ export default React.memo(function ServiceNeedTable({
           <Th minimalWidth>{t.children.serviceNeed.status}</Th>
         </Tr>
       </Thead>
-      {serviceNeeds
-        .sort((a, b) => b.startDate.compareTo(a.startDate))
-        .map((serviceNeed) => {
-          const dateRange = new DateRange(
-            serviceNeed.startDate,
-            serviceNeed.endDate
-          )
-          const tense = dateRange.tenseAt(LocalDate.todayInHelsinkiTz())
-          return (
-            <Tr
-              key={serviceNeed.startDate.formatIso()}
-              data-qa="service-need-table-row"
-            >
-              <Td minimalWidth data-qa="service-need-date-range">
-                {dateRange.format()}
-              </Td>
-              <Td data-qa="service-need-description">
-                {(lang === 'fi' && serviceNeed.option?.nameFi) ||
-                  (lang === 'sv' && serviceNeed.option?.nameSv) ||
-                  (lang === 'en' && serviceNeed.option?.nameEn) ||
-                  ''}
-              </Td>
-              <Td data-qa="service-need-unit">{serviceNeed.unitName}</Td>
-              <Td minimalWidth>
-                <StaticChip color={colorsByTense[tense]}>
-                  {t.common.tense[tense]}
-                </StaticChip>
-              </Td>
-            </Tr>
-          )
-        })}
+      <Tbody>
+        {serviceNeeds
+          .sort((a, b) => b.startDate.compareTo(a.startDate))
+          .map((serviceNeed) => {
+            const dateRange = new DateRange(
+              serviceNeed.startDate,
+              serviceNeed.endDate
+            )
+            const tense = dateRange.tenseAt(LocalDate.todayInHelsinkiTz())
+            return (
+              <Tr
+                key={serviceNeed.startDate.formatIso()}
+                data-qa="service-need-table-row"
+              >
+                <Td minimalWidth data-qa="service-need-date-range">
+                  {dateRange.format()}
+                </Td>
+                <Td data-qa="service-need-description">
+                  {(lang === 'fi' && serviceNeed.option?.nameFi) ||
+                    (lang === 'sv' && serviceNeed.option?.nameSv) ||
+                    (lang === 'en' && serviceNeed.option?.nameEn) ||
+                    ''}
+                </Td>
+                <Td data-qa="service-need-unit">{serviceNeed.unitName}</Td>
+                <Td minimalWidth>
+                  <StaticChip color={colorsByTense[tense]}>
+                    {t.common.tense[tense]}
+                  </StaticChip>
+                </Td>
+              </Tr>
+            )
+          })}
+      </Tbody>
     </Table>
   ) : (
     <>{t.children.serviceNeed.empty}</>
