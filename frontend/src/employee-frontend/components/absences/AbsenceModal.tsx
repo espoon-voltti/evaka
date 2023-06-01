@@ -29,17 +29,21 @@ export type AbsenceUpdate =
       absenceCategories: AbsenceCategory[]
     }
   | { type: 'noAbsence'; absenceCategories: AbsenceCategory[] }
+  | { type: 'missingHolidayReservation' }
 
 type AbsenceTypeState =
   | { type: 'absence'; absenceType: AbsenceType }
   | { type: 'noAbsence' }
+  | { type: 'missingHolidayReservation' }
 
 export default React.memo(function AbsenceModal({
   showCategorySelection,
+  showMissingHolidayReservation,
   onSave,
   onClose
 }: {
   showCategorySelection: boolean
+  showMissingHolidayReservation: boolean
   onSave: (value: AbsenceUpdate) => void
   onClose: () => void
 }) {
@@ -66,10 +70,11 @@ export default React.memo(function AbsenceModal({
     <FormModal
       title=""
       resolveAction={() =>
-        onSave({
-            ...selectedAbsenceType,
-            absenceCategories: selectedCategories
-        })
+        onSave(
+          selectedAbsenceType.type === 'missingHolidayReservation'
+            ? { type: 'missingHolidayReservation' }
+            : { ...selectedAbsenceType, absenceCategories: selectedCategories }
+        )
       }
       resolveLabel={i18n.absences.modal.saveButton}
       resolveDisabled={showCategorySelection && selectedCategories.length === 0}
@@ -102,6 +107,19 @@ export default React.memo(function AbsenceModal({
             onChange={() => setSelectedAbsenceType({ type: 'noAbsence' })}
             data-qa="absence-type-NO_ABSENCE"
           />
+          {showMissingHolidayReservation ? (
+            <Radio
+              id="MISSING_HOLIDAY_RESERVATION"
+              label={
+                i18n.absences.modal.absenceTypes.MISSING_HOLIDAY_RESERVATION
+              }
+              checked={selectedAbsenceType.type === 'missingHolidayReservation'}
+              onChange={() =>
+                setSelectedAbsenceType({ type: 'missingHolidayReservation' })
+              }
+              data-qa="absence-type-MISSING_HOLIDAY_RESERVATION"
+            />
+          ) : null}
         </FixedSpaceColumn>
 
         {showCategorySelection && (

@@ -122,6 +122,23 @@ fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRa
         .execute()
 }
 
+fun Database.Transaction.deleteReservationsFromHolidayPeriodDates(
+    deletions: List<Pair<ChildId, LocalDate>>
+): List<AttendanceReservationId> {
+    val batch =
+        prepareBatch(
+            """
+        DELETE FROM attendance_reservation
+        WHERE child_id = :childId
+        AND date = :date
+        AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
+        RETURNING id
+    """
+        )
+    deletions.forEach { batch.bind("childId", it.first).bind("date", it.second).add() }
+    return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
+}
+
 data class ReservationInsert(val childId: ChildId, val date: LocalDate, val range: TimeRange?)
 
 fun Database.Transaction.insertValidReservations(

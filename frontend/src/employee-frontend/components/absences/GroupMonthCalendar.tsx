@@ -29,7 +29,8 @@ import { Gap } from 'lib-components/white-space'
 import {
   postGroupPresences,
   getGroupMonthCalendar,
-  postGroupAbsences
+  postGroupAbsences,
+  deleteGroupHolidayReservations
 } from '../../api/absences'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
@@ -118,10 +119,20 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
     [selectedCells]
   )
 
+  const showMissingHolidayReservation = useMemo(
+    () =>
+      selectedCells.some((cell) =>
+        groupMonthCalendar.days.some(
+          (day) => day.date.isEqual(cell.date) && day.holidayPeriod
+        )
+      ),
+    [groupMonthCalendar.days, selectedCells]
+  )
+
   const toggleCellSelection = useCallback((cell: SelectedCell) => {
     setSelectedCells((cells) => {
       const removed = cells.filter(
-        (c) => !(c.childId === cell.childId || c.date === cell.date)
+        (c) => !(c.childId === cell.childId && c.date.isEqual(cell.date))
       )
       if (removed.length === cells.length) {
         return [...cells, cell]
@@ -154,6 +165,7 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
       {modalVisible && selectedCells.length > 0 && (
         <AbsenceModal
           showCategorySelection={showCategorySelection}
+          showMissingHolidayReservation={showMissingHolidayReservation}
           onSave={updateAbsences}
           onClose={closeModal}
         />
@@ -217,6 +229,14 @@ function sendAbsenceUpdates(
               category
             }))
         )
+      )
+    case 'missingHolidayReservation':
+      return deleteGroupHolidayReservations(
+        groupId,
+        selectedCells.map((cell) => ({
+          childId: cell.childId,
+          date: cell.date
+        }))
       )
   }
 }

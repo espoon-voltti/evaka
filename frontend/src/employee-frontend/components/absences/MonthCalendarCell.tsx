@@ -205,7 +205,6 @@ export default React.memo(function MonthCalendarCell({
   toggleCellSelection
 }: MonthCalendarCellProps) {
   const id = useMemo(() => getCellId(childId, date), [childId, date])
-  const { absenceCategories, missingHolidayReservation } = day
 
   const isSelected = useMemo(
     () =>
@@ -220,16 +219,9 @@ export default React.memo(function MonthCalendarCell({
       toggleCellSelection({
         childId,
         date,
-        absenceCategories,
-        missingHolidayReservation
+        absenceCategories: day.absenceCategories
       }),
-    [
-      absenceCategories,
-      childId,
-      date,
-      missingHolidayReservation,
-      toggleCellSelection
-    ]
+    [childId, date, day.absenceCategories, toggleCellSelection]
   )
 
   const hasTooltip =

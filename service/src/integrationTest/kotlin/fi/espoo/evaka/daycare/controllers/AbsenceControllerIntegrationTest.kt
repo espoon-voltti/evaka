@@ -245,6 +245,108 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
+    @Test
+    fun `deleting holiday reservations deletes reservations and absences`() {
+        //                   0 1 2 3
+        // holiday period:   - x x x
+        // reservations:     r r r -
+        // absences:         a a - -
+        // -------------------------
+        // result:           r - - -
+        //                   a - - -
+
+        val startDate = today
+        val endDate = today.plusDays(3)
+        db.transaction { tx ->
+            tx.insertHolidayPeriod(
+                period = FiniteDateRange(startDate.plusDays(1), endDate),
+                reservationDeadline = today
+            )
+
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(employee.id.raw)
+                )
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(employee.id.raw)
+                )
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(2),
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(employee.id.raw)
+                )
+            )
+
+            tx.insertTestAbsence(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = startDate,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
+            )
+            tx.insertTestAbsence(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(1),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
+            )
+        }
+
+        deleteHolidayReservations(
+            FiniteDateRange(startDate, endDate)
+                .dates()
+                .map { date ->
+                    AbsenceController.HolidayReservationsDelete(
+                        childId = testChild_1.id,
+                        date = date,
+                    )
+                }
+                .toList()
+        )
+
+        assertEquals(
+            listOf(
+                // This was kept
+                Reservation(
+                    childId = testChild_1.id,
+                    date = startDate,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0)
+                ),
+            ),
+            getAllReservations()
+        )
+
+        assertEquals(
+            listOf(
+                // This was kept
+                Absence(
+                    id = mockId,
+                    childId = testChild_1.id,
+                    date = startDate,
+                    category = AbsenceCategory.BILLABLE,
+                    absenceType = AbsenceType.OTHER_ABSENCE
+                ),
+            ),
+            getAbsencesOfChild(testChild_1.id)
+        )
+    }
+
     private fun getAbsencesOfChild(childId: ChildId): List<Absence> {
         return absenceController
             .absencesOfChild(
@@ -266,6 +368,18 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             MockEvakaClock(now),
             testDaycareGroup.id,
             absences
+        )
+    }
+
+    private fun deleteHolidayReservations(
+        deletions: List<AbsenceController.HolidayReservationsDelete>
+    ) {
+        absenceController.deleteHolidayReservations(
+            dbInstance(),
+            employee,
+            MockEvakaClock(now),
+            testDaycareGroup.id,
+            deletions
         )
     }
 

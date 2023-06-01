@@ -120,6 +120,23 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<Ab
     return batch.executeAndReturn().mapTo<AbsenceId>().toList()
 }
 
+fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(
+    deletions: List<Pair<ChildId, LocalDate>>
+): List<AbsenceId> {
+    val batch =
+        prepareBatch(
+            """
+        DELETE FROM absence
+        WHERE child_id = :childId
+        AND date = :date
+        AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
+        RETURNING id
+    """
+        )
+    deletions.forEach { batch.bind("childId", it.first).bind("date", it.second).add() }
+    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+}
+
 data class HolidayReservationCreate(
     val childId: ChildId,
     val date: LocalDate,

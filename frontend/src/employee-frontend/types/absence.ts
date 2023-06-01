@@ -46,6 +46,7 @@ export const deserializeGroupMonthCalendarChild = (
 export const deserializeGroupMonthCalendarDay = (
   json: JsonOf<GroupMonthCalendarDay>
 ): GroupMonthCalendarDay => ({
+  ...json,
   date: LocalDate.parseIso(json.date),
   children: json.children
     ? json.children.map(deserializeGroupMonthCalendarDayChild)

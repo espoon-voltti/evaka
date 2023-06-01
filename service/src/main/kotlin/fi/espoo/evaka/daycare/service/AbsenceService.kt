@@ -112,6 +112,7 @@ fun getGroupMonthCalendar(
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
                 GroupMonthCalendarDay(
                     date = date,
+                    holidayPeriod = isHolidayPeriodDate,
                     children =
                         if (date.isOperationalDate(operationDays, holidays)) {
                             placementList
@@ -392,6 +393,7 @@ data class GroupMonthCalendarChild(
 
 data class GroupMonthCalendarDay(
     val date: LocalDate,
+    val holidayPeriod: Boolean,
     val children: List<GroupMonthCalendarDayChild>? // null if not an operation day for the unit
 )
 

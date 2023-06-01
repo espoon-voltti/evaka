@@ -47,6 +47,7 @@ enum class Audit(
     AttachmentsUploadForPedagogicalDocument,
     AttendanceReservationCitizenCreate,
     AttendanceReservationCitizenRead,
+    AttendanceReservationDelete,
     AttendanceReservationEmployeeCreate,
     AttendanceReservationReportRead,
     BackupCareDelete,

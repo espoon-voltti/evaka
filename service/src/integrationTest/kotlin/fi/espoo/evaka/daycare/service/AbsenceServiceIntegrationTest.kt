@@ -130,6 +130,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map {
                             GroupMonthCalendarDay(
                                 date = it,
+                                holidayPeriod = false,
                                 children = if (it.isWeekend()) null else emptyList()
                             )
                         }
@@ -299,6 +300,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map { date ->
                             GroupMonthCalendarDay(
                                 date = date,
+                                holidayPeriod = false,
                                 children =
                                     if (date.isWeekend()) null
                                     else
@@ -363,6 +365,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             (backupCarePeriod.dates().map { date ->
                     GroupMonthCalendarDay(
                         date = date,
+                        holidayPeriod = false,
                         children =
                             if (date.isWeekend()) null
                             else
@@ -377,6 +380,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     normalPeriod.dates().map { date ->
                         GroupMonthCalendarDay(
                             date = date,
+                            holidayPeriod = false,
                             children =
                                 if (date.isWeekend()) null
                                 else
@@ -459,6 +463,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             (missingReservationsPeriod.dates().map { date ->
                     GroupMonthCalendarDay(
                         date = date,
+                        holidayPeriod = true,
                         children =
                             if (date.isWeekend()) null
                             else
@@ -474,6 +479,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     sequenceOf(
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end.minusDays(2),
+                            holidayPeriod = true,
                             children =
                                 listOf(
                                     emptyDayChild.copy(
@@ -496,6 +502,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         ),
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end.minusDays(1),
+                            holidayPeriod = true,
                             children =
                                 listOf(
                                     emptyDayChild.copy(
@@ -522,6 +529,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         ),
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end,
+                            holidayPeriod = true,
                             children =
                                 listOf(
                                     emptyDayChild.copy(
@@ -548,6 +556,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     normalPeriod.dates().map { date ->
                         GroupMonthCalendarDay(
                             date = date,
+                            holidayPeriod = false,
                             children =
                                 if (date.isWeekend()) null
                                 else
@@ -603,6 +612,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             (dailyServiceTimesPeriod1.dates().map { date ->
                     GroupMonthCalendarDay(
                         date = date,
+                        holidayPeriod = false,
                         children =
                             if (date.isWeekend()) null
                             else
@@ -618,6 +628,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     dailyServiceTimesPeriod2.dates().map { date ->
                         GroupMonthCalendarDay(
                             date = date,
+                            holidayPeriod = false,
                             children =
                                 if (date.isWeekend()) null
                                 else

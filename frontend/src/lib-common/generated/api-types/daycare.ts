@@ -405,6 +405,7 @@ export interface GroupMonthCalendarChild {
 export interface GroupMonthCalendarDay {
   children: GroupMonthCalendarDayChild[] | null
   date: LocalDate
+  holidayPeriod: boolean
 }
 
 /**
