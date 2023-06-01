@@ -114,6 +114,7 @@ export default React.memo(function TemplateContentEditor({
           <AddButtonRow
             text={i18n.documentTemplates.templateEditor.addSection}
             onClick={() => setCreatingSection(true)}
+            data-qa="create-section-button"
           />
         )}
 
@@ -142,6 +143,7 @@ export default React.memo(function TemplateContentEditor({
                 label={i18n.documentTemplates.templateEditor.readyToPublish}
                 checked={readyToPublish}
                 onChange={setReadyToPublish}
+                data-qa="ready-to-publish-checkbox"
               />
               <AsyncButton
                 text={i18n.common.save}

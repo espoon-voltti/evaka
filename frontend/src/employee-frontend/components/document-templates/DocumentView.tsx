@@ -52,7 +52,7 @@ export const DocumentSectionView = React.memo(function DocumentSectionView({
   const { label, questions, infoText } = useFormFields(bind)
   const questionElems = useFormElems(questions)
   return (
-    <div>
+    <div data-qa="document-section">
       <ExpandingInfo
         info={infoText.state}
         closeLabel={i18n.common.close}

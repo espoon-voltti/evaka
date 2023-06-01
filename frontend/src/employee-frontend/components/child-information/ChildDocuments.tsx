@@ -73,7 +73,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
           }}
         />
       )}
-      <Table>
+      <Table data-qa="table-of-child-documents">
         <Thead>
           <Tr>
             <Th>{i18n.childInformation.childDocuments.table.document}</Th>
@@ -85,17 +85,18 @@ const ChildDocuments = React.memo(function ChildDocuments({
         </Thead>
         <Tbody>
           {documents.map((document) => (
-            <Tr key={document.id}>
+            <Tr key={document.id} data-qa="child-document-row">
               <Td>
                 <IconButton
                   icon={faFile}
                   aria-label={i18n.childInformation.childDocuments.table.open}
                   onClick={() => navigate(`/child-documents/${document.id}`)}
+                  data-qa="open-document"
                 />
               </Td>
               <Td>{document.publishedAt?.format() ?? '-'}</Td>
               <Td>{document.templateName}</Td>
-              <Td>
+              <Td data-qa="document-status">
                 {document.publishedAt
                   ? i18n.childInformation.childDocuments.table.published
                   : i18n.childInformation.childDocuments.table.draft}
@@ -162,6 +163,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                   })
                 }
                 disabled={templatesOfType.length < 1 || submitting}
+                data-qa={`create-${type}`}
               />
             )
           })}

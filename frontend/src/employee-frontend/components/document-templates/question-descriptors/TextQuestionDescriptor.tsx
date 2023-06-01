@@ -80,7 +80,7 @@ const View = React.memo(function View({
   const { template, answer } = useFormFields(bind)
   const { label, infoText, multiline } = useFormFields(template)
   return readOnly ? (
-    <FixedSpaceColumn>
+    <FixedSpaceColumn data-qa="document-question-preview">
       <Label>{label.state}</Label>
       <div>
         {answer.state.split('\n').map((line, i) => (
@@ -92,7 +92,7 @@ const View = React.memo(function View({
       </div>
     </FixedSpaceColumn>
   ) : (
-    <FixedSpaceColumn fullWidth>
+    <FixedSpaceColumn fullWidth data-qa="document-question">
       <ExpandingInfo
         info={infoText.value()}
         width="full"
@@ -102,9 +102,14 @@ const View = React.memo(function View({
         <Label>{label.state}</Label>
       </ExpandingInfo>
       {multiline.state ? (
-        <TextAreaF bind={answer} readonly={false} />
+        <TextAreaF bind={answer} readonly={false} data-qa="answer-input" />
       ) : (
-        <InputFieldF bind={answer} readonly={false} width="L" />
+        <InputFieldF
+          bind={answer}
+          readonly={false}
+          width="L"
+          data-qa="answer-input"
+        />
       )}
     </FixedSpaceColumn>
   )
@@ -150,7 +155,11 @@ const TemplateView = React.memo(function TemplateView({
     <FixedSpaceColumn>
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.label}</Label>
-        <InputFieldF bind={label} hideErrorsBeforeTouched />
+        <InputFieldF
+          bind={label}
+          hideErrorsBeforeTouched
+          data-qa="question-label-input"
+        />
       </FixedSpaceColumn>
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>

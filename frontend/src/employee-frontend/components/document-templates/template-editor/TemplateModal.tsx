@@ -123,7 +123,7 @@ export default React.memo(function TemplateModal({
       resolveDisabled={!form.isValid()}
     >
       <Label>{i18n.documentTemplates.templateModal.name}</Label>
-      <InputFieldF bind={name} hideErrorsBeforeTouched />
+      <InputFieldF bind={name} hideErrorsBeforeTouched data-qa="name-input" />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.validity}</Label>
       <DateRangePickerF bind={validity} locale={lang} />
