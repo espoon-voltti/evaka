@@ -27,7 +27,7 @@ import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  deleteGroupAbsences,
+  postGroupPresences,
   getGroupMonthCalendar,
   postGroupAbsences
 } from '../../api/absences'
@@ -206,7 +206,7 @@ function sendAbsenceUpdates(
         )
       )
     case 'noAbsence':
-      return deleteGroupAbsences(
+      return postGroupPresences(
         groupId,
         selectedCells.flatMap((cell) =>
           cell.absenceCategories

@@ -5,7 +5,7 @@
 import { Failure, Result, Success, Response } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import {
-  AbsenceDelete,
+  Presence,
   AbsenceUpsert,
   GroupMonthCalendar,
   GroupStaffAttendance,
@@ -57,12 +57,12 @@ export async function postGroupAbsences(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function deleteGroupAbsences(
+export async function postGroupPresences(
   groupId: UUID,
-  deletions: AbsenceDelete[]
+  presences: Presence[]
 ): Promise<Result<void>> {
   return client
-    .post<void>(`/absences/${groupId}/delete`, deletions)
+    .post<void>(`/absences/${groupId}/present`, presences)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

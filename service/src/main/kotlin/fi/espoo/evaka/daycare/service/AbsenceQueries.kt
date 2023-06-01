@@ -104,9 +104,9 @@ fun Database.Transaction.upsertGeneratedAbsences(
     return batch.executeAndReturn().mapTo<AbsenceId>().toList()
 }
 
-data class AbsenceDelete(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)
+data class Presence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)
 
-fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>): List<AbsenceId> {
+fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<AbsenceId> {
     val sql =
         """
         DELETE FROM absence
@@ -118,6 +118,31 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>): Li
     val batch = prepareBatch(sql)
     deletions.forEach { batch.bindKotlin(it).add() }
     return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+}
+
+data class HolidayReservationCreate(
+    val childId: ChildId,
+    val date: LocalDate,
+)
+
+fun Database.Transaction.addMissingHolidayReservations(
+    createdBy: EvakaUserId,
+    additions: List<HolidayReservationCreate>
+) {
+    val batch =
+        prepareBatch(
+            """
+        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
+        SELECT :childId, :date, NULL, NULL, :createdBy
+        WHERE
+            EXISTS (SELECT 1 FROM holiday_period WHERE period @> :date) AND
+            NOT EXISTS (SELECT 1 FROM attendance_reservation WHERE child_id = :childId AND date = :date)
+        """
+        )
+    additions.forEach {
+        batch.bind("childId", it.childId).bind("date", it.date).bind("createdBy", createdBy).add()
+    }
+    batch.execute()
 }
 
 fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate): List<AbsenceId> =

@@ -6,9 +6,11 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.Absence
-import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.GroupMonthCalendar
+import fi.espoo.evaka.daycare.service.HolidayReservationCreate
+import fi.espoo.evaka.daycare.service.Presence
+import fi.espoo.evaka.daycare.service.addMissingHolidayReservations
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.daycare.service.deleteChildAbsences
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByMonth
@@ -100,40 +102,51 @@ class AbsenceController(private val accessControl: AccessControl) {
         )
     }
 
-    @PostMapping("/{groupId}/delete")
-    fun deleteAbsences(
+    @PostMapping("/{groupId}/present")
+    fun addPresences(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody deletions: List<AbsenceDelete>,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
+        @RequestBody deletions: List<Presence>,
     ) {
-        val children = deletions.map { it.childId }
-        val deleted =
-            db.connect { dbc ->
-                dbc.transaction {
+        val children = deletions.map { it.childId }.distinct()
+        db.connect { dbc ->
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Group.DELETE_ABSENCES,
                         groupId
                     )
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Child.DELETE_ABSENCE,
                         children
                     )
-                    it.batchDeleteAbsences(deletions)
+                    val deletedAbsences = tx.batchDeleteAbsences(deletions)
+                    val addedReservations =
+                        tx.addMissingHolidayReservations(
+                            user.evakaUserId,
+                            deletions.map { HolidayReservationCreate(it.childId, it.date) }
+                        )
+                    Pair(deletedAbsences, addedReservations)
                 }
             }
-        Audit.AbsenceDelete.log(
-            targetId = groupId,
-            objectId = deleted,
-            meta = mapOf("children" to children)
-        )
+            .also { (deleted, reservations) ->
+                Audit.AbsenceDelete.log(
+                    targetId = groupId,
+                    objectId = deleted,
+                    meta =
+                        mapOf(
+                            "children" to children,
+                            "createdHolidayReservations" to reservations,
+                        )
+                )
+            }
     }
 
     data class DeleteChildAbsenceBody(val date: LocalDate)

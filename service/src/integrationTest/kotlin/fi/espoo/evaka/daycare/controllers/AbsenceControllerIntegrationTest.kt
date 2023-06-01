@@ -7,16 +7,19 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.Presence
+import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
@@ -25,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -117,14 +121,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         }
 
-        deleteAbsences(
+        addPresences(
             listOf(
-                AbsenceDelete(
+                Presence(
                     childId = testChild_1.id,
                     date = firstAbsenceDate,
                     category = AbsenceCategory.BILLABLE
                 ),
-                AbsenceDelete(
+                Presence(
                     childId = testChild_1.id,
                     date = lastAbsenceDate,
                     category = AbsenceCategory.NONBILLABLE
@@ -165,6 +169,82 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
+    @Test
+    fun `deleting absences adds missing holiday reservations`() {
+        //                   0 1 2 3
+        // holiday period:   - x x x
+        // reservations:     - x x -
+        // -------------------------
+        // result:           - x x x
+
+        val startDate = today
+        val endDate = today.plusDays(3)
+        db.transaction { tx ->
+            tx.insertHolidayPeriod(
+                period = FiniteDateRange(startDate.plusDays(1), endDate),
+                reservationDeadline = today
+            )
+
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(employee.id.raw)
+                )
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(2),
+                    startTime = null,
+                    endTime = null,
+                    createdBy = EvakaUserId(employee.id.raw)
+                )
+            )
+        }
+
+        addPresences(
+            FiniteDateRange(startDate, endDate)
+                .dates()
+                .map { date ->
+                    Presence(
+                        childId = testChild_1.id,
+                        date = date,
+                        category = AbsenceCategory.BILLABLE
+                    )
+                }
+                .toList()
+        )
+
+        assertEquals(
+            listOf(
+                Reservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0)
+                ),
+                Reservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(2),
+                    startTime = null,
+                    endTime = null
+                ),
+
+                // This was added
+                Reservation(
+                    childId = testChild_1.id,
+                    date = startDate.plusDays(3),
+                    startTime = null,
+                    endTime = null
+                ),
+            ),
+            getAllReservations()
+        )
+    }
+
     private fun getAbsencesOfChild(childId: ChildId): List<Absence> {
         return absenceController
             .absencesOfChild(
@@ -179,13 +259,34 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             .map { it.copy(id = mockId) }
     }
 
-    private fun deleteAbsences(absences: List<AbsenceDelete>) {
-        absenceController.deleteAbsences(
+    private fun addPresences(absences: List<Presence>) {
+        absenceController.addPresences(
             dbInstance(),
             employee,
             MockEvakaClock(now),
             testDaycareGroup.id,
             absences
         )
+    }
+
+    private data class Reservation(
+        val childId: ChildId,
+        val date: LocalDate,
+        val startTime: LocalTime?,
+        val endTime: LocalTime?
+    )
+
+    private fun getAllReservations(): List<Reservation> {
+        return db.read { tx ->
+            tx.createQuery(
+                    """
+                SELECT child_id, date, start_time, end_time
+                FROM attendance_reservation
+                ORDER BY child_id, date
+                """
+                )
+                .mapTo<Reservation>()
+                .list()
+        }
     }
 }

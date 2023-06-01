@@ -9,7 +9,6 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitOperationDays
-import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
@@ -65,14 +64,6 @@ fun getGroupMonthCalendar(
         range.dates().filter { it.isOperationalDate(operationDays, holidays) }.toSet()
 
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
-    val missingHolidayReservations =
-        getMissingHolidayReservations(
-            placementList.keys.map { it.id },
-            absences,
-            reservations,
-            operationDates,
-            holidayPeriods
-        )
 
     val children =
         placementList
@@ -118,6 +109,7 @@ fun getGroupMonthCalendar(
         FiniteDateRange.ofMonth(year, Month.of(month))
             .dates()
             .map { date ->
+                val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
                 GroupMonthCalendarDay(
                     date = date,
                     children =
@@ -127,17 +119,20 @@ fun getGroupMonthCalendar(
                                     val placement =
                                         placements.find { it.dateRange.includes(date) }
                                             ?: return@mapNotNull null
+                                    val childAbsences = absences[child.id to date] ?: emptyList()
+                                    val childReservations =
+                                        reservations[child.id to date] ?: emptyList()
 
                                     GroupMonthCalendarDayChild(
                                         childId = child.id,
                                         absenceCategories = placement.categories,
                                         backupCare = backupCares[child.id]?.includes(date) ?: false,
                                         missingHolidayReservation =
-                                            (missingHolidayReservations[child.id] ?: listOf())
-                                                .contains(date),
-                                        absences = absences[child.id to date] ?: emptyList(),
-                                        reservations = reservations[child.id to date]
-                                                ?: emptyList(),
+                                            isHolidayPeriodDate &&
+                                                childReservations.isEmpty() &&
+                                                childAbsences.isEmpty(),
+                                        absences = childAbsences,
+                                        reservations = childReservations,
                                         dailyServiceTimes =
                                             (dailyServiceTimes[child.id]?.map { it.times }
                                                     ?: emptyList())
@@ -248,26 +243,6 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
         tx.upsertGeneratedAbsences(now, absencesToAdd)
     }
     tx.deleteOldGeneratedAbsencesInRange(now, childId, period)
-}
-
-private fun getMissingHolidayReservations(
-    childIds: List<ChildId>,
-    absences: Map<Pair<ChildId, LocalDate>, List<AbsenceWithModifierInfo>>,
-    reservations: Map<Pair<ChildId, LocalDate>, List<ChildReservation>>,
-    unitOperationalDates: Set<LocalDate>,
-    holidayPeriods: List<HolidayPeriod>
-): Map<ChildId, Set<LocalDate>> {
-    val holidayDates =
-        holidayPeriods.flatMap { it.period.dates() }.toSet().intersect(unitOperationalDates)
-    return childIds.associateWith { childId ->
-        holidayDates
-            .filter { date ->
-                val reserved = reservations[childId to date]?.isNotEmpty() ?: false
-                val absent = absences[childId to date]?.isNotEmpty() ?: false
-                !reserved && !absent
-            }
-            .toSet()
-    }
 }
 
 private fun supplementReservationsWithDailyServiceTimes(

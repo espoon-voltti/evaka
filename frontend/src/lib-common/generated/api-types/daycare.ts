@@ -44,15 +44,6 @@ export type AbsenceCategory =
   | 'NONBILLABLE'
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.AbsenceDelete
-*/
-export interface AbsenceDelete {
-  category: AbsenceCategory
-  childId: UUID
-  date: LocalDate
-}
-
-/**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceType
 */
 export type AbsenceType =
@@ -483,6 +474,15 @@ export interface PreschoolTerm {
   extendedTerm: FiniteDateRange
   finnishPreschool: FiniteDateRange
   swedishPreschool: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.Presence
+*/
+export interface Presence {
+  category: AbsenceCategory
+  childId: UUID
+  date: LocalDate
 }
 
 /**
