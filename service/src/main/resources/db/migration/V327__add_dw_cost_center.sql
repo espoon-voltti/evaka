@@ -1,1 +1,1 @@
-ALTER TABLE daycare ADD COLUMN dw_cost_center text NOT NULL DEFAULT '';
+ALTER TABLE daycare ADD COLUMN dw_cost_center text;
