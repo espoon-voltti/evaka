@@ -101,7 +101,7 @@ const View = React.memo(function View({
       >
         <Label>{label.state}</Label>
       </ExpandingInfo>
-      {multiline ? (
+      {multiline.state ? (
         <TextAreaF bind={answer} readonly={false} />
       ) : (
         <InputFieldF bind={answer} readonly={false} width="L" />
