@@ -26,7 +26,7 @@ dependencies {
         api("com.github.kagkarlsson:db-scheduler:12.1.0")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
-        api("com.google.guava:guava:31.1-jre")
+        api("com.google.guava:guava:32.0.0-jre")
         api("com.zaxxer:HikariCP:5.0.1")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.5.0")
