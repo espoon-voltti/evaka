@@ -382,7 +382,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
                         personName = "Karhula Johannes Olavi Antero Tapio",
-                        primaryCareArea = "Lwiz Foo"
+                        primaryCareArea = null
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement6.id,

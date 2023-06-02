@@ -519,7 +519,6 @@ LEFT JOIN fridge_child fc_spouse ON (
 
 LEFT JOIN placement p ON :today BETWEEN p.start_date AND p.end_date AND p.child_id IN (
     i.person_id,  -- child's own income statement
-    g.child_id,
     fc_head.child_id,
     fc_spouse.child_id
 )
