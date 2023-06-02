@@ -42,7 +42,7 @@ export default React.memo(function PlacementTerminationSection({
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
       <RequireAuth>
-        <PlacementTerminationContent childId={childId} />/
+        <PlacementTerminationContent childId={childId} />
       </RequireAuth>
     </ResponsiveWholePageCollapsible>
   )
