@@ -383,12 +383,6 @@ private fun generateFeeDecisions(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun Database.Read.getUnitsThatAreInvoiced(): List<DaycareId> {
-    return createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
-        .mapTo<DaycareId>()
-        .toList()
-}
-
 internal fun Database.Read.getPaidPlacements(
     from: LocalDate,
     children: Set<PersonBasic>

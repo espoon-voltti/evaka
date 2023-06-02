@@ -4,7 +4,6 @@
 
 import { DecisionIncome } from 'lib-common/api-types/income'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
@@ -39,10 +38,10 @@ const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 let page: Page
 let valueDecisionsPage: ValueDecisionsPage
-const decision1DateFrom = LocalDate.todayInSystemTz().subWeeks(1)
-const decision1DateTo = LocalDate.todayInSystemTz().addWeeks(2)
-const decision2DateFrom = LocalDate.todayInSystemTz()
-const decision2DateTo = LocalDate.todayInSystemTz().addWeeks(5)
+const decision1DateFrom = now.toLocalDate().subWeeks(1)
+const decision1DateTo = now.toLocalDate().addWeeks(2)
+const decision2DateFrom = now.toLocalDate()
+const decision2DateTo = now.toLocalDate().addWeeks(5)
 
 beforeEach(async () => {
   await resetDatabase()
@@ -104,7 +103,10 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
 
 describe('Value decisions', () => {
   beforeEach(async () => {
-    page = await Page.open({ acceptDownloads: true })
+    page = await Page.open({
+      acceptDownloads: true,
+      mockedTime: now.toSystemTzDate()
+    })
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
     await employeeLogin(page, financeAdmin.data)
@@ -231,7 +233,8 @@ describe('Value decisions with finance decision handler select enabled', () => {
         featureFlags: {
           financeDecisionHandlerSelect: true
         }
-      }
+      },
+      mockedTime: now.toSystemTzDate()
     })
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()

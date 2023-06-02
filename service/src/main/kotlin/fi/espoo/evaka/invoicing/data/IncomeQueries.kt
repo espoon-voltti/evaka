@@ -162,6 +162,8 @@ fun Database.Read.getIncomesFrom(
     personIds: List<PersonId>,
     from: LocalDate
 ): List<Income> {
+    if (personIds.isEmpty()) return emptyList()
+
     val sql =
         """
         SELECT income.*, evaka_user.name AS updated_by_name, '[]' as attachments

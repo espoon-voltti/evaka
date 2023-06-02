@@ -10,6 +10,7 @@ import config from '../../config'
 import {
   insertGuardianFixtures,
   resetDatabase,
+  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -145,6 +146,7 @@ describe('Municipal messaging -', () => {
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
     await messagesPage.sendNewMessage(defaultMessage)
+    await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 
     await openCitizenPage(messageReadTime)
     await citizenPage.goto(config.enduserMessagesUrl)
@@ -160,6 +162,7 @@ describe('Municipal messaging -', () => {
       ...defaultMessage,
       receiver: fixtures.careAreaFixture.id
     })
+    await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 
     await openStaffPage(messageReadTime)
     await staffPage.goto(`${config.employeeUrl}/messages`)

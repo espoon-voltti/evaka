@@ -16,6 +16,7 @@ import {
   insertVasuTemplateFixture,
   publishVasuDocument,
   resetDatabase,
+  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -246,12 +247,14 @@ test('Foster parent can receive and reply to messages', async () => {
     content: 'Message content'
   }
   await messagesPage.sendNewMessage(message)
+  await runPendingAsyncJobs(mockedNow)
 
   await activeRelationshipPage.goto(config.enduserMessagesUrl)
   const citizenMessagesPage = new CitizenMessagesPage(activeRelationshipPage)
   await citizenMessagesPage.assertThreadContent(message)
   const reply = 'Message reply'
   await citizenMessagesPage.replyToFirstThread(reply)
+  await runPendingAsyncJobs(mockedNow.addMinutes(1))
   await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
   unitSupervisorPage = await Page.open({

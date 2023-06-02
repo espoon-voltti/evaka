@@ -10,6 +10,7 @@ import config from '../../config'
 import {
   insertApplications,
   resetDatabase,
+  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -27,6 +28,7 @@ import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import MessagesPage from '../../pages/employee/messages/messages-page'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -104,6 +106,8 @@ describe('Service Worker Messaging', () => {
       await messagesPage.inputTitle.fill(title)
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
@@ -123,6 +127,8 @@ describe('Service Worker Messaging', () => {
       const messagesPage = await applReadView.openMessagesPage()
       await messagesPage.inputContent.fill('message')
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
@@ -159,6 +165,8 @@ describe('Service Worker Messaging', () => {
       const content = 'This should be visible in the application note'
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
       await applReadView.assertNote(0, `Lähetetty viesti\n\n${content}`)
@@ -175,6 +183,8 @@ describe('Service Worker Messaging', () => {
       const content = 'This should be visible in the application note'
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
       await applReadView.assertNote(0, `Lähetetty viesti\n\n${content}`)
@@ -195,6 +205,8 @@ describe('Service Worker Messaging', () => {
       const content = 'This should be visible in the application note'
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
       await messagesPage.undoMessage()
 
       await applReadView.reload()
@@ -214,6 +226,8 @@ describe('Service Worker Messaging', () => {
       await messagesPage.inputTitle.fill(title)
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
@@ -246,6 +260,8 @@ describe('Service Worker Messaging', () => {
       await messagesPage.inputTitle.fill(title)
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
@@ -304,6 +320,8 @@ describe('Service Worker Messaging', () => {
       const messagesPage = await applReadView.openMessagesPage()
       await messagesPage.inputContent.fill('message content')
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
       await applReadView.assertNoteNotEditable(0)
@@ -321,6 +339,8 @@ describe('Service Worker Messaging', () => {
       const content = 'This is the message'
       await messagesPage.inputContent.fill(content)
       await messagesPage.sendMessageButton.click()
+      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openStaffPage(mockedTime, messagingAndServiceWorker)
       applicationsPage = new ApplicationsPage(staffPage)

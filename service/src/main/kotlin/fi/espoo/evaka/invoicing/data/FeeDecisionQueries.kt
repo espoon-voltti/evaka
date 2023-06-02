@@ -34,7 +34,7 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import java.time.LocalDate
 import java.util.UUID
 
-fun feeDecisionQuery(predicate: Predicate<Any> = Predicate.alwaysTrue()) =
+fun feeDecisionQuery(predicate: Predicate<Any> = Predicate.alwaysTrue(), v2: Boolean = false) =
     QuerySql.of<Any> {
         sql(
             """
@@ -85,7 +85,7 @@ SELECT
         FROM fee_decision_child as part
         WHERE part.fee_decision_id = decision.id
     ), '[]'::jsonb) AS children
-FROM fee_decision as decision
+FROM fee_decision${if(v2) "_v2" else ""} as decision
 WHERE ${predicate(predicate.forTable("decision"))}
 """
         )
@@ -190,6 +190,49 @@ fun Database.Transaction.upsertFeeDecisions(decisions: List<FeeDecision>) {
     replaceChildren(decisions)
 }
 
+fun Database.Transaction.insertFeeDecisions(decisions: List<FeeDecision>, v2: Boolean = false) {
+    val sql =
+        """
+        INSERT INTO fee_decision${if(v2) "_v2" else ""} (
+            id,
+            status,
+            decision_number,
+            decision_type,
+            valid_during,
+            head_of_family_id,
+            partner_id,
+            head_of_family_income,
+            partner_income,
+            family_size,
+            fee_thresholds,
+            difference,
+            total_fee,
+            created
+        ) VALUES (
+            :id,
+            :status::fee_decision_status,
+            :decisionNumber,
+            :decisionType::fee_decision_type,
+            :validDuring,
+            :headOfFamilyId,
+            :partnerId,
+            :headOfFamilyIncome,
+            :partnerIncome,
+            :familySize,
+            :feeThresholds,
+            :difference,
+            :totalFee,
+            :created
+        )
+    """
+
+    val batch = prepareBatch(sql)
+    decisions.forEach { decision -> batch.bindKotlin(decision).add() }
+    batch.execute()
+
+    insertChildren(decisions.map { it.id to it.children }, v2)
+}
+
 private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
     val sql =
         """
@@ -246,16 +289,17 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
 
 private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
     val partsWithDecisionIds = decisions.map { it.id to it.children }
-    deleteChildren(partsWithDecisionIds.map { it.first })
+    deleteFeeDecisionChildren(partsWithDecisionIds.map { it.first })
     insertChildren(partsWithDecisionIds)
 }
 
 private fun Database.Transaction.insertChildren(
-    decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>
+    decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>,
+    v2: Boolean = false
 ) {
     val sql =
         """
-        INSERT INTO fee_decision_child (
+        INSERT INTO fee_decision_child${if(v2) "_v2" else ""} (
             id,
             fee_decision_id,
             child_id,
@@ -319,7 +363,7 @@ private fun Database.Transaction.insertChildren(
     batch.execute()
 }
 
-private fun Database.Transaction.deleteChildren(decisionIds: List<FeeDecisionId>) {
+fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecisionId>) {
     if (decisionIds.isEmpty()) return
 
     createUpdate("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
@@ -327,10 +371,12 @@ private fun Database.Transaction.deleteChildren(decisionIds: List<FeeDecisionId>
         .execute()
 }
 
-fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
+fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>, v2: Boolean = false) {
     if (ids.isEmpty()) return
 
-    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)").bind("ids", ids).execute()
+    createUpdate("DELETE FROM fee_decision${if(v2) "_v2" else ""} WHERE id = ANY(:ids)")
+        .bind("ids", ids)
+        .execute()
 }
 
 fun Database.Read.searchFeeDecisions(
@@ -597,7 +643,8 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
     headOfFamilyId: PersonId,
     period: DateRange?,
-    status: List<FeeDecisionStatus>?
+    status: List<FeeDecisionStatus>?,
+    v2: Boolean = false
 ): List<FeeDecision> {
     val headPredicate = Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
     val validPredicate =
@@ -612,7 +659,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
                 )
             }
     val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
-    return createQuery(feeDecisionQuery(predicate)).mapTo<FeeDecision>().list()
+    return createQuery(feeDecisionQuery(predicate, v2)).mapTo<FeeDecision>().list()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(
@@ -762,8 +809,13 @@ fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecision
         .execute()
 }
 
-fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: PersonId) {
-    createUpdate("SELECT id FROM fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
+fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(
+    headOfFamily: PersonId,
+    v2: Boolean = false
+) {
+    createUpdate(
+            "SELECT id FROM fee_decision${if(v2) "_v2" else ""} WHERE head_of_family_id = :headOfFamily FOR UPDATE"
+        )
         .bind("headOfFamily", headOfFamily)
         .execute()
 }

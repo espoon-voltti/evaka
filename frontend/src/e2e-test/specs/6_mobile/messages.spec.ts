@@ -10,6 +10,7 @@ import config from '../../config'
 import {
   insertGuardianFixtures,
   resetDatabase,
+  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -218,6 +219,7 @@ describe('Message editor in child page', () => {
     await messageEditorPage.draftNewMessage(message)
     await messageEditorPage.sendEditedMessage()
     await childPage.waitUntilLoaded()
+    await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
     await initCitizenPage(mockedDateAt12)
     await citizenPage.goto(config.enduserMessagesUrl)
@@ -230,6 +232,7 @@ describe('Child message thread', () => {
   test('Employee sees unread counts and pin login button', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessageIndicatorAndClicks()
 
     await unreadMessageCountsPage.groupLinksExist()
@@ -239,6 +242,7 @@ describe('Child message thread', () => {
   test('Employee navigates using login button and sees messages', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
     await nav.selectGroup(daycareGroupId)
@@ -248,6 +252,7 @@ describe('Child message thread', () => {
   test('Employee navigates using group link and sees messages', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPageThroughGroup()
     await waitUntilTrue(() => messagesPage.messagesExist())
@@ -256,6 +261,7 @@ describe('Child message thread', () => {
   test('Employee replies as a group to message sent to group', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
 
@@ -289,6 +295,7 @@ describe('Child message thread', () => {
   test("Staff sees citizen's message for group", async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessagesIndicator()
     await staffLoginsToMessagesPage()
 
@@ -307,6 +314,7 @@ describe('Child message thread', () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await citizenSendsMessageToGroup2()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
 
