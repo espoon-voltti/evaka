@@ -561,38 +561,12 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     allAdults.forEach {
-        insertTestPerson(
-            DevPerson(
-                id = it.id,
-                dateOfBirth = it.dateOfBirth,
-                ssn = it.ssn,
-                firstName = it.firstName,
-                lastName = it.lastName,
-                streetAddress = it.streetAddress,
-                postalCode = it.postalCode,
-                postOffice = it.postOffice,
-                email = it.email,
-                restrictedDetailsEnabled = it.restrictedDetailsEnabled
-            )
-        )
+        insertTestPerson(it)
         upsertCitizenUser(it.id)
     }
 
     allChildren.forEach {
-        insertTestPerson(
-            DevPerson(
-                id = it.id,
-                dateOfBirth = it.dateOfBirth,
-                ssn = it.ssn,
-                firstName = it.firstName,
-                lastName = it.lastName,
-                streetAddress = it.streetAddress,
-                postalCode = it.postalCode,
-                postOffice = it.postOffice,
-                duplicateOf = it.duplicateOf,
-                ophPersonOid = it.ophPersonOid
-            )
-        )
+        insertTestPerson(it)
         insertTestChild(DevChild(id = it.id))
     }
 
