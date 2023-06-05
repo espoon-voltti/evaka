@@ -30,12 +30,13 @@ let page: Page
 let header: CitizenHeader
 let citizenDecisionsPage: CitizenDecisionsPage
 let fixtures: AreaAndPersonFixtures
+const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: now.toSystemTzDate() })
   header = new CitizenHeader(page)
   citizenDecisionsPage = new CitizenDecisionsPage(page)
   await enduserLogin(page)
@@ -63,7 +64,7 @@ describe('Citizen application decisions', () => {
         'create-default-placement-plan',
         'send-decisions-without-proposal'
       ],
-      HelsinkiDateTime.now() // TODO: use mock clock
+      now
     )
 
     const decisions = await getDecisionsByApplication(applicationId)
@@ -85,15 +86,15 @@ describe('Citizen application decisions', () => {
     await citizenDecisionsPage.assertApplicationDecision(
       fixtures.enduserChildFixtureJari.id,
       preschoolDecisionId,
-      `Päätös esiopetuksesta ${LocalDate.todayInSystemTz().format()}`,
-      LocalDate.todayInSystemTz().format(),
+      `Päätös esiopetuksesta ${now.toLocalDate().format()}`,
+      now.toLocalDate().format(),
       'Vahvistettavana huoltajalla'
     )
     await citizenDecisionsPage.assertApplicationDecision(
       fixtures.enduserChildFixtureJari.id,
       preschoolDaycareDecisionId,
-      `Päätös liittyvästä varhaiskasvatuksesta ${LocalDate.todayInSystemTz().format()}`,
-      LocalDate.todayInSystemTz().format(),
+      `Päätös liittyvästä varhaiskasvatuksesta ${now.toLocalDate().format()}`,
+      now.toLocalDate().format(),
       'Vahvistettavana huoltajalla'
     )
 
@@ -146,7 +147,6 @@ describe('Citizen application decisions', () => {
     const applicationId = application.id
     await insertApplications([application])
 
-    const now = HelsinkiDateTime.now() // TODO: use mock clock
     await execSimpleApplicationActions(
       applicationId,
       [
