@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { insertDaycareGroupFixtures, resetDatabase } from '../../dev-api'
 import {
@@ -21,6 +21,7 @@ let childInformationPage: ChildInformationPage
 let fixtures: AreaAndPersonFixtures
 let page: Page
 let createApplicationModal: CreateApplicationModal
+const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetDatabase()
@@ -28,7 +29,7 @@ beforeEach(async () => {
   await insertDaycareGroupFixtures([daycareGroupFixture])
   const admin = await Fixture.employeeAdmin().save()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: now.toSystemTzDate() })
   await employeeLogin(page, admin.data)
 
   childInformationPage = new ChildInformationPage(page)
@@ -107,9 +108,7 @@ describe('Employee - paper application', () => {
   test('Service worker fills paper application with minimal info and saves it', async () => {
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(
-      LocalDate.todayInSystemTz().format()
-    )
+    await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
@@ -123,9 +122,7 @@ describe('Employee - paper application', () => {
   test('Service worker fills paper application with second guardian contact info and agreement status', async () => {
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(
-      LocalDate.todayInSystemTz().format()
-    )
+    await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
@@ -145,16 +142,14 @@ describe('Employee - paper application', () => {
 
   test('Paper application due date is saved on submit', async () => {
     const applicationEditPage = await createApplicationModal.submit()
-    await applicationEditPage.fillStartDate(
-      LocalDate.todayInSystemTz().format()
-    )
+    await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
     )
-    const dueDate = LocalDate.todayInSystemTz().addDays(7)
+    const dueDate = now.toLocalDate().addDays(7)
     await applicationEditPage.setDueDate(dueDate)
     const applicationViewPage = await applicationEditPage.saveApplication()
     await applicationViewPage.waitUntilLoaded()
@@ -165,13 +160,11 @@ describe('Employee - paper application', () => {
     await createApplicationModal.selectApplicationType('PRESCHOOL')
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(
-      LocalDate.todayInSystemTz().format()
-    )
+    await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.checkConnectedDaycare()
     await applicationEditPage.fillTimes()
     await applicationEditPage.fillConnectedDaycarePreferredStartDate(
-      LocalDate.todayInSystemTz().format()
+      now.toLocalDate().format()
     )
     await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(

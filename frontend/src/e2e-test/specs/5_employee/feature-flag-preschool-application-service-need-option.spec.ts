@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { insertDaycareGroupFixtures, resetDatabase } from '../../dev-api'
 import {
@@ -20,6 +20,7 @@ let childInformationPage: ChildInformationPage
 let fixtures: AreaAndPersonFixtures
 let page: Page
 let createApplicationModal: CreateApplicationModal
+const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetDatabase()
@@ -34,6 +35,7 @@ beforeEach(async () => {
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
+    mockedTime: now.toSystemTzDate(),
     employeeCustomizations: {
       featureFlags: {
         preschoolApplication: {
@@ -60,12 +62,10 @@ describe('Employee - paper application', () => {
     await createApplicationModal.selectApplicationType('PRESCHOOL')
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(
-      LocalDate.todayInSystemTz().format()
-    )
+    await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.checkConnectedDaycare()
     await applicationEditPage.fillConnectedDaycarePreferredStartDate(
-      LocalDate.todayInSystemTz().format()
+      now.toLocalDate().format()
     )
     await applicationEditPage.selectPreschoolPlacementType('PRESCHOOL_DAYCARE')
     await applicationEditPage.selectPreschoolServiceNeedOption('vaka')
