@@ -53,7 +53,7 @@
     "punycode": "^2.1.1",
     "react": "^17.0.2",
     "react-autosize-textarea": "^7.1.0",
-    "react-chartjs-2": "^4.3.1",
+    "react-chartjs-2": "^5.0.0",
     "react-csv": "^2.2.2",
     "react-datepicker": "^4.10.0",
     "react-day-picker": "^8.7.1",
