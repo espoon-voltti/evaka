@@ -206,29 +206,39 @@ function sendAbsenceUpdates(
     case 'absence':
       return postGroupAbsences(
         groupId,
-        selectedCells.flatMap((cell) =>
-          cell.absenceCategories
-            .filter((category) => update.absenceCategories.includes(category))
-            .map((category) => ({
-              childId: cell.childId,
-              date: cell.date,
-              category,
-              absenceType: update.absenceType
-            }))
-        )
+        selectedCells.flatMap((cell) => {
+          const categoriesToUpdate =
+            // No categories selected => update all
+            update.absenceCategories.length === 0
+              ? cell.absenceCategories
+              : cell.absenceCategories.filter((category) =>
+                  update.absenceCategories.includes(category)
+                )
+          return categoriesToUpdate.map((category) => ({
+            childId: cell.childId,
+            date: cell.date,
+            category,
+            absenceType: update.absenceType
+          }))
+        })
       )
     case 'noAbsence':
       return postGroupPresences(
         groupId,
-        selectedCells.flatMap((cell) =>
-          cell.absenceCategories
-            .filter((category) => update.absenceCategories.includes(category))
-            .map((category) => ({
-              childId: cell.childId,
-              date: cell.date,
-              category
-            }))
-        )
+        selectedCells.flatMap((cell) => {
+          const categoriesToUpdate =
+            // No categories selected => update all
+            update.absenceCategories.length === 0
+              ? cell.absenceCategories
+              : cell.absenceCategories.filter((category) =>
+                  update.absenceCategories.includes(category)
+                )
+          return categoriesToUpdate.map((category) => ({
+            childId: cell.childId,
+            date: cell.date,
+            category
+          }))
+        })
       )
     case 'missingHolidayReservation':
       return deleteGroupHolidayReservations(

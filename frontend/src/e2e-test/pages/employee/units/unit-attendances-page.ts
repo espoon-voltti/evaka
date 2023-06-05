@@ -45,15 +45,15 @@ export class UnitCalendarPage {
     date: LocalDate,
     expectedTexts: string[]
   ) {
-    await this.absenceCell(childId, date).hover()
     if (expectedTexts.length > 0) {
+      await this.absenceCell(childId, date).hover()
       await this.attendanceToolTip(date).assertText((text) =>
         text
           .replace(/\s/g, '')
           .includes(expectedTexts.join('').replace(/\s/g, ''))
       )
     } else {
-      await this.attendanceToolTip(date).waitUntilHidden()
+      await this.absenceCell(childId, date).waitUntilHidden()
     }
   }
 
