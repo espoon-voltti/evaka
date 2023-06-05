@@ -324,7 +324,7 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Tooltip for attendance is shown', async () => {
+  test('Tooltip for attendance reservation is shown', async () => {
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()

@@ -6,7 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
-import fi.espoo.evaka.holidayperiod.createHolidayPeriod
+import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -338,7 +338,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `adding a new daily service time creates a modal notification when reservations exist during the new period`() {
         db.transaction { tx ->
-            tx.createHolidayPeriod(
+            tx.insertHolidayPeriod(
                 FiniteDateRange(
                     dailyServiceTimesValidity.start.plusDays(7),
                     dailyServiceTimesValidity.start.plusDays(13),

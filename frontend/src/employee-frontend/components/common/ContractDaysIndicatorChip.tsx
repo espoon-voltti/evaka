@@ -15,8 +15,8 @@ import { OneLetterChip } from './OneLetterChip'
 type Props = { contractDayServiceNeeds: ChildServiceNeedInfo[] }
 
 const TooltipP = styled.p`
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin-top: 0;
+  margin-bottom: 0;
   width: 100%;
 `
 const TooltipDiv = styled.div`
@@ -24,7 +24,7 @@ const TooltipDiv = styled.div`
     margin-top: ${defaultMargins.xs};
   }
   white-space: nowrap;
-  margin-left: 0px;
+  margin-left: 0;
 `
 
 export const ContractDaysIndicatorChip = React.memo(
@@ -34,7 +34,7 @@ export const ContractDaysIndicatorChip = React.memo(
         position="right"
         width="large"
         tooltip={contractDayServiceNeeds.map((c, i) => (
-          <TooltipDiv key={`${c.childId}-sn-tooltip-${i}`}>
+          <TooltipDiv key={i}>
             <TooltipP>{`${c.optionName}:`}</TooltipP>
             <TooltipP>
               {c.validDuring.start.format()} - {c.validDuring.end.format()}

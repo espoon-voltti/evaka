@@ -29,7 +29,7 @@ import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { DayOfWeek } from '../../types'
 import { DaycareGroup } from '../../types/unit'
-import Absences from '../absences/Absences'
+import GroupMonthCalendar from '../absences/GroupMonthCalendar'
 import { renderResult } from '../async-rendering'
 
 import AttendanceGroupFilterSelect from './tab-calendar/AttendanceGroupFilterSelect'
@@ -275,7 +275,7 @@ const CalendarContent = React.memo(function CalendarContent({
         paddingVertical="zero"
       >
         {mode === 'month' && selectedGroup.type === 'group' ? (
-          <Absences
+          <GroupMonthCalendar
             groupId={selectedGroup.id}
             selectedDate={selectedDate}
             reservationEnabled={reservationEnabled}

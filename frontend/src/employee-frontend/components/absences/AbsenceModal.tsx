@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 
 import {
   AbsenceCategory,
@@ -16,35 +16,69 @@ import { Label } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import { absenceCategories } from '../../types/absence'
+import {
+  absenceCategories,
+  defaultAbsenceCategories,
+  defaultAbsenceType
+} from '../../types/absence'
+
+export type AbsenceUpdate =
+  | {
+      type: 'absence'
+      absenceType: AbsenceType
+      absenceCategories: AbsenceCategory[]
+    }
+  | { type: 'noAbsence'; absenceCategories: AbsenceCategory[] }
+  | { type: 'missingHolidayReservation' }
+
+type AbsenceTypeState =
+  | { type: 'absence'; absenceType: AbsenceType }
+  | { type: 'noAbsence' }
+  | { type: 'missingHolidayReservation' }
 
 export default React.memo(function AbsenceModal({
-  onSave,
-  saveDisabled,
-  onCancel,
-  selectedAbsenceType,
-  setSelectedAbsenceType,
   showCategorySelection,
-  selectedCategories,
-  updateCategories
+  showMissingHolidayReservation,
+  onSave,
+  onClose
 }: {
-  onSave: () => void
-  saveDisabled: boolean
-  onCancel: () => void
-  selectedAbsenceType: AbsenceType | null
-  setSelectedAbsenceType: (value: AbsenceType | null) => void
   showCategorySelection: boolean
-  selectedCategories: AbsenceCategory[]
-  updateCategories: (value: AbsenceCategory) => void
+  showMissingHolidayReservation: boolean
+  onSave: (value: AbsenceUpdate) => void
+  onClose: () => void
 }) {
   const { i18n } = useTranslation()
+
+  const [selectedAbsenceType, setSelectedAbsenceType] =
+    useState<AbsenceTypeState>({
+      type: 'absence',
+      absenceType: defaultAbsenceType
+    })
+  const [selectedCategories, setSelectedCategories] = useState(
+    defaultAbsenceCategories
+  )
+
+  const updateCategories = useCallback((category: AbsenceCategory) => {
+    setSelectedCategories((categories) =>
+      categories.includes(category)
+        ? categories.filter((c) => c !== category)
+        : [...categories, category]
+    )
+  }, [])
+
   return (
     <FormModal
       title=""
-      resolveAction={onSave}
+      resolveAction={() =>
+        onSave(
+          selectedAbsenceType.type === 'missingHolidayReservation'
+            ? { type: 'missingHolidayReservation' }
+            : { ...selectedAbsenceType, absenceCategories: selectedCategories }
+        )
+      }
       resolveLabel={i18n.absences.modal.saveButton}
-      resolveDisabled={saveDisabled}
-      rejectAction={onCancel}
+      resolveDisabled={showCategorySelection && selectedCategories.length === 0}
+      rejectAction={onClose}
       rejectLabel={i18n.absences.modal.cancelButton}
       data-qa="absence-modal"
     >
@@ -56,18 +90,36 @@ export default React.memo(function AbsenceModal({
               key={index}
               id={absenceType}
               label={i18n.absences.modal.absenceTypes[absenceType]}
-              checked={selectedAbsenceType === absenceType}
-              onChange={() => setSelectedAbsenceType(absenceType)}
+              checked={
+                selectedAbsenceType.type === 'absence' &&
+                selectedAbsenceType.absenceType === absenceType
+              }
+              onChange={() =>
+                setSelectedAbsenceType({ type: 'absence', absenceType })
+              }
               data-qa={`absence-type-${absenceType}`}
             />
           ))}
           <Radio
             id="NO_ABSENCE"
             label={i18n.absences.modal.absenceTypes.NO_ABSENCE}
-            checked={selectedAbsenceType === null}
-            onChange={() => setSelectedAbsenceType(null)}
+            checked={selectedAbsenceType.type === 'noAbsence'}
+            onChange={() => setSelectedAbsenceType({ type: 'noAbsence' })}
             data-qa="absence-type-NO_ABSENCE"
           />
+          {showMissingHolidayReservation ? (
+            <Radio
+              id="MISSING_HOLIDAY_RESERVATION"
+              label={
+                i18n.absences.modal.absenceTypes.MISSING_HOLIDAY_RESERVATION
+              }
+              checked={selectedAbsenceType.type === 'missingHolidayReservation'}
+              onChange={() =>
+                setSelectedAbsenceType({ type: 'missingHolidayReservation' })
+              }
+              data-qa="absence-type-MISSING_HOLIDAY_RESERVATION"
+            />
+          ) : null}
         </FixedSpaceColumn>
 
         {showCategorySelection && (

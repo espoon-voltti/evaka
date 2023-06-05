@@ -3,13 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import range from 'lodash/range'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components'
 
-import { AbsenceChild } from 'lib-common/generated/api-types/daycare'
+import {
+  GroupMonthCalendar,
+  GroupMonthCalendarChild,
+  GroupMonthCalendarDay,
+  GroupMonthCalendarDayChild
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Thead } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -19,73 +24,40 @@ import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
-import { Cell, CellPart } from '../../types/absence'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../common/ContractDaysIndicatorChip'
 
-import AbsenceCell, { DisabledCell } from './AbsenceCell'
+import { SelectedCell } from './GroupMonthCalendar'
+import MonthCalendarCell, { DisabledCell } from './MonthCalendarCell'
 import StaffAttendance from './StaffAttendance'
-import { getMonthDays, getRange } from './utils'
 
-interface AbsenceRowProps {
-  absenceChild: AbsenceChild
-  selectedCells: Cell[]
-  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
-  dateCols: LocalDate[]
+interface MonthCalendarRow {
+  child: GroupMonthCalendarChild
+  days: [LocalDate, GroupMonthCalendarDayChild | undefined][]
   emptyCols: number[]
-  operationDays: LocalDate[]
-  i18n: Translations
+  selectedCells: SelectedCell[]
+  toggleCellSelection: (cell: SelectedCell) => void
   selectedDate: LocalDate
   reservationEnabled: boolean
 }
 
-const shortChildName = (
-  firstName: string,
-  lastName: string,
-  i18n: Translations
-) => {
-  const firstNames = firstName.split(/\s/)
-  return lastName && firstName
-    ? `${lastName}, ${firstNames[0]}`
-    : i18n.common.noName
-}
-
-function getEmptyCols(dateColsLength: number): number[] {
-  return getRange(32 - dateColsLength)
-}
-
-const AbsenceTableRow = React.memo(function AbsenceTableRow({
+const MonthCalendarRow = React.memo(function MonthCalendarRow({
+  child,
+  days,
+  emptyCols,
   selectedCells,
   toggleCellSelection,
-  absenceChild,
-  dateCols,
-  emptyCols,
-  operationDays,
-  i18n,
   selectedDate,
   reservationEnabled
-}: AbsenceRowProps) {
+}: MonthCalendarRow) {
   const theme = useTheme()
-  const {
-    child,
-    placements,
-    absences,
-    backupCares,
-    missingHolidayReservations,
-    attendanceTotalHours,
-    reservationTotalHours,
-    dailyServiceTimes,
-    reservations
-  } = absenceChild
-
-  const contractDayServiceNeeds = absenceChild.actualServiceNeeds.filter(
+  const { i18n } = useTranslation()
+  const { actualServiceNeeds, attendanceTotalHours, reservationTotalHours } =
+    child
+  const contractDayServiceNeeds = actualServiceNeeds.filter(
     (c) => c.hasContractDays
   )
-
-  const showAttendanceWarning =
-    !!attendanceTotalHours &&
-    !!reservationTotalHours &&
-    attendanceTotalHours > reservationTotalHours
+  const showAttendanceWarning = attendanceTotalHours > reservationTotalHours
 
   return (
     <AbsenceTr data-qa="absence-child-row">
@@ -114,30 +86,21 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           </Tooltip>
         </FixedSpaceRow>
       </ChildNameTd>
-      {dateCols.map((date) =>
-        operationDays.some((operationDay) => operationDay.isEqual(date)) ? (
-          <AbsenceTd
+      {days.map(([date, day]) =>
+        day !== undefined ? (
+          <CalendarTd
             key={`${child.id}${date.formatIso()}`}
             $isToday={date.isToday()}
             data-qa={`absence-cell-${child.id}-${date.formatIso()}`}
           >
-            <AbsenceCell
-              selectedCells={selectedCells}
-              missingHolidayReservations={missingHolidayReservations}
-              toggleCellSelection={toggleCellSelection}
-              categories={placements[date.formatIso()]}
-              absences={absences[date.formatIso()]}
-              backupCare={backupCares[date.formatIso()] ?? false}
+            <MonthCalendarCell
               date={date}
               childId={child.id}
-              reservations={reservations.filter((reservation) =>
-                reservation.date.isEqual(date)
-              )}
-              dailyServiceTimes={dailyServiceTimes.filter((dst) =>
-                dst.start.toLocalDate().isEqual(date)
-              )}
+              day={day}
+              selectedCells={selectedCells}
+              toggleCellSelection={toggleCellSelection}
             />
-          </AbsenceTd>
+          </CalendarTd>
         ) : (
           <td key={`${child.id}${date.formatIso()}`}>
             <DisabledCell />
@@ -153,18 +116,14 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
         <>
           <td>
             <NumbersColumn>
-              {reservationTotalHours !== null
-                ? `${reservationTotalHours} h`
-                : '-'}
+              {reservationTotalHours} h
               <Gap size="xs" horizontal />
               <WarningPlaceholder />
             </NumbersColumn>
           </td>
           <td>
             <NumbersColumn warning={showAttendanceWarning}>
-              {attendanceTotalHours !== null
-                ? `${attendanceTotalHours} h`
-                : '-'}
+              {attendanceTotalHours} h
               <Gap size="xs" horizontal />
               {showAttendanceWarning ? (
                 <FontAwesomeIcon
@@ -182,6 +141,17 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     </AbsenceTr>
   )
 })
+
+const shortChildName = (
+  firstName: string,
+  lastName: string,
+  i18n: Translations
+) => {
+  const firstNames = firstName.split(/\s/)
+  return lastName && firstName
+    ? `${lastName}, ${firstNames[0]}`
+    : i18n.common.noName
+}
 
 const NumbersColumn = styled.div<{ warning?: boolean }>`
   width: 100%;
@@ -203,16 +173,14 @@ const WarningPlaceholder = styled.div`
 `
 
 interface AbsenceHeadProps {
-  dateCols: LocalDate[]
+  days: GroupMonthCalendarDay[]
   emptyCols: number[]
-  operationDays: LocalDate[]
   reservationEnabled: boolean
 }
 
-const AbsenceTableHead = React.memo(function AbsenceTableHead({
-  dateCols,
+const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
+  days,
   emptyCols,
-  operationDays,
   reservationEnabled
 }: AbsenceHeadProps) {
   const { i18n, lang } = useTranslation()
@@ -220,18 +188,19 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
     <Thead sticky>
       <AbsenceTr>
         <th />
-        {dateCols.map((item) =>
-          operationDays.some((operationDay) => operationDay.isEqual(item)) ? (
+        {days.map(({ date, children }) =>
+          children !== null ? (
+            // Operation day
             <AbsenceTh
-              key={item.getDate()}
-              $isToday={item.isToday()}
-              $isWeekend={item.isWeekend()}
+              key={date.getDate()}
+              $isToday={date.isToday()}
+              $isWeekend={date.isWeekend()}
             >
-              <div>{item.format('EEEEEE', lang)}</div>
-              <div>{item.getDate()}</div>
+              <div>{date.format('EEEEEE', lang)}</div>
+              <div>{date.getDate()}</div>
             </AbsenceTh>
           ) : (
-            <th key={item.getDate()} />
+            <th key={date.getDate()} />
           )
         )}
         {emptyCols.map((item) => (
@@ -250,49 +219,48 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
 
 interface AbsenceTableProps {
   groupId: string
-  selectedCells: Cell[]
-  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
+  groupMonthCalendar: GroupMonthCalendar
+  selectedCells: SelectedCell[]
+  toggleCellSelection: (cell: SelectedCell) => void
   selectedDate: LocalDate
-  childList: AbsenceChild[]
-  operationDays: LocalDate[]
   reservationEnabled: boolean
   staffAttendanceEnabled: boolean
 }
 
-export default React.memo(function AbsenceTable({
+export default React.memo(function MonthCalendarTable({
   groupId,
+  groupMonthCalendar,
   selectedCells,
   toggleCellSelection,
   selectedDate,
-  childList,
-  operationDays,
   reservationEnabled,
   staffAttendanceEnabled
 }: AbsenceTableProps) {
-  const { i18n } = useTranslation()
-
-  const dateCols = getMonthDays(selectedDate)
-  const emptyCols = getEmptyCols(dateCols.length)
+  const emptyCols = useMemo(
+    () => range(32 - groupMonthCalendar.days.length),
+    [groupMonthCalendar.days.length]
+  )
+  const tableRows = useMemo(
+    () => getMonthCalendarRows(groupMonthCalendar),
+    [groupMonthCalendar]
+  )
 
   return (
-    <AbsenceTableRoot>
-      <AbsenceTableHead
-        dateCols={dateCols}
+    <MonthCalendarTableRoot>
+      <MonthCalendarTableHead
+        days={groupMonthCalendar.days}
         emptyCols={emptyCols}
-        operationDays={operationDays}
         reservationEnabled={reservationEnabled}
       />
       <tbody>
-        {childList.map((item) => (
-          <AbsenceTableRow
-            key={item.child.id}
+        {tableRows.map(({ child, days }) => (
+          <MonthCalendarRow
+            key={child.id}
+            child={child}
+            days={days}
+            emptyCols={emptyCols}
             selectedCells={selectedCells}
             toggleCellSelection={toggleCellSelection}
-            absenceChild={item}
-            dateCols={dateCols}
-            emptyCols={emptyCols}
-            operationDays={operationDays}
-            i18n={i18n}
             selectedDate={selectedDate}
             reservationEnabled={reservationEnabled}
           />
@@ -304,16 +272,35 @@ export default React.memo(function AbsenceTable({
           <StaffAttendance
             groupId={groupId}
             selectedDate={selectedDate}
+            days={groupMonthCalendar.days}
             emptyCols={emptyCols}
-            operationDays={operationDays}
           />
         )}
       </tbody>
-    </AbsenceTableRoot>
+    </MonthCalendarTableRoot>
   )
 })
 
-const AbsenceTableRoot = styled.table`
+interface MonthCalendarRowData {
+  child: GroupMonthCalendarChild
+  days: [LocalDate, GroupMonthCalendarDayChild | undefined][]
+}
+
+function getMonthCalendarRows(
+  data: GroupMonthCalendar
+): MonthCalendarRowData[] {
+  return data.children.map((child) => ({
+    child,
+    days: data.days.map((day) => [
+      day.date,
+      day.children
+        ? day.children.find((c) => c.childId === child.id)
+        : undefined
+    ])
+  }))
+}
+
+const MonthCalendarTableRoot = styled.table`
   border-collapse: collapse;
   width: 100%;
 
@@ -337,7 +324,7 @@ const AbsenceTableRoot = styled.table`
   }
 `
 
-const AbsenceTd = styled.td<{ $isToday: boolean }>`
+const CalendarTd = styled.td<{ $isToday: boolean }>`
   ${(p: { $isToday: boolean }) =>
     p.$isToday && `background-color: ${colors.grayscale.g4}`};
 `
@@ -359,7 +346,7 @@ const ChildNameTd = styled.td`
 `
 
 const AbsenceTr = styled.tr`
-  &:hover ${AbsenceTd}, &:hover ${ChildNameTd} {
+  &:hover ${CalendarTd}, &:hover ${ChildNameTd} {
     background-color: ${colors.grayscale.g4};
 
     &:first-child {

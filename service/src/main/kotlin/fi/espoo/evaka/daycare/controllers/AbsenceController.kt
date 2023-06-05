@@ -6,15 +6,19 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.Absence
-import fi.espoo.evaka.daycare.service.AbsenceDelete
-import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
+import fi.espoo.evaka.daycare.service.GroupMonthCalendar
+import fi.espoo.evaka.daycare.service.HolidayReservationCreate
+import fi.espoo.evaka.daycare.service.Presence
+import fi.espoo.evaka.daycare.service.addMissingHolidayReservations
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
+import fi.espoo.evaka.daycare.service.deleteAbsencesFromHolidayPeriodDates
 import fi.espoo.evaka.daycare.service.deleteChildAbsences
-import fi.espoo.evaka.daycare.service.getAbsencesInGroupByMonth
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByMonth
 import fi.espoo.evaka.daycare.service.getFutureAbsencesOfChild
+import fi.espoo.evaka.daycare.service.getGroupMonthCalendar
 import fi.espoo.evaka.daycare.service.upsertAbsences
+import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -35,14 +39,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/absences")
 class AbsenceController(private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
-    fun absencesInGroupByMonth(
+    fun groupMonthCalendar(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
-    ): AbsenceGroup {
+    ): GroupMonthCalendar {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -52,7 +56,7 @@ class AbsenceController(private val accessControl: AccessControl) {
                         Action.Group.READ_ABSENCES,
                         groupId
                     )
-                    getAbsencesInGroupByMonth(it, groupId, year, month)
+                    getGroupMonthCalendar(it, groupId, year, month)
                 }
             }
             .also {
@@ -100,40 +104,95 @@ class AbsenceController(private val accessControl: AccessControl) {
         )
     }
 
-    @PostMapping("/{groupId}/delete")
-    fun deleteAbsences(
+    @PostMapping("/{groupId}/present")
+    fun addPresences(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody deletions: List<AbsenceDelete>,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
+        @RequestBody deletions: List<Presence>,
     ) {
-        val children = deletions.map { it.childId }
-        val deleted =
-            db.connect { dbc ->
-                dbc.transaction {
+        val children = deletions.map { it.childId }.distinct()
+        db.connect { dbc ->
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Group.DELETE_ABSENCES,
                         groupId
                     )
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Child.DELETE_ABSENCE,
                         children
                     )
-                    it.batchDeleteAbsences(deletions)
+                    val deletedAbsences = tx.batchDeleteAbsences(deletions)
+                    val addedReservations =
+                        tx.addMissingHolidayReservations(
+                            user.evakaUserId,
+                            deletions.map { HolidayReservationCreate(it.childId, it.date) }
+                        )
+                    Pair(deletedAbsences, addedReservations)
                 }
             }
-        Audit.AbsenceDelete.log(
-            targetId = groupId,
-            objectId = deleted,
-            meta = mapOf("children" to children)
-        )
+            .also { (deleted, reservations) ->
+                Audit.AbsenceDelete.log(
+                    targetId = groupId,
+                    objectId = deleted,
+                    meta =
+                        mapOf(
+                            "children" to children,
+                            "createdHolidayReservations" to reservations,
+                        )
+                )
+            }
+    }
+
+    data class HolidayReservationsDelete(
+        val childId: ChildId,
+        val date: LocalDate,
+    )
+
+    @PostMapping("/{groupId}/delete-holiday-reservations")
+    fun deleteHolidayReservations(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable groupId: GroupId,
+        @RequestBody body: List<HolidayReservationsDelete>
+    ) {
+        if (body.isEmpty()) return
+
+        val children = body.map { it.childId }.distinct()
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.DELETE_HOLIDAY_RESERVATIONS,
+                        children,
+                    )
+                    val pairs = body.map { Pair(it.childId, it.date) }
+                    val deletedReservations = tx.deleteReservationsFromHolidayPeriodDates(pairs)
+                    val deletedAbsences = tx.deleteAbsencesFromHolidayPeriodDates(pairs)
+                    Pair(deletedReservations, deletedAbsences)
+                }
+            }
+            .also { (deletedReservations, deletedAbsences) ->
+                Audit.AttendanceReservationDelete.log(
+                    targetId = groupId,
+                    meta =
+                        mapOf(
+                            "children" to children,
+                            "deletedReservations" to deletedReservations,
+                            "deletedAbsences" to deletedAbsences
+                        )
+                )
+            }
     }
 
     data class DeleteChildAbsenceBody(val date: LocalDate)

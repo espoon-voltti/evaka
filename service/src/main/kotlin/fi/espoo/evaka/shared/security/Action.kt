@@ -755,6 +755,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
+        DELETE_HOLIDAY_RESERVATIONS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
         READ_ADDITIONAL_INFO(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(

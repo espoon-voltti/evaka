@@ -9,7 +9,6 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitOperationDays
-import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
@@ -26,6 +25,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isOperationalDate
 import fi.espoo.evaka.user.EvakaUserType
@@ -36,12 +36,12 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
 
-fun getAbsencesInGroupByMonth(
+fun getGroupMonthCalendar(
     tx: Database.Read,
     groupId: GroupId,
     year: Int,
     month: Int
-): AbsenceGroup {
+): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
     val daycare =
@@ -50,84 +50,119 @@ fun getAbsencesInGroupByMonth(
     val groupName =
         tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
     val placementList = tx.getPlacementsByRange(groupId, range)
-    val absenceList = tx.getAbsencesInGroupByRange(groupId, range).groupBy { it.childId }.toMap()
+    val absences = tx.getAbsencesInGroupByRange(groupId, range)
     val actualServiceNeeds =
         tx.getActualServiceNeedInfosByRangeAndGroup(groupId, range).groupBy { it.childId }.toMap()
-    val backupCareList =
-        tx.getBackupCaresAffectingGroup(groupId, range).groupBy { it.childId }.toMap()
-    val reservations = tx.getGroupReservations(groupId, range).groupBy { it.childId }.toMap()
+    val backupCares = tx.getBackupCaresAffectingGroup(groupId, range)
+    val reservations = tx.getGroupReservations(groupId, range)
     val attendances = tx.getGroupAttendances(groupId, range).groupBy { it.childId }.toMap()
     val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
-    val operationalDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
+    val operationDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
     val holidays = tx.getHolidays(range)
-    val operationalDates = range.dates().filter { it.isOperationalDate(operationalDays, holidays) }
-    val setOfOperationalDays = operationalDates.toSet()
+    val operationDates =
+        range.dates().filter { it.isOperationalDate(operationDays, holidays) }.toSet()
 
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
-    val missingHolidayReservations =
-        getMissingHolidayReservations(
-            placementList.keys.map { it.id },
-            absenceList,
-            reservations,
-            setOfOperationalDays,
-            holidayPeriods
-        )
 
     val children =
-        placementList.map { (child, placements) ->
-            val placementDateRanges = placements.map { it.dateRange }
-            val absenceDates = absenceList[child.id]?.map { it.date }?.toSet() ?: setOf()
+        placementList
+            .map { (child, placements) ->
+                val placementDateRanges = placements.map { it.dateRange }
+                val absenceDates = absences.keys.map { it.second }.toSet()
 
-            val possibleAttendanceDates =
-                placementDateRanges
-                    .flatMap { it.dates() }
-                    .filterNot { absenceDates.contains(it) }
-                    .filter { setOfOperationalDays.contains(it) }
+                val possibleAttendanceDates =
+                    placementDateRanges
+                        .flatMap { it.dates() }
+                        .filterNot { absenceDates.contains(it) }
+                        .filter { operationDates.contains(it) }
 
-            val supplementedReservations =
-                supplementReservationsWithDailyServiceTimes(
-                    possibleAttendanceDates,
-                    reservations[child.id],
-                    dailyServiceTimes[child.id]?.map { it.times },
-                    absenceDates
-                )
-
-            AbsenceChild(
-                child = child,
-                placements =
-                    range
-                        .dates()
-                        .mapNotNull { date ->
-                            placements
-                                .find { it.dateRange.includes(date) }
-                                ?.let { date to it.categories }
-                        }
-                        .toMap(),
-                actualServiceNeeds = actualServiceNeeds[child.id] ?: listOf(),
-                absences = absenceList[child.id]?.groupBy { it.date } ?: mapOf(),
-                backupCares =
-                    backupCareList[child.id]
-                        ?.flatMap { it.period.dates().map { date -> date to true } }
-                        ?.toMap()
-                        ?: mapOf(),
-                missingHolidayReservations = missingHolidayReservations[child.id] ?: listOf(),
-                reservationTotalHours =
-                    sumOfHours(supplementedReservations, placementDateRanges, range),
-                attendanceTotalHours =
-                    attendances[child.id]
-                        ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
-                        ?.let { sumOfHours(it, placementDateRanges, range) },
-                reservations = reservations[child.id] ?: emptyList(),
-                dailyServiceTimes =
-                    dailyServiceTimesToPerDateTimeRanges(
+                val supplementedReservations =
+                    supplementReservationsWithDailyServiceTimes(
                         possibleAttendanceDates,
-                        dailyServiceTimes[child.id]?.map { it.times } ?: emptyList()
+                        reservations.entries.mapNotNull {
+                            if (it.key.first == child.id) {
+                                it.key.second to it.value
+                            } else null
+                        },
+                        dailyServiceTimes[child.id]?.map { it.times },
+                        absenceDates
                     )
-            )
-        }
+                GroupMonthCalendarChild(
+                    id = child.id,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
+                    dateOfBirth = child.dateOfBirth,
+                    actualServiceNeeds = actualServiceNeeds[child.id] ?: emptyList(),
+                    reservationTotalHours =
+                        sumOfHours(supplementedReservations, placementDateRanges, range),
+                    attendanceTotalHours =
+                        attendances[child.id]
+                            ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
+                            ?.let { sumOfHours(it, placementDateRanges, range) }
+                            ?: 0,
+                )
+            }
+            .sortedWith(compareBy({ it.lastName }, { it.firstName }))
 
-    return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDates.toList())
+    val days =
+        FiniteDateRange.ofMonth(year, Month.of(month))
+            .dates()
+            .map { date ->
+                val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
+                GroupMonthCalendarDay(
+                    date = date,
+                    holidayPeriod = isHolidayPeriodDate,
+                    children =
+                        if (date.isOperationalDate(operationDays, holidays)) {
+                            placementList
+                                .mapNotNull { (child, placements) ->
+                                    val placement =
+                                        placements.find { it.dateRange.includes(date) }
+                                            ?: return@mapNotNull null
+                                    val childAbsences = absences[child.id to date] ?: emptyList()
+                                    val childReservations =
+                                        reservations[child.id to date] ?: emptyList()
+
+                                    GroupMonthCalendarDayChild(
+                                        childId = child.id,
+                                        absenceCategories = placement.categories,
+                                        backupCare = backupCares[child.id]?.includes(date) ?: false,
+                                        missingHolidayReservation =
+                                            isHolidayPeriodDate &&
+                                                childReservations.isEmpty() &&
+                                                childAbsences.isEmpty(),
+                                        absences = childAbsences,
+                                        reservations = childReservations,
+                                        dailyServiceTimes =
+                                            (dailyServiceTimes[child.id]?.map { it.times }
+                                                    ?: emptyList())
+                                                .find { it.validityPeriod.includes(date) }
+                                                ?.let { value ->
+                                                    when (value) {
+                                                        is DailyServiceTimesValue.RegularTimes ->
+                                                            value.regularTimes
+                                                        is DailyServiceTimesValue.IrregularTimes ->
+                                                            value.getTimesOnDate(date)
+                                                        is DailyServiceTimesValue.VariableTimes ->
+                                                            null
+                                                    }
+                                                }
+                                    )
+                                }
+                                .sortedBy { it.childId }
+                        } else null
+                )
+            }
+            .toList()
+
+    return GroupMonthCalendar(
+        groupId,
+        daycare.name,
+        groupName,
+        children,
+        days,
+    )
 }
 
 fun getAbsencesOfChildByMonth(
@@ -211,48 +246,31 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
     tx.deleteOldGeneratedAbsencesInRange(now, childId, period)
 }
 
-private fun getMissingHolidayReservations(
-    childIds: List<ChildId>,
-    absences: Map<ChildId, List<AbsenceWithModifierInfo>>,
-    reservations: Map<ChildId, List<ChildReservation>>,
-    unitOperationalDates: Set<LocalDate>,
-    holidayPeriods: List<HolidayPeriod>
-): Map<ChildId, List<LocalDate>> {
-    val holidayDates =
-        holidayPeriods.flatMap { it.period.dates() }.toSet().intersect(unitOperationalDates)
-    return childIds.associateWith { childId ->
-        val reservedDates = reservations[childId]?.map { it.date } ?: listOf()
-        val absenceDates = absences[childId]?.map { it.date } ?: listOf()
-        val answeredDates = (reservedDates + absenceDates).toSet()
-        (holidayDates - answeredDates).toList()
-    }
-}
-
 private fun supplementReservationsWithDailyServiceTimes(
     possibleAttendanceDates: List<LocalDate>,
-    reservations: List<ChildReservation>?,
+    reservations: List<Pair<LocalDate, List<ChildReservation>>>,
     dailyServiceTimesList: List<DailyServiceTimesValue>?,
     absenceDates: Set<LocalDate>
 ): List<HelsinkiDateTimeRange> {
     val reservationRanges =
         reservations
-            ?.flatMap {
-                when (it.reservation) {
-                    is Reservation.Times ->
-                        listOf(
+            .flatMap { (date, reservations) ->
+                reservations.mapNotNull { res ->
+                    when (res.reservation) {
+                        is Reservation.Times ->
                             HelsinkiDateTimeRange.of(
-                                it.date,
-                                it.reservation.startTime.withNano(0).withSecond(0),
-                                it.reservation.endTime.withNano(0).withSecond(0)
+                                date,
+                                res.reservation.startTime.withNano(0).withSecond(0),
+                                res.reservation.endTime.withNano(0).withSecond(0)
                             )
-                        )
 
-                    // Reserved but no times -> use daily service times
-                    is Reservation.NoTimes -> listOf()
+                        // Reserved but no times -> use daily service times
+                        is Reservation.NoTimes -> null
+                    }
                 }
             }
-            ?.sortedBy { it.start }
-            ?.fold(listOf<HelsinkiDateTimeRange>()) { timeRanges, timeRange ->
+            .sortedBy { it.start }
+            .fold(listOf<HelsinkiDateTimeRange>()) { timeRanges, timeRange ->
                 if (timeRanges.isEmpty()) {
                     listOf(timeRange)
                 } else {
@@ -264,8 +282,7 @@ private fun supplementReservationsWithDailyServiceTimes(
                     }
                 }
             }
-            ?.filterNot { absenceDates.contains(it.start.toLocalDate()) }
-            ?: listOf()
+            .filterNot { absenceDates.contains(it.start.toLocalDate()) }
 
     val reservedDates = reservationRanges.map { it.start.toLocalDate() }.toSet()
 
@@ -356,32 +373,38 @@ enum class AbsenceCategory : DatabaseEnum {
     override val sqlType: String = "absence_category"
 }
 
-data class AbsenceGroup(
+data class GroupMonthCalendar(
     val groupId: GroupId,
     val daycareName: String,
     val groupName: String,
-    val children: List<AbsenceChild>,
-    val operationDays: List<LocalDate>
+    val children: List<GroupMonthCalendarChild>,
+    val days: List<GroupMonthCalendarDay>,
 )
 
-data class AbsenceChild(
-    val child: Child,
-    val placements: Map<LocalDate, Set<AbsenceCategory>>,
-    val actualServiceNeeds: List<ChildServiceNeedInfo>,
-    val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
-    val backupCares: Map<LocalDate, Boolean>,
-    val missingHolidayReservations: List<LocalDate>,
-    val reservationTotalHours: Int?,
-    val attendanceTotalHours: Int?,
-    val reservations: List<ChildReservation>,
-    val dailyServiceTimes: List<HelsinkiDateTimeRange>
-)
-
-data class Child(
+data class GroupMonthCalendarChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
+    val actualServiceNeeds: List<ChildServiceNeedInfo>,
+    val reservationTotalHours: Int,
+    val attendanceTotalHours: Int,
+)
+
+data class GroupMonthCalendarDay(
+    val date: LocalDate,
+    val holidayPeriod: Boolean,
+    val children: List<GroupMonthCalendarDayChild>? // null if not an operation day for the unit
+)
+
+data class GroupMonthCalendarDayChild(
+    val childId: ChildId,
+    val absenceCategories: Set<AbsenceCategory>,
+    val backupCare: Boolean,
+    val missingHolidayReservation: Boolean,
+    val absences: List<AbsenceWithModifierInfo>,
+    val reservations: List<ChildReservation>,
+    val dailyServiceTimes: TimeRange?
 )
 
 data class ChildServiceNeedInfo(
@@ -402,9 +425,6 @@ data class Absence(
 )
 
 data class AbsenceWithModifierInfo(
-    val id: AbsenceId,
-    val childId: ChildId,
-    val date: LocalDate,
     val category: AbsenceCategory,
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,

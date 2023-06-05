@@ -1353,6 +1353,7 @@ data class DevReservation(
     val date: LocalDate,
     val startTime: LocalTime?,
     val endTime: LocalTime?,
+    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val createdBy: EvakaUserId
 )
 
@@ -1360,8 +1361,8 @@ fun Database.Transaction.insertTestReservation(reservation: DevReservation) =
     insertTestDataRow(
             reservation,
             """
-INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created_by)
-VALUES (:id, :childId, :date, :startTime, :endTime, :createdBy)
+INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created, created_by)
+VALUES (:id, :childId, :date, :startTime, :endTime, :created, :createdBy)
 RETURNING id
 """
         )

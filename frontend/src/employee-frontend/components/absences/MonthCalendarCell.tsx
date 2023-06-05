@@ -8,17 +8,17 @@ import styled, { css } from 'styled-components'
 import {
   AbsenceCategory,
   AbsenceWithModifierInfo,
-  ChildReservation
+  GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/daycare'
-import { HelsinkiDateTimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
 
-import { Cell, CellPart } from '../../types/absence'
+import { CellPart } from '../../types/absence'
 
+import { SelectedCell } from './GroupMonthCalendar'
 import UnitCalendarDayCellTooltip from './UnitCalendarDayCellTooltip'
 
 const cellSize = 20
@@ -90,13 +90,11 @@ function getCellParts(
       (absence) => absence.category === category
     )
     if (maybeAbsence) {
-      const { id: absenceId, absenceType } = maybeAbsence
       return {
-        id: absenceId,
         childId,
         date,
         category,
-        absenceType,
+        absenceType: maybeAbsence.absenceType,
         position
       }
     } else {
@@ -105,6 +103,7 @@ function getCellParts(
         childId,
         date,
         category,
+        absenceType: undefined,
         position
       }
     }
@@ -115,8 +114,8 @@ interface AbsenceCellPartsProps {
   id: UUID
   childId: UUID
   date: LocalDate
-  categories: AbsenceCategory[] | undefined
-  absences: AbsenceWithModifierInfo[] | undefined
+  categories: AbsenceCategory[] | null
+  absences: AbsenceWithModifierInfo[]
   backupCare: boolean
   isSelected: boolean
   isMissingHolidayReservation: boolean
@@ -150,9 +149,9 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
       $isSelected={isSelected}
       onClick={clickable ? () => toggle(parts) : undefined}
     >
-      {parts.map(({ id: partId, absenceType, position }) => (
+      {parts.map(({ absenceType, position }) => (
         <AbsenceCellPart
-          key={partId}
+          key={position}
           $isSelected={isSelected}
           $position={position}
           $absenceType={absenceType}
@@ -190,52 +189,47 @@ const MissingHolidayReservationMarker = styled.div`
   border: 2px solid ${colors.status.warning};
 `
 
-interface AbsenceCellProps {
-  childId: UUID
-  selectedCells: Cell[]
-  missingHolidayReservations: LocalDate[]
-  toggleCellSelection: (id: UUID, parts: CellPart[]) => void
+interface MonthCalendarCellProps {
   date: LocalDate
-  categories: AbsenceCategory[] | undefined
-  absences: AbsenceWithModifierInfo[] | undefined
-  backupCare: boolean
-  reservations: ChildReservation[]
-  dailyServiceTimes: HelsinkiDateTimeRange[]
+  childId: UUID
+  day: GroupMonthCalendarDayChild
+  selectedCells: SelectedCell[]
+  toggleCellSelection: (cell: SelectedCell) => void
 }
 
-export default React.memo(function AbsenceCell({
-  childId,
-  selectedCells,
-  missingHolidayReservations,
-  toggleCellSelection,
+export default React.memo(function MonthCalendarCell({
   date,
-  categories,
-  absences = [],
-  backupCare,
-  reservations,
-  dailyServiceTimes
-}: AbsenceCellProps) {
+  childId,
+  day,
+  selectedCells,
+  toggleCellSelection
+}: MonthCalendarCellProps) {
   const id = useMemo(() => getCellId(childId, date), [childId, date])
-  const isMissingHolidayReservation = useMemo(
-    () => missingHolidayReservations.some((d) => d.isEqual(date)),
-    [date, missingHolidayReservations]
-  )
+
   const isSelected = useMemo(
-    () => selectedCells.some(({ id: selectedId }) => selectedId === id),
-    [id, selectedCells]
+    () =>
+      selectedCells.some(
+        (cell) => cell.childId === childId && cell.date.isEqual(date)
+      ),
+    [childId, date, selectedCells]
   )
 
   const toggle = useCallback(
-    (cellParts: CellPart[]) => toggleCellSelection(id, cellParts),
-    [id, toggleCellSelection]
+    () =>
+      toggleCellSelection({
+        childId,
+        date,
+        absenceCategories: day.absenceCategories
+      }),
+    [childId, date, day.absenceCategories, toggleCellSelection]
   )
 
   const hasTooltip =
-    backupCare ||
-    isMissingHolidayReservation ||
-    absences.length > 0 ||
-    reservations.length > 0 ||
-    dailyServiceTimes.length > 0
+    day.backupCare ||
+    day.missingHolidayReservation ||
+    day.absences.length > 0 ||
+    day.reservations.length > 0 ||
+    day.dailyServiceTimes !== null
 
   return (
     <Tooltip
@@ -243,11 +237,11 @@ export default React.memo(function AbsenceCell({
         hasTooltip ? (
           <UnitCalendarDayCellTooltip
             date={date}
-            absences={absences}
-            dailyServiceTimes={dailyServiceTimes}
-            reservations={reservations}
-            backupCare={backupCare}
-            isMissingHolidayReservation={isMissingHolidayReservation}
+            absences={day.absences}
+            dailyServiceTimes={day.dailyServiceTimes}
+            reservations={day.reservations}
+            backupCare={day.backupCare}
+            isMissingHolidayReservation={day.missingHolidayReservation}
           />
         ) : undefined
       }
@@ -259,11 +253,11 @@ export default React.memo(function AbsenceCell({
         id={id}
         childId={childId}
         date={date}
-        categories={categories}
-        absences={absences}
-        backupCare={backupCare}
+        categories={day.absenceCategories}
+        absences={day.absences}
+        backupCare={day.backupCare}
         isSelected={isSelected}
-        isMissingHolidayReservation={isMissingHolidayReservation}
+        isMissingHolidayReservation={day.missingHolidayReservation}
         toggle={toggle}
       />
     </Tooltip>

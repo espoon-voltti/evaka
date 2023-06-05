@@ -96,7 +96,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
 
                         it.deleteAllCitizenReservationsInRange(body.period)
                         it.deleteAllCitizenEditableAbsencesInRange(body.period)
-                        it.createHolidayPeriod(body.period, body.reservationDeadline)
+                        it.insertHolidayPeriod(body.period, body.reservationDeadline)
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
                     }

@@ -30,7 +30,7 @@ fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
         .mapTo<HolidayPeriod>()
         .firstOrNull()
 
-fun Database.Transaction.createHolidayPeriod(
+fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
     reservationDeadline: LocalDate
 ): HolidayPeriod =
