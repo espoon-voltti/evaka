@@ -77,14 +77,6 @@ export type DailyReservationRequest = DailyReservationRequest.Absent | DailyRese
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.DeleteHolidayReservations
-*/
-export interface DeleteHolidayReservations {
-  childId: UUID
-  date: LocalDate
-}
-
-/**
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange
 */
 export interface OpenTimeRange {

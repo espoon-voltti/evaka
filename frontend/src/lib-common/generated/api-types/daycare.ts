@@ -450,6 +450,14 @@ export interface GroupUpdateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.AbsenceController.HolidayReservationsDelete
+*/
+export interface HolidayReservationsDelete {
+  childId: UUID
+  date: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.domain.Language
 */
 export type Language =

@@ -9,9 +9,9 @@ import {
   AbsenceUpsert,
   GroupMonthCalendar,
   GroupStaffAttendance,
-  StaffAttendanceUpdate
+  StaffAttendanceUpdate,
+  HolidayReservationsDelete
 } from 'lib-common/generated/api-types/daycare'
-import { DeleteHolidayReservations } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -70,7 +70,7 @@ export async function postGroupPresences(
 
 export async function deleteGroupHolidayReservations(
   groupId: UUID,
-  deletions: DeleteHolidayReservations[]
+  deletions: HolidayReservationsDelete[]
 ): Promise<Result<void>> {
   return client
     .post<void>(`/absences/${groupId}/delete-holiday-reservations`, deletions)
