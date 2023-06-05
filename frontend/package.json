@@ -94,7 +94,7 @@
     "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.59.6",
     "babel-loader": "^9.1.2",
-    "concurrently": "^8.0.1",
+    "concurrently": "^8.1.0",
     "css-loader": "^6.7.3",
     "csstype": "^3.1.0",
     "esbuild": "^0.17.10",
