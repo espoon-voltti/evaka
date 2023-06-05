@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, {
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig
+} from 'axios'
 import http from 'http'
 import express from 'express'
 import { Cookie, CookieJar } from 'tough-cookie'
@@ -147,19 +151,11 @@ function parseCookies(res: AxiosResponse): Cookie[] {
 async function includeCookiesInRequest(
   baseUrl: string,
   cookies: CookieJar,
-  config: AxiosRequestConfig
-): Promise<AxiosRequestConfig> {
+  config: InternalAxiosRequestConfig
+): Promise<InternalAxiosRequestConfig> {
   const url = baseUrl + (config.url ?? '')
-  const Cookie = await cookies.getCookieString(url)
-  return {
-    ...config,
-    headers: {
-      ...config.headers,
-      Cookie: config.headers?.['cookie']
-        ? `${config.headers['cookie']}; ${Cookie}`
-        : Cookie
-    }
-  }
+  config.headers.set('Cookie', await cookies.getCookieString(url))
+  return config
 }
 
 async function storeCookiesFromResponse(
@@ -178,17 +174,12 @@ async function includeXsrfTokenInRequest(
   baseUrl: string,
   cookies: CookieJar,
   sessionType: SessionType,
-  config: AxiosRequestConfig
-): Promise<AxiosRequestConfig> {
+  config: InternalAxiosRequestConfig
+): Promise<InternalAxiosRequestConfig> {
   const cookie = (await cookies.getCookies(baseUrl)).find(
     ({ key }) => key === csrfCookieName(sessionType)
   )
   if (!cookie) return config
-  return {
-    ...config,
-    headers: {
-      ...config.headers,
-      'X-XSRF-TOKEN': cookie.value
-    }
-  }
+  config.headers.set('X-XSRF-TOKEN', cookie.value)
+  return config
 }
