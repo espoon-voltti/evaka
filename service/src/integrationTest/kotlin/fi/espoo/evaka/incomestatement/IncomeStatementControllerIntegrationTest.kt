@@ -21,7 +21,9 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -382,7 +384,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
                         personName = "Karhula Johannes Olavi Antero Tapio",
-                        primaryCareArea = "Lwiz Foo"
+                        primaryCareArea = null
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement6.id,
@@ -640,6 +642,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - placement valid date filter`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
+        val placementId3 = PlacementId(UUID.randomUUID())
         val placement1Start = LocalDate.of(2022, 9, 19)
         val placement1End = LocalDate.of(2022, 11, 19)
         val placement2Start = LocalDate.of(2022, 10, 19)
@@ -674,10 +677,23 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 endDate = placement2End,
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
+
+            tx.insertTestGuardian(
+                DevGuardian(guardianId = testAdult_3.id, childId = testChild_3.id)
+            )
+            tx.insertTestPlacement(
+                id = placementId3,
+                childId = testChild_3.id,
+                unitId = testDaycare.id,
+                startDate = placement2Start,
+                endDate = placement2End,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
         }
 
         val incomeStatement1 = createTestIncomeStatement(citizenId)
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+        val incomeStatement3 = createTestIncomeStatement(testAdult_3.id)
 
         val newCreated = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
 
@@ -688,6 +704,45 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 .execute()
         }
 
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement1.id,
+                        created = newCreated,
+                        startDate = incomeStatement1.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = citizenId,
+                        personName = "Doe John",
+                        primaryCareArea = "Test Area"
+                    ),
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Doe Joan",
+                        primaryCareArea = "Test Area"
+                    ),
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement3.id,
+                        created = incomeStatement3.created,
+                        startDate = incomeStatement3.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_3.id,
+                        personName = "Foo Mark",
+                        primaryCareArea = null
+                    )
+                ),
+                3,
+                1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(),
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.MAX))
+            )
+        )
         assertEquals(
             Paged(
                 listOf(
