@@ -676,7 +676,6 @@ jobs:
       matrix:
         include:
           - environment: dev
-          - environment: test
           - environment: staging
           - environment: prod
           - environment: tute
