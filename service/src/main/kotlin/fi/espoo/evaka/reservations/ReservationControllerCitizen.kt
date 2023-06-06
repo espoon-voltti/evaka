@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -143,6 +144,8 @@ class ReservationControllerCitizen(
                                                                     ?: listOf(),
                                                             attendances = attendances[key]
                                                                     ?: listOf(),
+                                                            unitOperationTime =
+                                                                placementDay.operationTime
                                                         )
                                                     }
                                             }
@@ -265,7 +268,8 @@ class ReservationControllerCitizen(
 data class PlacementDay(
     val requiresReservation: Boolean,
     val shiftCare: Boolean,
-    val contractDays: Boolean
+    val contractDays: Boolean,
+    val operationTime: TimeRange?
 )
 
 private fun placementDay(
@@ -289,7 +293,8 @@ private fun placementDay(
     return PlacementDay(
             requiresReservation = placement.type.requiresAttendanceReservations(),
             shiftCare = shiftCare,
-            contractDays = contractDays
+            contractDays = contractDays,
+            operationTime = placement.operationTimes[date.dayOfWeek.value - 1]
         )
         .takeIf { shiftCare || isOperationDay && !isHoliday }
 }
@@ -315,6 +320,7 @@ data class ReservationResponseDayChild(
     val absence: AbsenceInfo?,
     val reservations: List<Reservation>,
     val attendances: List<OpenTimeRange>,
+    val unitOperationTime: TimeRange?
 )
 
 data class AbsenceInfo(val type: AbsenceType, val editable: Boolean)

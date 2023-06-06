@@ -169,9 +169,20 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children =
                                 listOf(
-                                        dayChild(testChild_1.id),
-                                        dayChild(testChild_2.id, contractDays = true),
-                                        dayChild(testChild_3.id, requiresReservation = false)
+                                        dayChild(
+                                            testChild_1.id,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        ),
+                                        dayChild(
+                                            testChild_2.id,
+                                            contractDays = true,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        ),
+                                        dayChild(
+                                            testChild_3.id,
+                                            requiresReservation = false,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        )
                                     )
                                     .sortedBy { it.childId }
                         ),
@@ -180,9 +191,20 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children =
                                 listOf(
-                                        dayChild(testChild_1.id),
-                                        dayChild(testChild_2.id, contractDays = true),
-                                        dayChild(testChild_3.id, requiresReservation = false)
+                                        dayChild(
+                                            testChild_1.id,
+                                            unitOperationTime = testDaycare.operationTimes[1]
+                                        ),
+                                        dayChild(
+                                            testChild_2.id,
+                                            contractDays = true,
+                                            unitOperationTime = testDaycare.operationTimes[1]
+                                        ),
+                                        dayChild(
+                                            testChild_3.id,
+                                            requiresReservation = false,
+                                            unitOperationTime = testDaycare.operationTimes[1]
+                                        )
                                     )
                                     .sortedBy { it.childId }
                         ),
@@ -273,7 +295,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                     // sunday, only shift care is eligible
-                                    dayChild(testChild_3.id, shiftCare = true),
+                                    dayChild(
+                                        testChild_3.id,
+                                        shiftCare = true,
+                                        unitOperationTime = roundTheClockDaycare.operationTimes[6]
+                                    ),
                                 )
                         ),
                         ReservationResponseDay(
@@ -281,9 +307,21 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children =
                                 listOf(
-                                        dayChild(testChild_1.id),
-                                        dayChild(testChild_2.id, contractDays = true),
-                                        dayChild(testChild_3.id, shiftCare = true),
+                                        dayChild(
+                                            testChild_1.id,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        ),
+                                        dayChild(
+                                            testChild_2.id,
+                                            contractDays = true,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        ),
+                                        dayChild(
+                                            testChild_3.id,
+                                            shiftCare = true,
+                                            unitOperationTime =
+                                                roundTheClockDaycare.operationTimes[0]
+                                        ),
                                     )
                                     .sortedBy { it.childId }
                         ),
@@ -293,7 +331,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                     // holiday, only shift care is eligible
-                                    dayChild(testChild_3.id, shiftCare = true),
+                                    dayChild(
+                                        testChild_3.id,
+                                        shiftCare = true,
+                                        unitOperationTime = roundTheClockDaycare.operationTimes[1]
+                                    ),
                                 )
                         ),
                         ReservationResponseDay(
@@ -375,9 +417,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                                 AbsenceInfo(
                                                     AbsenceType.OTHER_ABSENCE,
                                                     editable = false
-                                                )
+                                                ),
+                                            unitOperationTime = testDaycare.operationTimes[0]
                                         ),
-                                        dayChild(testChild_2.id, contractDays = true),
+                                        dayChild(
+                                            testChild_2.id,
+                                            contractDays = true,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        ),
                                     )
                                     .sortedBy { it.childId }
                         ),
@@ -386,8 +433,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children =
                                 listOf(
-                                        dayChild(testChild_1.id),
-                                        dayChild(testChild_2.id, contractDays = true),
+                                        dayChild(
+                                            testChild_1.id,
+                                            unitOperationTime = testDaycare.operationTimes[1]
+                                        ),
+                                        dayChild(
+                                            testChild_2.id,
+                                            contractDays = true,
+                                            unitOperationTime = testDaycare.operationTimes[0]
+                                        ),
                                     )
                                     .sortedBy { it.childId }
                         ),
@@ -450,12 +504,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            reservations = listOf(Reservation.Times(startTime, endTime))
+                            reservations = listOf(Reservation.Times(startTime, endTime)),
+                            unitOperationTime = testDaycare.operationTimes[0]
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
+                            unitOperationTime = testDaycare.operationTimes[0]
                         )
                     )
                     .sortedBy { it.childId },
@@ -469,12 +525,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            reservations = listOf(Reservation.Times(startTime, endTime))
+                            reservations = listOf(Reservation.Times(startTime, endTime)),
+                            unitOperationTime = testDaycare.operationTimes[1]
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
+                            unitOperationTime = testDaycare.operationTimes[1]
                         )
                     )
                     .sortedBy { it.childId },
@@ -514,9 +572,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            reservations = listOf(Reservation.Times(startTime, endTime))
+                            reservations = listOf(Reservation.Times(startTime, endTime)),
+                            unitOperationTime = testDaycare.operationTimes[0]
                         ),
-                        dayChild(testChild_2.id, contractDays = true)
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            unitOperationTime = testDaycare.operationTimes[0]
+                        )
                     )
                     .sortedBy { it.childId },
                 day.children
@@ -529,9 +592,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            unitOperationTime = testDaycare.operationTimes[1]
                         ),
-                        dayChild(testChild_2.id, contractDays = true)
+                        dayChild(
+                            testChild_2.id,
+                            contractDays = true,
+                            unitOperationTime = testDaycare.operationTimes[1]
+                        )
                     )
                     .sortedBy { it.childId },
                 day.children
@@ -584,12 +653,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            unitOperationTime = testDaycare.operationTimes[0]
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            unitOperationTime = testDaycare.operationTimes[0]
                         )
                     )
                     .sortedBy { it.childId },
@@ -603,13 +676,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             testChild_1.id,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            unitOperationTime = testDaycare.operationTimes[1]
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            unitOperationTime = testDaycare.operationTimes[1]
                         )
                     )
                     .sortedBy { it.childId },
@@ -662,12 +738,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(monday, day.date)
             assertEquals(
                 listOf(
-                        dayChild(testChild_1.id),
+                        dayChild(testChild_1.id, unitOperationTime = testDaycare.operationTimes[0]),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
-                                AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = false)
+                                AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = false),
+                            unitOperationTime = testDaycare.operationTimes[0]
                         ),
                     )
                     .sortedBy { it.childId },
@@ -679,11 +756,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(tuesday, day.date)
             assertEquals(
                 listOf(
-                        dayChild(testChild_1.id),
+                        dayChild(testChild_1.id, unitOperationTime = testDaycare.operationTimes[1]),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            unitOperationTime = testDaycare.operationTimes[1]
                         )
                     )
                     .sortedBy { it.childId },
@@ -696,12 +775,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     private fun dayChild(
         childId: ChildId,
+        unitOperationTime: TimeRange?,
         requiresReservation: Boolean = true,
         shiftCare: Boolean = false,
         contractDays: Boolean = false,
         absence: AbsenceInfo? = null,
         reservations: List<Reservation> = emptyList(),
-        attendances: List<OpenTimeRange> = emptyList()
+        attendances: List<OpenTimeRange> = emptyList(),
     ) =
         ReservationResponseDayChild(
             childId,
@@ -710,7 +790,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             contractDays,
             absence,
             reservations,
-            attendances
+            attendances,
+            unitOperationTime
         )
 
     private fun postReservations(request: List<DailyReservationRequest>) {

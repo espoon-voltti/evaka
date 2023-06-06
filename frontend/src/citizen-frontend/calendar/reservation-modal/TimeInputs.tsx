@@ -279,9 +279,7 @@ const TimeRanges = React.memo(function Times({
                 onClick={() => bind.update((prev) => [prev[0], emptyTimeRange])}
                 aria-label={i18n.common.add}
               />
-            ) : (
-              <div />
-            )}
+            ) : null}
           </FixedSpaceRow>
         </RightCell>
       </FixedSpaceRow>

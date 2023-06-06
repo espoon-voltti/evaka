@@ -9,6 +9,7 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -48,8 +49,28 @@ const emptyChild: ReservationResponseDayChild = {
   shiftCare: false,
   absence: null,
   reservations: [],
-  attendances: []
+  attendances: [],
+  unitOperationTime: {
+    start: LocalTime.MIN,
+    end: LocalTime.of(23, 59)
+  }
 }
+
+const buildTimeInputState = (
+  value: string,
+  unitOperationTimeRange?: TimeRange | null
+) =>
+  unitOperationTimeRange !== undefined
+    ? {
+        value,
+        unitStartTime: unitOperationTimeRange?.start ?? null,
+        unitEndTime: unitOperationTimeRange?.end ?? null
+      }
+    : {
+        value,
+        unitStartTime: emptyChild.unitOperationTime?.start ?? null,
+        unitEndTime: emptyChild.unitOperationTime?.end ?? null
+      }
 
 describe('resetTimes', () => {
   describe('DAILY', () => {
@@ -102,7 +123,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }
@@ -135,7 +161,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }
@@ -167,7 +198,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }
@@ -227,7 +263,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '08:00', endTime: '16:00' }]
+              state: [
+                {
+                  startTime: buildTimeInputState('08:00'),
+                  endTime: buildTimeInputState('16:00')
+                }
+              ]
             }
           }
         }
@@ -248,7 +289,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }
@@ -401,7 +447,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }
@@ -646,7 +697,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('', null),
+                    endTime: buildTimeInputState('', null)
+                  }
+                ]
               }
             }
           }
@@ -680,7 +736,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }))
@@ -712,7 +773,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }))
@@ -786,7 +852,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -796,7 +867,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -813,7 +889,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -823,7 +904,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }
@@ -898,7 +984,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -908,7 +999,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -926,7 +1022,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -936,7 +1037,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }
@@ -1008,7 +1114,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:05', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:05'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           },
@@ -1018,7 +1129,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:10', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:10'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           },
@@ -1028,7 +1144,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:15', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:15'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           },
@@ -1038,7 +1159,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:20', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:20'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           },
@@ -1048,7 +1174,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:25', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:25'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           }
@@ -1071,7 +1202,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -1081,7 +1217,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -1092,7 +1233,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:15', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:15'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           },
@@ -1102,7 +1248,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -1112,7 +1263,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }
@@ -1258,7 +1414,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -1268,7 +1429,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }
@@ -1342,7 +1508,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }))
@@ -1819,7 +1990,12 @@ describe('resetTimes', () => {
                 branch: 'reservation',
                 state: {
                   branch: 'timeRanges',
-                  state: [{ startTime: '', endTime: '' }]
+                  state: [
+                    {
+                      startTime: buildTimeInputState(''),
+                      endTime: buildTimeInputState('')
+                    }
+                  ]
                 }
               }
             : { branch: 'readOnly', state: 'noChildren' }
@@ -1851,7 +2027,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }))
@@ -1882,7 +2063,12 @@ describe('resetTimes', () => {
             branch: 'reservation',
             state: {
               branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
+              state: [
+                {
+                  startTime: buildTimeInputState(''),
+                  endTime: buildTimeInputState('')
+                }
+              ]
             }
           }
         }))
@@ -2088,7 +2274,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:00', endTime: '16:00' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:00'),
+                    endTime: buildTimeInputState('16:00')
+                  }
+                ]
               }
             }
           },
@@ -2098,7 +2289,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2108,7 +2304,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2125,7 +2326,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2139,7 +2345,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2219,7 +2430,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2229,7 +2445,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }
@@ -2599,7 +2820,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2616,7 +2842,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2761,7 +2992,12 @@ describe('resetTimes', () => {
                     branch: 'reservation',
                     state: {
                       branch: 'timeRanges',
-                      state: [{ startTime: '08:15', endTime: '13:45' }]
+                      state: [
+                        {
+                          startTime: buildTimeInputState('08:15'),
+                          endTime: buildTimeInputState('13:45')
+                        }
+                      ]
                     }
                   }
                 }
@@ -2786,7 +3022,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2796,7 +3037,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '08:15', endTime: '13:45' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState('08:15'),
+                    endTime: buildTimeInputState('13:45')
+                  }
+                ]
               }
             }
           },
@@ -2806,7 +3052,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }
@@ -2838,7 +3089,12 @@ describe('resetTimes', () => {
                     branch: 'reservation',
                     state: {
                       branch: 'timeRanges',
-                      state: [{ startTime: '08:15', endTime: '13:45' }]
+                      state: [
+                        {
+                          startTime: buildTimeInputState('08:15'),
+                          endTime: buildTimeInputState('13:45')
+                        }
+                      ]
                     }
                   }
                 }
@@ -2863,7 +3119,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2873,7 +3134,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           },
@@ -2883,7 +3149,12 @@ describe('resetTimes', () => {
               branch: 'reservation',
               state: {
                 branch: 'timeRanges',
-                state: [{ startTime: '', endTime: '' }]
+                state: [
+                  {
+                    startTime: buildTimeInputState(''),
+                    endTime: buildTimeInputState('')
+                  }
+                ]
               }
             }
           }

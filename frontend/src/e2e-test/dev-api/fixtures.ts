@@ -120,6 +120,11 @@ export const fullDayTimeRange: TimeRange = {
   end: LocalTime.parse('23:59')
 }
 
+export const nonFullDayTimeRange: TimeRange = {
+  start: LocalTime.of(1, 0),
+  end: LocalTime.of(23, 0)
+}
+
 export const careAreaFixture: CareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
   name: 'Superkeskus',
@@ -191,7 +196,7 @@ export const daycareFixture: Daycare = {
     fullDayTimeRange,
     fullDayTimeRange,
     fullDayTimeRange,
-    fullDayTimeRange,
+    nonFullDayTimeRange,
     null,
     null
   ],

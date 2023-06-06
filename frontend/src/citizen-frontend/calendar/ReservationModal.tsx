@@ -303,7 +303,9 @@ export default React.memo(function ReservationModal({
               <AsyncButton
                 primary
                 text={i18n.common.confirm}
-                disabled={form.state.selectedChildren.length === 0}
+                disabled={
+                  form.state.selectedChildren.length === 0 || !form.isValid()
+                }
                 onClick={() => {
                   if (!form.isValid()) {
                     setShowAllErrors(true)

@@ -46,6 +46,12 @@ export async function getReservations(
           date: LocalDate.parseIso(day.date),
           children: day.children.map((child) => ({
             ...child,
+            unitOperationTime: child.unitOperationTime
+              ? {
+                  start: LocalTime.parseIso(child.unitOperationTime.start),
+                  end: LocalTime.parseIso(child.unitOperationTime.end)
+                }
+              : null,
             attendances: child.attendances.map((r) => ({
               startTime: LocalTime.parseIso(r.startTime),
               endTime: r.endTime ? LocalTime.parseIso(r.endTime) : null

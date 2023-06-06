@@ -141,6 +141,7 @@ export interface ReservationResponseDayChild {
   requiresReservation: boolean
   reservations: Reservation[]
   shiftCare: boolean
+  unitOperationTime: TimeRange | null
 }
 
 /**
