@@ -84,14 +84,8 @@ function MultiSelect<T>({
         backspaceRemovesValue={false}
         closeMenuOnSelect={closeMenuOnSelect ?? false}
         noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
-        getOptionLabel={
-          /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
-          getOptionLabel as any
-        }
-        getOptionValue={
-          /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
-          getOptionId as any
-        }
+        getOptionLabel={getOptionLabel}
+        getOptionValue={getOptionId}
         value={value}
         tabSelectsValue={false}
         onFocus={(ev) => {
@@ -123,20 +117,19 @@ function MultiSelect<T>({
           onChange(selectionsArray)
         }}
         filterOption={({ data }, q) =>
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
         }
         controlShouldRenderValue={showSelectedValues ?? true}
         components={{
           Option: function Option({ innerRef, innerProps, ...props }) {
-            const data = props.data as T
+            const data = props.data
 
             return (
               <OptionWrapper
+                {...innerProps}
                 data-qa="option"
                 data-id={getOptionId(data)}
                 ref={innerRef}
-                {...innerProps}
                 key={getOptionId(data)}
                 className={classNames({ focused: props.isFocused })}
               >
@@ -148,19 +141,6 @@ function MultiSelect<T>({
                   selected={props.isSelected}
                 />
               </OptionWrapper>
-            )
-          },
-          MultiValueContainer: function MultiValueContainer({
-            data,
-            children,
-            innerProps
-          }) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const id = getOptionId(data)
-            return (
-              <div {...innerProps} data-qa="multivalue" data-id={id}>
-                {children}
-              </div>
             )
           }
         }}
