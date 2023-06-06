@@ -179,7 +179,7 @@ data class BiFeeDecisionChild(
     val updated: HelsinkiDateTime,
     val feeDecision: UUID,
     val placementUnit: UUID,
-    val serviceNeedOption: UUID,
+    val serviceNeedOption: UUID?,
     val serviceNeedDescription: String,
     val finalFee: Int,
 )
