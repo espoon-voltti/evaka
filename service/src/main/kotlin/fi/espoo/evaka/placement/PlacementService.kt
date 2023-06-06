@@ -70,7 +70,7 @@ fun createPlacements(
                 period.start,
                 period.end,
                 serviceNeed.optionId,
-                if (serviceNeed.shiftCare) ShiftCareType.FULL else ShiftCareType.NONE,
+                ShiftCareType.fromBoolean(serviceNeed.shiftCare),
                 confirmedBy = null,
                 confirmedAt = null
             )

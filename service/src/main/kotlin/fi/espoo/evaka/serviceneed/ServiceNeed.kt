@@ -28,18 +28,14 @@ enum class ShiftCareType {
     NONE,
     FULL,
     INTERMITTENT;
-    fun hasVardaShiftCare(): Boolean =
-        when (this) {
-            NONE -> false
-            INTERMITTENT -> false
-            FULL -> true
+    companion object {
+        fun fromBoolean(value: Boolean): ShiftCareType {
+            return when (value) {
+                true -> FULL
+                false -> NONE
+            }
         }
-    fun hasApplicationShiftCare(): Boolean =
-        when (this) {
-            NONE -> false
-            INTERMITTENT -> false
-            FULL -> true
-        }
+    }
 }
 
 data class ServiceNeed(

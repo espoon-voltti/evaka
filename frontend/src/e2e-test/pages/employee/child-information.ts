@@ -627,7 +627,7 @@ export class PlacementsSection extends Section {
     this.find('[data-qa="service-need-option-select"]')
   )
 
-  #editNthServiceNeedButton = (index: number) =>
+  #nthServiceNeedEditButton = (index: number) =>
     this.#serviceNeedRow(index).findByDataQa('service-need-edit')
 
   #serviceNeedShiftCareCheckBox = new Checkbox(
@@ -742,11 +742,11 @@ export class PlacementsSection extends Section {
     await modal.submit()
   }
 
-  async editShiftCareTypeOfNthServiceNeed(
+  async setShiftCareTypeOfNthServiceNeed(
     index: number,
     shiftCareType: ShiftCareType
   ) {
-    await this.#editNthServiceNeedButton(index).click()
+    await this.#nthServiceNeedEditButton(index).click()
     await this.#serviceNeedShiftCareRadios[
       this.#shiftTypes.indexOf(shiftCareType)
     ].check()

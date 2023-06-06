@@ -82,7 +82,7 @@ describe('Intermittent shiftcare', () => {
     )
     await section.assertNthServiceNeedShiftCare(0, 'NONE')
 
-    await section.editShiftCareTypeOfNthServiceNeed(0, 'INTERMITTENT')
+    await section.setShiftCareTypeOfNthServiceNeed(0, 'INTERMITTENT')
     await section.assertNthServiceNeedShiftCare(0, 'INTERMITTENT')
   })
 })

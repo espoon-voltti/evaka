@@ -52,7 +52,7 @@ beforeEach(async () => {
   await employeeLogin(page, admin.data)
 })
 
-const openCollapsible = async (page: Page) => {
+const openCollapsible = async () => {
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   const childInformationPage = new ChildInformationPage(page)
   await childInformationPage.waitUntilLoaded()
@@ -61,7 +61,7 @@ const openCollapsible = async (page: Page) => {
 
 describe('Service need', () => {
   test('add service need to a placement', async () => {
-    const section = await openCollapsible(page)
+    const section = await openCollapsible()
     await section.addMissingServiceNeed(
       placement.data.id,
       activeServiceNeedOption.data.nameFi
@@ -73,7 +73,7 @@ describe('Service need', () => {
   })
 
   test('only active service need options can be selected', async () => {
-    const section = await openCollapsible(page)
+    const section = await openCollapsible()
 
     await section.assertServiceNeedOptions(placement.data.id, [
       activeServiceNeedOption.data.id
@@ -88,33 +88,11 @@ describe('Service need', () => {
         confirmedBy: employee.data.id
       })
       .save()
-    const section = await openCollapsible(page)
+    const section = await openCollapsible()
 
     await section.assertNthServiceNeedName(
       0,
       inactiveServiceNeedOption.data.nameFi
     )
-  })
-
-  test('service need can be added with intermittent shift care', async () => {
-    const testPage = await Page.open({
-      employeeCustomizations: {
-        featureFlags: {
-          experimental: {
-            intermittentShiftCare: true
-          }
-        }
-      }
-    })
-
-    await employeeLogin(testPage, admin.data)
-
-    const section = await openCollapsible(testPage)
-    await section.addMissingServiceNeed(
-      placement.data.id,
-      activeServiceNeedOption.data.nameFi,
-      'INTERMITTENT'
-    )
-    await section.assertNthServiceNeedShiftCare(0, 'INTERMITTENT')
   })
 })
