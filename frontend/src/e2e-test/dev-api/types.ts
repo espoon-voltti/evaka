@@ -24,6 +24,7 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import {
   Coordinate,
   PilotFeature,
@@ -443,7 +444,7 @@ export interface ServiceNeedFixture {
   startDate: string
   endDate: string
   optionId: string
-  shiftCare: boolean
+  shiftCare: ShiftCareType
   confirmedBy: UUID
   confirmedAt: LocalDate
 }

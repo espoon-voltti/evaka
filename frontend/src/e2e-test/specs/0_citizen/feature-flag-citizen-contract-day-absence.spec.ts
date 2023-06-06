@@ -71,7 +71,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
         startDate: placement.startDate,
         endDate: placement.endDate,
         optionId: serviceNeedOption.id,
-        shiftCare: false,
+        shiftCare: 'NONE',
         confirmedBy: employee.id,
         confirmedAt: today
       }

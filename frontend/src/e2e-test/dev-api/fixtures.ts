@@ -1366,7 +1366,7 @@ export class Fixture {
       startDate: LocalDate.todayInSystemTz().formatIso(),
       endDate: LocalDate.todayInSystemTz().formatIso(),
       optionId: 'not set',
-      shiftCare: false,
+      shiftCare: 'NONE',
       confirmedBy: 'not set',
       confirmedAt: LocalDate.todayInSystemTz()
     })

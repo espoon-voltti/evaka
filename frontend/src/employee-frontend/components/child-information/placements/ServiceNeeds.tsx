@@ -118,7 +118,7 @@ export default React.memo(function ServiceNeeds({
                   : placement.startDate,
                 endDate: placement.endDate,
                 optionId: undefined,
-                shiftCare: false
+                shiftCare: 'NONE'
               }}
               onSuccess={() => {
                 setCreatingNew(false)
@@ -168,7 +168,7 @@ export default React.memo(function ServiceNeeds({
                   startDate: sn.startDate,
                   endDate: sn.endDate,
                   optionId: undefined,
-                  shiftCare: false
+                  shiftCare: 'NONE'
                 }}
                 onSuccess={() => {
                   setCreatingNew(false)

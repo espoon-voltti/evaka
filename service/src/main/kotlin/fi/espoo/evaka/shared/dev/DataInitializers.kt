@@ -25,6 +25,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -501,7 +502,7 @@ fun Database.Transaction.insertTestServiceNeed(
     placementId: PlacementId,
     period: FiniteDateRange,
     optionId: ServiceNeedOptionId,
-    shiftCare: Boolean = false,
+    shiftCare: ShiftCareType = ShiftCareType.NONE,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
 ): ServiceNeedId {

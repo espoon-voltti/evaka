@@ -19,7 +19,7 @@ export interface ServiceNeed {
   id: UUID
   option: ServiceNeedOptionSummary
   placementId: UUID
-  shiftCare: boolean
+  shiftCare: ShiftCareType
   startDate: LocalDate
   updated: HelsinkiDateTime
 }
@@ -40,7 +40,7 @@ export interface ServiceNeedCreateRequest {
   endDate: LocalDate
   optionId: UUID
   placementId: UUID
-  shiftCare: boolean
+  shiftCare: ShiftCareType
   startDate: LocalDate
 }
 
@@ -109,6 +109,14 @@ export interface ServiceNeedSummary {
 export interface ServiceNeedUpdateRequest {
   endDate: LocalDate
   optionId: UUID
-  shiftCare: boolean
+  shiftCare: ShiftCareType
   startDate: LocalDate
 }
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.ShiftCareType
+*/
+export type ShiftCareType =
+  | 'NONE'
+  | 'FULL'
+  | 'INTERMITTENT'

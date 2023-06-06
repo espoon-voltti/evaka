@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -110,7 +111,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 startDate = mon,
                 endDate = thu,
                 optionId = snDaycareContractDays15.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -119,7 +120,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 startDate = fri,
                 endDate = fri,
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -197,7 +198,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 startDate = mon,
                 endDate = fri,
                 optionId = snDaycareContractDays15.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )

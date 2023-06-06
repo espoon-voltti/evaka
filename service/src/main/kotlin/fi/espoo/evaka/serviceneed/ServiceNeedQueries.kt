@@ -129,7 +129,7 @@ fun Database.Transaction.insertServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
-    shiftCare: Boolean,
+    shiftCare: ShiftCareType,
     confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ): ServiceNeedId {
@@ -158,7 +158,7 @@ fun Database.Transaction.updateServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
-    shiftCare: Boolean,
+    shiftCare: ShiftCareType,
     confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ) {

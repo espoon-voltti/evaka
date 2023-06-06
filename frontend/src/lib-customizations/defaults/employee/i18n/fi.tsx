@@ -1137,6 +1137,11 @@ export const fi = {
         period: 'Aikaväli',
         description: 'Kuvaus',
         shiftCare: 'Ilta/Vuoro',
+        shiftCareTypes: {
+          NONE: 'Ei',
+          INTERMITTENT: 'Satunnainen',
+          FULL: 'Kyllä'
+        },
         confirmed: 'Vahvistettu',
         createNewBtn: 'Luo uusi palveluntarve',
         addNewBtn: 'Lisää palveluntarve',

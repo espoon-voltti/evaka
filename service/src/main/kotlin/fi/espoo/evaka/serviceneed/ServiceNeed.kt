@@ -24,13 +24,31 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
+enum class ShiftCareType {
+    NONE,
+    FULL,
+    INTERMITTENT;
+    fun hasVardaShiftCare(): Boolean =
+        when (this) {
+            NONE -> false
+            INTERMITTENT -> false
+            FULL -> true
+        }
+    fun hasApplicationShiftCare(): Boolean =
+        when (this) {
+            NONE -> false
+            INTERMITTENT -> false
+            FULL -> true
+        }
+}
+
 data class ServiceNeed(
     val id: ServiceNeedId,
     val placementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate,
     @Nested("option") val option: ServiceNeedOptionSummary,
-    val shiftCare: Boolean,
+    val shiftCare: ShiftCareType,
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
     val confirmed: ServiceNeedConfirmation?,
@@ -154,7 +172,7 @@ fun createServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
-    shiftCare: Boolean,
+    shiftCare: ShiftCareType,
     confirmedAt: HelsinkiDateTime
 ): ServiceNeedId {
     validateServiceNeed(tx, placementId, startDate, endDate, optionId)
@@ -177,7 +195,7 @@ fun updateServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
-    shiftCare: Boolean,
+    shiftCare: ShiftCareType,
     confirmedAt: HelsinkiDateTime
 ) {
     val old = tx.getServiceNeed(id)
