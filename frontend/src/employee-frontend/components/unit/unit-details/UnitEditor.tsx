@@ -74,6 +74,7 @@ interface FormData {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string
+  dwCostCenter: string
   financeDecisionHandlerId: string
   additionalInfo: string
   phone: string
@@ -356,6 +357,7 @@ function validateForm(
   const name = form.name.trim() || null
   const capacity = parseInt(form.capacity, 10)
   const costCenter = form.costCenter.trim() || null
+  const dwCostCenter = form.dwCostCenter.trim() || null
   const additionalInfo = form.additionalInfo.trim() || null
   const phone = form.phone.trim() || null
   const email = form.email.trim() || null
@@ -552,6 +554,7 @@ function validateForm(
         uploadToKoski,
         invoicedByMunicipality,
         costCenter,
+        dwCostCenter,
         financeDecisionHandlerId,
         additionalInfo,
         phone,
@@ -621,6 +624,7 @@ function toFormData(unit: Unit | undefined): FormData {
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
+    dwCostCenter: unit?.dwCostCenter ?? '',
     financeDecisionHandlerId: unit?.financeDecisionHandler?.id ?? '',
     additionalInfo: unit?.additionalInfo ?? '',
     phone: unit?.phone ?? '',
@@ -1332,6 +1336,21 @@ export default function UnitEditor(props: Props): JSX.Element {
           />
         ) : (
           form.additionalInfo
+        )}
+      </FormPart>
+      <FormPart>
+        <label htmlFor="unit-dw-cost-center">
+          {i18n.unitEditor.label.dwCostCenter}
+        </label>
+        {props.editable ? (
+          <InputField
+            id="unit-dw-cost-center"
+            placeholder={i18n.unitEditor.placeholder.dwCostCenter}
+            value={form.dwCostCenter}
+            onChange={(value) => updateForm({ dwCostCenter: value })}
+          />
+        ) : (
+          form.dwCostCenter
         )}
       </FormPart>
       <H3>{i18n.unitEditor.title.contact}</H3>

@@ -54,6 +54,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             uploadToKoski = false,
             invoicedByMunicipality = false,
             costCenter = "123456",
+            dwCostCenter = "dw-test",
             additionalInfo = "Tämä on testi",
             phone = "123 456 7890",
             email = "test@example.com",
@@ -159,6 +160,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(fields.uploadChildrenToVarda, daycare.uploadChildrenToVarda)
         assertEquals(fields.invoicedByMunicipality, daycare.invoicedByMunicipality)
         assertEquals(fields.costCenter, daycare.costCenter)
+        assertEquals(fields.dwCostCenter, daycare.dwCostCenter)
         assertEquals(fields.additionalInfo, daycare.additionalInfo)
         assertEquals(fields.phone, daycare.phone)
         assertEquals(fields.email, daycare.email)

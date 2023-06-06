@@ -3430,6 +3430,7 @@ export const fi = {
       ophUnitOid: 'Toimipaikan OID',
       ophOrganizerOid: 'Järjestäjän OID',
       costCenter: 'Kustannuspaikka',
+      dwCostCenter: 'DW Kustannuspaikka',
       financeDecisionHandler: 'Talouspäätösten käsittelijä',
       additionalInfo: 'Lisätietoja yksiköstä',
       phone: 'Yksikön puhelinnumero',
@@ -3483,6 +3484,7 @@ export const fi = {
       financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
       costCenter: '(eVakasta laskutettaessa pakollinen tieto)',
+      dwCostCenter: 'DW:tä varten kustannuspaikan tieto',
       additionalInfo:
         'Voit kirjoittaa lisätietoja yksiköstä (ei näy kuntalaiselle)',
       phone: 'esim. +358 40 555 5555',
