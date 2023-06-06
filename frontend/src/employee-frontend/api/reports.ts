@@ -598,7 +598,7 @@ export interface AttendanceReservationReportFilters {
   groupIds: UUID[]
 }
 
-export async function getAssistanceReservationReport(
+export async function getAttendanceReservationReport(
   unitId: string,
   filters: AttendanceReservationReportFilters
 ): Promise<Result<AttendanceReservationReportRow[]>> {
