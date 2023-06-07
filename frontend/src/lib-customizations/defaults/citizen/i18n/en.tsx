@@ -1640,16 +1640,17 @@ const en: Translations = {
         <p>
           The client fees for municipal early childhood education are determined
           as a percentage of the family’s gross income. The fees vary according
-          to family size, income and time in early childhood education. Check{' '}
+          to family size, income and time in early childhood education. Check
+          the table in the customer bulletin (found{' '}
           <a
             target="_blank"
             rel="noreferrer"
             href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
           >
             here
-          </a>{' '}
-          to see if you need to submit an income statement, or if your family is
-          automatically covered by the highest early childhood education fee.
+          </a>
+          ) to see if you need to submit an income statement or if your family
+          belongs to the category of the highest early childhood education fee.
         </p>
         <p>
           More information on the fees:{' '}
@@ -1734,6 +1735,8 @@ const en: Translations = {
     ),
     addNew: 'New income statement',
     incomeInfo: 'Income information',
+    incomeInstructions:
+      'Please submit an income statement after your child has got the place in early childhood education.',
     childIncomeInfo: "Validity of the child's income information",
     incomeStatementMissing:
       'If your child has income, report it with an income statement.',

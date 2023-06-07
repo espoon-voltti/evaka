@@ -1734,17 +1734,16 @@ const sv: Translations = {
           Avgifterna för kommunal småbarnspedagogik beräknas i procentandel av
           familjens bruttoinkomster. Avgifterna varierar beroende på familjens
           storlek och inkomster samt barnets vårdtid inom småbarnspedagogik.
-          Kontrollera{' '}
+          Kontrollera från tabellen som finns i kundcirkuläret (fattas{' '}
           <a
             target="_blank"
             rel="noreferrer"
             href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/avgifter-inom-smabarnspedagogik"
           >
             här
-          </a>{' '}
-          om du behöver lämna in en inkomstutredning, eller om er familj
-          automatiskt omfattas av den högsta avgiftsklassen för
-          småbarnspedagogik.
+          </a>
+          ) om du behöver lämna in en inkomstutredning, eller om er familj
+          omfattas av den högsta avgiftsklassen för småbarnspedagogik.
         </p>
         <p>
           Mer information om avgifterna:{' '}
@@ -1831,6 +1830,8 @@ const sv: Translations = {
     ),
     addNew: 'Ny inkomstutredning',
     incomeInfo: 'Inkomstuppgifter',
+    incomeInstructions:
+      'Lämnä in en inkomstutredning eftersom din barn har fått platsen inom småbarnspedagogik.',
     childIncomeInfo: 'Giltigheten av barnets inkomstinformation',
     incomeStatementMissing:
       'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',
