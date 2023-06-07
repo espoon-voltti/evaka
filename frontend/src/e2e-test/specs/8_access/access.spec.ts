@@ -154,7 +154,7 @@ describe('Child information page sections', () => {
       applications: true,
       messageBlocklist: true,
       dailyServiceTimes: true,
-      vasuAndLeops: true,
+      childDocuments: true,
       pedagogicalDocuments: true,
       income: true,
       consents: true
@@ -177,7 +177,7 @@ describe('Child information page sections', () => {
       applications: true,
       messageBlocklist: true,
       dailyServiceTimes: true,
-      vasuAndLeops: false,
+      childDocuments: false,
       pedagogicalDocuments: false,
       income: false,
       consents: true
@@ -200,7 +200,7 @@ describe('Child information page sections', () => {
       applications: false,
       messageBlocklist: true,
       dailyServiceTimes: true,
-      vasuAndLeops: false,
+      childDocuments: false,
       pedagogicalDocuments: false,
       income: true,
       consents: true
@@ -223,7 +223,7 @@ describe('Child information page sections', () => {
       applications: false,
       messageBlocklist: true,
       dailyServiceTimes: true,
-      vasuAndLeops: false,
+      childDocuments: false,
       pedagogicalDocuments: true,
       income: false,
       consents: true
@@ -248,7 +248,7 @@ describe('Child information page sections', () => {
       applications: false,
       messageBlocklist: true,
       dailyServiceTimes: true,
-      vasuAndLeops: true,
+      childDocuments: true,
       pedagogicalDocuments: true,
       income: false,
       consents: true
@@ -274,7 +274,7 @@ describe('Child information page sections', () => {
       applications: false,
       messageBlocklist: true,
       dailyServiceTimes: true,
-      vasuAndLeops: true,
+      childDocuments: true,
       pedagogicalDocuments: true,
       income: false,
       consents: true

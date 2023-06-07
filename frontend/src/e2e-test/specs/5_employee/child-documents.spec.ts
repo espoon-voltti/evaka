@@ -96,14 +96,16 @@ describe('Employee - Child documents', () => {
       `${config.employeeUrl}/child-information/${childFixture.id}`
     )
     const childInformationPage = new ChildInformationPage(page)
-    let assistanceSection = await childInformationPage.openCollapsible(
-      'assistanceNeed'
+    let childDocumentsSection = await childInformationPage.openCollapsible(
+      'childDocuments'
     )
-    await assistanceSection.createPedagogicalReportButton.assertDisabled(true)
-    await assistanceSection.createPedagogicalAssessmentButton.assertDisabled(
+    await childDocumentsSection.createPedagogicalReportButton.assertDisabled(
+      true
+    )
+    await childDocumentsSection.createPedagogicalAssessmentButton.assertDisabled(
       false
     )
-    await assistanceSection.createPedagogicalAssessmentButton.click()
+    await childDocumentsSection.createPedagogicalAssessmentButton.click()
 
     const childDocument = new ChildDocumentPage(page)
     const answer = 'Jonkin sortin vastaus'
@@ -113,11 +115,11 @@ describe('Employee - Child documents', () => {
     await childDocument.previewButton.click()
     await childDocument.returnButton.click()
 
-    assistanceSection = await childInformationPage.openCollapsible(
-      'assistanceNeed'
+    childDocumentsSection = await childInformationPage.openCollapsible(
+      'childDocuments'
     )
-    await waitUntilEqual(assistanceSection.childDocumentsCount, 1)
-    const row = assistanceSection.childDocuments(0)
+    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
+    const row = childDocumentsSection.childDocuments(0)
     await row.status.assertTextEquals('Luonnos')
     await row.openLink.click()
 

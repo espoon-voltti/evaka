@@ -15,7 +15,7 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import ChildInformationPage, {
-  VasuAndLeopsSection
+  ChildDocumentsSection
 } from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
@@ -57,7 +57,7 @@ beforeAll(async () => {
 })
 
 describe('Child Information - Leops documents section', () => {
-  let section: VasuAndLeopsSection
+  let section: ChildDocumentsSection
   let vasuTemplatesList: VasuTemplatesListPage
 
   beforeEach(async () => {
@@ -90,9 +90,9 @@ describe('Child Information - Leops documents section', () => {
     const templateName = 'Test template'
     await createLeopsTemplate(templateName)
     await page.goto(`${config.employeeUrl}/child-information/${childId}`)
-    section = await childInformationPage.openCollapsible('vasuAndLeops')
+    section = await childInformationPage.openCollapsible('childDocuments')
 
-    await section.addNew()
+    await section.addNewVasu()
     const vasuPage = new VasuPage(page)
 
     await vasuPage.assertTemplateName(templateName)

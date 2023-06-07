@@ -34,7 +34,7 @@ import {
   PersonDetailWithDependantsAndGuardians
 } from '../../dev-api/types'
 import ChildInformationPage, {
-  VasuAndLeopsSection
+  ChildDocumentsSection
 } from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
@@ -95,22 +95,22 @@ beforeAll(async () => {
 })
 
 describe('Child Information - Vasu documents section', () => {
-  let section: VasuAndLeopsSection
+  let section: ChildDocumentsSection
   beforeEach(async () => {
     page = await Page.open()
     await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
-    section = await childInformationPage.openCollapsible('vasuAndLeops')
+    section = await childInformationPage.openCollapsible('childDocuments')
   })
 
   test('Can add a new vasu document', async () => {
-    await section.addNew()
+    await section.addNewVasu()
   })
 })
 
 describe('Child Information - Vasu language', () => {
-  let section: VasuAndLeopsSection
+  let section: ChildDocumentsSection
   beforeEach(async () => {
     const child = await Fixture.person().save()
     await Fixture.child(child.data.id).save()
@@ -139,11 +139,11 @@ describe('Child Information - Vasu language', () => {
     await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     childInformationPage = new ChildInformationPage(page)
-    section = await childInformationPage.openCollapsible('vasuAndLeops')
+    section = await childInformationPage.openCollapsible('childDocuments')
   })
 
   test('Child placed in a Swedish unit can only use Swedish templates', async () => {
-    await section.addNew()
+    await section.addNewVasu()
     await page
       .findAllByDataQa('vasu-state-chip')
       .nth(1)

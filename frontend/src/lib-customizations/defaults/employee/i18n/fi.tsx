@@ -1193,6 +1193,7 @@ export const fi = {
       edit: 'Muokkaa varahakijan tietoja',
       removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
     },
+    childDocumentsSectionTitle: 'Pedagogiset asiakirjat',
     vasu: {
       title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
       createNew: 'Luo uusi suunnitelma',
