@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import { formatInTimeZone } from 'date-fns-tz'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -31,6 +32,7 @@ import { renderResult } from '../async-rendering'
 import {
   childDocumentQuery,
   publishChildDocumentMutation,
+  queryKeys,
   unpublishChildDocumentMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
@@ -75,6 +77,17 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
   const { mutateAsync: unpublishChildDocument } = useMutationResult(
     unpublishChildDocumentMutation
+  )
+
+  // invalidate cached document on onmount
+  const queryClient = useQueryClient()
+  useEffect(
+    () => () => {
+      void queryClient.invalidateQueries(queryKeys.childDocument(document.id), {
+        type: 'all'
+      })
+    },
+    [queryClient, document.id]
   )
 
   const save = useCallback(
@@ -156,11 +169,16 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceRow alignItems="center">
               {preview || document.publishedAt ? (
-                <Button text={i18n.common.goBack} onClick={goBack} />
+                <Button
+                  text={i18n.common.goBack}
+                  onClick={goBack}
+                  data-qa="return-button"
+                />
               ) : (
                 <Button
                   text={i18n.common.goBack}
                   onClick={() => save(bind.value()).then(goBack)}
+                  data-qa="return-button"
                 />
               )}
               {preview && !document.publishedAt && (
@@ -193,7 +211,9 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                       'HH:mm:ss'
                     )}
                   </span>
-                  {!saved && <Spinner size={defaultMargins.m} />}
+                  {!saved && (
+                    <Spinner size={defaultMargins.m} data-qa="saving-spinner" />
+                  )}
                 </FixedSpaceRow>
               )}
             </FixedSpaceRow>
@@ -203,6 +223,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 primary
                 onClick={() => setPreview(true)}
                 disabled={!saved}
+                data-qa="preview-button"
               />
             )}
             {preview && !document.publishedAt && (

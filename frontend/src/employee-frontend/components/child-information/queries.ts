@@ -20,7 +20,7 @@ import {
 } from '../../api/child/child-documents'
 import { createQueryKeys } from '../../query'
 
-const queryKeys = createQueryKeys('childInformation', {
+export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id]
 })
@@ -43,7 +43,7 @@ export const createChildDocumentMutation = mutation({
 export const updateChildDocumentContentMutation = mutation({
   api: (arg: { id: UUID; content: DocumentContent }) =>
     putChildDocumentContent(arg.id, arg.content),
-  invalidateQueryKeys: () => []
+  invalidateQueryKeys: () => [] // do not invalidate automatically because of auto-save
 })
 
 export const publishChildDocumentMutation = mutation({

@@ -79,7 +79,7 @@ export default React.memo(function TemplateSectionView({
   const questionElems = useFormElems(questions)
 
   return (
-    <Wrapper $readOnly={readOnly}>
+    <Wrapper $readOnly={readOnly} data-qa="template-section">
       {!readOnly && (
         <SectionActionsRow
           justifyContent="flex-end"
@@ -89,6 +89,7 @@ export default React.memo(function TemplateSectionView({
             icon={faPlus}
             aria-label={i18n.documentTemplates.templateEditor.addQuestion}
             onClick={() => setCreatingQuestion(true)}
+            data-qa="create-question-button"
           />
           <IconButton
             icon={faPen}

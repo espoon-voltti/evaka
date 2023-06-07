@@ -173,6 +173,7 @@ export default React.memo(function DocumentTemplatesPage() {
             setTemplateModalOpen(true)
           }}
           text={i18n.documentTemplates.templatesPage.add}
+          data-qa="create-template-button"
         />
         {templateModalOpen && (
           <TemplateModal

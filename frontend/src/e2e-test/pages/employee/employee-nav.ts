@@ -23,6 +23,7 @@ export default class EmployeeNav {
       | 'pin-code'
       | 'finance-basics'
       | 'vasu-templates'
+      | 'document-templates'
       | 'holiday-periods'
       | 'preferred-first-name'
   ) {

@@ -60,7 +60,11 @@ export default React.memo(function TemplateSectionModal({
       <FixedSpaceColumn>
         <FixedSpaceColumn>
           <Label>{i18n.documentTemplates.templateEditor.sectionName}</Label>
-          <InputFieldF bind={label} hideErrorsBeforeTouched />
+          <InputFieldF
+            bind={label}
+            hideErrorsBeforeTouched
+            data-qa="name-input"
+          />
         </FixedSpaceColumn>
         <FixedSpaceColumn>
           <Label>{i18n.documentTemplates.templateEditor.infoText}</Label>
