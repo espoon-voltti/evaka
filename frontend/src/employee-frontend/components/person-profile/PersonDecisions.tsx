@@ -56,7 +56,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
             <Tbody>
               {orderBy(
                 decisions,
-                ['startDate', 'preferredUnitName'],
+                ['startDate', 'preferredUnitName', 'childName'],
                 ['desc', 'desc']
               ).map((decision: Decision) => (
                 <Tr key={`${decision.id}`} data-qa="table-decision-row">
