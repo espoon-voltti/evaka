@@ -7,7 +7,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import config from '../../config'
 import {
   insertDaycarePlacementFixtures,
-  insertGuardianFixtures,
   insertIncomeStatements,
   resetDatabase
 } from '../../dev-api'
@@ -100,12 +99,14 @@ describe('Income statements', () => {
   })
 
   test('Income statement can be filtered by child placement unit provider type', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: enduserChildFixtureJari.id
-      }
-    ])
+    await Fixture.fridgeChild()
+      .with({
+        headOfChild: enduserGuardianFixture.id,
+        childId: enduserChildFixtureJari.id,
+        startDate: today.addYears(-1),
+        endDate: today.addYears(1)
+      })
+      .save()
 
     const startDate = today.addYears(-1)
     const endDate = today
@@ -129,27 +130,23 @@ describe('Income statements', () => {
     ])
 
     const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.waitUntilLoaded()
     // No filters -> is shown
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by the placed unit provider type -> is shown
     await incomeStatementsPage.selectProviderType(daycareFixture.providerType)
+    await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by other unit provider type -> not shown
     await incomeStatementsPage.unSelectProviderType(daycareFixture.providerType)
     await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
+    await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(0)
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: enduserChildFixtureJari.id
-      }
-    ])
-
     await insertIncomeStatements(enduserChildFixtureJari.id, [
       {
         type: 'CHILD_INCOME',

@@ -482,6 +482,12 @@ export class IncomeStatementsPage {
   #providerTypeFilter = (type: ProviderType) =>
     new Checkable(this.page.find(`[data-qa="provider-type-filter-${type}"]`))
 
+  async waitUntilLoaded() {
+    await this.page
+      .findByDataQa('income-statements-page')
+      .assertAttributeEquals('data-isloading', 'false')
+  }
+
   async selectProviderType(type: ProviderType) {
     await this.#providerTypeFilter(type).check()
   }
