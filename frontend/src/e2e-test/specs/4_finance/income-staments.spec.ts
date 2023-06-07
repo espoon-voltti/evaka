@@ -25,7 +25,7 @@ import {
   FinancePage,
   IncomeStatementsPage
 } from '../../pages/employee/finance/finance-page'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -72,7 +72,7 @@ describe('Income statements', () => {
     ])
 
     let incomeStatementsPage = await navigateToIncomeStatements()
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 2)
+    await incomeStatementsPage.incomeStatementRows.assertCount(2)
     const personProfilePage =
       await incomeStatementsPage.openNthIncomeStatementForGuardian(1)
 
@@ -96,7 +96,7 @@ describe('Income statements', () => {
     )
 
     incomeStatementsPage = await navigateToIncomeStatements()
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
   })
 
   test('Income statement can be filtered by child placement unit provider type', async () => {
@@ -130,16 +130,16 @@ describe('Income statements', () => {
 
     const incomeStatementsPage = await navigateToIncomeStatements()
     // No filters -> is shown
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by the placed unit provider type -> is shown
     await incomeStatementsPage.selectProviderType(daycareFixture.providerType)
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by other unit provider type -> not shown
     await incomeStatementsPage.unSelectProviderType(daycareFixture.providerType)
     await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 0)
+    await incomeStatementsPage.incomeStatementRows.assertCount(0)
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
@@ -161,7 +161,7 @@ describe('Income statements', () => {
     ])
 
     const incomeStatementsPage = await navigateToIncomeStatements()
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
     await incomeStatementsPage.assertNthIncomeStatement(
       0,
       `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`,

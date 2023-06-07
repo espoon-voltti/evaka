@@ -478,13 +478,9 @@ export class InvoicesPage {
 export class IncomeStatementsPage {
   constructor(private readonly page: Page) {}
 
-  #incomeStatementRows = this.page.findAll(`[data-qa="income-statement-row"]`)
+  incomeStatementRows = this.page.findAll(`[data-qa="income-statement-row"]`)
   #providerTypeFilter = (type: ProviderType) =>
     new Checkable(this.page.find(`[data-qa="provider-type-filter-${type}"]`))
-
-  async getRowCount(): Promise<number> {
-    return this.#incomeStatementRows.count()
-  }
 
   async selectProviderType(type: ProviderType) {
     await this.#providerTypeFilter(type).check()
@@ -495,14 +491,14 @@ export class IncomeStatementsPage {
   }
 
   async openNthIncomeStatementForGuardian(nth: number) {
-    await this.#incomeStatementRows.nth(nth).find('a').click()
+    await this.incomeStatementRows.nth(nth).find('a').click()
     const page = new GuardianInformationPage(this.page)
     await page.waitUntilLoaded()
     return page
   }
 
   async openNthIncomeStatementForChild(nth: number) {
-    await this.#incomeStatementRows.nth(nth).find('a').click()
+    await this.incomeStatementRows.nth(nth).find('a').click()
     const page = new ChildInformationPage(this.page)
     await page.waitUntilLoaded()
     return page
@@ -513,11 +509,11 @@ export class IncomeStatementsPage {
     expectedName: string,
     expecteTypeText: string
   ) {
-    await this.#incomeStatementRows
+    await this.incomeStatementRows
       .nth(nth)
       .find('a')
       .assertTextEquals(expectedName)
-    await this.#incomeStatementRows
+    await this.incomeStatementRows
       .nth(nth)
       .find('[data-qa="income-statement-type"]')
       .assertTextEquals(expecteTypeText)
