@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-import { string } from 'lib-common/form/fields'
+import { boolean, string } from 'lib-common/form/fields'
 import { mapped, object, validated, value } from 'lib-common/form/form'
 import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -14,7 +14,9 @@ import {
   AnsweredQuestion,
   Question
 } from 'lib-common/generated/api-types/document'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
@@ -34,7 +36,8 @@ type ApiQuestion = Question.TextQuestion
 const templateForm = object({
   id: validated(string(), nonEmpty),
   label: validated(string(), nonEmpty),
-  infoText: string()
+  infoText: string(),
+  multiline: boolean()
 })
 
 type TemplateForm = typeof templateForm
@@ -44,7 +47,8 @@ const getTemplateInitialValues = (
 ): StateOf<TemplateForm> => ({
   id: question?.id ?? uuidv4(),
   label: question?.label ?? '',
-  infoText: question?.infoText ?? ''
+  infoText: question?.infoText ?? '',
+  multiline: question?.multiline ?? true
 })
 
 type Answer = string
@@ -74,11 +78,18 @@ const View = React.memo(function View({
 }) {
   const { i18n } = useTranslation()
   const { template, answer } = useFormFields(bind)
-  const { label, infoText } = useFormFields(template)
+  const { label, infoText, multiline } = useFormFields(template)
   return readOnly ? (
     <FixedSpaceColumn>
       <Label>{label.state}</Label>
-      <span>{answer.state}</span>
+      <div>
+        {answer.state.split('\n').map((line, i) => (
+          <Fragment key={i}>
+            {line}
+            <br />
+          </Fragment>
+        ))}
+      </div>
     </FixedSpaceColumn>
   ) : (
     <FixedSpaceColumn fullWidth>
@@ -90,7 +101,11 @@ const View = React.memo(function View({
       >
         <Label>{label.state}</Label>
       </ExpandingInfo>
-      <InputFieldF bind={answer} readonly={false} width="L" />
+      {multiline.state ? (
+        <TextAreaF bind={answer} readonly={false} />
+      ) : (
+        <InputFieldF bind={answer} readonly={false} width="L" />
+      )}
     </FixedSpaceColumn>
   )
 })
@@ -129,7 +144,7 @@ const TemplateView = React.memo(function TemplateView({
   bind: BoundForm<TemplateForm>
 }) {
   const { i18n } = useTranslation()
-  const { label, infoText } = useFormFields(bind)
+  const { label, infoText, multiline } = useFormFields(bind)
 
   return (
     <FixedSpaceColumn>
@@ -141,6 +156,10 @@ const TemplateView = React.memo(function TemplateView({
         <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
         <InputFieldF bind={infoText} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
+      <CheckboxF
+        bind={multiline}
+        label={i18n.documentTemplates.templateQuestions.multiline}
+      />
     </FixedSpaceColumn>
   )
 })

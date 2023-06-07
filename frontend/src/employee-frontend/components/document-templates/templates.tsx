@@ -56,7 +56,8 @@ export const templateQuestionForm = mapped(
 export const templateSectionForm = object({
   id: validated(string(), nonEmpty),
   label: validated(string(), nonEmpty),
-  questions: array(templateQuestionForm)
+  questions: array(templateQuestionForm),
+  infoText: string()
 })
 
 export const templateContentForm = object({
@@ -153,6 +154,7 @@ export const getTemplateFormInitialState = (
   sections: template.sections.map((section) => ({
     id: section.id,
     label: section.label,
-    questions: section.questions.map(getTemplateQuestionInitialState)
+    questions: section.questions.map(getTemplateQuestionInitialState),
+    infoText: section.infoText
   }))
 })

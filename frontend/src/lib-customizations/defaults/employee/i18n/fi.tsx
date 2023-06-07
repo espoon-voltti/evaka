@@ -3768,6 +3768,7 @@ export const fi = {
       titleNewSection: 'Uusi osio',
       titleEditSection: 'Muokkaa osiota',
       sectionName: 'Otsikko',
+      infoText: 'Ohjeteksti',
       addQuestion: 'Uusi osio',
       titleNewQuestion: 'Uusi kysymys',
       titleEditQuestion: 'Muokkaa kysymystä',
@@ -3784,7 +3785,9 @@ export const fi = {
     templateQuestions: {
       label: 'Otsikko',
       options: 'Vaihtoehdot',
-      infoText: 'Ohjeteksti'
+      infoText: 'Ohjeteksti',
+      multiline: 'Salli monirivinen vastaus',
+      withText: 'Pyydetään lisätietoja'
     },
     noSelection: 'Ei valintaa'
   },

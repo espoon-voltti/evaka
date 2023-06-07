@@ -31,7 +31,8 @@ export const documentSectionForm = mapped(
   object({
     id: string(),
     label: string(),
-    questions: array(documentQuestionForm)
+    questions: array(documentQuestionForm),
+    infoText: string()
   }),
   (output): DocumentContent => ({
     answers: output.questions.map((it) => it.value)
@@ -138,5 +139,6 @@ export const getDocumentFormInitialState = (
     questions: section.questions.map((question) => {
       const answer = content?.answers?.find((a) => a.questionId === question.id)
       return getDocumentQuestionInitialState(question, answer)
-    })
+    }),
+    infoText: section.infoText
   }))

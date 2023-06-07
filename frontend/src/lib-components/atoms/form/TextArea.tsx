@@ -7,10 +7,13 @@ import React, { RefObject, useMemo, useState } from 'react'
 import TextareaAutosize from 'react-autosize-textarea'
 import styled from 'styled-components'
 
+import { BoundFormState } from 'lib-common/form/hooks'
+
 import { BaseProps } from '../../utils'
 import UnderRowStatusIcon from '../StatusIcon'
 
 import { InputFieldUnderRow, InputInfo } from './InputField'
+import TextArea from './TextArea'
 
 interface TextAreaInputProps extends BaseProps {
   value: string
@@ -107,6 +110,31 @@ export default React.memo(function TextArea({
         </InputFieldUnderRow>
       )}
     </>
+  )
+})
+
+interface TextAreaFProps
+  extends Omit<TextAreaInputProps, 'value' | 'onChange'> {
+  bind: BoundFormState<string>
+}
+
+export const TextAreaF = React.memo(function TextAreaF({
+  bind,
+  ...props
+}: TextAreaFProps) {
+  return (
+    <TextArea
+      {...props}
+      value={bind.state}
+      onChange={bind.set}
+      info={
+        'info' in props
+          ? props.info
+          : props.readonly
+          ? undefined
+          : bind.inputInfo()
+      }
+    />
   )
 })
 

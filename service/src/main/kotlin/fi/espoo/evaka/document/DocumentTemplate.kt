@@ -26,8 +26,12 @@ sealed class Question(val type: QuestionType) {
     abstract val id: String
 
     @JsonTypeName("TEXT")
-    data class TextQuestion(override val id: String, val label: String, val infoText: String = "") :
-        Question(QuestionType.TEXT)
+    data class TextQuestion(
+        override val id: String,
+        val label: String,
+        val infoText: String = "",
+        val multiline: Boolean = false
+    ) : Question(QuestionType.TEXT)
 
     @JsonTypeName("CHECKBOX")
     data class CheckboxQuestion(
@@ -40,7 +44,7 @@ sealed class Question(val type: QuestionType) {
     data class CheckboxGroupQuestion(
         override val id: String,
         val label: String,
-        val options: List<MultiselectOption>,
+        val options: List<CheckboxGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.CHECKBOX_GROUP)
 
@@ -48,14 +52,25 @@ sealed class Question(val type: QuestionType) {
     data class RadioButtonGroupQuestion(
         override val id: String,
         val label: String,
-        val options: List<MultiselectOption>,
+        val options: List<RadioButtonGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.RADIO_BUTTON_GROUP)
 }
 
-data class MultiselectOption(val id: String, val label: String)
+data class CheckboxGroupQuestionOption(
+    val id: String,
+    val label: String,
+    val withText: Boolean = false
+)
 
-data class Section(val id: String, val label: String, val questions: List<Question>)
+data class RadioButtonGroupQuestionOption(val id: String, val label: String)
+
+data class Section(
+    val id: String,
+    val label: String,
+    val questions: List<Question>,
+    val infoText: String = ""
+)
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 

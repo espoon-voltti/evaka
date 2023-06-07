@@ -13,6 +13,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -30,7 +31,7 @@ const QuestionList = styled(FixedSpaceColumn)`
 
 const Wrapper = styled.div<{ $readOnly: boolean }>`
   .section-actions {
-    display: none;
+    visibility: hidden;
   }
 
   border-style: dashed;
@@ -42,16 +43,14 @@ const Wrapper = styled.div<{ $readOnly: boolean }>`
     ${(p) => (p.$readOnly ? '' : `border: ${colors.grayscale.g35} 1px dashed;`)}
 
     .section-actions {
-      display: flex;
+      visibility: visible;
     }
   }
 `
 
-const HeaderRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+const SectionActionsRow = styled(FixedSpaceRow)`
+  margin-top: ${defaultMargins.s};
+  margin-bottom: -${defaultMargins.XL};
 `
 
 interface Props {
@@ -76,46 +75,53 @@ export default React.memo(function TemplateSectionView({
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [creatingQuestion, setCreatingQuestion] = useState(false)
-  const { label, questions } = useFormFields(bind)
+  const { label, questions, infoText } = useFormFields(bind)
   const questionElems = useFormElems(questions)
 
   return (
     <Wrapper $readOnly={readOnly}>
-      <HeaderRow>
+      {!readOnly && (
+        <SectionActionsRow
+          justifyContent="flex-end"
+          className="section-actions"
+        >
+          <IconButton
+            icon={faPlus}
+            aria-label={i18n.documentTemplates.templateEditor.addQuestion}
+            onClick={() => setCreatingQuestion(true)}
+          />
+          <IconButton
+            icon={faPen}
+            aria-label={i18n.common.edit}
+            onClick={() => setEditing(true)}
+          />
+          <IconButton
+            icon={faArrowUp}
+            aria-label={i18n.documentTemplates.templateEditor.moveUp}
+            disabled={first}
+            onClick={onMoveUp}
+          />
+          <IconButton
+            icon={faArrowDown}
+            aria-label={i18n.documentTemplates.templateEditor.moveDown}
+            disabled={last}
+            onClick={onMoveDown}
+          />
+          <IconButton
+            icon={faTrash}
+            aria-label={i18n.common.remove}
+            disabled={questionElems.length > 0}
+            onClick={onDelete}
+          />
+        </SectionActionsRow>
+      )}
+      <ExpandingInfo
+        info={infoText.state}
+        closeLabel={i18n.common.close}
+        ariaLabel=""
+      >
         <H2>{label.value()}</H2>
-        {!readOnly && (
-          <FixedSpaceRow className="section-actions">
-            <IconButton
-              icon={faPlus}
-              aria-label={i18n.documentTemplates.templateEditor.addQuestion}
-              onClick={() => setCreatingQuestion(true)}
-            />
-            <IconButton
-              icon={faPen}
-              aria-label={i18n.common.edit}
-              onClick={() => setEditing(true)}
-            />
-            <IconButton
-              icon={faArrowUp}
-              aria-label={i18n.documentTemplates.templateEditor.moveUp}
-              disabled={first}
-              onClick={onMoveUp}
-            />
-            <IconButton
-              icon={faArrowDown}
-              aria-label={i18n.documentTemplates.templateEditor.moveDown}
-              disabled={last}
-              onClick={onMoveDown}
-            />
-            <IconButton
-              icon={faTrash}
-              aria-label={i18n.common.remove}
-              disabled={questionElems.length > 0}
-              onClick={onDelete}
-            />
-          </FixedSpaceRow>
-        )}
-      </HeaderRow>
+      </ExpandingInfo>
       <QuestionList spacing="L">
         {questionElems.map((question, index) => (
           <TemplateQuestionView

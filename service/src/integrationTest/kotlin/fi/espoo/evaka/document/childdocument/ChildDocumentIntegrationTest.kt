@@ -6,10 +6,11 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.CheckboxGroupQuestionOption
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.MultiselectOption
 import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -64,9 +65,9 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                                     label = "kysymys 3",
                                     options =
                                         listOf(
-                                            MultiselectOption("a", "eka"),
-                                            MultiselectOption("b", "toka"),
-                                            MultiselectOption("c", "kolmas"),
+                                            CheckboxGroupQuestionOption("a", "eka"),
+                                            CheckboxGroupQuestionOption("b", "toka"),
+                                            CheckboxGroupQuestionOption("c", "kolmas"),
                                         )
                                 ),
                                 Question.RadioButtonGroupQuestion(
@@ -74,9 +75,9 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                                     label = "kysymys 4",
                                     options =
                                         listOf(
-                                            MultiselectOption("a", "eka"),
-                                            MultiselectOption("b", "toka"),
-                                            MultiselectOption("c", "kolmas"),
+                                            RadioButtonGroupQuestionOption("a", "eka"),
+                                            RadioButtonGroupQuestionOption("b", "toka"),
+                                            RadioButtonGroupQuestionOption("c", "kolmas"),
                                         )
                                 )
                             )
@@ -285,7 +286,10 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                     listOf(
                         AnsweredQuestion.TextAnswer("q1", "hello"),
                         AnsweredQuestion.CheckboxAnswer("q2", true),
-                        AnsweredQuestion.CheckboxGroupAnswer("q3", listOf("a", "c")),
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            "q3",
+                            listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("c"))
+                        ),
                         AnsweredQuestion.RadioButtonGroupAnswer("q4", "b")
                     )
             )
@@ -389,7 +393,13 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             )
         val content =
             DocumentContent(
-                answers = listOf(AnsweredQuestion.CheckboxGroupAnswer("q3", listOf("a", "d")))
+                answers =
+                    listOf(
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            "q3",
+                            listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("d"))
+                        )
+                    )
             )
         assertThrows<BadRequest> {
             controller.updateDraftDocumentContent(

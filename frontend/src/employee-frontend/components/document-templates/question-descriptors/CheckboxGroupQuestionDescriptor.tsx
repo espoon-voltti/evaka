@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
-import { string } from 'lib-common/form/fields'
+import { boolean, string } from 'lib-common/form/fields'
 import { array, mapped, object, validated, value } from 'lib-common/form/form'
 import {
   BoundForm,
@@ -19,11 +19,12 @@ import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
 import {
   AnsweredQuestion,
+  CheckboxGroupAnswerContent,
   Question
 } from 'lib-common/generated/api-types/document'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
+import InputField, { InputFieldF } from 'lib-components/atoms/form/InputField'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -46,7 +47,8 @@ type ApiQuestion = Question.CheckboxGroupQuestion
 
 const optionForm = object({
   id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty)
+  label: validated(string(), nonEmpty),
+  withText: boolean()
 })
 
 const templateForm = object({
@@ -69,7 +71,7 @@ const getTemplateInitialValues = (
   infoText: question?.infoText ?? ''
 })
 
-type Answer = string[]
+type Answer = CheckboxGroupAnswerContent[]
 
 const getAnswerInitialValue = (): Answer => []
 
@@ -91,6 +93,10 @@ const GroupIndentation = styled.div`
   margin-left: ${defaultMargins.s};
 `
 
+const NoShrink = styled.div`
+  flex-shrink: 0;
+`
+
 const View = React.memo(function View({
   bind,
   readOnly
@@ -102,14 +108,25 @@ const View = React.memo(function View({
   const { template, answer } = useFormFields(bind)
   const { label, infoText, options } = useFormFields(template)
   const optionElems = useFormElems(options)
-  const selected = answer.state.map(
-    (answer) => optionElems.find((opt) => opt.state.id === answer)?.state?.label
-  )
 
   return readOnly ? (
     <FixedSpaceColumn>
       <Label>{label.state}</Label>
-      <div>{selected.length > 0 ? selected.join(', ') : '-'}</div>
+      <ul>
+        {answer.state.map((answer) => {
+          const option = optionElems.find(
+            (opt) => opt.state.id === answer.optionId
+          )?.state
+          return (
+            option && (
+              <li key={option.id}>
+                {option.label}
+                {option.withText ? ` : ${answer.extra}` : ''}
+              </li>
+            )
+          )
+        })}
+      </ul>
     </FixedSpaceColumn>
   ) : (
     <FixedSpaceColumn fullWidth>
@@ -123,19 +140,47 @@ const View = React.memo(function View({
       </ExpandingInfo>
       <GroupIndentation>
         <FixedSpaceColumn spacing="xs">
-          {optionElems.map((option) => (
-            <Checkbox
-              key={option.state.id}
-              label={option.state.label}
-              checked={answer.state.some((id) => id === option.state.id)}
-              onChange={(checked) =>
-                answer.update((old) => [
-                  ...old.filter((id) => id !== option.state.id),
-                  ...(checked ? [option.state.id] : [])
-                ])
-              }
-            />
-          ))}
+          {optionElems.map((option) => {
+            const answerOption = answer.state.find(
+              (opt) => opt.optionId === option.state.id
+            )
+
+            return (
+              <FixedSpaceRow key={option.state.id} alignItems="center">
+                <NoShrink>
+                  <Checkbox
+                    label={option.state.label}
+                    checked={answerOption !== undefined}
+                    onChange={(checked) =>
+                      answer.update((old) => [
+                        ...old.filter(
+                          (opt) => opt.optionId !== option.state.id
+                        ),
+                        ...(checked
+                          ? [{ optionId: option.state.id, extra: '' }]
+                          : [])
+                      ])
+                    }
+                  />
+                </NoShrink>
+                {option.state.withText && (
+                  <InputField
+                    value={answerOption?.extra ?? ''}
+                    readonly={!answerOption}
+                    onChange={(value) =>
+                      answer.update((old) => [
+                        ...old.filter(
+                          (opt) => opt.optionId !== option.state.id
+                        ),
+                        { optionId: option.state.id, extra: value }
+                      ])
+                    }
+                    width="L"
+                  />
+                )}
+              </FixedSpaceRow>
+            )
+          })}
         </FixedSpaceColumn>
       </GroupIndentation>
     </FixedSpaceColumn>
@@ -172,22 +217,33 @@ const Preview = React.memo(function Preview({
 
 const OptionView = React.memo(function OptionView({
   bind,
-  onDelete
+  onDelete,
+  index
 }: {
   bind: BoundForm<typeof optionForm>
   onDelete: () => void
+  index: number
 }) {
   const { i18n } = useTranslation()
-  const { label } = useFormFields(bind)
+  const { label, withText } = useFormFields(bind)
 
   return (
-    <FixedSpaceRow>
-      <InputFieldF bind={label} hideErrorsBeforeTouched />
-      <IconButton
-        icon={faTrash}
-        aria-label={i18n.common.remove}
-        onClick={onDelete}
-      />
+    <FixedSpaceRow alignItems="baseline">
+      <span>{index + 1}.</span>
+      <FixedSpaceColumn spacing="xxs">
+        <FixedSpaceRow alignItems="center">
+          <InputFieldF bind={label} hideErrorsBeforeTouched width="m" />
+          <IconButton
+            icon={faTrash}
+            aria-label={i18n.common.remove}
+            onClick={onDelete}
+          />
+        </FixedSpaceRow>
+        <CheckboxF
+          bind={withText}
+          label={i18n.documentTemplates.templateQuestions.withText}
+        />
+      </FixedSpaceColumn>
     </FixedSpaceRow>
   )
 })
@@ -213,9 +269,10 @@ const TemplateView = React.memo(function TemplateView({
       </FixedSpaceColumn>
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.options}</Label>
-        {optionElems.map((opt) => (
+        {optionElems.map((opt, i) => (
           <FixedSpaceRow key={opt.state.id} alignItems="center">
             <OptionView
+              index={i}
               bind={opt}
               onDelete={() =>
                 options.update((old) =>
@@ -233,7 +290,8 @@ const TemplateView = React.memo(function TemplateView({
               ...old,
               {
                 id: uuidv4(),
-                label: ''
+                label: '',
+                withText: false
               }
             ])
           }}

@@ -18,7 +18,7 @@ import TemplateQuestionModal from './TemplateQuestionModal'
 
 const Wrapper = styled.div<{ $readOnly: boolean }>`
   .question-actions {
-    display: none;
+    visibility: hidden;
   }
 
   border-style: dashed;
@@ -30,7 +30,7 @@ const Wrapper = styled.div<{ $readOnly: boolean }>`
     ${(p) => (p.$readOnly ? '' : `border: ${colors.grayscale.g35} 1px dashed;`)}
 
     .question-actions {
-      display: flex;
+      visibility: visible;
     }
   }
 `
