@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { isLoading } from 'lib-common/api'
 import {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
@@ -134,7 +135,10 @@ export default React.memo(function IncomeStatementsPage() {
   )
 
   return (
-    <Container data-qa="income-statements-page">
+    <Container
+      data-qa="income-statements-page"
+      data-isloading={isLoading(incomeStatements)}
+    >
       <ContentArea opaque>
         <H1>{i18n.incomeStatement.table.title}</H1>
         <IncomeStatementFilters />

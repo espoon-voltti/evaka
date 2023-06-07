@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
   insertDaycarePlacementFixtures,
-  insertGuardianFixtures,
   insertIncomeStatements,
   resetDatabase
 } from '../../dev-api'
@@ -25,18 +24,23 @@ import {
   FinancePage,
   IncomeStatementsPage
 } from '../../pages/employee/finance/finance-page'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let nav: EmployeeNav
+const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0, 0)
+const today = now.toLocalDate()
 
 beforeEach(async () => {
   await resetDatabase()
   await initializeAreaAndPersonData()
 
-  page = await Page.open({ acceptDownloads: true })
+  page = await Page.open({
+    acceptDownloads: true,
+    mockedTime: now.toSystemTzDate()
+  })
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
   await employeeLogin(page, financeAdmin.data)
@@ -56,18 +60,18 @@ describe('Income statements', () => {
     await insertIncomeStatements(enduserGuardianFixture.id, [
       {
         type: 'HIGHEST_FEE',
-        startDate: LocalDate.todayInSystemTz().addYears(-1),
-        endDate: LocalDate.todayInSystemTz().addDays(-1)
+        startDate: today.addYears(-1),
+        endDate: today.addDays(-1)
       },
       {
         type: 'HIGHEST_FEE',
-        startDate: LocalDate.todayInSystemTz(),
+        startDate: today,
         endDate: null
       }
     ])
 
     let incomeStatementsPage = await navigateToIncomeStatements()
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 2)
+    await incomeStatementsPage.incomeStatementRows.assertCount(2)
     const personProfilePage =
       await incomeStatementsPage.openNthIncomeStatementForGuardian(1)
 
@@ -91,19 +95,21 @@ describe('Income statements', () => {
     )
 
     incomeStatementsPage = await navigateToIncomeStatements()
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
   })
 
   test('Income statement can be filtered by child placement unit provider type', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: enduserChildFixtureJari.id
-      }
-    ])
+    await Fixture.fridgeChild()
+      .with({
+        headOfChild: enduserGuardianFixture.id,
+        childId: enduserChildFixtureJari.id,
+        startDate: today.addYears(-1),
+        endDate: today.addYears(1)
+      })
+      .save()
 
-    const startDate = LocalDate.todayInSystemTz().addYears(-1)
-    const endDate = LocalDate.todayInSystemTz()
+    const startDate = today.addYears(-1)
+    const endDate = today
 
     await insertDaycarePlacementFixtures([
       createDaycarePlacementFixture(
@@ -124,39 +130,35 @@ describe('Income statements', () => {
     ])
 
     const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.waitUntilLoaded()
     // No filters -> is shown
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by the placed unit provider type -> is shown
     await incomeStatementsPage.selectProviderType(daycareFixture.providerType)
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.waitUntilLoaded()
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by other unit provider type -> not shown
     await incomeStatementsPage.unSelectProviderType(daycareFixture.providerType)
     await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 0)
+    await incomeStatementsPage.waitUntilLoaded()
+    await incomeStatementsPage.incomeStatementRows.assertCount(0)
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: enduserChildFixtureJari.id
-      }
-    ])
-
     await insertIncomeStatements(enduserChildFixtureJari.id, [
       {
         type: 'CHILD_INCOME',
         otherInfo: 'Test info',
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz(),
+        startDate: today,
+        endDate: today,
         attachmentIds: []
       }
     ])
 
     const incomeStatementsPage = await navigateToIncomeStatements()
-    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
     await incomeStatementsPage.assertNthIncomeStatement(
       0,
       `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`,
