@@ -3733,7 +3733,7 @@ export const fi = {
     }
   },
   documentTemplates: {
-    title: 'Lomakepohjat (beta)',
+    title: 'Lomakepohjat',
     documentTypes: {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio'
