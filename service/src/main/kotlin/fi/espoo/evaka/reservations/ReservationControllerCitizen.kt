@@ -281,13 +281,13 @@ private fun placementDay(
 ): PlacementDay? {
     val placement = placements?.find { it.range.includes(date) } ?: return null
 
+    val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
     // Backup placements take precedence
-    val operationDays =
-        backupPlacements?.find { it.range.includes(date) }?.operationDays ?: placement.operationDays
+    val operationDays = backupPlacementForDate?.operationDays ?: placement.operationDays
 
     // Backup placements take precedence
     val operationTime =
-        (backupPlacements?.find { it.range.includes(date) }?.operationTimes
+        (backupPlacementForDate?.operationTimes
             ?: placement.operationTimes)[date.dayOfWeek.value - 1]
     val contractDays = contractDayRanges?.includes(date) ?: false
 
