@@ -285,6 +285,8 @@ private fun placementDay(
     val operationDays =
         backupPlacements?.find { it.range.includes(date) }?.operationDays ?: placement.operationDays
 
+    // Backup placements take precedence
+    val operationTime = (backupPlacements?.find { it.range.includes(date) }?.operationTimes ?: placement.operationTimes)[date.dayOfWeek.value - 1]
     val contractDays = contractDayRanges?.includes(date) ?: false
 
     val shiftCare = operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
@@ -294,7 +296,7 @@ private fun placementDay(
             requiresReservation = placement.type.requiresAttendanceReservations(),
             shiftCare = shiftCare,
             contractDays = contractDays,
-            operationTime = placement.operationTimes[date.dayOfWeek.value - 1]
+            operationTime = operationTime
         )
         .takeIf { shiftCare || isOperationDay && !isHoliday }
 }
