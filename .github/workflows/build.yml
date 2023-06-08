@@ -812,7 +812,7 @@ jobs:
               owner: '${{ env.DEPLOY_REPO_OWNER }}',
               repo: '${{ env.DEPLOY_REPO_NAME }}',
               workflow_id: '${{ env.DEPLOY_REPO_WORKFLOW }}',
-              ref: 'main',
+              ref: 'master',
               inputs: {
                 version: '${{ github.event.pull_request.head.sha || github.sha }}'
               }
