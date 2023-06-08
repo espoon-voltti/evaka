@@ -4,6 +4,8 @@
 
 import * as Sentry from '@sentry/browser'
 
+const sourceFileSuffixes = ['.js', '.jsx', '.ts', '.tsx', '.mjs']
+
 function isInlineScriptException(event: Sentry.Event): boolean {
   if (
     !event.exception ||
@@ -22,27 +24,20 @@ function isInlineScriptException(event: Sentry.Event): boolean {
     return false
   }
 
-  const frame = exception.stacktrace.frames[0]
-  return frame.filename === '<anonymous>'
-}
+  const exceptionHasValidFilename = exception.stacktrace.frames.some(
+    (frame) => {
+      const filename = frame.filename
+      return (
+        filename !== undefined &&
+        sourceFileSuffixes.some((suffix) => filename.endsWith(suffix))
+      )
+    }
+  )
 
-function isGoogleTranslateError(event: Sentry.Event): boolean {
-  if (!event.breadcrumbs) return false
-  return event.breadcrumbs.some((breadcrumb) => {
-    const { category, data } = breadcrumb
-    const method: unknown = data?.method
-    const url: unknown = data?.url
-    return (
-      category === 'xhr' &&
-      method === 'POST' &&
-      typeof url === 'string' &&
-      url.includes('translate.googleapis.com')
-    )
-  })
+  return !exceptionHasValidFilename
 }
 
 export function sentryEventFilter(event: Sentry.Event): Sentry.Event | null {
   if (isInlineScriptException(event)) return null
-  if (isGoogleTranslateError(event)) return null
   return event
 }
