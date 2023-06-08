@@ -38,6 +38,7 @@ function isInlineScriptException(event: Sentry.Event): boolean {
 }
 
 export function sentryEventFilter(event: Sentry.Event): Sentry.Event | null {
+  console.log('sentryEventFilter', event)
   if (isInlineScriptException(event)) return null
   return event
 }
