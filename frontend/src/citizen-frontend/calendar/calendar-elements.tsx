@@ -30,10 +30,12 @@ import RoundChildImages, { ChildImageData } from './RoundChildImages'
 export const Reservations = React.memo(function Reservations({
   data,
   childImages,
+  backgroundHighlight,
   isReservable
 }: {
   data: ReservationResponseDay
   childImages: ChildImageData[]
+  backgroundHighlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
   isReservable: boolean
 }) {
   const i18n = useTranslation()
@@ -65,7 +67,8 @@ export const Reservations = React.memo(function Reservations({
               )}
             />
             <GroupedElementText
-              className={group.type}
+              $type={group.type}
+              $backgroundHighlight={backgroundHighlight}
               data-qa="reservation-text"
             >
               {groupText(group, i18n)}
@@ -83,13 +86,17 @@ export const Holiday = React.memo(function Holiday() {
   return <Light>{i18n.calendar.holiday}</Light>
 })
 
-const GroupedElementText = styled.div`
+const GroupedElementText = styled.div<{
+  $type: DailyChildGroupElementType
+  $backgroundHighlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
+}>`
   word-break: break-word;
 
-  &.missing-reservation,
-  &.reservation-no-times {
-    color: ${(p) => p.theme.colors.accents.a2orangeDark};
-  }
+  ${(p) =>
+    p.$type === 'missing-reservation' &&
+    p.$backgroundHighlight !== 'holidayPeriod'
+      ? `color: ${p.theme.colors.accents.a2orangeDark};`
+      : undefined}
 `
 
 type DailyChildGroupElementType =
