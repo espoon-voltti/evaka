@@ -69,7 +69,10 @@ fun getGroupMonthCalendar(
         placementList
             .map { (child, placements) ->
                 val placementDateRanges = placements.map { it.dateRange }
-                val absenceDates = absences.keys.map { it.second }.toSet()
+                val absenceDates =
+                    absences.keys
+                        .mapNotNull { if (it.first == child.id) it.second else null }
+                        .toSet()
 
                 val possibleAttendanceDates =
                     placementDateRanges
