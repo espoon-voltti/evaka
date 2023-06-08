@@ -426,6 +426,7 @@ data class ReservationBackupPlacement(
     val childId: ChildId,
     val range: FiniteDateRange,
     val operationDays: Set<Int>,
+    val operationTimes: List<TimeRange>
 )
 
 fun Database.Read.getReservationBackupPlacements(
