@@ -19,20 +19,20 @@ function isInlineScriptException(event: Sentry.Event): boolean {
   if (
     !exception.stacktrace ||
     !exception.stacktrace.frames ||
-    exception.stacktrace.frames.length === 0
+    exception.stacktrace.frames.length <= 1
   ) {
     return false
   }
 
-  const exceptionHasValidFilename = exception.stacktrace.frames.some(
-    (frame) => {
+  const exceptionHasValidFilename = exception.stacktrace.frames
+    .slice(1)
+    .some((frame) => {
       const filename = frame.filename
       return (
         filename !== undefined &&
         sourceFileSuffixes.some((suffix) => filename.endsWith(suffix))
       )
-    }
-  )
+    })
 
   return !exceptionHasValidFilename
 }
