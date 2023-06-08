@@ -382,18 +382,17 @@ fun Database.Read.getAbsenceDatesForChildrenInRange(
 fun Database.Read.getBackupCaresAffectingGroup(
     groupId: GroupId,
     period: FiniteDateRange
-): Map<ChildId, FiniteDateRange> =
+): Map<ChildId, List<FiniteDateRange>> =
     createQuery(
             """
 SELECT bc.child_id, daterange(bc.start_date, bc.end_date, '[]') AS period
 FROM daycare_group_placement AS gp
-JOIN placement
-ON daycare_placement_id = placement.id
-JOIN backup_care AS bc
-ON bc.child_id = placement.child_id
-AND coalesce(bc.group_id != gp.daycare_group_id, true)
+JOIN placement ON daycare_placement_id = placement.id
+JOIN backup_care AS bc ON bc.child_id = placement.child_id
 WHERE daycare_group_id = :groupId
+AND (bc.group_id IS NULL OR bc.group_id != gp.daycare_group_id)
 AND daterange(gp.start_date, gp.end_date, '[]') && :period
+AND daterange(bc.start_date, bc.end_date, '[]') && :period
 """
         )
         .bind("groupId", groupId)
@@ -401,7 +400,7 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         .map { row ->
             row.mapColumn<ChildId>("child_id") to row.mapColumn<FiniteDateRange>("period")
         }
-        .toMap()
+        .groupBy({ it.first }, { it.second })
 
 data class ChildReservation(
     val reservation: Reservation,

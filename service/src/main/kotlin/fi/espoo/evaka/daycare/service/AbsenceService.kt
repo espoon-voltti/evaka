@@ -127,7 +127,9 @@ fun getGroupMonthCalendar(
                                     GroupMonthCalendarDayChild(
                                         childId = child.id,
                                         absenceCategories = placement.categories,
-                                        backupCare = backupCares[child.id]?.includes(date) ?: false,
+                                        backupCare =
+                                            backupCares[child.id]?.any { it.includes(date) }
+                                                ?: false,
                                         missingHolidayReservation =
                                             isHolidayPeriodDate &&
                                                 childReservations.isEmpty() &&
