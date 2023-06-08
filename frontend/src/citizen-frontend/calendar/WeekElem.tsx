@@ -121,13 +121,6 @@ const DayElem = React.memo(function DayElem({
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
 
-  // const markedByEmployee = useMemo(
-  //   () =>
-  //     calendarDay.children.length > 0 &&
-  //     calendarDay.children.every((c) => c.markedByEmployee),
-  //   [calendarDay]
-  // )
-  //
   const isToday = calendarDay.date.isToday()
   const setRef = useCallback(
     (e: HTMLButtonElement) => {
@@ -136,6 +129,16 @@ const DayElem = React.memo(function DayElem({
       }
     },
     [isToday]
+  )
+
+  const highlight = useMemo(
+    () =>
+      calendarDay.children.every((c) => c.absence && !c.absence.editable)
+        ? 'nonEditableAbsence'
+        : isHolidayPeriod
+        ? 'holidayPeriod'
+        : undefined,
+    [calendarDay.children, isHolidayPeriod]
   )
 
   const handleClick = useCallback(() => {
@@ -174,13 +177,7 @@ const DayElem = React.memo(function DayElem({
     <Day
       ref={setRef}
       $today={calendarDay.date.isToday()}
-      $highlight={
-        calendarDay.children.every((c) => c.absence && !c.absence.editable)
-          ? 'nonEditableAbsence'
-          : isHolidayPeriod
-          ? 'holidayPeriod'
-          : undefined
-      }
+      $highlight={highlight}
       onClick={handleClick}
       data-qa={`mobile-calendar-day-${calendarDay.date.formatIso()}`}
     >
@@ -202,6 +199,7 @@ const DayElem = React.memo(function DayElem({
           data={calendarDay}
           childImages={childImages}
           isReservable={isReservable}
+          backgroundHighlight={highlight}
         />
       </ReservationsContainer>
       {eventCount > 0 && (
