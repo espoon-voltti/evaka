@@ -4,8 +4,6 @@
 
 import * as Sentry from '@sentry/browser'
 
-const sourceFileSuffixes = ['.js', '.jsx', '.ts', '.tsx', '.mjs']
-
 function isInlineScriptException(event: Sentry.Event): boolean {
   if (
     !event.exception ||
@@ -19,20 +17,16 @@ function isInlineScriptException(event: Sentry.Event): boolean {
   if (
     !exception.stacktrace ||
     !exception.stacktrace.frames ||
-    exception.stacktrace.frames.length === 0
+    exception.stacktrace.frames.length <= 1
   ) {
     return false
   }
 
-  const exceptionHasValidFilename = exception.stacktrace.frames.some(
-    (frame) => {
-      const filename = frame.filename
-      return (
-        filename !== undefined &&
-        sourceFileSuffixes.some((suffix) => filename.endsWith(suffix))
-      )
-    }
-  )
+  const exceptionHasValidFilename = exception.stacktrace.frames
+    .slice(1)
+    .some(
+      (frame) => frame.filename !== undefined && frame.filename.endsWith('.js')
+    )
 
   return !exceptionHasValidFilename
 }
