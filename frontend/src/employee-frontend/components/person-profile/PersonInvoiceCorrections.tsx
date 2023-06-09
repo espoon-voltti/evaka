@@ -148,6 +148,7 @@ export default React.memo(function PersonInvoiceCorrections({
     if (!noteModalState) return
     if (noteModalState.id === 'new') {
       updateState({ note: noteModalState.note })
+      setNoteModalState(undefined)
       return
     } else {
       return updateInvoiceCorrectionNote(noteModalState.id, noteModalState.note)
