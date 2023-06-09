@@ -149,6 +149,52 @@ describe('Employee - Guardian Information', () => {
     await invoiceSection.assertInvoice(0, '01.01.2020', '31.01.2020', 'Luonnos')
   })
 
+  test('Invoice correction can be created and deleted', async () => {
+    await Fixture.fridgeChild()
+      .with({
+        headOfChild: fixtures.enduserGuardianFixture.id,
+        childId: fixtures.enduserChildFixtureJari.id,
+        startDate: LocalDate.of(2020, 1, 1),
+        endDate: LocalDate.of(2020, 12, 31)
+      })
+      .save()
+    const guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+
+    const invoiceCorrectionsSection = await guardianPage.openCollapsible(
+      'invoiceCorrections'
+    )
+    const newRow = await invoiceCorrectionsSection.addNewInvoiceCorrection()
+    await newRow.productSelect.selectOption('DAYCARE_DISCOUNT')
+    await newRow.description.fill('Virheen korjaus')
+    await newRow.unitSelect.fillAndSelectFirst(daycareFixture.name)
+    await newRow.startDate.fill('01.01.2020')
+    await newRow.endDate.fill('05.01.2020')
+    await newRow.amount.fill('5')
+    await newRow.price.fill('12')
+    await newRow.totalPrice.assertTextEquals('60 €')
+    const noteModal = await newRow.addNote()
+    await noteModal.note.fill('Testimuistiinpano')
+    await noteModal.submit()
+    await invoiceCorrectionsSection.saveButton.click()
+
+    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(1)
+    const row = invoiceCorrectionsSection.lastRow()
+    await row.productSelect.assertTextEquals('Alennus (maksup.)')
+    await row.description.assertTextEquals('Virheen korjaus')
+    await row.unitSelect.assertTextEquals(daycareFixture.name)
+    await row.period.assertTextEquals('01.01.2020 - 05.01.2020')
+    await row.amount.assertTextEquals('5')
+    await row.unitPrice.assertTextEquals('12 €')
+    await row.totalPrice.assertTextEquals('60 €')
+    await row.status.assertTextEquals('Ei vielä laskulla')
+    await row.noteIcon.hover()
+    await row.noteTooltip.assertTextEquals('Testimuistiinpano')
+
+    await row.deleteButton.click()
+    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+  })
+
   test('Invoice corrections show only units with cost center', async () => {
     await Fixture.fridgeChild()
       .with({
@@ -165,21 +211,15 @@ describe('Employee - Guardian Information', () => {
     const invoiceCorrectionsSection = await guardianPage.openCollapsible(
       'invoiceCorrections'
     )
-    await invoiceCorrectionsSection.assertInvoiceCorrectionsCount(0)
-    await invoiceCorrectionsSection.createInvoiceCorrection()
-    await invoiceCorrectionsSection.clickAndAssertUnitVisibility(
-      daycareFixture.name,
-      true
-    )
+    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    let row = await invoiceCorrectionsSection.addNewInvoiceCorrection()
+    await row.clickAndAssertUnitVisibility(daycareFixture.name, true)
 
     await deleteDaycareCostCenter(daycareFixture.id)
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
     await guardianPage.openCollapsible('invoiceCorrections')
-    await invoiceCorrectionsSection.assertInvoiceCorrectionsCount(0)
-    await invoiceCorrectionsSection.createInvoiceCorrection()
-    await invoiceCorrectionsSection.clickAndAssertUnitVisibility(
-      daycareFixture.name,
-      false
-    )
+    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    row = await invoiceCorrectionsSection.addNewInvoiceCorrection()
+    await row.clickAndAssertUnitVisibility(daycareFixture.name, false)
   })
 })

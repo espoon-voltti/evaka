@@ -220,6 +220,7 @@ export default React.memo(function PersonInvoiceCorrections({
             onChange={(note) =>
               setNoteModalState((previous) => previous && { ...previous, note })
             }
+            data-qa="note-textarea"
           />
         </AsyncFormModal>
       ) : null}
@@ -352,6 +353,7 @@ const ChildSection = React.memo(function ChildSection({
               onClick={save ?? (() => Promise.resolve(Success.of()))}
               onSuccess={onSaveSuccess}
               disabled={!save}
+              data-qa="save-invoice-correction"
             />
           </FixedSpaceRow>
         )}

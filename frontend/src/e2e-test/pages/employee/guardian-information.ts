@@ -568,31 +568,76 @@ class InvoicesSection extends Section {
 }
 
 class InvoiceCorrectionsSection extends Section {
-  #invoiceCorrectionRows = this.findAll(
+  invoiceCorrectionRows = this.findAll(
     '[data-qa="invoice-details-invoice-row"]'
   )
-  #createInvoiceCorrectionButton = this.findByDataQa(
-    'create-invoice-correction'
+  createInvoiceCorrectionButton = this.findByDataQa('create-invoice-correction')
+  saveButton = this.findByDataQa('save-invoice-correction')
+
+  lastRow() {
+    return new InvoiceCorrectionRow(this, this.invoiceCorrectionRows.last())
+  }
+
+  async addNewInvoiceCorrection() {
+    await this.createInvoiceCorrectionButton.click()
+    return new InvoiceCorrectionRowEdit(this, this.invoiceCorrectionRows.last())
+  }
+}
+
+class InvoiceCorrectionRow extends Element {
+  constructor(public parent: Element, self: Element) {
+    super(self)
+  }
+
+  productSelect = this.findByDataQa('product')
+  unitSelect = this.findByDataQa('unit')
+  description = this.findByDataQa('description')
+  period = this.findByDataQa('period')
+  amount = this.findByDataQa('amount')
+  unitPrice = this.findByDataQa('unit-price')
+  totalPrice = this.findByDataQa('total-price')
+  status = this.findByDataQa('status')
+  noteIcon = this.findByDataQa('note-icon')
+  noteTooltip = this.findByDataQa('note-tooltip')
+  deleteButton = this.findByDataQa('delete-invoice-row-button')
+}
+
+class InvoiceCorrectionRowEdit extends Element {
+  constructor(public parent: Element, self: Element) {
+    super(self)
+  }
+
+  productSelect = new Select(this.findByDataQa('select-product'))
+  unitSelect = new Combobox(this.findByDataQa('input-unit'))
+  description = new TextInput(this.findByDataQa('input-description'))
+  startDate = new DatePickerDeprecated(
+    this.findByDataQa('date-range-input-start-date')
   )
-  #unitSelect = new Select(this.findByDataQa('input-unit'))
-
-  async assertInvoiceCorrectionsCount(n: number) {
-    await waitUntilEqual(() => this.#invoiceCorrectionRows.count(), n)
-  }
-
-  async createInvoiceCorrection() {
-    await this.#createInvoiceCorrectionButton.click()
-  }
+  endDate = new DatePickerDeprecated(
+    this.findByDataQa('date-range-input-end-date')
+  )
+  amount = new TextInput(this.findByDataQa('input-amount'))
+  price = new TextInput(this.findByDataQa('input-price'))
+  totalPrice = this.findByDataQa('total-price')
 
   async clickAndAssertUnitVisibility(
     expectedUnitName: string,
     visible: boolean
   ) {
-    await this.#unitSelect.click()
+    await this.unitSelect.click()
     visible
-      ? await this.#unitSelect.findText(expectedUnitName).waitUntilVisible()
-      : await this.#unitSelect.findText(expectedUnitName).waitUntilHidden()
+      ? await this.unitSelect.findText(expectedUnitName).waitUntilVisible()
+      : await this.unitSelect.findText(expectedUnitName).waitUntilHidden()
   }
+
+  async addNote() {
+    await this.findByDataQa('add-note').click()
+    return new NoteModal(this.parent.findByDataQa('modal'))
+  }
+}
+
+class NoteModal extends Modal {
+  note = new TextInput(this.findByDataQa('note-textarea'))
 }
 
 const collapsibles = {
