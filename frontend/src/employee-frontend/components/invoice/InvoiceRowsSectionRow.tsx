@@ -108,7 +108,9 @@ function InvoiceRowSectionRow({
             data-qa="select-product"
           />
         ) : (
-          <div>{products.find(({ key }) => key === product)?.nameFi ?? ''}</div>
+          <div data-qa="product">
+            {products.find(({ key }) => key === product)?.nameFi ?? ''}
+          </div>
         )}
       </Td>
       <Td>
@@ -123,7 +125,7 @@ function InvoiceRowSectionRow({
             data-qa="input-description"
           />
         ) : (
-          <div>{description}</div>
+          <div data-qa="description">{description}</div>
         )}
       </Td>
       <Td>
@@ -135,7 +137,7 @@ function InvoiceRowSectionRow({
             update={update}
           />
         ) : (
-          <div>
+          <div data-qa="unit">
             <span>{unit?.name}</span>
             {!!savedCostCenter && (
               <UnitCostCenter>{savedCostCenter}</UnitCostCenter>
@@ -157,7 +159,9 @@ function InvoiceRowSectionRow({
             onValidationResult={() => undefined}
           />
         ) : (
-          `${periodStart.format()} - ${periodEnd.format()}`
+          <span data-qa="period">
+            {periodStart.format()} - {periodEnd.format()}
+          </span>
         )}
       </Td>
       <Td>
@@ -167,7 +171,7 @@ function InvoiceRowSectionRow({
             onChange={(amount) => void update({ amount })}
           />
         ) : (
-          amount
+          <span data-qa="amount">{amount}</span>
         )}
       </Td>
       <Td align="right">
@@ -177,32 +181,34 @@ function InvoiceRowSectionRow({
             onChange={(unitPrice) => void update({ unitPrice })}
           />
         ) : (
-          `${formatCents(unitPrice)} €`
+          <span data-qa="unit-price">{formatCents(unitPrice)} €</span>
         )}
       </Td>
-      <Td align="right">
+      <Td align="right" data-qa="total-price">
         {editable ? (
           <TotalPrice>{`${formatCents(amount * unitPrice)} €`}</TotalPrice>
         ) : (
           `${formatCents(price)} €`
         )}
       </Td>
-      {status !== undefined && <Td>{status}</Td>}
+      {status !== undefined && <Td data-qa="status">{status}</Td>}
       <Td>
         <FixedSpaceRow spacing="s" justifyContent="flex-end">
           {note !== null || addNote ? (
-            <Tooltip tooltip={note}>
+            <Tooltip tooltip={note} data-qa="note-tooltip">
               <IconButtonWrapper margin={editable}>
                 {addNote && editable ? (
                   <IconButton
                     icon={note ? fasCommentAltLines : faCommentAlt}
                     onClick={addNote}
                     aria-label={i18n.common.addNew}
+                    data-qa="add-note"
                   />
                 ) : (
                   <FontAwesomeIcon
                     icon={note ? fasCommentAltLines : faCommentAlt}
                     color={theme.colors.main.m2}
+                    data-qa="note-icon"
                   />
                 )}
               </IconButtonWrapper>
