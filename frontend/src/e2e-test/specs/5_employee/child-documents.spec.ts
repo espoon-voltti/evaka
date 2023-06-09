@@ -45,8 +45,8 @@ beforeEach(async () => {
     .with({
       childId: childFixture.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: now.toLocalDate().subYears(1).formatIso(),
-      endDate: now.toLocalDate().addYears(1).formatIso()
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1)
     })
     .save()
 })

@@ -47,8 +47,8 @@ beforeEach(async () => {
     .child(child1)
     .daycare(daycare)
     .with({
-      startDate: LocalDate.of(2020, 1, 1).formatIso(),
-      endDate: LocalDate.of(2036, 6, 30).formatIso()
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2036, 6, 30)
     })
     .save()
   dailyServiceTime = await Fixture.dailyServiceTime(child1.data.id).save()

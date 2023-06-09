@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import LocalDate from 'lib-common/local-date'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
@@ -41,7 +42,7 @@ const group2 = {
   id: uuidv4(),
   name: '#2',
   daycareId: daycareFixture.id,
-  startDate: '2021-01-01'
+  startDate: LocalDate.of(2021, 1, 1)
 }
 
 beforeEach(async () => {
@@ -74,8 +75,8 @@ async function createPlacements(
       childId,
       unitId: fixtures.daycareFixture.id,
       type: placementType,
-      startDate: '2021-05-01',
-      endDate: '2022-08-31'
+      startDate: LocalDate.of(2021, 5, 1),
+      endDate: LocalDate.of(2022, 8, 31)
     })
     .save()
   await Fixture.groupPlacement()
@@ -407,16 +408,16 @@ describe('Child mobile attendance list', () => {
           id: uuidv4(),
           name: 'testgroup',
           daycareId: daycare2Fixture.id,
-          startDate: '2022-01-01'
+          startDate: LocalDate.of(2022, 1, 1)
         })
         .save()
     ).data
 
-    const placement1StartDate = '2022-01-01'
-    const placement1EndDate = '2022-04-30'
+    const placement1StartDate = LocalDate.of(2022, 1, 1)
+    const placement1EndDate = LocalDate.of(2022, 4, 30)
 
-    const placement2StartDate = '2022-05-01'
-    const placement2EndDate = '2022-06-30'
+    const placement2StartDate = LocalDate.of(2022, 5, 1)
+    const placement2EndDate = LocalDate.of(2022, 6, 30)
 
     const daycarePlacementFixture = await Fixture.placement()
       .with({

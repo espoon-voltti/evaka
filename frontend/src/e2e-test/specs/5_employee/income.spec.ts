@@ -53,8 +53,8 @@ beforeEach(async () => {
     .with({
       childId: fixtures.enduserChildFixtureJari.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: placementStart.formatIso(),
-      endDate: placementEnd.formatIso()
+      startDate: placementStart,
+      endDate: placementEnd
     })
     .save()
 
@@ -245,7 +245,7 @@ describe('Income', () => {
         validFrom: placementStart,
         validTo: incomeEndDate,
         updatedBy: financeAdminId,
-        updatedAt: placementStart.toSystemTzDate()
+        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
       })
       .save()
 
@@ -287,7 +287,7 @@ describe('Income', () => {
         validFrom: placementStart,
         validTo: incomeEndDate,
         updatedBy: financeAdminId,
-        updatedAt: placementStart.toSystemTzDate()
+        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
       })
       .save()
 

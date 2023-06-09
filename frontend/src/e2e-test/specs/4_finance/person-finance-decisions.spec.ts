@@ -128,7 +128,7 @@ describe('Person finance decisions', () => {
         childId: enduserChildFixtureKaarina.id,
         headOfChildId: enduserGuardianFixture.id,
         startDate: enduserChildFixtureKaarina.dateOfBirth,
-        endDate: '2099-01-01'
+        endDate: LocalDate.of(2099, 1, 1)
       }
     ])
 
@@ -137,8 +137,8 @@ describe('Person finance decisions', () => {
         uuidv4(),
         enduserChildFixtureKaarina.id,
         daycareFixturePrivateVoucher.id,
-        from.formatIso(),
-        LocalDate.todayInSystemTz().formatIso()
+        from,
+        LocalDate.todayInSystemTz()
       )
     ])
 

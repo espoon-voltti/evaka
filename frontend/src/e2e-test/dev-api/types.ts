@@ -36,8 +36,6 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-type ISODate = string
-
 export interface CareArea {
   id: UUID
   name: string
@@ -51,8 +49,8 @@ export interface Daycare {
   areaId: UUID
   name: string
   type: ('CENTRE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB')[]
-  openingDate?: string | null
-  closingDate?: string | null
+  openingDate?: LocalDate | null
+  closingDate?: LocalDate | null
   costCenter: string
   streetAddress: string
   postalCode: string
@@ -86,15 +84,15 @@ export interface Daycare {
 export interface ChildAttendance {
   childId: UUID
   unitId: UUID
-  arrived: Date
-  departed: Date
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime
 }
 
 export interface DaycareGroup {
   id: UUID
   daycareId: UUID
   name: string
-  startDate: string
+  startDate: LocalDate
 }
 
 export interface DaycareCaretakers {
@@ -116,16 +114,16 @@ export interface DaycarePlacement {
   type: PlacementType
   childId: UUID
   unitId: UUID
-  startDate: string
-  endDate: string
+  startDate: LocalDate
+  endDate: LocalDate
 }
 
 export interface DaycareGroupPlacement {
   id: UUID
   daycareGroupId: UUID
   daycarePlacementId: UUID
-  startDate: string
-  endDate: string
+  startDate: LocalDate
+  endDate: LocalDate
 }
 
 export interface BackupCare {
@@ -134,15 +132,15 @@ export interface BackupCare {
   unitId: UUID
   groupId?: UUID
   period: {
-    start: string
-    end: string
+    start: LocalDate
+    end: LocalDate
   }
 }
 
 export interface PersonDetail {
   id: string
-  dateOfBirth: string
-  dateOfDeath?: string
+  dateOfBirth: LocalDate
+  dateOfDeath?: LocalDate
   firstName: string
   lastName: string
   preferredName?: string
@@ -156,7 +154,7 @@ export interface PersonDetail {
   postOffice?: string
   nationalities?: string[]
   restrictedDetailsEnabled?: boolean
-  restrictedDetailsEndDate?: string | null
+  restrictedDetailsEndDate?: LocalDate | null
 }
 
 export interface PersonDetailWithDependantsAndGuardians extends PersonDetail {
@@ -183,10 +181,10 @@ export interface EmployeeDetail {
 export interface Application {
   id: UUID
   type: ApplicationType
-  createdDate?: ISODate
-  modifiedDate?: ISODate
-  sentDate?: ISODate
-  dueDate?: ISODate
+  createdDate?: LocalDate
+  modifiedDate?: LocalDate
+  sentDate?: LocalDate
+  dueDate?: LocalDate
   status: ApplicationStatus
   guardianId: UUID
   childId: UUID
@@ -228,13 +226,13 @@ export interface ApplicationChild {
   firstName?: string
   lastName?: string
   socialSecurityNumber?: string
-  dateOfBirth?: ISODate
+  dateOfBirth?: LocalDate
   address?: ApplicationAddress
   nationality?: string
   language?: string
   hasCorrectingAddress?: boolean
   correctingAddress?: ApplicationAddress
-  childMovingDate?: ISODate
+  childMovingDate?: LocalDate
   restricted: boolean
 }
 
@@ -246,17 +244,17 @@ export interface ApplicationAdult {
   phoneNumber?: string
   email?: string
   hasCorrectingAddress?: boolean
-  guardianMovingDate?: ISODate
+  guardianMovingDate?: LocalDate
   restricted: boolean
 }
 
 export interface PlacementPlan {
   applicationId: UUID
   unitId: UUID
-  periodStart: ISODate
-  periodEnd: ISODate
-  preschoolDaycarePeriodStart?: ISODate | null
-  preschoolDaycarePeriodEnd?: ISODate | null
+  periodStart: LocalDate
+  periodEnd: LocalDate
+  preschoolDaycarePeriodStart?: LocalDate | null
+  preschoolDaycarePeriodEnd?: LocalDate | null
 }
 
 export type DevHolidayPeriod = HolidayPeriodBody & {
@@ -297,7 +295,7 @@ export interface VtjPerson {
   nationalities: VtjNationality[]
   nativeLanguage: VtjNativeLanguage | null
   restrictedDetails: VtjRestrictedDetails | null
-  dateOfDeath: ISODate | null
+  dateOfDeath: LocalDate | null
   residenceCode: string | null
 }
 
@@ -321,7 +319,7 @@ export interface VtjNativeLanguage {
 
 export interface VtjRestrictedDetails {
   enabled: boolean
-  endDate: ISODate | null
+  endDate: LocalDate | null
 }
 
 export interface DecisionFixture {
@@ -330,8 +328,8 @@ export interface DecisionFixture {
   applicationId: string
   unitId: string
   type: DecisionType
-  startDate: ISODate
-  endDate: ISODate
+  startDate: LocalDate
+  endDate: LocalDate
 }
 
 export interface Decision {
@@ -431,17 +429,17 @@ export interface PedagogicalDocument {
   id: string
   childId: string
   description: string
-  created?: Date
+  created?: HelsinkiDateTime
   createdBy?: string
-  updated?: Date
+  updated?: HelsinkiDateTime
   updatedBy?: string
 }
 
 export interface ServiceNeedFixture {
   id: string
   placementId: string
-  startDate: string
-  endDate: string
+  startDate: LocalDate
+  endDate: LocalDate
   optionId: string
   shiftCare: boolean
   confirmedBy: UUID
@@ -452,8 +450,8 @@ export interface AssistanceNeed {
   id: string
   updatedBy: string
   childId: string
-  startDate: Date
-  endDate: Date
+  startDate: LocalDate
+  endDate: LocalDate
   capacityFactor: number
   description: string
   otherBasis: string
@@ -535,18 +533,18 @@ export interface DevIncome {
   validTo: LocalDate
   data: Record<string, IncomeValue>
   effect: IncomeEffect
-  updatedAt: Date
+  updatedAt: HelsinkiDateTime
   updatedBy: string
 }
 
 export interface DevVardaReset {
   evakaChildId: string
-  resetTimestamp: Date | null
+  resetTimestamp: HelsinkiDateTime | null
 }
 
 export interface DevVardaServiceNeed {
   evakaServiceNeedId: string
-  evakaServiceNeedUpdated: Date
+  evakaServiceNeedUpdated: HelsinkiDateTime
   evakaChildId: string
   updateFailed: boolean
   errors: string[]

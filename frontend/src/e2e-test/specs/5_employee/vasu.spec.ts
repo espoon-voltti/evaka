@@ -126,8 +126,8 @@ describe('Child Information - Vasu language', () => {
       .daycare(swedishUnit)
       .with({
         childId: child.data.id,
-        startDate: placementDateRange.start.formatIso(),
-        endDate: placementDateRange.end.formatIso()
+        startDate: placementDateRange.start,
+        endDate: placementDateRange.end
       })
       .save()
     await insertVasuTemplateFixture({
@@ -190,17 +190,13 @@ describe('Vasu document page', () => {
       )
       await waitUntilEqual(
         () => basicInfo.childDateOfBirth,
-        LocalDate.parseIso(child.dateOfBirth).format()
+        child.dateOfBirth.format()
       )
       await waitUntilEqual(
         () => basicInfo.placement(0),
         `${daycareFixture.name} (${
           daycareGroupFixture.name
-        }) ${LocalDate.parseIso(
-          daycarePlacementFixture.startDate
-        ).format()} - ${LocalDate.parseIso(
-          daycarePlacementFixture.endDate
-        ).format()}`
+        }) ${daycarePlacementFixture.startDate.format()} - ${daycarePlacementFixture.endDate.format()}`
       )
       const [firstGuardian, secondGuardian] = child.guardians ?? []
       await waitUntilTrue(async () => {

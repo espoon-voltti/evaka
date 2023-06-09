@@ -219,16 +219,16 @@ test('Foster parent can receive and reply to messages', async () => {
     .with({
       childId: fosterChild.id,
       unitId,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: placementFixture.data.id,
       daycareGroupId: group.data.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
 
@@ -311,8 +311,8 @@ test('Foster parent can read a pedagogical document', async () => {
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   const document = await Fixture.pedagogicalDocument()
@@ -344,8 +344,8 @@ test('Foster parent can read a daycare curriculum and give permission to share i
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   const vasuDocId = await insertVasuDocument(
@@ -383,8 +383,8 @@ test('Foster parent can terminate a daycare placement', async () => {
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: endDate.formatIso()
+      startDate: mockedDate,
+      endDate: endDate
     })
     .save()
   await activeRelationshipPage.reload()
@@ -423,8 +423,8 @@ test('Foster parent can create a repeating reservation', async () => {
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   await activeRelationshipPage.reload()
@@ -458,8 +458,8 @@ test('Foster parent can see and give photo consent', async () => {
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
 
@@ -486,8 +486,8 @@ test('Foster parent can see calendar events for foster children', async () => {
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   const { data: daycareGroup } = await Fixture.daycareGroup()
@@ -498,8 +498,8 @@ test('Foster parent can see calendar events for foster children', async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso(),
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1),
       daycareGroupId: daycareGroup.id,
       daycarePlacementId: placement.id
     })

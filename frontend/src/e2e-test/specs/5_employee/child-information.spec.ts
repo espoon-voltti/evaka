@@ -62,8 +62,8 @@ beforeEach(async () => {
     .with({
       childId,
       unitId,
-      startDate: LocalDate.of(2020, 1, 1).formatIso(),
-      endDate: LocalDate.of(2020, 6, 1).formatIso()
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 6, 1)
     })
     .save()
 

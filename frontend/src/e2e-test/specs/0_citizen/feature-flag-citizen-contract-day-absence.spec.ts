@@ -46,8 +46,8 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       uuidv4(),
       child.id,
       unit.id,
-      today.formatIso(),
-      today.addYears(1).formatIso()
+      today,
+      today.addYears(1)
     )
     await insertDaycarePlacementFixtures([placement])
     const group = await Fixture.daycareGroup()

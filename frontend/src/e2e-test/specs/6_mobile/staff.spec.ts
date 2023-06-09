@@ -31,16 +31,16 @@ beforeEach(async () => {
     .with({
       childId: fixtures.familyWithTwoGuardians.children[0].id,
       unitId: fixtures.daycareFixture.id,
-      startDate: today.formatIso(),
-      endDate: today.addYears(1).formatIso()
+      startDate: today,
+      endDate: today.addYears(1)
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.data.id,
       daycareGroupId: daycareGroupFixture.id,
-      startDate: today.formatIso(),
-      endDate: today.addYears(1).formatIso()
+      startDate: today,
+      endDate: today.addYears(1)
     })
     .save()
 

@@ -72,8 +72,8 @@ beforeEach(async () => {
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 
@@ -84,8 +84,8 @@ beforeEach(async () => {
       id: child2DaycarePlacementId,
       childId: child2Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 })
@@ -125,8 +125,8 @@ describe('Unit groups - placement plans / proposals', () => {
       .with({
         applicationId: application1.id,
         unitId: daycareFixture.id,
-        periodStart: today.formatIso(),
-        periodEnd: today.formatIso()
+        periodStart: today,
+        periodEnd: today
       })
       .save()
 
@@ -134,8 +134,8 @@ describe('Unit groups - placement plans / proposals', () => {
       .with({
         applicationId: application2.id,
         unitId: daycareFixture.id,
-        periodStart: today.formatIso(),
-        periodEnd: today.formatIso()
+        periodStart: today,
+        periodEnd: today
       })
       .save()
 
@@ -144,8 +144,8 @@ describe('Unit groups - placement plans / proposals', () => {
         applicationId: application2.id,
         employeeId: unitSupervisor.id,
         unitId: daycareFixture.id,
-        startDate: today.formatIso(),
-        endDate: today.formatIso()
+        startDate: today,
+        endDate: today
       })
       .save()
 
@@ -155,8 +155,8 @@ describe('Unit groups - placement plans / proposals', () => {
         applicationId: application2.id,
         employeeId: unitSupervisor.id,
         unitId: daycareFixture.id,
-        startDate: today.addDays(1).formatIso(),
-        endDate: today.addDays(2).formatIso()
+        startDate: today.addDays(1),
+        endDate: today.addDays(2)
       })
       .save()
 

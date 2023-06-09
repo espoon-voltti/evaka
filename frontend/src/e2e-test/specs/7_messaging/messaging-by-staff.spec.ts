@@ -70,16 +70,16 @@ beforeEach(async () => {
     .with({
       childId,
       unitId,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.data.id,
       daycareGroupId: daycareGroupFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
 
@@ -87,8 +87,8 @@ beforeEach(async () => {
     .with({
       childId: fixtures.enduserChildFixtureKaarina.id,
       unitId,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
     .then((placement) =>
@@ -96,8 +96,8 @@ beforeEach(async () => {
         .with({
           daycarePlacementId: placement.data.id,
           daycareGroupId: daycareGroupFixture.id,
-          startDate: mockedDate.formatIso(),
-          endDate: mockedDate.addYears(1).formatIso()
+          startDate: mockedDate,
+          endDate: mockedDate.addYears(1)
         })
         .save()
     )

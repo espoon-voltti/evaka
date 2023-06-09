@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import { resetDatabase } from '../../dev-api'
@@ -48,7 +49,7 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
 
     daycare = await Fixture.daycare()
       .with(daycareFixture)
-      .with({ openingDate: placementStart.subYears(1).formatIso() })
+      .with({ openingDate: placementStart.subYears(1) })
       .careArea(await Fixture.careArea().with(careAreaFixture).save())
       .save()
     await Fixture.daycareGroup()
@@ -64,8 +65,8 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
       .child(child1)
       .daycare(daycare)
       .with({
-        startDate: placementStart.formatIso(),
-        endDate: placementEnd.formatIso()
+        startDate: placementStart,
+        endDate: placementEnd
       })
       .save()
 
@@ -78,8 +79,8 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
 
     await Fixture.groupPlacement()
       .with({
-        startDate: placementStart.formatIso(),
-        endDate: placementEnd.formatIso(),
+        startDate: placementStart,
+        endDate: placementEnd,
         daycareGroupId: daycareGroup.data.id,
         daycarePlacementId: placement.data.id
       })
@@ -98,8 +99,8 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
       .with({
         id: uuidv4(),
         placementId: placement.data.id,
-        startDate: placementStart.formatIso(),
-        endDate: placementEnd.formatIso(),
+        startDate: placementStart,
+        endDate: placementEnd,
         optionId: serviceNeedOption.data.id,
         shiftCare: false,
         confirmedBy: financeAdmin.data.id,
@@ -127,7 +128,7 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
         validFrom: placementStart,
         validTo: incomeEndDate,
         updatedBy: financeAdminId,
-        updatedAt: placementStart.toSystemTzDate()
+        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
       })
       .save()
 

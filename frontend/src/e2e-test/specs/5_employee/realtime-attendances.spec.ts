@@ -86,8 +86,8 @@ beforeEach(async () => {
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 
@@ -95,8 +95,8 @@ beforeEach(async () => {
     .with({
       daycareGroupId: groupId,
       daycarePlacementId: child1DaycarePlacementId,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 

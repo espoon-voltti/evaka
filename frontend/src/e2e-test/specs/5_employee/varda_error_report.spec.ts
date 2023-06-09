@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -79,13 +80,13 @@ describe('Varda error report', () => {
 
     await addVardaReset({
       evakaChildId: childId,
-      resetTimestamp: new Date()
+      resetTimestamp: HelsinkiDateTime.now()
     })
 
     await addVardaServiceNeed({
       evakaServiceNeedId: serviceNeed.data.id,
       evakaChildId: childId,
-      evakaServiceNeedUpdated: new Date(),
+      evakaServiceNeedUpdated: HelsinkiDateTime.now(),
       updateFailed: true,
       errors: ['test error']
     })

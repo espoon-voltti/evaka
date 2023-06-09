@@ -49,8 +49,8 @@ beforeEach(async () => {
         placementIds.get(child.id) ?? '',
         child.id,
         fixtures.daycareFixture.id,
-        today.formatIso(),
-        today.addYears(1).formatIso()
+        today,
+        today.addYears(1)
       )
     )
   )
@@ -65,8 +65,8 @@ beforeEach(async () => {
   for (const child of children) {
     await Fixture.groupPlacement()
       .with({
-        startDate: today.formatIso(),
-        endDate: today.addYears(1).formatIso(),
+        startDate: today,
+        endDate: today.addYears(1),
         daycareGroupId: daycareGroup.data.id,
         daycarePlacementId: placementIds.get(child.id) ?? ''
       })

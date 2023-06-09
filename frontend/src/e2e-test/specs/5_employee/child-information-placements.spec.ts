@@ -55,8 +55,8 @@ const setupPlacement = async (
       placementId,
       childId,
       unitId,
-      LocalDate.todayInSystemTz().formatIso(),
-      LocalDate.todayInSystemTz().formatIso(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       childPlacementType
     )
   ])
