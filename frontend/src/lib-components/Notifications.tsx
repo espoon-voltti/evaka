@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as Sentry from '@sentry/browser'
 import { onlineManager } from '@tanstack/react-query'
 import omit from 'lodash/omit'
 import React, {
@@ -166,14 +165,6 @@ function useOfflineNotification(
 
       const now = HelsinkiDateTime.now()
       if (isOnline) {
-        Sentry.captureEvent({
-          message: 'Network connection restored',
-          level: 'info',
-          extra: {
-            offlineSince: onlineStatus.since.formatIso(),
-            durationMs: now.valueOf() - onlineStatus.since.valueOf()
-          }
-        })
         removeNotification('offline')
       } else {
         addNotification(
