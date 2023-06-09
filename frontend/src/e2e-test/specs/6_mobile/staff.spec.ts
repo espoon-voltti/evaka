@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
@@ -16,6 +18,9 @@ let nav: MobileNav
 let staffPage: StaffPage
 let mobileSignupUrl: string
 
+const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
+const today = now.toLocalDate()
+
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
@@ -25,17 +30,21 @@ beforeEach(async () => {
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId: fixtures.familyWithTwoGuardians.children[0].id,
-      unitId: fixtures.daycareFixture.id
+      unitId: fixtures.daycareFixture.id,
+      startDate: today.formatIso(),
+      endDate: today.addYears(1).formatIso()
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: daycareGroupFixture.id
+      daycareGroupId: daycareGroupFixture.id,
+      startDate: today.formatIso(),
+      endDate: today.addYears(1).formatIso()
     })
     .save()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: now.toSystemTzDate() })
   nav = new MobileNav(page)
 
   mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
