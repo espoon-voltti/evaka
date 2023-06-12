@@ -2,11 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { RefObject, useEffect, useRef, useState } from 'react'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
-import { Failure, Loading } from 'lib-common/api'
+import { Failure, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
@@ -18,6 +25,7 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -27,7 +35,7 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 
 import {
   AttendanceReservationReportFilters,
-  getAssistanceReservationReport
+  getAttendanceReservationReport
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
@@ -78,35 +86,46 @@ export default React.memo(function AttendanceReservation() {
         : Promise.resolve(Loading.of<DaycareGroup[]>()),
     [unitId]
   )
-  const [report] = useApiState(
-    () =>
-      tooLongRange
-        ? Promise.resolve(
-            Failure.of<AttendanceReservationReportRow[]>({
-              message: 'Too long range'
-            })
-          )
-        : unitId == null
-        ? Promise.resolve(Loading.of<AttendanceReservationReportRow[]>())
-        : getAssistanceReservationReport(unitId, filters),
-    [unitId, filters, tooLongRange]
-  )
+
+  const [report, setReport] = useState<
+    Result<AttendanceReservationReportRow[]>
+  >(Success.of([]))
 
   const autoScrollRef = useRef<HTMLTableRowElement>(null)
+
+  const fetchAttendanceReservationReport = useCallback(() => {
+    if (tooLongRange) {
+      return Promise.resolve(
+        Failure.of<AttendanceReservationReportRow[]>({
+          message: 'Too long range'
+        })
+      )
+    } else if (unitId == null) {
+      return Promise.resolve(Loading.of<AttendanceReservationReportRow[]>())
+    } else {
+      setReport(Loading.of())
+      return getAttendanceReservationReport(unitId, filters)
+    }
+  }, [unitId, filters, tooLongRange])
 
   useEffect(() => {
     scrollRefIntoView(autoScrollRef)
   }, [report])
 
-  const filteredRows = report
-    .map<AttendanceReservationReportUiRow[]>((data) =>
-      data.map((row) => ({
-        ...row,
-        capacityFactor: formatDecimal(row.capacityFactor),
-        staffCountRequired: formatDecimal(row.staffCountRequired)
-      }))
-    )
-    .getOrElse<AttendanceReservationReportUiRow[]>([])
+  const filteredRows = useMemo(
+    () =>
+      report
+        .map<AttendanceReservationReportUiRow[]>((data) =>
+          data.map((row) => ({
+            ...row,
+            capacityFactor: formatDecimal(row.capacityFactor),
+            staffCountRequired: formatDecimal(row.staffCountRequired)
+          }))
+        )
+        .getOrElse<AttendanceReservationReportUiRow[]>([]),
+    [report]
+  )
+
   const filteredUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
@@ -232,6 +251,16 @@ export default React.memo(function AttendanceReservation() {
               isClearable={true}
             />
           </div>
+        </FilterRow>
+        <FilterRow>
+          <AsyncButton
+            primary
+            disabled={unitId === null}
+            text={i18n.common.search}
+            onClick={fetchAttendanceReservationReport}
+            onSuccess={(newReport) => setReport(Success.of(newReport))}
+            data-qa="send-button"
+          />
         </FilterRow>
 
         {unitId !== null && report.isLoading && <Loader />}
