@@ -370,12 +370,8 @@ export class ChildDocumentsSection extends Section {
     return this.#addNewVasu.click()
   }
 
-  readonly createPedagogicalAssessmentButton = this.page.findByDataQa(
-    'create-PEDAGOGICAL_ASSESSMENT'
-  )
-  readonly createPedagogicalReportButton = this.page.findByDataQa(
-    'create-PEDAGOGICAL_REPORT'
-  )
+  readonly createDocumentButton = this.page.findByDataQa('create-document')
+  readonly modalOk = this.page.findByDataQa('modal-okBtn')
 
   readonly childDocumentsCount = () =>
     this.page

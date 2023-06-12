@@ -7,18 +7,23 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
+import { oneOf, required } from 'lib-common/form/form'
+import { useForm } from 'lib-common/form/hooks'
 import {
   ChildDocumentSummary,
-  DocumentType
+  DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Table, Thead, Th, Tbody, Tr, Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -118,60 +123,98 @@ const ChildDocuments = React.memo(function ChildDocuments({
   )
 })
 
+const CreationModal = React.memo(function CreationModal({
+  childId,
+  templates,
+  onClose
+}: {
+  childId: UUID
+  templates: DocumentTemplateSummary[]
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+  const { mutateAsync: createChildDocument } = useMutationResult(
+    createChildDocumentMutation
+  )
+  const navigate = useNavigate()
+
+  const form = required(oneOf<UUID>())
+  const bind = useForm(
+    form,
+    () => ({
+      domValue: templates[0]?.id,
+      options: templates.map((t) => ({
+        domValue: t.id,
+        value: t.id,
+        label: t.name
+      }))
+    }),
+    i18n.validationErrors
+  )
+
+  const submit = async () => {
+    const res = await createChildDocument({
+      childId,
+      templateId: bind.value()
+    })
+    if (res.isSuccess) {
+      navigate(`/child-documents/${res.value}`)
+    }
+    return res
+  }
+
+  return (
+    <AsyncFormModal
+      title={i18n.childInformation.childDocuments.addNew}
+      resolveAction={submit}
+      onSuccess={onClose}
+      resolveLabel={i18n.common.confirm}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+      resolveDisabled={!bind.isValid()}
+    >
+      <FixedSpaceColumn>
+        <Label>{i18n.childInformation.childDocuments.select}</Label>
+        <SelectF bind={bind} />
+      </FixedSpaceColumn>
+    </AsyncFormModal>
+  )
+})
+
 const ChildDocumentsList = React.memo(function ChildDocumentsList({
   childId
 }: {
   childId: UUID
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
   const documentsResult = useQueryResult(childDocumentsQuery(childId))
   const documentTemplatesResult = useQueryResult(
     activeDocumentTemplateSummariesQuery(childId)
   )
-  const { mutateAsync: createChildDocument, isLoading: submitting } =
-    useMutationResult(createChildDocumentMutation)
+  const [creationModalOpen, setCreationModalOpen] = useState(false)
 
   return renderResult(
     combine(documentsResult, documentTemplatesResult),
-    ([documents, templates]) => {
-      const types: DocumentType[] = [
-        'PEDAGOGICAL_REPORT' as const,
-        'PEDAGOGICAL_ASSESSMENT' as const
-      ]
+    ([documents, templates]) => (
+      <FixedSpaceColumn>
+        <AddButtonRow
+          text={i18n.childInformation.childDocuments.addNew}
+          onClick={() => setCreationModalOpen(true)}
+          disabled={templates.length < 1}
+          data-qa="create-document"
+        />
 
-      return (
-        <FixedSpaceColumn>
-          {types.map((type) => {
-            const templatesOfType = templates.filter(
-              (template) => template.type === type
-            )
-            return (
-              <AddButtonRow
-                key={type}
-                text={`${
-                  i18n.childInformation.childDocuments.addNew
-                } ${i18n.documentTemplates.documentTypes[type].toLowerCase()}`}
-                onClick={() =>
-                  createChildDocument({
-                    childId,
-                    templateId: templatesOfType[0].id // TODO: selecting if multiple
-                  }).then((res) => {
-                    if (res.isSuccess) {
-                      navigate(`/child-documents/${res.value}`)
-                    }
-                  })
-                }
-                disabled={templatesOfType.length < 1 || submitting}
-                data-qa={`create-${type}`}
-              />
-            )
-          })}
+        {creationModalOpen && (
+          <CreationModal
+            childId={childId}
+            templates={templates}
+            onClose={() => setCreationModalOpen(false)}
+          />
+        )}
 
-          <ChildDocuments childId={childId} documents={documents} />
-        </FixedSpaceColumn>
-      )
-    }
+        <ChildDocuments childId={childId} documents={documents} />
+      </FixedSpaceColumn>
+    )
   )
 })
 
