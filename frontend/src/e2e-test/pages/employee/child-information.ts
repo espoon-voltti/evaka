@@ -680,7 +680,7 @@ export class PlacementsSection extends Section {
     index: number,
     shiftCareType: ShiftCareType
   ) {
-    await this.#serviceNeedRow(0)
+    await this.#serviceNeedRow(index)
       .findByDataQa(`shift-care-${shiftCareType}`)
       .waitUntilVisible()
   }

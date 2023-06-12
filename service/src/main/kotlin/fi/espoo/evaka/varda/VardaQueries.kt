@@ -359,7 +359,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
                 ELSE false
             END AS temporary,
             NOT(sno.part_week) AS daily,
-            sn.shift_care = 'FULL'::shift_care_type as shift_care,
+            sn.shift_care = 'FULL' as shift_care,
             d.provider_type,
             d.oph_organizer_oid,
             d.oph_unit_oid,

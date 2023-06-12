@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -24,10 +26,12 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
-enum class ShiftCareType {
+@ConstList("shiftCareType")
+enum class ShiftCareType: DatabaseEnum {
     NONE,
     FULL,
     INTERMITTENT;
+    override val sqlType: String = "shift_care_type"
     companion object {
         fun fromBoolean(value: Boolean): ShiftCareType {
             return when (value) {
