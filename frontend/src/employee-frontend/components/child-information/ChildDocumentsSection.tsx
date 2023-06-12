@@ -38,7 +38,7 @@ export default React.memo(function ChildDocumentsSection({
             placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
           )
         )
-        .getOrElse(true),
+        .getOrElse(false),
     [permittedActions, placements]
   )
 
