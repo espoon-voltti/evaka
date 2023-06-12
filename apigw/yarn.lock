@@ -1742,7 +1742,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.8.5, @xmldom/xmldom@npm:^0.8.6":
+"@xmldom/xmldom@npm:0.8.7, @xmldom/xmldom@npm:^0.8.5, @xmldom/xmldom@npm:^0.8.6":
   version: 0.8.7
   resolution: "@xmldom/xmldom@npm:0.8.7"
   checksum: 593d4429c2281ee7799adcb6ff8604b68cf30ce0721537e3e380287b423e67c7ac197d90987f932b4fd3febc409ded8435706e7f90fbba6e22e08740477341d1
@@ -3152,7 +3152,7 @@ __metadata:
     ts-node: ^10.9.1
     typescript: ^5.0.3
     uuid: ^9.0.0
-    xml-crypto: ^3.0.1
+    xml-crypto: ^3.1.0
     xml2js: ^0.5.0
     zod: ^3.21.4
   languageName: unknown
@@ -6966,6 +6966,16 @@ __metadata:
     "@xmldom/xmldom": ^0.8.5
     xpath: 0.0.32
   checksum: e0310375a08617c65d8cabe1d3ecb54e797b1f5138f445d0ff4ab0525e35618174c58a9db3987d820546ac4df6b04408e986a233baf293cf82a0d38ef3fca808
+  languageName: node
+  linkType: hard
+
+"xml-crypto@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "xml-crypto@npm:3.1.0"
+  dependencies:
+    "@xmldom/xmldom": 0.8.7
+    xpath: 0.0.32
+  checksum: 86f1c7b6b42364b2a48aa3a0970996c16a9733a0ffda461f5504acc5bc92e37eb6ed2ea9587c72651db2617f8596fbbc1d25afbca2504c115d9b44a9c54bc2ad
   languageName: node
   linkType: hard
 
