@@ -29,8 +29,8 @@ import org.jdbi.v3.core.mapper.PropagateNull
 @ConstList("shiftCareType")
 enum class ShiftCareType: DatabaseEnum {
     NONE,
-    FULL,
-    INTERMITTENT;
+    INTERMITTENT,
+    FULL;
     override val sqlType: String = "shift_care_type"
     companion object {
         fun fromBoolean(value: Boolean): ShiftCareType {

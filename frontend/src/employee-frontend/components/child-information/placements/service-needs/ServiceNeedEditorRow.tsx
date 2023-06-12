@@ -7,7 +7,8 @@ import React, { useContext, useMemo, useState } from 'react'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
   ServiceNeedOption,
-  ShiftCareType
+  ShiftCareType,
+  shiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -40,8 +41,6 @@ interface ServiceNeedCreateRowProps {
   onCancel: () => void
   editingId?: string
 }
-
-const shiftCareTypes: ShiftCareType[] = ['NONE', 'INTERMITTENT', 'FULL']
 
 function ServiceNeedEditorRow({
   placement,
@@ -161,7 +160,7 @@ function ServiceNeedEditorRow({
         <Td verticalAlign="top">
           {featureFlags.experimental?.intermittentShiftCare ? (
             <FixedSpaceColumn spacing="xs">
-              {shiftCareTypes.map((type) => (
+              {shiftCareType.map((type) => (
                 <Radio
                   key={type}
                   data-qa={`shift-care-type-radio-${type}`}

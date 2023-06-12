@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import {
+  ShiftCareType,
+  shiftCareType
+} from 'lib-common/generated/api-types/serviceneed'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -634,8 +637,7 @@ export class PlacementsSection extends Section {
     this.findByDataQa('shift-care-toggle')
   )
 
-  #shiftTypes = ['NONE', 'INTERMITTENT', 'FULL']
-  #serviceNeedShiftCareRadios = this.#shiftTypes.map(
+  #serviceNeedShiftCareRadios = shiftCareType.map(
     (type) => new Radio(this.findByDataQa(`shift-care-type-radio-${type}`))
   )
 
@@ -661,9 +663,8 @@ export class PlacementsSection extends Section {
     await this.#serviceNeedOptionSelect.selectOption({ label: optionName })
 
     if (intermittentShiftCare) {
-      await this.#serviceNeedShiftCareRadios[
-        this.#shiftTypes.indexOf(shiftCare)
-      ].check()
+      const indexOfType = shiftCareType.indexOf(shiftCare)
+      await this.#serviceNeedShiftCareRadios[indexOfType].check()
     } else {
       if (shiftCare === 'FULL') {
         await this.#serviceNeedShiftCareCheckBox.check()
@@ -744,12 +745,11 @@ export class PlacementsSection extends Section {
 
   async setShiftCareTypeOfNthServiceNeed(
     index: number,
-    shiftCareType: ShiftCareType
+    shiftCare: ShiftCareType
   ) {
     await this.#nthServiceNeedEditButton(index).click()
-    await this.#serviceNeedShiftCareRadios[
-      this.#shiftTypes.indexOf(shiftCareType)
-    ].check()
+    const indexOfType = shiftCareType.indexOf(shiftCare)
+    await this.#serviceNeedShiftCareRadios[indexOfType].check()
     await this.#serviceNeedSaveButton.click()
   }
 }

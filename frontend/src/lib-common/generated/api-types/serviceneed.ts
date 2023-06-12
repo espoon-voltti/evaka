@@ -116,7 +116,10 @@ export interface ServiceNeedUpdateRequest {
 /**
 * Generated from fi.espoo.evaka.serviceneed.ShiftCareType
 */
-export type ShiftCareType =
-  | 'NONE'
-  | 'FULL'
-  | 'INTERMITTENT'
+export const shiftCareType = [
+  'NONE',
+  'INTERMITTENT',
+  'FULL'
+] as const
+
+export type ShiftCareType = typeof shiftCareType[number]
