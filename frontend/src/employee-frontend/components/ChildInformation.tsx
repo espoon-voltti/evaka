@@ -147,9 +147,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'assistance', open: false },
@@ -165,9 +165,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'assistance', open: false },
@@ -186,9 +186,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
 
     { component: 'message-blocklist', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'fee-alterations', open: false },
@@ -204,9 +204,9 @@ const layouts: Layouts<typeof components> = {
 
     { component: 'family-contacts', open: false },
     { component: 'message-blocklist', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'assistance', open: false },
@@ -220,9 +220,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
 
@@ -236,9 +236,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
 
@@ -252,9 +252,9 @@ const layouts: Layouts<typeof components> = {
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'backup-care', open: false },
@@ -274,9 +274,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'childDocuments' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
 
