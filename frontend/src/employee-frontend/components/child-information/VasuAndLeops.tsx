@@ -25,15 +25,14 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import FullScreenDimmedSpinner from 'lib-components/molecules/FullScreenDimmedSpinner'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { ChildContext } from '../../state'
@@ -235,22 +234,16 @@ function VasuInitialization({
 
 interface Props {
   id: UUID
-  startOpen: boolean
 }
 
-export default React.memo(function VasuAndLeops({
-  id: childId,
-  startOpen
-}: Props) {
+export default React.memo(function VasuAndLeops({ id: childId }: Props) {
   const { i18n } = useTranslation()
-  const { permittedActions, placements } = useContext(ChildContext)
+  const { placements } = useContext(ChildContext)
   const [vasus, loadVasus] = useApiState(
     () => getVasuDocumentSummaries(childId),
     [childId]
   )
   const navigate = useNavigate()
-
-  const [open, setOpen] = useState(startOpen)
 
   const getDates = ({ modifiedAt, events }: VasuDocumentSummary): string => {
     const publishedAt = getLastPublished(events)
@@ -278,88 +271,60 @@ export default React.memo(function VasuAndLeops({
     [vasus]
   )
 
-  const noPermission = useMemo(
-    () =>
-      !permittedActions.has('READ_VASU_DOCUMENT') ||
-      placements
-        .map(
-          (ps) =>
-            !ps.placements.some((placement) =>
-              placement.daycare.enabledPilotFeatures.includes(
-                'VASU_AND_PEDADOC'
-              )
-            )
-        )
-        .getOrElse(true),
-    [permittedActions, placements]
-  )
-  if (noPermission) {
-    return null
-  }
-
   return (
     <div>
-      <CollapsibleContentArea
-        title={<H2 noMargin>{i18n.childInformation.vasu.title}</H2>}
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="vasu-and-leops-collapsible"
-      >
-        <VasuInitialization
-          childId={childId}
-          allowCreation={allowCreation}
-          placements={placements}
-        />
-        {renderResult(vasus, (vasus) => (
-          <Table>
-            <Tbody>
-              {vasus.map(({ data: vasu, permittedActions }) => (
-                <Tr key={vasu.id}>
-                  <Td>
-                    <InlineButton
-                      onClick={() => navigate(`/vasu/${vasu.id}`)}
-                      text={vasu.name}
-                    />
-                  </Td>
-                  <Td>{getDates(vasu)}</Td>
-                  <StateCell>
-                    <VasuStateChip
-                      state={vasu.documentState}
-                      labels={i18n.vasu.states}
-                    />
-                  </StateCell>
-                  <Td>
-                    {vasu.documentState === 'CLOSED' ? (
-                      <RequireRole oneOf={['ADMIN']}>
-                        <InlineButton
-                          onClick={() =>
-                            void updateDocumentState({
-                              documentId: vasu.id,
-                              eventType: 'RETURNED_TO_REVIEWED'
-                            }).finally(() => loadVasus())
-                          }
-                          text={
-                            i18n.vasu.transitions.RETURNED_TO_REVIEWED
-                              .buttonText
-                          }
-                        />
-                      </RequireRole>
-                    ) : (
+      <Title size={4}>{i18n.childInformation.vasu.title}</Title>
+      <VasuInitialization
+        childId={childId}
+        allowCreation={allowCreation}
+        placements={placements}
+      />
+      {renderResult(vasus, (vasus) => (
+        <Table>
+          <Tbody>
+            {vasus.map(({ data: vasu, permittedActions }) => (
+              <Tr key={vasu.id}>
+                <Td>
+                  <InlineButton
+                    onClick={() => navigate(`/vasu/${vasu.id}`)}
+                    text={vasu.name}
+                  />
+                </Td>
+                <Td>{getDates(vasu)}</Td>
+                <StateCell>
+                  <VasuStateChip
+                    state={vasu.documentState}
+                    labels={i18n.vasu.states}
+                  />
+                </StateCell>
+                <Td>
+                  {vasu.documentState === 'CLOSED' ? (
+                    <RequireRole oneOf={['ADMIN']}>
                       <InlineButton
-                        onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
-                        text={i18n.common.edit}
-                        disabled={!permittedActions.includes('UPDATE')}
+                        onClick={() =>
+                          void updateDocumentState({
+                            documentId: vasu.id,
+                            eventType: 'RETURNED_TO_REVIEWED'
+                          }).finally(() => loadVasus())
+                        }
+                        text={
+                          i18n.vasu.transitions.RETURNED_TO_REVIEWED.buttonText
+                        }
                       />
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        ))}
-      </CollapsibleContentArea>
+                    </RequireRole>
+                  ) : (
+                    <InlineButton
+                      onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
+                      text={i18n.common.edit}
+                      disabled={!permittedActions.includes('UPDATE')}
+                    />
+                  )}
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      ))}
     </div>
   )
 })

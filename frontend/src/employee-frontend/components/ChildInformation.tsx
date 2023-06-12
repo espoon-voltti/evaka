@@ -30,6 +30,7 @@ import BackupCare from './child-information/BackupCare'
 import ChildApplications from './child-information/ChildApplications'
 import ChildConsentsSection from './child-information/ChildConsentsSection'
 import ChildDetails from './child-information/ChildDetails'
+import ChildDocumentsSection from './child-information/ChildDocumentsSection'
 import ChildIncome from './child-information/ChildIncome'
 import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
 import FamilyContacts from './child-information/FamilyContacts'
@@ -38,7 +39,6 @@ import GuardiansAndParents from './child-information/GuardiansAndParents'
 import MessageBlocklist from './child-information/MessageBlocklist'
 import PedagogicalDocuments from './child-information/PedagogicalDocuments'
 import Placements from './child-information/Placements'
-import VasuAndLeops from './child-information/VasuAndLeops'
 import CircularLabel from './common/CircularLabel'
 import WarningLabel from './common/WarningLabel'
 import { getLayout, Layouts } from './layouts'
@@ -106,9 +106,10 @@ const components = {
     DailyServiceTimesSection,
     'READ_DAILY_SERVICE_TIMES'
   ),
-  vasuAndLeops: requireOneOfPermittedActions(
-    VasuAndLeops,
-    'READ_VASU_DOCUMENT'
+  childDocuments: requireOneOfPermittedActions(
+    ChildDocumentsSection,
+    'READ_VASU_DOCUMENT',
+    'READ_CHILD_DOCUMENT'
   ),
   pedagogicalDocuments: requireOneOfPermittedActions(
     PedagogicalDocuments,
@@ -146,9 +147,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'assistance', open: false },
@@ -164,9 +165,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'assistance', open: false },
@@ -185,9 +186,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
 
     { component: 'message-blocklist', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'fee-alterations', open: false },
@@ -203,9 +204,9 @@ const layouts: Layouts<typeof components> = {
 
     { component: 'family-contacts', open: false },
     { component: 'message-blocklist', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'assistance', open: false },
@@ -219,9 +220,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
 
@@ -235,9 +236,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
 
@@ -251,9 +252,9 @@ const layouts: Layouts<typeof components> = {
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
     { component: 'backup-care', open: false },
@@ -273,9 +274,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    { component: 'childDocuments', open: false },
     {
-      component: 'pedagogicalDocuments' as keyof typeof components,
+      component: 'pedagogicalDocuments',
       open: false
     },
 

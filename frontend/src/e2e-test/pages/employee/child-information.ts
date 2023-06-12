@@ -363,11 +363,36 @@ export class PedagogicalDocumentsSection extends Section {
   }
 }
 
-export class VasuAndLeopsSection extends Section {
-  readonly #addNew = this.find('[data-qa="add-new-vasu-button"]')
+export class ChildDocumentsSection extends Section {
+  readonly #addNewVasu = this.find('[data-qa="add-new-vasu-button"]')
 
-  async addNew() {
-    return this.#addNew.click()
+  async addNewVasu() {
+    return this.#addNewVasu.click()
+  }
+
+  readonly createPedagogicalAssessmentButton = this.page.findByDataQa(
+    'create-PEDAGOGICAL_ASSESSMENT'
+  )
+  readonly createPedagogicalReportButton = this.page.findByDataQa(
+    'create-PEDAGOGICAL_REPORT'
+  )
+
+  readonly childDocumentsCount = () =>
+    this.page
+      .findByDataQa('table-of-child-documents')
+      .findAllByDataQa('child-document-row')
+      .count()
+
+  childDocuments(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-child-documents')
+      .findAllByDataQa('child-document-row')
+      .nth(nth)
+
+    return {
+      openLink: row.findByDataQa('open-document'),
+      status: row.findByDataQa('document-status')
+    }
   }
 }
 
@@ -845,31 +870,6 @@ export class AssistanceNeedSection extends Section {
   )
 
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
-
-  readonly createPedagogicalAssessmentButton = this.page.findByDataQa(
-    'create-PEDAGOGICAL_ASSESSMENT'
-  )
-  readonly createPedagogicalReportButton = this.page.findByDataQa(
-    'create-PEDAGOGICAL_REPORT'
-  )
-
-  readonly childDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
-
-  childDocuments(nth: number) {
-    const row = this.page
-      .findByDataQa('table-of-child-documents')
-      .findAllByDataQa('child-document-row')
-      .nth(nth)
-
-    return {
-      openLink: row.findByDataQa('open-document'),
-      status: row.findByDataQa('document-status')
-    }
-  }
 }
 
 class MessageBlocklistSection extends Section {
@@ -932,9 +932,9 @@ const collapsibles = {
     selector: '[data-qa="pedagogical-documents-collapsible"]',
     section: PedagogicalDocumentsSection
   },
-  vasuAndLeops: {
-    selector: '[data-qa="vasu-and-leops-collapsible"]',
-    section: VasuAndLeopsSection
+  childDocuments: {
+    selector: '[data-qa="child-documents-collapsible"]',
+    section: ChildDocumentsSection
   },
   backupCares: {
     selector: '[data-qa="backup-cares-collapsible"]',

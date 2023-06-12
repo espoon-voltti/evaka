@@ -1193,6 +1193,7 @@ export const fi = {
       edit: 'Muokkaa varahakijan tietoja',
       removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
     },
+    childDocumentsSectionTitle: 'Pedagogiset asiakirjat',
     vasu: {
       title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
       createNew: 'Luo uusi suunnitelma',
@@ -3732,7 +3733,7 @@ export const fi = {
     }
   },
   documentTemplates: {
-    title: 'Lomakepohjat (beta)',
+    title: 'Lomakepohjat',
     documentTypes: {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio'
