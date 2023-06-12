@@ -4756,12 +4756,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chartjs-adapter-date-fns@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "chartjs-adapter-date-fns@npm:2.0.0"
+"chartjs-adapter-date-fns@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "chartjs-adapter-date-fns@npm:3.0.0"
   peerDependencies:
-    chart.js: ^3.0.0
-  checksum: 08ee2f99da4a15434e28da733cb0489fe94012ac1a493fbf01d660bcf17df3bb28ce767939c2881b67b3bbefe1a7ffe70dcea4cbd860ab6c2c670d90816e8176
+    chart.js: ">=2.8.0"
+    date-fns: ">=2.0.0"
+  checksum: c39bfdf490749faa589fba6e0dc0a2c5a467a5f06aaa52c5180e10fd9c83414807a064f6950538448bffee354c8064c0ce9d957bccbf2048e7ee2257aa95f138
   languageName: node
   linkType: hard
 
@@ -6193,7 +6194,7 @@ __metadata:
     babel-loader: ^9.1.2
     babel-plugin-styled-components: ^2.1.3
     chart.js: ^3.9.1
-    chartjs-adapter-date-fns: ^2.0.0
+    chartjs-adapter-date-fns: ^3.0.0
     classnames: ^2.3.1
     compute-scroll-into-view: ^1.0.17
     concurrently: ^8.1.0
