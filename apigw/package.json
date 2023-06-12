@@ -90,7 +90,7 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3",
-    "xml-crypto": "^3.0.1",
+    "xml-crypto": "^3.1.0",
     "xml2js": "^0.5.0"
   },
   "resolutions": {
