@@ -27,7 +27,7 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
 @ConstList("shiftCareType")
-enum class ShiftCareType: DatabaseEnum {
+enum class ShiftCareType : DatabaseEnum {
     NONE,
     INTERMITTENT,
     FULL;
