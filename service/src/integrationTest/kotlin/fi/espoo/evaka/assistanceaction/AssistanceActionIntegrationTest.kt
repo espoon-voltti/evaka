@@ -7,6 +7,7 @@ package fi.espoo.evaka.assistanceaction
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.assistance.AssistanceController
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -375,12 +376,12 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     ): List<AssistanceAction> {
         val (_, res, result) =
             http
-                .get("/children/$childId/assistance-actions")
+                .get("/children/$childId/assistance")
                 .asUser(user)
-                .responseObject<List<AssistanceActionResponse>>(jsonMapper)
+                .responseObject<AssistanceController.AssistanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get().map { it.action }
+        return result.get().assistanceActions.map { it.action }
     }
 
     private fun whenPutAssistanceActionThenExpectSuccess(

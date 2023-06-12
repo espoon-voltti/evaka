@@ -7,6 +7,7 @@ package fi.espoo.evaka.assistanceneed
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.assistance.AssistanceController
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceNeedId
@@ -402,12 +403,12 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     ): List<AssistanceNeed> {
         val (_, res, result) =
             http
-                .get("/children/$childId/assistance-needs")
+                .get("/children/$childId/assistance")
                 .asUser(asUser)
-                .responseObject<List<AssistanceNeedResponse>>(jsonMapper)
+                .responseObject<AssistanceController.AssistanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get().map { it.need }
+        return result.get().assistanceNeeds.map { it.need }
     }
 
     private fun whenPutAssistanceNeedThenExpectSuccess(

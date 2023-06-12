@@ -177,7 +177,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         clock: EvakaClock,
         action: Action.ScopedAction<T>,
         target: T
-    ): Boolean = hasPermissionFor(tx, user, clock, action, listOf(target))
+    ): Boolean = checkPermissionFor(tx, user, clock, action, target).isPermitted()
     fun <T> hasPermissionFor(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -187,6 +187,14 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
     ): Boolean =
         checkPermissionFor(tx, user, clock, action, targets).values.all { it.isPermitted() }
 
+    fun <T> checkPermissionFor(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: Action.ScopedAction<T>,
+        target: T
+    ): AccessControlDecision =
+        checkPermissionFor(tx, user, clock, action, listOf(target)).values.single()
     fun <T> checkPermissionFor(
         tx: Database.Read,
         user: AuthenticatedUser,

@@ -670,7 +670,55 @@ export const fi = {
         'Huom! Olet muokkaamassa päivittäistä varhaiskasvatusaikaa takautuvasti. Lapsen läsnäolokalenterin merkinnät saattavat muuttua tällä aikavälillä.'
     },
     assistance: {
-      title: 'Tuen tarve ja tukitoimet'
+      title: 'Tuen tarve ja tukitoimet',
+      fields: {
+        validDuring: 'Voimassaoloaika',
+        status: 'Tila',
+        capacityFactor: 'Kerroin',
+        level: 'Taso',
+        otherAssistanceMeasureType: 'Toimi'
+      },
+      types: {
+        daycareAssistanceLevel: {
+          GENERAL_SUPPORT: 'Yleinen tuki, ei päätöstä',
+          GENERAL_SUPPORT_WITH_DECISION: 'Yleinen tuki, päätös tukipalveluista',
+          INTENSIFIED_SUPPORT: 'Tehostettu tuki',
+          SPECIAL_SUPPORT: 'Erityinen tuki'
+        },
+        preschoolAssistanceLevel: {
+          INTENSIFIED_SUPPORT: 'Tehostettu tuki',
+          SPECIAL_SUPPORT:
+            'Erityinen tuki ilman pidennettyä oppivelvollisuutta',
+          SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1:
+            'Erityinen tuki ja pidennetty oppivelvollisuus - muu (Koskeen)',
+          SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
+            'Erityinen tuki ja pidennetty oppivelvollisuus - kehitysvamma 2 (Koskeen)'
+        },
+        otherAssistanceMeasureType: {
+          TRANSPORT_BENEFIT: 'Kuljetusetu',
+          ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)'
+        }
+      },
+      assistanceFactor: {
+        title: 'Tuen kerroin',
+        create: 'Luo uusi tuen kertoimen ajanjakso',
+        removeConfirmation: 'Haluatko poistaa tuen kertoimen ajanjakson?'
+      },
+      daycareAssistance: {
+        title: 'Tuen taso varhaiskasvatuksessa',
+        create: 'Luo uusi tuen tason ajanjakso (varhaiskasvatus)',
+        removeConfirmation: 'Haluatko poistaa tuen tason ajanjakson?'
+      },
+      preschoolAssistance: {
+        title: 'Tuen taso esiopetuksessa',
+        create: 'Luo uusi tuen tason ajanjakso (esiopetus)',
+        removeConfirmation: 'Haluatko poistaa tuen tason ajanjakson?'
+      },
+      otherAssistanceMeasure: {
+        title: 'Muut toimet',
+        create: 'Lisää muu toimi',
+        removeConfirmation: 'Haluatko poistaa muun toimen?'
+      }
     },
     assistanceNeed: {
       title: 'Tuen tarve',

@@ -4,6 +4,7 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 
+import DateRange from 'lib-common/date-range'
 import { Action } from 'lib-common/generated/action'
 import {
   AssistanceAction,
@@ -12,18 +13,18 @@ import {
 } from 'lib-common/generated/api-types/assistanceaction'
 import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
-import { faQuestion } from 'lib-icons'
 
-import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
-import LabelValueList from '../../../components/common/LabelValueList'
-import Toolbar from '../../../components/common/Toolbar'
-import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { isActiveDateRange } from '../../../utils/date'
+import LabelValueList from '../../common/LabelValueList'
+import Toolbar from '../../common/Toolbar'
+import ToolbarAccordion from '../../common/ToolbarAccordion'
 import { deleteAssistanceActionMutation } from '../queries'
+
+import AssistanceActionForm from './AssistanceActionForm'
+import { DeleteConfirmation } from './DeleteConfirmation'
 
 export interface Props {
   assistanceAction: AssistanceAction
@@ -46,39 +47,29 @@ export default React.memo(function AssistanceActionRow({
     assistanceAction.endDate
   )
   const [toggled, setToggled] = useState(expandedAtStart)
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const { uiMode, toggleUiMode } = useContext(UIContext)
   const refForm = useRef(null)
 
   const { mutateAsync: deleteAssistanceAction } = useMutationResult(
     deleteAssistanceActionMutation
   )
 
-  const renderDeleteConfirmation = () => (
-    <InfoModal
-      type="warning"
-      title={i18n.childInformation.assistanceAction.removeConfirmation}
-      text={`${
-        i18n.common.period
-      } ${assistanceAction.startDate.format()} - ${assistanceAction.endDate.format()}`}
-      icon={faQuestion}
-      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
-      resolve={{
-        action: () =>
-          deleteAssistanceAction({
-            id: assistanceAction.id,
-            childId: assistanceAction.childId
-          }).then(() => {
-            clearUiMode()
-          }),
-        label: i18n.common.remove
-      }}
-    />
-  )
-
   return (
     <div>
-      {uiMode === `remove-assistance-action-${assistanceAction.id}` &&
-        renderDeleteConfirmation()}
+      {uiMode === `remove-assistance-action-${assistanceAction.id}` && (
+        <DeleteConfirmation
+          title={i18n.childInformation.assistanceAction.removeConfirmation}
+          range={
+            new DateRange(assistanceAction.startDate, assistanceAction.endDate)
+          }
+          onSubmit={() =>
+            deleteAssistanceAction({
+              id: assistanceAction.id,
+              childId: assistanceAction.childId
+            })
+          }
+        />
+      )}
 
       <ToolbarAccordion
         title={`${

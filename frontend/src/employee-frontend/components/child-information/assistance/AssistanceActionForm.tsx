@@ -30,8 +30,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
-import FormActions from '../../../components/common/FormActions'
-import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
@@ -40,6 +38,8 @@ import {
   formHasErrors,
   isDateRangeInverted
 } from '../../../utils/validation/validations'
+import FormActions from '../../common/FormActions'
+import LabelValueList from '../../common/LabelValueList'
 import { DivFitContent } from '../../common/styled/containers'
 import {
   createAssistanceActionMutation,

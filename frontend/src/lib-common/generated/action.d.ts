@@ -123,6 +123,10 @@ export type AssistanceAction =
   | 'READ_PRE_PRESCHOOL_ASSISTANCE_ACTION'
   | 'UPDATE'
 
+export type AssistanceFactor =
+  | 'DELETE'
+  | 'UPDATE'
+
 export type AssistanceNeed =
   | 'DELETE'
   | 'READ_PRE_PRESCHOOL_ASSISTANCE_NEED'
@@ -156,6 +160,7 @@ export type BackupPickup =
 export type Child =
   | 'CREATE_ABSENCE'
   | 'CREATE_ASSISTANCE_ACTION'
+  | 'CREATE_ASSISTANCE_FACTOR'
   | 'CREATE_ASSISTANCE_NEED'
   | 'CREATE_ASSISTANCE_NEED_DECISION'
   | 'CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT'
@@ -165,8 +170,11 @@ export type Child =
   | 'CREATE_CHILD_DOCUMENT'
   | 'CREATE_DAILY_NOTE'
   | 'CREATE_DAILY_SERVICE_TIME'
+  | 'CREATE_DAYCARE_ASSISTANCE'
   | 'CREATE_FEE_ALTERATION'
+  | 'CREATE_OTHER_ASSISTANCE_MEASURE'
   | 'CREATE_PEDAGOGICAL_DOCUMENT'
+  | 'CREATE_PRESCHOOL_ASSISTANCE'
   | 'CREATE_STICKY_NOTE'
   | 'CREATE_VASU_DOCUMENT'
   | 'DELETE_ABSENCE'
@@ -179,6 +187,7 @@ export type Child =
   | 'READ_APPLICATION'
   | 'READ_ASSISTANCE'
   | 'READ_ASSISTANCE_ACTION'
+  | 'READ_ASSISTANCE_FACTORS'
   | 'READ_ASSISTANCE_NEED'
   | 'READ_ASSISTANCE_NEED_DECISIONS'
   | 'READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS'
@@ -189,13 +198,16 @@ export type Child =
   | 'READ_CHILD_DOCUMENT'
   | 'READ_CHILD_RECIPIENTS'
   | 'READ_DAILY_SERVICE_TIMES'
+  | 'READ_DAYCARE_ASSISTANCES'
   | 'READ_DECISIONS'
   | 'READ_FAMILY_CONTACTS'
   | 'READ_FEE_ALTERATIONS'
   | 'READ_FUTURE_ABSENCES'
   | 'READ_GUARDIANS'
+  | 'READ_OTHER_ASSISTANCE_MEASURES'
   | 'READ_PEDAGOGICAL_DOCUMENTS'
   | 'READ_PLACEMENT'
+  | 'READ_PRESCHOOL_ASSISTANCES'
   | 'READ_SENSITIVE_INFO'
   | 'READ_VASU_DOCUMENT'
   | 'UPDATE_ADDITIONAL_INFO'
@@ -217,6 +229,10 @@ export type ChildDocument =
   | 'UPDATE'
 
 export type DailyServiceTime =
+  | 'DELETE'
+  | 'UPDATE'
+
+export type DaycareAssistance =
   | 'DELETE'
   | 'UPDATE'
 
@@ -270,6 +286,10 @@ export type InvoiceCorrection =
 export type MobileDevice =
   | 'DELETE'
   | 'UPDATE_NAME'
+
+export type OtherAssistanceMeasure =
+  | 'DELETE'
+  | 'UPDATE'
 
 export type Pairing = 'POST_RESPONSE'
 
@@ -325,6 +345,10 @@ export type Person =
 export type Placement =
   | 'CREATE_GROUP_PLACEMENT'
   | 'CREATE_SERVICE_NEED'
+  | 'DELETE'
+  | 'UPDATE'
+
+export type PreschoolAssistance =
   | 'DELETE'
   | 'UPDATE'
 

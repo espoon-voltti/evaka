@@ -14,13 +14,13 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 
-import { getAssistanceActionOptions } from '../../api/child/assistance-actions'
-import AssistanceActionForm from '../../components/child-information/assistance-action/AssistanceActionForm'
-import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
-import { renderResult } from '../async-rendering'
+import { getAssistanceActionOptions } from '../../../api/child/assistance-actions'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { renderResult } from '../../async-rendering'
 
-import AssistanceActionRow from './assistance-action/AssistanceActionRow'
+import AssistanceActionForm from './AssistanceActionForm'
+import AssistanceActionRow from './AssistanceActionRow'
 
 const TitleRow = styled.div`
   display: flex;
@@ -38,7 +38,7 @@ export interface Props {
   assistanceActions: Result<AssistanceActionResponse[]>
 }
 
-export default React.memo(function AssistanceAction({
+export default React.memo(function AssistanceActionSection({
   id,
   assistanceActions
 }: Props) {

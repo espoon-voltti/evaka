@@ -11,13 +11,17 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
 
-import AssistanceAction from '../../components/child-information/AssistanceAction'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
+import AssistanceAction from './assistance/AssistanceActionSection'
+import { AssistanceFactorSection } from './assistance/AssistanceFactorSection'
+import { DaycareAssistanceSection } from './assistance/DaycareAssistanceSection'
+import { OtherAssistanceMeasureSection } from './assistance/OtherAssistanceMeasureSection'
+import { PreschoolAssistanceSection } from './assistance/PreschoolAssistanceSection'
 import { assistanceQuery } from './queries'
 
 export interface Props {
@@ -44,6 +48,36 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         paddingVertical="L"
         data-qa="assistance-collapsible"
       >
+        {permittedActions.has('READ_ASSISTANCE_FACTORS') && (
+          <AssistanceFactorSection
+            childId={id}
+            rows={assistanceResult.map(
+              ({ assistanceFactors }) => assistanceFactors
+            )}
+          />
+        )}
+        {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
+          <>
+            <HorizontalLine dashed slim />
+            <DaycareAssistanceSection
+              childId={id}
+              rows={assistanceResult.map(
+                ({ daycareAssistances }) => daycareAssistances
+              )}
+            />
+          </>
+        )}
+        {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
+          <>
+            <HorizontalLine dashed slim />
+            <PreschoolAssistanceSection
+              childId={id}
+              rows={assistanceResult.map(
+                ({ preschoolAssistances }) => preschoolAssistances
+              )}
+            />
+          </>
+        )}
         {permittedActions.has('READ_ASSISTANCE_NEED') && (
           <AssistanceNeed
             id={id}
@@ -59,6 +93,17 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
               id={id}
               assistanceActions={assistanceResult.map(
                 ({ assistanceActions }) => assistanceActions
+              )}
+            />
+          </>
+        )}
+        {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') && (
+          <>
+            <HorizontalLine dashed slim />
+            <OtherAssistanceMeasureSection
+              childId={id}
+              rows={assistanceResult.map(
+                ({ otherAssistanceMeasures }) => otherAssistanceMeasures
               )}
             />
           </>
