@@ -48,8 +48,8 @@ beforeEach(async () => {
     .with({
       childId: childFixture.id,
       unitId: fixtures.daycareFixturePrivateVoucher.id,
-      startDate: startDate.formatIso(),
-      endDate: endDate.formatIso()
+      startDate: startDate,
+      endDate: endDate
     })
     .save()
   const serviceNeedOption = await Fixture.serviceNeedOption()
@@ -58,8 +58,8 @@ beforeEach(async () => {
   await Fixture.serviceNeed()
     .with({
       placementId: placement.data.id,
-      startDate: startDate.formatIso(),
-      endDate: endDate.formatIso(),
+      startDate: startDate,
+      endDate: endDate,
       optionId: serviceNeedOption.data.id,
       confirmedBy: unitSupervisor.data.id
     })
@@ -84,7 +84,7 @@ describe('Employee - Backup care', () => {
     await groupsPage.missingPlacementsSection.assertRowCount(1)
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      dateOfBirth: LocalDate.parseIso(childFixture.dateOfBirth).format(),
+      dateOfBirth: childFixture.dateOfBirth.format(),
       placementDuration: '01.02.2023 - 03.02.2023',
       groupMissingDuration: '01.02.2023 - 03.02.2023'
     })
@@ -117,7 +117,7 @@ describe('Employee - Backup care', () => {
     await groupsPage.missingPlacementsSection.assertRowCount(1)
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      dateOfBirth: LocalDate.parseIso(childFixture.dateOfBirth).format(),
+      dateOfBirth: childFixture.dateOfBirth.format(),
       placementDuration: '01.02.2023 - 03.02.2023',
       groupMissingDuration: '01.02.2023 - 03.02.2023'
     })

@@ -146,7 +146,7 @@ export const clubFixture: Daycare = {
   areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen kerho',
   type: ['CLUB'],
-  openingDate: '2020-01-01',
+  openingDate: LocalDate.of(2020, 1, 1),
   costCenter: '31500',
   streetAddress: 'Kamreerintie 1',
   postalCode: '02210',
@@ -345,7 +345,7 @@ export const enduserGuardianFixture: PersonDetail = {
   email: 'johannes.karhula@evaka.test',
   phone: '123456789',
   language: 'fi',
-  dateOfBirth: '1944-07-07',
+  dateOfBirth: LocalDate.of(1944, 7, 7),
   streetAddress: 'Kamreerintie 1',
   postalCode: '00340',
   postOffice: 'Espoo',
@@ -363,7 +363,7 @@ export const enduserChildFixtureJari: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: '2014-07-07',
+  dateOfBirth: LocalDate.of(2014, 7, 7),
   streetAddress: enduserGuardianFixture.streetAddress,
   postalCode: enduserGuardianFixture.postalCode,
   postOffice: enduserGuardianFixture.postOffice,
@@ -380,7 +380,7 @@ export const enduserChildFixtureKaarina: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: '2016-06-16',
+  dateOfBirth: LocalDate.of(2016, 6, 6),
   streetAddress: enduserGuardianFixture.streetAddress,
   postalCode: enduserGuardianFixture.postalCode,
   postOffice: enduserGuardianFixture.postOffice,
@@ -397,7 +397,7 @@ export const enduserChildFixturePorriHatterRestricted: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: '2014-07-07',
+  dateOfBirth: LocalDate.of(2014, 7, 7),
   streetAddress: enduserGuardianFixture.streetAddress,
   postalCode: enduserGuardianFixture.postalCode,
   postOffice: enduserGuardianFixture.postOffice,
@@ -414,7 +414,7 @@ export const enduserChildJariOtherGuardianFixture: PersonDetail = {
   email: '',
   phone: '555-2580',
   language: 'fi',
-  dateOfBirth: '1999-12-31',
+  dateOfBirth: LocalDate.of(1999, 2, 1),
   streetAddress: 'Toistie 33',
   postalCode: '02230',
   postOffice: 'Espoo',
@@ -431,8 +431,8 @@ export const enduserDeceasedChildFixture: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: '2015-05-15',
-  dateOfDeath: '2020-06-01',
+  dateOfBirth: LocalDate.of(2015, 5, 15),
+  dateOfDeath: LocalDate.of(2020, 6, 1),
   streetAddress: 'Aapiskatu 1',
   postalCode: '00340',
   postOffice: 'Espoo',
@@ -448,7 +448,7 @@ export const enduserNonSsnChildFixture: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: '2018-08-15',
+  dateOfBirth: LocalDate.of(2018, 8, 15),
   streetAddress: 'Suosiellä 1',
   postalCode: '00340',
   postOffice: 'Espoo',
@@ -465,7 +465,7 @@ const twoGuardiansGuardian1 = {
   email: 'mikael.hogfors@evaka.test',
   phone: '123456789',
   language: 'fi',
-  dateOfBirth: '1981-02-22',
+  dateOfBirth: LocalDate.of(1981, 2, 22),
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
@@ -482,7 +482,7 @@ const twoGuardiansGuardian2 = {
   email: 'kaarina.hogfors@evaka.test',
   phone: '123456789',
   language: 'fi',
-  dateOfBirth: '1990-05-17',
+  dateOfBirth: LocalDate.of(1990, 5, 17),
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
@@ -500,7 +500,7 @@ const twoGuardiansChildren = [
     email: '',
     phone: '',
     language: 'fi',
-    dateOfBirth: '2013-10-07',
+    dateOfBirth: LocalDate.of(2013, 10, 7),
     streetAddress: 'Kamreerintie 4',
     postalCode: '02100',
     postOffice: 'Espoo',
@@ -528,7 +528,7 @@ const separatedGuardiansGuardian1 = {
   id: '1c1b2946-fdf3-4e02-a3e4-2c2a797bafc3',
   firstName: 'John',
   lastName: 'Doe',
-  dateOfBirth: '1980-01-01',
+  dateOfBirth: LocalDate.of(1980, 1, 1),
   ssn: '010180-1232',
   streetAddress: 'Kamreerintie 2',
   postalCode: '02770',
@@ -538,7 +538,7 @@ const separatedGuardiansGuardian2 = {
   id: '56064714-649f-457e-893a-44832936166c',
   firstName: 'Joan',
   lastName: 'Doe',
-  dateOfBirth: '1979-02-01',
+  dateOfBirth: LocalDate.of(1979, 2, 1),
   ssn: '010279-123L',
   streetAddress: 'Testikatu 1',
   postalCode: '02770',
@@ -549,7 +549,7 @@ const separatedGuardiansChildren = [
     id: '5474ee62-16cf-4cfe-a297-40559e165a32',
     firstName: 'Ricky',
     lastName: 'Doe',
-    dateOfBirth: '2017-06-01',
+    dateOfBirth: LocalDate.of(2017, 6, 1),
     ssn: '010617A123U',
     streetAddress: 'Kamreerintie 2',
     postalCode: '02770',
@@ -579,7 +579,7 @@ const restrictedDetailsGuardian = {
   email: 'kaj@example.com',
   phone: '123456789',
   language: 'fi',
-  dateOfBirth: '1984-08-08',
+  dateOfBirth: LocalDate.of(1984, 8, 8),
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
@@ -596,7 +596,7 @@ const guardian2WithNoRestrictions = {
   email: 'helga@example.com',
   phone: '123456789',
   language: 'fi',
-  dateOfBirth: '1986-04-13',
+  dateOfBirth: LocalDate.of(1986, 4, 13),
   streetAddress: 'Westendinkatu 3',
   postalCode: '02100',
   postOffice: 'Espoo',
@@ -610,7 +610,7 @@ const restrictedDetailsGuardiansChildren = [
     id: '82a2586e-3fdd-11eb-b378-0242ac130002',
     firstName: 'Vadelma',
     lastName: 'Pelimerkki',
-    dateOfBirth: '2017-05-15',
+    dateOfBirth: LocalDate.of(2017, 5, 15),
     ssn: '150517A9989',
     streetAddress: 'Kamreerintie 4',
     postalCode: '02100',
@@ -641,8 +641,8 @@ const deadGuardian = {
   email: 'kuisma@example.com',
   phone: '123456789',
   language: 'fi',
-  dateOfBirth: '1981-05-08',
-  dateOfDeath: '2021-05-01',
+  dateOfBirth: LocalDate.of(1981, 5, 8),
+  dateOfDeath: LocalDate.of(2021, 5, 1),
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
@@ -655,7 +655,7 @@ const deadGuardianChild = {
   id: '1ad3469b-593d-45e4-a68b-a09f759bd029',
   firstName: 'Kuopus',
   lastName: 'Kuollut',
-  dateOfBirth: '2019-09-09',
+  dateOfBirth: LocalDate.of(2019, 9, 9),
   ssn: '090917A998M',
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
@@ -683,7 +683,7 @@ export const personFixtureChildZeroYearOld: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: LocalDate.todayInSystemTz().formatIso(), // Always a zero-year-old
+  dateOfBirth: LocalDate.todayInSystemTz(), // Always a zero-year-old
   streetAddress: 'Kamreerintie 2',
   postalCode: '00370',
   postOffice: 'Espoo',
@@ -700,7 +700,7 @@ export const restrictedPersonFixture: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: '1983-10-03',
+  dateOfBirth: LocalDate.of(1983, 10, 3),
   streetAddress: '',
   postalCode: '',
   postOffice: '',
@@ -713,7 +713,7 @@ export const adultFixtureWihtoutSSN = {
   id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
   firstName: 'Aikuinen',
   lastName: 'Hetuton',
-  dateOfBirth: '1980-01-01',
+  dateOfBirth: LocalDate.of(1980, 1, 1),
   streetAddress: 'Kamreerintie 2',
   postalCode: '02770',
   postOffice: 'Espoo'
@@ -753,7 +753,7 @@ const applicationForm = (
 
   return {
     child: {
-      dateOfBirth: LocalDate.parseNullableIso(child.dateOfBirth),
+      dateOfBirth: child.dateOfBirth,
       person: {
         ...child,
         socialSecurityNumber: child.ssn ?? null
@@ -847,8 +847,8 @@ export const applicationFixture = (
 export const placementPlanFixture = (
   applicationId: string,
   unitId: string,
-  periodStart: string,
-  periodEnd: string
+  periodStart: LocalDate,
+  periodEnd: LocalDate
 ): PlacementPlan => ({
   applicationId,
   unitId,
@@ -866,8 +866,8 @@ const feeThresholds = {
 
 export const decisionFixture = (
   applicationId: string,
-  startDate: string,
-  endDate: string
+  startDate: LocalDate,
+  endDate: LocalDate
 ): DecisionFixture => ({
   id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
   employeeId: 'SET_THIS',
@@ -908,7 +908,7 @@ export const feeDecisionsFixture = (
     {
       child: {
         id: child.id,
-        dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
+        dateOfBirth: child.dateOfBirth
       },
       placement: {
         unitId: daycareId,
@@ -1038,7 +1038,7 @@ export const daycareGroupFixture: DaycareGroup = {
   id: '2f998c23-0f90-4afd-829b-d09ecf2f6188',
   daycareId: daycareFixture.id,
   name: 'Kosmiset vakiot',
-  startDate: '2000-01-01'
+  startDate: LocalDate.of(2000, 1, 1)
 }
 
 export function createChildFixture(childId: string): Child {
@@ -1051,8 +1051,8 @@ export function createDaycarePlacementFixture(
   id: string,
   childId: string,
   unitId: string,
-  startDate = '2022-05-01',
-  endDate = '2023-08-31',
+  startDate = LocalDate.of(2022, 5, 1),
+  endDate = LocalDate.of(2023, 8, 31),
   type: PlacementType = 'DAYCARE'
 ): DaycarePlacement {
   return {
@@ -1069,8 +1069,8 @@ export function createPreschoolDaycarePlacementFixture(
   id: string,
   childId: string,
   unitId: string,
-  startDate = '2022-05-01',
-  endDate = '2023-08-31'
+  startDate = LocalDate.of(2022, 5, 1),
+  endDate = LocalDate.of(2023, 8, 31)
 ): DaycarePlacement {
   return {
     id,
@@ -1086,9 +1086,9 @@ export function createBackupCareFixture(
   childId: string,
   unitId: string,
   groupId?: string,
-  period: { start: string; end: string } = {
-    start: '2023-02-01',
-    end: '2023-02-03'
+  period: { start: LocalDate; end: LocalDate } = {
+    start: LocalDate.of(2023, 2, 1),
+    end: LocalDate.of(2023, 2, 3)
   }
 ): BackupCare {
   return {
@@ -1162,7 +1162,7 @@ export class Fixture {
       id: uuidv4(),
       daycareId: '',
       name: `daycareGroup_${id}`,
-      startDate: '2020-01-01'
+      startDate: LocalDate.of(2020, 1, 1)
     })
   }
 
@@ -1181,7 +1181,7 @@ export class Fixture {
     const id = uniqueLabel()
     return new PersonBuilder({
       id: uuidv4(),
-      dateOfBirth: '2020-05-05',
+      dateOfBirth: LocalDate.of(2020, 5, 5),
       ssn: '050520A999M',
       email: `email_${id}@evaka.test`,
       firstName: `firstName_${id}`,
@@ -1304,8 +1304,8 @@ export class Fixture {
       employeeId: 'not set',
       unitId: nullUUID,
       type: 'DAYCARE',
-      startDate: '2020-01-01',
-      endDate: '2021-01-01'
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2021, 1, 1)
     })
   }
 
@@ -1331,8 +1331,8 @@ export class Fixture {
       childId: 'not set',
       unitId: 'not set',
       type: 'DAYCARE',
-      startDate: LocalDate.todayInSystemTz().formatIso(),
-      endDate: LocalDate.todayInSystemTz().addYears(1).formatIso()
+      startDate: LocalDate.todayInSystemTz(),
+      endDate: LocalDate.todayInSystemTz().addYears(1)
     })
   }
 
@@ -1341,8 +1341,8 @@ export class Fixture {
       id: uuidv4(),
       daycareGroupId: 'not set',
       daycarePlacementId: 'not set',
-      startDate: LocalDate.todayInSystemTz().formatIso(),
-      endDate: LocalDate.todayInSystemTz().addYears(1).formatIso()
+      startDate: LocalDate.todayInSystemTz(),
+      endDate: LocalDate.todayInSystemTz().addYears(1)
     })
   }
 
@@ -1353,8 +1353,8 @@ export class Fixture {
       unitId: 'not set',
       groupId: 'not set',
       period: {
-        start: LocalDate.todayInSystemTz().formatIso(),
-        end: LocalDate.todayInSystemTz().formatIso()
+        start: LocalDate.todayInSystemTz(),
+        end: LocalDate.todayInSystemTz()
       }
     })
   }
@@ -1363,8 +1363,8 @@ export class Fixture {
     return new ServiceNeedBuilder({
       id: uuidv4(),
       placementId: 'not set',
-      startDate: LocalDate.todayInSystemTz().formatIso(),
-      endDate: LocalDate.todayInSystemTz().formatIso(),
+      startDate: LocalDate.todayInSystemTz(),
+      endDate: LocalDate.todayInSystemTz(),
       optionId: 'not set',
       shiftCare: false,
       confirmedBy: 'not set',
@@ -1410,8 +1410,8 @@ export class Fixture {
       capacityFactor: 1.0,
       childId: 'not_set',
       description: '',
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: LocalDate.todayInSystemTz(),
+      endDate: LocalDate.todayInSystemTz(),
       otherBasis: '',
       updatedBy: ''
     })
@@ -1546,8 +1546,8 @@ export class Fixture {
     return new ChildAttendanceBuilder({
       childId: '',
       unitId: '',
-      arrived: new Date(),
-      departed: new Date()
+      arrived: HelsinkiDateTime.now(),
+      departed: HelsinkiDateTime.now()
     })
   }
 
@@ -1597,7 +1597,7 @@ export class Fixture {
         }
       },
       effect: 'INCOME',
-      updatedAt: new Date(),
+      updatedAt: HelsinkiDateTime.now(),
       updatedBy: 'not_set'
     })
   }
@@ -1613,7 +1613,7 @@ export class Fixture {
   static vardaReset(): VardaResetBuilder {
     return new VardaResetBuilder({
       evakaChildId: uuidv4(),
-      resetTimestamp: new Date()
+      resetTimestamp: HelsinkiDateTime.now()
     })
   }
 
@@ -1621,7 +1621,7 @@ export class Fixture {
     return new VardaServiceNeedBuilder({
       evakaServiceNeedId: uuidv4(),
       evakaChildId: uuidv4(),
-      evakaServiceNeedUpdated: new Date(),
+      evakaServiceNeedUpdated: HelsinkiDateTime.now(),
       updateFailed: false,
       errors: []
     })
@@ -1631,8 +1631,8 @@ export class Fixture {
     return new PlacementPlanBuilder({
       applicationId: uuidv4(),
       unitId: uuidv4(),
-      periodStart: '',
-      periodEnd: ''
+      periodStart: LocalDate.todayInSystemTz(),
+      periodEnd: LocalDate.todayInSystemTz()
     })
   }
 

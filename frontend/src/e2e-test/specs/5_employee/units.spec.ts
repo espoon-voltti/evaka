@@ -24,11 +24,9 @@ let childFixture: PersonDetail
 let placementFixture: DaycarePlacement
 let page: Page
 
-const isoToFi = (isoDate: string) => LocalDate.parseIso(isoDate).format()
-
 const placementDates = () => ({
-  start: isoToFi(placementFixture.startDate),
-  end: isoToFi(placementFixture.endDate)
+  start: placementFixture.startDate.format(),
+  end: placementFixture.endDate.format()
 })
 
 beforeEach(async () => {
@@ -42,7 +40,7 @@ beforeEach(async () => {
       .with({
         daycareId: unitFixture.id,
         name: 'Kosmiset vakiot',
-        startDate: '2020-02-01'
+        startDate: LocalDate.of(2020, 2, 1)
       })
       .save()
   ).data
@@ -53,8 +51,8 @@ beforeEach(async () => {
       .with({
         childId: childFixture.id,
         unitId: unitFixture.id,
-        startDate: today.formatIso(),
-        endDate: today.addYears(1).formatIso()
+        startDate: today,
+        endDate: today.addYears(1)
       })
       .save()
   ).data
@@ -93,9 +91,7 @@ describe('Employee - Units', () => {
 
     const group = await groupsPage.openGroupCollapsible(groupFixture.id)
     await group.assertGroupName(groupFixture.name)
-    await group.assertGroupStartDate(
-      LocalDate.parseIso(groupFixture.startDate).format()
-    )
+    await group.assertGroupStartDate(groupFixture.startDate.format())
     await group.assertChildCount(0)
   })
 
@@ -124,7 +120,7 @@ describe('Employee - Units', () => {
     await groupsPage.missingPlacementsSection.assertRowCount(1)
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      dateOfBirth: isoToFi(childFixture.dateOfBirth),
+      dateOfBirth: childFixture.dateOfBirth.format(),
       placementDuration: `${placementDates().start} - ${placementDates().end}`,
       groupMissingDuration: `${placementDates().start} - ${
         placementDates().end
@@ -157,7 +153,7 @@ describe('Employee - Units', () => {
     await groupsPage.missingPlacementsSection.assertRowCount(1)
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
       childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      dateOfBirth: isoToFi(childFixture.dateOfBirth),
+      dateOfBirth: childFixture.dateOfBirth.format(),
       placementDuration: `${placementDates().start} - ${placementDates().end}`,
       groupMissingDuration: `${placementDates().start} - ${
         placementDates().end
@@ -178,7 +174,7 @@ describe('Employee - Units', () => {
       .with({
         groupId: groupFixture.id,
         amount: 1,
-        startDate: LocalDate.parseIso(groupFixture.startDate)
+        startDate: groupFixture.startDate
       })
       .save()
 
@@ -201,8 +197,8 @@ describe('Employee - Units', () => {
       .careArea(area)
       .with({
         name: 'Wanha päiväkoti',
-        openingDate: '1900-01-01',
-        closingDate: '2000-01-01'
+        openingDate: LocalDate.of(1900, 1, 1),
+        closingDate: LocalDate.of(2000, 1, 1)
       })
       .save()
 

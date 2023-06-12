@@ -51,7 +51,7 @@ beforeEach(async () => {
       childId: fixtures.enduserChildFixtureKaarina.id,
       headOfChildId: fixtures.enduserGuardianFixture.id,
       startDate: fixtures.enduserChildFixtureKaarina.dateOfBirth,
-      endDate: '2099-01-01'
+      endDate: LocalDate.of(2099, 1, 1)
     }
   ])
 
@@ -72,8 +72,8 @@ beforeEach(async () => {
       uuidv4(),
       fixtures.enduserChildFixtureKaarina.id,
       fixtures.daycareFixture.id,
-      feeDecisionFixture.validDuring.start.formatIso(),
-      feeDecisionFixture.validDuring.end?.formatIso()
+      feeDecisionFixture.validDuring.start,
+      feeDecisionFixture.validDuring.end ?? undefined
     )
   ])
 

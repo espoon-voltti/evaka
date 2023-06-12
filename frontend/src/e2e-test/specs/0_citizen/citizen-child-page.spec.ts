@@ -59,8 +59,8 @@ describe('Citizen children page', () => {
           type: 'DAYCARE',
           childId: child.id,
           unitId: fixtures.daycareFixture.id,
-          startDate: mockedDate.subMonths(1).formatIso(),
-          endDate: mockedDate.formatIso()
+          startDate: mockedDate.subMonths(1),
+          endDate: mockedDate
         }))
       )
       await page.reload()
@@ -86,8 +86,8 @@ describe('Citizen children page', () => {
         type,
         childId: fixtures.enduserChildFixtureKaarina.id,
         unitId,
-        startDate: startDate.formatIso(),
-        endDate: endDate.formatIso()
+        startDate: startDate,
+        endDate: endDate
       }
     ])
   }
@@ -218,40 +218,40 @@ describe('Citizen children page', () => {
           type: 'DAYCARE',
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.daycareFixture.id,
-          startDate: daycare1Start.formatIso(),
-          endDate: daycare1End.formatIso()
+          startDate: daycare1Start,
+          endDate: daycare1End
         },
         {
           id: uuidv4(),
           type: 'DAYCARE',
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: daycare2start.formatIso(),
-          endDate: daycare2end.formatIso()
+          startDate: daycare2start,
+          endDate: daycare2end
         },
         {
           id: uuidv4(),
           type: 'PRESCHOOL',
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: preschool1Start.formatIso(),
-          endDate: preschool1End.formatIso()
+          startDate: preschool1Start,
+          endDate: preschool1End
         },
         {
           id: uuidv4(),
           type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: preschool2Start.formatIso(),
-          endDate: preschool2End.formatIso()
+          startDate: preschool2Start,
+          endDate: preschool2End
         },
         {
           id: uuidv4(),
           type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: daycareAfterPreschoolStart.formatIso(),
-          endDate: daycareAfterPreschoolEnd.formatIso()
+          startDate: daycareAfterPreschoolStart,
+          endDate: daycareAfterPreschoolEnd
         }
       ]
       await insertDaycarePlacementFixtures(placements)
@@ -287,16 +287,16 @@ describe('Citizen children page', () => {
           type: 'DAYCARE',
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.daycareFixture.id,
-          startDate: daycare1Start.formatIso(),
-          endDate: daycare1End.formatIso()
+          startDate: daycare1Start,
+          endDate: daycare1End
         },
         {
           id: uuidv4(),
           type: 'DAYCARE',
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: daycare2start.formatIso(),
-          endDate: daycare2end.formatIso()
+          startDate: daycare2start,
+          endDate: daycare2end
         }
       ]
       await insertDaycarePlacementFixtures(placements)
@@ -349,16 +349,16 @@ describe('Citizen children page', () => {
           type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: preschool2Start.formatIso(),
-          endDate: preschool2End.formatIso()
+          startDate: preschool2Start,
+          endDate: preschool2End
         },
         {
           id: uuidv4(),
           type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
-          startDate: daycareAfterPreschoolStart.formatIso(),
-          endDate: daycareAfterPreschoolEnd.formatIso()
+          startDate: daycareAfterPreschoolStart,
+          endDate: daycareAfterPreschoolEnd
         }
       ]
       await insertDaycarePlacementFixtures(placements)
@@ -453,7 +453,7 @@ describe('Citizen children page', () => {
         .with({
           unitId: fixtures.daycareFixture.id,
           childId: fixtures.enduserChildFixturePorriHatterRestricted.id,
-          startDate: mockedDate.subDays(10).formatIso()
+          startDate: mockedDate.subDays(10)
         })
         .save()
 
@@ -461,7 +461,7 @@ describe('Citizen children page', () => {
         .with({
           unitId: fixtures.daycareFixture.id,
           childId: fixtures.enduserChildFixtureKaarina.id,
-          startDate: mockedDate.subDays(10).formatIso()
+          startDate: mockedDate.subDays(10)
         })
         .save()
 
@@ -469,7 +469,7 @@ describe('Citizen children page', () => {
         .with({
           unitId: fixtures.daycareFixture.id,
           childId: fixtures.enduserChildFixtureJari.id,
-          startDate: mockedDate.subDays(10).formatIso()
+          startDate: mockedDate.subDays(10)
         })
         .save()
 
@@ -556,15 +556,15 @@ describe('Citizen children page with weak login', () => {
           childId: fixtures.enduserChildFixtureJari.id,
           unitId: fixtures.daycareFixture.id,
           type: 'DAYCARE',
-          startDate: mockedDate.subMonths(2).formatIso(),
-          endDate: mockedDate.formatIso()
+          startDate: mockedDate.subMonths(2),
+          endDate: mockedDate
         })
         .save()
       await Fixture.serviceNeed()
         .with({
           placementId: placement.data.id,
-          startDate: mockedDate.subMonths(1).formatIso(),
-          endDate: mockedDate.formatIso(),
+          startDate: mockedDate.subMonths(1),
+          endDate: mockedDate,
           optionId: serviceNeedOption.data.id,
           confirmedBy: daycareSupervisor.data.id
         })
@@ -612,8 +612,8 @@ describe('Citizen children page with weak login', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           type: 'PRESCHOOL',
-          startDate: mockedDate.subMonths(1).formatIso(),
-          endDate: mockedDate.formatIso()
+          startDate: mockedDate.subMonths(1),
+          endDate: mockedDate
         })
         .save()
 

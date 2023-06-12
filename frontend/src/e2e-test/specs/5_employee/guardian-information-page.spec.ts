@@ -64,7 +64,7 @@ beforeEach(async () => {
     id: uuidv4()
   }
 
-  const startDate = '2021-08-16'
+  const startDate = LocalDate.of(2021, 8, 16)
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
   await insertApplications([application, application2])
   await insertDecisionFixtures([

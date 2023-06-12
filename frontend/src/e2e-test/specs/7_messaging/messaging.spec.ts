@@ -74,16 +74,16 @@ beforeEach(async () => {
     .with({
       childId,
       unitId,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.data.id,
       daycareGroupId: daycareGroupFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.addYears(1).formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
 
@@ -101,7 +101,7 @@ beforeEach(async () => {
       id: backupGroupFixtureId,
       daycareId: backupDaycareId,
       name: 'Varayksikön ryhmä',
-      startDate: '2000-01-01'
+      startDate: LocalDate.of(2000, 1, 1)
     }
   ])
 
@@ -179,8 +179,8 @@ describe('Sending and receiving messages', () => {
           .with({
             childId: enduserChildFixtureKaarina.id,
             unitId: fixtures.daycareFixturePrivateVoucher.id,
-            startDate: mockedDate.formatIso(),
-            endDate: mockedDate.formatIso()
+            startDate: mockedDate,
+            endDate: mockedDate
           })
           .save()
         await insertBackupCareFixtures([
@@ -190,8 +190,8 @@ describe('Sending and receiving messages', () => {
             unitId: fixtures.daycareFixture.id,
             groupId: daycareGroupFixture.id,
             period: {
-              start: mockedDate.formatIso(),
-              end: mockedDate.formatIso()
+              start: mockedDate,
+              end: mockedDate
             }
           }
         ])
@@ -240,8 +240,8 @@ describe('Sending and receiving messages', () => {
             unitId: backupDaycareId,
             groupId: backupGroupFixtureId,
             period: {
-              start: mockedDate.formatIso(),
-              end: mockedDate.formatIso()
+              start: mockedDate,
+              end: mockedDate
             }
           }
         ])
@@ -411,16 +411,16 @@ describe('Sending and receiving messages', () => {
           .with({
             childId: enduserChildFixtureKaarina.id,
             unitId: fixtures.daycareFixture.id,
-            startDate: mockedDate.formatIso(),
-            endDate: mockedDate.formatIso()
+            startDate: mockedDate,
+            endDate: mockedDate
           })
           .save()
         await Fixture.groupPlacement()
           .with({
             daycarePlacementId: daycarePlacementFixture.data.id,
             daycareGroupId: daycareGroupFixture.id,
-            startDate: mockedDate.formatIso(),
-            endDate: mockedDate.formatIso()
+            startDate: mockedDate,
+            endDate: mockedDate
           })
           .save()
         await insertGuardianFixtures([

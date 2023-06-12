@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { addDays, subDays } from 'date-fns'
-
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
@@ -64,8 +62,8 @@ const setupPlacement = async (
       uuidv4(),
       childId,
       voucher ? voucherUnitId : unitId,
-      LocalDate.todayInSystemTz().formatIso(),
-      LocalDate.todayInSystemTz().formatIso(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       childPlacementType
     )
   ])
@@ -95,8 +93,8 @@ describe('Child Information assistance need functionality for employees', () => 
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
-        startDate: subDays(new Date(), 1),
-        endDate: new Date(),
+        startDate: LocalDate.todayInSystemTz().addDays(-1),
+        endDate: LocalDate.todayInSystemTz(),
         description:
           'Test service need to be hidden because it starts before preschool started',
         updatedBy: unitSupervisor.id
@@ -106,8 +104,8 @@ describe('Child Information assistance need functionality for employees', () => 
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
-        startDate: addDays(new Date(), 1),
-        endDate: addDays(new Date(), 1),
+        startDate: LocalDate.todayInSystemTz().addDays(1),
+        endDate: LocalDate.todayInSystemTz().addDays(1),
         description:
           'Test service need to be shown because it starts after preschool started',
         updatedBy: unitSupervisor.id
@@ -125,7 +123,7 @@ describe('Child Information assistance need functionality for employees', () => 
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
-        startDate: new Date(),
+        startDate: LocalDate.todayInSystemTz(),
         description:
           'Test service need to be shown because it starts when preschool started',
         updatedBy: unitSupervisor.id
@@ -141,7 +139,7 @@ describe('Child Information assistance need functionality for employees', () => 
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
-        startDate: subDays(new Date(), 1),
+        startDate: LocalDate.todayInSystemTz().addDays(-1),
         description: 'Test service need to be shown because user is admin',
         updatedBy: admin.id
       })
@@ -160,8 +158,8 @@ describe('Child Information assistance need functionality for employees', () => 
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
-        startDate: subDays(new Date(), 1),
-        endDate: new Date(),
+        startDate: LocalDate.todayInSystemTz().addDays(-1),
+        endDate: LocalDate.todayInSystemTz(),
         description:
           'Test service need to be shown to SEO if she has acl rights to child',
         updatedBy: specialEducationTeacher.id
@@ -171,8 +169,8 @@ describe('Child Information assistance need functionality for employees', () => 
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
-        startDate: addDays(new Date(), 1),
-        endDate: addDays(new Date(), 2),
+        startDate: LocalDate.todayInSystemTz().addDays(1),
+        endDate: LocalDate.todayInSystemTz().addDays(2),
         description:
           'Test service to be shown because it is active only during preschool period',
         updatedBy: specialEducationTeacher.id

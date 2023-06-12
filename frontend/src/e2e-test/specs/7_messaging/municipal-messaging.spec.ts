@@ -66,8 +66,8 @@ beforeEach(async () => {
     .with({
       childId: childInAreaA.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate
     })
     .save()
     .then((placement) =>
@@ -84,8 +84,8 @@ beforeEach(async () => {
     .with({
       childId: childInAreaB.id,
       unitId: daycare2Fixture.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate
     })
     .save()
     .then((placement) =>

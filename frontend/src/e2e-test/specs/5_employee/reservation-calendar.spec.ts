@@ -84,8 +84,8 @@ beforeEach(async () => {
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 
@@ -96,8 +96,8 @@ beforeEach(async () => {
       unitId: daycareFixture.id,
       groupId: groupId2,
       period: {
-        start: backupCareStartDate.formatIso(),
-        end: backupCareEndDate.formatIso()
+        start: backupCareStartDate,
+        end: backupCareEndDate
       }
     })
     .save()
@@ -106,8 +106,8 @@ beforeEach(async () => {
     .with({
       daycareGroupId: groupId,
       daycarePlacementId: child1DaycarePlacementId,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 
@@ -152,8 +152,8 @@ describe('Unit group calendar', () => {
         unitId: daycare.id,
         groupId: groupId3,
         period: {
-          start: backupCareSameUnitStartDate.formatIso(),
-          end: backupCareSameUnitEndDate.formatIso()
+          start: backupCareSameUnitStartDate,
+          end: backupCareSameUnitEndDate
         }
       })
       .save()
@@ -186,8 +186,8 @@ describe('Unit group calendar', () => {
         unitId: daycare.id,
         groupId: groupId3,
         period: {
-          start: backupCareSameUnitStartDate.formatIso(),
-          end: backupCareSameUnitEndDate.formatIso()
+          start: backupCareSameUnitStartDate,
+          end: backupCareSameUnitEndDate
         }
       })
       .save()
@@ -482,14 +482,8 @@ describe('Unit group calendar', () => {
           .with({
             childId: child1Fixture.id,
             unitId: daycare2Fixture.id,
-            arrived: HelsinkiDateTime.fromLocal(
-              mockedToday,
-              arrival
-            ).toSystemTzDate(),
-            departed: HelsinkiDateTime.fromLocal(
-              mockedToday,
-              departure
-            ).toSystemTzDate()
+            arrived: HelsinkiDateTime.fromLocal(mockedToday, arrival),
+            departed: HelsinkiDateTime.fromLocal(mockedToday, departure)
           })
           .save()
       })
@@ -556,8 +550,8 @@ describe('Unit group calendar for shift care unit', () => {
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
-        arrived: arrived.toSystemTzDate(),
-        departed: arrived.toSystemTzDate()
+        arrived: arrived,
+        departed: arrived
       })
       .save()
 
@@ -571,8 +565,8 @@ describe('Unit group calendar for shift care unit', () => {
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
-        arrived: arrived2.toSystemTzDate(),
-        departed: departed2.toSystemTzDate()
+        arrived: arrived2,
+        departed: departed2
       })
       .save()
 

@@ -69,7 +69,7 @@ describe('Placement sketching report', () => {
           preferredStartDate
         }
       },
-      sentDate: sentDate.formatIso(),
+      sentDate: sentDate,
       status: 'SENT',
       id: applicationId
     }
@@ -108,7 +108,7 @@ describe('Placement sketching report', () => {
           preferredStartDate
         }
       },
-      sentDate: sentDate.formatIso(),
+      sentDate: sentDate,
       status: 'SENT',
       id: applicationId
     }
@@ -123,7 +123,7 @@ describe('Placement sketching report', () => {
       uuidv4(),
       createdApplication.childId,
       preferredUnit.id,
-      placementStartDate.formatIso()
+      placementStartDate
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
@@ -156,7 +156,7 @@ describe('Placement sketching report', () => {
           preferredStartDate
         }
       },
-      sentDate: sentDate.formatIso(),
+      sentDate: sentDate,
       status: 'SENT',
       id: uuidv4()
     }
@@ -177,7 +177,7 @@ describe('Placement sketching report', () => {
           preferredStartDate
         }
       },
-      sentDate: sentDate.formatIso(),
+      sentDate: sentDate,
       status: 'WAITING_PLACEMENT',
       id: uuidv4()
     }
@@ -198,7 +198,7 @@ describe('Placement sketching report', () => {
           preferredStartDate
         }
       },
-      sentDate: sentDate.formatIso(),
+      sentDate: sentDate,
       status: 'ACTIVE',
       id: uuidv4()
     }

@@ -32,8 +32,8 @@ beforeEach(async () => {
     .with({
       childId: fixtures.enduserChildFixtureJari.id,
       unitId: fixtures.daycareFixture.id,
-      startDate: today.formatIso(),
-      endDate: today.addYears(1).formatIso()
+      startDate: today,
+      endDate: today.addYears(1)
     })
     .save()
   const kaarinaPlacement = await Fixture.placement()
@@ -41,8 +41,8 @@ beforeEach(async () => {
       childId: fixtures.enduserChildFixtureKaarina.id,
       unitId: fixtures.daycareFixture.id,
       type: 'PRESCHOOL_DAYCARE',
-      startDate: today.formatIso(),
-      endDate: today.addYears(1).formatIso()
+      startDate: today,
+      endDate: today.addYears(1)
     })
     .save()
   await Fixture.groupPlacement()

@@ -212,14 +212,14 @@ describe('Application transitions', () => {
       .with({
         unitId: fixtures.daycareFixture.id,
         childId: fixtures.enduserChildFixturePorriHatterRestricted.id,
-        startDate: preferredStartDate.formatIso()
+        startDate: preferredStartDate
       })
       .save()
     await Fixture.placement()
       .with({
         unitId: fixtures.preschoolFixture.id,
         childId: fixtures.enduserChildFixtureJari.id,
-        startDate: preferredStartDate.formatIso()
+        startDate: preferredStartDate
       })
       .save()
 
@@ -626,8 +626,10 @@ describe('Application transitions', () => {
 
     const decision = decisionFixture(
       applicationId,
-      application.form.preferences.preferredStartDate?.formatIso() ?? '',
-      application.form.preferences.preferredStartDate?.formatIso() ?? ''
+      application.form.preferences.preferredStartDate ??
+        LocalDate.todayInSystemTz(),
+      application.form.preferences.preferredStartDate ??
+        LocalDate.todayInSystemTz()
     )
     const decisionId = decision.id
 
@@ -670,7 +672,7 @@ describe('Application transitions', () => {
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }
-    const placementStartDate = '2021-08-16'
+    const placementStartDate = LocalDate.of(2021, 8, 16)
 
     await insertApplications([application1, application2])
 

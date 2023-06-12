@@ -148,8 +148,8 @@ beforeEach(async () => {
     .with({
       childId: child.id,
       unitId: unit.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate
     })
     .save()
   await Fixture.groupPlacement()
@@ -161,8 +161,8 @@ beforeEach(async () => {
     .with({
       childId: child2.id,
       unitId: unit.id,
-      startDate: mockedDate.formatIso(),
-      endDate: mockedDate.formatIso()
+      startDate: mockedDate,
+      endDate: mockedDate
     })
     .save()
   await Fixture.groupPlacement()

@@ -86,7 +86,7 @@ describe('Service Worker Messaging', () => {
           fixtures.enduserChildFixtureJari,
           fixtures.enduserGuardianFixture
         ),
-        sentDate: mockedToday.formatIso()
+        sentDate: mockedToday
       }
       await insertApplications([applFixture])
     })

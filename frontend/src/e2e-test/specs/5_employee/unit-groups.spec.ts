@@ -70,8 +70,8 @@ beforeEach(async () => {
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 
@@ -82,8 +82,8 @@ beforeEach(async () => {
       id: child2DaycarePlacementId,
       childId: child2Fixture.id,
       unitId: daycare.id,
-      startDate: placementStartDate.formatIso(),
-      endDate: placementEndDate.formatIso()
+      startDate: placementStartDate,
+      endDate: placementEndDate
     })
     .save()
 
@@ -113,8 +113,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.formatIso(),
-        endDate: placementEndDate.formatIso()
+        startDate: placementStartDate,
+        endDate: placementEndDate
       })
       .save()
 
@@ -184,8 +184,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.formatIso(),
-        endDate: placementEndDate.formatIso()
+        startDate: placementStartDate,
+        endDate: placementEndDate
       })
       .save()
 
@@ -214,8 +214,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.formatIso(),
-        endDate: placementEndDate.formatIso()
+        startDate: placementStartDate,
+        endDate: placementEndDate
       })
       .save()
 
@@ -232,8 +232,8 @@ describe('Unit groups - unit supervisor', () => {
         id: child3DaycarePlacementId,
         childId: child3Fixture.id,
         unitId: daycare2.id,
-        startDate: placementStartDate.formatIso(),
-        endDate: placementEndDate.formatIso()
+        startDate: placementStartDate,
+        endDate: placementEndDate
       })
       .save()
     const backupCareFixture = createBackupCareFixture(
@@ -241,8 +241,8 @@ describe('Unit groups - unit supervisor', () => {
       daycare.id,
       groupId,
       {
-        start: placementStartDate.formatIso(),
-        end: placementEndDate.formatIso()
+        start: placementStartDate,
+        end: placementEndDate
       }
     )
     await insertBackupCareFixtures([backupCareFixture])
@@ -274,8 +274,8 @@ describe('Unit groups - unit supervisor', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child2DaycarePlacementId,
-        startDate: placementStartDate.formatIso(),
-        endDate: placementEndDate.formatIso()
+        startDate: placementStartDate,
+        endDate: placementEndDate
       })
       .save()
 
@@ -327,8 +327,8 @@ describe('Unit groups - staff', () => {
       .with({
         daycareGroupId: groupId,
         daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate.formatIso(),
-        endDate: placementEndDate.formatIso()
+        startDate: placementStartDate,
+        endDate: placementEndDate
       })
       .save()
 

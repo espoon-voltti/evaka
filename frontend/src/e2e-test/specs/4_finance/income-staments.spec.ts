@@ -116,8 +116,8 @@ describe('Income statements', () => {
         uuidv4(),
         enduserChildFixtureJari.id,
         daycareFixture.id,
-        startDate.formatIso(),
-        endDate.formatIso()
+        startDate,
+        endDate
       )
     ])
 

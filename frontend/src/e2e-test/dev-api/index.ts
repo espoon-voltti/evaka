@@ -402,8 +402,8 @@ export async function insertParentshipFixtures(
   fixtures: {
     childId: UUID
     headOfChildId: UUID
-    startDate: string
-    endDate: string | null
+    startDate: LocalDate
+    endDate: LocalDate | null
   }[]
 ): Promise<void> {
   try {

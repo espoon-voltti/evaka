@@ -69,8 +69,8 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
         uuidv4(),
         child.id,
         fixtures.daycareFixture.id,
-        today.formatIso(),
-        today.addYears(1).formatIso()
+        today,
+        today.addYears(1)
       )
     )
     await insertDaycarePlacementFixtures(placementFixtures)
@@ -514,15 +514,15 @@ describe('Citizen calendar child visibility', () => {
         uuidv4(),
         child.id,
         fixtures.daycareFixture.id,
-        placement1start.formatIso(),
-        placement1end.formatIso()
+        placement1start,
+        placement1end
       ),
       createDaycarePlacementFixture(
         uuidv4(),
         child.id,
         fixtures.daycareFixture.id,
-        placement2start.formatIso(),
-        placement2end.formatIso()
+        placement2start,
+        placement2end
       )
     ])
 
@@ -569,8 +569,8 @@ describe('Citizen calendar child visibility', () => {
         uuidv4(),
         fixtures.enduserChildFixtureKaarina.id,
         daycare2Fixture.id,
-        placement1start.formatIso(),
-        placement1end.formatIso()
+        placement1start,
+        placement1end
       )
     ])
 
@@ -590,8 +590,8 @@ describe('Citizen calendar child visibility', () => {
         uuidv4(),
         child.id,
         daycare2Fixture.id,
-        placement1start.formatIso(),
-        placement1end.formatIso()
+        placement1start,
+        placement1end
       )
     ])
 
@@ -653,8 +653,8 @@ describe('Citizen calendar visibility', () => {
         uuidv4(),
         child.id,
         daycareId,
-        today.addDays(13).formatIso(),
-        today.addYears(1).formatIso()
+        today.addDays(13),
+        today.addYears(1)
       )
     ])
 
@@ -672,8 +672,8 @@ describe('Citizen calendar visibility', () => {
         uuidv4(),
         child.id,
         daycareId,
-        today.addDays(15).formatIso(),
-        today.addYears(1).formatIso()
+        today.addDays(15),
+        today.addYears(1)
       )
     ])
 
