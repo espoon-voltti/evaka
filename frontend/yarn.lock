@@ -6246,7 +6246,7 @@ __metadata:
     react-day-picker: ^8.7.1
     react-dom: ^17.0.2
     react-focus-lock: 2.9.1
-    react-image-crop: ^10.0.11
+    react-image-crop: ^10.1.4
     react-leaflet: ^3.2.5
     react-linkify: ^1.0.0-alpha
     react-router-dom: ^6.3.0
@@ -9984,14 +9984,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-image-crop@npm:^10.0.11":
-  version: 10.0.11
-  resolution: "react-image-crop@npm:10.0.11"
+"react-image-crop@npm:^10.1.4":
+  version: 10.1.4
+  resolution: "react-image-crop@npm:10.1.4"
   dependencies:
     clsx: ^1.2.1
   peerDependencies:
     react: ">=16.13.1"
-  checksum: a1da11ce1058866fe41db9d4c0cc461e648b762bc20cc5ba0cbee4cf60037a5be4b0cba4eea61089f5e1b8e163d9c7beb4e09ce4fe315d284e65189945c63df2
+  checksum: 3616d4d78ad3a6de81372013a567a44e443d06857e17868943c11fe18d02e1f3f76aaae26843897ec2c6918cd39df93efb8dcea087ad874b00a3e4633ff82c69
   languageName: node
   linkType: hard
 
