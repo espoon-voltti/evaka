@@ -428,13 +428,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@datadog/native-appsec@npm:2.0.0"
+"@datadog/native-appsec@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@datadog/native-appsec@npm:3.2.0"
   dependencies:
     node-gyp: latest
     node-gyp-build: ^3.9.0
-  checksum: 357e9ab5af9ac5e6d25ffa84440e27f0498888c8aae5064f7d384297769f000cf36fa9056168f8bc7fc5ee7fd15e2f49340a61b2732b57c876b91d1e48a63285
+  checksum: 60635bc0379a130178a1f6e2d70c63e4198f5397730b1182a08c1fb2a4095a452bb5923e12e3859ea5786bcbd2b8d84e4058d0676913419100b0d8ac4df43b88
   languageName: node
   linkType: hard
 
@@ -447,29 +447,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@datadog/native-iast-taint-tracking@npm:1.1.1"
+"@datadog/native-iast-taint-tracking@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@datadog/native-iast-taint-tracking@npm:1.4.1"
   dependencies:
     node-gyp: latest
     node-gyp-build: ^3.9.0
-  checksum: e2b9c247543fad5c3a4cf04aa70ba5ed4b5445e6b285326ee99e939ed03ce307d6c1b0ae310d2d11807b9f3b5ce9e1f34c6b518f34f04554837fca59a21551d3
+  checksum: fab7fd4418493a3948d5dd89c6267fae278654be075b0b6bca77be170d73c42d778ec83fb9a9b9937a8f7d1804219492a2e4aa321b42d811ef797e515252053e
   languageName: node
   linkType: hard
 
-"@datadog/native-metrics@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "@datadog/native-metrics@npm:1.5.0"
+"@datadog/native-metrics@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@datadog/native-metrics@npm:2.0.0"
   dependencies:
+    node-addon-api: ^6.1.0
     node-gyp: latest
     node-gyp-build: ^3.9.0
-  checksum: 4cd4862990ef31c147cf5bc11ffbbabfcb69a7bb772347249def22f6a60864c3869b7ac531adb2df406320d094643577cdc4e8a0d47fcc002f29264a1bb15327
+  checksum: 3975904bebb6a073158d8e3fbee35208d3d98c9c03c8ed5e9dac02e31bfdc165b1d87452ac2e888bbbf0674a66567486493353cc1a9b4ec67e24347b323b530e
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@datadog/pprof@npm:2.1.0"
+"@datadog/pprof@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@datadog/pprof@npm:2.2.1"
   dependencies:
     delay: ^5.0.0
     node-gyp: latest
@@ -479,7 +480,7 @@ __metadata:
     pprof-format: ^2.0.6
     source-map: ^0.7.3
     split: ^1.0.1
-  checksum: f76eb1b815c11934db0a3c7f2b889a5c0ed2aaf8db3afa054001ecf105be17906ea776052f48df4c3b84ae283f131609c91407c0055e9d0e3c591eab9e1bf901
+  checksum: a4ea9c7dbb4eb6dd453c8b8bb5b7781932038f4e3546cef98645410f059f9332f047c7b9a547efdf22a6e844d1bef00acd09233c4a1fe05f8b07188b81c7612e
   languageName: node
   linkType: hard
 
@@ -1775,6 +1776,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"acorn-import-assertions@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "acorn-import-assertions@npm:1.9.0"
+  peerDependencies:
+    acorn: ^8
+  checksum: 944fb2659d0845c467066bdcda2e20c05abe3aaf11972116df457ce2627628a81764d800dd55031ba19de513ee0d43bb771bc679cc0eda66dc8b4fade143bc0c
+  languageName: node
+  linkType: hard
+
 "acorn-jsx@npm:^5.3.2":
   version: 5.3.2
   resolution: "acorn-jsx@npm:5.3.2"
@@ -1791,7 +1801,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.4.1, acorn@npm:^8.8.0":
+"acorn@npm:^8.4.1, acorn@npm:^8.8.0, acorn@npm:^8.8.2":
   version: 8.8.2
   resolution: "acorn@npm:8.8.2"
   bin:
@@ -2321,6 +2331,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cjs-module-lexer@npm:^1.2.2":
+  version: 1.2.3
+  resolution: "cjs-module-lexer@npm:1.2.3"
+  checksum: 5ea3cb867a9bb609b6d476cd86590d105f3cfd6514db38ff71f63992ab40939c2feb68967faa15a6d2b1f90daa6416b79ea2de486e9e2485a6f8b66a21b4fb0a
+  languageName: node
+  linkType: hard
+
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -2601,20 +2618,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^3.16.0":
-  version: 3.16.0
-  resolution: "dd-trace@npm:3.16.0"
+"dd-trace@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "dd-trace@npm:4.1.1"
   dependencies:
-    "@datadog/native-appsec": 2.0.0
+    "@datadog/native-appsec": ^3.2.0
     "@datadog/native-iast-rewriter": 2.0.1
-    "@datadog/native-iast-taint-tracking": 1.1.1
-    "@datadog/native-metrics": ^1.5.0
-    "@datadog/pprof": ^2.1.0
+    "@datadog/native-iast-taint-tracking": ^1.4.1
+    "@datadog/native-metrics": ^2.0.0
+    "@datadog/pprof": ^2.2.1
     "@datadog/sketches-js": ^2.1.0
     crypto-randomuuid: ^1.0.0
     diagnostics_channel: ^1.1.0
     ignore: ^5.2.0
-    import-in-the-middle: ^1.3.4
+    import-in-the-middle: ^1.3.5
     ipaddr.js: ^2.0.1
     istanbul-lib-coverage: 3.2.0
     koalas: ^1.0.2
@@ -2631,8 +2648,8 @@ __metadata:
     path-to-regexp: ^0.1.2
     protobufjs: ^7.1.2
     retry: ^0.10.1
-    semver: ^5.5.0
-  checksum: 1ee7c005d6ad3403f762284e272ed6038736a1b4e9177f074f2d29e78d95125bc0f56e66f2f8e5e79e4823123b7066c29d963e7592baaa53b5cf87aeb589bf26
+    semver: ^7.3.8
+  checksum: 7c3a235fa493859eccf3883173398cfd8c7225e3e94b1e096cb63d0bbf85e192a4e6f7f2ca3140e31a18bce29f6948180a9ded2afa4d4f76ac1db28db1c55615
   languageName: node
   linkType: hard
 
@@ -3116,7 +3133,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^3.16.0
+    dd-trace: ^4.1.1
     eslint: ^8.37.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^4.2.1
@@ -3868,12 +3885,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.3.4":
-  version: 1.3.4
-  resolution: "import-in-the-middle@npm:1.3.4"
+"import-in-the-middle@npm:^1.3.5":
+  version: 1.4.1
+  resolution: "import-in-the-middle@npm:1.4.1"
   dependencies:
+    acorn: ^8.8.2
+    acorn-import-assertions: ^1.9.0
+    cjs-module-lexer: ^1.2.2
     module-details-from-path: ^1.0.3
-  checksum: a1949ecf5f13a49bd78627ce86c6c3ba955b6f1e631548282780712d1b007d51b595599c84c7eb4a8b397c0285d0095da30e43813c35205e2ee3cfc5e4bd7558
+  checksum: 39cf8ba24f660dfd7f57cd871ea39b0162cb80d6fefd9150988b8836e50c3c64d9ea8793777f631730de929e90d8bd5cf18bcb65338d05e810c8d26075cddb26
   languageName: node
   linkType: hard
 
@@ -5125,6 +5145,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-addon-api@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "node-addon-api@npm:6.1.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 3a539510e677cfa3a833aca5397300e36141aca064cdc487554f2017110709a03a95da937e98c2a14ec3c626af7b2d1b6dabe629a481f9883143d0d5bff07bf2
+  languageName: node
+  linkType: hard
+
 "node-forge@npm:^1.3.1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
@@ -6066,7 +6095,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^5.5.0, semver@npm:^5.7.1":
+"semver@npm:^5.7.1":
   version: 5.7.1
   resolution: "semver@npm:5.7.1"
   bin:
