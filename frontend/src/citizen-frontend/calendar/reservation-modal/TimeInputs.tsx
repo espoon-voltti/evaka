@@ -18,7 +18,14 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, noTimes, timeRanges, reservation } from './form'
+import {
+  day,
+  emptyTimeRange,
+  noTimes,
+  timeRanges,
+  reservation,
+  getEmptyTimeRangeWithUnitTimes
+} from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
@@ -276,7 +283,21 @@ const TimeRanges = React.memo(function Times({
             {secondTimeRange === undefined && allowExtraTimeRange ? (
               <IconButton
                 icon={faPlus}
-                onClick={() => bind.update((prev) => [prev[0], emptyTimeRange])}
+                onClick={() =>
+                  bind.update((prev) => {
+                    //use same unit times as first reservation
+                    const { unitStartTime, unitEndTime } = prev[0].startTime
+                    if (unitStartTime && unitEndTime)
+                      return [
+                        prev[0],
+                        getEmptyTimeRangeWithUnitTimes({
+                          start: unitStartTime,
+                          end: unitEndTime
+                        })
+                      ]
+                    else return [prev[0], emptyTimeRange]
+                  })
+                }
                 aria-label={i18n.common.add}
               />
             ) : null}

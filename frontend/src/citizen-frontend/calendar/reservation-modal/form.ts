@@ -51,6 +51,14 @@ export const emptyTimeRange: StateOf<typeof localTimeRangeWithUnitTimes> = {
   }
 }
 
+export const getEmptyTimeRangeWithUnitTimes = (unitTimes: TimeRange | null) => {
+  const emptyTimeInputState = createTimeInputState('', unitTimes)
+  return {
+    startTime: emptyTimeInputState,
+    endTime: emptyTimeInputState
+  }
+}
+
 export const timeRanges = mapped(
   array(
     validated(localTimeRangeWithUnitTimes, (output) =>
