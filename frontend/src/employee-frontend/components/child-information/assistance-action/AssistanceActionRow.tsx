@@ -4,12 +4,12 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 
+import { Action } from 'lib-common/generated/action'
 import {
   AssistanceAction,
+  AssistanceActionOption,
   AssistanceActionResponse
-} from 'employee-frontend/types/child'
-import { Action } from 'lib-common/generated/action'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+} from 'lib-common/generated/api-types/assistanceaction'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
@@ -125,7 +125,7 @@ export default React.memo(function AssistanceActionRow({
                   <ul>
                     {assistanceActionOptions.map(
                       (option) =>
-                        assistanceAction.actions.has(option.value) && (
+                        assistanceAction.actions.includes(option.value) && (
                           <li key={option.value}>{option.nameFi}</li>
                         )
                     )}
@@ -148,7 +148,7 @@ export default React.memo(function AssistanceActionRow({
                   <ul>
                     {assistanceMeasures.map(
                       (measure) =>
-                        assistanceAction.measures.has(measure) && (
+                        assistanceAction.measures.includes(measure) && (
                           <li key={measure}>
                             {
                               i18n.childInformation.assistanceAction.fields

@@ -4,14 +4,15 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
+  AssistanceAction,
   AssistanceActionOption,
-  AssistanceActionRequest
+  AssistanceActionRequest,
+  AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { AssistanceAction, AssistanceActionResponse } from '../../types/child'
 import { client } from '../client'
 
 export async function createAssistanceAction(
@@ -28,9 +29,7 @@ export async function createAssistanceAction(
     .then((data) => ({
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseIso(data.endDate),
-      actions: new Set(data.actions),
-      measures: new Set(data.measures)
+      endDate: LocalDate.parseIso(data.endDate)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -49,9 +48,7 @@ export async function getAssistanceActions(
         action: {
           ...data.action,
           startDate: LocalDate.parseIso(data.action.startDate),
-          endDate: LocalDate.parseIso(data.action.endDate),
-          actions: new Set(data.action.actions),
-          measures: new Set(data.action.measures)
+          endDate: LocalDate.parseIso(data.action.endDate)
         }
       }))
     )
@@ -76,9 +73,7 @@ export async function updateAssistanceAction(
     .then((data) => ({
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseIso(data.endDate),
-      actions: new Set(data.actions),
-      measures: new Set(data.measures)
+      endDate: LocalDate.parseIso(data.endDate)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

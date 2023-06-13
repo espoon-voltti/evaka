@@ -5,13 +5,14 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   AssistanceBasisOption,
-  AssistanceNeedRequest
+  AssistanceNeed,
+  AssistanceNeedRequest,
+  AssistanceNeedResponse
 } from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { AssistanceNeed, AssistanceNeedResponse } from '../../types/child'
 import { client } from '../client'
 
 export async function createAssistanceNeed(
@@ -28,8 +29,7 @@ export async function createAssistanceNeed(
     .then((data) => ({
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseIso(data.endDate),
-      bases: new Set(data.bases)
+      endDate: LocalDate.parseIso(data.endDate)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -48,8 +48,7 @@ export async function getAssistanceNeeds(
         need: {
           ...data.need,
           startDate: LocalDate.parseIso(data.need.startDate),
-          endDate: LocalDate.parseIso(data.need.endDate),
-          bases: new Set(data.need.bases)
+          endDate: LocalDate.parseIso(data.need.endDate)
         }
       }))
     )
@@ -71,8 +70,7 @@ export async function updateAssistanceNeed(
     .then((data) => ({
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseIso(data.endDate),
-      bases: new Set(data.bases)
+      endDate: LocalDate.parseIso(data.endDate)
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

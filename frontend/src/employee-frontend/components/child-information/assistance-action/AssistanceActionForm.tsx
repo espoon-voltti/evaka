@@ -13,8 +13,10 @@ import styled from 'styled-components'
 
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
+  AssistanceAction,
   AssistanceActionOption,
   AssistanceActionRequest,
+  AssistanceActionResponse,
   AssistanceMeasure
 } from 'lib-common/generated/api-types/assistanceaction'
 import LocalDate from 'lib-common/local-date'
@@ -35,10 +37,6 @@ import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  AssistanceAction,
-  AssistanceActionResponse
-} from '../../../types/child'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
   FormErrors,
@@ -56,10 +54,10 @@ const CheckboxRow = styled.div`
 interface FormState {
   startDate: LocalDate
   endDate: LocalDate
-  actions: Set<string>
+  actions: Array<string>
   otherSelected: boolean
   otherAction: string
-  measures: Set<AssistanceMeasure>
+  measures: Array<AssistanceMeasure>
 }
 
 interface CommonProps {
@@ -137,10 +135,10 @@ export default React.memo(function AssistanceActionForm(props: Props) {
         ? {
             startDate: LocalDate.todayInSystemTz(),
             endDate: LocalDate.todayInSystemTz(),
-            actions: new Set(),
+            actions: [],
             otherSelected: false,
             otherAction: '',
-            measures: new Set()
+            measures: []
           }
         : {
             ...props.assistanceAction,
@@ -267,12 +265,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                       <CheckboxRow>
                         <Checkbox
                           label={option.nameFi}
-                          checked={form.actions.has(option.value)}
+                          checked={form.actions.includes(option.value)}
                           onChange={(value) => {
                             const actions = new Set([...form.actions])
                             if (value) actions.add(option.value)
                             else actions.delete(option.value)
-                            updateFormState({ actions: actions })
+                            updateFormState({ actions: Array.from(actions) })
                           }}
                         />
                       </CheckboxRow>
@@ -281,12 +279,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                     <CheckboxRow key={option.value}>
                       <Checkbox
                         label={option.nameFi}
-                        checked={form.actions.has(option.value)}
+                        checked={form.actions.includes(option.value)}
                         onChange={(value) => {
                           const actions = new Set([...form.actions])
                           if (value) actions.add(option.value)
                           else actions.delete(option.value)
-                          updateFormState({ actions: actions })
+                          updateFormState({ actions: Array.from(actions) })
                         }}
                       />
                     </CheckboxRow>
@@ -351,12 +349,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                             i18n.childInformation.assistanceAction.fields
                               .measureTypes[measure]
                           }
-                          checked={form.measures.has(measure)}
+                          checked={form.measures.includes(measure)}
                           onChange={(value) => {
                             const measures = new Set([...form.measures])
                             if (value) measures.add(measure)
                             else measures.delete(measure)
-                            updateFormState({ measures: measures })
+                            updateFormState({ measures: Array.from(measures) })
                           }}
                         />
                       </CheckboxRow>
@@ -368,12 +366,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                           i18n.childInformation.assistanceAction.fields
                             .measureTypes[measure]
                         }
-                        checked={form.measures.has(measure)}
+                        checked={form.measures.includes(measure)}
                         onChange={(value) => {
                           const measures = new Set([...form.measures])
                           if (value) measures.add(measure)
                           else measures.delete(measure)
-                          updateFormState({ measures: measures })
+                          updateFormState({ measures: Array.from(measures) })
                         }}
                       />
                     </CheckboxRow>
