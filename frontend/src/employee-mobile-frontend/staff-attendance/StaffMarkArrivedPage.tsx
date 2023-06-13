@@ -140,12 +140,14 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const selectedTimeDiffFromPlannedStartOfDayMinutes = useMemo(
     () =>
-      firstPlannedStartOfTheDay &&
-      isValidTimeString &&
-      differenceInMinutes(
-        HelsinkiDateTime.now().withTime(LocalTime.parse(time)).toSystemTzDate(),
-        firstPlannedStartOfTheDay.toSystemTzDate()
-      ),
+      firstPlannedStartOfTheDay && isValidTimeString
+        ? differenceInMinutes(
+            HelsinkiDateTime.now()
+              .withTime(LocalTime.parse(time))
+              .toSystemTzDate(),
+            firstPlannedStartOfTheDay.toSystemTzDate()
+          )
+        : null,
     [firstPlannedStartOfTheDay, time, isValidTimeString]
   )
 
