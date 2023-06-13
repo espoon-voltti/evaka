@@ -99,13 +99,8 @@ describe('Employee - Child documents', () => {
     let childDocumentsSection = await childInformationPage.openCollapsible(
       'childDocuments'
     )
-    await childDocumentsSection.createPedagogicalReportButton.assertDisabled(
-      true
-    )
-    await childDocumentsSection.createPedagogicalAssessmentButton.assertDisabled(
-      false
-    )
-    await childDocumentsSection.createPedagogicalAssessmentButton.click()
+    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
 
     const childDocument = new ChildDocumentPage(page)
     const answer = 'Jonkin sortin vastaus'

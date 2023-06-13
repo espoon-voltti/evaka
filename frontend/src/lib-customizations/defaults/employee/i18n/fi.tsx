@@ -743,7 +743,8 @@ export const fi = {
         published: 'Julkaistu',
         draft: 'Luonnos'
       },
-      addNew: 'Luo uusi',
+      addNew: 'Luo uusi lomake',
+      select: 'Valitse lomake',
       removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
       editor: {
         preview: 'Esikatsele',
