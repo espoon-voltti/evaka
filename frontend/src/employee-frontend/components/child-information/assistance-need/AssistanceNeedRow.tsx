@@ -10,13 +10,13 @@ import {
   AssistanceNeedResponse,
   AssistanceNeed
 } from 'lib-common/generated/api-types/assistanceneed'
+import { useMutationResult } from 'lib-common/query'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
 import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
 import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
@@ -24,11 +24,11 @@ import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { isActiveDateRange } from '../../../utils/date'
+import { deleteAssistanceNeedMutation } from '../queries'
 
 export interface Props {
   assistanceNeed: AssistanceNeed
   permittedActions: Action.AssistanceNeed[]
-  onReload: () => void
   assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
@@ -37,7 +37,6 @@ export interface Props {
 export default React.memo(function AssistanceNeedRow({
   assistanceNeed,
   permittedActions,
-  onReload,
   assistanceNeeds,
   assistanceBasisOptions,
   refSectionTop
@@ -51,6 +50,10 @@ export default React.memo(function AssistanceNeedRow({
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const refForm = useRef(null)
 
+  const { mutateAsync: deleteAssistanceNeed } = useMutationResult(
+    deleteAssistanceNeedMutation
+  )
+
   const renderDeleteConfirmation = () => (
     <InfoModal
       type="warning"
@@ -62,9 +65,11 @@ export default React.memo(function AssistanceNeedRow({
       reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
       resolve={{
         action: () =>
-          removeAssistanceNeed(assistanceNeed.id).then(() => {
+          deleteAssistanceNeed({
+            id: assistanceNeed.id,
+            childId: assistanceNeed.childId
+          }).then(() => {
             clearUiMode()
-            onReload()
           }),
         label: i18n.common.remove
       }}
@@ -108,7 +113,6 @@ export default React.memo(function AssistanceNeedRow({
           <div ref={refForm}>
             <AssistanceNeedForm
               assistanceNeed={assistanceNeed}
-              onReload={onReload}
               assistanceNeeds={assistanceNeeds}
               assistanceBasisOptions={assistanceBasisOptions}
             />

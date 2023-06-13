@@ -778,6 +778,15 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
         READ_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        READ_ASSISTANCE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inPlacementUnitOfChild()
+        ),
         CREATE_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()

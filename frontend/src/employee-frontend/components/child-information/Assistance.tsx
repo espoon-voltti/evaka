@@ -4,6 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -17,6 +18,7 @@ import { useTranslation } from '../../state/i18n'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
+import { assistanceQuery } from './queries'
 
 export interface Props {
   id: UUID
@@ -25,8 +27,10 @@ export interface Props {
 
 export default React.memo(function Assistance({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
+
   const { permittedActions, assistanceNeedVoucherCoefficientsEnabled } =
     useContext<ChildState>(ChildContext)
+  const assistanceResult = useQueryResult(assistanceQuery(id))
 
   const [open, setOpen] = useState(startOpen)
 
@@ -41,12 +45,22 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         data-qa="assistance-collapsible"
       >
         {permittedActions.has('READ_ASSISTANCE_NEED') && (
-          <AssistanceNeed id={id} />
+          <AssistanceNeed
+            id={id}
+            assistanceNeeds={assistanceResult.map(
+              ({ assistanceNeeds }) => assistanceNeeds
+            )}
+          />
         )}
         {permittedActions.has('READ_ASSISTANCE_ACTION') && (
           <>
             <HorizontalLine dashed slim />
-            <AssistanceAction id={id} />
+            <AssistanceAction
+              id={id}
+              assistanceActions={assistanceResult.map(
+                ({ assistanceActions }) => assistanceActions
+              )}
+            />
           </>
         )}
         {featureFlags.experimental?.assistanceNeedDecisions &&

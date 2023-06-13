@@ -6,17 +6,15 @@ import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
-import { combine } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
+import { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 
-import {
-  getAssistanceActionOptions,
-  getAssistanceActions
-} from '../../api/child/assistance-actions'
+import { getAssistanceActionOptions } from '../../api/child/assistance-actions'
 import AssistanceActionForm from '../../components/child-information/assistance-action/AssistanceActionForm'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -37,15 +35,15 @@ const TitleRow = styled.div`
 
 export interface Props {
   id: UUID
+  assistanceActions: Result<AssistanceActionResponse[]>
 }
 
-export default React.memo(function AssistanceAction({ id }: Props) {
+export default React.memo(function AssistanceAction({
+  id,
+  assistanceActions
+}: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext<ChildState>(ChildContext)
-  const [assistanceActions, loadData] = useApiState(
-    () => getAssistanceActions(id),
-    [id]
-  )
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const refSectionTop = useRef(null)
 
@@ -86,7 +84,6 @@ export default React.memo(function AssistanceAction({ id }: Props) {
           <>
             <AssistanceActionForm
               childId={id}
-              onReload={loadData}
               assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
             />
@@ -98,7 +95,6 @@ export default React.memo(function AssistanceAction({ id }: Props) {
             <AssistanceActionForm
               childId={id}
               assistanceAction={duplicate.action}
-              onReload={loadData}
               assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
             />
@@ -110,7 +106,6 @@ export default React.memo(function AssistanceAction({ id }: Props) {
             key={assistanceAction.action.id}
             assistanceAction={assistanceAction.action}
             permittedActions={assistanceAction.permittedActions}
-            onReload={loadData}
             assistanceActions={assistanceActions}
             assistanceActionOptions={assistanceActionOptions}
             refSectionTop={refSectionTop}

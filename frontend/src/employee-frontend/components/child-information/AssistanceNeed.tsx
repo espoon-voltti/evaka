@@ -6,17 +6,15 @@ import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
-import { combine } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
+import { AssistanceNeedResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 
-import {
-  getAssistanceBasisOptions,
-  getAssistanceNeeds
-} from '../../api/child/assistance-needs'
+import { getAssistanceBasisOptions } from '../../api/child/assistance-needs'
 import AssistanceNeedForm from '../../components/child-information/assistance-need/AssistanceNeedForm'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -37,15 +35,15 @@ const TitleRow = styled.div`
 
 export interface Props {
   id: UUID
+  assistanceNeeds: Result<AssistanceNeedResponse[]>
 }
 
-export default React.memo(function AssistanceNeed({ id }: Props) {
+export default React.memo(function AssistanceNeed({
+  id,
+  assistanceNeeds
+}: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext<ChildState>(ChildContext)
-  const [assistanceNeeds, loadData] = useApiState(
-    () => getAssistanceNeeds(id),
-    [id]
-  )
   const [assistanceBasisOptions] = useApiState(getAssistanceBasisOptions, [])
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const refSectionTop = useRef(null)
@@ -85,7 +83,6 @@ export default React.memo(function AssistanceNeed({ id }: Props) {
           <>
             <AssistanceNeedForm
               childId={id}
-              onReload={loadData}
               assistanceNeeds={assistanceNeeds}
               assistanceBasisOptions={assistanceBasisOptions}
             />
@@ -97,7 +94,6 @@ export default React.memo(function AssistanceNeed({ id }: Props) {
             <AssistanceNeedForm
               childId={id}
               assistanceNeed={duplicate.need}
-              onReload={loadData}
               assistanceNeeds={assistanceNeeds}
               assistanceBasisOptions={assistanceBasisOptions}
             />
@@ -109,7 +105,6 @@ export default React.memo(function AssistanceNeed({ id }: Props) {
             key={assistanceNeed.need.id}
             assistanceNeed={assistanceNeed.need}
             permittedActions={assistanceNeed.permittedActions}
-            onReload={loadData}
             assistanceNeeds={assistanceNeeds}
             assistanceBasisOptions={assistanceBasisOptions}
             refSectionTop={refSectionTop}

@@ -32,13 +32,6 @@ class AssistanceActionService {
         }
     }
 
-    fun getAssistanceActionsByChildId(
-        db: Database.Connection,
-        childId: ChildId
-    ): List<AssistanceAction> {
-        return db.read { it.getAssistanceActionsByChild(childId) }
-    }
-
     fun updateAssistanceAction(
         db: Database.Connection,
         user: AuthenticatedUser,

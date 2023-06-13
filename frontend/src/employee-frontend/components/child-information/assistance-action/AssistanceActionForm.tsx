@@ -20,6 +20,7 @@ import {
   AssistanceMeasure
 } from 'lib-common/generated/api-types/assistanceaction'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -29,10 +30,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
-import {
-  createAssistanceAction,
-  updateAssistanceAction
-} from '../../../api/child/assistance-actions'
 import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
@@ -44,6 +41,10 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import { DivFitContent } from '../../common/styled/containers'
+import {
+  createAssistanceActionMutation,
+  updateAssistanceActionMutation
+} from '../queries'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -61,7 +62,6 @@ interface FormState {
 }
 
 interface CommonProps {
-  onReload: () => void
   assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
 }
@@ -158,6 +158,13 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     setForm(newState)
   }
 
+  const { mutateAsync: createAssistanceAction } = useMutationResult(
+    createAssistanceActionMutation
+  )
+  const { mutateAsync: updateAssistanceAction } = useMutationResult(
+    updateAssistanceActionMutation
+  )
+
   useEffect(() => {
     const isSoftConflict = checkSoftConflict(form, props)
     const isHardConflict = checkHardConflict(form, props)
@@ -185,13 +192,16 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     }
 
     const apiCall = isCreate(props)
-      ? createAssistanceAction(props.childId, data)
-      : updateAssistanceAction(props.assistanceAction.id, data)
+      ? createAssistanceAction({ childId: props.childId, data })
+      : updateAssistanceAction({
+          id: props.assistanceAction.id,
+          childId: props.assistanceAction.childId,
+          data
+        })
 
     void apiCall.then((res) => {
       if (res.isSuccess) {
         clearUiMode()
-        props.onReload()
       } else if (res.isFailure) {
         if (res.statusCode == 409) {
           setFormErrors({

@@ -13,6 +13,7 @@ import {
   AssistanceNeedResponse
 } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -22,10 +23,6 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  createAssistanceNeed,
-  updateAssistanceNeed
-} from '../../../api/child/assistance-needs'
 import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
@@ -37,6 +34,10 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import { DivFitContent } from '../../common/styled/containers'
+import {
+  createAssistanceNeedMutation,
+  updateAssistanceNeedMutation
+} from '../queries'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -71,7 +72,6 @@ interface FormState {
 const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
 
 interface CommonProps {
-  onReload: () => void
   assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
 }
@@ -164,6 +164,13 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
     setForm(newState)
   }
 
+  const { mutateAsync: createAssistanceNeed } = useMutationResult(
+    createAssistanceNeedMutation
+  )
+  const { mutateAsync: updateAssistanceNeed } = useMutationResult(
+    updateAssistanceNeedMutation
+  )
+
   useEffect(() => {
     const isHardConflict = checkHardConflict(form, props)
     const isSoftConflict = checkSoftConflict(form, props)
@@ -194,13 +201,16 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
     }
 
     const apiCall = isCreate(props)
-      ? createAssistanceNeed(props.childId, data)
-      : updateAssistanceNeed(props.assistanceNeed.id, data)
+      ? createAssistanceNeed({ childId: props.childId, data })
+      : updateAssistanceNeed({
+          id: props.assistanceNeed.id,
+          childId: props.assistanceNeed.childId,
+          data
+        })
 
     void apiCall.then((res) => {
       if (res.isSuccess) {
         clearUiMode()
-        props.onReload()
       } else if (res.isFailure) {
         if (res.statusCode == 409) {
           setFormErrors({

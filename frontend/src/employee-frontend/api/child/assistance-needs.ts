@@ -6,8 +6,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import {
   AssistanceBasisOption,
   AssistanceNeed,
-  AssistanceNeedRequest,
-  AssistanceNeedResponse
+  AssistanceNeedRequest
 } from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -18,7 +17,7 @@ import { client } from '../client'
 export async function createAssistanceNeed(
   childId: UUID,
   assistanceNeedData: AssistanceNeedRequest
-): Promise<Result<AssistanceNeed>> {
+): Promise<AssistanceNeed> {
   return client
     .post<JsonOf<AssistanceNeed>>(`/children/${childId}/assistance-needs`, {
       ...assistanceNeedData,
@@ -31,35 +30,12 @@ export async function createAssistanceNeed(
       startDate: LocalDate.parseIso(data.startDate),
       endDate: LocalDate.parseIso(data.endDate)
     }))
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function getAssistanceNeeds(
-  childId: UUID
-): Promise<Result<AssistanceNeedResponse[]>> {
-  return client
-    .get<JsonOf<AssistanceNeedResponse[]>>(
-      `/children/${childId}/assistance-needs`
-    )
-    .then((res) =>
-      res.data.map((data) => ({
-        ...data,
-        need: {
-          ...data.need,
-          startDate: LocalDate.parseIso(data.need.startDate),
-          endDate: LocalDate.parseIso(data.need.endDate)
-        }
-      }))
-    )
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateAssistanceNeed(
   assistanceNeedId: UUID,
   assistanceNeedData: AssistanceNeedRequest
-): Promise<Result<AssistanceNeed>> {
+): Promise<AssistanceNeed> {
   return client
     .put<JsonOf<AssistanceNeed>>(`/assistance-needs/${assistanceNeedId}`, {
       ...assistanceNeedData,
@@ -72,17 +48,12 @@ export async function updateAssistanceNeed(
       startDate: LocalDate.parseIso(data.startDate),
       endDate: LocalDate.parseIso(data.endDate)
     }))
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeAssistanceNeed(
   assistanceNeedId: UUID
-): Promise<Result<null>> {
-  return client
-    .delete(`/assistance-needs/${assistanceNeedId}`)
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
+): Promise<void> {
+  await client.delete(`/assistance-needs/${assistanceNeedId}`)
 }
 
 export async function getAssistanceBasisOptions(): Promise<

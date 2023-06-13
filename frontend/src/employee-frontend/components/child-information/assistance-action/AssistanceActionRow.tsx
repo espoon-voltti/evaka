@@ -10,12 +10,12 @@ import {
   AssistanceActionOption,
   AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
+import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
-import { removeAssistanceAction } from '../../../api/child/assistance-actions'
 import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
 import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
@@ -23,11 +23,11 @@ import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { isActiveDateRange } from '../../../utils/date'
+import { deleteAssistanceActionMutation } from '../queries'
 
 export interface Props {
   assistanceAction: AssistanceAction
   permittedActions: Action.AssistanceAction[]
-  onReload: () => void
   assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
@@ -36,7 +36,6 @@ export interface Props {
 export default React.memo(function AssistanceActionRow({
   assistanceAction,
   permittedActions,
-  onReload,
   assistanceActions,
   assistanceActionOptions,
   refSectionTop
@@ -50,6 +49,10 @@ export default React.memo(function AssistanceActionRow({
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const refForm = useRef(null)
 
+  const { mutateAsync: deleteAssistanceAction } = useMutationResult(
+    deleteAssistanceActionMutation
+  )
+
   const renderDeleteConfirmation = () => (
     <InfoModal
       type="warning"
@@ -61,9 +64,11 @@ export default React.memo(function AssistanceActionRow({
       reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
       resolve={{
         action: () =>
-          removeAssistanceAction(assistanceAction.id).then(() => {
+          deleteAssistanceAction({
+            id: assistanceAction.id,
+            childId: assistanceAction.childId
+          }).then(() => {
             clearUiMode()
-            onReload()
           }),
         label: i18n.common.remove
       }}
@@ -106,7 +111,6 @@ export default React.memo(function AssistanceActionRow({
           <div ref={refForm}>
             <AssistanceActionForm
               assistanceAction={assistanceAction}
-              onReload={onReload}
               assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
             />
