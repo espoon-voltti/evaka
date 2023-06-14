@@ -550,8 +550,8 @@ jobs:
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
+          ./service/build-docker.sh
           cd ./compose
-          ./build.sh
           ./compose-integration build
           ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
 
