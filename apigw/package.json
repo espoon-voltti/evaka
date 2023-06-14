@@ -92,9 +92,6 @@
     "xml-crypto": "^3.0.1",
     "xml2js": "^0.5.0"
   },
-  "resolutions": {
-    "@types/node": "^18.15.11"
-  },
   "jest": {
     "preset": "ts-jest",
     "roots": [
