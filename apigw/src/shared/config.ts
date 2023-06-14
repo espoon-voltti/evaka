@@ -276,7 +276,7 @@ export function configFromEnv(): Config {
     ad,
     sfi,
     redis: {
-      host: process.env.REDIS_HOST ?? ifNodeEnv(['local'], 'localhost'),
+      host: process.env.REDIS_HOST ?? ifNodeEnv(['local'], '127.0.0.1'),
       port: env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379),
       password: process.env.REDIS_PASSWORD,
       tlsServerName: process.env.REDIS_TLS_SERVER_NAME,
