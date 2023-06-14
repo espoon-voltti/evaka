@@ -70,6 +70,8 @@ jobs:
           name: evaka/proxy
           path: ./proxy
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -108,6 +110,8 @@ jobs:
           name: evaka/keycloak
           path: ./keycloak
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -149,6 +153,8 @@ jobs:
           name: evaka/frontend-common
           path: ./frontend
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
@@ -166,6 +172,8 @@ jobs:
           path: ./frontend
           target: builder
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
@@ -196,7 +204,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -240,6 +248,8 @@ jobs:
           name: evaka/frontend
           path: ./frontend
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
             build=${{ github.run_number }}
@@ -323,6 +333,8 @@ jobs:
           push: false
           load: true
           target: test
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -336,6 +348,8 @@ jobs:
           name: evaka/api-gateway
           path: ./apigw
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -384,6 +398,8 @@ jobs:
           path: .
           dockerfile: service/Dockerfile
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -400,6 +416,8 @@ jobs:
           path: .
           dockerfile: service/Dockerfile
           push: ${{ inputs.push || 'true' }}
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -445,6 +463,8 @@ jobs:
           dockerfile: service/test.Dockerfile
           push: false
           load: true
+          tcpdump: "true"
+          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -470,7 +490,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -513,7 +533,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -591,7 +611,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -687,7 +707,7 @@ jobs:
           BRANCH: ${{ github.head_ref || github.ref_name }}
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -761,7 +781,7 @@ jobs:
     steps:
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
