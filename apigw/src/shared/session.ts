@@ -11,10 +11,14 @@ import {
 } from 'date-fns'
 import express, { CookieOptions } from 'express'
 import session from 'express-session'
-import { cookieSecret, sessionTimeoutMinutes, useSecureCookies } from './config'
-import { LogoutToken, toMiddleware } from './express'
-import { fromCallback } from './promise-utils'
-import { RedisClient } from './redis-client'
+import {
+  cookieSecret,
+  sessionTimeoutMinutes,
+  useSecureCookies
+} from './config.js'
+import { LogoutToken, toMiddleware } from './express.js'
+import { fromCallback } from './promise-utils.js'
+import { RedisClient } from './redis-client.js'
 
 export type SessionType = 'enduser' | 'employee'
 

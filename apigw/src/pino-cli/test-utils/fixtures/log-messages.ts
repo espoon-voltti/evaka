@@ -9,8 +9,8 @@ import {
   AuditLog,
   PinoMiscLog,
   MiscLog
-} from '../../cli'
-import { ipv6ToIpv4 } from '../../cli/utils'
+} from '../../cli/index.js'
+import { ipv6ToIpv4 } from '../../cli/utils.js'
 
 export const validPinoAccessLogMessage: PinoAccessLog = {
   level: 'info',

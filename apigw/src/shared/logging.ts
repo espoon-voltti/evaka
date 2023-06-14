@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Express, Request } from 'express'
-import { merge } from 'lodash'
-import pino from 'pino'
-import pinoHttp from 'pino-http'
-import * as queryString from 'query-string'
+import _ from 'lodash'
+import { pino } from 'pino'
+import { pinoHttp } from 'pino-http'
+import queryString from 'query-string'
 import {
   appBuild,
   appCommit,
@@ -14,8 +14,8 @@ import {
   hostIp,
   prettyLogs,
   volttiEnv
-} from './config'
-import { createSha256Hash } from './crypto'
+} from './config.js'
+import { createSha256Hash } from './crypto.js'
 import {
   LogFn,
   LogLevel,
@@ -25,7 +25,7 @@ import {
   PinoResponse,
   PinoResSerializer,
   UserPinoRequest
-} from './types'
+} from './types.js'
 
 const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   base: {
@@ -62,7 +62,7 @@ const PRETTY_OPTS: Partial<pino.LoggerOptions> = {
 }
 
 const logger = pino(
-  merge({}, BASE_LOGGER_OPTS, APP_LOGGER_OPTS, prettyLogs ? PRETTY_OPTS : {})
+  _.merge({}, BASE_LOGGER_OPTS, APP_LOGGER_OPTS, prettyLogs ? PRETTY_OPTS : {})
 )
 
 export const logError: LogFn = (msg, req?, meta?, err?) =>
@@ -116,7 +116,12 @@ const AUDIT_LOGGER_OPTS = {
 }
 
 export const auditLogger = pino(
-  merge({}, BASE_LOGGER_OPTS, AUDIT_LOGGER_OPTS, prettyLogs ? PRETTY_OPTS : {})
+  _.merge(
+    {},
+    BASE_LOGGER_OPTS,
+    AUDIT_LOGGER_OPTS,
+    prettyLogs ? PRETTY_OPTS : {}
+  )
 )
 
 export function logAuditEvent(
@@ -144,7 +149,7 @@ const ACCESS_LOGGER_OPTS: pino.LoggerOptions = {
   base: { type: 'app-requests-received', version: 1 }
 }
 
-const middlewareLogger = pino(merge({}, BASE_LOGGER_OPTS, ACCESS_LOGGER_OPTS))
+const middlewareLogger = pino(_.merge({}, BASE_LOGGER_OPTS, ACCESS_LOGGER_OPTS))
 
 export default function setupMiddleware(app: Express) {
   app.use(

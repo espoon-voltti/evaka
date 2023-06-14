@@ -4,8 +4,8 @@
 
 import csurf from 'csurf'
 import express from 'express'
-import { SessionType } from '../session'
-import { useSecureCookies } from '../config'
+import { SessionType } from '../session.js'
+import { useSecureCookies } from '../config.js'
 
 // Middleware that does XSRF header checks
 export const csrf = csurf({ cookie: false })

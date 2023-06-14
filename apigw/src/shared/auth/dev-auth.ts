@@ -4,10 +4,10 @@
 
 import passport, { Strategy } from 'passport'
 import { Request, Router, urlencoded } from 'express'
-import { authenticate, EvakaSessionUser, login, logout } from './index'
-import { AsyncRequestHandler, toRequestHandler } from '../express'
-import { SessionType } from '../session'
-import { parseRelayState } from '../saml'
+import { authenticate, EvakaSessionUser, login, logout } from './index.js'
+import { AsyncRequestHandler, toRequestHandler } from '../express.js'
+import { SessionType } from '../session.js'
+import { parseRelayState } from '../saml/index.js'
 
 export interface DevAuthRouterOptions {
   root: string

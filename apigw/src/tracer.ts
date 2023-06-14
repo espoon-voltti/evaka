@@ -9,11 +9,11 @@ import {
   tracingEnabled,
   traceAgentHostname,
   traceAgentPort
-} from './shared/config'
+} from './shared/config.js'
 import tracer from 'dd-trace'
 
 if (tracingEnabled) {
-  tracer.init({
+  tracer.tracer.init({
     env: volttiEnv,
     service: serviceName,
     version: appCommit,

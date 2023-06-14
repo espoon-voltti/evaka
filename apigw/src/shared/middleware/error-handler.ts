@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorRequestHandler } from 'express'
-import { logError } from '../logging'
-import { csrfCookieName } from './csrf'
-import { InvalidRequest } from '../express'
-import { debug } from '../config'
+import { logError } from '../logging.js'
+import { csrfCookieName } from './csrf.js'
+import { InvalidRequest } from '../express.js'
+import { debug } from '../config.js'
 
 interface LogResponse {
   message: string | null

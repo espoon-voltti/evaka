@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { client, UUID } from './service-client'
+import { client, UUID } from './service-client.js'
 
 export async function getCitizens(): Promise<DevCitizen[]> {
   const { data } = await client.get(`/dev-api/citizen`)

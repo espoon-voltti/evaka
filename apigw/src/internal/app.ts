@@ -6,9 +6,9 @@ import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
 import helmet from 'helmet'
 import passport from 'passport'
-import { requireAuthentication } from '../shared/auth'
-import { createAdSamlStrategy } from './ad-saml'
-import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml'
+import { requireAuthentication } from '../shared/auth/index.js'
+import { createAdSamlStrategy } from './ad-saml.js'
+import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml.js'
 import {
   appCommit,
   Config,
@@ -16,33 +16,33 @@ import {
   enableDevApi,
   espooBiPocPassword,
   titaniaConfig
-} from '../shared/config'
-import setupLoggingMiddleware from '../shared/logging'
-import { csrf, csrfCookie } from '../shared/middleware/csrf'
-import { errorHandler } from '../shared/middleware/error-handler'
-import tracing from '../shared/middleware/tracing'
-import { createProxy } from '../shared/proxy-utils'
-import { trustReverseProxy } from '../shared/reverse-proxy'
-import createSamlRouter from '../shared/routes/saml'
-import csp from '../shared/routes/csp'
+} from '../shared/config.js'
+import setupLoggingMiddleware from '../shared/logging.js'
+import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
+import { errorHandler } from '../shared/middleware/error-handler.js'
+import tracing from '../shared/middleware/tracing.js'
+import { createProxy } from '../shared/proxy-utils.js'
+import { trustReverseProxy } from '../shared/reverse-proxy.js'
+import createSamlRouter from '../shared/routes/saml.js'
+import csp from '../shared/routes/csp.js'
 import session, {
   refreshLogoutToken,
   touchSessionMaxAge
-} from '../shared/session'
+} from '../shared/session.js'
 import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
   pinLoginRequestHandler,
   pinLogoutRequestHandler,
   refreshMobileSession
-} from './mobile-device-session'
-import authStatus from './routes/auth-status'
+} from './mobile-device-session.js'
+import authStatus from './routes/auth-status.js'
 import expressBasicAuth from 'express-basic-auth'
-import { cacheControl } from '../shared/middleware/cache-control'
-import { createSamlConfig } from '../shared/saml'
-import redisCacheProvider from '../shared/saml/passport-saml-cache-redis'
-import { createDevAdRouter } from './dev-ad-auth'
-import { assertRedisConnection, RedisClient } from '../shared/redis-client'
+import { cacheControl } from '../shared/middleware/cache-control.js'
+import { createSamlConfig } from '../shared/saml/index.js'
+import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
+import { createDevAdRouter } from './dev-ad-auth.js'
+import { assertRedisConnection, RedisClient } from '../shared/redis-client.js'
 
 export default function internalGwApp(
   config: Config,

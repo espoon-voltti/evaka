@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { createJwt } from './src/shared/auth/jwt'
+import { createJwt } from './src/shared/auth/jwt.js'
 
 const token = createJwt({
   // user UUID

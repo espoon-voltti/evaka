@@ -2,6 +2,7 @@
   "name": "evaka-api-gateways",
   "version": "1.0.0",
   "description": "API gateways for eVaka",
+  "type": "module",
   "private": true,
   "license": "LGPL-2.1-or-later",
   "scripts": {
@@ -10,11 +11,11 @@
     "lint": "eslint --ext .ts,.tsx --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
     "pretest": "tsc --build src/pino-cli",
-    "test": "yarn lint:fix && NODE_ENV=test jest",
+    "test": "yarn lint:fix && NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
     "dev": "tsc --build src && concurrently --prefix '[{name}]' --names 'tsc,nodemon' 'tsc --build --preserveWatchOutput -w src' 'NODE_ENV=local nodemon dist/index.js'",
     "coverage": "NODE_ENV=test jest --coverage",
     "pretest-ci": "yarn pretest",
-    "test-ci": "NODE_ENV=test jest --runInBand",
+    "test-ci": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "prepack": "exit 1"
   },
   "dependencies": {
@@ -93,7 +94,21 @@
     "xml2js": "^0.5.0"
   },
   "jest": {
-    "preset": "ts-jest",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "useESM": true,
+          "isolatedModules": true
+        }
+      ]
+    },
     "roots": [
       "<rootDir>/src"
     ],

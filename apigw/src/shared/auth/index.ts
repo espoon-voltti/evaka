@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { concat } from 'lodash'
+import _ from 'lodash'
 import express, { NextFunction, Request, Response } from 'express'
-import { logAuditEvent } from '../logging'
-import { gatewayRole } from '../config'
-import { createJwt } from './jwt'
+import { logAuditEvent } from '../logging.js'
+import { gatewayRole } from '../config.js'
+import { createJwt } from './jwt.js'
 import { Profile } from '@node-saml/passport-saml'
-import { UserType } from '../service-client'
+import { UserType } from '../service-client.js'
 import passport, { AuthenticateCallback } from 'passport'
-import { fromCallback } from '../promise-utils'
-import { consumeLogoutToken, sessionCookie, SessionType } from '../session'
+import { fromCallback } from '../promise-utils.js'
+import { consumeLogoutToken, sessionCookie, SessionType } from '../session.js'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -74,7 +74,8 @@ function createJwtToken(user: EvakaSessionUser): string {
       return createJwt({ ...common, evaka_type: 'system' })
     case 'EMPLOYEE': {
       const roles =
-        user.roles ?? concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
+        user.roles ??
+        _.concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
       return createJwt({
         ...common,
         evaka_type: 'employee',

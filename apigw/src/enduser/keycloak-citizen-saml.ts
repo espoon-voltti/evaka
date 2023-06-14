@@ -4,8 +4,8 @@
 
 import { z } from 'zod'
 import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
-import { citizenLogin } from '../shared/service-client'
-import { createSamlStrategy } from '../shared/saml'
+import { citizenLogin } from '../shared/service-client.js'
+import { createSamlStrategy } from '../shared/saml/index.js'
 
 const Profile = z.object({
   socialSecurityNumber: z.string(),

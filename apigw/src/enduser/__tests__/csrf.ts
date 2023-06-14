@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GatewayTester } from '../../shared/test/gateway-tester'
-import { csrfCookieName } from '../../shared/middleware/csrf'
-import { CitizenUser } from '../../shared/service-client'
-import enduserGwApp from '../app'
-import { configFromEnv } from '../../shared/config'
-import { MockRedisClient } from '../../shared/test/mock-redis-client'
+import { GatewayTester } from '../../shared/test/gateway-tester.js'
+import { csrfCookieName } from '../../shared/middleware/csrf.js'
+import { CitizenUser } from '../../shared/service-client.js'
+import enduserGwApp from '../app.js'
+import { configFromEnv } from '../../shared/config.js'
+import { MockRedisClient } from '../../shared/test/mock-redis-client.js'
 
 const mockUser: CitizenUser = {
   id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'

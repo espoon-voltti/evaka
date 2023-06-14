@@ -4,9 +4,9 @@
 
 import { z } from 'zod'
 import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
-import { employeeLogin } from '../shared/service-client'
-import { Config } from '../shared/config'
-import { createSamlStrategy } from '../shared/saml'
+import { employeeLogin } from '../shared/service-client.js'
+import { Config } from '../shared/config.js'
+import { createSamlStrategy } from '../shared/saml/index.js'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'

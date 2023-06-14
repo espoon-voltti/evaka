@@ -4,8 +4,8 @@
 
 import { z } from 'zod'
 import { SamlConfig, Strategy } from '@node-saml/passport-saml'
-import { citizenLogin } from '../shared/service-client'
-import { createSamlStrategy } from '../shared/saml'
+import { citizenLogin } from '../shared/service-client.js'
+import { createSamlStrategy } from '../shared/saml/index.js'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en

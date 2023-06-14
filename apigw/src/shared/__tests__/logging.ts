@@ -8,9 +8,9 @@ import {
   reqSerializer,
   resSerializer,
   userIdHashReqSerializer
-} from '../logging'
-import { createSha256Hash } from '../crypto'
-import { PinoRequest, PinoResponse, UserPinoRequest } from '../types'
+} from '../logging.js'
+import { createSha256Hash } from '../crypto.js'
+import { PinoRequest, PinoResponse, UserPinoRequest } from '../types.js'
 
 const path = '/api/grants/youth/v1/grant-applications'
 const queryString =
