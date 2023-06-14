@@ -30,7 +30,6 @@
     "express-basic-auth": "^1.2.1",
     "express-http-proxy": "^1.6.3",
     "express-session": "^1.17.3",
-    "fast-json-parse": "^1.0.3",
     "fast-xml-parser": "^4.2.4",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
