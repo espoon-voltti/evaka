@@ -283,6 +283,9 @@ const TimeRanges = React.memo(function Times({
             {secondTimeRange === undefined && allowExtraTimeRange ? (
               <IconButton
                 icon={faPlus}
+                data-qa={
+                  dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
+                }
                 onClick={() =>
                   bind.update((prev) => {
                     //use same unit times as first reservation
