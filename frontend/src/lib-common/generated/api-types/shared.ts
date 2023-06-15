@@ -60,6 +60,7 @@ export interface EmployeeFeatures {
   submitPatuReport: boolean
   unitFeatures: boolean
   units: boolean
+  useNewAssistanceModel: boolean
   vasuTemplates: boolean
 }
 

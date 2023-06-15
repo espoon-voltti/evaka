@@ -23,5 +23,6 @@ data class EmployeeFeatures(
     val pinCode: Boolean,
     val assistanceNeedDecisionsReport: Boolean,
     val createDraftInvoices: Boolean,
-    val submitPatuReport: Boolean
+    val submitPatuReport: Boolean,
+    val useNewAssistanceModel: Boolean,
 )

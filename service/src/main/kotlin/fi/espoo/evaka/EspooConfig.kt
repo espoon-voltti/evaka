@@ -228,7 +228,7 @@ class EspooConfig {
             municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
             serviceWorkerMessageAccountName =
                 "Espoon kaupungin palveluohjaus - Esbo stads servicehandledning - City of Espoo service guidance",
-            applyPlacementUnitFromDecision = false
+            applyPlacementUnitFromDecision = false,
         )
 
     @Bean
