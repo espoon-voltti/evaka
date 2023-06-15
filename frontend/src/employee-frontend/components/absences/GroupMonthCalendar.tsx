@@ -25,6 +25,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import {
   postGroupPresences,
@@ -58,10 +59,14 @@ export default React.memo(function GroupMonthCalendarWrapper({
 
   const [groupMonthCalendar, loadGroupMonthCalendar] = useApiState(
     () =>
-      getGroupMonthCalendar(groupId, {
-        year: selectedYear,
-        month: selectedMonth
-      }),
+      getGroupMonthCalendar(
+        groupId,
+        {
+          year: selectedYear,
+          month: selectedMonth
+        },
+        featureFlags.experimental?.intermittentShiftCare ?? false
+      ),
     [groupId, selectedYear, selectedMonth]
   )
 

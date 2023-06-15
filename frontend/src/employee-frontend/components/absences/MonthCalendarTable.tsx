@@ -14,6 +14,7 @@ import {
   GroupMonthCalendarDay,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/daycare'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Thead } from 'lib-components/layout/Table'
@@ -21,6 +22,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamationTriangle } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
@@ -32,6 +34,8 @@ import MonthCalendarCell, { DisabledCell } from './MonthCalendarCell'
 import StaffAttendance from './StaffAttendance'
 
 interface MonthCalendarRow {
+  holidays: Record<string, boolean>
+  operationTimes: (TimeRange | null)[]
   child: GroupMonthCalendarChild
   days: [LocalDate, GroupMonthCalendarDayChild | undefined][]
   emptyCols: number[]
@@ -42,6 +46,8 @@ interface MonthCalendarRow {
 }
 
 const MonthCalendarRow = React.memo(function MonthCalendarRow({
+  holidays,
+  operationTimes,
   child,
   days,
   emptyCols,
@@ -95,6 +101,8 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
           >
             <MonthCalendarCell
               date={date}
+              holidays={holidays}
+              operationTime={operationTimes[date.getIsoDayOfWeek() - 1]}
               childId={child.id}
               day={day}
               selectedCells={selectedCells}
@@ -103,13 +111,13 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
           </CalendarTd>
         ) : (
           <td key={`${child.id}${date.formatIso()}`}>
-            <DisabledCell />
+            <DisabledCell $requiresBackupCare={false} />
           </td>
         )
       )}
       {emptyCols.map((item) => (
         <td key={item}>
-          <DisabledCell />
+          <DisabledCell $requiresBackupCare={false} />
         </td>
       ))}
       {reservationEnabled && (
@@ -189,7 +197,8 @@ const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
       <AbsenceTr>
         <th />
         {days.map(({ date, children }) =>
-          children !== null ? (
+          children !== null ||
+          featureFlags.experimental?.intermittentShiftCare ? (
             // Operation day
             <AbsenceTh
               key={date.getDate()}
@@ -245,6 +254,14 @@ export default React.memo(function MonthCalendarTable({
     [groupMonthCalendar]
   )
 
+  const holidays = groupMonthCalendar.days.reduce<Record<string, boolean>>(
+    (prev, next) => {
+      prev[next.date.formatIso()] = next.holiday
+      return prev
+    },
+    {}
+  )
+
   return (
     <MonthCalendarTableRoot>
       <MonthCalendarTableHead
@@ -256,6 +273,8 @@ export default React.memo(function MonthCalendarTable({
         {tableRows.map(({ child, days }) => (
           <MonthCalendarRow
             key={child.id}
+            holidays={holidays}
+            operationTimes={groupMonthCalendar.daycareOperationTimes}
             child={child}
             days={days}
             emptyCols={emptyCols}

@@ -2079,6 +2079,7 @@ export const fi = {
       childName: 'Lapsen nimi',
       startTime: 'Saapuu',
       endTime: 'Lähtee',
+      requiresBackupCare: 'Tee varasijoitus',
       editRow: 'Muokkaa aikoja',
       openReservationModal: 'Tee toistuva varaus',
       reservationModal: {
@@ -2726,6 +2727,8 @@ export const fi = {
       NO_ABSENCE: 'Ei poissaoloa'
     },
     missingHolidayReservation: 'Huoltaja ei ole vahvistanut loma-ajan varausta',
+    shiftCare: 'Ilta-/vuorohoito',
+    requiresBackupCare: 'Odottaa varasijoitusta',
     additionalLegendItems: {
       CONTRACT_DAYS: 'Sopimuspäivällinen palveluntarve'
     },

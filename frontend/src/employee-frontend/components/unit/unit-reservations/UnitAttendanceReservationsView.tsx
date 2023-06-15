@@ -21,6 +21,7 @@ import {
 import { fontWeights, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { getStaffAttendances } from '../../../api/staff-attendance'
@@ -73,7 +74,12 @@ export default React.memo(function UnitAttendanceReservationsView({
   const { i18n } = useTranslation()
 
   const [childReservations, reloadChildReservations] = useApiState(
-    () => getUnitAttendanceReservations(unitId, weekRange),
+    () =>
+      getUnitAttendanceReservations(
+        unitId,
+        weekRange,
+        featureFlags.experimental?.intermittentShiftCare ?? false
+      ),
     [unitId, weekRange]
   )
 

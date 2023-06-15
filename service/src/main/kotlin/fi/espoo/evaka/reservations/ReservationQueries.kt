@@ -152,10 +152,13 @@ fun Database.Transaction.insertValidReservations(
         SELECT :childId, :date, :start, :end, :userId
         FROM realized_placement_all(:date) rp
         JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+        LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
         WHERE 
             rp.child_id = :childId AND
-            extract(isodow FROM :date) = ANY(d.operation_days) AND
-            (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
+            (sn.shift_care = 'INTERMITTENT' OR (
+                extract(isodow FROM :date) = ANY(d.operation_days) AND
+                (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date))
+            )) AND
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
         ON CONFLICT DO NOTHING
         RETURNING id

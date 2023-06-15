@@ -108,7 +108,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
             {!children /* not an operation day */ ||
             !staffCount.isSuccess ||
             isLoading(staffCount) ? (
-              <DisabledCell />
+              <DisabledCell $requiresBackupCare={false} />
             ) : !isActive(date) ? (
               <InactiveCell />
             ) : (
@@ -123,7 +123,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
       })}
       {emptyCols.map((item) => (
         <Td key={item}>
-          <DisabledCell />
+          <DisabledCell $requiresBackupCare={false} />
         </Td>
       ))}
     </StaffAttendanceTr>

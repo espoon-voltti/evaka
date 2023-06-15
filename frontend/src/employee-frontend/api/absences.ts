@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success, Response } from 'lib-common/api'
+import { Failure, Response, Result, Success } from 'lib-common/api'
 import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
+import { parseIsoTimeRange } from 'lib-common/api-types/daily-service-times'
 import {
-  Presence,
   AbsenceUpsert,
   GroupMonthCalendar,
   GroupStaffAttendance,
-  StaffAttendanceUpdate,
-  HolidayReservationsDelete
+  HolidayReservationsDelete,
+  Presence,
+  StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -31,14 +32,20 @@ interface SearchParams {
 
 export async function getGroupMonthCalendar(
   groupId: UUID,
-  params: SearchParams
+  params: SearchParams,
+  includeNonOperationalDays: boolean
 ): Promise<Result<GroupMonthCalendar>> {
   return client
-    .get<JsonOf<GroupMonthCalendar>>(`/absences/${groupId}`, { params })
+    .get<JsonOf<GroupMonthCalendar>>(`/absences/${groupId}`, {
+      params: { ...params, includeNonOperationalDays }
+    })
     .then((res) => res.data)
     .then((data) => ({
       ...data,
       children: data.children.map(deserializeGroupMonthCalendarChild),
+      daycareOperationTimes: data.daycareOperationTimes.map((range) =>
+        range !== null ? parseIsoTimeRange(range) : null
+      ),
       days: data.days.map(deserializeGroupMonthCalendarDay)
     }))
     .then((v) => Success.of(v))

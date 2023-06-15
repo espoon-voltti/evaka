@@ -149,6 +149,11 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
                     <ChildDay
                       day={day}
                       dataForAllDays={childDailyRecordRow}
+                      serviceNeedInfo={childServiceNeedInfos.find(
+                        (info) =>
+                          info.childId === child.id &&
+                          info.validDuring.includes(day.date)
+                      )}
                       rowIndex={index}
                       editState={childEditState}
                       {...editCallbacks}

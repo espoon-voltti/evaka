@@ -75,6 +75,7 @@ class AttendanceReservationsControllerIntegrationTest :
             .map {
                 UnitAttendanceReservations.OperationalDay(
                     it,
+                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     isHoliday = false,
                     isInHolidayPeriod = false
                 )
@@ -278,7 +279,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             childId = testChild_1.id,
                             hasContractDays = true,
                             optionName = snDaycareContractDays15.nameFi,
-                            validDuring = FiniteDateRange(mon, thu)
+                            validDuring = FiniteDateRange(mon, thu),
+                            shiftCare = ShiftCareType.NONE,
                         )
                     )
             ),
@@ -293,13 +295,15 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_5.id,
                     hasContractDays = true,
                     optionName = snDaycareContractDays15.nameFi,
-                    validDuring = FiniteDateRange(mon, fri)
+                    validDuring = FiniteDateRange(mon, fri),
+                    shiftCare = ShiftCareType.NONE,
                 ),
                 ChildServiceNeedInfo(
                     childId = testChild_1.id,
                     hasContractDays = false,
                     optionName = snDaycareFullDay35.nameFi,
-                    validDuring = FiniteDateRange(fri, fri)
+                    validDuring = FiniteDateRange(fri, fri),
+                    shiftCare = ShiftCareType.NONE,
                 )
             ),
             group2SnInfos.childInfos.sortedBy { it.validDuring.start }
@@ -682,6 +686,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 .map {
                     UnitAttendanceReservations.OperationalDay(
                         it,
+                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                         isHoliday = false,
                         isInHolidayPeriod = true
                     )
@@ -705,6 +710,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 .map {
                     UnitAttendanceReservations.OperationalDay(
                         it,
+                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                         isHoliday = false,
                         isInHolidayPeriod = true
                     )
@@ -741,6 +747,7 @@ class AttendanceReservationsControllerIntegrationTest :
             clock,
             testDaycare.id,
             from = mon,
-            to = fri
+            to = fri,
+            includeNonOperationalDays = false
         )
 }

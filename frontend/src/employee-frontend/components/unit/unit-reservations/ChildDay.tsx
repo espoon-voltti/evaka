@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useCallback } from 'react'
 import styled, { css } from 'styled-components'
 
@@ -15,6 +16,7 @@ import {
   ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
+import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
 import { Reservation } from 'lib-common/generated/api-types/reservations'
 import { TimeRange as ServiceTimesTimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
@@ -24,6 +26,7 @@ import { attendanceTimeDiffers, TimeRange } from 'lib-common/reservations'
 import { fontWeights, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
+import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
@@ -48,6 +51,7 @@ function getExpectedAttendanceTime(
 interface Props {
   day: OperationalDay
   dataForAllDays: Record<JsonOf<LocalDate>, ChildRecordOfDay>
+  serviceNeedInfo: ChildServiceNeedInfo | undefined
   rowIndex: number
   editState?: EditState
   deleteAbsence: (i: number, d: LocalDate) => void
@@ -60,6 +64,7 @@ interface Props {
 export default React.memo(function ChildDay({
   day,
   dataForAllDays,
+  serviceNeedInfo,
   rowIndex,
   editState,
   deleteAbsence,
@@ -102,7 +107,13 @@ export default React.memo(function ChildDay({
 
   if (!dailyData) return null
 
-  if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
+  const intermittent = serviceNeedInfo?.shiftCare === 'INTERMITTENT'
+  if (
+    day.isHoliday &&
+    !dailyData.reservation &&
+    !dailyData.attendance &&
+    !intermittent
+  )
     return null
 
   const { reservation, dailyServiceTimes, inOtherUnit, isInBackupGroup } =
@@ -125,6 +136,24 @@ export default React.memo(function ChildDay({
     reservation,
     serviceTimeOfDay
   )
+
+  const unitStartAfterReservationStart =
+    dailyData.attendance === null &&
+    intermittent &&
+    reservation !== null &&
+    (day.time === null ||
+      day.isHoliday ||
+      (reservation.type === 'TIMES' &&
+        day.time.start > reservation.startTime)) &&
+    !inOtherUnit
+  const unitEndBeforeReservationEnd =
+    dailyData.attendance === null &&
+    intermittent &&
+    reservation !== null &&
+    (day.time === null ||
+      day.isHoliday ||
+      (reservation.type === 'TIMES' && day.time.end < reservation.endTime)) &&
+    !inOtherUnit
 
   return (
     <DateCell>
@@ -155,11 +184,35 @@ export default React.memo(function ChildDay({
         ) : reservation && reservation.type === 'TIMES' ? (
           // a reservation exists for this day
           <>
-            <ReservationTime data-qa="reservation-start">
+            <ReservationTime
+              data-qa="reservation-start"
+              warning={unitStartAfterReservationStart}
+            >
               {reservation.startTime.format()}
+              {unitStartAfterReservationStart && (
+                <>
+                  {' '}
+                  <FontAwesomeIcon
+                    icon={faExclamationTriangle}
+                    color={colors.status.warning}
+                  />
+                </>
+              )}
             </ReservationTime>
-            <ReservationTime data-qa="reservation-end">
+            <ReservationTime
+              data-qa="reservation-end"
+              warning={unitEndBeforeReservationEnd}
+            >
               {reservation.endTime.format()}
+              {unitEndBeforeReservationEnd && (
+                <>
+                  {' '}
+                  <FontAwesomeIcon
+                    icon={faExclamationTriangle}
+                    color={colors.status.warning}
+                  />
+                </>
+              )}
             </ReservationTime>
           </>
         ) : day.isInHolidayPeriod && reservation == null ? (
@@ -197,6 +250,14 @@ export default React.memo(function ChildDay({
               }
               save={() => saveAttendance(day.date)}
             />
+          ) : unitStartAfterReservationStart || unitEndBeforeReservationEnd ? (
+            <TimeCell data-qa="backup-care-required-warning" warning>
+              {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
+              <FontAwesomeIcon
+                icon={faExclamationTriangle}
+                color={colors.status.warning}
+              />
+            </TimeCell>
           ) : (
             <>
               <AttendanceTime
