@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -93,7 +94,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         placementId = placementId,
                         period = FiniteDateRange(monday, tuesday),
                         optionId = snDaycareContractDays10.id,
-                        shiftCare = false
+                        shiftCare = ShiftCareType.NONE
                     )
                 }
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)

@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -117,7 +118,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 startDate = placementStart,
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -497,7 +498,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 startDate = placementStart,
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )

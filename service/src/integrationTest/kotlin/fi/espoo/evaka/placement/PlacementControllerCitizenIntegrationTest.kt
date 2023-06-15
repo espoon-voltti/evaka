@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -253,7 +254,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 startPreschool,
                 endPreschool.minusDays(10),
                 snPreschoolDaycare45.id,
-                false,
+                ShiftCareType.NONE,
                 null,
                 null
             )
@@ -262,7 +263,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 endPreschool.minusDays(9),
                 endPreschool,
                 snPreschoolDaycarePartDay35.id,
-                false,
+                ShiftCareType.NONE,
                 null,
                 null
             )
@@ -571,7 +572,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         startPreschool,
                         endPreschool.minusDays(10),
                         snPreschoolDaycare45.id,
-                        false,
+                        ShiftCareType.NONE,
                         null,
                         null
                     )
@@ -580,7 +581,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         endPreschool.minusDays(9),
                         endPreschool,
                         snPreschoolDaycarePartDay35.id,
-                        false,
+                        ShiftCareType.NONE,
                         null,
                         null
                     )

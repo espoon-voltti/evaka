@@ -20,17 +20,15 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let admin: EmployeeBuilder
 let childId: UUID
-let employee: EmployeeBuilder
 let placement: PlacementBuilder
 let activeServiceNeedOption: ServiceNeedOptionBuilder
-let inactiveServiceNeedOption: ServiceNeedOptionBuilder
 
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
-  employee = await Fixture.employee()
+  await Fixture.employee()
     .with({ roles: ['ADMIN'] })
     .save()
   placement = await Fixture.placement()
@@ -42,13 +40,18 @@ beforeEach(async () => {
   activeServiceNeedOption = await Fixture.serviceNeedOption()
     .with({ validPlacementType: placement.data.type })
     .save()
-  inactiveServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type, active: false })
-    .save()
 
   admin = await Fixture.employeeAdmin().save()
 
-  page = await Page.open()
+  page = await Page.open({
+    employeeCustomizations: {
+      featureFlags: {
+        experimental: {
+          intermittentShiftCare: true
+        }
+      }
+    }
+  })
   await employeeLogin(page, admin.data)
 })
 
@@ -59,40 +62,27 @@ const openCollapsible = async () => {
   return await childInformationPage.openCollapsible('placements')
 }
 
-describe('Service need', () => {
-  test('add service need to a placement', async () => {
+describe('Intermittent shiftcare', () => {
+  test('service need can be added with intermittent shift care', async () => {
+    const section = await openCollapsible()
+    await section.addMissingServiceNeed(
+      placement.data.id,
+      activeServiceNeedOption.data.nameFi,
+      'INTERMITTENT',
+      true
+    )
+    await section.assertNthServiceNeedShiftCare(0, 'INTERMITTENT')
+  })
+
+  test('service need can be edited to have intermittent shift care', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
       placement.data.id,
       activeServiceNeedOption.data.nameFi
     )
-    await section.assertNthServiceNeedName(
-      0,
-      activeServiceNeedOption.data.nameFi
-    )
-  })
+    await section.assertNthServiceNeedShiftCare(0, 'NONE')
 
-  test('only active service need options can be selected', async () => {
-    const section = await openCollapsible()
-
-    await section.assertServiceNeedOptions(placement.data.id, [
-      activeServiceNeedOption.data.id
-    ])
-  })
-
-  test('inactive service need name is shown on placement', async () => {
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.data.id,
-        optionId: inactiveServiceNeedOption.data.id,
-        confirmedBy: employee.data.id
-      })
-      .save()
-    const section = await openCollapsible()
-
-    await section.assertNthServiceNeedName(
-      0,
-      inactiveServiceNeedOption.data.nameFi
-    )
+    await section.setShiftCareTypeOfNthServiceNeed(0, 'INTERMITTENT')
+    await section.assertNthServiceNeedShiftCare(0, 'INTERMITTENT')
   })
 })

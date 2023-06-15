@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  ShiftCareType,
+  shiftCareType
+} from 'lib-common/generated/api-types/serviceneed'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -646,6 +650,18 @@ export class PlacementsSection extends Section {
   #serviceNeedOptionSelect = new Select(
     this.find('[data-qa="service-need-option-select"]')
   )
+
+  #nthServiceNeedEditButton = (index: number) =>
+    this.#serviceNeedRow(index).findByDataQa('service-need-edit')
+
+  #serviceNeedShiftCareCheckBox = new Checkbox(
+    this.findByDataQa('shift-care-toggle')
+  )
+
+  #serviceNeedShiftCareRadios = shiftCareType.map(
+    (type) => new Radio(this.findByDataQa(`shift-care-type-radio-${type}`))
+  )
+
   #serviceNeedSaveButton = this.find('[data-qa="service-need-save"]')
   #terminatedByGuardian = (placementId: string) =>
     this.#placementRow(placementId).find('[data-qa="placement-terminated"]')
@@ -657,10 +673,24 @@ export class PlacementsSection extends Section {
     }
   }
 
-  async addMissingServiceNeed(placementId: string, optionName: string) {
+  async addMissingServiceNeed(
+    placementId: string,
+    optionName: string,
+    shiftCare: ShiftCareType = 'NONE',
+    intermittentShiftCare = false
+  ) {
     await this.openPlacement(placementId)
     await this.#addMissingServiceNeedButton.click()
     await this.#serviceNeedOptionSelect.selectOption({ label: optionName })
+
+    if (intermittentShiftCare) {
+      const indexOfType = shiftCareType.indexOf(shiftCare)
+      await this.#serviceNeedShiftCareRadios[indexOfType].check()
+    } else {
+      if (shiftCare === 'FULL') {
+        await this.#serviceNeedShiftCareCheckBox.check()
+      }
+    }
     await this.#serviceNeedSaveButton.click()
   }
 
@@ -668,6 +698,14 @@ export class PlacementsSection extends Section {
     await this.#serviceNeedRowOptionName(index).assertTextEquals(optionName)
   }
 
+  async assertNthServiceNeedShiftCare(
+    index: number,
+    shiftCareType: ShiftCareType
+  ) {
+    await this.#serviceNeedRow(index)
+      .findByDataQa(`shift-care-${shiftCareType}`)
+      .waitUntilVisible()
+  }
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
     await this.openPlacement(placementId)
     await this.#addMissingServiceNeedButton.click()
@@ -724,6 +762,16 @@ export class PlacementsSection extends Section {
     await end.fill(endDate)
 
     await modal.submit()
+  }
+
+  async setShiftCareTypeOfNthServiceNeed(
+    index: number,
+    shiftCare: ShiftCareType
+  ) {
+    await this.#nthServiceNeedEditButton(index).click()
+    const indexOfType = shiftCareType.indexOf(shiftCare)
+    await this.#serviceNeedShiftCareRadios[indexOfType].check()
+    await this.#serviceNeedSaveButton.click()
   }
 }
 

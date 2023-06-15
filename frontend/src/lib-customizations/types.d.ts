@@ -212,6 +212,11 @@ interface BaseFeatureFlags {
      * Enable support for new template editor and child documents
      */
     childDocuments?: boolean
+
+    /**
+     * Enable support for intermittent shift care
+     */
+    intermittentShiftCare?: boolean
   }
 }
 

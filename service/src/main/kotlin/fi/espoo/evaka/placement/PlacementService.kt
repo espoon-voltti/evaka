@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.serviceneed.ServiceNeed
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
@@ -69,7 +70,7 @@ fun createPlacements(
                 period.start,
                 period.end,
                 serviceNeed.optionId,
-                serviceNeed.shiftCare,
+                ShiftCareType.fromBoolean(serviceNeed.shiftCare),
                 confirmedBy = null,
                 confirmedAt = null
             )

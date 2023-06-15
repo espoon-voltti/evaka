@@ -39,7 +39,7 @@ class ServiceNeedController(
         val startDate: LocalDate,
         val endDate: LocalDate,
         val optionId: ServiceNeedOptionId,
-        val shiftCare: Boolean
+        val shiftCare: ShiftCareType
     )
 
     @PostMapping("/service-needs")
@@ -83,7 +83,7 @@ class ServiceNeedController(
         val startDate: LocalDate,
         val endDate: LocalDate,
         val optionId: ServiceNeedOptionId,
-        val shiftCare: Boolean
+        val shiftCare: ShiftCareType
     )
 
     @PutMapping("/service-needs/{id}")

@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -99,7 +100,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                 startDate = placementStart,
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )

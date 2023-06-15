@@ -68,7 +68,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(1),
                 endDate = testDate(30),
                 optionId = snDefaultDaycare.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -96,7 +96,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(5),
                     endDate = testDate(3),
                     optionId = snDefaultDaycare.id,
-                    shiftCare = false
+                    shiftCare = ShiftCareType.NONE
                 ),
             )
         }
@@ -114,7 +114,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(1),
                     endDate = testDate(31),
                     optionId = snDefaultDaycare.id,
-                    shiftCare = false
+                    shiftCare = ShiftCareType.NONE
                 )
             )
         }
@@ -132,7 +132,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(1),
                     endDate = testDate(31),
                     optionId = snPreschoolDaycare45.id,
-                    shiftCare = false
+                    shiftCare = ShiftCareType.NONE
                 ),
             )
         }
@@ -151,7 +151,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(16),
                 endDate = testDate(30),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -179,7 +179,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(1),
                 endDate = testDate(30),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -208,7 +208,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(16),
                 endDate = testDate(30),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -236,7 +236,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(1),
                 endDate = testDate(20),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -264,7 +264,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(10),
                 endDate = testDate(20),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -297,7 +297,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(5),
                 endDate = testDate(25),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = false
+                shiftCare = ShiftCareType.NONE
             )
         )
 
@@ -349,7 +349,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(5),
                 endDate = testDate(25),
                 optionId = snDaycareFullDay25to35.id,
-                shiftCare = true
+                shiftCare = ShiftCareType.FULL
             )
         )
 
@@ -362,7 +362,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 serviceNeeds.any {
                     it.startDate == testDate(5) &&
                         it.endDate == testDate(25) &&
-                        it.shiftCare &&
+                        it.shiftCare == ShiftCareType.FULL &&
                         it.option.id == snDaycareFullDay25to35.id
                 }
             )

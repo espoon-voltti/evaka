@@ -95,6 +95,7 @@ import fi.espoo.evaka.reservations.createReservationsAndAbsences
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
@@ -1906,7 +1907,7 @@ data class DevServiceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val optionId: ServiceNeedOptionId,
-    val shiftCare: Boolean,
+    val shiftCare: ShiftCareType,
     val confirmedBy: EvakaUserId,
     val confirmedAt: LocalDate? = null
 )

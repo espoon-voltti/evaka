@@ -3,19 +3,27 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
-import styled from 'styled-components'
 
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import {
+  ServiceNeedOption,
+  ShiftCareType,
+  shiftCareType
+} from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
 import { Td, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { featureFlags } from 'lib-customizations/employee'
 import { faExclamation } from 'lib-icons'
 
 import {
@@ -33,6 +41,7 @@ interface ServiceNeedCreateRowProps {
   onCancel: () => void
   editingId?: string
 }
+
 function ServiceNeedEditorRow({
   placement,
   options,
@@ -115,7 +124,7 @@ function ServiceNeedEditorRow({
   return (
     <>
       <Tr>
-        <StyledTd>
+        <Td>
           <FixedSpaceRow spacing="xs" alignItems="center">
             <DatePickerDeprecated
               date={form.startDate}
@@ -133,8 +142,8 @@ function ServiceNeedEditorRow({
               type="short"
             />
           </FixedSpaceRow>
-        </StyledTd>
-        <StyledTd>
+        </Td>
+        <Td>
           <Select
             items={optionIds}
             selectedItem={form.optionId}
@@ -147,17 +156,34 @@ function ServiceNeedEditorRow({
             placeholder={t.optionPlaceholder}
             data-qa="service-need-option-select"
           />
-        </StyledTd>
-        <StyledTd>
-          <Checkbox
-            label={t.shiftCare}
-            hiddenLabel
-            checked={form.shiftCare}
-            onChange={(checked) => setForm({ ...form, shiftCare: checked })}
-          />
-        </StyledTd>
-        <StyledTd />
-        <StyledTd>
+        </Td>
+        <Td verticalAlign="top">
+          {featureFlags.experimental?.intermittentShiftCare ? (
+            <FixedSpaceColumn spacing="xs">
+              {shiftCareType.map((type) => (
+                <Radio
+                  key={type}
+                  data-qa={`shift-care-type-radio-${type}`}
+                  label={t.shiftCareTypes[type]}
+                  checked={form.shiftCare === type}
+                  onChange={() => setForm({ ...form, shiftCare: type })}
+                />
+              ))}
+            </FixedSpaceColumn>
+          ) : (
+            <Checkbox
+              label={t.shiftCare}
+              data-qa="shift-care-toggle"
+              hiddenLabel
+              checked={form.shiftCare === 'FULL'}
+              onChange={(checked) =>
+                setForm({ ...form, shiftCare: checked ? 'FULL' : 'NONE' })
+              }
+            />
+          )}
+        </Td>
+        <Td />
+        <Td>
           <FixedSpaceRow justifyContent="flex-end" spacing="m">
             <InlineButton
               onClick={onCancel}
@@ -172,7 +198,7 @@ function ServiceNeedEditorRow({
               data-qa="service-need-save"
             />
           </FixedSpaceRow>
-        </StyledTd>
+        </Td>
       </Tr>
 
       {overlapWarning && (
@@ -199,11 +225,7 @@ interface FormData {
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   optionId: UUID | undefined
-  shiftCare: boolean
+  shiftCare: ShiftCareType
 }
-
-const StyledTd = styled(Td)`
-  vertical-align: middle;
-`
 
 export default ServiceNeedEditorRow

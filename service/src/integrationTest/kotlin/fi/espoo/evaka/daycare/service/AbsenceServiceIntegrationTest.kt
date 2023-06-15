@@ -12,6 +12,7 @@ import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -1508,7 +1509,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = placementStart,
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
-                shiftCare = false,
+                shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
             )

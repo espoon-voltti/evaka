@@ -102,7 +102,7 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
         startDate: placementStart,
         endDate: placementEnd,
         optionId: serviceNeedOption.data.id,
-        shiftCare: false,
+        shiftCare: 'NONE',
         confirmedBy: financeAdmin.data.id,
         confirmedAt: placementStart
       })

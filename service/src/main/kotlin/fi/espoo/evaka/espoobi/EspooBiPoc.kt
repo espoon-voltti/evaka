@@ -151,7 +151,7 @@ FROM service_need_option
         streamingCsvRoute<BiServiceNeed> {
             sql(
                 """
-SELECT id, created, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care
+SELECT id, created, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care = 'FULL' as shift_care
 FROM service_need
 """
             )
