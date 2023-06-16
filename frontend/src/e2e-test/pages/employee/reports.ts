@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import { captureTextualDownload } from '../../browser'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
+  Checkbox,
   Combobox,
   DatePickerDeprecated,
   MultiSelect,
@@ -19,6 +20,11 @@ import {
 
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
+
+  async openMissingHeadOfFamilyReport() {
+    await this.page.find('[data-qa="report-missing-head-of-family"]').click()
+    return new MissingHeadOfFamilyReport(this.page)
+  }
 
   async openApplicationsReport() {
     await this.page.find('[data-qa="report-applications"]').click()
@@ -38,6 +44,39 @@ export default class ReportsPage {
   async openVardaErrorsReport() {
     await this.page.find('[data-qa="report-varda-errors"]').click()
     return new VardaErrorsReport(this.page)
+  }
+}
+
+export class MissingHeadOfFamilyReport {
+  constructor(private page: Page) {}
+
+  async toggleShowIntentionalDuplicates() {
+    await new Checkbox(
+      this.page.findByDataQa('show-intentional-duplicates-checkbox')
+    ).toggle()
+  }
+
+  async assertRows(
+    expected: {
+      areaName: string
+      unitName: string
+      childName: string
+      daysWithoutHead: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('missing-head-of-family-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
+        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
+        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row
+          .findByDataQa('days-without-head')
+          .assertTextEquals(data.daysWithoutHead)
+      })
+    )
   }
 }
 

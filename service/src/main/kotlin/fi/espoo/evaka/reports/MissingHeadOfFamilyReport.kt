@@ -30,7 +30,9 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
+        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
+        @RequestParam("showIntentionalDuplicates", required = false, defaultValue = "false")
+        showIntentionalDuplicates: Boolean
     ): List<MissingHeadOfFamilyReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -42,7 +44,7 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
                             Action.Unit.READ_MISSING_HEAD_OF_FAMILY_REPORT
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getMissingHeadOfFamilyRows(from, to, filter)
+                    it.getMissingHeadOfFamilyRows(from, to, showIntentionalDuplicates, filter)
                 }
             }
             .also {
@@ -56,6 +58,7 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
+    showIntentionalDuplicates: Boolean,
     idFilter: AccessControlFilter<DaycareId>
 ): List<MissingHeadOfFamilyReportRow> =
     createQuery<DatabaseTable> {
@@ -97,6 +100,7 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
         JOIN care_area ca ON ca.id = daycare.care_area_id
         WHERE person.date_of_death IS NULL
         AND ${predicate(idFilter.forTable("daycare"))}
+        AND (${bind(showIntentionalDuplicates)} IS TRUE OR duplicate_of IS NULL)
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """

@@ -156,6 +156,7 @@ export interface PersonDetail {
   nationalities?: string[]
   restrictedDetailsEnabled?: boolean
   restrictedDetailsEndDate?: LocalDate | null
+  duplicateOf?: string | null
 }
 
 export interface PersonDetailWithDependantsAndGuardians extends PersonDetail {
