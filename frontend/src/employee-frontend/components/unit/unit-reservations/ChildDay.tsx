@@ -137,7 +137,7 @@ export default React.memo(function ChildDay({
     serviceTimeOfDay
   )
 
-  const unitStartAfterReservationStart =
+  const requiresBackupCareForReservationStart =
     dailyData.attendance === null &&
     intermittent &&
     reservation !== null &&
@@ -146,7 +146,7 @@ export default React.memo(function ChildDay({
       (reservation.type === 'TIMES' &&
         day.time.start > reservation.startTime)) &&
     !inOtherUnit
-  const unitEndBeforeReservationEnd =
+  const requiresBackupCareForReservationEnd =
     dailyData.attendance === null &&
     intermittent &&
     reservation !== null &&
@@ -186,10 +186,10 @@ export default React.memo(function ChildDay({
           <>
             <ReservationTime
               data-qa="reservation-start"
-              warning={unitStartAfterReservationStart}
+              warning={requiresBackupCareForReservationStart}
             >
               {reservation.startTime.format()}
-              {unitStartAfterReservationStart && (
+              {requiresBackupCareForReservationStart && (
                 <>
                   {' '}
                   <FontAwesomeIcon
@@ -201,10 +201,10 @@ export default React.memo(function ChildDay({
             </ReservationTime>
             <ReservationTime
               data-qa="reservation-end"
-              warning={unitEndBeforeReservationEnd}
+              warning={requiresBackupCareForReservationEnd}
             >
               {reservation.endTime.format()}
-              {unitEndBeforeReservationEnd && (
+              {requiresBackupCareForReservationEnd && (
                 <>
                   {' '}
                   <FontAwesomeIcon
@@ -250,7 +250,8 @@ export default React.memo(function ChildDay({
               }
               save={() => saveAttendance(day.date)}
             />
-          ) : unitStartAfterReservationStart || unitEndBeforeReservationEnd ? (
+          ) : requiresBackupCareForReservationStart ||
+            requiresBackupCareForReservationEnd ? (
             <TimeCell data-qa="backup-care-required-warning" warning>
               {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
               <FontAwesomeIcon
