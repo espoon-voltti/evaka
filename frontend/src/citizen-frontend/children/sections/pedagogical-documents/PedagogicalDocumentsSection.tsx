@@ -41,6 +41,8 @@ import {
   faLockAlt
 } from 'lib-icons'
 
+import RequireAuth from '../../../RequireAuth'
+
 import {
   markPedagogicalDocumentAsReadMutation,
   pedagogicalDocumentsQuery,
@@ -398,7 +400,9 @@ export default React.memo(function PedagogicalDocumentsSection({
       contentPadding="zero"
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
-      <PedagogicalDocumentsContent childId={childId} />
+      <RequireAuth>
+        <PedagogicalDocumentsContent childId={childId} />
+      </RequireAuth>
     </CollapsibleOrWholePageContainer>
   )
 })
