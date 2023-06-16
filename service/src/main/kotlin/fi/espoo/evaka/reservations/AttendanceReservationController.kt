@@ -74,7 +74,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     val holidays = tx.getHolidays(period)
                     val holidayPeriods = tx.getHolidayPeriodsInRange(period)
                     val operationalDays =
-                        getUnitOperationalDays(
+                        getUnitOperationalDayData(
                             period,
                             unit,
                             holidays,
@@ -282,7 +282,7 @@ data class UnitAttendanceReservations(
     )
 }
 
-private fun getUnitOperationalDays(
+private fun getUnitOperationalDayData(
     period: FiniteDateRange,
     unit: Daycare,
     holidays: Set<LocalDate>,
