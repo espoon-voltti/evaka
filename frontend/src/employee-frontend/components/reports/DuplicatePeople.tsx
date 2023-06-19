@@ -94,9 +94,7 @@ export default React.memo(function DuplicatePeople() {
                   showIntentionalDuplicates: checkedValue
                 })
               }
-              label={
-                i18n.reports.duplicatePeople.filters.showIntentionalDuplicates
-              }
+              label={i18n.reports.common.filters.showIntentionalDuplicates}
               checked={filters.showIntentionalDuplicates}
             />
           </FilterRow>

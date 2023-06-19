@@ -13,12 +13,14 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   DatePickerClearableDeprecated,
   DatePickerDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
+import { featureFlags } from 'lib-customizations/employee'
 
 import {
   getMissingHeadOfFamilyReport,
@@ -49,7 +51,8 @@ export default React.memo(function MissingHeadOfFamily() {
   )
   const [filters, setFilters] = useState<MissingHeadOfFamilyReportFilters>({
     startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
-    endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
+    endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth(),
+    showIntentionalDuplicates: false
   })
 
   const [displayFilters, setDisplayFilters] =
@@ -130,6 +133,23 @@ export default React.memo(function MissingHeadOfFamily() {
           </Wrapper>
         </FilterRow>
 
+        {featureFlags.experimental?.personDuplicate && (
+          <FilterRow>
+            <FilterLabel />
+            <Checkbox
+              onChange={(checkedValue) =>
+                setFilters({
+                  ...filters,
+                  showIntentionalDuplicates: checkedValue
+                })
+              }
+              label={i18n.reports.common.filters.showIntentionalDuplicates}
+              checked={filters.showIntentionalDuplicates}
+              data-qa="show-intentional-duplicates-checkbox"
+            />
+          </FilterRow>
+        )}
+
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (
@@ -160,17 +180,20 @@ export default React.memo(function MissingHeadOfFamily() {
               </Thead>
               <Tbody>
                 {filteredRows.map((row: MissingHeadOfFamilyReportRow) => (
-                  <Tr key={`${row.unitId}:${row.childId}`}>
-                    <Td>{row.careAreaName}</Td>
-                    <Td>
+                  <Tr
+                    data-qa="missing-head-of-family-row"
+                    key={`${row.unitId}:${row.childId}`}
+                  >
+                    <Td data-qa="area-name">{row.careAreaName}</Td>
+                    <Td data-qa="unit-name">
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </Td>
-                    <Td>
+                    <Td data-qa="child-name">
                       <Link to={`/child-information/${row.childId}`}>
                         {row.lastName} {row.firstName}
                       </Link>
                     </Td>
-                    <Td>{row.daysWithoutHead}</Td>
+                    <Td data-qa="days-without-head">{row.daysWithoutHead}</Td>
                   </Tr>
                 ))}
               </Tbody>

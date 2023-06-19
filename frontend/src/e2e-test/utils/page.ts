@@ -340,6 +340,14 @@ export class Checkable extends Element {
     return this.#input.isChecked()
   }
 
+  async toggle() {
+    if (await this.checked) {
+      await this.uncheck()
+    } else {
+      await this.check()
+    }
+  }
+
   async waitUntilChecked(checked = true) {
     await waitUntilEqual(() => this.checked, checked)
   }

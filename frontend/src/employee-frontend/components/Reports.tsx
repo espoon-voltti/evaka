@@ -144,6 +144,7 @@ export default React.memo(function Reports() {
                 color={colors.status.warning}
                 icon={faUserAltSlash}
                 i18n={i18n.reports.missingHeadOfFamily}
+                data-qa="report-missing-head-of-family"
               />
             )}
             {reports.has('MISSING_SERVICE_NEED') && (

@@ -134,6 +134,7 @@ export async function getPresenceReport(
 export interface MissingHeadOfFamilyReportFilters {
   startDate: LocalDate
   endDate: LocalDate | null
+  showIntentionalDuplicates: boolean
 }
 
 export async function getMissingHeadOfFamilyReport(
@@ -145,7 +146,8 @@ export async function getMissingHeadOfFamilyReport(
       {
         params: {
           from: filters.startDate.formatIso(),
-          to: filters.endDate?.formatIso()
+          to: filters.endDate?.formatIso(),
+          showIntentionalDuplicates: filters.showIntentionalDuplicates
         }
       }
     )
