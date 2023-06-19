@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -57,7 +58,7 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
 
         val sql =
             """
-select conn_app.id                                     as connected_application_id,
+select conn_app.id                                     as application_id,
        p.id                                            as child_id,
        p.first_name                                    as child_first_name,
        p.last_name                                     as child_last_name,
@@ -104,6 +105,7 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
     }
 
     data class ManualDuplicationReportRow(
+        val applicationId: ApplicationId,
         val connectedDaycareId: DaycareId,
         val connectedDaycareName: String,
         val childId: ChildId,

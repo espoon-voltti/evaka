@@ -169,7 +169,7 @@ export default React.memo(function ManualDuplicationReport() {
             </Thead>
             <Tbody>
               {reportRows.map((row: ManualDuplicationReportRow) => (
-                <Tr key={row.childId}>
+                <Tr key={row.applicationId}>
                   <WrappableTd>
                     <Link
                       target="_blank"

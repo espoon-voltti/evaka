@@ -284,6 +284,7 @@ export interface InvoiceReportRow {
 * Generated from fi.espoo.evaka.reports.ManualDuplicationReportController.ManualDuplicationReportRow
 */
 export interface ManualDuplicationReportRow {
+  applicationId: UUID
   childFirstName: string
   childId: UUID
   childLastName: string
