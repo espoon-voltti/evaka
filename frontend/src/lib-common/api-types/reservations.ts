@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 
 import { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
@@ -23,6 +24,7 @@ export interface UnitAttendanceReservations {
 
 export interface OperationalDay {
   date: LocalDate
+  time: TimeRange | null
   isHoliday: boolean
   isInHolidayPeriod: boolean
 }

@@ -13,6 +13,7 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
@@ -40,7 +41,8 @@ fun getGroupMonthCalendar(
     tx: Database.Read,
     groupId: GroupId,
     year: Int,
-    month: Int
+    month: Int,
+    includeNonOperationalDays: Boolean
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -61,7 +63,10 @@ fun getGroupMonthCalendar(
     val operationDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
     val holidays = tx.getHolidays(range)
     val operationDates =
-        range.dates().filter { it.isOperationalDate(operationDays, holidays) }.toSet()
+        range
+            .dates()
+            .filter { includeNonOperationalDays || it.isOperationalDate(operationDays, holidays) }
+            .toSet()
 
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
 
@@ -113,11 +118,13 @@ fun getGroupMonthCalendar(
             .dates()
             .map { date ->
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
+                val operationalDate = date.isOperationalDate(operationDays, holidays)
                 GroupMonthCalendarDay(
                     date = date,
+                    holiday = !operationalDate,
                     holidayPeriod = isHolidayPeriodDate,
                     children =
-                        if (date.isOperationalDate(operationDays, holidays)) {
+                        if (includeNonOperationalDays || operationalDate) {
                             placementList
                                 .mapNotNull { (child, placements) ->
                                     val placement =
@@ -164,6 +171,7 @@ fun getGroupMonthCalendar(
     return GroupMonthCalendar(
         groupId,
         daycare.name,
+        daycare.operationTimes,
         groupName,
         children,
         days,
@@ -381,6 +389,7 @@ enum class AbsenceCategory : DatabaseEnum {
 data class GroupMonthCalendar(
     val groupId: GroupId,
     val daycareName: String,
+    val daycareOperationTimes: List<TimeRange?>,
     val groupName: String,
     val children: List<GroupMonthCalendarChild>,
     val days: List<GroupMonthCalendarDay>,
@@ -398,6 +407,7 @@ data class GroupMonthCalendarChild(
 
 data class GroupMonthCalendarDay(
     val date: LocalDate,
+    val holiday: Boolean,
     val holidayPeriod: Boolean,
     val children: List<GroupMonthCalendarDayChild>? // null if not an operation day for the unit
 )
@@ -416,7 +426,8 @@ data class ChildServiceNeedInfo(
     val childId: ChildId,
     val hasContractDays: Boolean,
     val optionName: String,
-    val validDuring: FiniteDateRange
+    val validDuring: FiniteDateRange,
+    val shiftCare: ShiftCareType
 )
 
 data class AbsencePlacement(val dateRange: FiniteDateRange, val categories: Set<AbsenceCategory>)

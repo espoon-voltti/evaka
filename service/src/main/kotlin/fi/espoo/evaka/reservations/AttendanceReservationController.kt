@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -52,7 +53,8 @@ class AttendanceReservationController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam(required = false, defaultValue = "false") includeNonOperationalDays: Boolean
     ): UnitAttendanceReservations {
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val period = FiniteDateRange(from, to)
@@ -72,7 +74,13 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     val holidays = tx.getHolidays(period)
                     val holidayPeriods = tx.getHolidayPeriodsInRange(period)
                     val operationalDays =
-                        getUnitOperationalDays(period, unit, holidays, holidayPeriods)
+                        getUnitOperationalDayData(
+                            period,
+                            unit,
+                            holidays,
+                            holidayPeriods,
+                            includeNonOperationalDays
+                        )
 
                     val effectiveGroupPlacements =
                         tx.getEffectiveGroupPlacementsInRange(unitId, period)
@@ -135,12 +143,25 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                 } else {
                                     UnitAttendanceReservations.GroupAttendanceReservations(
                                         group = group,
-                                        children = toChildDayRows(rows, serviceTimes, childData)
+                                        children =
+                                            toChildDayRows(
+                                                rows,
+                                                serviceTimes,
+                                                childData,
+                                                includeNonOperationalDays
+                                            )
                                     )
                                 }
                             },
                         ungrouped =
-                            byGroup[null]?.let { toChildDayRows(it, serviceTimes, childData) }
+                            byGroup[null]?.let {
+                                toChildDayRows(
+                                    it,
+                                    serviceTimes,
+                                    childData,
+                                    includeNonOperationalDays
+                                )
+                            }
                                 ?: emptyList(),
                         unitServiceNeedInfo = unitServiceNeedInfo
                     )
@@ -203,6 +224,7 @@ data class UnitAttendanceReservations(
 ) {
     data class OperationalDay(
         val date: LocalDate,
+        val time: TimeRange?,
         val isHoliday: Boolean,
         val isInHolidayPeriod: Boolean
     )
@@ -260,21 +282,29 @@ data class UnitAttendanceReservations(
     )
 }
 
-private fun getUnitOperationalDays(
+private fun getUnitOperationalDayData(
     period: FiniteDateRange,
     unit: Daycare,
     holidays: Set<LocalDate>,
-    holidayPeriods: List<HolidayPeriod>
+    holidayPeriods: List<HolidayPeriod>,
+    includeNonOperationalDays: Boolean
 ): List<UnitAttendanceReservations.OperationalDay> {
     val holidayPeriodDates = holidayPeriods.flatMap { it.period.dates() }.toSet()
     val isRoundTheClockUnit = unit.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
     return period
         .dates()
-        .filter { isRoundTheClockUnit || unit.operationDays.contains(it.dayOfWeek.value) }
+        .filter {
+            includeNonOperationalDays ||
+                isRoundTheClockUnit ||
+                unit.operationDays.contains(it.dayOfWeek.value)
+        }
         .map {
             UnitAttendanceReservations.OperationalDay(
                 it,
-                isHoliday = !isRoundTheClockUnit && holidays.contains(it),
+                time = unit.operationTimes[it.dayOfWeek.value - 1],
+                isHoliday =
+                    !isRoundTheClockUnit &&
+                        (holidays.contains(it) || !unit.operationDays.contains(it.dayOfWeek.value)),
                 isInHolidayPeriod = holidayPeriodDates.contains(it)
             )
         }
@@ -461,7 +491,8 @@ WHERE p.id = ANY(:childIds)
 private fun toChildDayRows(
     rows: List<ChildPlacementStatus>,
     serviceTimes: Map<ChildId, List<DailyServiceTimesValue>>,
-    childData: Map<ChildId, ChildData>
+    childData: Map<ChildId, ChildData>,
+    includeNonOperationalDays: Boolean
 ): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.childId }
@@ -491,7 +522,15 @@ private fun toChildDayRows(
                     (0 until maxRecordCountOnAnyDay).map { rowIndex ->
                         dailyData.associateBy(
                             { it.date },
-                            { dailyRecord(it, rowIndex, child, serviceTimes[childId]) }
+                            {
+                                dailyRecord(
+                                    it,
+                                    rowIndex,
+                                    child,
+                                    serviceTimes[childId],
+                                    includeNonOperationalDays
+                                )
+                            }
                         )
                     }
             )
@@ -502,13 +541,18 @@ private fun dailyRecord(
     placementStatus: ChildPlacementStatus,
     rowIndex: Int,
     childData: ChildData,
-    serviceTimes: List<DailyServiceTimesValue>?
+    serviceTimes: List<DailyServiceTimesValue>?,
+    includeNonOperationalDays: Boolean
 ): UnitAttendanceReservations.ChildRecordOfDay {
     val date = placementStatus.date
     val inOtherUnit = placementStatus.inOtherUnit
 
-    val reservation = if (inOtherUnit) null else childData.reservations[date]?.getOrNull(rowIndex)
-    val attendance = if (inOtherUnit) null else childData.attendances[date]?.getOrNull(rowIndex)
+    val reservation =
+        if (!includeNonOperationalDays && inOtherUnit) null
+        else childData.reservations[date]?.getOrNull(rowIndex)
+    val attendance =
+        if (!includeNonOperationalDays && inOtherUnit) null
+        else childData.attendances[date]?.getOrNull(rowIndex)
 
     return UnitAttendanceReservations.ChildRecordOfDay(
         reservation = reservation,

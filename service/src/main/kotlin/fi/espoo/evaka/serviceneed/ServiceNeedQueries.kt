@@ -312,6 +312,7 @@ fun Database.Read.getGroupedActualServiceNeedInfosByRangeAndUnit(
         val hasContractDays: Boolean,
         val optionName: String,
         val validDuring: FiniteDateRange,
+        val shiftCare: ShiftCareType,
         val groupId: GroupId?
     )
     val sql =
@@ -320,6 +321,7 @@ SELECT p.child_id,
        sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
        sno.name_fi                                 AS option_name,
        daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+       sn.shift_care,
        gp.daycare_group_id                         AS group_id
 FROM placement p
          JOIN service_need sn ON sn.placement_id = p.id
@@ -337,6 +339,7 @@ SELECT bc.child_id,
        sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
        sno.name_fi                                 AS option_name,
        daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+       sn.shift_care,
        bc.group_id                                 AS group_id
 FROM backup_care bc
          JOIN placement p ON bc.child_id = p.child_id AND
@@ -363,7 +366,8 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
                             childId = it.childId,
                             hasContractDays = it.hasContractDays,
                             optionName = it.optionName,
-                            validDuring = it.validDuring
+                            validDuring = it.validDuring,
+                            shiftCare = it.shiftCare,
                         )
                     }
             }
@@ -395,7 +399,8 @@ fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(
 SELECT p.child_id,
        sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
        sno.name_fi                                 AS option_name,
-       daterange(sn.start_date, sn.end_date, '[]') AS valid_during
+       daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+       sn.shift_care
 FROM daycare_group_placement AS gp
          JOIN placement p ON gp.daycare_placement_id = p.id
     AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
@@ -410,7 +415,8 @@ UNION ALL
 SELECT bc.child_id,
        sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
        sno.name_fi                                 AS option_name,
-       daterange(sn.start_date, sn.end_date, '[]') AS valid_during
+       daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+       sn.shift_care
 FROM backup_care bc
          JOIN placement p ON bc.child_id = p.child_id
     AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')

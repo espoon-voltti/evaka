@@ -380,6 +380,11 @@ export class UnitChildReservationsTable extends Element {
     ])
   }
 
+  getBackupCareRequiredWarning(date: LocalDate, row: number): Promise<string> {
+    const cell = this.#attendanceCell(date, row)
+    return cell.findByDataQa('backup-care-required-warning').text
+  }
+
   async openInlineEditor(childId: UUID) {
     await this.#ellipsisMenu(childId).click()
     await this.#editInline.click()

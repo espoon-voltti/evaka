@@ -10,6 +10,7 @@ import {
   AbsenceWithModifierInfo,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/daycare'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -114,9 +115,11 @@ interface AbsenceCellPartsProps {
   id: UUID
   childId: UUID
   date: LocalDate
+  holidays: Record<string, boolean>
   categories: AbsenceCategory[] | null
   absences: AbsenceWithModifierInfo[]
   backupCare: boolean
+  requiresBackupCare: boolean
   isSelected: boolean
   isMissingHolidayReservation: boolean
   toggle: (parts: CellPart[]) => void
@@ -125,9 +128,11 @@ interface AbsenceCellPartsProps {
 const AbsenceCellParts = React.memo(function AbsenceCellParts({
   childId,
   date,
+  holidays,
   categories,
   absences,
   backupCare,
+  requiresBackupCare,
   isSelected,
   isMissingHolidayReservation,
   toggle
@@ -139,7 +144,10 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
         : [],
     [absences, backupCare, categories, childId, date]
   )
-  if (parts.length === 0) {
+  if (requiresBackupCare) {
+    return <RequiresBackupCareDiv />
+  }
+  if (parts.length === 0 || holidays[date.formatIso()]) {
     return <DisabledCell />
   }
 
@@ -189,18 +197,40 @@ const MissingHolidayReservationMarker = styled.div`
   border: 2px solid ${colors.status.warning};
 `
 
+const RequiresBackupBackupMarker = styled.div`
+  position: absolute;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+  border: 2px solid ${colors.status.warning};
+  text-align: center;
+  color: ${colors.status.warning};
+  font-size: small;
+`
+
+const RequiresBackupCareDiv = () => (
+  <DisabledCell>
+    <RequiresBackupBackupMarker>!</RequiresBackupBackupMarker>
+  </DisabledCell>
+)
+
 interface MonthCalendarCellProps {
   date: LocalDate
+  holidays: Record<string, boolean>
+  operationTime: TimeRange | null
   childId: UUID
   day: GroupMonthCalendarDayChild
+  intermittent: boolean
   selectedCells: SelectedCell[]
   toggleCellSelection: (cell: SelectedCell) => void
 }
 
 export default React.memo(function MonthCalendarCell({
   date,
+  holidays,
+  operationTime,
   childId,
   day,
+  intermittent,
   selectedCells,
   toggleCellSelection
 }: MonthCalendarCellProps) {
@@ -231,6 +261,19 @@ export default React.memo(function MonthCalendarCell({
     day.reservations.length > 0 ||
     day.dailyServiceTimes !== null
 
+  const isHoliday = holidays[date.formatIso()]
+  const unitIsNotOpenOnReservation =
+    day.reservations.some(
+      ({ reservation }) =>
+        operationTime === null ||
+        isHoliday ||
+        (reservation.type === 'TIMES' &&
+          (operationTime.start > reservation.startTime ||
+            operationTime.end < reservation.endTime))
+    ) && !day.backupCare
+  const requiresBackupCare =
+    intermittent && unitIsNotOpenOnReservation && !day.backupCare
+
   return (
     <Tooltip
       tooltip={
@@ -242,6 +285,7 @@ export default React.memo(function MonthCalendarCell({
             reservations={day.reservations}
             backupCare={day.backupCare}
             isMissingHolidayReservation={day.missingHolidayReservation}
+            requiresBackupCare={requiresBackupCare}
           />
         ) : undefined
       }
@@ -253,9 +297,11 @@ export default React.memo(function MonthCalendarCell({
         id={id}
         childId={childId}
         date={date}
+        holidays={holidays}
         categories={day.absenceCategories}
         absences={day.absences}
         backupCare={day.backupCare}
+        requiresBackupCare={requiresBackupCare}
         isSelected={isSelected}
         isMissingHolidayReservation={day.missingHolidayReservation}
         toggle={toggle}

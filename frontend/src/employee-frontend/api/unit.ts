@@ -56,6 +56,7 @@ import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { parseReservation } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
@@ -815,14 +816,16 @@ export async function postAttendances(
 
 export async function getUnitAttendanceReservations(
   unitId: UUID,
-  dateRange: FiniteDateRange
+  dateRange: FiniteDateRange,
+  includeNonOperationalDays: boolean
 ): Promise<Result<UnitAttendanceReservations>> {
   return client
     .get<JsonOf<UnitAttendanceReservations>>('/attendance-reservations', {
       params: {
         unitId,
         from: dateRange.start.formatIso(),
-        to: dateRange.end?.formatIso()
+        to: dateRange.end?.formatIso(),
+        includeNonOperationalDays
       }
     })
     .then(({ data }) =>
@@ -830,7 +833,14 @@ export async function getUnitAttendanceReservations(
         unit: data.unit,
         operationalDays: data.operationalDays.map((operationalDay) => ({
           ...operationalDay,
-          date: LocalDate.parseIso(operationalDay.date)
+          date: LocalDate.parseIso(operationalDay.date),
+          time:
+            operationalDay.time !== null
+              ? {
+                  start: LocalTime.parseIso(operationalDay.time.start),
+                  end: LocalTime.parseIso(operationalDay.time.end)
+                }
+              : null
         })),
         groups: data.groups.map(({ group, children }) => ({
           group,

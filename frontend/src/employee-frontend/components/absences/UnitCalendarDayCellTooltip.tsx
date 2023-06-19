@@ -20,6 +20,7 @@ interface UnitCalendarMonthlyDayCellTooltipProps {
   reservations: ChildReservation[]
   backupCare: boolean
   isMissingHolidayReservation: boolean
+  requiresBackupCare: boolean
 }
 
 export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
@@ -28,7 +29,8 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
   dailyServiceTimes,
   reservations,
   backupCare,
-  isMissingHolidayReservation
+  isMissingHolidayReservation,
+  requiresBackupCare
 }: UnitCalendarMonthlyDayCellTooltipProps) {
   const { i18n } = useTranslation()
 
@@ -104,6 +106,17 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
     [i18n, absences]
   )
 
+  const requiresBackupCareTooltip = useMemo(
+    () => (
+      <div>
+        {i18n.absences.shiftCare}
+        <br />
+        {i18n.absences.requiresBackupCare}
+      </div>
+    ),
+    [i18n]
+  )
+
   return (
     <div data-qa={`attendance-tooltip-${date.toString()}`}>
       {backupCare ? (
@@ -112,6 +125,8 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
         absencesTooltip
       ) : isMissingHolidayReservation ? (
         missingHolidayReservationTooltip
+      ) : requiresBackupCare ? (
+        requiresBackupCareTooltip
       ) : reservations.length > 0 || dailyServiceTimes !== null ? (
         <div>
           {reservationTooltip}

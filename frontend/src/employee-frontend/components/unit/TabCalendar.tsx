@@ -22,6 +22,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
 
 import { getDaycareGroups, UnitResponse } from '../../api/unit'
@@ -71,7 +72,11 @@ const getWeekDateRange = (date: LocalDate, operationalDays: DayOfWeek[]) => {
   const start = date.startOfWeek()
   return new FiniteDateRange(
     start,
-    start.addDays(Math.max(...operationalDays) - 1)
+    start.addDays(
+      featureFlags.experimental?.intermittentShiftCare
+        ? 6
+        : Math.max(...operationalDays) - 1
+    )
   )
 }
 

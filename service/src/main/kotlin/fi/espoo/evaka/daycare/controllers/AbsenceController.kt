@@ -45,7 +45,8 @@ class AbsenceController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
+        @RequestParam(required = false, defaultValue = "false") includeNonOperationalDays: Boolean
     ): GroupMonthCalendar {
         return db.connect { dbc ->
                 dbc.read {
@@ -56,7 +57,7 @@ class AbsenceController(private val accessControl: AccessControl) {
                         Action.Group.READ_ABSENCES,
                         groupId
                     )
-                    getGroupMonthCalendar(it, groupId, year, month)
+                    getGroupMonthCalendar(it, groupId, year, month, includeNonOperationalDays)
                 }
             }
             .also {

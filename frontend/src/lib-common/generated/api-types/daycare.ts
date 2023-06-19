@@ -19,6 +19,7 @@ import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
 import { Reservation } from './reservations'
+import { ShiftCareType } from './serviceneed'
 import { TerminatedPlacement } from './placement'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
@@ -192,6 +193,7 @@ export interface ChildServiceNeedInfo {
   childId: UUID
   hasContractDays: boolean
   optionName: string
+  shiftCare: ShiftCareType
   validDuring: FiniteDateRange
 }
 
@@ -383,6 +385,7 @@ export interface FinanceDecisionHandler {
 export interface GroupMonthCalendar {
   children: GroupMonthCalendarChild[]
   daycareName: string
+  daycareOperationTimes: (TimeRange | null)[]
   days: GroupMonthCalendarDay[]
   groupId: UUID
   groupName: string
@@ -407,6 +410,7 @@ export interface GroupMonthCalendarChild {
 export interface GroupMonthCalendarDay {
   children: GroupMonthCalendarDayChild[] | null
   date: LocalDate
+  holiday: boolean
   holidayPeriod: boolean
 }
 
