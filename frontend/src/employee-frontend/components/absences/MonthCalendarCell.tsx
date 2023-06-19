@@ -144,14 +144,16 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
         : [],
     [absences, backupCare, categories, childId, date]
   )
-  if (parts.length === 0 || holidays[date.formatIso()] || requiresBackupCare) {
-    return <DisabledCell $requiresBackupCare={requiresBackupCare} />
+  if (requiresBackupCare) {
+    return <RequiresBackupCareDiv />
+  }
+  if (parts.length === 0 || holidays[date.formatIso()]) {
+    return <DisabledCell />
   }
 
   const clickable = !backupCare
   return (
     <AbsenceCellDiv
-      $requiresBackupCare={requiresBackupCare}
       $isSelected={isSelected}
       onClick={clickable ? () => toggle(parts) : undefined}
     >
@@ -173,16 +175,10 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   )
 })
 
-export const DisabledCell = styled.div<{ $requiresBackupCare: boolean }>`
+export const DisabledCell = styled.div`
   position: relative;
   height: ${cellSize}px;
   width: ${cellSize}px;
-
-  ${(p) =>
-    p.$requiresBackupCare &&
-    css`
-      border: 2px solid ${colors.status.warning};
-    `}
 `
 
 const AbsenceCellDiv = styled(DisabledCell)<{ $isSelected: boolean }>`
@@ -201,12 +197,29 @@ const MissingHolidayReservationMarker = styled.div`
   border: 2px solid ${colors.status.warning};
 `
 
+const RequiresBackupBackupMarker = styled.div`
+  position: absolute;
+  height: ${cellSize}px;
+  width: ${cellSize}px;
+  border: 2px solid ${colors.status.warning};
+  text-align: center;
+  color: ${colors.status.warning};
+  font-size: small;
+`
+
+const RequiresBackupCareDiv = () => (
+  <DisabledCell>
+    <RequiresBackupBackupMarker>!</RequiresBackupBackupMarker>
+  </DisabledCell>
+)
+
 interface MonthCalendarCellProps {
   date: LocalDate
   holidays: Record<string, boolean>
   operationTime: TimeRange | null
   childId: UUID
   day: GroupMonthCalendarDayChild
+  intermittent: boolean
   selectedCells: SelectedCell[]
   toggleCellSelection: (cell: SelectedCell) => void
 }
@@ -217,6 +230,7 @@ export default React.memo(function MonthCalendarCell({
   operationTime,
   childId,
   day,
+  intermittent,
   selectedCells,
   toggleCellSelection
 }: MonthCalendarCellProps) {
@@ -247,15 +261,18 @@ export default React.memo(function MonthCalendarCell({
     day.reservations.length > 0 ||
     day.dailyServiceTimes !== null
 
-  const requiresBackupCare =
+  const isHoliday = holidays[date.formatIso()]
+  const unitIsNotOpenOnReservation =
     day.reservations.some(
       ({ reservation }) =>
         operationTime === null ||
-        holidays[date.formatIso()] ||
+        isHoliday ||
         (reservation.type === 'TIMES' &&
           (operationTime.start > reservation.startTime ||
             operationTime.end < reservation.endTime))
     ) && !day.backupCare
+  const requiresBackupCare =
+    intermittent && unitIsNotOpenOnReservation && !day.backupCare
 
   return (
     <Tooltip

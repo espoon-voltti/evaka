@@ -137,22 +137,20 @@ export default React.memo(function ChildDay({
     serviceTimeOfDay
   )
 
-  const requiresBackupCareForReservationStart =
-    dailyData.attendance === null &&
-    intermittent &&
+  const unitIsNotOpenOnReservationStart =
     reservation !== null &&
     (day.time === null ||
       day.isHoliday ||
-      (reservation.type === 'TIMES' &&
-        day.time.start > reservation.startTime)) &&
-    !inOtherUnit
-  const requiresBackupCareForReservationEnd =
-    dailyData.attendance === null &&
-    intermittent &&
+      (reservation.type === 'TIMES' && day.time.start > reservation.startTime))
+  const unitIsNotOpenOnReservationEnd =
     reservation !== null &&
     (day.time === null ||
       day.isHoliday ||
-      (reservation.type === 'TIMES' && day.time.end < reservation.endTime)) &&
+      (reservation.type === 'TIMES' && day.time.end < reservation.endTime))
+  const requiresBackupCare =
+    dailyData.attendance === null &&
+    intermittent &&
+    (unitIsNotOpenOnReservationStart || unitIsNotOpenOnReservationEnd) &&
     !inOtherUnit
 
   return (
@@ -186,10 +184,10 @@ export default React.memo(function ChildDay({
           <>
             <ReservationTime
               data-qa="reservation-start"
-              warning={requiresBackupCareForReservationStart}
+              warning={unitIsNotOpenOnReservationStart}
             >
               {reservation.startTime.format()}
-              {requiresBackupCareForReservationStart && (
+              {unitIsNotOpenOnReservationStart && (
                 <>
                   {' '}
                   <FontAwesomeIcon
@@ -201,10 +199,10 @@ export default React.memo(function ChildDay({
             </ReservationTime>
             <ReservationTime
               data-qa="reservation-end"
-              warning={requiresBackupCareForReservationEnd}
+              warning={unitIsNotOpenOnReservationEnd}
             >
               {reservation.endTime.format()}
-              {requiresBackupCareForReservationEnd && (
+              {unitIsNotOpenOnReservationEnd && (
                 <>
                   {' '}
                   <FontAwesomeIcon
@@ -250,8 +248,7 @@ export default React.memo(function ChildDay({
               }
               save={() => saveAttendance(day.date)}
             />
-          ) : requiresBackupCareForReservationStart ||
-            requiresBackupCareForReservationEnd ? (
+          ) : requiresBackupCare ? (
             <TimeCell data-qa="backup-care-required-warning" warning>
               {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
               <FontAwesomeIcon

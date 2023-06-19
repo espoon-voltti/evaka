@@ -105,19 +105,25 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
               operationTime={operationTimes[date.getIsoDayOfWeek() - 1]}
               childId={child.id}
               day={day}
+              intermittent={actualServiceNeeds.some(
+                (serviceNeed) =>
+                  serviceNeed.childId === child.id &&
+                  serviceNeed.validDuring.includes(date) &&
+                  serviceNeed.shiftCare === 'INTERMITTENT'
+              )}
               selectedCells={selectedCells}
               toggleCellSelection={toggleCellSelection}
             />
           </CalendarTd>
         ) : (
           <td key={`${child.id}${date.formatIso()}`}>
-            <DisabledCell $requiresBackupCare={false} />
+            <DisabledCell />
           </td>
         )
       )}
       {emptyCols.map((item) => (
         <td key={item}>
-          <DisabledCell $requiresBackupCare={false} />
+          <DisabledCell />
         </td>
       ))}
       {reservationEnabled && (
