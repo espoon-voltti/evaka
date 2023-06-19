@@ -59,6 +59,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   beforeEach(async () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
+
     children = [
       fixtures.enduserChildFixtureJari,
       fixtures.enduserChildFixtureKaarina,
@@ -686,5 +687,119 @@ describe('Citizen calendar visibility', () => {
     // Ensure page has loaded
     await page.find('[data-qa="nav-children-desktop"]').waitUntilVisible()
     await page.find('[data-qa="nav-calendar-desktop"]').waitUntilHidden()
+  })
+})
+
+describe.each(e)('Citizen calendar shift care reservations', (env) => {
+  let page: Page
+  const today = LocalDate.of(2022, 1, 5)
+  const placement1start = today
+  const placement1end = today.addMonths(6)
+  let fixtures: AreaAndPersonFixtures
+
+  beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+    const careArea = await Fixture.careArea().with(careArea2Fixture).save()
+    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        fixtures.enduserChildFixtureKaarina.id,
+        daycare2Fixture.id,
+        placement1start,
+        placement1end
+      )
+    ])
+    page = await Page.open({
+      mockedTime: today.toSystemTzDate()
+    })
+    await enduserLogin(page)
+  })
+
+  test(`Citizen creates 2 reservations from day view: ${env}`, async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    const reservationDay = today.addDays(14)
+
+    const reservation1 = {
+      startTime: '08:00',
+      endTime: '16:00'
+    }
+
+    const reservation2 = {
+      startTime: '17:00',
+      endTime: '19:00'
+    }
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    await dayView.assertNoReservation(fixtures.enduserChildFixtureKaarina.id)
+
+    const editor = await dayView.edit()
+    await editor.fillReservationTimes(
+      fixtures.enduserChildFixtureKaarina.id,
+      reservation1.startTime,
+      reservation1.endTime
+    )
+    await editor.save()
+
+    await dayView.assertReservations(
+      fixtures.enduserChildFixtureKaarina.id,
+      `${reservation1.startTime} – ${reservation1.endTime}`
+    )
+
+    const editor2 = await dayView.edit()
+    await editor2.addSecondReservation(
+      fixtures.enduserChildFixtureKaarina.id,
+      reservation2.startTime,
+      reservation2.endTime
+    )
+    await editor2.save()
+
+    await dayView.assertReservations(
+      fixtures.enduserChildFixtureKaarina.id,
+      `${reservation1.startTime} – ${reservation1.endTime}, ${reservation2.startTime} – ${reservation2.endTime}`
+    )
+  })
+
+  test(`Citizen creates 2 reservations from reservation modal: ${env}`, async () => {
+    const calendarPage = await openCalendarPage(env)
+    const reservationDay = today.addDays(14)
+
+    const reservation1 = {
+      startTime: '10:00',
+      endTime: '16:00',
+      childIds: [fixtures.enduserChildFixtureKaarina.id]
+    }
+
+    const reservation2 = {
+      startTime: '17:00',
+      endTime: '18:00'
+    }
+    const reservationsModal = await calendarPage.openReservationsModal()
+
+    await reservationsModal.fillDailyReservationInfo(
+      new FiniteDateRange(reservationDay, reservationDay),
+      reservation1.startTime,
+      reservation1.endTime,
+      reservation1.childIds,
+      1
+    )
+
+    await reservationsModal.fillDaily2ndReservationInfo(
+      reservation2.startTime,
+      reservation2.endTime
+    )
+
+    await reservationsModal.save()
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    await dayView.assertReservations(
+      fixtures.enduserChildFixtureKaarina.id,
+      `${reservation1.startTime} – ${reservation1.endTime}, ${reservation2.startTime} – ${reservation2.endTime}`
+    )
   })
 })

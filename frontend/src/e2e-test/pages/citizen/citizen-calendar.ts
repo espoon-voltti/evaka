@@ -216,6 +216,7 @@ class ReservationsModal {
   #dailyEndTimeInput = new TextInput(
     this.page.find('[data-qa="daily-time-0-end"]')
   )
+
   #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
       new TextInput(this.page.find(`[data-qa="weekly-${index}-time-0-start"]`))
@@ -243,6 +244,10 @@ class ReservationsModal {
   #childCheckbox = (childId: string) =>
     new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
 
+  async save() {
+    await this.#modalSendButton.click()
+  }
+
   async fillDailyReservationInfo(
     dateRange: FiniteDateRange,
     startTime: string,
@@ -264,6 +269,21 @@ class ReservationsModal {
     await this.#dailyEndTimeInput.press('Tab')
   }
 
+  async fillDaily2ndReservationInfo(startTime: string, endTime: string) {
+    const addReservationButton = this.page.findByDataQa('daily-add-res-button')
+    await addReservationButton.click()
+    const daily2ndReservationStartTimeInput = new TextInput(
+      this.page.findByDataQa('daily-time-1-start')
+    )
+
+    const daily2ndReservationEndTimeInput = new TextInput(
+      this.page.findByDataQa('daily-time-1-end')
+    )
+    await daily2ndReservationStartTimeInput.fill(startTime)
+    await daily2ndReservationEndTimeInput.fill(endTime)
+    await daily2ndReservationEndTimeInput.press('Tab')
+  }
+
   async createRepeatingDailyReservation(
     dateRange: FiniteDateRange,
     startTime: string,
@@ -278,7 +298,7 @@ class ReservationsModal {
       childIds,
       totalChildren
     )
-    await this.#modalSendButton.click()
+    await this.save()
   }
 
   private async deselectChildren(n: number) {
@@ -329,7 +349,7 @@ class ReservationsModal {
     weeklyTimes: ({ startTime: string; endTime: string } | { absence: true })[]
   ) {
     await this.fillWeeklyReservationInfo(dateRange, weeklyTimes)
-    await this.#modalSendButton.click()
+    await this.save()
   }
 
   async fillIrregularReservationInfo(
@@ -356,7 +376,7 @@ class ReservationsModal {
     irregularTimes: { date: LocalDate; startTime: string; endTime: string }[]
   ) {
     await this.fillIrregularReservationInfo(dateRange, irregularTimes)
-    await this.#modalSendButton.click()
+    await this.save()
   }
 
   async assertUnmodifiableDayExists(
@@ -544,17 +564,28 @@ class DayViewEditor extends Element {
     return this.findByDataQa(`child-${childId}`)
   }
 
-  async fillReservationTimes(
+  async addSecondReservation(
     childId: UUID,
     startTime: string,
     endTime: string
   ) {
     const child = this.#childSection(childId)
+    await child.findByDataQa('edit-reservation-add-res-button').click()
+    await this.fillReservationTimes(childId, startTime, endTime, 1)
+  }
+
+  async fillReservationTimes(
+    childId: UUID,
+    startTime: string,
+    endTime: string,
+    reservationIndex = 0
+  ) {
+    const child = this.#childSection(childId)
     await new TextInput(
-      child.findByDataQa('edit-reservation-time-0-start')
+      child.findByDataQa(`edit-reservation-time-${reservationIndex}-start`)
     ).fill(startTime)
     const endInput = new TextInput(
-      child.findByDataQa('edit-reservation-time-0-end')
+      child.findByDataQa(`edit-reservation-time-${reservationIndex}-end`)
     )
     await endInput.fill(endTime)
     await endInput.press('Tab')
