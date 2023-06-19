@@ -292,7 +292,7 @@ export interface ManualDuplicationReportRow {
   connectedDaycareName: string
   connectedDecisionType: DecisionType
   connectedEndDate: LocalDate
-  connectedSnoName: string
+  connectedSnoName: string | null
   connectedStartDate: LocalDate
   dateOfBirth: LocalDate
   preschoolDaycareId: UUID

@@ -86,10 +86,8 @@ from decision connected_decision
            pre_d.start_date as preschool_start_date,
            pre_d.end_date   as preschool_end_date
     from decision pre_d
-             join application pre_app on pre_d.application_id = pre_app.id
-             join daycare d on pre_d.unit_id = d.id
-             join person p on pre_app.child_id = p.id
-    where pre_app.child_id = conn_app.child_id
+    join daycare d on pre_d.unit_id = d.id
+    where pre_d.application_id = conn_app.id
       and pre_d.type = 'PRESCHOOL'
       and pre_d.status = 'ACCEPTED'
       and daterange(pre_d.start_date, pre_d.end_date, '[]') &&
@@ -115,7 +113,7 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
         val connectedDecisionType: DecisionType,
         val connectedStartDate: LocalDate,
         val connectedEndDate: LocalDate,
-        val connectedSnoName: String,
+        val connectedSnoName: String?,
         val preschoolDaycareId: DaycareId,
         val preschoolDaycareName: String,
         val preschoolDecisionType: DecisionType,

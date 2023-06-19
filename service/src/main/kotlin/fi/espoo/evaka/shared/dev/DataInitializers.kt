@@ -708,6 +708,7 @@ fun Database.Transaction.insertTestPlacementPlan(
 }
 
 data class TestDecision(
+    val id: DecisionId? = DecisionId(UUID.randomUUID()),
     val createdBy: EvakaUserId,
     val sentDate: LocalDate = LocalDate.now(europeHelsinki),
     val unitId: DaycareId,
@@ -730,8 +731,8 @@ fun Database.Transaction.insertTestDecision(decision: TestDecision) =
     insertTestDataRow(
             decision,
             """
-INSERT INTO decision (created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent)
-VALUES (:createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy, :pendingDecisionEmailsSentCount, :pendingDecisionEmailSent)
+INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent)
+VALUES (:id, :createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy, :pendingDecisionEmailsSentCount, :pendingDecisionEmailSent)
 RETURNING id
 """
         )
