@@ -125,10 +125,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2023-28708</cve>
     </suppress>
-        <suppress>
+    <suppress>
         <notes><![CDATA[
         In spring framework versions prior to 5.2.24 release+ ,5.3.27+ and 6.0.8+ , it is possible for a user to provide a specially crafted SpEL expression that may cause a denial-of-service (DoS) condition.
         ]]></notes>
         <cve>CVE-2023-20863</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        An issue was discovered jackson-databind thru 2.15.2 allows attackers to cause a denial of service or other unspecified impacts via crafted object that uses cyclic dependencies.
+        IGNORED UNTIL FIX IS RELEASED
+        ]]></notes>
+        <cve>CVE-2023-35116</cve>
     </suppress>
 </suppressions>
