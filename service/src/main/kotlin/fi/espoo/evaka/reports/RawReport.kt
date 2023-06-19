@@ -112,7 +112,7 @@ SELECT
     sn IS NOT NULL AS has_service_need,
     coalesce(sno.part_day, false) AS part_day,
     coalesce(sno.part_week, false) AS part_week,
-    sn.shift_care = 'FULL' AS shift_care,
+    coalesce(sn.shift_care, 'NONE') = 'FULL' AS shift_care,
     coalesce(sno.daycare_hours_per_week, 0.0) AS hours_per_week,
 
     an IS NOT NULL as has_assistance_need,
