@@ -36,7 +36,7 @@
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "make-error-cause": "^2.3.0",
-    "nocache": "^3.0.4",
+    "nocache": "^4.0.0",
     "passport": "^0.6.0",
     "pino": "^8.14.1",
     "pino-http": "^8.3.3",
