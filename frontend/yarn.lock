@@ -3451,15 +3451,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-datepicker@npm:4.10.0":
-  version: 4.10.0
-  resolution: "@types/react-datepicker@npm:4.10.0"
+"@types/react-datepicker@npm:4.11.2":
+  version: 4.11.2
+  resolution: "@types/react-datepicker@npm:4.11.2"
   dependencies:
     "@popperjs/core": ^2.9.2
     "@types/react": "*"
     date-fns: ^2.0.1
     react-popper: ^2.2.5
-  checksum: c0e978d081b8e3e3b87f757d74b29187a81b095f9eabcb6a0e8b505f816b746e2fcb3a56f27041e5a02f4e6c90ab7b315f9a74dfc896c0a98a773bbe680c4982
+  checksum: 592cff1604c74a336dcf5bb72db3f9f47de50bcab4e3d95684b21b4cf6b22e7e7e6351758e866e734c209aa41d21601f04322e1b03920a9473152e4db08bc170
   languageName: node
   linkType: hard
 
@@ -6181,7 +6181,7 @@ __metadata:
     "@types/punycode": ^2.1.0
     "@types/react": ^17.0.59
     "@types/react-csv": ^1.1.3
-    "@types/react-datepicker": 4.10.0
+    "@types/react-datepicker": 4.11.2
     "@types/react-dom": ^17.0.20
     "@types/react-linkify": ^1.0.1
     "@types/react-router-dom": ^5.3.3
@@ -6243,7 +6243,7 @@ __metadata:
     react-autosize-textarea: ^7.1.0
     react-chartjs-2: ^5.0.0
     react-csv: ^2.2.2
-    react-datepicker: ^4.10.0
+    react-datepicker: ^4.14.0
     react-day-picker: ^8.7.1
     react-dom: ^17.0.2
     react-focus-lock: 2.9.1
@@ -9918,9 +9918,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-datepicker@npm:^4.10.0":
-  version: 4.10.0
-  resolution: "react-datepicker@npm:4.10.0"
+"react-datepicker@npm:^4.14.0":
+  version: 4.14.0
+  resolution: "react-datepicker@npm:4.14.0"
   dependencies:
     "@popperjs/core": ^2.9.2
     classnames: ^2.2.6
@@ -9931,7 +9931,7 @@ __metadata:
   peerDependencies:
     react: ^16.9.0 || ^17 || ^18
     react-dom: ^16.9.0 || ^17 || ^18
-  checksum: d3e433e35a80308fe0c12d97a6d27148c5d31cc5a640d26da77c50ceff71541b1809b86372ad9d0e53aa4795fe50bb544c0f26f17ef2223cca0682089fe29450
+  checksum: 11f40e81ece92eaf5feb08835515cacde202cd21be232a43cdec1026a962cb33157332c09d60af8e000c58669f5616a5a6094c3b7023ff0712da2348570fdc0f
   languageName: node
   linkType: hard
 
