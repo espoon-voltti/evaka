@@ -332,6 +332,7 @@ export interface DecisionFixture {
   type: DecisionType
   startDate: LocalDate
   endDate: LocalDate
+  status: DecisionStatus
 }
 
 export interface Decision {

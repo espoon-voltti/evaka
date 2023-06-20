@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -57,7 +58,7 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
 
         val sql =
             """
-select conn_app.id                                     as connected_application_id,
+select conn_app.id                                     as application_id,
        p.id                                            as child_id,
        p.first_name                                    as child_first_name,
        p.last_name                                     as child_last_name,
@@ -85,10 +86,8 @@ from decision connected_decision
            pre_d.start_date as preschool_start_date,
            pre_d.end_date   as preschool_end_date
     from decision pre_d
-             join application pre_app on pre_d.application_id = pre_app.id
-             join daycare d on pre_d.unit_id = d.id
-             join person p on pre_app.child_id = p.id
-    where pre_app.child_id = conn_app.child_id
+    join daycare d on pre_d.unit_id = d.id
+    where pre_d.application_id = conn_app.id
       and pre_d.type = 'PRESCHOOL'
       and pre_d.status = 'ACCEPTED'
       and daterange(pre_d.start_date, pre_d.end_date, '[]') &&
@@ -104,6 +103,7 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
     }
 
     data class ManualDuplicationReportRow(
+        val applicationId: ApplicationId,
         val connectedDaycareId: DaycareId,
         val connectedDaycareName: String,
         val childId: ChildId,
@@ -113,7 +113,7 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
         val connectedDecisionType: DecisionType,
         val connectedStartDate: LocalDate,
         val connectedEndDate: LocalDate,
-        val connectedSnoName: String,
+        val connectedSnoName: String?,
         val preschoolDaycareId: DaycareId,
         val preschoolDaycareName: String,
         val preschoolDecisionType: DecisionType,

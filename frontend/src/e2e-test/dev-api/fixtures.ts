@@ -875,7 +875,8 @@ export const decisionFixture = (
   unitId: daycareFixture.id,
   type: 'DAYCARE',
   startDate: startDate,
-  endDate: endDate
+  endDate: endDate,
+  status: 'PENDING'
 })
 
 export const feeDecisionsFixture = (
@@ -1305,7 +1306,8 @@ export class Fixture {
       unitId: nullUUID,
       type: 'DAYCARE',
       startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2021, 1, 1)
+      endDate: LocalDate.of(2021, 1, 1),
+      status: 'PENDING'
     })
   }
 

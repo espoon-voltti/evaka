@@ -41,6 +41,11 @@ export default class ReportsPage {
     return new VoucherServiceProvidersReport(this.page)
   }
 
+  async openManualDuplicationReport() {
+    await this.page.find('[data-qa="report-manual-duplication"]').click()
+    return new ManualDuplicationReport(this.page)
+  }
+
   async openVardaErrorsReport() {
     await this.page.find('[data-qa="report-varda-errors"]').click()
     return new VardaErrorsReport(this.page)
@@ -262,6 +267,37 @@ export class ServiceVoucherUnitReport {
       .findAllByDataQa('realized-amount')
       .nth(nth)
       .assertText((text) => parseFloat(text) === expectedRealizedAmount)
+  }
+}
+
+export class ManualDuplicationReport {
+  constructor(private page: Page) {}
+
+  async assertRows(
+    expected: {
+      childName: string
+      connectedUnitName: string
+      serviceNeedOptionName: string
+      preschoolUnitName: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('manual-duplication-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row
+          .findByDataQa('connected-unit-name')
+          .assertTextEquals(data.connectedUnitName)
+        await row
+          .findByDataQa('service-need-option-name')
+          .assertTextEquals(data.serviceNeedOptionName)
+        await row
+          .findByDataQa('preschool-unit-name')
+          .assertTextEquals(data.preschoolUnitName)
+      })
+    )
   }
 }
 

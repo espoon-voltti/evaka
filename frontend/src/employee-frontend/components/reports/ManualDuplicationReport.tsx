@@ -169,8 +169,8 @@ export default React.memo(function ManualDuplicationReport() {
             </Thead>
             <Tbody>
               {reportRows.map((row: ManualDuplicationReportRow) => (
-                <Tr key={row.childId}>
-                  <WrappableTd>
+                <Tr data-qa="manual-duplication-row" key={row.applicationId}>
+                  <WrappableTd data-qa="child-name">
                     <Link
                       target="_blank"
                       to={`/child-information/${row.childId}`}
@@ -179,7 +179,7 @@ export default React.memo(function ManualDuplicationReport() {
                     </Link>
                   </WrappableTd>
                   <WrappableTd>{row.dateOfBirth.format()}</WrappableTd>
-                  <WrappableTd>
+                  <WrappableTd data-qa="connected-unit-name">
                     <Link
                       target="_blank"
                       to={`/units/${row.connectedDaycareId}`}
@@ -188,10 +188,12 @@ export default React.memo(function ManualDuplicationReport() {
                     </Link>
                   </WrappableTd>
 
-                  <WrappableTd>{row.connectedSnoName}</WrappableTd>
+                  <WrappableTd data-qa="service-need-option-name">
+                    {row.connectedSnoName}
+                  </WrappableTd>
                   <WrappableTd>{`${row.connectedStartDate.format()} - ${row.connectedEndDate.format()}`}</WrappableTd>
 
-                  <WrappableTd>
+                  <WrappableTd data-qa="preschool-unit-name">
                     <Link
                       target="_blank"
                       to={`/units/${row.preschoolDaycareId}`}

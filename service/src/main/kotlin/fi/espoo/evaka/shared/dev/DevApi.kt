@@ -39,10 +39,10 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
+import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
-import fi.espoo.evaka.decision.insertDecision
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
@@ -390,7 +390,8 @@ class DevApi(
         val unitId: DaycareId,
         val type: DecisionType,
         val startDate: LocalDate,
-        val endDate: LocalDate
+        val endDate: LocalDate,
+        val status: DecisionStatus
     )
 
     @PostMapping("/decisions")
@@ -402,15 +403,23 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 decisions.forEach { decision ->
-                    tx.insertDecision(
-                        decision.id,
-                        EvakaUserId(decision.employeeId.raw),
-                        evakaClock.today(),
-                        decision.applicationId,
-                        decision.unitId,
-                        decision.type,
-                        decision.startDate,
-                        decision.endDate
+                    tx.insertTestDecision(
+                        TestDecision(
+                            id = decision.id,
+                            createdBy = EvakaUserId(decision.employeeId.raw),
+                            sentDate = evakaClock.today(),
+                            unitId = decision.unitId,
+                            applicationId = decision.applicationId,
+                            type = decision.type,
+                            startDate = decision.startDate,
+                            endDate = decision.endDate,
+                            status = decision.status,
+                            requestedStartDate = null,
+                            resolvedBy = null,
+                            resolved = null,
+                            pendingDecisionEmailsSentCount = null,
+                            pendingDecisionEmailSent = null
+                        )
                     )
                 }
             }

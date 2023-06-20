@@ -321,7 +321,7 @@ export default React.memo(function Reports() {
                 color={colors.status.warning}
                 icon={faChild}
                 i18n={i18n.reports.manualDuplication}
-                data-qa="report-placement-count"
+                data-qa="report-manual-duplication"
               />
             )}
             {reports.has('PLACEMENT_COUNT') && (
