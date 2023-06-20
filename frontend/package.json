@@ -149,6 +149,7 @@
     }
   },
   "resolutions": {
+    "@types/react": "^18.0.23",
     "webpack@npm:5.37.1/terser-webpack-plugin": "5.1.1"
   },
   "engines": {
