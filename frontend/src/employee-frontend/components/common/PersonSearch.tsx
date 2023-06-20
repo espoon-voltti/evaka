@@ -154,7 +154,10 @@ type PersonSearchProps = Omit<
 >
 
 export function DbPersonSearch(props: PersonSearchProps) {
-  const filterItems = useCallback((_, items: PersonSummary[]) => items, [])
+  const filterItems = useCallback(
+    (_: string, items: PersonSummary[]) => items,
+    []
+  )
   const getItemDataQa = useCallback((p: PersonSummary) => `person-${p.id}`, [])
 
   return (
@@ -169,7 +172,8 @@ export function DbPersonSearch(props: PersonSearchProps) {
 
 export function VtjPersonSearch(props: PersonSearchProps) {
   const filterItems = useCallback(
-    (_, items: PersonSummary[]) => items.filter((i) => i.socialSecurityNumber),
+    (_: string, items: PersonSummary[]) =>
+      items.filter((i) => i.socialSecurityNumber),
     []
   )
   const getItemDataQa = useCallback(

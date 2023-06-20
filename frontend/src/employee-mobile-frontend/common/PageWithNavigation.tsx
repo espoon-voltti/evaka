@@ -18,7 +18,8 @@ const FlexibleDiv = styled.div`
   overflow: auto;
 `
 
-type PageWithNavigation = BottomNavbarProps & TopBarWithGroupSelectorProps
+type PageWithNavigation = BottomNavbarProps &
+  TopBarWithGroupSelectorProps & { children: React.ReactNode }
 
 export const PageWithNavigation: React.FC<PageWithNavigation> = ({
   selected,
