@@ -52,7 +52,11 @@ const validateLang = (value: string | null): value is Lang => {
 }
 
 export const LocalizationContextProvider = React.memo(
-  function LocalizationContextProvider({ children }) {
+  function LocalizationContextProvider({
+    children
+  }: {
+    children: React.ReactNode
+  }) {
     const [lang, setLang] = useLocalStorage(
       'evaka-citizen.lang',
       defaultState.lang,
