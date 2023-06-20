@@ -10,6 +10,7 @@ import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { PlacementType } from './placement'
+import { ShiftCareType } from './serviceneed'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
@@ -141,6 +142,7 @@ export interface ReservationResponseDayChild {
   requiresReservation: boolean
   reservations: Reservation[]
   shiftCare: boolean
+  shiftCareType: ShiftCareType
   unitOperationTime: TimeRange | null
 }
 
@@ -150,6 +152,5 @@ export interface ReservationResponseDayChild {
 export interface ReservationsResponse {
   children: ReservationChild[]
   days: ReservationResponseDay[]
-  includesWeekends: boolean
   reservableRange: FiniteDateRange
 }

@@ -14,14 +14,12 @@ import { dailyTimes } from './form'
 
 export interface DailyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof dailyTimes>
-  anyChildInShiftCare: boolean
   showAllErrors: boolean
 }
 
 export default React.memo(function DailyRepetitionTimeInputGrid({
   bind,
-  showAllErrors,
-  anyChildInShiftCare
+  showAllErrors
 }: DailyRepetitionTimeInputGridProps) {
   const i18n = useTranslation()
 
@@ -43,7 +41,7 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
       bind={day}
       label={label}
       showAllErrors={showAllErrors}
-      allowExtraTimeRange={anyChildInShiftCare}
+      allowExtraTimeRange={true}
       dataQaPrefix="daily"
       onFocus={(ev) => {
         scrollIntoViewSoftKeyboard(ev.target)

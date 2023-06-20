@@ -9,6 +9,13 @@ import { UUID } from 'lib-common/types'
 import { waitUntilEqual } from '../../utils'
 import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 
+export type FormatterReservation = {
+  startTime: string
+  endTime: string
+  isOverdraft: boolean
+}
+export type TwoPartReservation = [FormatterReservation, FormatterReservation]
+
 interface BaseReservation {
   childIds: UUID[]
 }
@@ -120,7 +127,11 @@ export default class CitizenCalendarPage {
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
 
-  async assertReservations(date: LocalDate, reservations: Reservation[]) {
+  async assertReservations(
+    date: LocalDate,
+    reservations: Reservation[],
+    formatter?: (res: StartAndEndTimeReservation) => string
+  ) {
     const reservationRows = this.dayCell(date)
       .findByDataQa('reservations')
       .findAllByDataQa('reservation-group')
@@ -142,9 +153,33 @@ export default class CitizenCalendarPage {
             ? 'Maksuton poissaolo'
             : 'missing' in reservation
             ? 'Ilmoitus puuttuu'
+            : formatter
+            ? formatter(reservation)
             : `${reservation.startTime}–${reservation.endTime}`
         )
     }
+  }
+
+  async assertTwoPartReservationFromDayCellGroup(
+    date: LocalDate,
+    twoPartReservation: TwoPartReservation,
+    childId: UUID,
+    formatter: (res: TwoPartReservation) => string,
+    groupIndex = 0
+  ) {
+    const reservationRows = this.dayCell(date)
+      .findByDataQa('reservations')
+      .findAllByDataQa('reservation-group')
+
+    const row = reservationRows.nth(groupIndex)
+
+    await row
+      .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
+      .waitUntilVisible()
+
+    await row
+      .findByDataQa('reservation-text')
+      .assertTextEquals(formatter(twoPartReservation))
   }
 
   #holidayCtas = this.page.findAllByDataQa('holiday-period-cta')

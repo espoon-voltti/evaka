@@ -14,14 +14,12 @@ import { weekDay, weeklyTimes } from './form'
 
 export interface WeeklyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof weeklyTimes>
-  anyChildInShiftCare: boolean
   showAllErrors: boolean
 }
 
 export default React.memo(function WeeklyRepetitionTimeInputGrid({
   bind,
-  showAllErrors,
-  anyChildInShiftCare
+  showAllErrors
 }: WeeklyRepetitionTimeInputGridProps) {
   const weekDays = useFormElems(bind)
   return (
@@ -31,7 +29,6 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
           key={form.state.weekDay}
           bind={form}
           showAllErrors={showAllErrors}
-          anyChildInShiftCare={anyChildInShiftCare}
         />
       ))}
     </>
@@ -40,12 +37,10 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
 
 const WeekDay = React.memo(function WeekDay({
   bind,
-  showAllErrors,
-  anyChildInShiftCare
+  showAllErrors
 }: {
   bind: BoundForm<typeof weekDay>
   showAllErrors: boolean
-  anyChildInShiftCare: boolean
 }) {
   const i18n = useTranslation()
 
@@ -59,7 +54,7 @@ const WeekDay = React.memo(function WeekDay({
         <LabelLike>{i18n.common.datetime.weekdaysShort[weekDay - 1]}</LabelLike>
       }
       showAllErrors={showAllErrors}
-      allowExtraTimeRange={anyChildInShiftCare}
+      allowExtraTimeRange={true}
       dataQaPrefix={`weekly-${weekDay - 1}`}
       onFocus={(ev) => {
         scrollIntoViewSoftKeyboard(ev.target)

@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.Timeline
@@ -67,10 +68,6 @@ class ReservationControllerCitizen(
                         tx.getReservationBackupPlacements(childIds, requestedRange)
                     val contractDayRanges =
                         tx.getReservationContractDayRanges(childIds, requestedRange)
-                    val includesWeekends =
-                        (placements.values.flatMap { p -> p.map { it.operationDays } } +
-                                backupPlacements.values.flatMap { p -> p.map { it.operationDays } })
-                            .any { it.contains(6) || it.contains(7) }
 
                     val reservationData =
                         tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
@@ -110,17 +107,15 @@ class ReservationControllerCitizen(
                     val days =
                         requestedRange
                             .dates()
-                            .mapNotNull { date ->
-                                if (!includesWeekends && date.dayOfWeek.value > 5)
-                                    return@mapNotNull null
+                            .map { date ->
                                 val isHoliday = holidays.contains(date)
                                 ReservationResponseDay(
                                     date = date,
                                     holiday = isHoliday,
                                     children =
                                         // Includes all children that are eligible for daycare
-                                        // on this date: have a placement, is an operation day in
-                                        // their unit
+                                        // on this date: have a placement and is an operation day in
+                                        // their unit or child has intermittent shift care
                                         children
                                             .mapNotNull { child ->
                                                 placementDay(
@@ -137,6 +132,8 @@ class ReservationControllerCitizen(
                                                             requiresReservation =
                                                                 placementDay.requiresReservation,
                                                             shiftCare = placementDay.shiftCare,
+                                                            shiftCareType =
+                                                                placementDay.shiftCareType,
                                                             contractDays =
                                                                 placementDay.contractDays,
                                                             absence = absences[key],
@@ -157,8 +154,7 @@ class ReservationControllerCitizen(
                     ReservationsResponse(
                         children = children.filter { placements.containsKey(it.id) },
                         days = days,
-                        reservableRange = reservableRange,
-                        includesWeekends = includesWeekends,
+                        reservableRange = reservableRange
                     )
                 }
             }
@@ -269,7 +265,8 @@ data class PlacementDay(
     val requiresReservation: Boolean,
     val shiftCare: Boolean,
     val contractDays: Boolean,
-    val operationTime: TimeRange?
+    val operationTime: TimeRange?,
+    val shiftCareType: ShiftCareType
 )
 
 private fun placementDay(
@@ -281,6 +278,7 @@ private fun placementDay(
 ): PlacementDay? {
     val placement = placements?.find { it.range.includes(date) } ?: return null
 
+    val serviceNeed = placement.serviceNeeds.find { it.range.includes(date) }
     val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
     // Backup placements take precedence
     val operationDays = backupPlacementForDate?.operationDays ?: placement.operationDays
@@ -291,14 +289,18 @@ private fun placementDay(
             ?: placement.operationTimes)[date.dayOfWeek.value - 1]
     val contractDays = contractDayRanges?.includes(date) ?: false
 
-    val shiftCare = operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
+    val shiftCare =
+        shiftCareType == ShiftCareType.INTERMITTENT || operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+
     val isOperationDay = operationDays.contains(date.dayOfWeek.value)
 
     return PlacementDay(
             requiresReservation = placement.type.requiresAttendanceReservations(),
             shiftCare = shiftCare,
             contractDays = contractDays,
-            operationTime = operationTime
+            operationTime = if (isHoliday) null else operationTime,
+            shiftCareType = shiftCareType
         )
         .takeIf { shiftCare || isOperationDay && !isHoliday }
 }
@@ -306,8 +308,7 @@ private fun placementDay(
 data class ReservationsResponse(
     val children: List<ReservationChild>,
     val days: List<ReservationResponseDay>,
-    val reservableRange: FiniteDateRange,
-    val includesWeekends: Boolean
+    val reservableRange: FiniteDateRange
 )
 
 data class ReservationResponseDay(
@@ -320,6 +321,7 @@ data class ReservationResponseDayChild(
     val childId: ChildId,
     val requiresReservation: Boolean, // Whether reservations are required
     val shiftCare: Boolean, // Can make more one reservation for this day
+    val shiftCareType: ShiftCareType,
     val contractDays: Boolean,
     val absence: AbsenceInfo?,
     val reservations: List<Reservation>,

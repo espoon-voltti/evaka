@@ -53,7 +53,8 @@ const emptyChild: ReservationResponseDayChild = {
   unitOperationTime: {
     start: LocalTime.MIN,
     end: LocalTime.of(23, 59)
-  }
+  },
+  shiftCareType: 'NONE'
 }
 
 const buildTimeInputState = (

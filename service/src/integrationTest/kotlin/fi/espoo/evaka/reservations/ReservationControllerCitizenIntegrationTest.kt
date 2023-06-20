@@ -129,7 +129,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         LocalDate.of(2021, 11, 8), // Next week's monday
                         LocalDate.of(2022, 8, 31),
                     ),
-                includesWeekends = false,
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
@@ -163,8 +162,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     ),
                 days =
                     listOf(
-                        // sunday is not included because it's not a weekday
-
+                        // sunday without children is included because weekends are always visible
+                        ReservationResponseDay(
+                            date = sunday,
+                            holiday = false,
+                            children = emptyList()
+                        ),
                         ReservationResponseDay(
                             date = monday,
                             holiday = false,
@@ -256,7 +259,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         LocalDate.of(2021, 11, 8), // Next week's monday
                         LocalDate.of(2022, 8, 31),
                     ),
-                includesWeekends = true,
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
@@ -382,7 +384,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         LocalDate.of(2021, 11, 8), // Next week's monday
                         LocalDate.of(2022, 8, 31),
                     ),
-                includesWeekends = false,
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
@@ -783,11 +784,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         absence: AbsenceInfo? = null,
         reservations: List<Reservation> = emptyList(),
         attendances: List<OpenTimeRange> = emptyList(),
+        shiftCareType: ShiftCareType = ShiftCareType.NONE
     ) =
         ReservationResponseDayChild(
             childId,
             requiresReservation,
             shiftCare,
+            shiftCareType,
             contractDays,
             absence,
             reservations,

@@ -91,10 +91,7 @@ export const localTimeWithUnitTimes = transformed(
     if (parsed === undefined) {
       return ValidationError.of('timeFormat')
     } else if (
-      !v.unitStartTime ||
-      !v.unitEndTime ||
-      parsed.isBefore(v.unitStartTime) ||
-      parsed.isAfter(v.unitEndTime)
+      !isValidAgainstUnitTime(parsed, v.unitStartTime, v.unitEndTime)
     ) {
       return ValidationError.of('outsideUnitOperationTime')
     }
@@ -171,3 +168,16 @@ export const localTimeRange = transformed(
 )
 
 const midnight = LocalTime.of(0, 0)
+
+export function isValidAgainstUnitTime(
+  inputTime: LocalTime,
+  unitStartTime: LocalTime | null,
+  unitEndTime: LocalTime | null
+) {
+  return (
+    unitStartTime &&
+    unitEndTime &&
+    !inputTime.isBefore(unitStartTime) &&
+    !inputTime.isAfter(unitEndTime)
+  )
+}
