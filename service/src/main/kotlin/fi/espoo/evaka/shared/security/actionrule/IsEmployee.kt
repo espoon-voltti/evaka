@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
@@ -242,6 +243,19 @@ WHERE e.id = ${bind(user.id)} AND e.roles && '{SERVICE_WORKER}'::user_role[]
                 """
 SELECT id
 FROM assistance_need_decision
+WHERE decision_maker_employee_id = ${bind(employee.id)}
+AND sent_for_decision IS NOT NULL
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision() =
+        rule<AssistanceNeedPreschoolDecisionId> { employee, _ ->
+            sql(
+                """
+SELECT id
+FROM assistance_need_preschool_decision
 WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
             """

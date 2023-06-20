@@ -800,6 +800,9 @@ export const fi = {
         unpublish: 'Palauta luonnokseksi'
       }
     },
+    assistanceNeedPreschoolDecision: {
+      sectionTitle: 'Päätökset tuesta esiopetuksessa'
+    },
     assistanceNeedDecision: {
       pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
       annulmentReason: 'Päätöksen mitätöinnin perustelu',

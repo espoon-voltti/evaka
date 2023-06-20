@@ -53,10 +53,27 @@ import {
 } from '../../api/child/child-documents'
 import { createQueryKeys } from '../../query'
 
+import {
+  deleteAssistanceNeedPreschoolDecision,
+  getAssistanceNeedPreschoolDecisionBasics,
+  postAssistanceNeedPreschoolDecision
+} from './assistance-need/decision/api-preschool'
+
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
+<<<<<<< HEAD
   assistance: (childId: UUID) => ['assistance', childId]
+=======
+  assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
+    'assistanceNeedPreschoolDecisionBasics',
+    childId
+  ],
+  assistanceNeedPreschoolDecision: (decisionId: UUID) => [
+    'assistanceNeedPreschoolDecision',
+    decisionId
+  ]
+>>>>>>> 71264e2a7 (listing, creation, deletion)
 })
 
 export const childDocumentsQuery = query({
@@ -107,6 +124,7 @@ export const deleteChildDocumentMutation = mutation({
   ]
 })
 
+<<<<<<< HEAD
 export const assistanceQuery = query({
   api: getAssistanceData,
   queryKey: queryKeys.assistance
@@ -213,4 +231,25 @@ export const deleteOtherAssistanceMeasureMutation = mutation({
   api: (arg: { id: UUID; childId: UUID }) =>
     deleteOtherAssistanceMeasure(arg.id),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+=======
+export const assistanceNeedPreschoolDecisionBasicsQuery = query({
+  api: getAssistanceNeedPreschoolDecisionBasics,
+  queryKey: queryKeys.assistanceNeedPreschoolDecisionBasics
+})
+
+export const createAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: UUID) => postAssistanceNeedPreschoolDecision(arg),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg)
+  ]
+})
+
+export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { childId: UUID; id: UUID }) =>
+    deleteAssistanceNeedPreschoolDecision(arg.id),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
+    queryKeys.assistanceNeedPreschoolDecision(arg.id)
+  ]
+>>>>>>> 71264e2a7 (listing, creation, deletion)
 })

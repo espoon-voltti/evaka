@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -182,6 +182,11 @@ interface BaseFeatureFlags {
      * Enable assistance need decisions (tuen päätös)
      */
     assistanceNeedDecisions?: boolean
+
+    /**
+     * Enable assistance need preschool decisions (esiopetuksen tuen päätös)
+     */
+    assistanceNeedPreschoolDecisions?: boolean
 
     /**
      * Enable language selection for assistance need decisions

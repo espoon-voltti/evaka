@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -17,6 +17,7 @@ import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
+import AssistanceNeedPreschoolDecisionSection from './AssistanceNeedPreschoolDecisionSection'
 import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
 import AssistanceAction from './assistance/AssistanceActionSection'
 import { AssistanceFactorSection } from './assistance/AssistanceFactorSection'
@@ -123,6 +124,13 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
             <>
               <HorizontalLine dashed slim />
               <AssistanceNeedDecisionSection id={id} />
+            </>
+          )}
+        {featureFlags.experimental?.assistanceNeedPreschoolDecisions &&
+          permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
+            <>
+              <HorizontalLine dashed slim />
+              <AssistanceNeedPreschoolDecisionSection childId={id} />
             </>
           )}
         {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&

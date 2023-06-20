@@ -239,6 +239,118 @@ export type AssistanceNeedDecisionStatus =
   | 'ANNULLED'
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecision
+*/
+export interface AssistanceNeedPreschoolDecision {
+  annulmentReason: string
+  child: AssistanceNeedPreschoolDecisionChild
+  decisionMade: LocalDate | null
+  decisionNumber: number
+  form: AssistanceNeedPreschoolDecisionForm
+  hasDocument: boolean
+  id: UUID
+  sentForDecision: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionBasics
+*/
+export interface AssistanceNeedPreschoolDecisionBasics {
+  created: HelsinkiDateTime
+  decisionMade: LocalDate | null
+  id: UUID
+  selectedUnit: UnitInfoBasics | null
+  sentForDecision: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+  type: AssistanceNeedPreschoolDecisionType | null
+  validFrom: LocalDate | null
+  validTo: LocalDate | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.AssistanceNeedPreschoolDecisionBasicsResponse
+*/
+export interface AssistanceNeedPreschoolDecisionBasicsResponse {
+  decision: AssistanceNeedPreschoolDecisionBasics
+  permittedActions: Action.AssistanceNeedPreschoolDecision[]
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionChild
+*/
+export interface AssistanceNeedPreschoolDecisionChild {
+  dateOfBirth: LocalDate
+  id: UUID
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
+*/
+export interface AssistanceNeedPreschoolDecisionForm {
+  basisDocumentDoctorStatement: boolean
+  basisDocumentOtherOrMissing: boolean
+  basisDocumentOtherOrMissingInfo: string
+  basisDocumentPedagogicalReport: boolean
+  basisDocumentPsychologistStatement: boolean
+  basisDocumentSocialReport: boolean
+  basisDocumentsInfo: string
+  decisionBasis: string
+  decisionMakerEmployeeId: UUID | null
+  decisionMakerTitle: string
+  extendedCompulsoryEducation: boolean
+  extendedCompulsoryEducationInfo: string
+  grantedAssistanceService: boolean
+  grantedAssistiveDevices: boolean
+  grantedInterpretationService: boolean
+  grantedServicesBasis: string
+  guardianInfo: AssistanceNeedPreschoolDecisionGuardian[]
+  guardiansHeardOn: LocalDate | null
+  language: AssistanceNeedDecisionLanguage
+  otherRepresentativeDetails: string
+  otherRepresentativeHeard: boolean
+  preparer1EmployeeId: UUID | null
+  preparer1PhoneNumber: string
+  preparer1Title: string
+  preparer2EmployeeId: UUID | null
+  preparer2PhoneNumber: string
+  preparer2Title: string
+  primaryGroup: string
+  selectedUnit: UUID | null
+  type: AssistanceNeedPreschoolDecisionType | null
+  validFrom: LocalDate | null
+  viewOfGuardians: string
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionGuardian
+*/
+export interface AssistanceNeedPreschoolDecisionGuardian {
+  details: string
+  id: UUID
+  isHeard: boolean
+  name: string
+  personId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.AssistanceNeedPreschoolDecisionResponse
+*/
+export interface AssistanceNeedPreschoolDecisionResponse {
+  decision: AssistanceNeedPreschoolDecision
+  permittedActions: Action.AssistanceNeedPreschoolDecision[]
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
+*/
+export type AssistanceNeedPreschoolDecisionType =
+  | 'NEW'
+  | 'CONTINUING'
+  | 'TERMINATED'
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
 */
 export interface AssistanceNeedRequest {
@@ -350,5 +462,12 @@ export interface UnreadAssistanceNeedDecisionItem {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest
 */
 export interface UpdateDecisionMakerForAssistanceNeedDecisionRequest {
+  title: string
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
+*/
+export interface UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest {
   title: string
 }

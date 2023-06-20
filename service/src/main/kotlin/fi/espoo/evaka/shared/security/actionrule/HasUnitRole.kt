@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
@@ -343,6 +344,50 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT ad.id, acl.role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
 FROM assistance_need_decision ad
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE ad.decision_maker_employee_id = ${bind(user.id)}
+  AND ad.sent_for_decision IS NOT NULL
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision() =
+        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+            sql(
+                """
+SELECT ad.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM assistance_need_preschool_decision ad
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inSelectedUnitOfAssistanceNeedPreschoolDecision() =
+        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+            sql(
+                """
+SELECT ad.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM assistance_need_preschool_decision ad
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id =  ad.selected_unit
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    // For Tampere
+    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision() =
+        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+            sql(
+                """
+SELECT ad.id, acl.role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
+FROM assistance_need_preschool_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE ad.decision_maker_employee_id = ${bind(user.id)}

@@ -24,6 +24,8 @@ sealed interface DatabaseTable {
     sealed class AssistanceNeedDecision : DatabaseTable
     sealed class AssistanceNeedDecisionEmployee : DatabaseTable
     sealed class AssistanceNeedDecisionGuardian : DatabaseTable
+    sealed class AssistanceNeedPreschoolDecision : DatabaseTable
+    sealed class AssistanceNeedPreschoolDecisionGuardian : DatabaseTable
     sealed class AssistanceNeedVoucherCoefficient : DatabaseTable
     sealed class Attachment : DatabaseTable
     sealed class Attendance : DatabaseTable
@@ -114,9 +116,12 @@ typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
 
 typealias AssistanceNeedDecisionId = Id<DatabaseTable.AssistanceNeedDecision>
 
-typealias AssistanceNeedDecisionEmployeeId = Id<DatabaseTable.AssistanceNeedDecisionEmployee>
-
 typealias AssistanceNeedDecisionGuardianId = Id<DatabaseTable.AssistanceNeedDecisionGuardian>
+
+typealias AssistanceNeedPreschoolDecisionId = Id<DatabaseTable.AssistanceNeedPreschoolDecision>
+
+typealias AssistanceNeedPreschoolDecisionGuardianId =
+    Id<DatabaseTable.AssistanceNeedPreschoolDecisionGuardian>
 
 typealias AssistanceNeedVoucherCoefficientId = Id<DatabaseTable.AssistanceNeedVoucherCoefficient>
 

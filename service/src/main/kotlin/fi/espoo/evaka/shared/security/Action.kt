@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
@@ -600,6 +601,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class AssistanceNeedDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>
     ) : ScopedAction<AssistanceNeedDecisionId> {
@@ -640,6 +642,53 @@ sealed interface Action {
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
         ANNUL(HasGlobalRole(ADMIN), IsEmployee.andIsDecisionMakerForAssistanceNeedDecision());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class AssistanceNeedPreschoolDecision(
+        override vararg val defaultRules: ScopedActionRule<in AssistanceNeedPreschoolDecisionId>
+    ) : ScopedAction<AssistanceNeedPreschoolDecisionId> {
+        READ_DECISION_MAKER_OPTIONS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+        ),
+        UPDATE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+        ),
+        READ(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasGlobalRole(DIRECTOR).andAssistanceNeedPreschoolDecisionHasBeenSent(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+        ),
+        SEND(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+        ),
+        REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
+        READ_IN_REPORT(
+            HasGlobalRole(ADMIN),
+            IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
+            HasUnitRole(UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedPreschoolDecision(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+        ),
+        DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
+        MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
+        UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
+        ANNUL(
+            HasGlobalRole(ADMIN),
+            IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -890,6 +939,14 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_NEED_DECISIONS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
+        CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
+        READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
