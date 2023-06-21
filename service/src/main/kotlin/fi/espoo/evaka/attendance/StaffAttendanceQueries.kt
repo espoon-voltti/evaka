@@ -25,7 +25,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
             """
     SELECT DISTINCT 
         dacl.employee_id,
-        e.first_name,
+        coalesce(e.preferred_first_name, e.first_name) AS first_name,
         e.last_name,
         att.id AS attendance_id,
         att.employee_id AS attendance_employee_id,
@@ -68,7 +68,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         LIMIT 1
     ) att ON TRUE
     WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
-    ORDER BY e.last_name, e.first_name
+    ORDER BY e.last_name, first_name
     """
                 .trimIndent()
         )
