@@ -11,7 +11,7 @@ interface Props {
   children: ReactNode
 }
 
-export default class ModalAccessibilityWrapper extends React.Component {
+export default class ModalAccessibilityWrapper extends React.Component<Props> {
   static contextType = OverlayContext
   declare context: React.ContextType<typeof OverlayContext>
 

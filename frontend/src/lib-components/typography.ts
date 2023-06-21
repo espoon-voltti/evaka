@@ -25,6 +25,7 @@ export const fontSizesMobile = {
 }
 
 export type HeadingProps = BaseProps & {
+  children: React.ReactNode
   fitted?: boolean
   'data-qa'?: string
   centered?: boolean

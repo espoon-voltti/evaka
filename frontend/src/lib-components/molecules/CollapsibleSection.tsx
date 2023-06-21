@@ -11,9 +11,9 @@ import styled, { useTheme } from 'styled-components'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 
 import { desktopMin } from '../breakpoints'
-import { H3, HeadingProps } from '../typography'
+import { H3 } from '../typography'
 import { BaseProps } from '../utils'
-import { defaultMargins, Gap } from '../white-space'
+import { Gap, defaultMargins } from '../white-space'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -74,7 +74,6 @@ type CollapsibleSectionProps = BaseProps & {
   startCollapsed?: boolean
   fitted?: boolean
   'data-qa'?: string
-  headingComponent?: React.FC<HeadingProps>
 }
 
 /**
@@ -87,8 +86,7 @@ export default React.memo(function CollapsibleSection({
   startCollapsed = false,
   fitted = false,
   className,
-  'data-qa': dataQa,
-  headingComponent: Heading = H3
+  'data-qa': dataQa
 }: CollapsibleSectionProps) {
   const { colors } = useTheme()
   const [collapsed, setCollapsed] = useState<boolean>(startCollapsed)
@@ -113,9 +111,9 @@ export default React.memo(function CollapsibleSection({
             </IconWrapper>
           )}
           {fitted && icon && <Gap horizontal size="xs" />}
-          <Heading fitted noMargin={fitted}>
+          <H3 fitted noMargin={fitted}>
             {title}
-          </Heading>
+          </H3>
         </div>
         <ToggleWrapper data-qa="collapsible-trigger">
           <FontAwesomeIcon

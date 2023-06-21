@@ -69,7 +69,7 @@ export default React.memo(function IncomeStatementPage() {
   )
 
   const navigateToPersonProfile = useCallback(
-    (type) =>
+    ({ type }: IncomeStatement) =>
       navigate(
         `/${
           type !== 'CHILD_INCOME' ? 'profile' : 'child-information'
@@ -125,7 +125,7 @@ export default React.memo(function IncomeStatementPage() {
             <ContentArea opaque>
               <HandlerNotesForm
                 onSave={onUpdateHandled}
-                onSuccess={() => navigateToPersonProfile(incomeStatement.type)}
+                onSuccess={() => navigateToPersonProfile(incomeStatement)}
                 initialValues={{
                   handled: incomeStatement.handled,
                   handlerNote: incomeStatement.handlerNote
