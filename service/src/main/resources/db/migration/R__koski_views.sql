@@ -42,8 +42,7 @@ TABLE (
     oph_unit_oid text, oph_organizer_oid text,
     full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
     developmental_disability_1 daterange[], developmental_disability_2 daterange[],
-    extended_compulsory_education daterange[], transport_benefit daterange[],
-    special_assistance_decision_with_group daterange[], special_assistance_decision_without_group daterange[]
+    extended_compulsory_education daterange[], transport_benefit daterange[], special_support_decision daterange[]
 ) AS $$
     SELECT
         p.child_id,
@@ -60,8 +59,7 @@ TABLE (
         developmental_disability_2,
         extended_compulsory_education,
         transport_benefit,
-        special_assistance_decision_with_group,
-        special_assistance_decision_without_group
+        special_support_decision
     FROM koski_placement(today) p
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
@@ -100,19 +98,15 @@ TABLE (
                 WHERE 'TRANSPORT_BENEFIT' = ANY(measures)
             ) AS transport_benefit,
             array_agg(date_interval) FILTER (
-                WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures) AND 'SPECIAL_GROUP' = ANY(actions)
-            ) AS special_assistance_decision_with_group,
-            array_agg(date_interval) FILTER (
-                WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures) AND 'SPECIAL_GROUP' != ALL(actions)
-            ) AS special_assistance_decision_without_group
+                WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures)
+            ) AS special_support_decision
         FROM (
             SELECT
                 aa.id,
                 daterange(aa.start_date, aa.end_date, '[]') AS date_interval,
                 aa.start_date,
                 aa.end_date,
-                aa.measures,
-                array_remove(array_agg(aao.value), null) AS actions
+                aa.measures
             FROM assistance_action aa
             LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
             LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id

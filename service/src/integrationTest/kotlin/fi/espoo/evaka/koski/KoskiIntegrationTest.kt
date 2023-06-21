@@ -495,13 +495,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         ErityisenTuenPäätös(
                             alku = testCases[2].period.start,
                             loppu = testCases[2].period.end,
-                            erityisryhmässä = true,
                             opiskeleeToimintaAlueittain = false
                         ),
                         ErityisenTuenPäätös(
                             alku = testCases[3].period.start,
                             loppu = testCases[3].period.end,
-                            erityisryhmässä = false,
                             opiskeleeToimintaAlueittain = false
                         )
                     )
