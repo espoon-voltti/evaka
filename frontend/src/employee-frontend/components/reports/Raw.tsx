@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 
+import { Result, Success } from 'lib-common/api'
+import { RawReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -30,8 +31,10 @@ export default React.memo(function Raw() {
   const invertedRange = filters.to.isBefore(filters.from)
   const tooLongRange = filters.to.isAfter(filters.from.addDays(7))
 
-  const [rows] = useApiState(() => getRawReport(filters), [filters])
+  const [report, setReport] = useState<Result<RawReportRow[]>>(Success.of([]))
   const { user } = useContext(UserContext)
+
+  const fetchRawReport = useCallback(() => getRawReport(filters), [filters])
 
   const mapYesNo = (value: boolean | null | undefined) => {
     if (value === true) {
@@ -69,13 +72,21 @@ export default React.memo(function Raw() {
             />
           </FlexRow>
         </FilterRow>
-
+        <FilterRow>
+          <AsyncButton
+            primary
+            text={i18n.common.search}
+            onClick={fetchRawReport}
+            onSuccess={(newReport) => setReport(Success.of(newReport))}
+            data-qa="send-button"
+          />
+        </FilterRow>
         {invertedRange ? (
           <span>Virheellinen aikaväli</span>
         ) : tooLongRange ? (
           <span>Liian pitkä aikaväli (max 7 päivää)</span>
         ) : (
-          renderResult(rows, (rows) => (
+          renderResult(report, (rows) => (
             <ReportDownload
               data={rows.map((row) => ({
                 ...row,
