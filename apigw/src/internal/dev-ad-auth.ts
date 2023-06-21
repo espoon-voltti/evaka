@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { v4 as uuidv4 } from 'uuid'
-import _, { escape } from 'lodash'
+import _ from 'lodash'
 import { z } from 'zod'
 import { Router } from 'express'
-import { assertStringProp } from '../shared/express'
-import { getEmployees } from '../shared/dev-api'
-import { createDevAuthRouter } from '../shared/auth/dev-auth'
-import { employeeLogin } from '../shared/service-client'
+import { assertStringProp } from '../shared/express.js'
+import { getEmployees } from '../shared/dev-api.js'
+import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
+import { employeeLogin } from '../shared/service-client.js'
 
 const Employee = z.object({
   externalId: z.string(),
@@ -36,7 +36,7 @@ export function createDevAdRouter(): Router {
               id="${externalId}"
               name="preset"
               ${idx == 0 ? 'checked' : ''}
-              value="${escape(json)}" />
+              value="${_.escape(json)}" />
             <label for="${externalId}">${firstName} ${lastName}</label>
           </div>`
         })

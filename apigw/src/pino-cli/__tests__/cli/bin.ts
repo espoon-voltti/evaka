@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { spawnSync } from 'child_process'
-import * as path from 'path'
+import * as path from 'node:path'
 import {
   expected,
   validPinoAccessLogMessage,
@@ -12,7 +12,9 @@ import {
   validPinoMiscLogMessageWithError
 } from '../../test-utils/fixtures/log-messages'
 import { deepCopyObj } from '../../test-utils/utils'
+import { fileURLToPath } from 'node:url'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const cliPath = path.join(
   __dirname,
   '..',

@@ -4,7 +4,7 @@
 
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
-import { EvakaSessionUser } from './auth'
+import { EvakaSessionUser } from './auth/index.js'
 import passportSaml from '@node-saml/passport-saml'
 
 export interface LogoutToken {

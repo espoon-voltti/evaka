@@ -3,20 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { AxiosResponse } from 'axios'
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 import { Cookie } from 'tough-cookie'
 import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
 import xmldom from '@xmldom/xmldom'
-import zlib from 'zlib'
-import { Config, configFromEnv } from '../config'
-import { sessionCookie } from '../session'
-import { GatewayTester } from '../test/gateway-tester'
-import { DevCitizen } from '../dev-api'
-import { CitizenUser } from '../service-client'
+import zlib from 'node:zlib'
+import { Config, configFromEnv } from '../config.js'
+import { sessionCookie } from '../session.js'
+import { GatewayTester } from '../test/gateway-tester.js'
+import { DevCitizen } from '../dev-api.js'
+import { CitizenUser } from '../service-client.js'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
-import { MockRedisClient } from '../test/mock-redis-client'
+import { MockRedisClient } from '../test/mock-redis-client.js'
+import { fileURLToPath } from 'node:url'
+
+import enduserGwApp from '../../enduser/app.js'
 
 const mockUser: DevCitizen & CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
@@ -42,6 +45,8 @@ const SECURED_ENDPOINT = `/api/application/auth/status`
 // any real certificates/domains.
 const SP_ISSUER = 'evaka-local'
 const IDP_ISSUER = 'evaka-slo-test'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const IDP_PVK = fs
   .readFileSync(
     path.resolve(__dirname, '../../../config/test-cert/slo-test-idp-key.pem'),
@@ -53,7 +58,6 @@ describe('SAML Single Logout', () => {
   let tester: GatewayTester
 
   beforeEach(async () => {
-    const { default: enduserGwApp } = await import('../../enduser/app')
     const config: Config = {
       ...configFromEnv(),
       sfi: {

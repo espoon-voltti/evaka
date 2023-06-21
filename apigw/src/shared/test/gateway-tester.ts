@@ -11,10 +11,10 @@ import http from 'http'
 import express from 'express'
 import { Cookie, CookieJar } from 'tough-cookie'
 import nock from 'nock'
-import { evakaServiceUrl } from '../config'
-import { sessionCookie, SessionType } from '../session'
-import { csrfCookieName } from '../middleware/csrf'
-import { CitizenUser, EmployeeUser } from '../service-client'
+import { evakaServiceUrl } from '../config.js'
+import { sessionCookie, SessionType } from '../session.js'
+import { csrfCookieName } from '../middleware/csrf.js'
+import { CitizenUser, EmployeeUser } from '../service-client.js'
 
 export class GatewayTester {
   public readonly client: AxiosInstance

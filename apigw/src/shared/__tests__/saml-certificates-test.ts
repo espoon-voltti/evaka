@@ -4,19 +4,23 @@
 
 import { differenceInMonths } from 'date-fns'
 import certificates, { TrustedCertificates } from '../certificates'
-import { pki } from 'node-forge'
+import * as invalidlyTypedForge from 'node-forge'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const forge = (invalidlyTypedForge as any)
+  .default as typeof import('node-forge')
 
 describe('SAML certificates', () => {
   test('at least one certificate must exist', () => {
     expect(Object.keys(certificates).length).toBeGreaterThan(0)
   })
-  for (const certificateName of Object.keys(
-    certificates
-  ) as Array<TrustedCertificates>) {
-    test(`${certificateName} must decode successfully`, () => {
+
+  test.each(Object.keys(certificates) as TrustedCertificates[])(
+    '%s must decode successfully',
+    async (certificateName) => {
       const computeHash = false
       const strict = true
-      const certificate = pki.certificateFromPem(
+      const certificate = forge.pki.certificateFromPem(
         certificates[certificateName],
         computeHash,
         strict
@@ -30,6 +34,6 @@ describe('SAML certificates', () => {
           `⚠ Certificate ${certificateName} expired or about to expire! ⚠`
         )
       }
-    })
-  }
+    }
+  )
 })

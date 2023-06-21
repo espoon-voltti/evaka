@@ -4,8 +4,8 @@
 
 import expressHttpProxy from 'express-http-proxy'
 import type express from 'express'
-import { evakaServiceUrl } from './config'
-import { createServiceRequestHeaders } from './service-client'
+import { evakaServiceUrl } from './config.js'
+import { createServiceRequestHeaders } from './service-client.js'
 
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)

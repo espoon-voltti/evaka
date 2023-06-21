@@ -7,10 +7,10 @@ import {
   digitransitApiEnabled,
   digitransitApiKey,
   digitransitApiUrl
-} from '../shared/config'
+} from '../shared/config.js'
 import expressHttpProxy from 'express-http-proxy'
-import { createProxy } from '../shared/proxy-utils'
-import { logError, logWarn } from '../shared/logging'
+import { createProxy } from '../shared/proxy-utils.js'
+import { logError, logWarn } from '../shared/logging.js'
 
 const router = Router()
 

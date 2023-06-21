@@ -2,19 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import 'source-map-support/register'
+import sourceMapSupport from 'source-map-support'
 import {
   configFromEnv,
   gatewayRole,
   httpPort,
   toRedisClientOpts
-} from './shared/config'
-import './tracer'
-import { logError, logInfo } from './shared/logging'
-import enduserGwApp from './enduser/app'
-import internalGwApp from './internal/app'
+} from './shared/config.js'
+import './tracer.js'
+import { logError, logInfo } from './shared/logging.js'
+import enduserGwApp from './enduser/app.js'
+import internalGwApp from './internal/app.js'
 import * as redis from 'redis'
 
+sourceMapSupport.install()
 const config = configFromEnv()
 
 const redisClient = redis.createClient(toRedisClientOpts(config))

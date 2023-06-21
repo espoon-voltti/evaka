@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Router } from 'express'
-import { createProxy } from '../shared/proxy-utils'
+import { createProxy } from '../shared/proxy-utils.js'
 
 const router = Router()
 const proxy = createProxy()

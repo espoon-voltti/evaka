@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import jsonParser from 'fast-json-parse'
 import split from 'split2'
 import * as through from 'through2'
 import { SerializedRequest, SerializedResponse } from 'pino-std-serializers'
-import { ipv6ToIpv4 } from './utils'
+import { ipv6ToIpv4 } from './utils.js'
 
 export interface BaseLog {
   '@timestamp': string
@@ -225,12 +224,11 @@ const errorPayload = (e: unknown, message?: string): ErrorLog => {
 
 const parser = (input: string) => {
   try {
-    const result = jsonParser(input)
-    if (result.err) {
+    return JSON.parse(input)
+  } catch (e) {
+    if (e instanceof SyntaxError) {
       return
     }
-    return result.value
-  } catch (e) {
     writeObjToStdoutAsJson(errorPayload(e, 'Parser failed unexpectedly'))
     throw e
   }

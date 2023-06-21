@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import pump from 'pump'
-import { parserStream, transportStream } from '.'
+import { parserStream, transportStream } from './index.js'
 
 pump(process.stdin, parserStream, transportStream, (err) => {
   if (err) {

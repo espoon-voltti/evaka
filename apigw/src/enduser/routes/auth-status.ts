@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getUserDetails } from '../../shared/service-client'
-import { toRequestHandler } from '../../shared/express'
-import { appCommit } from '../../shared/config'
+import { getUserDetails } from '../../shared/service-client.js'
+import { toRequestHandler } from '../../shared/express.js'
+import { appCommit } from '../../shared/config.js'
 
 export default toRequestHandler(async (req, res) => {
   if (req.user && req.user.id) {

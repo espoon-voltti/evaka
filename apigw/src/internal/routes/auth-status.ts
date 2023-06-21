@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
-import { isEqual } from 'lodash'
-import { toRequestHandler } from '../../shared/express'
+import _ from 'lodash'
+import { toRequestHandler } from '../../shared/express.js'
 import {
   getEmployeeDetails,
   getMobileDevice,
   UUID
-} from '../../shared/service-client'
-import { saveLogoutToken, saveSession } from '../../shared/session'
-import { fromCallback } from '../../shared/promise-utils'
-import { appCommit } from '../../shared/config'
-import { logout } from '../../shared/auth'
+} from '../../shared/service-client.js'
+import { saveLogoutToken, saveSession } from '../../shared/session.js'
+import { fromCallback } from '../../shared/promise-utils.js'
+import { appCommit } from '../../shared/config.js'
+import { logout } from '../../shared/auth/index.js'
 
 interface AuthStatus {
   loggedIn: boolean
@@ -112,7 +112,7 @@ async function validateUser(
 }
 
 const rolesChanged = (a: string[] | undefined, b: string[] | undefined) =>
-  !isEqual(new Set(a), new Set(b))
+  !_.isEqual(new Set(a), new Set(b))
 
 const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
   rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { z } from 'zod'
-import { isEqual } from 'lodash'
+import _ from 'lodash'
 import {
   CacheProvider,
   Profile,
@@ -11,15 +11,15 @@ import {
   Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
-import { logError, logWarn } from '../logging'
-import { createLogoutToken, EvakaSessionUser } from '../auth'
-import { evakaBaseUrl, EvakaSamlConfig } from '../config'
-import { readFileSync } from 'fs'
-import certificates, { TrustedCertificates } from '../certificates'
+import { logError, logWarn } from '../logging.js'
+import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
+import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
+import { readFileSync } from 'node:fs'
+import certificates, { TrustedCertificates } from '../certificates.js'
 import express from 'express'
-import path from 'path'
-import { logoutWithOnlyToken } from '../session'
-import { fromCallback } from '../promise-utils'
+import path from 'node:path'
+import { logoutWithOnlyToken } from '../session.js'
+import { fromCallback } from '../promise-utils.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -130,7 +130,7 @@ export function createSamlStrategy(
       }
       const reqUser: Partial<Profile> = (req.user ?? {}) as Partial<Profile>
       const reqId = SamlProfileId.safeParse(reqUser)
-      if (reqId.success && isEqual(reqId.data, profileId.data)) {
+      if (reqId.success && _.isEqual(reqId.data, profileId.data)) {
         return reqUser
       }
     })()
