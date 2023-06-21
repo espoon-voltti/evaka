@@ -73,8 +73,8 @@ TABLE (
     ) pa ON p.type = 'PREPARATORY'
     JOIN LATERAL (
         SELECT
-            array_agg(date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_1' = ANY(bases)) AS developmental_disability_1,
-            array_agg(date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_2' = ANY(bases)) AS developmental_disability_2
+            array_agg(date_interval ORDER BY date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_1' = ANY(bases)) AS developmental_disability_1,
+            array_agg(date_interval ORDER BY date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_2' = ANY(bases)) AS developmental_disability_2
         FROM (
             SELECT
                 an.id,
@@ -91,13 +91,13 @@ TABLE (
     ) an ON true
     JOIN LATERAL (
         SELECT
-            array_agg(date_interval) FILTER (
+            array_agg(date_interval ORDER BY date_interval) FILTER (
                 WHERE 'EXTENDED_COMPULSORY_EDUCATION' = ANY(measures)
             ) AS extended_compulsory_education,
-            array_agg(date_interval) FILTER (
+            array_agg(date_interval ORDER BY date_interval) FILTER (
                 WHERE 'TRANSPORT_BENEFIT' = ANY(measures)
             ) AS transport_benefit,
-            array_agg(date_interval) FILTER (
+            array_agg(date_interval ORDER BY date_interval) FILTER (
                 WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures)
             ) AS special_support_decision
         FROM (
