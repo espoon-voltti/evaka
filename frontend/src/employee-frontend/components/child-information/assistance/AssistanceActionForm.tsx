@@ -13,11 +13,14 @@ import styled from 'styled-components'
 
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
+  AssistanceAction,
   AssistanceActionOption,
   AssistanceActionRequest,
+  AssistanceActionResponse,
   AssistanceMeasure
 } from 'lib-common/generated/api-types/assistanceaction'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -27,25 +30,22 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
-import {
-  createAssistanceAction,
-  updateAssistanceAction
-} from '../../../api/child/assistance-actions'
-import FormActions from '../../../components/common/FormActions'
-import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  AssistanceAction,
-  AssistanceActionResponse
-} from '../../../types/child'
+import { UserContext } from '../../../state/user'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
   FormErrors,
   formHasErrors,
   isDateRangeInverted
 } from '../../../utils/validation/validations'
+import FormActions from '../../common/FormActions'
+import LabelValueList from '../../common/LabelValueList'
 import { DivFitContent } from '../../common/styled/containers'
+import {
+  createAssistanceActionMutation,
+  updateAssistanceActionMutation
+} from '../queries'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -56,14 +56,13 @@ const CheckboxRow = styled.div`
 interface FormState {
   startDate: LocalDate
   endDate: LocalDate
-  actions: Set<string>
+  actions: Array<string>
   otherSelected: boolean
   otherAction: string
-  measures: Set<AssistanceMeasure>
+  measures: Array<AssistanceMeasure>
 }
 
 interface CommonProps {
-  onReload: () => void
   assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
 }
@@ -137,10 +136,10 @@ export default React.memo(function AssistanceActionForm(props: Props) {
         ? {
             startDate: LocalDate.todayInSystemTz(),
             endDate: LocalDate.todayInSystemTz(),
-            actions: new Set(),
+            actions: [],
             otherSelected: false,
             otherAction: '',
-            measures: new Set()
+            measures: []
           }
         : {
             ...props.assistanceAction,
@@ -159,6 +158,16 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     const newState = { ...form, ...values }
     setForm(newState)
   }
+
+  const { mutateAsync: createAssistanceAction } = useMutationResult(
+    createAssistanceActionMutation
+  )
+  const { mutateAsync: updateAssistanceAction } = useMutationResult(
+    updateAssistanceActionMutation
+  )
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
 
   useEffect(() => {
     const isSoftConflict = checkSoftConflict(form, props)
@@ -187,13 +196,16 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     }
 
     const apiCall = isCreate(props)
-      ? createAssistanceAction(props.childId, data)
-      : updateAssistanceAction(props.assistanceAction.id, data)
+      ? createAssistanceAction({ childId: props.childId, data })
+      : updateAssistanceAction({
+          id: props.assistanceAction.id,
+          childId: props.assistanceAction.childId,
+          data
+        })
 
     void apiCall.then((res) => {
       if (res.isSuccess) {
         clearUiMode()
-        props.onReload()
       } else if (res.isFailure) {
         if (res.statusCode == 409) {
           setFormErrors({
@@ -267,12 +279,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                       <CheckboxRow>
                         <Checkbox
                           label={option.nameFi}
-                          checked={form.actions.has(option.value)}
+                          checked={form.actions.includes(option.value)}
                           onChange={(value) => {
                             const actions = new Set([...form.actions])
                             if (value) actions.add(option.value)
                             else actions.delete(option.value)
-                            updateFormState({ actions: actions })
+                            updateFormState({ actions: Array.from(actions) })
                           }}
                         />
                       </CheckboxRow>
@@ -281,12 +293,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                     <CheckboxRow key={option.value}>
                       <Checkbox
                         label={option.nameFi}
-                        checked={form.actions.has(option.value)}
+                        checked={form.actions.includes(option.value)}
                         onChange={(value) => {
                           const actions = new Set([...form.actions])
                           if (value) actions.add(option.value)
                           else actions.delete(option.value)
-                          updateFormState({ actions: actions })
+                          updateFormState({ actions: Array.from(actions) })
                         }}
                       />
                     </CheckboxRow>
@@ -327,61 +339,64 @@ export default React.memo(function AssistanceActionForm(props: Props) {
             ),
             valueWidth: '100%'
           },
-          assistanceMeasures.length > 0 && {
-            label: i18n.childInformation.assistanceAction.fields.measures,
-            value: (
-              <div>
-                {assistanceMeasures.map((measure) =>
-                  i18n.childInformation.assistanceAction.fields.measureTypes[
-                    `${measure}_INFO`
-                  ] ? (
-                    <ExpandingInfo
-                      key={measure}
-                      info={String(
-                        i18n.childInformation.assistanceAction.fields
-                          .measureTypes[`${measure}_INFO`]
-                      )}
-                      ariaLabel=""
-                      width="full"
-                      closeLabel={i18n.common.close}
-                    >
+          assistanceMeasures.length > 0 &&
+            !useNewAssistanceModel && {
+              label: i18n.childInformation.assistanceAction.fields.measures,
+              value: (
+                <div>
+                  {assistanceMeasures.map((measure) =>
+                    i18n.childInformation.assistanceAction.fields.measureTypes[
+                      `${measure}_INFO`
+                    ] ? (
+                      <ExpandingInfo
+                        key={measure}
+                        info={String(
+                          i18n.childInformation.assistanceAction.fields
+                            .measureTypes[`${measure}_INFO`]
+                        )}
+                        ariaLabel=""
+                        width="full"
+                        closeLabel={i18n.common.close}
+                      >
+                        <CheckboxRow key={measure}>
+                          <Checkbox
+                            label={
+                              i18n.childInformation.assistanceAction.fields
+                                .measureTypes[measure]
+                            }
+                            checked={form.measures.includes(measure)}
+                            onChange={(value) => {
+                              const measures = new Set([...form.measures])
+                              if (value) measures.add(measure)
+                              else measures.delete(measure)
+                              updateFormState({
+                                measures: Array.from(measures)
+                              })
+                            }}
+                          />
+                        </CheckboxRow>
+                      </ExpandingInfo>
+                    ) : (
                       <CheckboxRow key={measure}>
                         <Checkbox
                           label={
                             i18n.childInformation.assistanceAction.fields
                               .measureTypes[measure]
                           }
-                          checked={form.measures.has(measure)}
+                          checked={form.measures.includes(measure)}
                           onChange={(value) => {
                             const measures = new Set([...form.measures])
                             if (value) measures.add(measure)
                             else measures.delete(measure)
-                            updateFormState({ measures: measures })
+                            updateFormState({ measures: Array.from(measures) })
                           }}
                         />
                       </CheckboxRow>
-                    </ExpandingInfo>
-                  ) : (
-                    <CheckboxRow key={measure}>
-                      <Checkbox
-                        label={
-                          i18n.childInformation.assistanceAction.fields
-                            .measureTypes[measure]
-                        }
-                        checked={form.measures.has(measure)}
-                        onChange={(value) => {
-                          const measures = new Set([...form.measures])
-                          if (value) measures.add(measure)
-                          else measures.delete(measure)
-                          updateFormState({ measures: measures })
-                        }}
-                      />
-                    </CheckboxRow>
-                  )
-                )}
-              </div>
-            )
-          }
+                    )
+                  )}
+                </div>
+              )
+            }
         ]}
       />
 

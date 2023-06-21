@@ -19,6 +19,7 @@ sealed interface DatabaseTable {
     sealed class AssistanceAction : DatabaseTable
     sealed class AssistanceActionOption : DatabaseTable
     sealed class AssistanceBasisOption : DatabaseTable
+    sealed class AssistanceFactor : DatabaseTable
     sealed class AssistanceNeed : DatabaseTable
     sealed class AssistanceNeedDecision : DatabaseTable
     sealed class AssistanceNeedDecisionEmployee : DatabaseTable
@@ -39,6 +40,7 @@ sealed interface DatabaseTable {
     sealed class GroupNote : DatabaseTable
     sealed class DailyServicesTime : DatabaseTable
     sealed class DailyServicesTimeNotification : DatabaseTable
+    sealed class DaycareAssistance : DatabaseTable
     sealed class DaycareCaretaker : DatabaseTable
     sealed class Decision : DatabaseTable
     sealed class DocumentTemplate : DatabaseTable
@@ -67,6 +69,7 @@ sealed interface DatabaseTable {
     sealed class MessageThread : DatabaseTable
     sealed class MessageThreadFolder : DatabaseTable
     sealed class MobileDevice : DatabaseTable
+    sealed class OtherAssistanceMeasure : DatabaseTable
     sealed class Pairing : DatabaseTable
     sealed class Parentship : DatabaseTable
     sealed class Partnership : DatabaseTable
@@ -75,6 +78,7 @@ sealed interface DatabaseTable {
     sealed class Person : DatabaseTable
     sealed class Placement : DatabaseTable
     sealed class PlacementPlan : DatabaseTable
+    sealed class PreschoolAssistance : DatabaseTable
     sealed class ServiceNeed : DatabaseTable
     sealed class ServiceNeedOption : DatabaseTable
     sealed class ServiceNeedOptionVoucherValue : DatabaseTable
@@ -103,6 +107,8 @@ typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
 typealias AssistanceActionOptionId = Id<DatabaseTable.AssistanceActionOption>
 
 typealias AssistanceBasisOptionId = Id<DatabaseTable.AssistanceBasisOption>
+
+typealias AssistanceFactorId = Id<DatabaseTable.AssistanceFactor>
 
 typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
 
@@ -145,6 +151,8 @@ typealias GroupNoteId = Id<DatabaseTable.GroupNote>
 typealias DailyServiceTimesId = Id<DatabaseTable.DailyServicesTime>
 
 typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServicesTimeNotification>
+
+typealias DaycareAssistanceId = Id<DatabaseTable.DaycareAssistance>
 
 typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
 
@@ -202,6 +210,8 @@ typealias MessageThreadFolderId = Id<DatabaseTable.MessageThreadFolder>
 
 typealias MobileDeviceId = Id<DatabaseTable.MobileDevice>
 
+typealias OtherAssistanceMeasureId = Id<DatabaseTable.OtherAssistanceMeasure>
+
 typealias PairingId = Id<DatabaseTable.Pairing>
 
 typealias ParentshipId = Id<DatabaseTable.Parentship>
@@ -217,6 +227,8 @@ typealias PersonId = Id<DatabaseTable.Person>
 typealias PlacementId = Id<DatabaseTable.Placement>
 
 typealias PlacementPlanId = Id<DatabaseTable.PlacementPlan>
+
+typealias PreschoolAssistanceId = Id<DatabaseTable.PreschoolAssistance>
 
 typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 

@@ -43,13 +43,6 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun getAssistanceNeedsByChildId(
-        db: Database.Connection,
-        childId: ChildId
-    ): List<AssistanceNeed> {
-        return db.transaction { it.getAssistanceNeedsByChild(childId) }
-    }
-
     fun updateAssistanceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,

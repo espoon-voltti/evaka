@@ -8,6 +8,7 @@ import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
@@ -22,6 +23,7 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -39,6 +41,7 @@ import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
@@ -46,6 +49,7 @@ import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
@@ -560,6 +564,22 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+    enum class AssistanceFactor(
+        override vararg val defaultRules: ScopedActionRule<in AssistanceFactorId>
+    ) : ScopedAction<AssistanceFactorId> {
+        UPDATE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceFactor()
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceFactor()
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
     enum class AssistanceNeed(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedId>
     ) : ScopedAction<AssistanceNeedId> {
@@ -778,6 +798,54 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
         READ_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        READ_ASSISTANCE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inPlacementUnitOfChild()
+        ),
+        CREATE_ASSISTANCE_FACTOR(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
+        READ_ASSISTANCE_FACTORS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inPlacementUnitOfChild()
+        ),
+        CREATE_DAYCARE_ASSISTANCE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
+        READ_DAYCARE_ASSISTANCES(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inPlacementUnitOfChild()
+        ),
+        CREATE_PRESCHOOL_ASSISTANCE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
+        READ_PRESCHOOL_ASSISTANCES(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inPlacementUnitOfChild()
+        ),
         CREATE_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
@@ -796,6 +864,19 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_NEED(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inPlacementUnitOfChild()
+        ),
+        CREATE_OTHER_ASSISTANCE_MEASURE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+        ),
+        READ_OTHER_ASSISTANCE_MEASURES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
@@ -1074,6 +1155,22 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+    enum class DaycareAssistance(
+        override vararg val defaultRules: ScopedActionRule<in DaycareAssistanceId>
+    ) : ScopedAction<DaycareAssistanceId> {
+        UPDATE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfDaycareAssistance()
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfDaycareAssistance()
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
     enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) :
         ScopedAction<DecisionId> {
         READ(
@@ -1320,6 +1417,22 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+    enum class OtherAssistanceMeasure(
+        override vararg val defaultRules: ScopedActionRule<in OtherAssistanceMeasureId>
+    ) : ScopedAction<OtherAssistanceMeasureId> {
+        UPDATE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure()
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure()
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
     enum class Pairing(override vararg val defaultRules: ScopedActionRule<in PairingId>) :
         ScopedAction<PairingId> {
         POST_RESPONSE(
@@ -1515,6 +1628,22 @@ sealed interface Action {
         CREATE_SERVICE_NEED(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class PreschoolAssistance(
+        override vararg val defaultRules: ScopedActionRule<in PreschoolAssistanceId>
+    ) : ScopedAction<PreschoolAssistanceId> {
+        UPDATE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfPreschoolAssistance()
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfPreschoolAssistance()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

@@ -4,30 +4,32 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 
+import DateRange from 'lib-common/date-range'
+import { Action } from 'lib-common/generated/action'
 import {
   AssistanceAction,
+  AssistanceActionOption,
   AssistanceActionResponse
-} from 'employee-frontend/types/child'
-import { Action } from 'lib-common/generated/action'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+} from 'lib-common/generated/api-types/assistanceaction'
+import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
-import { faQuestion } from 'lib-icons'
 
-import { removeAssistanceAction } from '../../../api/child/assistance-actions'
-import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
-import LabelValueList from '../../../components/common/LabelValueList'
-import Toolbar from '../../../components/common/Toolbar'
-import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import { UserContext } from '../../../state/user'
 import { isActiveDateRange } from '../../../utils/date'
+import LabelValueList from '../../common/LabelValueList'
+import Toolbar from '../../common/Toolbar'
+import ToolbarAccordion from '../../common/ToolbarAccordion'
+import { deleteAssistanceActionMutation } from '../queries'
+
+import AssistanceActionForm from './AssistanceActionForm'
+import { DeleteConfirmation } from './DeleteConfirmation'
 
 export interface Props {
   assistanceAction: AssistanceAction
   permittedActions: Action.AssistanceAction[]
-  onReload: () => void
   assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
@@ -36,7 +38,6 @@ export interface Props {
 export default React.memo(function AssistanceActionRow({
   assistanceAction,
   permittedActions,
-  onReload,
   assistanceActions,
   assistanceActionOptions,
   refSectionTop
@@ -47,33 +48,32 @@ export default React.memo(function AssistanceActionRow({
     assistanceAction.endDate
   )
   const [toggled, setToggled] = useState(expandedAtStart)
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const { uiMode, toggleUiMode } = useContext(UIContext)
   const refForm = useRef(null)
 
-  const renderDeleteConfirmation = () => (
-    <InfoModal
-      type="warning"
-      title={i18n.childInformation.assistanceAction.removeConfirmation}
-      text={`${
-        i18n.common.period
-      } ${assistanceAction.startDate.format()} - ${assistanceAction.endDate.format()}`}
-      icon={faQuestion}
-      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
-      resolve={{
-        action: () =>
-          removeAssistanceAction(assistanceAction.id).then(() => {
-            clearUiMode()
-            onReload()
-          }),
-        label: i18n.common.remove
-      }}
-    />
+  const { mutateAsync: deleteAssistanceAction } = useMutationResult(
+    deleteAssistanceActionMutation
   )
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
 
   return (
     <div>
-      {uiMode === `remove-assistance-action-${assistanceAction.id}` &&
-        renderDeleteConfirmation()}
+      {uiMode === `remove-assistance-action-${assistanceAction.id}` && (
+        <DeleteConfirmation
+          title={i18n.childInformation.assistanceAction.removeConfirmation}
+          range={
+            new DateRange(assistanceAction.startDate, assistanceAction.endDate)
+          }
+          onSubmit={() =>
+            deleteAssistanceAction({
+              id: assistanceAction.id,
+              childId: assistanceAction.childId
+            })
+          }
+        />
+      )}
 
       <ToolbarAccordion
         title={`${
@@ -106,7 +106,6 @@ export default React.memo(function AssistanceActionRow({
           <div ref={refForm}>
             <AssistanceActionForm
               assistanceAction={assistanceAction}
-              onReload={onReload}
               assistanceActions={assistanceActions}
               assistanceActionOptions={assistanceActionOptions}
             />
@@ -125,7 +124,7 @@ export default React.memo(function AssistanceActionRow({
                   <ul>
                     {assistanceActionOptions.map(
                       (option) =>
-                        assistanceAction.actions.has(option.value) && (
+                        assistanceAction.actions.includes(option.value) && (
                           <li key={option.value}>{option.nameFi}</li>
                         )
                     )}
@@ -142,24 +141,25 @@ export default React.memo(function AssistanceActionRow({
                   </ul>
                 )
               },
-              assistanceMeasures.length > 0 && {
-                label: i18n.childInformation.assistanceAction.fields.measures,
-                value: (
-                  <ul>
-                    {assistanceMeasures.map(
-                      (measure) =>
-                        assistanceAction.measures.has(measure) && (
-                          <li key={measure}>
-                            {
-                              i18n.childInformation.assistanceAction.fields
-                                .measureTypes[measure]
-                            }
-                          </li>
-                        )
-                    )}
-                  </ul>
-                )
-              }
+              assistanceMeasures.length > 0 &&
+                !useNewAssistanceModel && {
+                  label: i18n.childInformation.assistanceAction.fields.measures,
+                  value: (
+                    <ul>
+                      {assistanceMeasures.map(
+                        (measure) =>
+                          assistanceAction.measures.includes(measure) && (
+                            <li key={measure}>
+                              {
+                                i18n.childInformation.assistanceAction.fields
+                                  .measureTypes[measure]
+                              }
+                            </li>
+                          )
+                      )}
+                    </ul>
+                  )
+                }
             ]}
           />
         )}

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJob
@@ -37,7 +38,8 @@ data class EvakaEnv(
     val fiveYearsOldDaycareEnabled: Boolean,
     val mockClock: Boolean,
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
-    val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long
+    val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
+    val assistanceModel: AssistanceModel,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -84,7 +86,12 @@ data class EvakaEnv(
                 nrOfDaysFeeDecisionCanBeSentInAdvance =
                     env.lookup("evaka.fee_decision.days_in_advance") ?: 0,
                 nrOfDaysVoucherValueDecisionCanBeSentInAdvance =
-                    env.lookup("evaka.voucher_value_decision.days_in_advance") ?: 0
+                    env.lookup("evaka.voucher_value_decision.days_in_advance") ?: 0,
+                assistanceModel =
+                    when (env.lookup("evaka.use_new_assistance_model") ?: false) {
+                        true -> AssistanceModel.NEW
+                        false -> AssistanceModel.OLD
+                    }
             )
         }
     }

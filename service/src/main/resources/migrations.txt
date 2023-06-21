@@ -326,3 +326,4 @@ V326__fee_decision_service_need_option_id.sql
 V327__add_dw_cost_center.sql
 V328__document_checkbox_group_extra.sql
 V329__service_need_shift_care_enum.sql
+V330__assistance_need_model.sql

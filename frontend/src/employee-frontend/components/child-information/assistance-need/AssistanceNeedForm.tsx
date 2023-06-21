@@ -8,9 +8,12 @@ import styled from 'styled-components'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   AssistanceBasisOption,
-  AssistanceNeedRequest
+  AssistanceNeed,
+  AssistanceNeedRequest,
+  AssistanceNeedResponse
 } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -20,15 +23,10 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  createAssistanceNeed,
-  updateAssistanceNeed
-} from '../../../api/child/assistance-needs'
 import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceNeed, AssistanceNeedResponse } from '../../../types/child'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
   FormErrors,
@@ -36,6 +34,10 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import { DivFitContent } from '../../common/styled/containers'
+import {
+  createAssistanceNeedMutation,
+  updateAssistanceNeedMutation
+} from '../queries'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -64,13 +66,12 @@ interface FormState {
   startDate: LocalDate
   endDate: LocalDate
   capacityFactor: string
-  bases: Set<string>
+  bases: Array<string>
 }
 
 const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
 
 interface CommonProps {
-  onReload: () => void
   assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
 }
@@ -145,7 +146,7 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           capacityFactor: '1',
-          bases: new Set()
+          bases: []
         }
       : {
           ...props.assistanceNeed,
@@ -162,6 +163,13 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
     const newState = { ...form, ...values }
     setForm(newState)
   }
+
+  const { mutateAsync: createAssistanceNeed } = useMutationResult(
+    createAssistanceNeedMutation
+  )
+  const { mutateAsync: updateAssistanceNeed } = useMutationResult(
+    updateAssistanceNeedMutation
+  )
 
   useEffect(() => {
     const isHardConflict = checkHardConflict(form, props)
@@ -193,13 +201,16 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
     }
 
     const apiCall = isCreate(props)
-      ? createAssistanceNeed(props.childId, data)
-      : updateAssistanceNeed(props.assistanceNeed.id, data)
+      ? createAssistanceNeed({ childId: props.childId, data })
+      : updateAssistanceNeed({
+          id: props.assistanceNeed.id,
+          childId: props.assistanceNeed.childId,
+          data
+        })
 
     void apiCall.then((res) => {
       if (res.isSuccess) {
         clearUiMode()
-        props.onReload()
       } else if (res.isFailure) {
         if (res.statusCode == 409) {
           setFormErrors({
@@ -315,12 +326,12 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                       <CheckboxRow key={basis.value}>
                         <Checkbox
                           label={basis.nameFi}
-                          checked={form.bases.has(basis.value)}
+                          checked={form.bases.includes(basis.value)}
                           onChange={(value) => {
                             const bases = new Set([...form.bases])
                             if (value) bases.add(basis.value)
                             else bases.delete(basis.value)
-                            updateFormState({ bases: bases })
+                            updateFormState({ bases: Array.from(bases) })
                           }}
                         />
                       </CheckboxRow>
@@ -329,12 +340,12 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                     <CheckboxRow key={basis.value}>
                       <Checkbox
                         label={basis.nameFi}
-                        checked={form.bases.has(basis.value)}
+                        checked={form.bases.includes(basis.value)}
                         onChange={(value) => {
                           const bases = new Set([...form.bases])
                           if (value) bases.add(basis.value)
                           else bases.delete(basis.value)
-                          updateFormState({ bases: bases })
+                          updateFormState({ bases: Array.from(bases) })
                         }}
                       />
                     </CheckboxRow>

@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -29,12 +31,14 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -234,6 +238,20 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementUnitOfChildOfAssistanceFactor() =
+        rule<AssistanceFactorId> { user, now ->
+            sql(
+                """
+SELECT af.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
+FROM assistance_factor af
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementUnitOfChildOfAssistanceNeed() =
         rule<AssistanceNeedId> { user, now ->
             sql(
@@ -254,6 +272,48 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT ad.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM assistance_need_decision ad
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementUnitOfChildOfDaycareAssistance() =
+        rule<DaycareAssistanceId> { user, now ->
+            sql(
+                """
+SELECT da.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
+FROM daycare_assistance da
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementUnitOfChildOfOtherAssistanceMeasure() =
+        rule<OtherAssistanceMeasureId> { user, now ->
+            sql(
+                """
+SELECT oam.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
+FROM other_assistance_measure oam
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementUnitOfChildOfPreschoolAssistance() =
+        rule<PreschoolAssistanceId> { user, now ->
+            sql(
+                """
+SELECT pa.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
+FROM preschool_assistance pa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}

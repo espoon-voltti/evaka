@@ -4,19 +4,26 @@
 
 import React, { useContext, useState } from 'react'
 
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
 
-import AssistanceAction from '../../components/child-information/AssistanceAction'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
-import { ChildContext, ChildState } from '../../state/child'
+import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
+import AssistanceAction from './assistance/AssistanceActionSection'
+import { AssistanceFactorSection } from './assistance/AssistanceFactorSection'
+import { DaycareAssistanceSection } from './assistance/DaycareAssistanceSection'
+import { OtherAssistanceMeasureSection } from './assistance/OtherAssistanceMeasureSection'
+import { PreschoolAssistanceSection } from './assistance/PreschoolAssistanceSection'
+import { assistanceQuery } from './queries'
 
 export interface Props {
   id: UUID
@@ -25,8 +32,13 @@ export interface Props {
 
 export default React.memo(function Assistance({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
+
   const { permittedActions, assistanceNeedVoucherCoefficientsEnabled } =
-    useContext<ChildState>(ChildContext)
+    useContext(ChildContext)
+  const assistanceResult = useQueryResult(assistanceQuery(id))
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
 
   const [open, setOpen] = useState(startOpen)
 
@@ -40,15 +52,72 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         paddingVertical="L"
         data-qa="assistance-collapsible"
       >
-        {permittedActions.has('READ_ASSISTANCE_NEED') && (
-          <AssistanceNeed id={id} />
+        {useNewAssistanceModel && (
+          <>
+            {permittedActions.has('READ_ASSISTANCE_FACTORS') && (
+              <AssistanceFactorSection
+                childId={id}
+                rows={assistanceResult.map(
+                  ({ assistanceFactors }) => assistanceFactors
+                )}
+              />
+            )}
+            {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
+              <>
+                <HorizontalLine dashed slim />
+                <DaycareAssistanceSection
+                  childId={id}
+                  rows={assistanceResult.map(
+                    ({ daycareAssistances }) => daycareAssistances
+                  )}
+                />
+              </>
+            )}
+            {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
+              <>
+                <HorizontalLine dashed slim />
+                <PreschoolAssistanceSection
+                  childId={id}
+                  rows={assistanceResult.map(
+                    ({ preschoolAssistances }) => preschoolAssistances
+                  )}
+                />
+              </>
+            )}
+          </>
         )}
+        {permittedActions.has('READ_ASSISTANCE_NEED') &&
+          !useNewAssistanceModel && (
+            <AssistanceNeed
+              id={id}
+              assistanceNeeds={assistanceResult.map(
+                ({ assistanceNeeds }) => assistanceNeeds
+              )}
+            />
+          )}
         {permittedActions.has('READ_ASSISTANCE_ACTION') && (
           <>
             <HorizontalLine dashed slim />
-            <AssistanceAction id={id} />
+            <AssistanceAction
+              id={id}
+              assistanceActions={assistanceResult.map(
+                ({ assistanceActions }) => assistanceActions
+              )}
+            />
           </>
         )}
+        {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') &&
+          useNewAssistanceModel && (
+            <>
+              <HorizontalLine dashed slim />
+              <OtherAssistanceMeasureSection
+                childId={id}
+                rows={assistanceResult.map(
+                  ({ otherAssistanceMeasures }) => otherAssistanceMeasures
+                )}
+              />
+            </>
+          )}
         {featureFlags.experimental?.assistanceNeedDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
             <>
