@@ -34,6 +34,8 @@ enum class Audit(
     ApplicationUpdate,
     ApplicationVerify,
     ApplicationsReportRead,
+    AssistanceActionOptionsRead,
+    AssistanceBasisOptionsRead,
     AssistanceFactorCreate,
     AssistanceFactorUpdate,
     AssistanceFactorDelete,

@@ -385,16 +385,17 @@ class AssistanceController(
         clock: EvakaClock
     ): List<AssistanceBasisOption> {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Global.READ_ASSISTANCE_BASIS_OPTIONS
-                )
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_ASSISTANCE_BASIS_OPTIONS
+                    )
+                }
+                assistanceNeedService.getAssistanceBasisOptions(dbc)
             }
-            assistanceNeedService.getAssistanceBasisOptions(dbc)
-        }
+            .also { Audit.AssistanceBasisOptionsRead.log() }
     }
 
     @PostMapping("/children/{childId}/assistance-actions")
@@ -487,16 +488,17 @@ class AssistanceController(
         clock: EvakaClock
     ): List<AssistanceActionOption> {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Global.READ_ASSISTANCE_ACTION_OPTIONS
-                )
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_ASSISTANCE_ACTION_OPTIONS
+                    )
+                }
+                assistanceActionService.getAssistanceActionOptions(dbc)
             }
-            assistanceActionService.getAssistanceActionOptions(dbc)
-        }
+            .also { Audit.AssistanceActionOptionsRead.log() }
     }
 
     @PostMapping("/children/{child}/assistance-factors")
