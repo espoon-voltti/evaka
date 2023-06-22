@@ -6,6 +6,8 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.getDaycare
@@ -37,7 +39,11 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AttendanceReservationReportController(private val accessControl: AccessControl) {
+class AttendanceReservationReportController(
+    env: EvakaEnv,
+    private val accessControl: AccessControl
+) {
+    private val assistanceModel = env.assistanceModel
 
     @GetMapping("/reports/attendance-reservation/{unitId}")
     fun getAttendanceReservationReportByUnit(
@@ -64,6 +70,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     getAttendanceReservationReport(
                         tx,
+                        assistanceModel,
                         start,
                         end,
                         unitId,
@@ -248,29 +255,39 @@ private data class AssistanceNeedRow(
     val capacityFactor: Double
 )
 
-private fun Database.Read.getAssistanceNeeds(
-    start: LocalDate,
-    end: LocalDate,
+private fun Database.Read.getCapacityFactors(
+    model: AssistanceModel,
+    range: FiniteDateRange,
     children: List<ChildId>,
-): List<AssistanceNeedRow> {
-    val sql =
-        """
+): List<AssistanceNeedRow> =
+    createQuery<Any> {
+            when (model) {
+                AssistanceModel.OLD ->
+                    sql(
+                        """
 SELECT
     an.child_id,
-    daterange(an.start_date, an.end_date, '[]') * daterange(:start, :end, '[]') as range,
+    daterange(an.start_date, an.end_date, '[]') * ${bind(range)} AS range,
     an.capacity_factor
 FROM assistance_need an
-WHERE an.child_id = ANY(:children) AND daterange(an.start_date, an.end_date, '[]') && daterange(:start, :end, '[]');
-    """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("start", start)
-        .bind("end", end)
-        .bind("children", children.toTypedArray())
+WHERE an.child_id = ANY(${bind(children)}) AND daterange(an.start_date, an.end_date, '[]') && ${bind(range)}
+"""
+                    )
+                AssistanceModel.NEW ->
+                    sql(
+                        """
+SELECT
+    child_id,
+    valid_during * ${bind(range)} AS range,
+    capacity_factor
+FROM assistance_factor af
+WHERE child_id = ANY(${bind(children)}) AND valid_during && ${bind(range)}
+"""
+                    )
+            }
+        }
         .mapTo<AssistanceNeedRow>()
-        .toList()
-}
+        .list()
 
 private data class ReservationRow(
     val date: LocalDate,
@@ -374,17 +391,20 @@ data class AttendanceReservationReportRow(
 
 private fun getAttendanceReservationReport(
     db: Database.Read,
+    assistanceModel: AssistanceModel,
     start: LocalDate,
     end: LocalDate,
     unitId: DaycareId,
     groupIds: List<GroupId>?
 ): List<AttendanceReservationReportRow> {
+    val range = FiniteDateRange(start, end)
     val daycare = db.getDaycare(unitId)!!
     val placementStuff = db.getPlacementInfo(start, end, unitId, groupIds)
     val allChildren = placementStuff.map { it.childId }.distinct()
     val childInfoMap = db.getChildInfo(allChildren).associateBy { it.childId }
     val serviceNeedsMap = db.getServiceNeeds(start, end, allChildren).groupBy { it.childId }
-    val assistanceNeedsMap = db.getAssistanceNeeds(start, end, allChildren).groupBy { it.childId }
+    val assistanceNeedsMap =
+        db.getCapacityFactors(assistanceModel, range, allChildren).groupBy { it.childId }
     val reservationsMap = db.getReservations(start, end, allChildren)
     val absencesMap = db.getAbsences(start, end, allChildren)
     val serviceTimesMap = db.getDailyServiceTimesForChildren(allChildren.toSet())

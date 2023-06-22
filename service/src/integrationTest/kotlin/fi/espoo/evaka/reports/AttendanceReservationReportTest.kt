@@ -12,12 +12,12 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevAssistanceNeed
+import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
+import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -324,7 +325,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
-    fun `assistance need factor is supported`() {
+    fun `assistance factor is supported`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             tx.insertTestPlacement(
@@ -333,12 +334,11 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestAssistanceNeed(
-                DevAssistanceNeed(
+            tx.insertTestAssistanceFactor(
+                DevAssistanceFactor(
                     childId = testChild_1.id,
-                    updatedBy = admin.evakaUserId,
-                    startDate = date,
-                    endDate = date,
+                    modifiedBy = admin.evakaUserId,
+                    validDuring = date.toFiniteDateRange(),
                     capacityFactor = 5.0
                 )
             )
