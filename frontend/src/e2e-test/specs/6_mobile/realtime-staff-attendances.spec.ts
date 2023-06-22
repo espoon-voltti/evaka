@@ -27,6 +27,7 @@ let nav: MobileNav
 let mobileSignupUrl: string
 let staffAttendancePage: StaffAttendancePage
 let staffFixture: EmployeeBuilder
+let employeeName: string
 
 const pin = '4242'
 
@@ -85,8 +86,12 @@ beforeEach(async () => {
   staffFixture = await Fixture.employeeStaff(daycare2Fixture.id)
     .withGroupAcl(daycareGroupFixture.id)
     .withGroupAcl(daycareGroup2Fixture.id)
+    .with({
+      preferredFirstName: 'Kutsumanimi'
+    })
     .save()
   await Fixture.employeePin().with({ userId: staffFixture.data.id, pin }).save()
+  employeeName = `${staffFixture.data.lastName} Kutsumanimi`
 })
 
 const initPages = async (mockedTime: Date) => {
@@ -104,13 +109,13 @@ const initPages = async (mockedTime: Date) => {
 describe('Realtime staff attendance page', () => {
   test('Staff member can be marked as arrived and departed', async () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0).toSystemTzDate())
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
     const arrivalTime = '05:59'
     const departureTime = '12:45'
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.markStaffArrived({
       pin,
@@ -127,7 +132,8 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.assertPresentStaffCount(1)
 
     await staffAttendancePage.selectTab('present')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.markStaffDeparted({ pin, time: departureTime })
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendanceTimes(
@@ -143,11 +149,11 @@ describe('Realtime staff attendance page', () => {
     await initPages(
       HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)).toSystemTzDate()
     )
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.staffMemberPage.markArrivedBtn.assertDisabled(
       true
@@ -157,11 +163,10 @@ describe('Realtime staff attendance page', () => {
   test('Staff arrival page behaves correctly with different time values when no plan exists', async () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 0).toSystemTzDate())
 
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
-
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
@@ -195,11 +200,10 @@ describe('Realtime staff attendance page', () => {
     // Now it is 7:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 7, 30).toSystemTzDate())
 
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
-
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
@@ -243,11 +247,10 @@ describe('Realtime staff attendance page', () => {
     // Now it is 8:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 30).toSystemTzDate())
 
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
-
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
@@ -297,11 +300,10 @@ describe('Realtime staff attendance page', () => {
     // Now it is 15:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 30).toSystemTzDate())
 
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
-
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
 
@@ -344,11 +346,10 @@ describe('Realtime staff attendance page', () => {
     // Now it is 16:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 30).toSystemTzDate())
 
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
-
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
 
@@ -399,10 +400,10 @@ describe('Realtime staff attendance page', () => {
 
     // Now it is 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
 
@@ -446,10 +447,9 @@ describe('Realtime staff attendance page', () => {
 
     // Now it is 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
 
@@ -466,7 +466,8 @@ describe('Realtime staff attendance page', () => {
     )
 
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 0).toSystemTzDate())
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     await staffAttendancePage.setArrivalTime('15:00')
@@ -492,10 +493,10 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 4).toSystemTzDate())
-    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
-    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.openStaffPage(employeeName)
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
@@ -515,9 +516,7 @@ describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
-    await staffAttendancePage.openStaffPage(
-      `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
-    )
+    await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
 
@@ -551,6 +550,7 @@ describe('Realtime staff attendance page', () => {
 
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(name)
+
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.assertExternalStaffArrivalTime(arrivalTime)
     await staffAttendancePage.markExternalStaffDeparted('11:09')
