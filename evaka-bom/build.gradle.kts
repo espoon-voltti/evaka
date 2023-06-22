@@ -30,6 +30,7 @@ dependencies {
         api("com.zaxxer:HikariCP:5.0.1")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.5.0")
+        api("io.netty:netty-handler:4.1.94.Final")
         api("io.opentracing:opentracing-api:${Version.openTracing}")
         api("io.opentracing:opentracing-util:${Version.openTracing}")
         api("jakarta.annotation:jakarta.annotation-api:2.1.1")
