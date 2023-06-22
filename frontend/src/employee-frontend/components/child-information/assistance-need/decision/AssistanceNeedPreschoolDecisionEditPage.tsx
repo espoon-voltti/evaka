@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -32,8 +32,9 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
+import Select, { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -49,9 +50,10 @@ import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
+import { translations } from 'lib-customizations/employee'
 
 import { Unit } from '../../../../api/daycare'
-import { useTranslation } from '../../../../state/i18n'
+import { useTranslation, I18nContext } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   assistanceNeedPreschoolDecisionQuery,
@@ -170,6 +172,11 @@ const GuardianForm = React.memo(function GuardianForm({
   )
 })
 
+const t = {
+  FI: translations['fi'],
+  SV: translations['sv']
+}
+
 const DecisionEditor = React.memo(function DecisionEditor({
   decision,
   units
@@ -178,9 +185,20 @@ const DecisionEditor = React.memo(function DecisionEditor({
   units: Unit[]
 }) {
   const { i18n, lang: uiLang } = useTranslation()
-  const t = i18n.childInformation.assistanceNeedPreschoolDecision
   const navigate = useNavigate()
   const [displayValidation, setDisplayValidation] = useState(false)
+  const [formLanguage, setFormLanguage] = useState(decision.form.language)
+
+  const getTypeOptions = useCallback(
+    (lang: AssistanceNeedDecisionLanguage) =>
+      types.map((type) => ({
+        domValue: type,
+        value: type,
+        label:
+          t[lang].childInformation.assistanceNeedPreschoolDecision.types[type]
+      })),
+    []
+  )
 
   const bind = useForm(
     form,
@@ -188,19 +206,22 @@ const DecisionEditor = React.memo(function DecisionEditor({
       ...decision.form,
       language: {
         domValue: decision.form.language || '',
-        options: ['FI' as const, 'SV' as const].map((lang) => ({
-          domValue: lang,
-          value: lang,
-          label: lang // todo
-        }))
+        options: [
+          {
+            domValue: 'FI' as const,
+            value: 'FI' as const,
+            label: i18n.language.fi
+          },
+          {
+            domValue: 'SV' as const,
+            value: 'SV' as const,
+            label: i18n.language.sv
+          }
+        ]
       },
       type: {
         domValue: decision.form.type || '',
-        options: types.map((type) => ({
-          domValue: type,
-          value: type,
-          label: t.types[type]
-        }))
+        options: getTypeOptions(decision.form.language)
       }
     }),
     i18n.validationErrors
@@ -268,6 +289,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
   )
 
   const {
+    language,
     type,
     validFrom,
     extendedCompulsoryEducation,
@@ -293,303 +315,227 @@ const DecisionEditor = React.memo(function DecisionEditor({
     viewOfGuardians
   } = useFormFields(bind)
 
+  if (language.value() !== formLanguage) {
+    setFormLanguage(language.value())
+    type.update((prev) => ({
+      ...prev,
+      options: getTypeOptions(language.value())
+    }))
+  }
+
   const guardians = useFormElems(guardianInfo)
+
+  const lang = useMemo(
+    () => ({
+      lang: language.value() === 'SV' ? ('sv' as const) : ('fi' as const),
+      setLang: () => undefined
+    }),
+    [language]
+  )
 
   return (
     <div>
       <Container>
         <ContentArea opaque>
-          <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
-            <FixedSpaceColumn>
-              <H1 noMargin>{t.pageTitle}</H1>
-              <H2>{decision.child.name}</H2>
-            </FixedSpaceColumn>
-            <FixedSpaceColumn>
-              <span>
-                {i18n.childInformation.assistanceNeedDecision.decisionNumber}{' '}
-                {decision.decisionNumber}
-              </span>
-              <AssistanceNeedDecisionStatusChip
-                decisionStatus={decision.status}
-                texts={i18n.childInformation.assistanceNeedDecision.statuses}
-              />
-              <span>
-                {i18n.childInformation.assistanceNeedDecision.confidential}
-              </span>
-              <span>
-                {i18n.childInformation.assistanceNeedDecision.lawReference}
-              </span>
-            </FixedSpaceColumn>
+          <FixedSpaceRow alignItems="baseline">
+            <Label>
+              {i18n.childInformation.assistanceNeedDecision.formLanguage}
+            </Label>
+            <SelectF bind={language} />
           </FixedSpaceRow>
-          <FixedSpaceColumn spacing="XL">
-            <SectionSpacer>
-              <H2>Päätettävä tuki</H2>
-
+          <HorizontalLine />
+          <I18nContext.Provider value={lang}>
+            <FixedSpaceRow
+              justifyContent="space-between"
+              alignItems="flex-start"
+            >
               <FixedSpaceColumn>
-                <FixedSpaceRow alignItems="center">
-                  <Label>Erityisen tuen tila *</Label>
-                  {displayValidation && validationErrors.type && (
-                    <AlertBox
-                      message={i18n.validationErrors[validationErrors.type]}
-                      thin
-                    />
-                  )}
-                </FixedSpaceRow>
-                {type.state.options.map((opt) => (
-                  <Radio
-                    key={opt.domValue}
-                    label={opt.label}
-                    checked={type.value() == opt.value}
-                    onChange={() =>
-                      type.update((prev) => ({
-                        ...prev,
-                        domValue: opt.domValue
-                      }))
-                    }
-                  />
-                ))}
-              </FixedSpaceColumn>
-
-              <FixedSpaceColumn>
-                <Label>Voimassa alkaen *</Label>
-                <DatePickerF
-                  bind={validFrom}
-                  locale={uiLang}
-                  info={
-                    displayValidation && validationErrors.validFrom
-                      ? {
-                          status: 'warning',
-                          text: i18n.validationErrors[
-                            validationErrors.validFrom
-                          ]
-                        }
-                      : undefined
+                <H1 noMargin>
+                  {
+                    i18n.childInformation.assistanceNeedPreschoolDecision
+                      .pageTitle
                   }
-                />
+                </H1>
+                <H2>{decision.child.name}</H2>
               </FixedSpaceColumn>
-
               <FixedSpaceColumn>
-                <Label>Pidennetty oppivelvollisuus</Label>
-                <CheckboxF
-                  bind={extendedCompulsoryEducation}
-                  label="Lapsella on pidennetty oppivelvollisuus"
+                <span>
+                  {i18n.childInformation.assistanceNeedDecision.decisionNumber}{' '}
+                  {decision.decisionNumber}
+                </span>
+                <AssistanceNeedDecisionStatusChip
+                  decisionStatus={decision.status}
+                  texts={i18n.childInformation.assistanceNeedDecision.statuses}
                 />
-                {extendedCompulsoryEducation.value() && (
-                  <FixedSpaceColumn>
-                    <Label>
-                      Lisätiedot pidennetystä oppivelvollisuudesta *
-                    </Label>
-                    <WidthLimiter>
-                      <TextAreaF
-                        bind={extendedCompulsoryEducationInfo}
-                        info={
-                          displayValidation &&
-                          validationErrors.extendedCompulsoryEducationInfo
-                            ? {
-                                status: 'warning',
-                                text: i18n.validationErrors[
-                                  validationErrors
-                                    .extendedCompulsoryEducationInfo
-                                ]
-                              }
-                            : undefined
-                        }
+                <span>
+                  {i18n.childInformation.assistanceNeedDecision.confidential}
+                </span>
+                <span>
+                  {i18n.childInformation.assistanceNeedDecision.lawReference}
+                </span>
+              </FixedSpaceColumn>
+            </FixedSpaceRow>
+            <FixedSpaceColumn spacing="XL">
+              <SectionSpacer>
+                <H2>Päätettävä tuki</H2>
+
+                <FixedSpaceColumn>
+                  <FixedSpaceRow alignItems="center">
+                    <Label>Erityisen tuen tila *</Label>
+                    {displayValidation && validationErrors.type && (
+                      <AlertBox
+                        message={i18n.validationErrors[validationErrors.type]}
+                        thin
                       />
-                    </WidthLimiter>
-                  </FixedSpaceColumn>
-                )}
-              </FixedSpaceColumn>
+                    )}
+                  </FixedSpaceRow>
+                  {type.state.options.map((opt) => (
+                    <Radio
+                      key={opt.domValue}
+                      label={opt.label}
+                      checked={type.value() == opt.value}
+                      onChange={() =>
+                        type.update((prev) => ({
+                          ...prev,
+                          domValue: opt.domValue
+                        }))
+                      }
+                    />
+                  ))}
+                </FixedSpaceColumn>
 
-              <FixedSpaceColumn>
-                <Label>
-                  Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset
-                  apuvälineet
-                </Label>
-                <CheckboxF
-                  bind={grantedAssistanceService}
-                  label="Lapselle myönnetään avustajapalveluita"
-                />
-                <CheckboxF
-                  bind={grantedInterpretationService}
-                  label="Lapselle myönnetään tulkitsemispalveluita"
-                />
-                <CheckboxF
-                  bind={grantedAssistiveDevices}
-                  label="Lapselle myönnetään erityisiä apuvälineitä"
-                />
-              </FixedSpaceColumn>
-
-              <FixedSpaceColumn>
-                <Label>
-                  Perustelut myönnettäville tulkitsemis- ja avustajapalveluille
-                  ja apuvälineille
-                </Label>
-                <WidthLimiter>
-                  <TextAreaF bind={grantedServicesBasis} />
-                </WidthLimiter>
-              </FixedSpaceColumn>
-
-              <FixedSpaceColumn>
-                <Label>Esiopetuksen järjestämispaikka *</Label>
-                <Select<Unit | null>
-                  items={[null, ...units]}
-                  selectedItem={
-                    selectedUnit
-                      ? units.find((u) => u.id === selectedUnit.value()) ?? null
-                      : null
-                  }
-                  getItemLabel={(u) => u?.name ?? ''}
-                  getItemValue={(u: Unit | undefined) => u?.id ?? ''}
-                  onChange={(u) => selectedUnit.set(u?.id ?? null)}
-                />
-                {displayValidation && validationErrors.selectedUnit && (
-                  <AlertBox
-                    message={
-                      i18n.validationErrors[validationErrors.selectedUnit]
-                    }
-                    thin
-                  />
-                )}
-              </FixedSpaceColumn>
-
-              <FixedSpaceColumn>
-                <Label>Pääsääntöinen opetusryhmä *</Label>
-                <InputFieldF
-                  bind={primaryGroup}
-                  width="L"
-                  info={
-                    displayValidation && validationErrors.primaryGroup
-                      ? {
-                          status: 'warning',
-                          text: i18n.validationErrors[
-                            validationErrors.primaryGroup
-                          ]
-                        }
-                      : undefined
-                  }
-                />
-              </FixedSpaceColumn>
-
-              <FixedSpaceColumn>
-                <Label>Perustelut päätökselle *</Label>
-                <WidthLimiter>
-                  <TextAreaF
-                    bind={decisionBasis}
+                <FixedSpaceColumn>
+                  <Label>Voimassa alkaen *</Label>
+                  <DatePickerF
+                    bind={validFrom}
+                    locale={uiLang}
                     info={
-                      displayValidation && validationErrors.decisionBasis
+                      displayValidation && validationErrors.validFrom
                         ? {
                             status: 'warning',
                             text: i18n.validationErrors[
-                              validationErrors.decisionBasis
+                              validationErrors.validFrom
                             ]
                           }
                         : undefined
                     }
                   />
-                </WidthLimiter>
-              </FixedSpaceColumn>
+                </FixedSpaceColumn>
 
-              <FixedSpaceColumn>
-                <FixedSpaceRow alignItems="center">
-                  <Label>Asiakirjat, joihin päätös perustuu *</Label>
-                  {displayValidation && validationErrors.documentBasis && (
+                <FixedSpaceColumn>
+                  <Label>Pidennetty oppivelvollisuus</Label>
+                  <CheckboxF
+                    bind={extendedCompulsoryEducation}
+                    label="Lapsella on pidennetty oppivelvollisuus"
+                  />
+                  {extendedCompulsoryEducation.value() && (
+                    <FixedSpaceColumn>
+                      <Label>
+                        Lisätiedot pidennetystä oppivelvollisuudesta *
+                      </Label>
+                      <WidthLimiter>
+                        <TextAreaF
+                          bind={extendedCompulsoryEducationInfo}
+                          info={
+                            displayValidation &&
+                            validationErrors.extendedCompulsoryEducationInfo
+                              ? {
+                                  status: 'warning',
+                                  text: i18n.validationErrors[
+                                    validationErrors
+                                      .extendedCompulsoryEducationInfo
+                                  ]
+                                }
+                              : undefined
+                          }
+                        />
+                      </WidthLimiter>
+                    </FixedSpaceColumn>
+                  )}
+                </FixedSpaceColumn>
+
+                <FixedSpaceColumn>
+                  <Label>
+                    Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset
+                    apuvälineet
+                  </Label>
+                  <CheckboxF
+                    bind={grantedAssistanceService}
+                    label="Lapselle myönnetään avustajapalveluita"
+                  />
+                  <CheckboxF
+                    bind={grantedInterpretationService}
+                    label="Lapselle myönnetään tulkitsemispalveluita"
+                  />
+                  <CheckboxF
+                    bind={grantedAssistiveDevices}
+                    label="Lapselle myönnetään erityisiä apuvälineitä"
+                  />
+                </FixedSpaceColumn>
+
+                <FixedSpaceColumn>
+                  <Label>
+                    Perustelut myönnettäville tulkitsemis- ja
+                    avustajapalveluille ja apuvälineille
+                  </Label>
+                  <WidthLimiter>
+                    <TextAreaF bind={grantedServicesBasis} />
+                  </WidthLimiter>
+                </FixedSpaceColumn>
+
+                <FixedSpaceColumn>
+                  <Label>Esiopetuksen järjestämispaikka *</Label>
+                  <Select<Unit | null>
+                    items={[null, ...units]}
+                    selectedItem={
+                      selectedUnit
+                        ? units.find((u) => u.id === selectedUnit.value()) ??
+                          null
+                        : null
+                    }
+                    getItemLabel={(u) => u?.name ?? ''}
+                    getItemValue={(u: Unit | undefined) => u?.id ?? ''}
+                    onChange={(u) => selectedUnit.set(u?.id ?? null)}
+                  />
+                  {displayValidation && validationErrors.selectedUnit && (
                     <AlertBox
                       message={
-                        i18n.validationErrors[validationErrors.documentBasis]
+                        i18n.validationErrors[validationErrors.selectedUnit]
                       }
                       thin
                     />
                   )}
-                </FixedSpaceRow>
-                <CheckboxF
-                  bind={basisDocumentPedagogicalReport}
-                  label="Pedagoginen selvitys"
-                />
-                <CheckboxF
-                  bind={basisDocumentPsychologistStatement}
-                  label="Psykologin lausunto"
-                />
-                <CheckboxF
-                  bind={basisDocumentDoctorStatement}
-                  label="Sosiaalinen selvitys"
-                />
-                <CheckboxF
-                  bind={basisDocumentSocialReport}
-                  label="Lääkärin lausunto"
-                />
-                <CheckboxF
-                  bind={basisDocumentOtherOrMissing}
-                  label="Liite puuttuu, tai muu liite, mikä?"
-                />
-                <InputFieldF
-                  bind={basisDocumentOtherOrMissingInfo}
-                  info={
-                    displayValidation &&
-                    validationErrors.basisDocumentOtherOrMissingInfo
-                      ? {
-                          status: 'warning',
-                          text: i18n.validationErrors[
-                            validationErrors.basisDocumentOtherOrMissingInfo
-                          ]
-                        }
-                      : undefined
-                  }
-                />
-              </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <Label>Lisätiedot liitteistä</Label>
-                <WidthLimiter>
-                  <TextAreaF bind={basisDocumentsInfo} />
-                </WidthLimiter>
-              </FixedSpaceColumn>
-            </SectionSpacer>
+                </FixedSpaceColumn>
 
-            <SectionSpacer>
-              <H2>Huoltajien kanssa tehty yhteistyö</H2>
-
-              <FixedSpaceColumn>
-                <Label>Huoltajien kuulemisen päivämäärä *</Label>
-                <DatePickerF
-                  bind={guardiansHeardOn}
-                  locale={uiLang}
-                  info={
-                    displayValidation && validationErrors.guardiansHeardOn
-                      ? {
-                          status: 'warning',
-                          text: i18n.validationErrors[
-                            validationErrors.guardiansHeardOn
-                          ]
-                        }
-                      : undefined
-                  }
-                />
-              </FixedSpaceColumn>
-
-              <FixedSpaceColumn>
-                <Label>Huoltajat, joita on kuultu, ja kuulemistapa *</Label>
-                {guardians.map((guardian, i) => (
-                  <GuardianForm
-                    key={guardian.state.id}
-                    bind={guardian}
-                    displayValidation={displayValidation}
-                    validationErrors={validationErrors.guardianInfo[i]}
+                <FixedSpaceColumn>
+                  <Label>Pääsääntöinen opetusryhmä *</Label>
+                  <InputFieldF
+                    bind={primaryGroup}
+                    width="L"
+                    info={
+                      displayValidation && validationErrors.primaryGroup
+                        ? {
+                            status: 'warning',
+                            text: i18n.validationErrors[
+                              validationErrors.primaryGroup
+                            ]
+                          }
+                        : undefined
+                    }
                   />
-                ))}
-                <FixedSpaceColumn spacing="zero">
-                  <CheckboxF
-                    bind={otherRepresentativeHeard}
-                    label="Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)"
-                  />
+                </FixedSpaceColumn>
+
+                <FixedSpaceColumn>
+                  <Label>Perustelut päätökselle *</Label>
                   <WidthLimiter>
-                    <InputFieldF
-                      bind={otherRepresentativeDetails}
+                    <TextAreaF
+                      bind={decisionBasis}
                       info={
-                        displayValidation &&
-                        validationErrors.otherRepresentativeDetails
+                        displayValidation && validationErrors.decisionBasis
                           ? {
                               status: 'warning',
                               text: i18n.validationErrors[
-                                validationErrors.otherRepresentativeDetails
+                                validationErrors.decisionBasis
                               ]
                             }
                           : undefined
@@ -597,28 +543,138 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     />
                   </WidthLimiter>
                 </FixedSpaceColumn>
-              </FixedSpaceColumn>
 
-              <FixedSpaceColumn>
-                <Label>Huoltajien näkemys esitetystä tuesta *</Label>
-                <WidthLimiter>
-                  <TextAreaF
-                    bind={viewOfGuardians}
+                <FixedSpaceColumn>
+                  <FixedSpaceRow alignItems="center">
+                    <Label>Asiakirjat, joihin päätös perustuu *</Label>
+                    {displayValidation && validationErrors.documentBasis && (
+                      <AlertBox
+                        message={
+                          i18n.validationErrors[validationErrors.documentBasis]
+                        }
+                        thin
+                      />
+                    )}
+                  </FixedSpaceRow>
+                  <CheckboxF
+                    bind={basisDocumentPedagogicalReport}
+                    label="Pedagoginen selvitys"
+                  />
+                  <CheckboxF
+                    bind={basisDocumentPsychologistStatement}
+                    label="Psykologin lausunto"
+                  />
+                  <CheckboxF
+                    bind={basisDocumentDoctorStatement}
+                    label="Sosiaalinen selvitys"
+                  />
+                  <CheckboxF
+                    bind={basisDocumentSocialReport}
+                    label="Lääkärin lausunto"
+                  />
+                  <CheckboxF
+                    bind={basisDocumentOtherOrMissing}
+                    label="Liite puuttuu, tai muu liite, mikä?"
+                  />
+                  <InputFieldF
+                    bind={basisDocumentOtherOrMissingInfo}
                     info={
-                      displayValidation && validationErrors.viewOfGuardians
+                      displayValidation &&
+                      validationErrors.basisDocumentOtherOrMissingInfo
                         ? {
                             status: 'warning',
                             text: i18n.validationErrors[
-                              validationErrors.viewOfGuardians
+                              validationErrors.basisDocumentOtherOrMissingInfo
                             ]
                           }
                         : undefined
                     }
                   />
-                </WidthLimiter>
-              </FixedSpaceColumn>
-            </SectionSpacer>
-          </FixedSpaceColumn>
+                </FixedSpaceColumn>
+                <FixedSpaceColumn>
+                  <Label>Lisätiedot liitteistä</Label>
+                  <WidthLimiter>
+                    <TextAreaF bind={basisDocumentsInfo} />
+                  </WidthLimiter>
+                </FixedSpaceColumn>
+              </SectionSpacer>
+
+              <SectionSpacer>
+                <H2>Huoltajien kanssa tehty yhteistyö</H2>
+
+                <FixedSpaceColumn>
+                  <Label>Huoltajien kuulemisen päivämäärä *</Label>
+                  <DatePickerF
+                    bind={guardiansHeardOn}
+                    locale={uiLang}
+                    info={
+                      displayValidation && validationErrors.guardiansHeardOn
+                        ? {
+                            status: 'warning',
+                            text: i18n.validationErrors[
+                              validationErrors.guardiansHeardOn
+                            ]
+                          }
+                        : undefined
+                    }
+                  />
+                </FixedSpaceColumn>
+
+                <FixedSpaceColumn>
+                  <Label>Huoltajat, joita on kuultu, ja kuulemistapa *</Label>
+                  {guardians.map((guardian, i) => (
+                    <GuardianForm
+                      key={guardian.state.id}
+                      bind={guardian}
+                      displayValidation={displayValidation}
+                      validationErrors={validationErrors.guardianInfo[i]}
+                    />
+                  ))}
+                  <FixedSpaceColumn spacing="zero">
+                    <CheckboxF
+                      bind={otherRepresentativeHeard}
+                      label="Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)"
+                    />
+                    <WidthLimiter>
+                      <InputFieldF
+                        bind={otherRepresentativeDetails}
+                        info={
+                          displayValidation &&
+                          validationErrors.otherRepresentativeDetails
+                            ? {
+                                status: 'warning',
+                                text: i18n.validationErrors[
+                                  validationErrors.otherRepresentativeDetails
+                                ]
+                              }
+                            : undefined
+                        }
+                      />
+                    </WidthLimiter>
+                  </FixedSpaceColumn>
+                </FixedSpaceColumn>
+
+                <FixedSpaceColumn>
+                  <Label>Huoltajien näkemys esitetystä tuesta *</Label>
+                  <WidthLimiter>
+                    <TextAreaF
+                      bind={viewOfGuardians}
+                      info={
+                        displayValidation && validationErrors.viewOfGuardians
+                          ? {
+                              status: 'warning',
+                              text: i18n.validationErrors[
+                                validationErrors.viewOfGuardians
+                              ]
+                            }
+                          : undefined
+                      }
+                    />
+                  </WidthLimiter>
+                </FixedSpaceColumn>
+              </SectionSpacer>
+            </FixedSpaceColumn>
+          </I18nContext.Provider>
         </ContentArea>
       </Container>
 

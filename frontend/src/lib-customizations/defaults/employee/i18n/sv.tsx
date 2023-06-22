@@ -12,6 +12,14 @@ export const sv = {
   ...fi,
   childInformation: {
     ...fi.childInformation,
+    assistanceNeedPreschoolDecision: {
+      ...fi.childInformation.assistanceNeedPreschoolDecision,
+      types: {
+        NEW: 'svenska: Erityinen tuki alkaa',
+        CONTINUING: 'svenska: Erityinen tuki jatkuu',
+        TERMINATED: 'svenska: Erityinen tuki päättyy'
+      }
+    },
     assistanceNeedDecision: {
       ...fi.childInformation.assistanceNeedDecision,
       pageTitle: 'Beslut om stöd',

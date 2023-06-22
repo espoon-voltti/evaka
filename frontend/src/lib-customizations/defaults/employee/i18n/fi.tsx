@@ -803,6 +803,7 @@ export const fi = {
     assistanceNeedPreschoolDecision: {
       pageTitle: 'Päätös tuesta esiopetuksessa',
       sectionTitle: 'Päätökset tuesta esiopetuksessa',
+      lawReference: 'Perusopetuslaki 17 §',
       types: {
         NEW: 'Erityinen tuki alkaa',
         CONTINUING: 'Erityinen tuki jatkuu',
