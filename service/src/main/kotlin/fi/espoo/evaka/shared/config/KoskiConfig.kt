@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import com.github.kittinunf.fuel.core.FuelManager
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.koski.KoskiClient
@@ -18,12 +19,15 @@ import org.springframework.context.annotation.Configuration
 class KoskiConfig {
     @Bean
     fun koskiClient(
+        evakaEnv: EvakaEnv,
         koskiEnv: ObjectProvider<KoskiEnv>,
         ophEnv: ObjectProvider<OphEnv>,
         fuel: FuelManager,
         asyncJobRunner: AsyncJobRunner<AsyncJob>
     ): KoskiClient? =
         koskiEnv.ifAvailable?.let { kEnv ->
-            ophEnv.ifAvailable?.let { oEnv -> KoskiClient(kEnv, oEnv, fuel, asyncJobRunner) }
+            ophEnv.ifAvailable?.let { oEnv ->
+                KoskiClient(evakaEnv.assistanceModel, kEnv, oEnv, fuel, asyncJobRunner)
+            }
         }
 }

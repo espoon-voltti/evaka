@@ -7,7 +7,9 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
-import fi.espoo.evaka.assistanceaction.AssistanceMeasure
+import fi.espoo.evaka.assistance.AssistanceModel
+import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
+import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -18,16 +20,16 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevAssistanceAction
-import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestOtherAssistanceMeasure
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestPreschoolAssistance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
@@ -60,6 +62,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             KoskiTester(
                 db,
                 KoskiClient(
+                    AssistanceModel.NEW,
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:${koskiServer.port}"),
                     OphEnv.fromEnvironment(env),
@@ -125,7 +128,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val daycare = testDaycare
         val today = preschoolTerm2019.end.plusDays(1)
 
-        fun countPendingStudyRights() = db.read { it.getPendingStudyRights(today) }.size
+        fun countPendingStudyRights() =
+            db.read { it.getPendingStudyRights(AssistanceModel.NEW, today) }.size
 
         db.transaction { it.setUnitOid(daycare.id, MockKoskiServer.UNIT_OID_THAT_TRIGGERS_400) }
         insertPlacement(daycareId = daycare.id)
@@ -356,6 +360,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByExistingPerson =
             db.read {
                 it.getPendingStudyRights(
+                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(personIds = listOf(testChild_1.id))
                 )
@@ -365,6 +370,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByRandomPerson =
             db.read {
                 it.getPendingStudyRights(
+                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(personIds = listOf(ChildId(UUID.randomUUID())))
                 )
@@ -374,6 +380,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByExistingDaycare =
             db.read {
                 it.getPendingStudyRights(
+                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(daycareIds = listOf(testDaycare.id))
                 )
@@ -383,6 +390,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByRandomDaycare =
             db.read {
                 it.getPendingStudyRights(
+                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(daycareIds = listOf(DaycareId(UUID.randomUUID())))
                 )
@@ -391,93 +399,33 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `assistance needs are converted to Koski extra information`() {
-        data class TestCase(val period: FiniteDateRange, val basis: String)
-        insertPlacement(testChild_1)
-        val testCases =
-            listOf(
-                TestCase(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
-                TestCase(testPeriod(2L to 3L), "DEVELOPMENTAL_DISABILITY_2")
-            )
-        val actionPeriod = testPeriod(0L to 3L)
-        db.transaction { tx ->
-            testCases.forEach {
-                tx.insertTestAssistanceNeed(
-                    DevAssistanceNeed(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                        childId = testChild_1.id,
-                        startDate = it.period.start,
-                        endDate = it.period.end,
-                        bases = setOf(it.basis)
-                    )
-                )
-            }
-            // Koski validation rules require extended compulsory education when developmental
-            // disability date ranges
-            // are present
-            tx.insertTestAssistanceAction(
-                DevAssistanceAction(
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    childId = testChild_1.id,
-                    startDate = actionPeriod.start,
-                    endDate = actionPeriod.end,
-                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
-                    actions = emptySet()
-                )
-            )
-        }
-
-        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        assertEquals(
-            Lisätiedot(
-                vammainen = listOf(Aikajakso.from(testCases[0].period)),
-                vaikeastiVammainen = listOf(Aikajakso.from(testCases[1].period)),
-                pidennettyOppivelvollisuus = Aikajakso.from(actionPeriod),
-                kuljetusetu = null,
-                erityisenTuenPäätökset = null
-            ),
-            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
-        )
-    }
-
-    @Test
-    fun `assistance actions are converted to Koski extra information`() {
+    fun `preschool assistance info is converted to Koski extra information`() {
         data class TestCase(
             val period: FiniteDateRange,
-            val measure: AssistanceMeasure,
-            val action: String? = null
+            val level: PreschoolAssistanceLevel,
         )
         insertPlacement(testChild_1)
         val testCases =
             listOf(
-                TestCase(testPeriod(0L to 1L), AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
-                TestCase(testPeriod(2L to 3L), AssistanceMeasure.TRANSPORT_BENEFIT),
+                TestCase(testPeriod(0L to 1L), PreschoolAssistanceLevel.INTENSIFIED_SUPPORT),
+                TestCase(testPeriod(2L to 3L), PreschoolAssistanceLevel.SPECIAL_SUPPORT),
                 TestCase(
                     testPeriod(4L to 5L),
-                    AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
-                    "SPECIAL_GROUP"
+                    PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
                 ),
-                TestCase(testPeriod(6L to 7L), AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION)
-            )
-        db.transaction { tx ->
-            tx.insertTestAssistanceNeed(
-                DevAssistanceNeed(
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    childId = testChild_1.id,
-                    startDate = testCases[0].period.start,
-                    endDate = testCases[0].period.end,
-                    bases = setOf("DEVELOPMENTAL_DISABILITY_1")
+                TestCase(
+                    testPeriod(6L to 7L),
+                    PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2
                 )
             )
+        db.transaction { tx ->
             testCases.forEach {
-                tx.insertTestAssistanceAction(
-                    DevAssistanceAction(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                tx.insertTestPreschoolAssistance(
+                    DevPreschoolAssistance(
+                        modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
-                        startDate = it.period.start,
-                        endDate = it.period.end,
-                        measures = setOf(it.measure),
-                        actions = listOfNotNull(it.action).toSet()
+                        validDuring = it.period,
+                        level = it.level,
                     )
                 )
             }
@@ -486,10 +434,19 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertEquals(
             Lisätiedot(
-                vammainen = listOf(Aikajakso.from(testCases[0].period)),
-                vaikeastiVammainen = null,
-                pidennettyOppivelvollisuus = Aikajakso.from(testCases[0].period),
-                kuljetusetu = Aikajakso.from(testCases[1].period),
+                vammainen =
+                    listOf(
+                        Aikajakso.from(testCases[2].period),
+                    ),
+                vaikeastiVammainen =
+                    listOf(
+                        Aikajakso.from(testCases[3].period),
+                    ),
+                pidennettyOppivelvollisuus =
+                    Aikajakso.from(
+                        FiniteDateRange(testCases[1].period.start, testCases[3].period.end)
+                    ),
+                kuljetusetu = null,
                 erityisenTuenPäätökset =
                     listOf(
                         ErityisenTuenPäätös(
@@ -511,7 +468,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `adjacent transport benefit ranges are sent as one joined range`() {
         insertPlacement(testChild_1)
-        val assistanceActions =
+        val otherAssistanceMeasures =
             listOf(
                 testPeriod(1L to 1L),
                 testPeriod(2L to 2L),
@@ -519,15 +476,13 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 testPeriod(6L to 7L)
             )
         db.transaction { tx ->
-            assistanceActions.forEach {
-                tx.insertTestAssistanceAction(
-                    DevAssistanceAction(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+            otherAssistanceMeasures.forEach {
+                tx.insertTestOtherAssistanceMeasure(
+                    DevOtherAssistanceMeasure(
+                        modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
-                        startDate = it.start,
-                        endDate = it.end,
-                        measures = setOf(AssistanceMeasure.TRANSPORT_BENEFIT),
-                        actions = emptySet()
+                        validDuring = it,
+                        type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT
                     )
                 )
             }
@@ -540,48 +495,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 vaikeastiVammainen = null,
                 pidennettyOppivelvollisuus = null,
                 kuljetusetu = Aikajakso.from(testPeriod(1L to 4L)),
-                erityisenTuenPäätökset = null
-            ),
-            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
-        )
-    }
-
-    @Test
-    fun `disability date ranges are only sent if extended compulsory education is sent`() {
-        insertPlacement(testChild_1)
-        val assistanceNeeds = listOf(Pair(testPeriod(0L to 6L), "DEVELOPMENTAL_DISABILITY_1"))
-        db.transaction { tx ->
-            assistanceNeeds.forEach {
-                tx.insertTestAssistanceNeed(
-                    DevAssistanceNeed(
-                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                        childId = testChild_1.id,
-                        startDate = it.first.start,
-                        endDate = it.first.end,
-                        bases = setOf(it.second)
-                    )
-                )
-            }
-            val actionPeriod = testPeriod(7L to 8L)
-            tx.insertTestAssistanceAction(
-                DevAssistanceAction(
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    childId = testChild_1.id,
-                    startDate = actionPeriod.start,
-                    endDate = actionPeriod.end,
-                    measures = setOf(AssistanceMeasure.TRANSPORT_BENEFIT),
-                    actions = emptySet()
-                )
-            )
-        }
-
-        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        assertEquals(
-            Lisätiedot(
-                vammainen = null,
-                vaikeastiVammainen = null,
-                pidennettyOppivelvollisuus = null,
-                kuljetusetu = Aikajakso.from(testPeriod(7L to 8L)),
                 erityisenTuenPäätökset = null
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
@@ -1015,6 +928,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             KoskiTester(
                 db,
                 KoskiClient(
+                    AssistanceModel.NEW,
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:${koskiServer.port}"),
                     OphEnv.fromEnvironment(env).copy(municipalityCode = "001"),

@@ -15,6 +15,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.core.isClientError
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -27,6 +28,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 class KoskiClient(
+    private val assistanceModel: AssistanceModel,
     private val env: KoskiEnv,
     private val ophEnv: OphEnv,
     private val fuel: FuelManager,
@@ -74,6 +76,7 @@ class KoskiClient(
                 env.sourceSystem,
                 ophEnv.organizerOid,
                 ophEnv.municipalityCode,
+                assistanceModel,
                 msg.key,
                 today
             )
