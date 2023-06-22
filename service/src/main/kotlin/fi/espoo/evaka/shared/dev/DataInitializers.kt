@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttendanceId
@@ -38,6 +39,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -53,6 +55,7 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PaymentId
@@ -60,6 +63,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
+import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
@@ -1498,3 +1502,47 @@ fun Database.Transaction.updateDaycareOperationTimes(
         .bind("daycareId", daycareId)
         .bind("operationTimes", opTimes)
         .execute()
+
+fun Database.Transaction.insertTestAssistanceFactor(assistanceFactor: DevAssistanceFactor) =
+    insertTestDataRow(
+            assistanceFactor,
+            """
+INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified, modified_by)
+VALUES (:id, :childId, :validDuring, :capacityFactor, :modified, :modifiedBy)
+"""
+        )
+        .let(::AssistanceFactorId)
+
+fun Database.Transaction.insertTestDaycareAssistance(daycareAssistance: DevDaycareAssistance) =
+    insertTestDataRow(
+            daycareAssistance,
+            """
+INSERT INTO daycare_assistance (id, child_id, valid_during, level, modified, modified_by)
+VALUES (:id, :childId, :validDuring, :level, :modified, :modifiedBy)
+"""
+        )
+        .let(::DaycareAssistanceId)
+
+fun Database.Transaction.insertTestPreschoolAssistance(
+    preschoolAssistance: DevPreschoolAssistance
+) =
+    insertTestDataRow(
+            preschoolAssistance,
+            """
+INSERT INTO preschool_assistance (id, child_id, valid_during, level, modified, modified_by)
+VALUES (:id, :childId, :validDuring, :level, :modified, :modifiedBy)
+"""
+        )
+        .let(::PreschoolAssistanceId)
+
+fun Database.Transaction.insertTestOtherAssistanceMeasure(
+    otherAssistanceMeasure: DevOtherAssistanceMeasure
+) =
+    insertTestDataRow(
+            otherAssistanceMeasure,
+            """
+INSERT INTO other_assistance_measure (id, child_id, valid_during, type, modified, modified_by)
+VALUES (:id, :childId, :validDuring, :type, :modified, :modifiedBy)
+"""
+        )
+        .let(::OtherAssistanceMeasureId)

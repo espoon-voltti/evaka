@@ -14,6 +14,9 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.assistance.DaycareAssistanceLevel
+import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
+import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
@@ -101,6 +104,7 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
@@ -111,6 +115,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -124,12 +129,14 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
@@ -2052,3 +2059,43 @@ data class Citizen(
             )
     }
 }
+
+data class DevAssistanceFactor(
+    val id: AssistanceFactorId = AssistanceFactorId(UUID.randomUUID()),
+    val childId: ChildId,
+    val validDuring: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
+    val capacityFactor: Double = 1.0,
+    val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+)
+
+data class DevDaycareAssistance(
+    val id: DaycareAssistanceId = DaycareAssistanceId(UUID.randomUUID()),
+    val childId: ChildId,
+    val validDuring: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
+    val level: DaycareAssistanceLevel = DaycareAssistanceLevel.GENERAL_SUPPORT,
+    val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+)
+
+data class DevPreschoolAssistance(
+    val id: PreschoolAssistanceId = PreschoolAssistanceId(UUID.randomUUID()),
+    val childId: ChildId,
+    val validDuring: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
+    val level: PreschoolAssistanceLevel = PreschoolAssistanceLevel.INTENSIFIED_SUPPORT,
+    val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+)
+
+data class DevOtherAssistanceMeasure(
+    val id: OtherAssistanceMeasureId = OtherAssistanceMeasureId(UUID.randomUUID()),
+    val childId: ChildId,
+    val validDuring: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
+    val type: OtherAssistanceMeasureType,
+    val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+)
