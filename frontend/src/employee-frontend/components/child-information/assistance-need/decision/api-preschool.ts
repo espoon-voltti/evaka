@@ -4,7 +4,8 @@
 
 import {
   AssistanceNeedPreschoolDecision,
-  AssistanceNeedPreschoolDecisionBasicsResponse
+  AssistanceNeedPreschoolDecisionBasicsResponse,
+  AssistanceNeedPreschoolDecisionResponse
 } from 'lib-common/generated/api-types/assistanceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -38,6 +39,7 @@ const deserializeAssistanceNeedPreschoolDecisionBasicsResponse = (
     ...json.decision,
     created: HelsinkiDateTime.parseIso(json.decision.created),
     validFrom: LocalDate.parseNullableIso(json.decision.validFrom),
+    validTo: LocalDate.parseNullableIso(json.decision.validFrom),
     sentForDecision: LocalDate.parseNullableIso(json.decision.sentForDecision),
     decisionMade: LocalDate.parseNullableIso(json.decision.decisionMade)
   }
@@ -63,6 +65,19 @@ export async function getAssistanceNeedPreschoolDecisionBasics(
     .then((res) =>
       res.data.map(deserializeAssistanceNeedPreschoolDecisionBasicsResponse)
     )
+}
+
+export async function getAssistanceNeedPreschoolDecision(
+  decisionId: UUID
+): Promise<AssistanceNeedPreschoolDecisionResponse> {
+  return client
+    .get<JsonOf<AssistanceNeedPreschoolDecisionResponse>>(
+      `/assistance-need-preschool-decisions/${decisionId}`
+    )
+    .then((res) => ({
+      ...res.data,
+      decision: deserializeAssistanceNeedPreschoolDecision(res.data.decision)
+    }))
 }
 
 export async function deleteAssistanceNeedPreschoolDecision(

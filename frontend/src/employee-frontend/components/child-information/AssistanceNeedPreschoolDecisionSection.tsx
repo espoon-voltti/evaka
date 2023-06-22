@@ -73,7 +73,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
               const res = await createDecision(childId)
               if (res.isSuccess) {
                 navigate(
-                  `/child-information/${childId}/assistance-need-preschool-decision/${res.value.id}/edit`
+                  `/child-information/${childId}/assistance-need-preschool-decisions/${res.value.id}/edit`
                 )
               }
             }}

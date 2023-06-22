@@ -51,10 +51,12 @@ import {
   putChildDocumentPublish,
   putChildDocumentUnpublish
 } from '../../api/child/child-documents'
+import { getUnitsRaw } from '../../api/daycare'
 import { createQueryKeys } from '../../query'
 
 import {
   deleteAssistanceNeedPreschoolDecision,
+  getAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecisionBasics,
   postAssistanceNeedPreschoolDecision
 } from './assistance-need/decision/api-preschool'
@@ -62,9 +64,7 @@ import {
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
-<<<<<<< HEAD
-  assistance: (childId: UUID) => ['assistance', childId]
-=======
+  assistance: (childId: UUID) => ['assistance', childId],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
     'assistanceNeedPreschoolDecisionBasics',
     childId
@@ -72,8 +72,8 @@ export const queryKeys = createQueryKeys('childInformation', {
   assistanceNeedPreschoolDecision: (decisionId: UUID) => [
     'assistanceNeedPreschoolDecision',
     decisionId
-  ]
->>>>>>> 71264e2a7 (listing, creation, deletion)
+  ],
+  preschoolUnits: () => ['preschoolUnits']
 })
 
 export const childDocumentsQuery = query({
@@ -124,7 +124,6 @@ export const deleteChildDocumentMutation = mutation({
   ]
 })
 
-<<<<<<< HEAD
 export const assistanceQuery = query({
   api: getAssistanceData,
   queryKey: queryKeys.assistance
@@ -231,10 +230,16 @@ export const deleteOtherAssistanceMeasureMutation = mutation({
   api: (arg: { id: UUID; childId: UUID }) =>
     deleteOtherAssistanceMeasure(arg.id),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
-=======
+})
+
 export const assistanceNeedPreschoolDecisionBasicsQuery = query({
   api: getAssistanceNeedPreschoolDecisionBasics,
   queryKey: queryKeys.assistanceNeedPreschoolDecisionBasics
+})
+
+export const assistanceNeedPreschoolDecisionQuery = query({
+  api: getAssistanceNeedPreschoolDecision,
+  queryKey: queryKeys.assistanceNeedPreschoolDecision
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({
@@ -251,5 +256,9 @@ export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)
   ]
->>>>>>> 71264e2a7 (listing, creation, deletion)
+})
+
+export const preschoolUnitsQuery = query({
+  api: () => getUnitsRaw([], 'PRESCHOOL'),
+  queryKey: queryKeys.preschoolUnits
 })

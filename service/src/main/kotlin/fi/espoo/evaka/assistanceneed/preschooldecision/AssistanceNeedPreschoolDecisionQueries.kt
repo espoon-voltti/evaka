@@ -42,6 +42,7 @@ fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
                 )
                 .bind("decisionId", decisionId)
                 .bind("childId", childId)
+                .execute()
         }
         .let(::getAssistanceNeedPreschoolDecisionById)
 

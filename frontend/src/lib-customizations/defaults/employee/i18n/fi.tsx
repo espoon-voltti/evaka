@@ -801,7 +801,13 @@ export const fi = {
       }
     },
     assistanceNeedPreschoolDecision: {
-      sectionTitle: 'Päätökset tuesta esiopetuksessa'
+      pageTitle: 'Päätös tuesta esiopetuksessa',
+      sectionTitle: 'Päätökset tuesta esiopetuksessa',
+      types: {
+        NEW: 'Erityinen tuki alkaa',
+        CONTINUING: 'Erityinen tuki jatkuu',
+        TERMINATED: 'Erityinen tuki päättyy'
+      }
     },
     assistanceNeedDecision: {
       pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
@@ -4013,6 +4019,7 @@ export const fi = {
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu',
+    guardianMustBeHeard: 'Huoltajaa on kuultava',
     ...components.datePicker.validationErrors
   },
   holidayPeriods: {
