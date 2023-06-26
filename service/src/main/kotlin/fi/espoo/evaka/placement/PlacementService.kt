@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
@@ -429,6 +430,7 @@ data class UnitChildrenCapacityFactors(
 )
 
 fun Database.Read.getUnitChildrenCapacities(
+    assistanceModel: AssistanceModel,
     unitId: DaycareId,
     date: LocalDate
 ): List<UnitChildrenCapacityFactors> {
@@ -448,7 +450,10 @@ fun Database.Read.getUnitChildrenCapacities(
         LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
         LEFT JOIN service_need_option sno on sn.option_id = sno.id
         LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.valid_placement_type AND default_sno.default_option
-        LEFT JOIN assistance_need an ON an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date
+        ${when (assistanceModel) {
+            AssistanceModel.OLD -> "LEFT JOIN assistance_need an ON an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date"
+            AssistanceModel.NEW -> "LEFT JOIN assistance_factor an ON an.child_id = ch.id AND an.valid_during @> :date"
+        }}
         WHERE pl.unit_id = :unitId
         GROUP BY ch.id
     """

@@ -5,7 +5,9 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitStats
@@ -37,9 +39,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/occupancy")
 class OccupancyController(
+    env: EvakaEnv,
     private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService
 ) {
+    private val assistanceModel = env.assistanceModel
+
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
         db: Database,
@@ -61,6 +66,7 @@ class OccupancyController(
                         unitId
                     )
                     it.calculateOccupancyPeriods(
+                        assistanceModel,
                         clock.today(),
                         unitId,
                         FiniteDateRange(from, to),
@@ -148,6 +154,7 @@ class OccupancyController(
                     val (threeMonths, sixMonths) =
                         calculateSpeculatedMaxOccupancies(
                             tx,
+                            assistanceModel,
                             clock.today(),
                             AccessControlFilter.PermitAll,
                             unitId,
@@ -188,6 +195,7 @@ class OccupancyController(
                     )
                     getUnitOccupancies(
                         tx,
+                        assistanceModel,
                         clock.now(),
                         unitId,
                         period,
@@ -220,6 +228,7 @@ class OccupancyController(
                         unitId
                     )
                     it.calculateOccupancyPeriodsGroupLevel(
+                        assistanceModel,
                         clock.today(),
                         unitId,
                         FiniteDateRange(from, to),
@@ -265,6 +274,7 @@ data class UnitOccupancies(
 
 private fun getUnitOccupancies(
     tx: Database.Read,
+    assistanceModel: AssistanceModel,
     now: HelsinkiDateTime,
     unitId: DaycareId,
     period: FiniteDateRange,
@@ -274,6 +284,7 @@ private fun getUnitOccupancies(
         planned =
             getOccupancyResponse(
                 tx.calculateOccupancyPeriods(
+                    assistanceModel,
                     now.toLocalDate(),
                     unitId,
                     period,
@@ -284,6 +295,7 @@ private fun getUnitOccupancies(
         confirmed =
             getOccupancyResponse(
                 tx.calculateOccupancyPeriods(
+                    assistanceModel,
                     now.toLocalDate(),
                     unitId,
                     period,
@@ -294,6 +306,7 @@ private fun getUnitOccupancies(
         realized =
             getOccupancyResponse(
                 tx.calculateOccupancyPeriods(
+                    assistanceModel,
                     now.toLocalDate(),
                     unitId,
                     period,
@@ -313,7 +326,8 @@ private fun getUnitOccupancies(
                         )
                     }
                 RealtimeOccupancy(
-                    childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
+                    childAttendances =
+                        tx.getChildOccupancyAttendances(assistanceModel, unitId, queryTimeRange),
                     staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
                 )
             } else {
@@ -355,6 +369,7 @@ data class OccupancyResponseSpeculated(
  * - assistance need coefficient = X, or default = 1.0
  */
 fun Database.Read.calculateOccupancyPeriods(
+    assistanceModel: AssistanceModel,
     today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
@@ -368,12 +383,20 @@ fun Database.Read.calculateOccupancyPeriods(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+            calculateDailyUnitOccupancyValues(
+                assistanceModel,
+                today,
+                period,
+                type,
+                unitFilter,
+                unitId = unitId
+            )
         )
         .flatMap { (_, values) -> values }
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
+    assistanceModel: AssistanceModel,
     today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
@@ -387,7 +410,14 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyGroupOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+            calculateDailyGroupOccupancyValues(
+                assistanceModel,
+                today,
+                period,
+                type,
+                unitFilter,
+                unitId = unitId
+            )
         )
         .flatMap { (groupKey, values) ->
             values.map { value ->
@@ -410,6 +440,7 @@ private data class SpeculatedMaxOccupancies(
 
 private fun calculateSpeculatedMaxOccupancies(
     tx: Database.Read,
+    assistanceModel: AssistanceModel,
     now: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>,
     unitId: DaycareId,
@@ -423,6 +454,7 @@ private fun calculateSpeculatedMaxOccupancies(
 
     val currentOccupancies =
         tx.calculateDailyUnitOccupancyValues(
+            assistanceModel,
             today = now,
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
@@ -431,6 +463,7 @@ private fun calculateSpeculatedMaxOccupancies(
         )
     val speculatedOccupancies =
         tx.calculateDailyUnitOccupancyValues(
+            assistanceModel,
             today = now,
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
