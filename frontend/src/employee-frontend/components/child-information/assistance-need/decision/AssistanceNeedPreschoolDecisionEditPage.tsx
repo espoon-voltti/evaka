@@ -40,7 +40,8 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
-import Select, { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -74,7 +75,13 @@ const WidthLimiter = styled.div`
   max-width: 700px;
 `
 
+const ComboboxWrapper = styled.div`
+  width: 400px;
+`
+
 const SectionSpacer = styled(FixedSpaceColumn).attrs({ spacing: 'L' })``
+
+const LabeledValue = styled(FixedSpaceColumn).attrs({ spacing: 'xs' })``
 
 const guardianForm = object({
   id: string(),
@@ -128,7 +135,17 @@ const form = mapped(
   }),
   (output): AssistanceNeedPreschoolDecisionForm => ({
     ...output,
-    type: output.type ?? null
+    type: output.type ?? null,
+    extendedCompulsoryEducationInfo: output.extendedCompulsoryEducation
+      ? output.extendedCompulsoryEducationInfo
+      : '',
+    basisDocumentOtherOrMissingInfo: output.basisDocumentOtherOrMissing
+      ? output.basisDocumentOtherOrMissingInfo
+      : '',
+    preparer2Title: output.preparer2EmployeeId ? output.preparer2Title : '',
+    preparer2PhoneNumber: output.preparer2EmployeeId
+      ? output.preparer2PhoneNumber
+      : ''
   })
 )
 
@@ -292,12 +309,22 @@ const DecisionEditor = React.memo(function DecisionEditor({
       preparer1EmployeeId: bind.state.preparer1EmployeeId
         ? undefined
         : ('required' as const),
-      preparer2EmployeeId: bind.state.preparer2EmployeeId
-        ? undefined
-        : ('required' as const),
+      preparer1Title:
+        bind.state.preparer1Title.trim() === ''
+          ? ('required' as const)
+          : undefined,
+      preparer2Title:
+        bind.state.preparer2EmployeeId &&
+        bind.state.preparer2Title.trim() === ''
+          ? ('required' as const)
+          : undefined,
       decisionMakerEmployeeId: bind.state.decisionMakerEmployeeId
         ? undefined
-        : ('required' as const)
+        : ('required' as const),
+      decisionMakerTitle:
+        bind.state.decisionMakerTitle.trim() === ''
+          ? ('required' as const)
+          : undefined
     }),
     [bind.state]
   )
@@ -394,6 +421,19 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
   const saved = !saving && bind.isValid() && bind.value() === savedValue
 
+  const info = useCallback(
+    (key: keyof Omit<typeof validationErrors, 'guardianInfo'>) => {
+      const error = validationErrors[key]
+      if (!displayValidation || !error) return undefined
+
+      return {
+        status: 'warning' as const,
+        text: i18n.validationErrors[error]
+      }
+    },
+    [displayValidation, validationErrors, i18n]
+  )
+
   return (
     <div>
       <Container>
@@ -465,53 +505,35 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   ))}
                 </FixedSpaceColumn>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Voimassa alkaen *</Label>
                   <DatePickerF
                     bind={validFrom}
                     locale={uiLang}
-                    info={
-                      displayValidation && validationErrors.validFrom
-                        ? {
-                            status: 'warning',
-                            text: i18n.validationErrors[
-                              validationErrors.validFrom
-                            ]
-                          }
-                        : undefined
-                    }
+                    info={info('validFrom')}
                   />
-                </FixedSpaceColumn>
+                </LabeledValue>
 
                 <FixedSpaceColumn>
-                  <Label>Pidennetty oppivelvollisuus</Label>
-                  <CheckboxF
-                    bind={extendedCompulsoryEducation}
-                    label="Lapsella on pidennetty oppivelvollisuus"
-                  />
+                  <LabeledValue>
+                    <Label>Pidennetty oppivelvollisuus</Label>
+                    <CheckboxF
+                      bind={extendedCompulsoryEducation}
+                      label="Lapsella on pidennetty oppivelvollisuus"
+                    />
+                  </LabeledValue>
                   {extendedCompulsoryEducation.value() && (
-                    <FixedSpaceColumn>
+                    <LabeledValue>
                       <Label>
                         Lisätiedot pidennetystä oppivelvollisuudesta *
                       </Label>
                       <WidthLimiter>
                         <TextAreaF
                           bind={extendedCompulsoryEducationInfo}
-                          info={
-                            displayValidation &&
-                            validationErrors.extendedCompulsoryEducationInfo
-                              ? {
-                                  status: 'warning',
-                                  text: i18n.validationErrors[
-                                    validationErrors
-                                      .extendedCompulsoryEducationInfo
-                                  ]
-                                }
-                              : undefined
-                          }
+                          info={info('extendedCompulsoryEducationInfo')}
                         />
                       </WidthLimiter>
-                    </FixedSpaceColumn>
+                    </LabeledValue>
                   )}
                 </FixedSpaceColumn>
 
@@ -534,7 +556,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   />
                 </FixedSpaceColumn>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>
                     Perustelut myönnettäville tulkitsemis- ja
                     avustajapalveluille ja apuvälineille
@@ -542,12 +564,12 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <WidthLimiter>
                     <TextAreaF bind={grantedServicesBasis} />
                   </WidthLimiter>
-                </FixedSpaceColumn>
+                </LabeledValue>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Esiopetuksen järjestämispaikka *</Label>
-                  <Select<Unit | null>
-                    items={[null, ...units]}
+                  <Combobox
+                    items={units}
                     selectedItem={
                       selectedUnit
                         ? units.find((u) => u.id === selectedUnit.value()) ??
@@ -555,55 +577,29 @@ const DecisionEditor = React.memo(function DecisionEditor({
                         : null
                     }
                     getItemLabel={(u) => u?.name ?? ''}
-                    getItemValue={(u: Unit | undefined) => u?.id ?? ''}
                     onChange={(u) => selectedUnit.set(u?.id ?? null)}
+                    info={info('selectedUnit')}
                   />
-                  {displayValidation && validationErrors.selectedUnit && (
-                    <AlertBox
-                      message={
-                        i18n.validationErrors[validationErrors.selectedUnit]
-                      }
-                      thin
-                    />
-                  )}
-                </FixedSpaceColumn>
+                </LabeledValue>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Pääsääntöinen opetusryhmä *</Label>
                   <InputFieldF
                     bind={primaryGroup}
                     width="L"
-                    info={
-                      displayValidation && validationErrors.primaryGroup
-                        ? {
-                            status: 'warning',
-                            text: i18n.validationErrors[
-                              validationErrors.primaryGroup
-                            ]
-                          }
-                        : undefined
-                    }
+                    info={info('primaryGroup')}
                   />
-                </FixedSpaceColumn>
+                </LabeledValue>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Perustelut päätökselle *</Label>
                   <WidthLimiter>
                     <TextAreaF
                       bind={decisionBasis}
-                      info={
-                        displayValidation && validationErrors.decisionBasis
-                          ? {
-                              status: 'warning',
-                              text: i18n.validationErrors[
-                                validationErrors.decisionBasis
-                              ]
-                            }
-                          : undefined
-                      }
+                      info={info('decisionBasis')}
                     />
                   </WidthLimiter>
-                </FixedSpaceColumn>
+                </LabeledValue>
 
                 <FixedSpaceColumn>
                   <FixedSpaceRow alignItems="center">
@@ -637,49 +633,34 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     bind={basisDocumentOtherOrMissing}
                     label="Liite puuttuu, tai muu liite, mikä?"
                   />
-                  <InputFieldF
-                    bind={basisDocumentOtherOrMissingInfo}
-                    info={
-                      displayValidation &&
-                      validationErrors.basisDocumentOtherOrMissingInfo
-                        ? {
-                            status: 'warning',
-                            text: i18n.validationErrors[
-                              validationErrors.basisDocumentOtherOrMissingInfo
-                            ]
-                          }
-                        : undefined
-                    }
-                  />
+                  {basisDocumentOtherOrMissing.value() && (
+                    <WidthLimiter>
+                      <TextAreaF
+                        bind={basisDocumentOtherOrMissingInfo}
+                        info={info('basisDocumentOtherOrMissingInfo')}
+                      />
+                    </WidthLimiter>
+                  )}
                 </FixedSpaceColumn>
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Lisätiedot liitteistä</Label>
                   <WidthLimiter>
                     <TextAreaF bind={basisDocumentsInfo} />
                   </WidthLimiter>
-                </FixedSpaceColumn>
+                </LabeledValue>
               </SectionSpacer>
 
               <SectionSpacer>
                 <H2>Huoltajien kanssa tehty yhteistyö</H2>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Huoltajien kuulemisen päivämäärä *</Label>
                   <DatePickerF
                     bind={guardiansHeardOn}
                     locale={uiLang}
-                    info={
-                      displayValidation && validationErrors.guardiansHeardOn
-                        ? {
-                            status: 'warning',
-                            text: i18n.validationErrors[
-                              validationErrors.guardiansHeardOn
-                            ]
-                          }
-                        : undefined
-                    }
+                    info={info('guardiansHeardOn')}
                   />
-                </FixedSpaceColumn>
+                </LabeledValue>
 
                 <FixedSpaceColumn>
                   <Label>Huoltajat, joita on kuultu, ja kuulemistapa *</Label>
@@ -699,170 +680,142 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     <WidthLimiter>
                       <InputFieldF
                         bind={otherRepresentativeDetails}
-                        info={
-                          displayValidation &&
-                          validationErrors.otherRepresentativeDetails
-                            ? {
-                                status: 'warning',
-                                text: i18n.validationErrors[
-                                  validationErrors.otherRepresentativeDetails
-                                ]
-                              }
-                            : undefined
-                        }
+                        info={info('otherRepresentativeDetails')}
                       />
                     </WidthLimiter>
                   </FixedSpaceColumn>
                 </FixedSpaceColumn>
 
-                <FixedSpaceColumn>
+                <LabeledValue>
                   <Label>Huoltajien näkemys esitetystä tuesta *</Label>
                   <WidthLimiter>
                     <TextAreaF
                       bind={viewOfGuardians}
-                      info={
-                        displayValidation && validationErrors.viewOfGuardians
-                          ? {
-                              status: 'warning',
-                              text: i18n.validationErrors[
-                                validationErrors.viewOfGuardians
-                              ]
-                            }
-                          : undefined
-                      }
+                      info={info('viewOfGuardians')}
                     />
                   </WidthLimiter>
-                </FixedSpaceColumn>
+                </LabeledValue>
               </SectionSpacer>
 
               <SectionSpacer>
                 <H2>Vastuuhenkilöt</H2>
                 <FixedSpaceRow>
-                  <FixedSpaceColumn>
-                    <Label>Päätöksen valmistelija</Label>
-                    <Select<Employee | null>
-                      items={[null, ...decisionMakers]}
-                      selectedItem={
-                        preparer1EmployeeId
-                          ? decisionMakers.find(
-                              (e) => e.id === preparer1EmployeeId.value()
-                            ) ?? null
-                          : null
-                      }
-                      getItemLabel={(e) =>
-                        e
-                          ? `${e.preferredFirstName ?? e.firstName} ${
-                              e.lastName
-                            }`
-                          : ''
-                      }
-                      getItemValue={(e: Employee | undefined) => e?.id ?? ''}
-                      onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
+                  <LabeledValue>
+                    <Label>Päätöksen valmistelija *</Label>
+                    <ComboboxWrapper>
+                      <Combobox
+                        items={decisionMakers}
+                        getItemLabel={(e) =>
+                          e
+                            ? `${e.preferredFirstName ?? e.firstName} ${
+                                e.lastName
+                              }`
+                            : ''
+                        }
+                        selectedItem={
+                          preparer1EmployeeId
+                            ? decisionMakers.find(
+                                (e) => e.id === preparer1EmployeeId.value()
+                              ) ?? null
+                            : null
+                        }
+                        onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
+                        clearable
+                        info={info('preparer1EmployeeId')}
+                      />
+                    </ComboboxWrapper>
+                  </LabeledValue>
+                  <LabeledValue>
+                    <Label>Titteli *</Label>
+                    <InputFieldF
+                      bind={preparer1Title}
+                      width="L"
+                      info={info('preparer1Title')}
                     />
-                    {displayValidation &&
-                      validationErrors.preparer1EmployeeId && (
-                        <AlertBox
-                          message={
-                            i18n.validationErrors[
-                              validationErrors.preparer1EmployeeId
-                            ]
-                          }
-                          thin
-                        />
-                      )}
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn>
-                    <Label>Titteli</Label>
-                    <InputFieldF bind={preparer1Title} width="L" />
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn>
+                  </LabeledValue>
+                  <LabeledValue>
                     <Label>Puhelinnumero</Label>
                     <InputFieldF bind={preparer1PhoneNumber} />
-                  </FixedSpaceColumn>
+                  </LabeledValue>
                 </FixedSpaceRow>
                 <FixedSpaceRow>
-                  <FixedSpaceColumn>
+                  <LabeledValue>
                     <Label>Päätöksen valmistelija</Label>
-                    <Select<Employee | null>
-                      items={[null, ...decisionMakers]}
-                      selectedItem={
-                        preparer2EmployeeId
-                          ? decisionMakers.find(
-                              (e) => e.id === preparer2EmployeeId.value()
-                            ) ?? null
-                          : null
-                      }
-                      getItemLabel={(e) =>
-                        e
-                          ? `${e.preferredFirstName ?? e.firstName} ${
-                              e.lastName
-                            }`
-                          : ''
-                      }
-                      getItemValue={(e: Employee | undefined) => e?.id ?? ''}
-                      onChange={(e) => preparer2EmployeeId.set(e?.id ?? null)}
-                    />
-                    {displayValidation &&
-                      validationErrors.preparer2EmployeeId && (
-                        <AlertBox
-                          message={
-                            i18n.validationErrors[
-                              validationErrors.preparer2EmployeeId
-                            ]
-                          }
-                          thin
+                    <ComboboxWrapper>
+                      <Combobox
+                        items={decisionMakers}
+                        selectedItem={
+                          preparer2EmployeeId
+                            ? decisionMakers.find(
+                                (e) => e.id === preparer2EmployeeId.value()
+                              ) ?? null
+                            : null
+                        }
+                        getItemLabel={(e) =>
+                          e
+                            ? `${e.preferredFirstName ?? e.firstName} ${
+                                e.lastName
+                              }`
+                            : ''
+                        }
+                        onChange={(e) => preparer2EmployeeId.set(e?.id ?? null)}
+                        clearable
+                      />
+                    </ComboboxWrapper>
+                  </LabeledValue>
+                  {preparer2EmployeeId.value() && (
+                    <>
+                      <LabeledValue>
+                        <Label>Titteli *</Label>
+                        <InputFieldF
+                          bind={preparer2Title}
+                          width="L"
+                          info={info('preparer2Title')}
                         />
-                      )}
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn>
-                    <Label>Titteli</Label>
-                    <InputFieldF bind={preparer2Title} width="L" />
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn>
-                    <Label>Puhelinnumero</Label>
-                    <InputFieldF bind={preparer2PhoneNumber} />
-                  </FixedSpaceColumn>
+                      </LabeledValue>
+                      <LabeledValue>
+                        <Label>Puhelinnumero</Label>
+                        <InputFieldF bind={preparer2PhoneNumber} />
+                      </LabeledValue>
+                    </>
+                  )}
                 </FixedSpaceRow>
                 <FixedSpaceRow>
-                  <FixedSpaceColumn>
-                    <Label>Päätöksen tekijä</Label>
-                    <Select<Employee | null>
-                      items={[null, ...decisionMakers]}
-                      selectedItem={
-                        decisionMakerEmployeeId
-                          ? decisionMakers.find(
-                              (e) => e.id === decisionMakerEmployeeId.value()
-                            ) ?? null
-                          : null
-                      }
-                      getItemLabel={(e) =>
-                        e
-                          ? `${e.preferredFirstName ?? e.firstName} ${
-                              e.lastName
-                            }`
-                          : ''
-                      }
-                      getItemValue={(e: Employee | undefined) => e?.id ?? ''}
-                      onChange={(e) =>
-                        decisionMakerEmployeeId.set(e?.id ?? null)
-                      }
+                  <LabeledValue>
+                    <Label>Päätöksen tekijä *</Label>
+                    <ComboboxWrapper>
+                      <Combobox
+                        items={decisionMakers}
+                        selectedItem={
+                          decisionMakerEmployeeId
+                            ? decisionMakers.find(
+                                (e) => e.id === decisionMakerEmployeeId.value()
+                              ) ?? null
+                            : null
+                        }
+                        getItemLabel={(e) =>
+                          e
+                            ? `${e.preferredFirstName ?? e.firstName} ${
+                                e.lastName
+                              }`
+                            : ''
+                        }
+                        onChange={(e) =>
+                          decisionMakerEmployeeId.set(e?.id ?? null)
+                        }
+                        clearable
+                        info={info('decisionMakerEmployeeId')}
+                      />
+                    </ComboboxWrapper>
+                  </LabeledValue>
+                  <LabeledValue>
+                    <Label>Titteli *</Label>
+                    <InputFieldF
+                      bind={decisionMakerTitle}
+                      width="L"
+                      info={info('decisionMakerTitle')}
                     />
-                    {displayValidation &&
-                      validationErrors.decisionMakerEmployeeId && (
-                        <AlertBox
-                          message={
-                            i18n.validationErrors[
-                              validationErrors.decisionMakerEmployeeId
-                            ]
-                          }
-                          thin
-                        />
-                      )}
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn>
-                    <Label>Titteli</Label>
-                    <InputFieldF bind={decisionMakerTitle} width="L" />
-                  </FixedSpaceColumn>
+                  </LabeledValue>
                 </FixedSpaceRow>
               </SectionSpacer>
             </FixedSpaceColumn>

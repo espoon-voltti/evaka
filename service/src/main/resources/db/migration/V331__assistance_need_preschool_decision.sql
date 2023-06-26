@@ -76,11 +76,14 @@ ALTER TABLE assistance_need_preschool_decision
                 guardians_heard_on IS NOT NULL AND
                 view_of_guardians <> '' AND
                 preparer_1_employee_id IS NOT NULL AND
+                preparer_1_title <> '' AND
                 decision_maker_employee_id IS NOT NULL AND
+                decision_maker_title <> '' AND
                 sent_for_decision IS NOT NULL AND
                 (extended_compulsory_education = false OR extended_compulsory_education_info <> '') AND
                 (basis_document_other_or_missing = false OR basis_document_other_or_missing_info <> '') AND
-                (other_representative_heard = false OR other_representative_details <> '')
+                (other_representative_heard = false OR other_representative_details <> '') AND
+                (preparer_2_employee_id IS NULL OR preparer_2_title <> '')
             )
         ),
     ADD CONSTRAINT check$decision_made CHECK (
