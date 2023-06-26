@@ -447,13 +447,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "@datadog/native-iast-taint-tracking@npm:1.4.1"
+"@datadog/native-iast-taint-tracking@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "@datadog/native-iast-taint-tracking@npm:1.5.0"
   dependencies:
     node-gyp: latest
     node-gyp-build: ^3.9.0
-  checksum: fab7fd4418493a3948d5dd89c6267fae278654be075b0b6bca77be170d73c42d778ec83fb9a9b9937a8f7d1804219492a2e4aa321b42d811ef797e515252053e
+  checksum: b5d8e9e615218c32b9e39c5050ff6471acf12c528459f93955944ed0d59ff77e9a54c628b5e7b2dfb264cc0fb59eb24093da624f7e456b4a1dba2b5aad33210c
   languageName: node
   linkType: hard
 
@@ -468,19 +468,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "@datadog/pprof@npm:2.2.1"
+"@datadog/pprof@npm:2.2.3":
+  version: 2.2.3
+  resolution: "@datadog/pprof@npm:2.2.3"
   dependencies:
     delay: ^5.0.0
     node-gyp: latest
     node-gyp-build: ^3.9.0
     p-limit: ^3.1.0
     pify: ^5.0.0
-    pprof-format: ^2.0.6
+    pprof-format: ^2.0.7
     source-map: ^0.7.3
     split: ^1.0.1
-  checksum: a4ea9c7dbb4eb6dd453c8b8bb5b7781932038f4e3546cef98645410f059f9332f047c7b9a547efdf22a6e844d1bef00acd09233c4a1fe05f8b07188b81c7612e
+  checksum: eb217b0b9172f28019c7ec585ccf7a3b1b238cdd077fe627c1cc20a2ee4c18afcc7df882a5989ec4f86463cf351da3df0214c5c44c10e2028c28bdc5e04dd5dc
   languageName: node
   linkType: hard
 
@@ -964,21 +964,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:<1.4.0":
-  version: 1.3.1
-  resolution: "@opentelemetry/core@npm:1.3.1"
+"@opentelemetry/core@npm:^1.14.0":
+  version: 1.14.0
+  resolution: "@opentelemetry/core@npm:1.14.0"
   dependencies:
-    "@opentelemetry/semantic-conventions": 1.3.1
+    "@opentelemetry/semantic-conventions": 1.14.0
   peerDependencies:
-    "@opentelemetry/api": ">=1.0.0 <1.2.0"
-  checksum: a59d0e8b7af2054d4b741a076abb992fb9bb241b1e7e2563a7d03b8a810155eb5c5c4eab28ebae39ce67d9ae66ae2a8d5d038de3b7ddc6301ac636840ceb876c
+    "@opentelemetry/api": ">=1.0.0 <1.5.0"
+  checksum: 061e6f3bee492e020915427da94da902846ed6ee922bdb21a70563e5fbd3ebb39e8e3ae6eb1071eb775d27ca31093929ab65fe8abc81228042be8d9a3c96bac8
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:1.3.1":
-  version: 1.3.1
-  resolution: "@opentelemetry/semantic-conventions@npm:1.3.1"
-  checksum: 83fa3b8a8198f6a5265a4191a89cfcce042240b92e034cf29631b0fe749993f4f74f4d21d89b10f6b05984246424adf8d037f8be507fcf0adf60933ab7143f07
+"@opentelemetry/semantic-conventions@npm:1.14.0":
+  version: 1.14.0
+  resolution: "@opentelemetry/semantic-conventions@npm:1.14.0"
+  checksum: 0d4f752035ac25d10cfcaf0e16f29bff8fa47877baff61dc4d047f9fe1e70f1459d02f5b70982c579db48584038e4fe263755b35ffa7254385604917337469f3
   languageName: node
   linkType: hard
 
@@ -2636,18 +2636,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "dd-trace@npm:4.2.0"
+"dd-trace@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "dd-trace@npm:4.3.0"
   dependencies:
     "@datadog/native-appsec": ^3.2.0
     "@datadog/native-iast-rewriter": 2.0.1
-    "@datadog/native-iast-taint-tracking": ^1.4.1
+    "@datadog/native-iast-taint-tracking": ^1.5.0
     "@datadog/native-metrics": ^2.0.0
-    "@datadog/pprof": ^2.2.1
+    "@datadog/pprof": 2.2.3
     "@datadog/sketches-js": ^2.1.0
     "@opentelemetry/api": ^1.0.0
-    "@opentelemetry/core": <1.4.0
+    "@opentelemetry/core": ^1.14.0
     crypto-randomuuid: ^1.0.0
     diagnostics_channel: ^1.1.0
     ignore: ^5.2.0
@@ -2669,7 +2669,7 @@ __metadata:
     protobufjs: ^7.1.2
     retry: ^0.10.1
     semver: ^7.3.8
-  checksum: bed8e6f05fdbe68f45a3796179f1bb8e6ed4ba613ac35ec167bf0547405d916e6dc6e7c847700a74ade11aaae1b97c53287ccc66586faf95c0930f19ff0151d2
+  checksum: f902575732030c9f620855e319255ebfb1b8fe7a5d0cc817e52c1d8de2ff5678d6df78c0c4ca064658a991edd4582de340468f6a1d213f8d69098bf3b4b78785
   languageName: node
   linkType: hard
 
@@ -3159,7 +3159,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^4.2.0
+    dd-trace: ^4.3.0
     eslint: ^8.43.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^4.2.1
@@ -5632,7 +5632,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pprof-format@npm:^2.0.6":
+"pprof-format@npm:^2.0.7":
   version: 2.0.7
   resolution: "pprof-format@npm:2.0.7"
   checksum: 0033740ba5ffb9a0d684e7fc3a616d2932d21b908a62a095e88a0091fcd1ef9af379060b303429d9df8698c9f48a789202cc38ba1c71b3c4a6084a5604647367
