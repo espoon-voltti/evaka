@@ -45,6 +45,7 @@ class FinanceDecisionGenerator(
     env: EvakaEnv,
     private val featureConfig: FeatureConfig
 ) {
+    private val assistanceModel = env.assistanceModel
     private val feeDecisionMinDate = env.feeDecisionMinDate
 
     fun createRetroactiveFeeDecisions(
@@ -83,6 +84,7 @@ class FinanceDecisionGenerator(
             .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
+                    assistanceModel,
                     featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
@@ -141,6 +143,7 @@ class FinanceDecisionGenerator(
             .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
+                    assistanceModel,
                     featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
