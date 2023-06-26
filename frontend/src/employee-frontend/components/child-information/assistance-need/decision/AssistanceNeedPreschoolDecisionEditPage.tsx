@@ -31,6 +31,7 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionType
 } from 'lib-common/generated/api-types/assistanceneed'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -62,6 +63,7 @@ import { Unit } from '../../../../api/daycare'
 import { useTranslation, I18nContext } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
+  assistanceNeedPreschoolDecisionMakerOptionsQuery,
   assistanceNeedPreschoolDecisionQuery,
   preschoolUnitsQuery,
   queryKeys,
@@ -185,10 +187,12 @@ const t = {
 
 const DecisionEditor = React.memo(function DecisionEditor({
   decision,
-  units
+  units,
+  decisionMakers
 }: {
   decision: AssistanceNeedPreschoolDecision
   units: Unit[]
+  decisionMakers: Employee[]
 }) {
   const { i18n, lang: uiLang } = useTranslation()
   const navigate = useNavigate()
@@ -284,7 +288,16 @@ const DecisionEditor = React.memo(function DecisionEditor({
       viewOfGuardians:
         bind.state.viewOfGuardians.trim() === ''
           ? ('required' as const)
-          : undefined
+          : undefined,
+      preparer1EmployeeId: bind.state.preparer1EmployeeId
+        ? undefined
+        : ('required' as const),
+      preparer2EmployeeId: bind.state.preparer2EmployeeId
+        ? undefined
+        : ('required' as const),
+      decisionMakerEmployeeId: bind.state.decisionMakerEmployeeId
+        ? undefined
+        : ('required' as const)
     }),
     [bind.state]
   )
@@ -323,7 +336,15 @@ const DecisionEditor = React.memo(function DecisionEditor({
     guardianInfo,
     otherRepresentativeHeard,
     otherRepresentativeDetails,
-    viewOfGuardians
+    viewOfGuardians,
+    preparer1EmployeeId,
+    preparer1Title,
+    preparer1PhoneNumber,
+    preparer2EmployeeId,
+    preparer2Title,
+    preparer2PhoneNumber,
+    decisionMakerEmployeeId,
+    decisionMakerTitle
   } = useFormFields(bind)
 
   if (language.value() !== formLanguage) {
@@ -713,6 +734,137 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   </WidthLimiter>
                 </FixedSpaceColumn>
               </SectionSpacer>
+
+              <SectionSpacer>
+                <H2>Vastuuhenkilöt</H2>
+                <FixedSpaceRow>
+                  <FixedSpaceColumn>
+                    <Label>Päätöksen valmistelija</Label>
+                    <Select<Employee | null>
+                      items={[null, ...decisionMakers]}
+                      selectedItem={
+                        preparer1EmployeeId
+                          ? decisionMakers.find(
+                              (e) => e.id === preparer1EmployeeId.value()
+                            ) ?? null
+                          : null
+                      }
+                      getItemLabel={(e) =>
+                        e
+                          ? `${e.preferredFirstName ?? e.firstName} ${
+                              e.lastName
+                            }`
+                          : ''
+                      }
+                      getItemValue={(e: Employee | undefined) => e?.id ?? ''}
+                      onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
+                    />
+                    {displayValidation &&
+                      validationErrors.preparer1EmployeeId && (
+                        <AlertBox
+                          message={
+                            i18n.validationErrors[
+                              validationErrors.preparer1EmployeeId
+                            ]
+                          }
+                          thin
+                        />
+                      )}
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn>
+                    <Label>Titteli</Label>
+                    <InputFieldF bind={preparer1Title} width="L" />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn>
+                    <Label>Puhelinnumero</Label>
+                    <InputFieldF bind={preparer1PhoneNumber} />
+                  </FixedSpaceColumn>
+                </FixedSpaceRow>
+                <FixedSpaceRow>
+                  <FixedSpaceColumn>
+                    <Label>Päätöksen valmistelija</Label>
+                    <Select<Employee | null>
+                      items={[null, ...decisionMakers]}
+                      selectedItem={
+                        preparer2EmployeeId
+                          ? decisionMakers.find(
+                              (e) => e.id === preparer2EmployeeId.value()
+                            ) ?? null
+                          : null
+                      }
+                      getItemLabel={(e) =>
+                        e
+                          ? `${e.preferredFirstName ?? e.firstName} ${
+                              e.lastName
+                            }`
+                          : ''
+                      }
+                      getItemValue={(e: Employee | undefined) => e?.id ?? ''}
+                      onChange={(e) => preparer2EmployeeId.set(e?.id ?? null)}
+                    />
+                    {displayValidation &&
+                      validationErrors.preparer2EmployeeId && (
+                        <AlertBox
+                          message={
+                            i18n.validationErrors[
+                              validationErrors.preparer2EmployeeId
+                            ]
+                          }
+                          thin
+                        />
+                      )}
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn>
+                    <Label>Titteli</Label>
+                    <InputFieldF bind={preparer2Title} width="L" />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn>
+                    <Label>Puhelinnumero</Label>
+                    <InputFieldF bind={preparer2PhoneNumber} />
+                  </FixedSpaceColumn>
+                </FixedSpaceRow>
+                <FixedSpaceRow>
+                  <FixedSpaceColumn>
+                    <Label>Päätöksen tekijä</Label>
+                    <Select<Employee | null>
+                      items={[null, ...decisionMakers]}
+                      selectedItem={
+                        decisionMakerEmployeeId
+                          ? decisionMakers.find(
+                              (e) => e.id === decisionMakerEmployeeId.value()
+                            ) ?? null
+                          : null
+                      }
+                      getItemLabel={(e) =>
+                        e
+                          ? `${e.preferredFirstName ?? e.firstName} ${
+                              e.lastName
+                            }`
+                          : ''
+                      }
+                      getItemValue={(e: Employee | undefined) => e?.id ?? ''}
+                      onChange={(e) =>
+                        decisionMakerEmployeeId.set(e?.id ?? null)
+                      }
+                    />
+                    {displayValidation &&
+                      validationErrors.decisionMakerEmployeeId && (
+                        <AlertBox
+                          message={
+                            i18n.validationErrors[
+                              validationErrors.decisionMakerEmployeeId
+                            ]
+                          }
+                          thin
+                        />
+                      )}
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn>
+                    <Label>Titteli</Label>
+                    <InputFieldF bind={decisionMakerTitle} width="L" />
+                  </FixedSpaceColumn>
+                </FixedSpaceRow>
+              </SectionSpacer>
             </FixedSpaceColumn>
           </I18nContext.Provider>
         </ContentArea>
@@ -776,6 +928,9 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
     assistanceNeedPreschoolDecisionQuery(decisionId)
   )
   const unitsResult = useQueryResult(preschoolUnitsQuery)
+  const decisionMakersResult = useQueryResult(
+    assistanceNeedPreschoolDecisionMakerOptionsQuery(decisionId)
+  )
 
   // invalidate cached decision on onmount
   const queryClient = useQueryClient()
@@ -798,9 +953,13 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   )
 
   return renderResult(
-    combine(decisionResult, unitsResult),
-    ([decisionResponse, units]) => (
-      <DecisionEditor decision={decisionResponse.decision} units={units} />
+    combine(decisionResult, unitsResult, decisionMakersResult),
+    ([decisionResponse, units, decisionMakers]) => (
+      <DecisionEditor
+        decision={decisionResponse.decision}
+        units={units}
+        decisionMakers={decisionMakers}
+      />
     )
   )
 })

@@ -61,6 +61,7 @@ import {
   deleteAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecisionBasics,
+  getAssistanceNeedPreschoolDecisionMakerOptions,
   postAssistanceNeedPreschoolDecision,
   putAssistanceNeedPreschoolDecision
 } from './assistance-need/decision/api-preschool'
@@ -77,7 +78,11 @@ export const queryKeys = createQueryKeys('childInformation', {
     'assistanceNeedPreschoolDecision',
     decisionId
   ],
-  preschoolUnits: () => ['preschoolUnits']
+  preschoolUnits: () => ['preschoolUnits'],
+  decisionMakerOptions: (decisionId: UUID) => [
+    'decisionMakerOptions',
+    decisionId
+  ]
 })
 
 export const childDocumentsQuery = query({
@@ -244,6 +249,11 @@ export const assistanceNeedPreschoolDecisionBasicsQuery = query({
 export const assistanceNeedPreschoolDecisionQuery = query({
   api: getAssistanceNeedPreschoolDecision,
   queryKey: queryKeys.assistanceNeedPreschoolDecision
+})
+
+export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
+  api: getAssistanceNeedPreschoolDecisionMakerOptions,
+  queryKey: queryKeys.decisionMakerOptions
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({

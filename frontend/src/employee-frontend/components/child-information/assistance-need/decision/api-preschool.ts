@@ -8,6 +8,7 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionResponse
 } from 'lib-common/generated/api-types/assistanceneed'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -92,4 +93,22 @@ export async function deleteAssistanceNeedPreschoolDecision(
   id: UUID
 ): Promise<void> {
   await client.delete(`assistance-need-preschool-decisions/${id}`)
+}
+
+export async function getAssistanceNeedPreschoolDecisionMakerOptions(
+  decisionId: UUID
+): Promise<Employee[]> {
+  return client
+    .get<JsonOf<Employee[]>>(
+      `/assistance-need-preschool-decisions/${decisionId}/decision-maker-options`
+    )
+    .then((res) =>
+      res.data.map((employee) => ({
+        ...employee,
+        created: HelsinkiDateTime.parseIso(employee.created),
+        updated: employee.updated
+          ? HelsinkiDateTime.parseIso(employee.updated)
+          : null
+      }))
+    )
 }
