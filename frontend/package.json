@@ -114,7 +114,7 @@
     "jest-circus": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jest-environment-node": "^29.5.0",
-    "jest-junit": "^15.0.0",
+    "jest-junit": "^16.0.0",
     "make-error-cause": "^2.3.0",
     "playwright": "^1.34.2",
     "postcss": "^8.4.21",
