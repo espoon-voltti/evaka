@@ -5,6 +5,7 @@
 import {
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionBasicsResponse,
+  AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionResponse
 } from 'lib-common/generated/api-types/assistanceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -78,6 +79,13 @@ export async function getAssistanceNeedPreschoolDecision(
       ...res.data,
       decision: deserializeAssistanceNeedPreschoolDecision(res.data.decision)
     }))
+}
+
+export async function putAssistanceNeedPreschoolDecision(
+  decisionId: UUID,
+  body: AssistanceNeedPreschoolDecisionForm
+): Promise<void> {
+  await client.put(`/assistance-need-preschool-decisions/${decisionId}`, body)
 }
 
 export async function deleteAssistanceNeedPreschoolDecision(

@@ -2,12 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { formatInTimeZone } from 'date-fns-tz'
+import isEqual from 'lodash/isEqual'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Failure, Success } from 'lib-common/api'
-import { boolean, localDate, string } from 'lib-common/form/fields'
+import { combine } from 'lib-common/api'
+import { boolean, optionalLocalDate, string } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -28,17 +31,20 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionType
 } from 'lib-common/generated/api-types/assistanceneed'
-import { useQueryResult } from 'lib-common/query'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
 import Select, { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import { TextAreaF } from 'lib-components/atoms/form/TextArea'
+import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -48,7 +54,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { translations } from 'lib-customizations/employee'
 
@@ -57,10 +63,10 @@ import { useTranslation, I18nContext } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   assistanceNeedPreschoolDecisionQuery,
-  preschoolUnitsQuery
+  preschoolUnitsQuery,
+  queryKeys,
+  updateAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
-
-import { FooterContainer } from './common'
 
 const WidthLimiter = styled.div`
   max-width: 700px;
@@ -81,7 +87,7 @@ const form = mapped(
     language: required(oneOf<AssistanceNeedDecisionLanguage>()),
 
     type: oneOf<AssistanceNeedPreschoolDecisionType>(),
-    validFrom: localDate,
+    validFrom: optionalLocalDate,
 
     extendedCompulsoryEducation: boolean(),
     extendedCompulsoryEducationInfo: string(),
@@ -103,7 +109,7 @@ const form = mapped(
     basisDocumentOtherOrMissingInfo: string(),
     basisDocumentsInfo: string(),
 
-    guardiansHeardOn: localDate,
+    guardiansHeardOn: optionalLocalDate,
     guardianInfo: array(guardianForm),
     otherRepresentativeHeard: boolean(),
     otherRepresentativeDetails: string(),
@@ -283,10 +289,15 @@ const DecisionEditor = React.memo(function DecisionEditor({
     [bind.state]
   )
 
-  const isValid = useMemo(
-    () => Object.values(validationErrors).every((e) => e === undefined),
-    [validationErrors]
-  )
+  const isValid = useMemo(() => {
+    const { guardianInfo, ...rest } = validationErrors
+    return (
+      Object.values(rest).every((e) => e === undefined) &&
+      guardianInfo.every((guardianErrors) =>
+        Object.values(guardianErrors).every((e) => e === undefined)
+      )
+    )
+  }, [validationErrors])
 
   const {
     language,
@@ -332,6 +343,35 @@ const DecisionEditor = React.memo(function DecisionEditor({
     }),
     [language]
   )
+
+  const debouncedValue = useDebounce(bind.isValid() ? bind.value() : null, 1000)
+  const [savedValue, setSavedValue] = useState(bind.value())
+  const [lastSavedAt, setLastSavedAt] = useState(HelsinkiDateTime.now())
+  const {
+    mutateAsync: updateAssistanceNeedPreschoolDecision,
+    isLoading: saving
+  } = useMutationResult(updateAssistanceNeedPreschoolDecisionMutation)
+
+  useEffect(() => {
+    if (debouncedValue !== null && !isEqual(debouncedValue, savedValue)) {
+      void updateAssistanceNeedPreschoolDecision({
+        id: decision.id,
+        body: debouncedValue
+      }).then((res) => {
+        if (res.isSuccess) {
+          setSavedValue(debouncedValue)
+          setLastSavedAt(HelsinkiDateTime.now())
+        }
+      })
+    }
+  }, [
+    debouncedValue,
+    savedValue,
+    decision.id,
+    updateAssistanceNeedPreschoolDecision
+  ])
+
+  const saved = !saving && bind.isValid() && bind.value() === savedValue
 
   return (
     <div>
@@ -681,63 +721,81 @@ const DecisionEditor = React.memo(function DecisionEditor({
       <Gap size="m" />
 
       <StickyFooter>
-        <FooterContainer>
-          <FixedSpaceRow justifyContent="space-between" alignItems="center">
-            <FixedSpaceRow>
-              <AsyncButton
-                primary
-                text={i18n.childInformation.assistanceNeedDecision.leavePage}
-                onClick={() => Promise.resolve(Success.of(null))} // todo
-                onSuccess={() =>
-                  navigate(`/child-information/${decision.child.id}`)
-                }
-                data-qa="leave-page-button"
-                hideSuccess
-              />
-              <span>todo saving ...</span>
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <FixedSpaceRow alignItems="center">
+            <Button
+              text={i18n.childInformation.assistanceNeedDecision.leavePage}
+              disabled={saving}
+              onClick={() =>
+                navigate(`/child-information/${decision.child.id}`)
+              }
+              data-qa="leave-page-button"
+            />
+            <FixedSpaceRow alignItems="center" spacing="xs">
+              <span>
+                {i18n.common.saved}{' '}
+                {formatInTimeZone(
+                  lastSavedAt.timestamp,
+                  'Europe/Helsinki',
+                  'HH:mm:ss'
+                )}
+              </span>
+              {!saved && (
+                <Spinner size={defaultMargins.m} data-qa="saving-spinner" />
+              )}
             </FixedSpaceRow>
+          </FixedSpaceRow>
 
-            <AsyncButton
-              primary
-              text={i18n.childInformation.assistanceNeedDecision.preview}
-              disabled={displayValidation && !isValid}
-              onClick={async () => {
-                if (isValid) {
-                  return Promise.resolve(
-                    Failure.of({
-                      message: 'todo'
-                    })
-                  )
-                } else {
-                  setDisplayValidation(true)
-                  return Promise.resolve(
-                    Failure.of({
-                      message: 'Invalid form'
-                    })
-                  )
-                }
-              }}
-              onSuccess={() =>
+          <Button
+            primary
+            text={i18n.childInformation.assistanceNeedDecision.preview}
+            disabled={!saved || (displayValidation && !isValid)}
+            onClick={() => {
+              if (isValid) {
                 navigate(
                   `/child-information/${decision.child.id}/assistance-need-decision/${decision.id}`
                 )
+              } else {
+                setDisplayValidation(true)
               }
-              data-qa="preview-button"
-              hideSuccess
-            />
-          </FixedSpaceRow>
-        </FooterContainer>
+            }}
+            data-qa="preview-button"
+          />
+        </FixedSpaceRow>
       </StickyFooter>
     </div>
   )
 })
 
 export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
-  const { decisionId } = useNonNullableParams<{ decisionId: UUID }>()
+  const { childId, decisionId } = useNonNullableParams<{
+    childId: UUID
+    decisionId: UUID
+  }>()
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery(decisionId)
   )
   const unitsResult = useQueryResult(preschoolUnitsQuery)
+
+  // invalidate cached decision on onmount
+  const queryClient = useQueryClient()
+  useEffect(
+    () => () => {
+      void queryClient.invalidateQueries(
+        queryKeys.assistanceNeedPreschoolDecision(decisionId),
+        {
+          type: 'all'
+        }
+      )
+      void queryClient.invalidateQueries(
+        queryKeys.assistanceNeedPreschoolDecisionBasics(childId),
+        {
+          type: 'all'
+        }
+      )
+    },
+    [queryClient, childId, decisionId]
+  )
 
   return renderResult(
     combine(decisionResult, unitsResult),

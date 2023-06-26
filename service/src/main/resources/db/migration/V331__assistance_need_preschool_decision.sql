@@ -77,7 +77,10 @@ ALTER TABLE assistance_need_preschool_decision
                 view_of_guardians <> '' AND
                 preparer_1_employee_id IS NOT NULL AND
                 decision_maker_employee_id IS NOT NULL AND
-                sent_for_decision IS NOT NULL
+                sent_for_decision IS NOT NULL AND
+                (extended_compulsory_education = false OR extended_compulsory_education_info <> '') AND
+                (basis_document_other_or_missing = false OR basis_document_other_or_missing_info <> '') AND
+                (other_representative_heard = false OR other_representative_details <> '')
             )
         ),
     ADD CONSTRAINT check$decision_made CHECK (
@@ -92,15 +95,6 @@ ALTER TABLE assistance_need_preschool_decision
                 THEN annulment_reason <> ''
             ELSE annulment_reason = ''
             END
-        ),
-    ADD CONSTRAINT check$extended_compulsory_education_info CHECK (
-                extended_compulsory_education = false OR extended_compulsory_education_info <> ''
-        ),
-    ADD CONSTRAINT check$basis_document_other_or_missing_info CHECK (
-                basis_document_other_or_missing = false OR basis_document_other_or_missing_info <> ''
-        ),
-    ADD CONSTRAINT check$other_representative_details CHECK (
-        other_representative_heard = false OR other_representative_details <> ''
         );
 
 CREATE INDEX idx$assistance_need_preschool_decision_child

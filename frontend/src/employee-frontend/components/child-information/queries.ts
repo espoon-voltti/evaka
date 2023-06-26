@@ -9,7 +9,10 @@ import {
   PreschoolAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
 import { AssistanceActionRequest } from 'lib-common/generated/api-types/assistanceaction'
-import { AssistanceNeedRequest } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedPreschoolDecisionForm,
+  AssistanceNeedRequest
+} from 'lib-common/generated/api-types/assistanceneed'
 import {
   ChildDocumentCreateRequest,
   DocumentContent
@@ -58,7 +61,8 @@ import {
   deleteAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecisionBasics,
-  postAssistanceNeedPreschoolDecision
+  postAssistanceNeedPreschoolDecision,
+  putAssistanceNeedPreschoolDecision
 } from './assistance-need/decision/api-preschool'
 
 export const queryKeys = createQueryKeys('childInformation', {
@@ -247,6 +251,12 @@ export const createAssistanceNeedPreschoolDecisionMutation = mutation({
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg)
   ]
+})
+
+export const updateAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { id: UUID; body: AssistanceNeedPreschoolDecisionForm }) =>
+    putAssistanceNeedPreschoolDecision(arg.id, arg.body),
+  invalidateQueryKeys: () => [] // no automatic invalidation due to auto-save
 })
 
 export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
