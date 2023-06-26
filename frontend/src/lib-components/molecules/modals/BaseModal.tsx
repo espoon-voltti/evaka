@@ -241,6 +241,7 @@ export const PlainModal = React.memo(function PlainModal(
           noPadding
           mobileFullScreen={props.mobileFullScreen}
           margin={props.margin}
+          className="modal-container"
           data-qa="modal"
         >
           {props.children}

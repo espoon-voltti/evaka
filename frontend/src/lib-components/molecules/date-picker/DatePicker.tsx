@@ -276,10 +276,16 @@ const DatePicker = React.memo(function DatePicker({
   }, [showDatePicker])
 
   useEffect(() => {
-    function handleEvent(event: { target: EventTarget | null }) {
+    function handleEvent(event: { target: EventTarget | null; type: string }) {
       if (event.target instanceof Element) {
         if (wrapperRef.current?.contains(event.target)) {
           return
+        }
+        if (
+          event.type === 'pointerup' &&
+          event.target.classList.contains('modal-container')
+        ) {
+          return // do not close when clicking on modal scrollbar
         }
       }
 
