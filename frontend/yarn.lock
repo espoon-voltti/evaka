@@ -3134,19 +3134,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.34.2":
-  version: 1.34.2
-  resolution: "@playwright/test@npm:1.34.2"
+"@playwright/test@npm:^1.35.1":
+  version: 1.35.1
+  resolution: "@playwright/test@npm:1.35.1"
   dependencies:
     "@types/node": "*"
     fsevents: 2.3.2
-    playwright-core: 1.34.2
+    playwright-core: 1.35.1
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 51e581386bebdd97a40c9d5304a04eb7e9ecf731206686a526e8990f2362174311ee681fa7cf4e58b103235e60232c326bfd6c764029ca9cbd69da55244cd2f9
+  checksum: 3509d2f2c7397f9b0d4f49088cab8625f17d186f7e9b3389ddebf7c52ee8aae6407eab48f66b300b7bf6a33f6e3533fd5951e72bfdb001b68838af98596d5a53
   languageName: node
   linkType: hard
 
@@ -6451,7 +6451,7 @@ __metadata:
     "@fortawesome/free-regular-svg-icons": 6.4.0
     "@fortawesome/free-solid-svg-icons": 6.4.0
     "@fortawesome/react-fontawesome": 0.2.0
-    "@playwright/test": ^1.34.2
+    "@playwright/test": ^1.35.1
     "@sentry/browser": ^7.53.0
     "@sentry/react": ^7.53.0
     "@sentry/webpack-plugin": ^1.20.1
@@ -9490,6 +9490,15 @@ __metadata:
   bin:
     playwright: cli.js
   checksum: 7902f973d47c3d6affb794f0120d9f318e9fb098606dc7152e18f254ed1ceb2bbeafc40620b12d48a14b628b31c1d7bd05cdfe920af085dadb21a51128684a4b
+  languageName: node
+  linkType: hard
+
+"playwright-core@npm:1.35.1":
+  version: 1.35.1
+  resolution: "playwright-core@npm:1.35.1"
+  bin:
+    playwright-core: cli.js
+  checksum: 179abc0051f00474e528935b507fa8cedc986b2803b020d7679878ba28cdd7036ad5a779792aad2ad281f8dc625eb1d2fb77663cb8de0d20c7ffbda7c18febdd
   languageName: node
   linkType: hard
 
