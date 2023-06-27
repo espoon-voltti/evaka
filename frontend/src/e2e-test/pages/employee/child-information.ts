@@ -775,39 +775,20 @@ export class PlacementsSection extends Section {
   }
 }
 
-export class AssistanceNeedSection extends Section {
-  #createAssistanceNeedButton = this.find(
-    '[data-qa="assistance-need-create-btn"]'
+export class AssistanceSection extends Section {
+  createAssistanceFactorButton = this.find(
+    '[data-qa="assistance-factor-create-btn"]'
   )
-  #assistanceNeedMultiplierInput = new TextInput(
-    this.find('[data-qa="input-assistance-need-multiplier"]')
+  assistanceFactorForm = new AssistanceFactorForm(
+    this.findByDataQa('assistance-factor-form')
   )
-  #confirmAssistanceNeedButton = this.find(
-    '[data-qa="button-assistance-need-confirm"]'
-  )
-  #assistanceNeedMultiplier = this.findAll(
-    '[data-qa="assistance-need-multiplier"]'
-  )
-  #assistanceNeedRow = this.findAll('[data-qa="assistance-need-row"]')
+  #assistanceFactorRows = this.findAllByDataQa('assistance-factor-row')
 
-  async createNewAssistanceNeed() {
-    await this.#createAssistanceNeedButton.click()
+  assistanceFactorRow(nth: number): AssistanceFactorRow {
+    return new AssistanceFactorRow(this.#assistanceFactorRows.nth(nth))
   }
-
-  async setAssistanceNeedMultiplier(multiplier: string) {
-    await this.#assistanceNeedMultiplierInput.fill(multiplier)
-  }
-
-  async confirmAssistanceNeed() {
-    await this.#confirmAssistanceNeedButton.click()
-  }
-
-  async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
-    await this.#assistanceNeedMultiplier.nth(nth).assertTextEquals(expected)
-  }
-
-  async assertAssistanceNeedCount(expectedCount: number) {
-    await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
+  async assertAssistanceFactorCount(count: number) {
+    await this.#assistanceFactorRows.assertCount(count)
   }
 
   async waitUntilAssistanceNeedDecisionsLoaded() {
@@ -916,6 +897,20 @@ export class AssistanceNeedSection extends Section {
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 }
 
+class AssistanceFactorForm extends Element {
+  capacityFactor = new TextInput(this.findByDataQa('capacity-factor'))
+  validDuring = this.findByDataQa('valid-during')
+  startDate = new DatePicker(this.validDuring.findByDataQa('start-date'))
+  endDate = new DatePicker(this.validDuring.findByDataQa('end-date'))
+  save = this.findByDataQa('save')
+  cancel = this.findByDataQa('cancel')
+}
+
+class AssistanceFactorRow extends Element {
+  capacityFactor = this.findByDataQa('capacity-factor')
+  validDuring = this.findByDataQa('valid-during')
+}
+
 class MessageBlocklistSection extends Section {
   async addParentToBlockList(parentId: string) {
     const checkbox = new Checkbox(
@@ -996,9 +991,9 @@ const collapsibles = {
     selector: '[data-qa="child-placements-collapsible"]',
     section: PlacementsSection
   },
-  assistanceNeed: {
+  assistance: {
     selector: '[data-qa="assistance-collapsible"]',
-    section: AssistanceNeedSection
+    section: AssistanceSection
   },
   messageBlocklist: {
     selector: '[data-qa="child-message-blocklist-collapsible"]',

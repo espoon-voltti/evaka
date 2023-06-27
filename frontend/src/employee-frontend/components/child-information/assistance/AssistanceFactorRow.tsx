@@ -6,6 +6,7 @@ import React, { useContext } from 'react'
 
 import { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
+import { formatDecimal } from 'lib-common/utils/number'
 import { Td, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
@@ -34,9 +35,9 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
   )
 
   return (
-    <Tr>
-      <Td>{data.capacityFactor}</Td>
-      <Td>{data.validDuring.format()}</Td>
+    <Tr data-qa="assistance-factor-row">
+      <Td data-qa="capacity-factor">{formatDecimal(data.capacityFactor)}</Td>
+      <Td data-qa="valid-during">{data.validDuring.format()}</Td>
       <Td>
         <StatusLabel
           status={getStatusLabelByDateRange({

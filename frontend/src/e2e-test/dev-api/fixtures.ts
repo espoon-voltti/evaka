@@ -1122,6 +1122,8 @@ export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
 
 export const nullUUID = '00000000-0000-0000-0000-000000000000'
 
+export const systemInternalUser = nullUUID
+
 export const uuidv4 = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0,

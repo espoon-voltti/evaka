@@ -68,12 +68,13 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
   )
 
   return (
-    <Tr>
+    <Tr data-qa="assistance-factor-form">
       <Td>
         <InputFieldF
           bind={capacityFactor}
           type="number"
           hideErrorsBeforeTouched={true}
+          data-qa="capacity-factor"
         />
       </Td>
       <Td>
