@@ -5,8 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.CareType
-import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
@@ -72,27 +70,26 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                 optionId = snDefaultPreschool.id
             )
 
-            val daycareU3yChildId = tx.insertTestPerson(DevPerson(
-                    dateOfBirth = mockToday.today().minusYears(2)
-            ))
+            val daycareU3yChildId =
+                tx.insertTestPerson(DevPerson(dateOfBirth = mockToday.today().minusYears(2)))
             tx.insertTestChild(DevChild(id = daycareU3yChildId))
             val daycarePlacementId =
-                    tx.insertTestPlacement(
-                            childId = daycareU3yChildId,
-                            unitId = unitId,
-                            startDate = mockToday.today().minusMonths(1),
-                            endDate = mockToday.today().plusMonths(1),
-                            type = PlacementType.DAYCARE
-                    )
+                tx.insertTestPlacement(
+                    childId = daycareU3yChildId,
+                    unitId = unitId,
+                    startDate = mockToday.today().minusMonths(1),
+                    endDate = mockToday.today().plusMonths(1),
+                    type = PlacementType.DAYCARE
+                )
             tx.insertTestServiceNeed(
-                    confirmedBy = EvakaUserId(admin.id.raw),
-                    placementId = daycarePlacementId,
-                    period =
+                confirmedBy = EvakaUserId(admin.id.raw),
+                placementId = daycarePlacementId,
+                period =
                     FiniteDateRange(
-                            mockToday.today().minusMonths(1),
-                            mockToday.today().plusMonths(1)
+                        mockToday.today().minusMonths(1),
+                        mockToday.today().plusMonths(1)
                     ),
-                    optionId = snDefaultDaycare.id
+                optionId = snDefaultDaycare.id
             )
         }
         val reportAll =
@@ -109,14 +106,14 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
         assertEquals(1, reportAll.placementCountUnder3v)
 
         val reportPreschool =
-                placementCountReportController.getPlacementCountReport(
-                        dbInstance(),
-                        adminLoginUser,
-                        mockToday,
-                        mockToday.today(),
-                        emptyList(),
-                        listOf(CareType.PRESCHOOL)
-                )
+            placementCountReportController.getPlacementCountReport(
+                dbInstance(),
+                adminLoginUser,
+                mockToday,
+                mockToday.today(),
+                emptyList(),
+                listOf(PlacementType.PRESCHOOL)
+            )
         assertEquals(1, reportPreschool.placementCount)
         assertEquals(1, reportPreschool.placementCount3vAndOver)
         assertEquals(0, reportPreschool.placementCountUnder3v)
