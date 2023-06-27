@@ -6,7 +6,7 @@ import 'lib-common/assets/fonts/fonts.css'
 import 'core-js/stable'
 import * as Sentry from '@sentry/browser'
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
@@ -29,7 +29,9 @@ Sentry.addGlobalEventProcessor(sentryEventFilter)
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-ReactDOM.render(<App />, document.getElementById('app'))
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const root = createRoot(document.getElementById('app')!)
+root.render(<App />)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {
