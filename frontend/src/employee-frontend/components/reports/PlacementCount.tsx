@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
-import { careTypes } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   PlacementCountAreaResult,
   PlacementCountReportResult
@@ -41,6 +41,22 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careAreas: []
 }
+
+const placementTypes: readonly PlacementType[] = [
+  'CLUB',
+  'DAYCARE',
+  'DAYCARE_PART_TIME',
+  'DAYCARE_FIVE_YEAR_OLDS',
+  'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
+  'PRESCHOOL',
+  'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB',
+  'PREPARATORY',
+  'PREPARATORY_DAYCARE',
+  'TEMPORARY_DAYCARE',
+  'TEMPORARY_DAYCARE_PART_DAY',
+  'SCHOOL_SHIFT_CARE'
+] as const
 
 const AccordionIcon = styled(FontAwesomeIcon)`
   cursor: pointer;
@@ -88,7 +104,7 @@ export default React.memo(function PlacementCount() {
   const [filters, setFilters] = useState<PlacementCountReportFilters>({
     examinationDate: currentLocalDate,
     providerTypes: [],
-    careTypes: []
+    placementTypes: []
   })
 
   const [displayFilters, setDisplayFilters] =
@@ -232,21 +248,25 @@ export default React.memo(function PlacementCount() {
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.placementCount.careType}</FilterLabel>
+          <FilterLabel>{i18n.reports.placementCount.placementType}</FilterLabel>
           <Wrapper>
             <MultiSelect
-              options={sortBy(careTypes, (s) => i18n.common.types[s])}
+              options={sortBy(placementTypes, (s) => i18n.placement.type[s])}
               onChange={(selectedItems) =>
                 setFilters({
                   ...filters,
-                  careTypes: selectedItems.map((selectedItem) => selectedItem)
+                  placementTypes: selectedItems.map(
+                    (selectedItem) => selectedItem
+                  )
                 })
               }
-              value={careTypes.filter((unitType) =>
-                filters.careTypes?.includes(unitType)
+              value={placementTypes.filter((unitType) =>
+                filters.placementTypes?.includes(unitType)
               )}
-              getOptionId={(unitType) => unitType}
-              getOptionLabel={(unitType) => i18n.common.types[unitType]}
+              getOptionId={(placementType) => placementType}
+              getOptionLabel={(placementType) =>
+                i18n.placement.type[placementType]
+              }
               placeholder={i18n.common.all}
             />
           </Wrapper>

@@ -453,7 +453,7 @@ export function getSextetReport(
 
 export interface PlacementCountReportFilters {
   examinationDate: LocalDate
-  careTypes: CareType[]
+  placementTypes: PlacementType[]
   providerTypes: ProviderType[]
 }
 
@@ -464,7 +464,7 @@ export async function getPlacementCountReport(
     .get<JsonOf<PlacementCountReportResult>>(`/reports/placement-count`, {
       params: {
         examinationDate: filters.examinationDate.formatIso(),
-        careTypes: filters.careTypes.join(','),
+        placementTypes: filters.placementTypes.join(','),
         providerTypes: filters.providerTypes.join(',')
       }
     })
