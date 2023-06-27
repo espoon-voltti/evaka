@@ -822,7 +822,9 @@ export const fi = {
       type: 'Erityisen tuen tila',
       validFrom: 'Voimassa alkaen',
       extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
-      extendedCompulsoryEducation: 'Lapsella on pidennetty oppivelvollisuus',
+      extendedCompulsoryEducation:
+        'Kyllä, lapsella on pidennetty oppivelvollisuus',
+      no: 'Ei',
       extendedCompulsoryEducationInfo:
         'Lisätiedot pidennetystä oppivelvollisuudesta',
       grantedAssistanceSection:
@@ -830,6 +832,7 @@ export const fi = {
       grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
       grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
       grantedAssistiveDevices: 'Lapselle myönnetään erityisiä apuvälineitä',
+      grantedNothing: 'Ei valintaa',
       grantedServicesBasis:
         'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
       selectedUnit: 'Esiopetuksen järjestämispaikka',
