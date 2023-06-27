@@ -27,7 +27,11 @@ data class AssistanceNeedPreschoolDecision(
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
     val annulmentReason: String,
-    val hasDocument: Boolean
+    val hasDocument: Boolean,
+    val unitName: String?,
+    val preparer1Name: String?,
+    val preparer2Name: String?,
+    val decisionMakerName: String?
 )
 
 enum class AssistanceNeedPreschoolDecisionType {

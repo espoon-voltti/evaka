@@ -245,12 +245,16 @@ export interface AssistanceNeedPreschoolDecision {
   annulmentReason: string
   child: AssistanceNeedPreschoolDecisionChild
   decisionMade: LocalDate | null
+  decisionMakerName: string | null
   decisionNumber: number
   form: AssistanceNeedPreschoolDecisionForm
   hasDocument: boolean
   id: UUID
+  preparer1Name: string | null
+  preparer2Name: string | null
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
+  unitName: string | null
 }
 
 /**
