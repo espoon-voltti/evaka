@@ -20,7 +20,7 @@ fun Database.Read.getChildConsentsByChild(childId: ChildId): List<ChildConsent> 
             """
 SELECT cc.id, cc.child_id, cc.type, cc.given, cc.given_at,
        (p.first_name || ' ' || p.last_name) given_by_guardian,
-       (e.first_name || ' ' || e.last_name) given_by_employee
+       (coalesce(e.preferred_first_name, e.first_name) || ' ' || e.last_name) given_by_employee
 FROM child_consent cc
 LEFT JOIN person p ON p.id = cc.given_by_guardian
 LEFT JOIN employee e ON e.id = cc.given_by_employee
