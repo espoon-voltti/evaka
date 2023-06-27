@@ -131,6 +131,7 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecision(
         """
         UPDATE assistance_need_preschool_decision
         SET 
+            language = :language,
             type = :type,
             valid_from = :validFrom,
             extended_compulsory_education = :extendedCompulsoryEducation,

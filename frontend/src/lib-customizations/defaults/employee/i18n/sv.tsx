@@ -13,12 +13,8 @@ export const sv = {
   childInformation: {
     ...fi.childInformation,
     assistanceNeedPreschoolDecision: {
-      ...fi.childInformation.assistanceNeedPreschoolDecision,
-      types: {
-        NEW: 'svenska: Erityinen tuki alkaa',
-        CONTINUING: 'svenska: Erityinen tuki jatkuu',
-        TERMINATED: 'svenska: Erityinen tuki päättyy'
-      }
+      ...fi.childInformation.assistanceNeedPreschoolDecision
+      // todo: swedish translations
     },
     assistanceNeedDecision: {
       ...fi.childInformation.assistanceNeedDecision,

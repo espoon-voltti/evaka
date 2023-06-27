@@ -61,7 +61,7 @@ import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { translations } from 'lib-customizations/employee'
 
 import { Unit } from '../../../../api/daycare'
-import { useTranslation, I18nContext } from '../../../../state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   assistanceNeedPreschoolDecisionMakerOptionsQuery,
@@ -197,9 +197,9 @@ const GuardianForm = React.memo(function GuardianForm({
   )
 })
 
-const t = {
-  FI: translations['fi'],
-  SV: translations['sv']
+const pageTranslations = {
+  FI: translations['fi'].childInformation.assistanceNeedPreschoolDecision,
+  SV: translations['sv'].childInformation.assistanceNeedPreschoolDecision
 }
 
 const DecisionEditor = React.memo(function DecisionEditor({
@@ -215,14 +215,14 @@ const DecisionEditor = React.memo(function DecisionEditor({
   const navigate = useNavigate()
   const [displayValidation, setDisplayValidation] = useState(false)
   const [formLanguage, setFormLanguage] = useState(decision.form.language)
+  const t = pageTranslations[formLanguage]
 
   const getTypeOptions = useCallback(
     (lang: AssistanceNeedDecisionLanguage) =>
       types.map((type) => ({
         domValue: type,
         value: type,
-        label:
-          t[lang].childInformation.assistanceNeedPreschoolDecision.types[type]
+        label: pageTranslations[lang].types[type]
       })),
     []
   )
@@ -384,14 +384,6 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
   const guardians = useFormElems(guardianInfo)
 
-  const lang = useMemo(
-    () => ({
-      lang: language.value() === 'SV' ? ('sv' as const) : ('fi' as const),
-      setLang: () => undefined
-    }),
-    [language]
-  )
-
   const debouncedValue = useDebounce(bind.isValid() ? bind.value() : null, 1000)
   const [savedValue, setSavedValue] = useState(bind.value())
   const [lastSavedAt, setLastSavedAt] = useState(HelsinkiDateTime.now())
@@ -444,382 +436,358 @@ const DecisionEditor = React.memo(function DecisionEditor({
             </Label>
             <SelectF bind={language} />
           </FixedSpaceRow>
+
           <HorizontalLine />
-          <I18nContext.Provider value={lang}>
-            <FixedSpaceRow
-              justifyContent="space-between"
-              alignItems="flex-start"
-            >
+
+          <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
+            <FixedSpaceColumn>
+              <H1 noMargin>{t.pageTitle}</H1>
+              <H2>{decision.child.name}</H2>
+            </FixedSpaceColumn>
+            <FixedSpaceColumn>
+              <span>
+                {t.decisionNumber} {decision.decisionNumber}
+              </span>
+              <AssistanceNeedDecisionStatusChip
+                decisionStatus={decision.status}
+                texts={t.statuses}
+              />
+              <span>{t.confidential}</span>
+              <span>{t.lawReference}</span>
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <FixedSpaceColumn spacing="XL">
+            <SectionSpacer>
+              <H2>{t.decidedAssistance}</H2>
+
               <FixedSpaceColumn>
-                <H1 noMargin>
-                  {
-                    i18n.childInformation.assistanceNeedPreschoolDecision
-                      .pageTitle
-                  }
-                </H1>
-                <H2>{decision.child.name}</H2>
-              </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <span>
-                  {i18n.childInformation.assistanceNeedDecision.decisionNumber}{' '}
-                  {decision.decisionNumber}
-                </span>
-                <AssistanceNeedDecisionStatusChip
-                  decisionStatus={decision.status}
-                  texts={i18n.childInformation.assistanceNeedDecision.statuses}
-                />
-                <span>
-                  {i18n.childInformation.assistanceNeedDecision.confidential}
-                </span>
-                <span>
-                  {i18n.childInformation.assistanceNeedDecision.lawReference}
-                </span>
-              </FixedSpaceColumn>
-            </FixedSpaceRow>
-            <FixedSpaceColumn spacing="XL">
-              <SectionSpacer>
-                <H2>Päätettävä tuki</H2>
-
-                <FixedSpaceColumn>
-                  <FixedSpaceRow alignItems="center">
-                    <Label>Erityisen tuen tila *</Label>
-                    {displayValidation && validationErrors.type && (
-                      <AlertBox
-                        message={i18n.validationErrors[validationErrors.type]}
-                        thin
-                      />
-                    )}
-                  </FixedSpaceRow>
-                  {type.state.options.map((opt) => (
-                    <Radio
-                      key={opt.domValue}
-                      label={opt.label}
-                      checked={type.value() == opt.value}
-                      onChange={() =>
-                        type.update((prev) => ({
-                          ...prev,
-                          domValue: opt.domValue
-                        }))
-                      }
+                <FixedSpaceRow alignItems="center">
+                  <Label>{t.type} *</Label>
+                  {displayValidation && validationErrors.type && (
+                    <AlertBox
+                      message={i18n.validationErrors[validationErrors.type]}
+                      thin
                     />
-                  ))}
-                </FixedSpaceColumn>
-
-                <LabeledValue>
-                  <Label>Voimassa alkaen *</Label>
-                  <DatePickerF
-                    bind={validFrom}
-                    locale={uiLang}
-                    info={info('validFrom')}
-                  />
-                </LabeledValue>
-
-                <FixedSpaceColumn>
-                  <LabeledValue>
-                    <Label>Pidennetty oppivelvollisuus</Label>
-                    <CheckboxF
-                      bind={extendedCompulsoryEducation}
-                      label="Lapsella on pidennetty oppivelvollisuus"
-                    />
-                  </LabeledValue>
-                  {extendedCompulsoryEducation.value() && (
-                    <LabeledValue>
-                      <Label>
-                        Lisätiedot pidennetystä oppivelvollisuudesta *
-                      </Label>
-                      <WidthLimiter>
-                        <TextAreaF
-                          bind={extendedCompulsoryEducationInfo}
-                          info={info('extendedCompulsoryEducationInfo')}
-                        />
-                      </WidthLimiter>
-                    </LabeledValue>
                   )}
-                </FixedSpaceColumn>
-
-                <FixedSpaceColumn>
-                  <Label>
-                    Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset
-                    apuvälineet
-                  </Label>
-                  <CheckboxF
-                    bind={grantedAssistanceService}
-                    label="Lapselle myönnetään avustajapalveluita"
-                  />
-                  <CheckboxF
-                    bind={grantedInterpretationService}
-                    label="Lapselle myönnetään tulkitsemispalveluita"
-                  />
-                  <CheckboxF
-                    bind={grantedAssistiveDevices}
-                    label="Lapselle myönnetään erityisiä apuvälineitä"
-                  />
-                </FixedSpaceColumn>
-
-                <LabeledValue>
-                  <Label>
-                    Perustelut myönnettäville tulkitsemis- ja
-                    avustajapalveluille ja apuvälineille
-                  </Label>
-                  <WidthLimiter>
-                    <TextAreaF bind={grantedServicesBasis} />
-                  </WidthLimiter>
-                </LabeledValue>
-
-                <LabeledValue>
-                  <Label>Esiopetuksen järjestämispaikka *</Label>
-                  <Combobox
-                    items={units}
-                    selectedItem={
-                      selectedUnit
-                        ? units.find((u) => u.id === selectedUnit.value()) ??
-                          null
-                        : null
+                </FixedSpaceRow>
+                {type.state.options.map((opt) => (
+                  <Radio
+                    key={opt.domValue}
+                    label={opt.label}
+                    checked={type.value() == opt.value}
+                    onChange={() =>
+                      type.update((prev) => ({
+                        ...prev,
+                        domValue: opt.domValue
+                      }))
                     }
-                    getItemLabel={(u) => u?.name ?? ''}
-                    onChange={(u) => selectedUnit.set(u?.id ?? null)}
-                    info={info('selectedUnit')}
                   />
-                </LabeledValue>
+                ))}
+              </FixedSpaceColumn>
 
-                <LabeledValue>
-                  <Label>Pääsääntöinen opetusryhmä *</Label>
-                  <InputFieldF
-                    bind={primaryGroup}
-                    width="L"
-                    info={info('primaryGroup')}
-                  />
-                </LabeledValue>
+              <LabeledValue>
+                <Label>{t.validFrom} *</Label>
+                <DatePickerF
+                  bind={validFrom}
+                  locale={uiLang}
+                  info={info('validFrom')}
+                />
+              </LabeledValue>
 
-                <LabeledValue>
-                  <Label>Perustelut päätökselle *</Label>
-                  <WidthLimiter>
-                    <TextAreaF
-                      bind={decisionBasis}
-                      info={info('decisionBasis')}
-                    />
-                  </WidthLimiter>
-                </LabeledValue>
-
-                <FixedSpaceColumn>
-                  <FixedSpaceRow alignItems="center">
-                    <Label>Asiakirjat, joihin päätös perustuu *</Label>
-                    {displayValidation && validationErrors.documentBasis && (
-                      <AlertBox
-                        message={
-                          i18n.validationErrors[validationErrors.documentBasis]
-                        }
-                        thin
-                      />
-                    )}
-                  </FixedSpaceRow>
-                  <CheckboxF
-                    bind={basisDocumentPedagogicalReport}
-                    label="Pedagoginen selvitys"
-                  />
-                  <CheckboxF
-                    bind={basisDocumentPsychologistStatement}
-                    label="Psykologin lausunto"
-                  />
-                  <CheckboxF
-                    bind={basisDocumentDoctorStatement}
-                    label="Sosiaalinen selvitys"
-                  />
-                  <CheckboxF
-                    bind={basisDocumentSocialReport}
-                    label="Lääkärin lausunto"
-                  />
-                  <CheckboxF
-                    bind={basisDocumentOtherOrMissing}
-                    label="Liite puuttuu, tai muu liite, mikä?"
-                  />
-                  {basisDocumentOtherOrMissing.value() && (
+              <FixedSpaceColumn>
+                <Label>{t.extendedCompulsoryEducationSection}</Label>
+                <CheckboxF
+                  bind={extendedCompulsoryEducation}
+                  label={t.extendedCompulsoryEducation}
+                />
+                {extendedCompulsoryEducation.value() && (
+                  <LabeledValue>
+                    <Label>{t.extendedCompulsoryEducationInfo} *</Label>
                     <WidthLimiter>
                       <TextAreaF
-                        bind={basisDocumentOtherOrMissingInfo}
-                        info={info('basisDocumentOtherOrMissingInfo')}
+                        bind={extendedCompulsoryEducationInfo}
+                        info={info('extendedCompulsoryEducationInfo')}
                       />
                     </WidthLimiter>
-                  )}
-                </FixedSpaceColumn>
-                <LabeledValue>
-                  <Label>Lisätiedot liitteistä</Label>
-                  <WidthLimiter>
-                    <TextAreaF bind={basisDocumentsInfo} />
-                  </WidthLimiter>
-                </LabeledValue>
-              </SectionSpacer>
+                  </LabeledValue>
+                )}
+              </FixedSpaceColumn>
 
-              <SectionSpacer>
-                <H2>Huoltajien kanssa tehty yhteistyö</H2>
+              <FixedSpaceColumn>
+                <Label>{t.grantedAssistanceSection}</Label>
+                <CheckboxF
+                  bind={grantedAssistanceService}
+                  label={t.grantedAssistanceService}
+                />
+                <CheckboxF
+                  bind={grantedInterpretationService}
+                  label={t.grantedInterpretationService}
+                />
+                <CheckboxF
+                  bind={grantedAssistiveDevices}
+                  label={t.grantedAssistiveDevices}
+                />
+              </FixedSpaceColumn>
 
-                <LabeledValue>
-                  <Label>Huoltajien kuulemisen päivämäärä *</Label>
-                  <DatePickerF
-                    bind={guardiansHeardOn}
-                    locale={uiLang}
-                    info={info('guardiansHeardOn')}
+              <LabeledValue>
+                <Label>{t.grantedServicesBasis}</Label>
+                <WidthLimiter>
+                  <TextAreaF bind={grantedServicesBasis} />
+                </WidthLimiter>
+              </LabeledValue>
+
+              <LabeledValue>
+                <Label>{t.selectedUnit} *</Label>
+                <Combobox
+                  items={units}
+                  selectedItem={
+                    selectedUnit
+                      ? units.find((u) => u.id === selectedUnit.value()) ?? null
+                      : null
+                  }
+                  getItemLabel={(u) => u?.name ?? ''}
+                  onChange={(u) => selectedUnit.set(u?.id ?? null)}
+                  info={info('selectedUnit')}
+                />
+              </LabeledValue>
+
+              <LabeledValue>
+                <Label>{t.primaryGroup} *</Label>
+                <InputFieldF
+                  bind={primaryGroup}
+                  width="L"
+                  info={info('primaryGroup')}
+                />
+              </LabeledValue>
+
+              <LabeledValue>
+                <Label>{t.decisionBasis} *</Label>
+                <WidthLimiter>
+                  <TextAreaF
+                    bind={decisionBasis}
+                    info={info('decisionBasis')}
                   />
-                </LabeledValue>
+                </WidthLimiter>
+              </LabeledValue>
 
-                <FixedSpaceColumn>
-                  <Label>Huoltajat, joita on kuultu, ja kuulemistapa *</Label>
-                  {guardians.map((guardian, i) => (
-                    <GuardianForm
-                      key={guardian.state.id}
-                      bind={guardian}
-                      displayValidation={displayValidation}
-                      validationErrors={validationErrors.guardianInfo[i]}
+              <FixedSpaceColumn>
+                <FixedSpaceRow alignItems="center">
+                  <Label>{t.documentBasis} *</Label>
+                  {displayValidation && validationErrors.documentBasis && (
+                    <AlertBox
+                      message={
+                        i18n.validationErrors[validationErrors.documentBasis]
+                      }
+                      thin
                     />
-                  ))}
-                  <FixedSpaceColumn spacing="zero">
-                    <CheckboxF
-                      bind={otherRepresentativeHeard}
-                      label="Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)"
-                    />
-                    <WidthLimiter>
-                      <InputFieldF
-                        bind={otherRepresentativeDetails}
-                        info={info('otherRepresentativeDetails')}
-                      />
-                    </WidthLimiter>
-                  </FixedSpaceColumn>
-                </FixedSpaceColumn>
-
-                <LabeledValue>
-                  <Label>Huoltajien näkemys esitetystä tuesta *</Label>
+                  )}
+                </FixedSpaceRow>
+                <CheckboxF
+                  bind={basisDocumentPedagogicalReport}
+                  label={t.basisDocumentPedagogicalReport}
+                />
+                <CheckboxF
+                  bind={basisDocumentPsychologistStatement}
+                  label={t.basisDocumentPsychologistStatement}
+                />
+                <CheckboxF
+                  bind={basisDocumentSocialReport}
+                  label={t.basisDocumentSocialReport}
+                />
+                <CheckboxF
+                  bind={basisDocumentDoctorStatement}
+                  label={t.basisDocumentDoctorStatement}
+                />
+                <CheckboxF
+                  bind={basisDocumentOtherOrMissing}
+                  label={t.basisDocumentOtherOrMissing}
+                />
+                {basisDocumentOtherOrMissing.value() && (
                   <WidthLimiter>
                     <TextAreaF
-                      bind={viewOfGuardians}
-                      info={info('viewOfGuardians')}
+                      bind={basisDocumentOtherOrMissingInfo}
+                      info={info('basisDocumentOtherOrMissingInfo')}
                     />
                   </WidthLimiter>
-                </LabeledValue>
-              </SectionSpacer>
+                )}
+              </FixedSpaceColumn>
+              <LabeledValue>
+                <Label>{t.basisDocumentsInfo}</Label>
+                <WidthLimiter>
+                  <TextAreaF bind={basisDocumentsInfo} />
+                </WidthLimiter>
+              </LabeledValue>
+            </SectionSpacer>
 
-              <SectionSpacer>
-                <H2>Vastuuhenkilöt</H2>
-                <FixedSpaceRow>
-                  <LabeledValue>
-                    <Label>Päätöksen valmistelija *</Label>
-                    <ComboboxWrapper>
-                      <Combobox
-                        items={decisionMakers}
-                        getItemLabel={(e) =>
-                          e
-                            ? `${e.preferredFirstName ?? e.firstName} ${
-                                e.lastName
-                              }`
-                            : ''
-                        }
-                        selectedItem={
-                          preparer1EmployeeId
-                            ? decisionMakers.find(
-                                (e) => e.id === preparer1EmployeeId.value()
-                              ) ?? null
-                            : null
-                        }
-                        onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
-                        clearable
-                        info={info('preparer1EmployeeId')}
-                      />
-                    </ComboboxWrapper>
-                  </LabeledValue>
-                  <LabeledValue>
-                    <Label>Titteli *</Label>
+            <SectionSpacer>
+              <H2>{t.guardianCollaborationSection}</H2>
+
+              <LabeledValue>
+                <Label>{t.guardiansHeardOn} *</Label>
+                <DatePickerF
+                  bind={guardiansHeardOn}
+                  locale={uiLang}
+                  info={info('guardiansHeardOn')}
+                />
+              </LabeledValue>
+
+              <FixedSpaceColumn>
+                <Label>{t.heardGuardians} *</Label>
+                {guardians.map((guardian, i) => (
+                  <GuardianForm
+                    key={guardian.state.id}
+                    bind={guardian}
+                    displayValidation={displayValidation}
+                    validationErrors={validationErrors.guardianInfo[i]}
+                  />
+                ))}
+                <FixedSpaceColumn spacing="zero">
+                  <CheckboxF
+                    bind={otherRepresentativeHeard}
+                    label={t.otherRepresentative}
+                  />
+                  <WidthLimiter>
                     <InputFieldF
-                      bind={preparer1Title}
-                      width="L"
-                      info={info('preparer1Title')}
+                      bind={otherRepresentativeDetails}
+                      info={info('otherRepresentativeDetails')}
                     />
-                  </LabeledValue>
-                  <LabeledValue>
-                    <Label>Puhelinnumero</Label>
-                    <InputFieldF bind={preparer1PhoneNumber} />
-                  </LabeledValue>
-                </FixedSpaceRow>
-                <FixedSpaceRow>
-                  <LabeledValue>
-                    <Label>Päätöksen valmistelija</Label>
-                    <ComboboxWrapper>
-                      <Combobox
-                        items={decisionMakers}
-                        selectedItem={
-                          preparer2EmployeeId
-                            ? decisionMakers.find(
-                                (e) => e.id === preparer2EmployeeId.value()
-                              ) ?? null
-                            : null
-                        }
-                        getItemLabel={(e) =>
-                          e
-                            ? `${e.preferredFirstName ?? e.firstName} ${
-                                e.lastName
-                              }`
-                            : ''
-                        }
-                        onChange={(e) => preparer2EmployeeId.set(e?.id ?? null)}
-                        clearable
-                      />
-                    </ComboboxWrapper>
-                  </LabeledValue>
-                  {preparer2EmployeeId.value() && (
-                    <>
-                      <LabeledValue>
-                        <Label>Titteli *</Label>
-                        <InputFieldF
-                          bind={preparer2Title}
-                          width="L"
-                          info={info('preparer2Title')}
-                        />
-                      </LabeledValue>
-                      <LabeledValue>
-                        <Label>Puhelinnumero</Label>
-                        <InputFieldF bind={preparer2PhoneNumber} />
-                      </LabeledValue>
-                    </>
-                  )}
-                </FixedSpaceRow>
-                <FixedSpaceRow>
-                  <LabeledValue>
-                    <Label>Päätöksen tekijä *</Label>
-                    <ComboboxWrapper>
-                      <Combobox
-                        items={decisionMakers}
-                        selectedItem={
-                          decisionMakerEmployeeId
-                            ? decisionMakers.find(
-                                (e) => e.id === decisionMakerEmployeeId.value()
-                              ) ?? null
-                            : null
-                        }
-                        getItemLabel={(e) =>
-                          e
-                            ? `${e.preferredFirstName ?? e.firstName} ${
-                                e.lastName
-                              }`
-                            : ''
-                        }
-                        onChange={(e) =>
-                          decisionMakerEmployeeId.set(e?.id ?? null)
-                        }
-                        clearable
-                        info={info('decisionMakerEmployeeId')}
-                      />
-                    </ComboboxWrapper>
-                  </LabeledValue>
-                  <LabeledValue>
-                    <Label>Titteli *</Label>
-                    <InputFieldF
-                      bind={decisionMakerTitle}
-                      width="L"
-                      info={info('decisionMakerTitle')}
+                  </WidthLimiter>
+                </FixedSpaceColumn>
+              </FixedSpaceColumn>
+
+              <LabeledValue>
+                <Label>{t.viewOfGuardians} *</Label>
+                <WidthLimiter>
+                  <TextAreaF
+                    bind={viewOfGuardians}
+                    info={info('viewOfGuardians')}
+                  />
+                </WidthLimiter>
+              </LabeledValue>
+            </SectionSpacer>
+
+            <SectionSpacer>
+              <H2>{t.responsiblePeople}</H2>
+              <FixedSpaceRow>
+                <LabeledValue>
+                  <Label>{t.preparer} *</Label>
+                  <ComboboxWrapper>
+                    <Combobox
+                      items={decisionMakers}
+                      getItemLabel={(e) =>
+                        e
+                          ? `${e.preferredFirstName ?? e.firstName} ${
+                              e.lastName
+                            }`
+                          : ''
+                      }
+                      selectedItem={
+                        preparer1EmployeeId
+                          ? decisionMakers.find(
+                              (e) => e.id === preparer1EmployeeId.value()
+                            ) ?? null
+                          : null
+                      }
+                      onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
+                      clearable
+                      info={info('preparer1EmployeeId')}
                     />
-                  </LabeledValue>
-                </FixedSpaceRow>
-              </SectionSpacer>
-            </FixedSpaceColumn>
-          </I18nContext.Provider>
+                  </ComboboxWrapper>
+                </LabeledValue>
+                <LabeledValue>
+                  <Label>{t.employeeTitle} *</Label>
+                  <InputFieldF
+                    bind={preparer1Title}
+                    width="L"
+                    info={info('preparer1Title')}
+                  />
+                </LabeledValue>
+                <LabeledValue>
+                  <Label>{t.phone}</Label>
+                  <InputFieldF bind={preparer1PhoneNumber} />
+                </LabeledValue>
+              </FixedSpaceRow>
+              <FixedSpaceRow>
+                <LabeledValue>
+                  <Label>{t.preparer}</Label>
+                  <ComboboxWrapper>
+                    <Combobox
+                      items={decisionMakers}
+                      selectedItem={
+                        preparer2EmployeeId
+                          ? decisionMakers.find(
+                              (e) => e.id === preparer2EmployeeId.value()
+                            ) ?? null
+                          : null
+                      }
+                      getItemLabel={(e) =>
+                        e
+                          ? `${e.preferredFirstName ?? e.firstName} ${
+                              e.lastName
+                            }`
+                          : ''
+                      }
+                      onChange={(e) => preparer2EmployeeId.set(e?.id ?? null)}
+                      clearable
+                    />
+                  </ComboboxWrapper>
+                </LabeledValue>
+                {preparer2EmployeeId.value() && (
+                  <>
+                    <LabeledValue>
+                      <Label>{t.employeeTitle} *</Label>
+                      <InputFieldF
+                        bind={preparer2Title}
+                        width="L"
+                        info={info('preparer2Title')}
+                      />
+                    </LabeledValue>
+                    <LabeledValue>
+                      <Label>{t.phone}</Label>
+                      <InputFieldF bind={preparer2PhoneNumber} />
+                    </LabeledValue>
+                  </>
+                )}
+              </FixedSpaceRow>
+              <FixedSpaceRow>
+                <LabeledValue>
+                  <Label>{t.decisionMaker} *</Label>
+                  <ComboboxWrapper>
+                    <Combobox
+                      items={decisionMakers}
+                      selectedItem={
+                        decisionMakerEmployeeId
+                          ? decisionMakers.find(
+                              (e) => e.id === decisionMakerEmployeeId.value()
+                            ) ?? null
+                          : null
+                      }
+                      getItemLabel={(e) =>
+                        e
+                          ? `${e.preferredFirstName ?? e.firstName} ${
+                              e.lastName
+                            }`
+                          : ''
+                      }
+                      onChange={(e) =>
+                        decisionMakerEmployeeId.set(e?.id ?? null)
+                      }
+                      clearable
+                      info={info('decisionMakerEmployeeId')}
+                    />
+                  </ComboboxWrapper>
+                </LabeledValue>
+                <LabeledValue>
+                  <Label>{t.employeeTitle} *</Label>
+                  <InputFieldF
+                    bind={decisionMakerTitle}
+                    width="L"
+                    info={info('decisionMakerTitle')}
+                  />
+                </LabeledValue>
+              </FixedSpaceRow>
+            </SectionSpacer>
+          </FixedSpaceColumn>
         </ContentArea>
       </Container>
 
