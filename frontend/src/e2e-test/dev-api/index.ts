@@ -19,6 +19,12 @@ import {
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  AssistanceFactor,
+  DaycareAssistance,
+  OtherAssistanceMeasure,
+  PreschoolAssistance
+} from 'lib-common/generated/api-types/assistance'
+import {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'
@@ -315,6 +321,46 @@ export async function insertAssistanceNeedFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/assistance-needs`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertAssistanceFactorFixtures(
+  fixture: AssistanceFactor[]
+): Promise<void> {
+  try {
+    await devClient.post(`/assistance-factors`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDaycareAssistanceFixtures(
+  fixture: DaycareAssistance[]
+): Promise<void> {
+  try {
+    await devClient.post(`/daycare-assistances`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertPreschoolAssistanceFixtures(
+  fixture: PreschoolAssistance[]
+): Promise<void> {
+  try {
+    await devClient.post(`/preschool-assistances`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertOtherAssistanceMeasureFixtures(
+  fixture: OtherAssistanceMeasure[]
+): Promise<void> {
+  try {
+    await devClient.post(`/other-assistance-measures`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

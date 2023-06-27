@@ -13,6 +13,12 @@ import {
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/api-types/application'
 import {
+  AssistanceFactor,
+  DaycareAssistance,
+  OtherAssistanceMeasure,
+  PreschoolAssistance
+} from 'lib-common/generated/api-types/assistance'
+import {
   FixedPeriodQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
@@ -112,7 +118,11 @@ import {
   insertStaffRealtimeAttendance,
   insertHoliday,
   insertIncomeNotification,
-  insertReservationFixtures
+  insertReservationFixtures,
+  insertAssistanceFactorFixtures,
+  insertDaycareAssistanceFixtures,
+  insertPreschoolAssistanceFixtures,
+  insertOtherAssistanceMeasureFixtures
 } from './index'
 
 export const fullDayTimeRange: TimeRange = {
@@ -1419,6 +1429,62 @@ export class Fixture {
     })
   }
 
+  static assistanceFactor(): AssistanceFactorBuilder {
+    return new AssistanceFactorBuilder({
+      id: uuidv4(),
+      capacityFactor: 1.0,
+      childId: 'not_set',
+      validDuring: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      modified: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser
+    })
+  }
+
+  static daycareAssistance(): DaycareAssistanceBuilder {
+    return new DaycareAssistanceBuilder({
+      id: uuidv4(),
+      level: 'GENERAL_SUPPORT',
+      childId: 'not_set',
+      validDuring: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      modified: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser
+    })
+  }
+
+  static preschoolAssistance(): PreschoolAssistanceBuilder {
+    return new PreschoolAssistanceBuilder({
+      id: uuidv4(),
+      level: 'SPECIAL_SUPPORT',
+      childId: 'not_set',
+      validDuring: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      modified: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser
+    })
+  }
+
+  static otherAssistanceMeasure(): OtherAssistanceMeasureBuilder {
+    return new OtherAssistanceMeasureBuilder({
+      id: uuidv4(),
+      type: 'TRANSPORT_BENEFIT',
+      childId: 'not_set',
+      validDuring: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      modified: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser
+    })
+  }
+
   static assistanceNeedDecision(): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
@@ -2117,6 +2183,54 @@ export class AssistanceNeedBuilder extends FixtureBuilder<AssistanceNeed> {
   // Note: shallow copy
   copy() {
     return new AssistanceNeedBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
+  async save() {
+    await insertAssistanceFactorFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceFactorBuilder({ ...this.data })
+  }
+}
+
+export class DaycareAssistanceBuilder extends FixtureBuilder<DaycareAssistance> {
+  async save() {
+    await insertDaycareAssistanceFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new DaycareAssistanceBuilder({ ...this.data })
+  }
+}
+
+export class PreschoolAssistanceBuilder extends FixtureBuilder<PreschoolAssistance> {
+  async save() {
+    await insertPreschoolAssistanceFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new PreschoolAssistanceBuilder({ ...this.data })
+  }
+}
+
+export class OtherAssistanceMeasureBuilder extends FixtureBuilder<OtherAssistanceMeasure> {
+  async save() {
+    await insertOtherAssistanceMeasureFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new OtherAssistanceMeasureBuilder({ ...this.data })
   }
 }
 

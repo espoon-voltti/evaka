@@ -1311,6 +1311,54 @@ RETURNING id
         }
     }
 
+    @PostMapping("/assistance-factors")
+    fun createAssistanceFactors(
+        db: Database,
+        @RequestBody assistanceFactors: List<DevAssistanceFactor>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                assistanceFactors.forEach { tx.insertTestAssistanceFactor(it) }
+            }
+        }
+    }
+
+    @PostMapping("/daycare-assistances")
+    fun createDaycareAssistances(
+        db: Database,
+        @RequestBody daycareAssistances: List<DevDaycareAssistance>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                daycareAssistances.forEach { tx.insertTestDaycareAssistance(it) }
+            }
+        }
+    }
+
+    @PostMapping("/preschool-assistances")
+    fun createPreschoolAssistances(
+        db: Database,
+        @RequestBody preschoolAssistances: List<DevPreschoolAssistance>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                preschoolAssistances.forEach { tx.insertTestPreschoolAssistance(it) }
+            }
+        }
+    }
+
+    @PostMapping("/other-assistance-measures")
+    fun createOtherAssistanceMeasures(
+        db: Database,
+        @RequestBody otherAssistanceMeasures: List<DevOtherAssistanceMeasure>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                otherAssistanceMeasures.forEach { tx.insertTestOtherAssistanceMeasure(it) }
+            }
+        }
+    }
+
     @PostMapping("/assistance-need-decisions")
     fun createAssistanceNeedDecisions(
         db: Database,
