@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ManualDuplicationReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/manual-duplication")
-    fun getPlacementCountReport(
+    fun getManualDuplicationReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

@@ -3444,7 +3444,7 @@ export const fi = {
       placementCount: 'Lapsia yhteensä',
       calculatedPlacements: 'Laskennallinen määrä',
       providerType: 'Järjestämismuoto',
-      careType: 'Toimintamuoto',
+      placementType: 'Sijoitusmuoto',
       placementsOver3: 'Vähintään 3v',
       placementsUnder3: 'Alle 3v',
       total: 'Yhteensä'

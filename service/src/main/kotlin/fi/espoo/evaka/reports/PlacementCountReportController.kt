@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -33,7 +33,8 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         examinationDate: LocalDate,
         @RequestParam(name = "providerTypes")
         requestedProviderTypes: List<ProviderType> = emptyList(),
-        @RequestParam(name = "careTypes") requestedCareTypes: List<CareType> = emptyList()
+        @RequestParam(name = "placementTypes")
+        requestedPlacementTypes: List<PlacementType> = emptyList()
     ): PlacementCountReportResult {
         return db.connect { dbc ->
                 dbc.read {
@@ -47,7 +48,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                     it.getPlacementCountReportRows(
                         examinationDate,
                         requestedProviderTypes.ifEmpty { ProviderType.values().toList() },
-                        requestedCareTypes.ifEmpty { CareType.values().toList() }
+                        requestedPlacementTypes.ifEmpty { PlacementType.values().toList() }
                     )
                 }
             }
@@ -57,7 +58,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                         mapOf(
                             "examinationDate" to examinationDate,
                             "providerTypes" to requestedProviderTypes,
-                            "careTypes" to requestedCareTypes
+                            "careTypes" to requestedPlacementTypes
                         )
                 )
             }
@@ -66,7 +67,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
     private fun Database.Read.getPlacementCountReportRows(
         examinationDate: LocalDate,
         providerTypes: List<ProviderType>,
-        careTypes: List<CareType>
+        placementTypes: List<PlacementType>
     ): PlacementCountReportResult {
         // language=sql
         val sql =
@@ -106,7 +107,7 @@ WHERE d.opening_date <= :examinationDate
   AND (d.closing_date IS NULL OR d.closing_date >= :examinationDate)
   AND d.provider_type = ANY
       (:providerTypes::unit_provider_type[])
-  AND :careTypes::care_types[] && d.type
+  AND pl.type = ANY(:placementTypes::placement_type[])
 GROUP BY ROLLUP ((ca.id, ca.name), (d.id, d.name))
 ORDER BY ca.name, d.name ASC;
             """
@@ -115,7 +116,7 @@ ORDER BY ca.name, d.name ASC;
             createQuery(sql)
                 .bind("examinationDate", examinationDate)
                 .bind("providerTypes", providerTypes)
-                .bind("careTypes", careTypes)
+                .bind("placementTypes", placementTypes)
                 .mapTo<PlacementCountReportRow>()
 
         val daycaresByArea = mutableMapOf<String, MutableList<PlacementCountDaycareResult>>()
