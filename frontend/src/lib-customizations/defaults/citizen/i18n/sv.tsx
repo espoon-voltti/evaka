@@ -2254,23 +2254,23 @@ const sv: Translations = {
         `Sida ${current} av ${total}`
     },
     serviceNeedAndDailyServiceTime: {
-      title: 'Palveluntarve ja päivittäinen varhaiskasvatusaika (sv)'
+      title: 'Dagvårdsbehov och daglig vårdtid'
     },
     serviceNeed: {
-      title: 'Palveluntarve (sv)',
-      validity: 'Voimassaoloaika (sv)',
-      description: 'Kuvaus (sv)',
-      unit: 'Yksikkö (sv)',
-      status: 'Tila (sv)',
-      empty: 'Palveluntarvetta ei määritelty (sv)'
+      title: 'Dagvårdsbehov',
+      validity: 'Giltig',
+      description: 'Beskrivning',
+      unit: 'Enhet',
+      status: 'Status',
+      empty: 'Dagvårdsbehov inte definierat'
     },
     dailyServiceTime: {
-      title: 'Päivittäinen varhaiskasvatusaika (sv)',
-      validity: 'Voimassaoloaika (sv)',
-      description: 'Kuvaus (sv)',
-      status: 'Tila (sv)',
-      variableTime: 'Päivittäinen aika vaihtelee (sv)',
-      empty: 'Ei määritelty (sv)'
+      title: 'Daglig vårdtid',
+      validity: 'Giltighetstid',
+      description: 'Beskrivning',
+      status: 'Status',
+      variableTime: 'Dagliga tiden varierar',
+      empty: 'Inte definierat'
     },
     vasu: {
       title: 'Plan för småbarnspedagogik och lärande inom förskoleundervisning',
