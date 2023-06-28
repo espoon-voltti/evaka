@@ -24,6 +24,7 @@ val generatedFiles =
                 generateEnum<Action.AssistanceFactor>(),
                 generateEnum<Action.AssistanceNeed>(),
                 generateEnum<Action.AssistanceNeedDecision>(),
+                generateEnum<Action.AssistanceNeedPreschoolDecision>(),
                 generateEnum<Action.AssistanceNeedVoucherCoefficient>(),
                 generateEnum<Action.BackupCare>(),
                 generateEnum<Action.BackupPickup>(),

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
@@ -131,6 +132,18 @@ AND sent_for_decision IS NOT NULL
                 """
 SELECT id
 FROM assistance_need_decision
+WHERE sent_for_decision IS NOT NULL
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun andAssistanceNeedPreschoolDecisionHasBeenSent() =
+        rule<AssistanceNeedPreschoolDecisionId> { _, _ ->
+            sql(
+                """
+SELECT id
+FROM assistance_need_preschool_decision
 WHERE sent_for_decision IS NOT NULL
             """
                     .trimIndent()

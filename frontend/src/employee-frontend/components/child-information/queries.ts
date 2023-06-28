@@ -9,7 +9,10 @@ import {
   PreschoolAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
 import { AssistanceActionRequest } from 'lib-common/generated/api-types/assistanceaction'
-import { AssistanceNeedRequest } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedPreschoolDecisionForm,
+  AssistanceNeedRequest
+} from 'lib-common/generated/api-types/assistanceneed'
 import {
   ChildDocumentCreateRequest,
   DocumentContent
@@ -51,12 +54,35 @@ import {
   putChildDocumentPublish,
   putChildDocumentUnpublish
 } from '../../api/child/child-documents'
+import { getUnitsRaw } from '../../api/daycare'
 import { createQueryKeys } from '../../query'
+
+import {
+  deleteAssistanceNeedPreschoolDecision,
+  getAssistanceNeedPreschoolDecision,
+  getAssistanceNeedPreschoolDecisionBasics,
+  getAssistanceNeedPreschoolDecisionMakerOptions,
+  postAssistanceNeedPreschoolDecision,
+  putAssistanceNeedPreschoolDecision
+} from './assistance-need/decision/api-preschool'
 
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
-  assistance: (childId: UUID) => ['assistance', childId]
+  assistance: (childId: UUID) => ['assistance', childId],
+  assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
+    'assistanceNeedPreschoolDecisionBasics',
+    childId
+  ],
+  assistanceNeedPreschoolDecision: (decisionId: UUID) => [
+    'assistanceNeedPreschoolDecision',
+    decisionId
+  ],
+  preschoolUnits: () => ['preschoolUnits'],
+  decisionMakerOptions: (decisionId: UUID) => [
+    'decisionMakerOptions',
+    decisionId
+  ]
 })
 
 export const childDocumentsQuery = query({
@@ -213,4 +239,46 @@ export const deleteOtherAssistanceMeasureMutation = mutation({
   api: (arg: { id: UUID; childId: UUID }) =>
     deleteOtherAssistanceMeasure(arg.id),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+})
+
+export const assistanceNeedPreschoolDecisionBasicsQuery = query({
+  api: getAssistanceNeedPreschoolDecisionBasics,
+  queryKey: queryKeys.assistanceNeedPreschoolDecisionBasics
+})
+
+export const assistanceNeedPreschoolDecisionQuery = query({
+  api: getAssistanceNeedPreschoolDecision,
+  queryKey: queryKeys.assistanceNeedPreschoolDecision
+})
+
+export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
+  api: getAssistanceNeedPreschoolDecisionMakerOptions,
+  queryKey: queryKeys.decisionMakerOptions
+})
+
+export const createAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: UUID) => postAssistanceNeedPreschoolDecision(arg),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg)
+  ]
+})
+
+export const updateAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { id: UUID; body: AssistanceNeedPreschoolDecisionForm }) =>
+    putAssistanceNeedPreschoolDecision(arg.id, arg.body),
+  invalidateQueryKeys: () => [] // no automatic invalidation due to auto-save
+})
+
+export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { childId: UUID; id: UUID }) =>
+    deleteAssistanceNeedPreschoolDecision(arg.id),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
+    queryKeys.assistanceNeedPreschoolDecision(arg.id)
+  ]
+})
+
+export const preschoolUnitsQuery = query({
+  api: () => getUnitsRaw([], 'PRESCHOOL'),
+  queryKey: queryKeys.preschoolUnits
 })

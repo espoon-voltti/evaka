@@ -20,11 +20,11 @@ export interface Unit {
   name: string
 }
 
-export async function getUnits(
+export async function getUnitsRaw(
   areas: string[],
   type: UnitTypeFilter,
   from?: LocalDate
-): Promise<Result<Unit[]>> {
+): Promise<Unit[]> {
   return client
     .get<JsonOf<Unit[]>>('/filters/units', {
       params: {
@@ -34,14 +34,21 @@ export async function getUnits(
       }
     })
     .then((res) =>
-      Success.of(
-        res.data.sort((unitA, unitB) =>
-          unitA.name.localeCompare(unitB.name, 'fi', {
-            ignorePunctuation: true
-          })
-        )
+      res.data.sort((unitA, unitB) =>
+        unitA.name.localeCompare(unitB.name, 'fi', {
+          ignorePunctuation: true
+        })
       )
     )
+}
+
+export async function getUnits(
+  areas: string[],
+  type: UnitTypeFilter,
+  from?: LocalDate
+): Promise<Result<Unit[]>> {
+  return getUnitsRaw(areas, type, from)
+    .then((res) => Success.of(res))
     .catch((e) => Failure.fromError(e))
 }
 

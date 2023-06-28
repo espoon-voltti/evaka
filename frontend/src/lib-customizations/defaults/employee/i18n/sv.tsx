@@ -12,6 +12,10 @@ export const sv = {
   ...fi,
   childInformation: {
     ...fi.childInformation,
+    assistanceNeedPreschoolDecision: {
+      ...fi.childInformation.assistanceNeedPreschoolDecision
+      // todo: swedish translations
+    },
     assistanceNeedDecision: {
       ...fi.childInformation.assistanceNeedDecision,
       pageTitle: 'Beslut om stöd',
