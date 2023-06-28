@@ -101,6 +101,14 @@ export async function putAssistanceNeedPreschoolDecisionUnsend(
   await client.put(`/assistance-need-preschool-decisions/${decisionId}/unsend`)
 }
 
+export async function putAssistanceNeedPreschoolDecisionMarkAsOpened(
+  decisionId: UUID
+): Promise<void> {
+  await client.put(
+    `/assistance-need-preschool-decisions/${decisionId}/mark-as-opened`
+  )
+}
+
 export async function deleteAssistanceNeedPreschoolDecision(
   id: UUID
 ): Promise<void> {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
@@ -15,9 +15,13 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { DecisionFormReadView } from '../child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionReadPage'
+import { putAssistanceNeedPreschoolDecisionMarkAsOpened } from '../child-information/assistance-need/decision/api-preschool'
 import { assistanceNeedPreschoolDecisionQuery } from '../child-information/queries'
+
+import { AssistanceNeedDecisionReportContext } from './AssistanceNeedDecisionReportContext'
 
 const DecisionView = React.memo(function DecisionView({
   decision: { decision }
@@ -26,6 +30,23 @@ const DecisionView = React.memo(function DecisionView({
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
+
+  const { user } = useContext(UserContext)
+  const { refreshAssistanceNeedDecisionCounts } = useContext(
+    AssistanceNeedDecisionReportContext
+  )
+
+  useEffect(() => {
+    if (
+      !decision.decisionMakerHasOpened &&
+      user?.id === decision.form.decisionMakerEmployeeId
+    ) {
+      void putAssistanceNeedPreschoolDecisionMarkAsOpened(decision.id).then(
+        () => refreshAssistanceNeedDecisionCounts()
+      )
+    }
+  }, [decision, user, refreshAssistanceNeedDecisionCounts])
+
   return (
     <div>
       <DecisionFormReadView decision={decision} />

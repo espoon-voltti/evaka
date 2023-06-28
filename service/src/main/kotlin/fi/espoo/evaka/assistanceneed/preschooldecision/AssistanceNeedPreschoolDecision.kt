@@ -26,6 +26,7 @@ data class AssistanceNeedPreschoolDecision(
     val status: AssistanceNeedDecisionStatus,
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
+    val decisionMakerHasOpened: Boolean,
     val annulmentReason: String,
     val hasDocument: Boolean,
     val unitName: String?,

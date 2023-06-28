@@ -112,7 +112,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/send")
-    fun sendAssistanceNeedPreschoolDecision(
+    fun sendForDecision(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -138,7 +138,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/unsend")
-    fun revertToUnsentAssistanceNeedPreschoolDecision(
+    fun revertToUnsent(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -158,6 +158,29 @@ class AssistanceNeedPreschoolDecisionController(
                 }
             }
             .also { Audit.ChildAssistanceNeedPreschoolDecisionRevertToUnsent.log(targetId = id) }
+    }
+
+    @PutMapping("/assistance-need-preschool-decisions/{id}/mark-as-opened")
+    fun markAsOpened(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.MARK_AS_OPENED,
+                        id
+                    )
+
+                    tx.markAssistanceNeedPreschoolDecisionAsOpened(id)
+                }
+            }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = id) }
     }
 
     @GetMapping("/children/{childId}/assistance-need-preschool-decisions")

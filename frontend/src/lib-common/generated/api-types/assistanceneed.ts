@@ -245,6 +245,7 @@ export interface AssistanceNeedPreschoolDecision {
   annulmentReason: string
   child: AssistanceNeedPreschoolDecisionChild
   decisionMade: LocalDate | null
+  decisionMakerHasOpened: boolean
   decisionMakerName: string | null
   decisionNumber: number
   form: AssistanceNeedPreschoolDecisionForm

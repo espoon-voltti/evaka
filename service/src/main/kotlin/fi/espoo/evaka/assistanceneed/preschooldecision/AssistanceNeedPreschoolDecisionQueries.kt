@@ -107,6 +107,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             
             ad.sent_for_decision,
             ad.decision_made,
+            ad.decision_maker_has_opened,
             ad.annulment_reason,
             (ad.document_key IS NOT NULL) has_document,
             
