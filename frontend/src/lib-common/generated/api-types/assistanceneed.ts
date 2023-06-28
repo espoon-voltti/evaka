@@ -408,6 +408,13 @@ export interface DecideAssistanceNeedDecisionRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.DecideAssistanceNeedPreschoolDecisionRequest
+*/
+export interface DecideAssistanceNeedPreschoolDecisionRequest {
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 */
 export interface ServiceOptions {

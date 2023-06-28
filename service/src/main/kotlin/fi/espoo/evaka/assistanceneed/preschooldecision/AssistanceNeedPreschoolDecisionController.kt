@@ -8,6 +8,7 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
+import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -183,6 +184,79 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = id) }
     }
 
+    @PutMapping("/assistance-need-preschool-decisions/{id}/decide")
+    fun decideAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
+        @RequestBody body: DecideAssistanceNeedPreschoolDecisionRequest
+    ) {
+        if (
+            body.status == AssistanceNeedDecisionStatus.DRAFT ||
+                body.status == AssistanceNeedDecisionStatus.ANNULLED
+        ) {
+            throw BadRequest(
+                "Assistance need decisions cannot be decided to be a draft or annulled"
+            )
+        }
+
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.DECIDE,
+                        id
+                    )
+
+                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
+
+                    if (
+                        decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
+                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                            decision.status == AssistanceNeedDecisionStatus.ANNULLED
+                    ) {
+                        throw BadRequest("Already-decided decisions cannot be decided again")
+                    }
+
+                    tx.decideAssistanceNeedPreschoolDecision(
+                        id = id,
+                        status = body.status,
+                        decisionMade =
+                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
+                            else clock.today(),
+                        unreadGuardianIds =
+                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                                null
+                            } else {
+                                tx.getChildGuardians(decision.child.id)
+                            }
+                    )
+
+                    // todo
+                    /*if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.SendAssistanceNeedDecisionEmail(id),
+                                AsyncJob.CreateAssistanceNeedDecisionPdf(id),
+                                AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
+                            ),
+                            runAt = clock.now()
+                        )
+                    }*/
+                }
+            }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionDecide.log(
+                    targetId = id,
+                    meta = mapOf("status" to body.status)
+                )
+            }
+    }
+
     @GetMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun getAssistanceNeedPreschoolDecisions(
         db: Database,
@@ -335,6 +409,10 @@ class AssistanceNeedPreschoolDecisionController(
     data class AssistanceNeedPreschoolDecisionResponse(
         val decision: AssistanceNeedPreschoolDecision,
         val permittedActions: Set<Action.AssistanceNeedPreschoolDecision>
+    )
+
+    data class DecideAssistanceNeedPreschoolDecisionRequest(
+        val status: AssistanceNeedDecisionStatus
     )
 
     data class UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest(val title: String)

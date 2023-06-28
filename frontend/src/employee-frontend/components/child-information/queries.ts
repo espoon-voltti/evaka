@@ -10,6 +10,7 @@ import {
 } from 'lib-common/generated/api-types/assistance'
 import { AssistanceActionRequest } from 'lib-common/generated/api-types/assistanceaction'
 import {
+  AssistanceNeedDecisionStatus,
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedRequest
 } from 'lib-common/generated/api-types/assistanceneed'
@@ -64,6 +65,7 @@ import {
   getAssistanceNeedPreschoolDecisionMakerOptions,
   postAssistanceNeedPreschoolDecision,
   putAssistanceNeedPreschoolDecision,
+  putAssistanceNeedPreschoolDecisionDecide,
   putAssistanceNeedPreschoolDecisionSend,
   putAssistanceNeedPreschoolDecisionUnsend
 } from './assistance-need/decision/api-preschool'
@@ -283,6 +285,18 @@ export const sendAssistanceNeedPreschoolDecisionMutation = mutation({
 export const unsendAssistanceNeedPreschoolDecisionMutation = mutation({
   api: (arg: { childId: UUID; id: UUID }) =>
     putAssistanceNeedPreschoolDecisionUnsend(arg.id),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
+    queryKeys.assistanceNeedPreschoolDecision(arg.id)
+  ]
+})
+
+export const decideAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: {
+    childId: UUID
+    id: UUID
+    status: AssistanceNeedDecisionStatus
+  }) => putAssistanceNeedPreschoolDecisionDecide(arg.id, arg.status),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)

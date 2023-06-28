@@ -294,7 +294,7 @@ fun Database.Transaction.markAssistanceNeedPreschoolDecisionAsOpened(
     createUpdate(sql).bind("id", id).updateExactlyOne()
 }
 
-fun Database.Transaction.decideAssistanceNeedDecision(
+fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId,
     status: AssistanceNeedDecisionStatus,
     decisionMade: LocalDate?,
