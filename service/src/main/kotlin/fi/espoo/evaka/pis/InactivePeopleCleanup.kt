@@ -20,7 +20,7 @@ fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<P
                 """
 WITH people_with_no_archive_data AS (
     SELECT id FROM person
-    WHERE (last_login IS NULL OR last_login::date < :twoWeeksAgo)
+    WHERE (last_login IS NULL OR last_login::date < :twoMonthsAgo)
     AND NOT EXISTS (SELECT 1 FROM application WHERE application.guardian_id = person.id OR application.child_id = person.id OR application.other_guardian_id = person.id)
     AND NOT EXISTS (SELECT 1 FROM application_other_guardian aog WHERE aog.guardian_id = person.id)
     AND NOT EXISTS (SELECT 1 FROM placement WHERE placement.child_id = person.id)
@@ -124,7 +124,7 @@ AND NOT EXISTS (
 RETURNING id
 """
             )
-            .bind("twoWeeksAgo", queryDate.minusDays(14))
+            .bind("twoMonthsAgo", queryDate.minusMonths(2))
             .executeAndReturnGeneratedKeys()
             .mapTo<PersonId>()
             .toSet()
