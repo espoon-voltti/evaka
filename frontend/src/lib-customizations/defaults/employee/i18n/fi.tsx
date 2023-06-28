@@ -3109,7 +3109,7 @@ export const fi = {
       annulModal: {
         title: 'Mitätöidäänkö päätös?',
         okBtn: 'Mitätöi päätös',
-        text: 'Haluatko varmasti mitätöidä päätöksen? Päätöksen voimassaolo lakkaa välittömästi. Tieto mitätöinnistä ja sen perustelu lähetetään kuntalaisen nähtäväksi eVakaan.',
+        text: 'Päätöstä ei saa mitätöidä keskustelematta ensin huoltajan kanssa. Uudella päätöksellä ei hallintolain mukaan saa heikentää huoltajan asemaa. Haluatko varmasti mitätöidä päätöksen? Päätöksen voimassaolo lakkaa välittömästi. Tieto mitätöinnistä ja sen perustelu lähetetään kuntalaisen nähtäväksi eVakaan.',
         inputPlaceholder: 'Kuvaile miksi päätös on mitätöity'
       },
       mismatchDecisionMakerWarning: {
