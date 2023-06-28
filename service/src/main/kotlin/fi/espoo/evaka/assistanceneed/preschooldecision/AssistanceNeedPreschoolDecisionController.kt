@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -105,23 +104,60 @@ class AssistanceNeedPreschoolDecisionController(
                         Action.AssistanceNeedPreschoolDecision.UPDATE,
                         id
                     )
-                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
-
-                    if (
-                        decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
-                            (decision.status != AssistanceNeedDecisionStatus.DRAFT ||
-                                decision.sentForDecision != null)
-                    ) {
-                        throw Forbidden(
-                            "Only non-sent draft or workable decisions can be edited",
-                            "UNEDITABLE_DECISION"
-                        )
-                    }
 
                     tx.updateAssistanceNeedPreschoolDecision(id, body)
                 }
             }
             .also { Audit.ChildAssistanceNeedPreschoolDecisionUpdate.log(targetId = id) }
+    }
+
+    @PutMapping("/assistance-need-preschool-decisions/{id}/send")
+    fun sendAssistanceNeedPreschoolDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.SEND,
+                        id
+                    )
+
+                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
+                    if (!decision.isValid) throw BadRequest("Decision form is not valid")
+
+                    tx.updateAssistanceNeedPreschoolDecisionToSent(id, clock.today())
+                }
+            }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionSend.log(targetId = id) }
+    }
+
+    @PutMapping("/assistance-need-preschool-decisions/{id}/unsend")
+    fun revertToUnsentAssistanceNeedPreschoolDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.REVERT_TO_UNSENT,
+                        id
+                    )
+
+                    tx.updateAssistanceNeedPreschoolDecisionToNotSent(id)
+                }
+            }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionRevertToUnsent.log(targetId = id) }
     }
 
     @GetMapping("/children/{childId}/assistance-need-preschool-decisions")

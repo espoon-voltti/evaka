@@ -89,6 +89,18 @@ export async function putAssistanceNeedPreschoolDecision(
   await client.put(`/assistance-need-preschool-decisions/${decisionId}`, body)
 }
 
+export async function putAssistanceNeedPreschoolDecisionSend(
+  decisionId: UUID
+): Promise<void> {
+  await client.put(`/assistance-need-preschool-decisions/${decisionId}/send`)
+}
+
+export async function putAssistanceNeedPreschoolDecisionUnsend(
+  decisionId: UUID
+): Promise<void> {
+  await client.put(`/assistance-need-preschool-decisions/${decisionId}/unsend`)
+}
+
 export async function deleteAssistanceNeedPreschoolDecision(
   id: UUID
 ): Promise<void> {

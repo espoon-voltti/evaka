@@ -63,7 +63,9 @@ import {
   getAssistanceNeedPreschoolDecisionBasics,
   getAssistanceNeedPreschoolDecisionMakerOptions,
   postAssistanceNeedPreschoolDecision,
-  putAssistanceNeedPreschoolDecision
+  putAssistanceNeedPreschoolDecision,
+  putAssistanceNeedPreschoolDecisionSend,
+  putAssistanceNeedPreschoolDecisionUnsend
 } from './assistance-need/decision/api-preschool'
 
 export const queryKeys = createQueryKeys('childInformation', {
@@ -267,6 +269,24 @@ export const updateAssistanceNeedPreschoolDecisionMutation = mutation({
   api: (arg: { id: UUID; body: AssistanceNeedPreschoolDecisionForm }) =>
     putAssistanceNeedPreschoolDecision(arg.id, arg.body),
   invalidateQueryKeys: () => [] // no automatic invalidation due to auto-save
+})
+
+export const sendAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { childId: UUID; id: UUID }) =>
+    putAssistanceNeedPreschoolDecisionSend(arg.id),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
+    queryKeys.assistanceNeedPreschoolDecision(arg.id)
+  ]
+})
+
+export const unsendAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { childId: UUID; id: UUID }) =>
+    putAssistanceNeedPreschoolDecisionUnsend(arg.id),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
+    queryKeys.assistanceNeedPreschoolDecision(arg.id)
+  ]
 })
 
 export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({

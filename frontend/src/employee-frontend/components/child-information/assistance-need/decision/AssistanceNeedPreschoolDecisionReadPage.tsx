@@ -6,11 +6,12 @@ import React, { Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
-import { useQueryResult } from 'lib-common/query'
+import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -24,7 +25,11 @@ import { translations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
-import { assistanceNeedPreschoolDecisionQuery } from '../../queries'
+import {
+  assistanceNeedPreschoolDecisionQuery,
+  sendAssistanceNeedPreschoolDecisionMutation,
+  unsendAssistanceNeedPreschoolDecisionMutation
+} from '../../queries'
 
 const WidthLimiter = styled.div`
   max-width: 700px;
@@ -61,13 +66,20 @@ const ReadOnlyTextArea = React.memo(function ReadOnlyTextArea({
 })
 
 const DecisionReadView = React.memo(function DecisionReadView({
-  decision
+  decision: { decision, permittedActions }
 }: {
-  decision: AssistanceNeedPreschoolDecision
+  decision: AssistanceNeedPreschoolDecisionResponse
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const t = pageTranslations[decision.form.language]
+
+  const { mutateAsync: sendForDecision } = useMutationResult(
+    sendAssistanceNeedPreschoolDecisionMutation
+  )
+  const { mutateAsync: revertSendForDecision } = useMutationResult(
+    unsendAssistanceNeedPreschoolDecisionMutation
+  )
 
   return (
     <div>
@@ -285,6 +297,10 @@ const DecisionReadView = React.memo(function DecisionReadView({
             />
             <Button
               text={i18n.childInformation.assistanceNeedDecision.modifyDecision}
+              disabled={
+                decision.status !== 'NEEDS_WORK' &&
+                !(decision.status === 'DRAFT' && !decision.sentForDecision)
+              }
               onClick={() =>
                 navigate(
                   `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}/edit`
@@ -294,15 +310,57 @@ const DecisionReadView = React.memo(function DecisionReadView({
             />
           </FixedSpaceRow>
 
-          <Button
-            primary
-            text={
-              i18n.childInformation.assistanceNeedDecision.sendToDecisionMaker
-            }
-            disabled={true}
-            onClick={() => alert('todo')}
-            data-qa="send-decision"
-          />
+          <FixedSpaceRow>
+            {decision.sentForDecision && (
+              <FixedSpaceColumn spacing="xs">
+                <span>
+                  {
+                    i18n.childInformation.assistanceNeedDecision
+                      .sentToDecisionMaker
+                  }
+                </span>
+                <span>{decision.sentForDecision.format()}</span>
+              </FixedSpaceColumn>
+            )}
+            {permittedActions.includes('REVERT_TO_UNSENT') &&
+              decision.sentForDecision !== null &&
+              ['DRAFT', 'NEEDS_WORK'].includes(decision.status) && (
+                <AsyncButton
+                  text={
+                    i18n.childInformation.assistanceNeedDecision.revertToUnsent
+                  }
+                  onClick={() =>
+                    revertSendForDecision({
+                      childId: decision.child.id,
+                      id: decision.id
+                    })
+                  }
+                  onSuccess={() => undefined}
+                  data-qa="revert-to-unsent"
+                />
+              )}
+            {permittedActions.includes('SEND') &&
+              (decision.status === 'NEEDS_WORK' ||
+                (decision.status === 'DRAFT' &&
+                  decision.sentForDecision === null)) && (
+                <AsyncButton
+                  primary
+                  text={
+                    i18n.childInformation.assistanceNeedDecision
+                      .sendToDecisionMaker
+                  }
+                  disabled={!decision.isValid}
+                  onClick={() =>
+                    sendForDecision({
+                      childId: decision.child.id,
+                      id: decision.id
+                    })
+                  }
+                  onSuccess={() => undefined}
+                  data-qa="send-decision"
+                />
+              )}
+          </FixedSpaceRow>
         </FixedSpaceRow>
       </StickyFooter>
     </div>
@@ -316,6 +374,6 @@ export default React.memo(function AssistanceNeedPreschoolDecisionReadPage() {
   )
 
   return renderResult(decisionResult, (decisionResponse) => (
-    <DecisionReadView decision={decisionResponse.decision} />
+    <DecisionReadView decision={decisionResponse} />
   ))
 })

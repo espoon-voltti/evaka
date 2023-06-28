@@ -250,6 +250,7 @@ export interface AssistanceNeedPreschoolDecision {
   form: AssistanceNeedPreschoolDecisionForm
   hasDocument: boolean
   id: UUID
+  isValid: boolean
   preparer1Name: string | null
   preparer2Name: string | null
   sentForDecision: LocalDate | null
