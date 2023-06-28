@@ -198,16 +198,32 @@ class AssistanceController(
                             child
                         )
                     )
-                        tx.getAssistanceFactors(child).let { rows ->
-                            val actions: Map<AssistanceFactorId, Set<Action.AssistanceFactor>> =
-                                accessControl.getPermittedActions(
-                                    tx,
-                                    user,
-                                    clock,
-                                    rows.map { it.id }
-                                )
-                            rows.map { AssistanceFactorResponse(it, actions[it.id] ?: emptySet()) }
-                        }
+                        tx.getAssistanceFactors(child)
+                            .let { rows ->
+                                val prePreschool =
+                                    rows.filterNot { isPrePreschoolDate(it.validDuring.start) }
+                                val decisions =
+                                    accessControl.checkPermissionFor(
+                                        tx,
+                                        user,
+                                        clock,
+                                        Action.AssistanceFactor.READ_PRE_PRESCHOOL,
+                                        prePreschool.map { it.id }
+                                    )
+                                rows.filter { decisions[it.id]?.isPermitted() ?: true }
+                            }
+                            .let { rows ->
+                                val actions: Map<AssistanceFactorId, Set<Action.AssistanceFactor>> =
+                                    accessControl.getPermittedActions(
+                                        tx,
+                                        user,
+                                        clock,
+                                        rows.map { it.id }
+                                    )
+                                rows.map {
+                                    AssistanceFactorResponse(it, actions[it.id] ?: emptySet())
+                                }
+                            }
                     else emptyList()
 
                 val daycareAssistances =
@@ -220,16 +236,33 @@ class AssistanceController(
                             child
                         )
                     )
-                        tx.getDaycareAssistances(child).let { rows ->
-                            val actions: Map<DaycareAssistanceId, Set<Action.DaycareAssistance>> =
-                                accessControl.getPermittedActions(
-                                    tx,
-                                    user,
-                                    clock,
-                                    rows.map { it.id }
-                                )
-                            rows.map { DaycareAssistanceResponse(it, actions[it.id] ?: emptySet()) }
-                        }
+                        tx.getDaycareAssistances(child)
+                            .let { rows ->
+                                val prePreschool =
+                                    rows.filterNot { isPrePreschoolDate(it.validDuring.start) }
+                                val decisions =
+                                    accessControl.checkPermissionFor(
+                                        tx,
+                                        user,
+                                        clock,
+                                        Action.DaycareAssistance.READ_PRE_PRESCHOOL,
+                                        prePreschool.map { it.id }
+                                    )
+                                rows.filter { decisions[it.id]?.isPermitted() ?: true }
+                            }
+                            .let { rows ->
+                                val actions:
+                                    Map<DaycareAssistanceId, Set<Action.DaycareAssistance>> =
+                                    accessControl.getPermittedActions(
+                                        tx,
+                                        user,
+                                        clock,
+                                        rows.map { it.id }
+                                    )
+                                rows.map {
+                                    DaycareAssistanceResponse(it, actions[it.id] ?: emptySet())
+                                }
+                            }
                     else emptyList()
 
                 val preschoolAssistances =
@@ -267,19 +300,35 @@ class AssistanceController(
                             child
                         )
                     )
-                        tx.getOtherAssistanceMeasures(child).let { rows ->
-                            val actions:
-                                Map<OtherAssistanceMeasureId, Set<Action.OtherAssistanceMeasure>> =
-                                accessControl.getPermittedActions(
-                                    tx,
-                                    user,
-                                    clock,
-                                    rows.map { it.id }
-                                )
-                            rows.map {
-                                OtherAssistanceMeasureResponse(it, actions[it.id] ?: emptySet())
+                        tx.getOtherAssistanceMeasures(child)
+                            .let { rows ->
+                                val prePreschool =
+                                    rows.filterNot { isPrePreschoolDate(it.validDuring.start) }
+                                val decisions =
+                                    accessControl.checkPermissionFor(
+                                        tx,
+                                        user,
+                                        clock,
+                                        Action.OtherAssistanceMeasure.READ_PRE_PRESCHOOL,
+                                        prePreschool.map { it.id }
+                                    )
+                                rows.filter { decisions[it.id]?.isPermitted() ?: true }
                             }
-                        }
+                            .let { rows ->
+                                val actions:
+                                    Map<
+                                        OtherAssistanceMeasureId, Set<Action.OtherAssistanceMeasure>
+                                    > =
+                                    accessControl.getPermittedActions(
+                                        tx,
+                                        user,
+                                        clock,
+                                        rows.map { it.id }
+                                    )
+                                rows.map {
+                                    OtherAssistanceMeasureResponse(it, actions[it.id] ?: emptySet())
+                                }
+                            }
                     else emptyList()
 
                 AssistanceResponse(

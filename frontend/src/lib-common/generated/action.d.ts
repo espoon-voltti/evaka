@@ -125,6 +125,7 @@ export type AssistanceAction =
 
 export type AssistanceFactor =
   | 'DELETE'
+  | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
 export type AssistanceNeed =
@@ -249,6 +250,7 @@ export type DailyServiceTime =
 
 export type DaycareAssistance =
   | 'DELETE'
+  | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
 export type Decision =
@@ -304,6 +306,7 @@ export type MobileDevice =
 
 export type OtherAssistanceMeasure =
   | 'DELETE'
+  | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
 export type Pairing = 'POST_RESPONSE'
