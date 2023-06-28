@@ -108,13 +108,22 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             ad.sent_for_decision,
             ad.decision_made,
             ad.annulment_reason,
-            (ad.document_key IS NOT NULL) has_document
+            (ad.document_key IS NOT NULL) has_document,
+            
+            d.name as unit_name,
+            CASE WHEN preparer1.id IS NOT NULL THEN coalesce(preparer1.preferred_first_name, preparer1.first_name) || ' ' || preparer1.last_name END as preparer_1_name,
+            CASE WHEN preparer2.id IS NOT NULL THEN coalesce(preparer2.preferred_first_name, preparer2.first_name) || ' ' || preparer2.last_name END as preparer_2_name,
+            CASE WHEN decision_maker.id IS NOT NULL THEN coalesce(decision_maker.preferred_first_name, decision_maker.first_name) || ' ' || decision_maker.last_name END as decision_maker_name
         FROM assistance_need_preschool_decision ad
         JOIN person child ON child.id = ad.child_id
         LEFT JOIN assistance_need_preschool_decision_guardian dg ON dg.assistance_need_decision_id = ad.id
         LEFT JOIN person p ON p.id = dg.person_id
+        LEFT JOIN daycare d ON ad.selected_unit = d.id
+        LEFT JOIN employee preparer1 ON ad.preparer_1_employee_id = preparer1.id
+        LEFT JOIN employee preparer2 ON ad.preparer_2_employee_id = preparer2.id
+        LEFT JOIN employee decision_maker ON ad.decision_maker_employee_id = decision_maker.id
         WHERE ad.id = :id
-        GROUP BY ad.id, child_id, valid_from, child.id;
+        GROUP BY ad.id, child.id, d.id, preparer1.id, preparer2.id, decision_maker.id;
         """
 
     return createQuery(sql).bind("id", id).mapTo<AssistanceNeedPreschoolDecision>().firstOrNull()

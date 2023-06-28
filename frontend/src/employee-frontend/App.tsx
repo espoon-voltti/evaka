@@ -45,6 +45,7 @@ import ChildDocumentEditor from './components/child-documents/ChildDocumentEdito
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import AssistanceNeedPreschoolDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionEditPage'
+import AssistanceNeedPreschoolDecisionReadPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionReadPage'
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import DocumentTemplatesPage from './components/document-templates/template-editor/DocumentTemplatesPage'
@@ -254,6 +255,16 @@ export default function App() {
                           title={i18n.titles.assistanceNeedDecision}
                         >
                           <AssistanceNeedDecisionEditPage />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId"
+                      element={
+                        <EmployeeRoute
+                          title={i18n.titles.assistanceNeedDecision}
+                        >
+                          <AssistanceNeedPreschoolDecisionReadPage />
                         </EmployeeRoute>
                       }
                     />

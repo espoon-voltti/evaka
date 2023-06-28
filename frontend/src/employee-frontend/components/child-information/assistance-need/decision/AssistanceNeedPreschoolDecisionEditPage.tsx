@@ -297,6 +297,11 @@ const DecisionEditor = React.memo(function DecisionEditor({
         details:
           guardian.details.trim() === '' ? ('required' as const) : undefined
       })),
+      otherRepresentativeHeard:
+        bind.state.guardianInfo.length === 0 &&
+        !bind.state.otherRepresentativeHeard
+          ? ('required' as const)
+          : undefined,
       otherRepresentativeDetails:
         bind.state.otherRepresentativeHeard &&
         bind.state.otherRepresentativeDetails.trim() === ''
@@ -652,6 +657,17 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       info={info('otherRepresentativeDetails')}
                     />
                   </WidthLimiter>
+                  {displayValidation &&
+                    validationErrors.otherRepresentativeHeard && (
+                      <AlertBox
+                        message={
+                          i18n.validationErrors[
+                            validationErrors.otherRepresentativeHeard
+                          ]
+                        }
+                        thin
+                      />
+                    )}
                 </FixedSpaceColumn>
               </FixedSpaceColumn>
 
@@ -826,7 +842,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
             onClick={() => {
               if (isValid) {
                 navigate(
-                  `/child-information/${decision.child.id}/assistance-need-decision/${decision.id}`
+                  `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
                 )
               } else {
                 setDisplayValidation(true)
