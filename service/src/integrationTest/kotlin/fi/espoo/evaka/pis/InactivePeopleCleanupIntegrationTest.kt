@@ -125,7 +125,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertPerson(testAdult_1)
             tx.execute(
                 "UPDATE person SET last_login = ? WHERE id = ?",
-                testDate.minusDays(14),
+                testDate.minusMonths(2),
                 testAdult_1.id
             )
         }
