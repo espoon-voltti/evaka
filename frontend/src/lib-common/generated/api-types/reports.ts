@@ -46,6 +46,7 @@ export interface AssistanceNeedDecisionsReportRow {
   decisionMade: LocalDate | null
   id: UUID
   isOpened: boolean | null
+  preschool: boolean
   sentForDecision: LocalDate
   status: AssistanceNeedDecisionStatus
   unitName: string

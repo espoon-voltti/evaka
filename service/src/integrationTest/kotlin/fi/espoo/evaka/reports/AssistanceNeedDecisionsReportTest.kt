@@ -150,7 +150,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         whenPostAssistanceNeedDecisionMarkAsOpenedThenExpectSuccess(firstDecisionId, decisionMaker1)
 
         val report = whenGetAssistanceNeedDecisionsReportThenExpectSuccess(decisionMaker1)
-        assertEquals(true, report.find { it.id == firstDecisionId }?.isOpened)
+        assertEquals(true, report.find { it.id == firstDecisionId.raw }?.isOpened)
         assertEquals(2, report.count { it.isOpened == false })
         assertEquals(1, report.count { it.isOpened == null })
     }

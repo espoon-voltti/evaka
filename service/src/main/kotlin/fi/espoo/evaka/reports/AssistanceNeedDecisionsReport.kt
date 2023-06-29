@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
+import java.util.UUID
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -31,14 +33,23 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
         return db.connect { dbc ->
                 dbc.read {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    val filter =
+
+                    val filterDaycare =
                         accessControl.requireAuthorizationFilter(
                             it,
                             user,
                             clock,
                             Action.AssistanceNeedDecision.READ_IN_REPORT
                         )
-                    it.getDecisionRows(user.evakaUserId, filter)
+                    val filterPreschool =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT
+                        )
+
+                    it.getDecisionRows(user.evakaUserId, filterDaycare, filterPreschool)
                 }
             }
             .also { Audit.AssistanceNeedDecisionsReportRead.log(meta = mapOf("count" to it.size)) }
@@ -72,20 +83,36 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
 
 private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
-    idFilter: AccessControlFilter<AssistanceNeedDecisionId>
+    idFilterDaycare: AccessControlFilter<AssistanceNeedDecisionId>,
+    idFilterPreschool: AccessControlFilter<AssistanceNeedPreschoolDecisionId>,
 ): List<AssistanceNeedDecisionsReportRow> =
     createQuery<DatabaseTable> {
             sql(
                 """
-SELECT ad.id, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
+WITH decisions AS (
+    SELECT 
+        id, false as preschool, status, sent_for_decision, decision_made, 
+        child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened
+    FROM assistance_need_decision ad
+    WHERE sent_for_decision IS NOT NULL
+    AND (${predicate(idFilterDaycare.forTable("ad"))})
+    
+    UNION ALL
+    
+    SELECT 
+        id, true as preschool, status, sent_for_decision, decision_made, 
+        child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened
+    FROM assistance_need_preschool_decision apd
+    WHERE sent_for_decision IS NOT NULL
+    AND (${predicate(idFilterPreschool.forTable("apd"))})
+)
+SELECT ad.id, ad.preschool, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
     care_area.name care_area_name, daycare.name unit_name, decision_made, status,
-    (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened ELSE NULL END) is_opened
-FROM assistance_need_decision ad
+    (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened END) is_opened
+FROM decisions ad
 JOIN person child ON child.id = ad.child_id
 JOIN daycare ON daycare.id = ad.selected_unit
 JOIN care_area ON care_area.id = daycare.care_area_id
-WHERE sent_for_decision IS NOT NULL
-AND (${predicate(idFilter.forTable("ad"))})
         """
                     .trimIndent()
             )
@@ -94,7 +121,8 @@ AND (${predicate(idFilter.forTable("ad"))})
         .toList()
 
 data class AssistanceNeedDecisionsReportRow(
-    val id: AssistanceNeedDecisionId,
+    val id: UUID,
+    val preschool: Boolean,
     val sentForDecision: LocalDate,
     val childName: String,
     val careAreaName: String,
@@ -109,10 +137,19 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
     val sql =
         """
         SELECT COUNT(*)
-        FROM assistance_need_decision
-        WHERE sent_for_decision IS NOT NULL
-          AND decision_maker_employee_id = :employeeId
-          AND NOT decision_maker_has_opened
+        FROM (
+            SELECT 1 FROM assistance_need_decision
+            WHERE sent_for_decision IS NOT NULL
+            AND decision_maker_employee_id = :employeeId
+            AND NOT decision_maker_has_opened
+            
+            UNION ALL 
+            
+            SELECT 1 FROM assistance_need_preschool_decision
+            WHERE sent_for_decision IS NOT NULL
+            AND decision_maker_employee_id = :employeeId
+            AND NOT decision_maker_has_opened
+        ) decisions
         """
             .trimIndent()
     return createQuery(sql).bind("employeeId", userId).mapTo<Int>().first()

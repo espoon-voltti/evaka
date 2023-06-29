@@ -107,6 +107,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             
             ad.sent_for_decision,
             ad.decision_made,
+            ad.decision_maker_has_opened,
             ad.annulment_reason,
             (ad.document_key IS NOT NULL) has_document,
             
@@ -172,7 +173,7 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecision(
             decision_maker_employee_id = :decisionMakerEmployeeId,
             decision_maker_title = :decisionMakerTitle,
             decision_maker_has_opened = COALESCE(:decisionMakerHasOpened, decision_maker_has_opened)
-        WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
+        WHERE id = :id AND status = 'NEEDS_WORK' OR (status = 'DRAFT' AND sent_for_decision IS NULL )
         """
 
     createUpdate(sql)
@@ -193,6 +194,36 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecision(
     val batch = prepareBatch(guardianSql)
     data.guardianInfo.forEach { guardian -> batch.bindKotlin(guardian).add() }
     batch.execute()
+}
+
+fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToSent(
+    id: AssistanceNeedPreschoolDecisionId,
+    today: LocalDate
+) {
+    createUpdate(
+            """
+        UPDATE assistance_need_preschool_decision
+        SET sent_for_decision = :today, status = 'DRAFT'
+        WHERE id = :id AND status in ('DRAFT', 'NEEDS_WORK')
+    """
+        )
+        .bind("id", id)
+        .bind("today", today)
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToNotSent(
+    id: AssistanceNeedPreschoolDecisionId
+) {
+    createUpdate(
+            """
+        UPDATE assistance_need_preschool_decision
+        SET sent_for_decision = NULL, status = 'DRAFT'
+        WHERE id = :id AND status in ('DRAFT', 'NEEDS_WORK')
+    """
+        )
+        .bind("id", id)
+        .updateExactlyOne()
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
@@ -263,7 +294,7 @@ fun Database.Transaction.markAssistanceNeedPreschoolDecisionAsOpened(
     createUpdate(sql).bind("id", id).updateExactlyOne()
 }
 
-fun Database.Transaction.decideAssistanceNeedDecision(
+fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId,
     status: AssistanceNeedDecisionStatus,
     decisionMade: LocalDate?,

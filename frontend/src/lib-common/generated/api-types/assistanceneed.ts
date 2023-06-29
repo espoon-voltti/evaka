@@ -245,11 +245,13 @@ export interface AssistanceNeedPreschoolDecision {
   annulmentReason: string
   child: AssistanceNeedPreschoolDecisionChild
   decisionMade: LocalDate | null
+  decisionMakerHasOpened: boolean
   decisionMakerName: string | null
   decisionNumber: number
   form: AssistanceNeedPreschoolDecisionForm
   hasDocument: boolean
   id: UUID
+  isValid: boolean
   preparer1Name: string | null
   preparer2Name: string | null
   sentForDecision: LocalDate | null
@@ -402,6 +404,13 @@ export interface AssistanceNeedVoucherCoefficientResponse {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest
 */
 export interface DecideAssistanceNeedDecisionRequest {
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.DecideAssistanceNeedPreschoolDecisionRequest
+*/
+export interface DecideAssistanceNeedPreschoolDecisionRequest {
   status: AssistanceNeedDecisionStatus
 }
 

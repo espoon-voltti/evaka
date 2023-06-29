@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  AssistanceNeedDecisionStatus,
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionBasicsResponse,
   AssistanceNeedPreschoolDecisionForm,
-  AssistanceNeedPreschoolDecisionResponse
+  AssistanceNeedPreschoolDecisionResponse,
+  DecideAssistanceNeedPreschoolDecisionRequest
 } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -87,6 +89,39 @@ export async function putAssistanceNeedPreschoolDecision(
   body: AssistanceNeedPreschoolDecisionForm
 ): Promise<void> {
   await client.put(`/assistance-need-preschool-decisions/${decisionId}`, body)
+}
+
+export async function putAssistanceNeedPreschoolDecisionSend(
+  decisionId: UUID
+): Promise<void> {
+  await client.put(`/assistance-need-preschool-decisions/${decisionId}/send`)
+}
+
+export async function putAssistanceNeedPreschoolDecisionUnsend(
+  decisionId: UUID
+): Promise<void> {
+  await client.put(`/assistance-need-preschool-decisions/${decisionId}/unsend`)
+}
+
+export async function putAssistanceNeedPreschoolDecisionMarkAsOpened(
+  decisionId: UUID
+): Promise<void> {
+  await client.put(
+    `/assistance-need-preschool-decisions/${decisionId}/mark-as-opened`
+  )
+}
+
+export async function putAssistanceNeedPreschoolDecisionDecide(
+  decisionId: UUID,
+  status: AssistanceNeedDecisionStatus
+): Promise<void> {
+  const body: DecideAssistanceNeedPreschoolDecisionRequest = {
+    status
+  }
+  await client.put(
+    `/assistance-need-preschool-decisions/${decisionId}/decide`,
+    body
+  )
 }
 
 export async function deleteAssistanceNeedPreschoolDecision(

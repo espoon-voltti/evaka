@@ -26,13 +26,61 @@ data class AssistanceNeedPreschoolDecision(
     val status: AssistanceNeedDecisionStatus,
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
+    val decisionMakerHasOpened: Boolean,
     val annulmentReason: String,
     val hasDocument: Boolean,
     val unitName: String?,
     val preparer1Name: String?,
     val preparer2Name: String?,
     val decisionMakerName: String?
-)
+) {
+    val isValid: Boolean
+        get() {
+            if (form.type == null) return false
+            if (form.validFrom == null) return false
+            if (
+                form.extendedCompulsoryEducation &&
+                    form.extendedCompulsoryEducationInfo.trim().isBlank()
+            )
+                return false
+            if (form.selectedUnit == null) return false
+            if (form.primaryGroup.trim().isBlank()) return false
+            if (form.decisionBasis.trim().isBlank()) return false
+            if (
+                listOf(
+                        form.basisDocumentPedagogicalReport,
+                        form.basisDocumentPsychologistStatement,
+                        form.basisDocumentSocialReport,
+                        form.basisDocumentDoctorStatement,
+                        form.basisDocumentOtherOrMissing
+                    )
+                    .none { it }
+            )
+                return false
+            if (
+                form.basisDocumentOtherOrMissing &&
+                    form.basisDocumentOtherOrMissingInfo.trim().isBlank()
+            )
+                return false
+            if (form.guardiansHeardOn == null) return false
+            if (form.guardianInfo.any { !it.isHeard || it.details.trim().isBlank() }) return false
+            if (
+                form.guardianInfo.isEmpty() &&
+                    (form.otherRepresentativeHeard ||
+                        form.otherRepresentativeDetails.trim().isBlank())
+            )
+                return false
+            if (form.viewOfGuardians.trim().isBlank()) return false
+            if (form.preparer1EmployeeId == null) return false
+            if (form.preparer1Title.trim().isBlank()) return false
+            if (form.preparer2EmployeeId != null && form.preparer2Title.trim().isBlank())
+                return false
+            if (form.decisionMakerEmployeeId == null) return false
+            if (form.decisionMakerTitle.trim().isBlank()) return false
+
+            return true
+        }
+}
 
 enum class AssistanceNeedPreschoolDecisionType {
     NEW,

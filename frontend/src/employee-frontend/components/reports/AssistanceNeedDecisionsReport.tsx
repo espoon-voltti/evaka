@@ -196,7 +196,11 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
                 <RelativeTr
                   key={row.id}
                   onClick={() =>
-                    navigate(`/reports/assistance-need-decisions/${row.id}`)
+                    navigate(
+                      `/reports/assistance-need${
+                        row.preschool ? '-preschool' : ''
+                      }-decisions/${row.id}`
+                    )
                   }
                   data-qa="assistance-need-decision-row"
                 >

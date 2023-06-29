@@ -217,6 +217,16 @@ const DecisionEditor = React.memo(function DecisionEditor({
   const [formLanguage, setFormLanguage] = useState(decision.form.language)
   const t = pageTranslations[formLanguage]
 
+  useEffect(() => {
+    const editable =
+      decision.status === 'NEEDS_WORK' ||
+      (decision.status === 'DRAFT' && !decision.sentForDecision)
+    if (!editable)
+      navigate(
+        `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
+      )
+  }, [decision, navigate])
+
   const getTypeOptions = useCallback(
     (lang: AssistanceNeedDecisionLanguage) =>
       types.map((type) => ({

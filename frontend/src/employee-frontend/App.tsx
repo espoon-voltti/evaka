@@ -65,6 +65,7 @@ import PlacementDraftPage from './components/placement-draft/PlacementDraft'
 import ReportApplications from './components/reports/Applications'
 import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
 import AssistanceNeedDecisionsReportDecision from './components/reports/AssistanceNeedDecisionsReportDecision'
+import AssistanceNeedDecisionsReportPreschoolDecision from './components/reports/AssistanceNeedDecisionsReportPreschoolDecision'
 import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
 import AttendanceReservation from './components/reports/AttendanceReservation'
 import AttendanceReservationByChild from './components/reports/AttendanceReservationByChild'
@@ -563,6 +564,14 @@ export default function App() {
                       element={
                         <EmployeeRoute title={i18n.titles.reports}>
                           <AssistanceNeedDecisionsReportDecision />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/reports/assistance-need-preschool-decisions/:decisionId"
+                      element={
+                        <EmployeeRoute title={i18n.titles.reports}>
+                          <AssistanceNeedDecisionsReportPreschoolDecision />
                         </EmployeeRoute>
                       }
                     />
