@@ -67,16 +67,16 @@ const DecisionView = React.memo(function DecisionView({
     decideAssistanceNeedPreschoolDecisionMutation
   )
 
+  const isDecisionMaker =
+    user && user.id === decision.form.decisionMakerEmployeeId
+
   useEffect(() => {
-    if (
-      !decision.decisionMakerHasOpened &&
-      user?.id === decision.form.decisionMakerEmployeeId
-    ) {
+    if (!decision.decisionMakerHasOpened && isDecisionMaker) {
       void putAssistanceNeedPreschoolDecisionMarkAsOpened(decision.id).then(
         () => refreshAssistanceNeedDecisionCounts()
       )
     }
-  }, [decision, user, refreshAssistanceNeedDecisionCounts])
+  }, [decision, isDecisionMaker, refreshAssistanceNeedDecisionCounts])
 
   return (
     <div>
@@ -93,14 +93,14 @@ const DecisionView = React.memo(function DecisionView({
             <FixedSpaceRow>
               <DangerButton
                 text={i18n.reports.assistanceNeedDecisions.rejectDecision}
-                disabled={submitting}
+                disabled={submitting || !isDecisionMaker}
                 onClick={() => setConfirmationModal('REJECT')}
               />
               <Button
                 text={
                   i18n.reports.assistanceNeedDecisions.returnDecisionForEditing
                 }
-                disabled={submitting}
+                disabled={submitting || !isDecisionMaker}
                 onClick={() =>
                   decide({
                     childId: decision.child.id,
@@ -112,7 +112,7 @@ const DecisionView = React.memo(function DecisionView({
               <Button
                 primary
                 text={i18n.reports.assistanceNeedDecisions.approveDecision}
-                disabled={submitting}
+                disabled={submitting || !isDecisionMaker}
                 onClick={() => setConfirmationModal('ACCEPT')}
               />
             </FixedSpaceRow>
