@@ -202,7 +202,7 @@ class DecisionService(
 
     private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
         documentClient
-            .upload(bucket, Document(name = key, bytes = document, contentType = "appliation/pdf"))
+            .upload(bucket, Document(name = key, bytes = document, contentType = "application/pdf"))
             .also { logger.debug { "PDF (object name: $key) uploaded to S3 with $it." } }
 
     fun deliverDecisionToGuardians(
@@ -290,7 +290,7 @@ class DecisionService(
             SfiMessage(
                 messageId = uniqueId,
                 documentId = uniqueId,
-                documentDisplayName = calculateDecisionFileName(tx, decision, lang),
+                documentDisplayName = calculateDecisionFileName(decision, lang),
                 documentBucket = decisionBucket,
                 documentKey = documentKey,
                 firstName = guardian.firstName,
@@ -314,21 +314,16 @@ class DecisionService(
                     decision.documentKey
                         ?: throw NotFound("Document generation for ${decision.id} in progress")
                 val lang = tx.getDecisionLanguage(decision.id)
-                val fileName = calculateDecisionFileName(tx, decision, lang)
+                val fileName = calculateDecisionFileName(decision, lang)
                 documentKey to fileName
             }
         return documentClient.responseAttachment(decisionBucket, documentKey, fileName)
     }
 
-    private fun calculateDecisionFileName(
-        tx: Database.Read,
-        decision: Decision,
-        lang: DocumentLang
-    ): String {
-        val child = tx.getPersonById(decision.childId)
-        val childName = "${child?.firstName}_${child?.lastName}"
+    private fun calculateDecisionFileName(decision: Decision, lang: DocumentLang): String {
+        val decisionUniqueId = decision.decisionNumber
         val prefix = templateProvider.getLocalizedFilename(decision.type, lang)
-        return "${prefix}_$childName.pdf".replace(" ", "_")
+        return "${prefix}_$decisionUniqueId.pdf".replace(" ", "_")
     }
 }
 
