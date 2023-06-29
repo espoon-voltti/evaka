@@ -14,6 +14,7 @@ import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -207,6 +208,12 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class CreateAssistanceNeedPreschoolDecisionPdf(
+        val decisionId: AssistanceNeedPreschoolDecisionId
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class UpdateFromVtj(val ssn: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -263,6 +270,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Config(concurrency = 4),
                 setOf(
                     CreateAssistanceNeedDecisionPdf::class,
+                    CreateAssistanceNeedPreschoolDecisionPdf::class,
                     DvvModificationsRefresh::class,
                     GarbageCollectPairing::class,
                     GenerateFinanceDecisions::class,

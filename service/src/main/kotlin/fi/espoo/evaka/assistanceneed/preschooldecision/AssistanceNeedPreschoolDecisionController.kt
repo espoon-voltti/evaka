@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -31,7 +33,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceNeedPreschoolDecisionController(
     private val featureConfig: FeatureConfig,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
@@ -221,32 +224,35 @@ class AssistanceNeedPreschoolDecisionController(
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
 
+                    val decided =
+                        body.status in
+                            listOf(
+                                AssistanceNeedDecisionStatus.ACCEPTED,
+                                AssistanceNeedDecisionStatus.REJECTED
+                            )
                     tx.decideAssistanceNeedPreschoolDecision(
                         id = id,
                         status = body.status,
-                        decisionMade =
-                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
-                            else clock.today(),
+                        decisionMade = clock.today().takeIf { decided },
                         unreadGuardianIds =
-                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
-                                null
-                            } else {
+                            if (decided) {
                                 tx.getChildGuardians(decision.child.id)
+                            } else {
+                                null
                             }
                     )
 
-                    // todo
-                    /*if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                    if (decided) {
                         asyncJobRunner.plan(
                             tx,
                             listOf(
-                                AsyncJob.SendAssistanceNeedDecisionEmail(id),
-                                AsyncJob.CreateAssistanceNeedDecisionPdf(id),
-                                AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
+                                // todo AsyncJob.SendAssistanceNeedDecisionEmail(id),
+                                AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id),
+                                // todo AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
                             ),
                             runAt = clock.now()
                         )
-                    }*/
+                    }
                 }
             }
             .also {

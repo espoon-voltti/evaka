@@ -257,6 +257,9 @@ export interface AssistanceNeedPreschoolDecision {
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
   unitName: string | null
+  unitPostOffice: string | null
+  unitPostalCode: string | null
+  unitStreetAddress: string | null
 }
 
 /**

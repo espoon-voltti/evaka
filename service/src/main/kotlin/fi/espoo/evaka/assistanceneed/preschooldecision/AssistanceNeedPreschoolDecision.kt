@@ -30,6 +30,9 @@ data class AssistanceNeedPreschoolDecision(
     val annulmentReason: String,
     val hasDocument: Boolean,
     val unitName: String?,
+    val unitStreetAddress: String?,
+    val unitPostalCode: String?,
+    val unitPostOffice: String?,
     val preparer1Name: String?,
     val preparer2Name: String?,
     val decisionMakerName: String?

@@ -112,6 +112,9 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             (ad.document_key IS NOT NULL) has_document,
             
             d.name as unit_name,
+            d.street_address as unit_street_address,
+            d.postal_code as unit_postal_code,
+            d.post_office as unit_post_office,
             CASE WHEN preparer1.id IS NOT NULL THEN coalesce(preparer1.preferred_first_name, preparer1.first_name) || ' ' || preparer1.last_name END as preparer_1_name,
             CASE WHEN preparer2.id IS NOT NULL THEN coalesce(preparer2.preferred_first_name, preparer2.first_name) || ' ' || preparer2.last_name END as preparer_2_name,
             CASE WHEN decision_maker.id IS NOT NULL THEN coalesce(decision_maker.preferred_first_name, decision_maker.first_name) || ' ' || decision_maker.last_name END as decision_maker_name
@@ -317,6 +320,21 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         .bind("decisionMade", decisionMade)
         .bind("unreadGuardianIds", unreadGuardianIds)
         .updateExactlyOne()
+}
+
+fun Database.Transaction.updateAssistanceNeedPreschoolDocumentKey(
+    id: AssistanceNeedPreschoolDecisionId,
+    key: String
+) {
+    // language=sql
+    val sql =
+        """
+        UPDATE assistance_need_preschool_decision
+        SET document_key = :key
+        WHERE id = :id
+        """
+            .trimIndent()
+    createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
 }
 
 fun Database.Transaction.annulAssistanceNeedPreschoolDecision(
