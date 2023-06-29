@@ -2066,6 +2066,9 @@ export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> 
 }
 
 export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
+  dateRange(): FiniteDateRange {
+    return new FiniteDateRange(this.data.startDate, this.data.endDate)
+  }
   async save() {
     await insertDaycarePlacementFixtures([this.data])
     return this

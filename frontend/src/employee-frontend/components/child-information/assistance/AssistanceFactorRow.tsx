@@ -57,6 +57,8 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
           />
         )}
         <Toolbar
+          dataQaEdit="edit"
+          dataQaDelete="delete"
           onEdit={onEdit}
           editable={permittedActions.includes('UPDATE')}
           onDelete={() => toggleUiMode(`remove-assistance-factor-${data.id}`)}

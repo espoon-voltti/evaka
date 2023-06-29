@@ -86,9 +86,9 @@ export const PreschoolAssistanceForm = React.memo(
     )
 
     return (
-      <Tr>
+      <Tr data-qa="preschool-assistance-form">
         <Td>
-          <SelectF bind={level} />
+          <SelectF data-qa="level" bind={level} />
         </Td>
         <Td>
           <DateRangePickerF

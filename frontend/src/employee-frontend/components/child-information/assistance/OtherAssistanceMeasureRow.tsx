@@ -34,9 +34,9 @@ export const OtherAssistanceMeasureRow = React.memo(
       deleteOtherAssistanceMeasureMutation
     )
     return (
-      <Tr>
-        <Td>{t.types.otherAssistanceMeasureType[data.type]}</Td>
-        <Td>{data.validDuring.format()}</Td>
+      <Tr data-qa="other-assistance-measure-row">
+        <Td data-qa="type">{t.types.otherAssistanceMeasureType[data.type]}</Td>
+        <Td data-qa="valid-during">{data.validDuring.format()}</Td>
         <Td>
           <StatusLabel
             status={getStatusLabelByDateRange({
@@ -59,6 +59,8 @@ export const OtherAssistanceMeasureRow = React.memo(
             />
           )}
           <Toolbar
+            dataQaEdit="edit"
+            dataQaDelete="delete"
             onEdit={onEdit}
             editable={permittedActions.includes('UPDATE')}
             onDelete={() =>

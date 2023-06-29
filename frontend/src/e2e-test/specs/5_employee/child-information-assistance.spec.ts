@@ -11,18 +11,15 @@ import { UUID } from 'lib-common/types'
 import config from '../../config'
 import {
   insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  createDaycarePlacementFixture,
   daycareFixture,
   daycareGroupFixture,
   familyWithTwoGuardians,
-  Fixture,
-  uuidv4
+  Fixture
 } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import ChildInformationPage, {
@@ -54,20 +51,16 @@ beforeEach(async () => {
   admin = (await Fixture.employeeAdmin().save()).data
 })
 
-const setupPlacement = async (
-  childPlacementType: PlacementType,
-  voucher = false
-) => {
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(
-      uuidv4(),
-      childId,
-      voucher ? voucherUnitId : unitId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      childPlacementType
-    )
-  ])
+const setupPlacement = async (type: PlacementType, voucher = false) => {
+  const fixture = Fixture.placement().with({
+    childId,
+    unitId: voucher ? voucherUnitId : unitId,
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: LocalDate.todayInSystemTz(),
+    type
+  })
+  await fixture.save()
+  return fixture
 }
 
 const logUserIn = async (user: EmployeeDetail) => {
@@ -78,19 +71,333 @@ const logUserIn = async (user: EmployeeDetail) => {
 }
 
 describe('Child Information assistance functionality for employees', () => {
-  test('assistance factor can be added', async () => {
-    await setupPlacement('DAYCARE')
-    await logUserIn((await Fixture.employeeUnitSupervisor(unitId).save()).data)
+  describe('assistance factor', () => {
+    it('can be added', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
 
-    await assistance.createAssistanceFactorButton.click()
-    const form = assistance.assistanceFactorForm
-    await form.capacityFactor.type('1,5')
-    await form.startDate.fill(LocalDate.todayInSystemTz().format())
-    await form.endDate.fill(LocalDate.todayInSystemTz().addDays(1).format())
-    await form.save.click()
+      await assistance.createAssistanceFactorButton.click()
+      const form = assistance.assistanceFactorForm
+      await form.capacityFactor.fill('1.5')
+      await form.startDate.fill(validDuring.start.format())
+      await form.endDate.fill(validDuring.end.format())
+      await form.save.click()
 
-    const row = assistance.assistanceFactorRow(0)
-    await row.capacityFactor.assertTextEquals('1,5')
+      const row = assistance.assistanceFactorRow(0)
+      await row.capacityFactor.assertTextEquals('1,5')
+      await row.validDuring.assertTextEquals(validDuring.format())
+    })
+
+    it('can be edited', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await Fixture.assistanceFactor()
+        .with({
+          childId,
+          validDuring,
+          capacityFactor: 1.5
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      const row = assistance.assistanceFactorRow(0)
+      await row.capacityFactor.assertTextEquals('1,5')
+
+      await row.edit.click()
+      const form = assistance.assistanceFactorForm
+      await form.capacityFactor.fill('2.5')
+      await form.save.click()
+
+      await row.capacityFactor.assertTextEquals('2,5')
+    })
+
+    it('can be deleted', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await Fixture.assistanceFactor()
+        .with({
+          childId,
+          validDuring,
+          capacityFactor: 1.5
+        })
+        .save()
+      await Fixture.assistanceFactor()
+        .with({
+          childId,
+          validDuring: new FiniteDateRange(
+            validDuring.end.addDays(1),
+            validDuring.end.addDays(7)
+          ),
+          capacityFactor: 2.5
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.assertAssistanceFactorCount(2)
+      await assistance.assistanceFactorRow(0).delete()
+
+      await assistance.assertAssistanceFactorCount(1)
+      await assistance
+        .assistanceFactorRow(0)
+        .capacityFactor.assertTextEquals('1,5')
+    })
+  })
+
+  describe('daycare assistance', () => {
+    it('can be added', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.createDaycareAssistanceButton.click()
+      const form = assistance.daycareAssistanceForm
+      await form.level.selectOption('GENERAL_SUPPORT')
+      await form.fillValidDuring(validDuring)
+      await form.save.click()
+
+      const row = assistance.daycareAssistanceRow(0)
+      await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
+      await row.validDuring.assertTextEquals(validDuring.format())
+    })
+
+    it('can be edited', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await Fixture.daycareAssistance()
+        .with({
+          childId,
+          validDuring,
+          level: 'GENERAL_SUPPORT'
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      const row = assistance.daycareAssistanceRow(0)
+      await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
+
+      await row.edit.click()
+      const form = assistance.daycareAssistanceForm
+      await form.level.selectOption('SPECIAL_SUPPORT')
+      await form.save.click()
+
+      await row.level.assertTextEquals('Erityinen tuki')
+    })
+
+    it('can be deleted', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await Fixture.daycareAssistance()
+        .with({
+          childId,
+          validDuring,
+          level: 'GENERAL_SUPPORT'
+        })
+        .save()
+      await Fixture.daycareAssistance()
+        .with({
+          childId,
+          validDuring: new FiniteDateRange(
+            validDuring.end.addDays(1),
+            validDuring.end.addDays(7)
+          ),
+          level: 'INTENSIFIED_SUPPORT'
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.assertDaycareAssistanceCount(2)
+      await assistance.daycareAssistanceRow(0).delete()
+
+      await assistance.assertDaycareAssistanceCount(1)
+      await assistance
+        .daycareAssistanceRow(0)
+        .level.assertTextEquals('Yleinen tuki, ei päätöstä')
+    })
+  })
+
+  describe('preschool assistance', () => {
+    it('can be added', async () => {
+      const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.createPreschoolAssistanceButton.click()
+      const form = assistance.preschoolAssistanceForm
+      await form.level.selectOption('SPECIAL_SUPPORT')
+      await form.fillValidDuring(validDuring)
+      await form.save.click()
+
+      const row = assistance.preschoolAssistanceRow(0)
+      await row.level.assertTextEquals(
+        'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+      )
+      await row.validDuring.assertTextEquals(validDuring.format())
+    })
+
+    it('can be edited', async () => {
+      const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
+      await Fixture.preschoolAssistance()
+        .with({
+          childId,
+          validDuring,
+          level: 'SPECIAL_SUPPORT'
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      const row = assistance.preschoolAssistanceRow(0)
+      await row.level.assertTextEquals(
+        'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+      )
+
+      await row.edit.click()
+      const form = assistance.preschoolAssistanceForm
+      await form.level.selectOption('INTENSIFIED_SUPPORT')
+      await form.save.click()
+
+      await row.level.assertTextEquals('Tehostettu tuki')
+    })
+
+    it('can be deleted', async () => {
+      const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
+      await Fixture.preschoolAssistance()
+        .with({
+          childId,
+          validDuring,
+          level: 'INTENSIFIED_SUPPORT'
+        })
+        .save()
+      await Fixture.preschoolAssistance()
+        .with({
+          childId,
+          validDuring: new FiniteDateRange(
+            validDuring.end.addDays(1),
+            validDuring.end.addDays(7)
+          ),
+          level: 'SPECIAL_SUPPORT'
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.assertPreschoolAssistanceCount(2)
+      await assistance.preschoolAssistanceRow(0).delete()
+
+      await assistance.assertPreschoolAssistanceCount(1)
+      await assistance
+        .preschoolAssistanceRow(0)
+        .level.assertTextEquals('Tehostettu tuki')
+    })
+  })
+
+  describe('other assistance measure', () => {
+    it('can be added', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.createOtherAssistanceMeasureButton.click()
+      const form = assistance.otherAssistanceMeasureForm
+      await form.type.selectOption('ACCULTURATION_SUPPORT')
+      await form.fillValidDuring(validDuring)
+      await form.save.click()
+
+      const row = assistance.otherAssistanceMeasureRow(0)
+      await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
+      await row.validDuring.assertTextEquals(validDuring.format())
+    })
+
+    it('can be edited', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await Fixture.otherAssistanceMeasure()
+        .with({
+          childId,
+          validDuring,
+          type: 'TRANSPORT_BENEFIT'
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      const row = assistance.otherAssistanceMeasureRow(0)
+      await row.type.assertTextEquals('Kuljetusetu')
+
+      await row.edit.click()
+      const form = assistance.otherAssistanceMeasureForm
+      await form.type.selectOption('ACCULTURATION_SUPPORT')
+      await form.save.click()
+
+      await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
+    })
+
+    it('can be deleted', async () => {
+      const validDuring = (await setupPlacement('DAYCARE')).dateRange()
+      await Fixture.otherAssistanceMeasure()
+        .with({
+          childId,
+          validDuring,
+          type: 'TRANSPORT_BENEFIT'
+        })
+        .save()
+      await Fixture.otherAssistanceMeasure()
+        .with({
+          childId,
+          validDuring: new FiniteDateRange(
+            validDuring.end.addDays(1),
+            validDuring.end.addDays(7)
+          ),
+          type: 'ACCULTURATION_SUPPORT'
+        })
+        .save()
+      await logUserIn(
+        (
+          await Fixture.employeeUnitSupervisor(unitId).save()
+        ).data
+      )
+
+      await assistance.assertOtherAssistanceMeasureCount(2)
+      await assistance.otherAssistanceMeasureRow(0).delete()
+
+      await assistance.assertOtherAssistanceMeasureCount(1)
+      await assistance
+        .otherAssistanceMeasureRow(0)
+        .type.assertTextEquals('Kuljetusetu')
+    })
   })
 
   test('assistance factor before preschool for a child in preschool is not shown for unit supervisor', async () => {

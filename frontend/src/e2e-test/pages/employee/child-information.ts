@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ShiftCareType,
   shiftCareType
@@ -776,19 +777,62 @@ export class PlacementsSection extends Section {
 }
 
 export class AssistanceSection extends Section {
-  createAssistanceFactorButton = this.find(
-    '[data-qa="assistance-factor-create-btn"]'
+  createAssistanceFactorButton = this.findByDataQa(
+    'assistance-factor-create-btn'
+  )
+  createDaycareAssistanceButton = this.findByDataQa(
+    'daycare-assistance-create-btn'
+  )
+  createPreschoolAssistanceButton = this.findByDataQa(
+    'preschool-assistance-create-btn'
+  )
+  createOtherAssistanceMeasureButton = this.findByDataQa(
+    'other-assistance-measure-create-btn'
   )
   assistanceFactorForm = new AssistanceFactorForm(
     this.findByDataQa('assistance-factor-form')
   )
+  daycareAssistanceForm = new DaycareAssistanceForm(
+    this.findByDataQa('daycare-assistance-form')
+  )
+  preschoolAssistanceForm = new PreschoolAssistanceForm(
+    this.findByDataQa('preschool-assistance-form')
+  )
+  otherAssistanceMeasureForm = new OtherAssistanceMeasureForm(
+    this.findByDataQa('other-assistance-measure-form')
+  )
   #assistanceFactorRows = this.findAllByDataQa('assistance-factor-row')
+  #daycareAssistanceRows = this.findAllByDataQa('daycare-assistance-row')
+  #preschoolAssistanceRows = this.findAllByDataQa('preschool-assistance-row')
+  #otherAssistanceMeasureRows = this.findAllByDataQa(
+    'other-assistance-measure-row'
+  )
 
   assistanceFactorRow(nth: number): AssistanceFactorRow {
     return new AssistanceFactorRow(this.#assistanceFactorRows.nth(nth))
   }
   async assertAssistanceFactorCount(count: number) {
     await this.#assistanceFactorRows.assertCount(count)
+  }
+  daycareAssistanceRow(nth: number): DaycareAssistanceRow {
+    return new DaycareAssistanceRow(this.#daycareAssistanceRows.nth(nth))
+  }
+  async assertDaycareAssistanceCount(count: number) {
+    await this.#daycareAssistanceRows.assertCount(count)
+  }
+  preschoolAssistanceRow(nth: number): PreschoolAssistanceRow {
+    return new PreschoolAssistanceRow(this.#preschoolAssistanceRows.nth(nth))
+  }
+  async assertPreschoolAssistanceCount(count: number) {
+    await this.#preschoolAssistanceRows.assertCount(count)
+  }
+  otherAssistanceMeasureRow(nth: number): OtherAssistanceMeasureRow {
+    return new OtherAssistanceMeasureRow(
+      this.#otherAssistanceMeasureRows.nth(nth)
+    )
+  }
+  async assertOtherAssistanceMeasureCount(count: number) {
+    await this.#otherAssistanceMeasureRows.assertCount(count)
   }
 
   async waitUntilAssistanceNeedDecisionsLoaded() {
@@ -897,18 +941,61 @@ export class AssistanceSection extends Section {
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 }
 
-class AssistanceFactorForm extends Element {
-  capacityFactor = new TextInput(this.findByDataQa('capacity-factor'))
+abstract class InlineAssistanceForm extends Element {
   validDuring = this.findByDataQa('valid-during')
   startDate = new DatePicker(this.validDuring.findByDataQa('start-date'))
   endDate = new DatePicker(this.validDuring.findByDataQa('end-date'))
   save = this.findByDataQa('save')
   cancel = this.findByDataQa('cancel')
+
+  async fillValidDuring(dateRange: FiniteDateRange) {
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+  }
 }
 
-class AssistanceFactorRow extends Element {
-  capacityFactor = this.findByDataQa('capacity-factor')
+abstract class InlineAssistanceRow extends Element {
   validDuring = this.findByDataQa('valid-during')
+  edit = this.findByDataQa('edit')
+  #deleteButton = this.findByDataQa('delete')
+
+  async delete() {
+    await this.#deleteButton.click()
+    const modal = new Modal(this.locator)
+    await modal.submit()
+  }
+}
+
+class AssistanceFactorForm extends InlineAssistanceForm {
+  capacityFactor = new TextInput(this.findByDataQa('capacity-factor'))
+}
+
+class AssistanceFactorRow extends InlineAssistanceRow {
+  capacityFactor = this.findByDataQa('capacity-factor')
+}
+
+class DaycareAssistanceForm extends InlineAssistanceForm {
+  level = new Select(this.findByDataQa('level'))
+}
+
+class DaycareAssistanceRow extends InlineAssistanceRow {
+  level = this.findByDataQa('level')
+}
+
+class PreschoolAssistanceForm extends InlineAssistanceForm {
+  level = new Select(this.findByDataQa('level'))
+}
+
+class PreschoolAssistanceRow extends InlineAssistanceRow {
+  level = this.findByDataQa('level')
+}
+
+class OtherAssistanceMeasureForm extends InlineAssistanceForm {
+  type = new Select(this.findByDataQa('type'))
+}
+
+class OtherAssistanceMeasureRow extends InlineAssistanceRow {
+  type = this.findByDataQa('type')
 }
 
 class MessageBlocklistSection extends Section {
