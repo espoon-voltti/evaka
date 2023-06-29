@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { shade } from 'polished'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -14,6 +14,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -54,6 +55,9 @@ const DecisionView = React.memo(function DecisionView({
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
+  const [confirmationModal, setConfirmationModal] = useState<
+    'REJECT' | 'ACCEPT' | null
+  >(null)
 
   const { user } = useContext(UserContext)
   const { refreshAssistanceNeedDecisionCounts } = useContext(
@@ -90,13 +94,7 @@ const DecisionView = React.memo(function DecisionView({
               <DangerButton
                 text={i18n.reports.assistanceNeedDecisions.rejectDecision}
                 disabled={submitting}
-                onClick={() =>
-                  decide({
-                    childId: decision.child.id,
-                    id: decision.id,
-                    status: 'REJECTED'
-                  })
-                }
+                onClick={() => setConfirmationModal('REJECT')}
               />
               <Button
                 text={
@@ -115,18 +113,48 @@ const DecisionView = React.memo(function DecisionView({
                 primary
                 text={i18n.reports.assistanceNeedDecisions.approveDecision}
                 disabled={submitting}
-                onClick={() =>
-                  decide({
-                    childId: decision.child.id,
-                    id: decision.id,
-                    status: 'ACCEPTED'
-                  })
-                }
+                onClick={() => setConfirmationModal('ACCEPT')}
               />
             </FixedSpaceRow>
           )}
         </FixedSpaceRow>
       </StickyFooter>
+
+      {confirmationModal === 'REJECT' && (
+        <AsyncFormModal
+          title={i18n.reports.assistanceNeedDecisions.rejectModal.title}
+          text={i18n.reports.assistanceNeedDecisions.rejectModal.text}
+          resolveAction={() =>
+            decide({
+              childId: decision.child.id,
+              id: decision.id,
+              status: 'REJECTED'
+            })
+          }
+          resolveLabel={i18n.reports.assistanceNeedDecisions.rejectModal.okBtn}
+          onSuccess={() => setConfirmationModal(null)}
+          rejectAction={() => setConfirmationModal(null)}
+          rejectLabel={i18n.common.cancel}
+        />
+      )}
+
+      {confirmationModal === 'ACCEPT' && (
+        <AsyncFormModal
+          title={i18n.reports.assistanceNeedDecisions.approveModal.title}
+          text={i18n.reports.assistanceNeedDecisions.approveModal.text}
+          resolveAction={() =>
+            decide({
+              childId: decision.child.id,
+              id: decision.id,
+              status: 'ACCEPTED'
+            })
+          }
+          resolveLabel={i18n.reports.assistanceNeedDecisions.approveModal.okBtn}
+          onSuccess={() => setConfirmationModal(null)}
+          rejectAction={() => setConfirmationModal(null)}
+          rejectLabel={i18n.common.cancel}
+        />
+      )}
     </div>
   )
 })
