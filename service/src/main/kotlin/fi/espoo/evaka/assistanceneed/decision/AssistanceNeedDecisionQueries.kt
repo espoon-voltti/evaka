@@ -367,7 +367,6 @@ fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisio
         """
         SELECT document_key
         FROM assistance_need_decision ad
-        LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE ad.id = :id
         """
             .trimIndent()

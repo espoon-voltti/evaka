@@ -15,10 +15,12 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import java.time.LocalDate
 import java.util.Locale
 import mu.KotlinLogging
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.thymeleaf.context.Context
 
@@ -83,6 +85,16 @@ class AssistanceNeedPreschoolDecisionService(
                 .key
 
         tx.updateAssistanceNeedPreschoolDocumentKey(decision.id, key)
+    }
+
+    fun getDecisionPdfResponse(
+        dbc: Database.Connection,
+        decisionId: AssistanceNeedPreschoolDecisionId
+    ): ResponseEntity<Any> {
+        val documentKey =
+            dbc.read { it.getAssistanceNeedPreschoolDecisionDocumentKey(decisionId) }
+                ?: throw NotFound("No assistance need decision found with ID ($decisionId)")
+        return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
     fun generatePdf(

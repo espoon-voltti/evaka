@@ -19,17 +19,22 @@ import { childrenQuery } from '../../children/queries'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { assistanceDecisionsQuery } from '../assistance-decision-page/queries'
+import { assistanceNeedPreschoolDecisionsQuery } from '../assistance-decision-page/queries-preschool'
 import { decisionsQuery } from '../queries'
 import { applicationDecisionIsUnread } from '../shared'
 
 import ApplicationDecision from './ApplicationDecision'
 import AssistanceDecision from './AssistanceDecision'
+import AssistancePreschoolDecision from './AssistancePreschoolDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
   const children = useQueryResult(childrenQuery)
   const applicationDecisions = useQueryResult(decisionsQuery)
   const assistanceDecisions = useQueryResult(assistanceDecisionsQuery)
+  const assistancePreschoolDecisions = useQueryResult(
+    assistanceNeedPreschoolDecisionsQuery
+  )
 
   useTitle(t, t.decisions.title)
 
@@ -48,8 +53,18 @@ export default React.memo(function Decisions() {
 
   const childrenWithSortedDecisions = useMemo(
     () =>
-      combine(children, applicationDecisions, assistanceDecisions).map(
-        ([children, applicationDecisions, assistanceDecisions]) =>
+      combine(
+        children,
+        applicationDecisions,
+        assistanceDecisions,
+        assistancePreschoolDecisions
+      ).map(
+        ([
+          children,
+          applicationDecisions,
+          assistanceDecisions,
+          assistancePreschoolDecisions
+        ]) =>
           children
             .map((child) => {
               const childDecisions = sortBy(
@@ -63,6 +78,9 @@ export default React.memo(function Decisions() {
                       }))
                     ),
                   ...assistanceDecisions.filter(
+                    ({ childId }) => child.id === childId
+                  ),
+                  ...assistancePreschoolDecisions.filter(
                     ({ childId }) => child.id === childId
                   )
                 ],
@@ -83,7 +101,12 @@ export default React.memo(function Decisions() {
             })
             .filter((child) => child.decisions.length > 0)
       ),
-    [applicationDecisions, assistanceDecisions, children]
+    [
+      applicationDecisions,
+      assistanceDecisions,
+      assistancePreschoolDecisions,
+      children
+    ]
   )
 
   return (
@@ -125,8 +148,10 @@ export default React.memo(function Decisions() {
                     <HorizontalLine dashed slim />
                     {'applicationId' in decision ? (
                       <ApplicationDecision {...decision} />
-                    ) : (
+                    ) : 'assistanceLevels' in decision ? (
                       <AssistanceDecision {...decision} />
+                    ) : (
+                      <AssistancePreschoolDecision decision={decision} />
                     )}
                   </Fragment>
                 ))}

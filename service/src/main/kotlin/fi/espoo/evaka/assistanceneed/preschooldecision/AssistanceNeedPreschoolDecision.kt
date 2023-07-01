@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
@@ -134,6 +135,7 @@ data class AssistanceNeedPreschoolDecisionChild(
 
 data class AssistanceNeedPreschoolDecisionBasics(
     val id: AssistanceNeedPreschoolDecisionId,
+    val childId: ChildId,
     val created: HelsinkiDateTime,
     val status: AssistanceNeedDecisionStatus,
     val type: AssistanceNeedPreschoolDecisionType?,
@@ -141,7 +143,9 @@ data class AssistanceNeedPreschoolDecisionBasics(
     val validTo: LocalDate?,
     @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
     val sentForDecision: LocalDate?,
-    val decisionMade: LocalDate?
+    val decisionMade: LocalDate?,
+    val annulmentReason: String,
+    val unreadGuardianIds: List<PersonId>
 )
 
 data class AssistanceNeedPreschoolDecisionGuardian(
@@ -150,4 +154,16 @@ data class AssistanceNeedPreschoolDecisionGuardian(
     val name: String,
     val isHeard: Boolean,
     val details: String
+)
+
+data class AssistanceNeedPreschoolDecisionCitizenListItem(
+    val id: AssistanceNeedPreschoolDecisionId,
+    val childId: ChildId,
+    val validityPeriod: DateRange,
+    val status: AssistanceNeedDecisionStatus,
+    val type: AssistanceNeedPreschoolDecisionType,
+    val decisionMade: LocalDate,
+    val unitName: String,
+    val annulmentReason: String,
+    val isUnread: Boolean
 )

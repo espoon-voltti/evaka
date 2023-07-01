@@ -266,6 +266,8 @@ export interface AssistanceNeedPreschoolDecision {
 * Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionBasics
 */
 export interface AssistanceNeedPreschoolDecisionBasics {
+  annulmentReason: string
+  childId: UUID
   created: HelsinkiDateTime
   decisionMade: LocalDate | null
   id: UUID
@@ -273,6 +275,7 @@ export interface AssistanceNeedPreschoolDecisionBasics {
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
   type: AssistanceNeedPreschoolDecisionType | null
+  unreadGuardianIds: UUID[]
   validFrom: LocalDate | null
   validTo: LocalDate | null
 }
@@ -292,6 +295,21 @@ export interface AssistanceNeedPreschoolDecisionChild {
   dateOfBirth: LocalDate
   id: UUID
   name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionCitizenListItem
+*/
+export interface AssistanceNeedPreschoolDecisionCitizenListItem {
+  annulmentReason: string
+  childId: UUID
+  decisionMade: LocalDate
+  id: UUID
+  isUnread: boolean
+  status: AssistanceNeedDecisionStatus
+  type: AssistanceNeedPreschoolDecisionType
+  unitName: string
+  validityPeriod: DateRange
 }
 
 /**

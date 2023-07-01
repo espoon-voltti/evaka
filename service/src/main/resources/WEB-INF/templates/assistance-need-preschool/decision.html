@@ -101,7 +101,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <div th:text="${decision.form.preparer1PhoneNumber}"></div>
             </div>
           </div>
-          <div class="decision-details" th:if="${decision.preparer2EmployeeId} != null">
+          <div class="decision-details" th:if="${decision.form.preparer2EmployeeId} != null">
             <h3 th:text="#{preparator}"></h3>
             <div>
               <div>

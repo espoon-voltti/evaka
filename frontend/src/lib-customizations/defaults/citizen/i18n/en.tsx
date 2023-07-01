@@ -1490,6 +1490,64 @@ const en: Translations = {
       },
       returnToPreviousPage: 'Return'
     },
+    assistancePreschoolDecisions: {
+      // TODO
+      title: 'Päätös erityisestä tuesta esiopetuksessa',
+      statuses: {
+        DRAFT: 'Luonnos',
+        NEEDS_WORK: 'Korjattava',
+        ACCEPTED: 'Hyväksytty',
+        REJECTED: 'Hylätty',
+        ANNULLED: 'Mitätöity'
+      },
+      pageTitle: 'Päätös tuesta esiopetuksessa',
+      decisionNumber: 'Päätösnumero',
+      confidential: 'Salassa pidettävä',
+      lawReference: 'Perusopetuslaki 17 §',
+      types: {
+        NEW: 'Erityinen tuki alkaa',
+        CONTINUING: 'Erityinen tuki jatkuu',
+        TERMINATED: 'Erityinen tuki päättyy'
+      },
+      decidedAssistance: 'Päätettävä tuki',
+      type: 'Erityisen tuen tila',
+      validFrom: 'Voimassa alkaen',
+      extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
+      extendedCompulsoryEducation:
+        'Kyllä, lapsella on pidennetty oppivelvollisuus',
+      no: 'Ei',
+      extendedCompulsoryEducationInfo:
+        'Lisätiedot pidennetystä oppivelvollisuudesta',
+      grantedAssistanceSection:
+        'Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet',
+      grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
+      grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
+      grantedAssistiveDevices: 'Lapselle myönnetään erityisiä apuvälineitä',
+      grantedNothing: 'Ei valintaa',
+      grantedServicesBasis:
+        'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
+      selectedUnit: 'Esiopetuksen järjestämispaikka',
+      primaryGroup: 'Pääsääntöinen opetusryhmä',
+      decisionBasis: 'Perustelut päätökselle',
+      documentBasis: 'Asiakirjat, joihin päätös perustuu',
+      basisDocumentPedagogicalReport: 'Pedagoginen selvitys',
+      basisDocumentPsychologistStatement: 'Psykologin lausunto',
+      basisDocumentDoctorStatement: 'Lääkärin lausunto',
+      basisDocumentSocialReport: 'Sosiaalinen selvitys',
+      basisDocumentOtherOrMissing: 'Liite puuttuu, tai muu liite, mikä?',
+      basisDocumentsInfo: 'Lisätiedot liitteistä',
+      guardianCollaborationSection: 'Huoltajien kanssa tehty yhteistyö',
+      guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
+      heardGuardians: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+      otherRepresentative:
+        'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
+      viewOfGuardians: 'Huoltajien näkemys esitetystä tuesta',
+      responsiblePeople: 'Vastuuhenkilöt',
+      preparer: 'Päätöksen valmistelija',
+      decisionMaker: 'Päätöksen tekijä',
+      employeeTitle: 'Titteli',
+      phone: 'Puhelinnumero'
+    },
     assistanceDecisions: {
       title: 'Support decision',
       assistanceLevel: 'Level of support',

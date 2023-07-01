@@ -11,16 +11,17 @@ import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/ap
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import Button from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
+import { translations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
-import { DecisionFormReadView } from '../child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionReadPage'
 import { putAssistanceNeedPreschoolDecisionMarkAsOpened } from '../child-information/assistance-need/decision/api-preschool'
 import {
   assistanceNeedPreschoolDecisionQuery,
@@ -80,7 +81,13 @@ const DecisionView = React.memo(function DecisionView({
 
   return (
     <div>
-      <DecisionFormReadView decision={decision} />
+      <AssistanceNeedPreschoolDecisionReadOnly
+        decision={decision}
+        texts={
+          translations[decision.form.language === 'SV' ? 'sv' : 'fi']
+            .childInformation.assistanceNeedPreschoolDecision
+        }
+      />
       <Gap size="m" />
       <StickyFooter>
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
