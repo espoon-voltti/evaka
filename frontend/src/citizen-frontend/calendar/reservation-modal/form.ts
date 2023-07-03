@@ -33,7 +33,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
-import { Translations } from 'lib-customizations/citizen'
+import { Translations, featureFlags } from 'lib-customizations/citizen'
 
 export const MAX_TIME_RANGE = {
   start: LocalTime.MIN,
@@ -794,7 +794,8 @@ export class DayProperties {
 export function getUnitTimeForDay(
   d: ReservationResponseDayChild
 ): TimeRange | null {
-  return d.shiftCareType === 'INTERMITTENT'
+  return featureFlags.experimental?.intermittentShiftCare &&
+    d.shiftCareType === 'INTERMITTENT'
     ? MAX_TIME_RANGE
     : d.unitOperationTime
 }
