@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { animated, useSpring } from '@react-spring/web'
 import React, { useState } from 'react'
-import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
