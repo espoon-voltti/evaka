@@ -7,8 +7,8 @@ plugins {
 }
 
 object Version {
-    const val bouncyCastle = "1.74"
-    const val cxf = "4.0.1"
+    const val bouncyCastle = "1.75"
+    const val cxf = "4.0.2"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
     const val mockito = "5.4.0"
@@ -23,13 +23,13 @@ dependencies {
     constraints {
         api("com.auth0:java-jwt:4.4.0")
         api("com.fasterxml.woodstox:woodstox-core:6.4.0")
-        api("com.github.kagkarlsson:db-scheduler:12.1.0")
+        api("com.github.kagkarlsson:db-scheduler:12.4.0")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:32.0.1-jre")
         api("com.zaxxer:HikariCP:5.0.1")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
-        api("io.javalin:javalin:5.5.0")
+        api("io.javalin:javalin:5.6.1")
         // Fixes CVE-2023-34468
         api("io.netty:netty-handler:4.1.94.Final")
         api("io.opentracing:opentracing-api:${Version.openTracing}")
@@ -37,13 +37,13 @@ dependencies {
         api("jakarta.annotation:jakarta.annotation-api:2.1.1")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
-        api("net.logstash.logback:logstash-logback-encoder:7.3")
+        api("net.logstash.logback:logstash-logback-encoder:7.4")
         api("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.2.1")
         api("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:${Version.cxf}") // not included in cxf-bom
         api("org.apache.commons:commons-pool2:2.11.1")
         api("org.apache.commons:commons-text:1.10.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
-        api("org.apache.tika:tika-core:2.7.0")
+        api("org.apache.tika:tika-core:2.8.0")
         api("org.apache.wss4j:wss4j-ws-security-dom:3.0.0")
         api("org.bouncycastle:bcpkix-jdk18on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk18on:${Version.bouncyCastle}")
