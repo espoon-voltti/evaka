@@ -45,8 +45,7 @@ configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRunt
 
 idea {
     module {
-        testSourceDirs = testSourceDirs + sourceSets["integrationTest"].kotlin.srcDirs
-        testResourceDirs = testResourceDirs + sourceSets["integrationTest"].resources.srcDirs
+        testSources = testSources + sourceSets["integrationTest"].kotlin.sourceDirectories
     }
 }
 
