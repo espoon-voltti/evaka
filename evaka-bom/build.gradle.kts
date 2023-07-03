@@ -11,7 +11,7 @@ object Version {
     const val cxf = "4.0.1"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
-    const val mockito = "5.3.1"
+    const val mockito = "5.4.0"
     const val openTracing = "0.33.0"
 }
 
@@ -52,7 +52,7 @@ dependencies {
         api("org.jetbrains:annotations:24.0.1")
         api("org.mockito:mockito-core:${Version.mockito}")
         api("org.mockito:mockito-junit-jupiter:${Version.mockito}")
-        api("org.mockito.kotlin:mockito-kotlin:4.1.0")
+        api("org.mockito.kotlin:mockito-kotlin:5.0.0")
         api("org.postgresql:postgresql:42.6.0")
         api("org.skyscreamer:jsonassert:1.5.1")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
