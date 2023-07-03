@@ -12,20 +12,32 @@ import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import kotlin.jvm.optionals.getOrNull
 
-fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
-    createQuery<DatabaseTable.AssistanceFactor> {
-            sql(
-                """
+private fun getAssistanceFactors(predicate: Predicate<DatabaseTable.AssistanceFactor>) =
+    QuerySql.of<DatabaseTable.AssistanceFactor> {
+        sql(
+            """
 SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
 FROM assistance_factor
-WHERE child_id = ${bind(child)}
+WHERE ${predicate(predicate.forTable("assistance_factor"))}
 """
-            )
-        }
+        )
+    }
+
+fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
+    createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
         .mapTo<AssistanceFactor>()
         .list()
+
+fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
+    createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
+        .mapTo<AssistanceFactor>()
+        .findOne()
+        .getOrNull()
 
 fun Database.Transaction.insertAssistanceFactor(
     user: AuthenticatedUser,
@@ -67,11 +79,19 @@ WHERE id = ${bind(id)}
         }
         .updateExactlyOne()
 
-fun Database.Transaction.deleteAssistanceFactor(id: AssistanceFactorId) =
+fun Database.Transaction.deleteAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createUpdate<DatabaseTable.AssistanceFactor> {
-            sql("DELETE FROM assistance_factor WHERE id = ${bind(id)}")
+            sql(
+                """
+DELETE FROM assistance_factor WHERE id = ${bind(id)}
+RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+"""
+            )
         }
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<AssistanceFactor>()
+        .findOne()
+        .getOrNull()
 
 fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {

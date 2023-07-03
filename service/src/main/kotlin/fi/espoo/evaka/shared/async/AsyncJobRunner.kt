@@ -102,6 +102,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
         runAt: HelsinkiDateTime
+    ) = plan(tx, payloads.asSequence(), retryCount, retryInterval, runAt)
+    fun plan(
+        tx: Database.Transaction,
+        payloads: Sequence<T>,
+        retryCount: Int = defaultRetryCount,
+        retryInterval: Duration = defaultRetryInterval,
+        runAt: HelsinkiDateTime
     ) =
         plan(
             tx,
@@ -115,7 +122,9 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             }
         )
 
-    fun plan(tx: Database.Transaction, jobs: Collection<JobParams<out T>>) =
+    fun plan(tx: Database.Transaction, jobs: Iterable<JobParams<out T>>) =
+        plan(tx, jobs.asSequence())
+    fun plan(tx: Database.Transaction, jobs: Sequence<JobParams<out T>>) =
         stateLock.read {
             jobs.forEach { job ->
                 tx.insertJob(job)

@@ -26,6 +26,9 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -45,6 +48,7 @@ class AssistanceController(
     private val accessControl: AccessControl,
     private val assistanceNeedService: AssistanceNeedService,
     private val assistanceActionService: AssistanceActionService,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     data class AssistanceFactorResponse(
         val data: AssistanceFactor,
@@ -567,7 +571,18 @@ class AssistanceController(
                         Action.Child.CREATE_ASSISTANCE_FACTOR,
                         child
                     )
-                    tx.insertAssistanceFactor(user, clock.now(), child, body)
+                    tx.insertAssistanceFactor(user, clock.now(), child, body).also {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    child,
+                                    body.validDuring.asDateRange()
+                                )
+                            ),
+                            runAt = clock.now()
+                        )
+                    }
                 }
             }
             .also { id -> Audit.AssistanceFactorCreate.log(targetId = child, objectId = id) }
@@ -589,7 +604,23 @@ class AssistanceController(
                         Action.AssistanceFactor.UPDATE,
                         id
                     )
+                    val original = tx.getAssistanceFactor(id)
                     tx.updateAssistanceFactor(user, clock.now(), id, body)
+                    if (original != null) {
+                        val affectedRanges = Timeline.of(original.validDuring, body.validDuring)
+                        affectedRanges.spanningRange()?.let {
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forChild(
+                                        original.childId,
+                                        it.asDateRange(),
+                                    )
+                                ),
+                                runAt = clock.now()
+                            )
+                        }
+                    }
                 }
             }
             .also { Audit.AssistanceFactorUpdate.log(targetId = id) }
@@ -613,7 +644,18 @@ class AssistanceController(
                         )
                         .let {
                             if (it.isPermitted()) {
-                                tx.deleteAssistanceFactor(id)
+                                tx.deleteAssistanceFactor(id)?.also { deleted ->
+                                    asyncJobRunner.plan(
+                                        tx,
+                                        listOf(
+                                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                                deleted.childId,
+                                                deleted.validDuring.asDateRange()
+                                            )
+                                        ),
+                                        runAt = clock.now()
+                                    )
+                                }
                                 id
                             } else {
                                 null
