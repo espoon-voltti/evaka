@@ -2,14 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
+import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 
 import { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
 
-import Container, { ContentArea } from '../layout/Container'
+import Container, {
+  CollapsibleContentArea,
+  ContentArea
+} from '../layout/Container'
 import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
 import { H1, H2, Label } from '../typography'
+import { Gap } from '../white-space'
 
 import { AssistanceNeedDecisionStatusChip } from './AssistanceNeedDecisionStatusChip'
 
@@ -92,6 +96,8 @@ interface ViewTranslations {
   decisionMaker: string
   employeeTitle: string
   phone: string
+  appealInstructionsTitle: string
+  appealInstructions: JSX.Element
 }
 
 export default React.memo(function DecisionFormReadView({
@@ -101,6 +107,7 @@ export default React.memo(function DecisionFormReadView({
   decision: AssistanceNeedPreschoolDecision
   texts: ViewTranslations
 }) {
+  const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
   return (
     <Container>
       <ContentArea opaque>
@@ -299,6 +306,17 @@ export default React.memo(function DecisionFormReadView({
           </SectionSpacer>
         </FixedSpaceColumn>
       </ContentArea>
+
+      <Gap size="m" />
+
+      <CollapsibleContentArea
+        title={<H2 noMargin>{t.appealInstructionsTitle}</H2>}
+        open={appealInstructionsOpen}
+        toggleOpen={() => setAppealInstructionsOpen(!appealInstructionsOpen)}
+        opaque
+      >
+        {t.appealInstructions}
+      </CollapsibleContentArea>
     </Container>
   )
 })
