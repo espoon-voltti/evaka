@@ -95,13 +95,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
-        Bug is fixed in woodstox-core 6.4.0 (in use), but it still depends on an old version of the API package stax-api, which is identified as vulnerable
-        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.codehaus\.woodstox/stax2\-api@.*$</packageUrl>
-        <cpe>cpe:/a:fasterxml:woodstox</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         Low risk and severity. All guava versions are affected, but the vulnerable function is marked deprecated and not used by our codebase.
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
