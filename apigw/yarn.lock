@@ -2652,9 +2652,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "dd-trace@npm:4.3.0"
+"dd-trace@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "dd-trace@npm:4.4.0"
   dependencies:
     "@datadog/native-appsec": ^3.2.0
     "@datadog/native-iast-rewriter": 2.0.1
@@ -2685,7 +2685,7 @@ __metadata:
     protobufjs: ^7.1.2
     retry: ^0.10.1
     semver: ^7.3.8
-  checksum: f902575732030c9f620855e319255ebfb1b8fe7a5d0cc817e52c1d8de2ff5678d6df78c0c4ca064658a991edd4582de340468f6a1d213f8d69098bf3b4b78785
+  checksum: a9dbb94a8741eb89b97609983cba1544cfc018b0efcfb5da90ab389f788f8d1fc927e77d73a0e74b0e1672208ec322f37595f0354f153d11b5f58829d446f48d
   languageName: node
   linkType: hard
 
@@ -3175,7 +3175,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^4.3.0
+    dd-trace: ^4.4.0
     eslint: ^8.44.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^4.2.1
