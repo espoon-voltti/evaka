@@ -7,7 +7,8 @@
 const fs = require('fs')
 const path = require('path')
 
-const SentryWebpackPlugin = require('@sentry/webpack-plugin')
+const sentryWebpackPlugin =
+  require('@sentry/webpack-plugin').sentryWebpackPlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
 const webpack = require('webpack')
@@ -86,16 +87,19 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
   // SentryWebpackPlugin automatically publishes source maps and creates a release.
   if (process.env.SENTRY_PUBLISH_ENABLED === 'true') {
     plugins.push(
-      new SentryWebpackPlugin({
+      sentryWebpackPlugin({
         org: process.env.SENTRY_ORG || undefined,
-        release: process.env.APP_COMMIT,
+        release: {
+          name: process.env.APP_COMMIT,
+          setCommits: {
+            repo: 'espoon-voltti/evaka',
+            commit: process.env.APP_COMMIT,
+            auto: false
+          }
+        },
         project: `evaka-${name}`,
-        include: path.resolve(__dirname, `dist/bundle/${name}`),
-        urlPrefix: `~${publicPath}`,
-        setCommits: {
-          repo: 'espoon-voltti/evaka',
-          commit: process.env.APP_COMMIT,
-          auto: false
+        sourcemaps: {
+          assets: path.resolve(__dirname, `dist/bundle/${name}`)
         }
       })
     )
