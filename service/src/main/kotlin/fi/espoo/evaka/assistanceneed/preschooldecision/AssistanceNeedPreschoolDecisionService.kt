@@ -5,9 +5,16 @@
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -30,16 +37,60 @@ const val assistanceNeedDecisionsBucketPrefix = "assistance-need-preschool-decis
 
 @Component
 class AssistanceNeedPreschoolDecisionService(
+    private val emailClient: IEmailClient,
+    private val emailMessageProvider: IEmailMessageProvider,
     private val pdfGenerator: PdfGenerator,
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     bucketEnv: BucketEnv,
+    private val emailEnv: EmailEnv,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     private val bucket = bucketEnv.data
 
     init {
+        asyncJobRunner.registerHandler(::runSendAssistanceNeedPreschoolDecisionEmail)
         asyncJobRunner.registerHandler(::runCreateAssistanceNeedPreschoolDecisionPdf)
+    }
+
+    fun runSendAssistanceNeedPreschoolDecisionEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail
+    ) {
+        db.transaction { tx ->
+            this.sendDecisionEmail(tx, msg.decisionId)
+            logger.info {
+                "Successfully sent assistance need preschool decision email (id: ${msg.decisionId})."
+            }
+        }
+    }
+
+    fun sendDecisionEmail(tx: Database.Transaction, decisionId: AssistanceNeedPreschoolDecisionId) {
+        val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
+
+        logger.info { "Sending assistance need decision email (decisionId: $decision)" }
+
+        val language =
+            when (decision.form.language) {
+                AssistanceNeedDecisionLanguage.SV -> Language.sv
+                else -> Language.fi
+            }
+        val fromAddress = emailEnv.applicationReceivedSender(language)
+        val content = emailMessageProvider.assistanceNeedPreschoolDecisionNotification(language)
+
+        tx.getChildGuardians(decision.child.id)
+            .associateWith { tx.getPersonById(it)?.email }
+            .forEach { (guardianId, toAddress) ->
+                if (toAddress != null) {
+                    emailClient.sendEmail(
+                        "$decisionId - $guardianId",
+                        toAddress,
+                        fromAddress,
+                        content
+                    )
+                }
+            }
     }
 
     fun runCreateAssistanceNeedPreschoolDecisionPdf(

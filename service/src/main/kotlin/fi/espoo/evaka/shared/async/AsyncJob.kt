@@ -208,6 +208,12 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendAssistanceNeedPreschoolDecisionEmail(
+        val decisionId: AssistanceNeedPreschoolDecisionId
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class CreateAssistanceNeedPreschoolDecisionPdf(
         val decisionId: AssistanceNeedPreschoolDecisionId
     ) : AsyncJob {
@@ -298,6 +304,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                 setOf(
                     SendApplicationEmail::class,
                     SendAssistanceNeedDecisionEmail::class,
+                    SendAssistanceNeedPreschoolDecisionEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
                     SendOutdatedIncomeNotificationEmail::class,

@@ -238,7 +238,7 @@ class AssistanceNeedPreschoolDecisionController(
                         asyncJobRunner.plan(
                             tx,
                             listOf(
-                                // todo AsyncJob.SendAssistanceNeedDecisionEmail(id),
+                                AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(id),
                                 AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id),
                                 // todo AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
                             ),
