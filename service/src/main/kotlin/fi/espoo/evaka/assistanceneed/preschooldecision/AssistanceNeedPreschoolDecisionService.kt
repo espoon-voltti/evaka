@@ -26,7 +26,7 @@ import org.thymeleaf.context.Context
 
 private val logger = KotlinLogging.logger {}
 
-const val assistanceNeedDecisionsBucketPrefix = "assistance-need--preschool-decisions/"
+const val assistanceNeedDecisionsBucketPrefix = "assistance-need-preschool-decisions/"
 
 @Component
 class AssistanceNeedPreschoolDecisionService(

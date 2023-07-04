@@ -195,14 +195,16 @@ class AssistanceNeedPreschoolDecisionController(
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
         @RequestBody body: DecideAssistanceNeedPreschoolDecisionRequest
     ) {
-        if (
-            body.status == AssistanceNeedDecisionStatus.DRAFT ||
-                body.status == AssistanceNeedDecisionStatus.ANNULLED
-        ) {
-            throw BadRequest(
-                "Assistance need decisions cannot be decided to be a draft or annulled"
-            )
-        }
+        val decided =
+            when (body.status) {
+                AssistanceNeedDecisionStatus.ACCEPTED,
+                AssistanceNeedDecisionStatus.REJECTED -> true
+                AssistanceNeedDecisionStatus.NEEDS_WORK -> false
+                AssistanceNeedDecisionStatus.DRAFT ->
+                    throw BadRequest("Assistance need decisions cannot be decided to be draft")
+                AssistanceNeedDecisionStatus.ANNULLED ->
+                    throw BadRequest("Assistance need decisions cannot be decided to be annulled")
+            }
 
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -216,20 +218,10 @@ class AssistanceNeedPreschoolDecisionController(
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (
-                        decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                            decision.status == AssistanceNeedDecisionStatus.ANNULLED
-                    ) {
+                    if (decision.status.isDecided()) {
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
 
-                    val decided =
-                        body.status in
-                            listOf(
-                                AssistanceNeedDecisionStatus.ACCEPTED,
-                                AssistanceNeedDecisionStatus.REJECTED
-                            )
                     tx.decideAssistanceNeedPreschoolDecision(
                         id = id,
                         status = body.status,
@@ -333,6 +325,7 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = id) }
     }
 
+    // TODO: Unused endpoint?
     @PutMapping("/assistance-need-preschool-decisions/{id}/decision-maker")
     fun updateAssistanceNeedPreschoolDecisionDecisionMaker(
         db: Database,
@@ -352,12 +345,7 @@ class AssistanceNeedPreschoolDecisionController(
                     )
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (
-                        decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                            decision.status == AssistanceNeedDecisionStatus.ANNULLED ||
-                            decision.sentForDecision == null
-                    ) {
+                    if (decision.status.isDecided() || decision.sentForDecision == null) {
                         throw BadRequest(
                             "Decision maker cannot be changed for already-decided or unsent decisions"
                         )

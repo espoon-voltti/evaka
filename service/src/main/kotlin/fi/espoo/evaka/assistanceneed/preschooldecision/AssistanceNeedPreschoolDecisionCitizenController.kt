@@ -4,7 +4,6 @@
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -66,17 +65,8 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                     )
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (
-                        decision.status !in
-                            listOf(
-                                AssistanceNeedDecisionStatus.ACCEPTED,
-                                AssistanceNeedDecisionStatus.REJECTED,
-                                AssistanceNeedDecisionStatus.ANNULLED
-                            )
-                    ) {
-                        throw NotFound(
-                            "Citizen can only view accepted and rejected assistance need decisions"
-                        )
+                    if (!decision.status.isDecided()) {
+                        throw NotFound("Citizen can only view decided assistance need decisions")
                     }
 
                     decision

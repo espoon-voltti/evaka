@@ -366,26 +366,18 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
         createQuery(
                 """
         SELECT child_id FROM guardian WHERE guardian_id = :userId
-        UNION
+        UNION ALL 
         SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
     """
             )
             .bind("today", today)
             .bind("userId", userId)
             .mapTo<ChildId>()
-            .list()
-            .distinct()
+            .set()
 
     return childIds
         .flatMap { childId -> getAssistanceNeedPreschoolDecisionsByChildId(childId) }
-        .filter {
-            it.status in
-                listOf(
-                    AssistanceNeedDecisionStatus.ACCEPTED,
-                    AssistanceNeedDecisionStatus.REJECTED,
-                    AssistanceNeedDecisionStatus.ANNULLED
-                )
-        }
+        .filter { it.status.isDecided() }
         .mapNotNull {
             if (
                 it.validFrom == null ||
@@ -430,21 +422,20 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
     today: LocalDate,
     userId: PersonId
 ): List<UnreadAssistanceNeedDecisionItem> {
-    // language=sql
     val sql =
         """
-        WITH children AS (
-            SELECT child_id FROM guardian WHERE guardian_id = :userId
-            UNION
-            SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
-        )
-        SELECT ad.child_id, COUNT(ad.child_id) as count
+        SELECT ad.child_id, COUNT(ad.id) as count
         FROM assistance_need_preschool_decision ad
-        JOIN children c ON c.child_id = ad.child_id
-        WHERE (:userId = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
+        WHERE (:userId = ANY(ad.unread_guardian_ids)) 
+            AND status IN ('REJECTED', 'ACCEPTED')
+            AND ad.child_id IN (
+                SELECT child_id FROM guardian WHERE guardian_id = :userId
+                UNION ALL 
+                SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+            )
         GROUP BY ad.child_id
         """
-            .trimIndent()
+
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
