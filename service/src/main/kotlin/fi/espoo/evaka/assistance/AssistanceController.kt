@@ -102,11 +102,9 @@ class AssistanceController(
                             it.type == PlacementType.PRESCHOOL_CLUB) &&
                             it.startDate <= clock.today()
                     }
-                val isPrePreschoolDate = { date: LocalDate ->
-                    relevantPreschoolPlacements.isEmpty() ||
-                        relevantPreschoolPlacements.any { placement ->
-                            placement.startDate.isBefore(date) || placement.startDate == date
-                        }
+                val needsPrePreschoolCheck = { date: LocalDate ->
+                    relevantPreschoolPlacements.isNotEmpty() &&
+                        relevantPreschoolPlacements.all { it.startDate.isAfter(date) }
                 }
                 val assistanceNeeds =
                     if (
@@ -121,8 +119,8 @@ class AssistanceController(
                         tx.getAssistanceNeedsByChild(child)
                             .let { allAssistanceNeeds ->
                                 val prePreschool =
-                                    allAssistanceNeeds.filterNot {
-                                        isPrePreschoolDate(it.startDate)
+                                    allAssistanceNeeds.filter {
+                                        needsPrePreschoolCheck(it.startDate)
                                     }
                                 val decisions =
                                     accessControl.checkPermissionFor(
@@ -162,8 +160,8 @@ class AssistanceController(
                         tx.getAssistanceActionsByChild(child)
                             .let { allAssistanceActions ->
                                 val prePreschool =
-                                    allAssistanceActions.filterNot {
-                                        isPrePreschoolDate(it.startDate)
+                                    allAssistanceActions.filter {
+                                        needsPrePreschoolCheck(it.startDate)
                                     }
                                 val decisions =
                                     accessControl.checkPermissionFor(
@@ -205,7 +203,7 @@ class AssistanceController(
                         tx.getAssistanceFactors(child)
                             .let { rows ->
                                 val prePreschool =
-                                    rows.filterNot { isPrePreschoolDate(it.validDuring.start) }
+                                    rows.filter { needsPrePreschoolCheck(it.validDuring.start) }
                                 val decisions =
                                     accessControl.checkPermissionFor(
                                         tx,
@@ -243,7 +241,7 @@ class AssistanceController(
                         tx.getDaycareAssistances(child)
                             .let { rows ->
                                 val prePreschool =
-                                    rows.filterNot { isPrePreschoolDate(it.validDuring.start) }
+                                    rows.filter { needsPrePreschoolCheck(it.validDuring.start) }
                                 val decisions =
                                     accessControl.checkPermissionFor(
                                         tx,
@@ -307,7 +305,7 @@ class AssistanceController(
                         tx.getOtherAssistanceMeasures(child)
                             .let { rows ->
                                 val prePreschool =
-                                    rows.filterNot { isPrePreschoolDate(it.validDuring.start) }
+                                    rows.filter { needsPrePreschoolCheck(it.validDuring.start) }
                                 val decisions =
                                     accessControl.checkPermissionFor(
                                         tx,
