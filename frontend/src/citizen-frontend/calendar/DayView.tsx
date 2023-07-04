@@ -741,13 +741,19 @@ const Reservations = React.memo(function Reservations({
       {i18n.calendar.reservationNoTimes}
     </ReservationStatus>
   ) : withTimes.length > 0 ? (
-    <span data-qa="reservations">
-      {withTimes
-        .map((reservation) =>
-          formatReservation(shiftCareType, unitTimes, reservation, i18n, ' – ')
-        )
-        .join(', ')}
-    </span>
+    <div data-qa="reservations">
+      {withTimes.map((reservation, i) => (
+        <ReservationRow data-qa={`reservation-output-${i}`} key={`res-${i}`}>
+          {formatReservation(
+            shiftCareType,
+            unitTimes,
+            reservation,
+            i18n,
+            ' – '
+          )}
+        </ReservationRow>
+      ))}
+    </div>
   ) : requiresReservation ? (
     <ReservationStatus data-qa="no-reservations">
       {i18n.calendar.missingReservation}
@@ -863,4 +869,8 @@ const NonGridLabelLike = styled(LabelLike)`
   @media (max-width: ${tabletMin}) {
     margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
   }
+`
+const ReservationRow = styled.p`
+  margin-top: 0px;
+  margin-bottom: ${defaultMargins.xs};
 `

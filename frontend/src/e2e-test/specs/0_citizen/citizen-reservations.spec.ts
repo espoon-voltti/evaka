@@ -254,17 +254,26 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
     const dayView = await calendarPage.openDayView(reservationDay)
 
+    const reservation1 = {
+      startTime: '08:00',
+      endTime: '16:00'
+    }
+
     expect(children.length).toEqual(3)
     await dayView.assertNoReservation(children[0].id)
     await dayView.assertNoReservation(children[1].id)
     await dayView.assertNoReservation(children[2].id)
 
     const editor = await dayView.edit()
-    await editor.fillReservationTimes(children[1].id, '08:00', '16:00')
+    await editor.fillReservationTimes(
+      children[1].id,
+      reservation1.startTime,
+      reservation1.endTime
+    )
     await editor.save()
 
     await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, '08:00 – 16:00')
+    await dayView.assertReservations(children[1].id, [reservation1])
     await dayView.assertNoReservation(children[2].id)
   })
 
@@ -745,10 +754,9 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     )
     await editor.save()
 
-    await dayView.assertReservations(
-      fixtures.enduserChildFixtureKaarina.id,
-      `${reservation1.startTime} – ${reservation1.endTime}`
-    )
+    await dayView.assertReservations(fixtures.enduserChildFixtureKaarina.id, [
+      reservation1
+    ])
 
     const editor2 = await dayView.edit()
     await editor2.addSecondReservation(
@@ -758,10 +766,10 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     )
     await editor2.save()
 
-    await dayView.assertReservations(
-      fixtures.enduserChildFixtureKaarina.id,
-      `${reservation1.startTime} – ${reservation1.endTime}, ${reservation2.startTime} – ${reservation2.endTime}`
-    )
+    await dayView.assertReservations(fixtures.enduserChildFixtureKaarina.id, [
+      reservation1,
+      reservation2
+    ])
   })
 
   test(`Citizen creates 2 reservations from reservation modal: ${env}`, async () => {
@@ -797,9 +805,9 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
 
     const dayView = await calendarPage.openDayView(reservationDay)
 
-    await dayView.assertReservations(
-      fixtures.enduserChildFixtureKaarina.id,
-      `${reservation1.startTime} – ${reservation1.endTime}, ${reservation2.startTime} – ${reservation2.endTime}`
-    )
+    await dayView.assertReservations(fixtures.enduserChildFixtureKaarina.id, [
+      reservation1,
+      reservation2
+    ])
   })
 })

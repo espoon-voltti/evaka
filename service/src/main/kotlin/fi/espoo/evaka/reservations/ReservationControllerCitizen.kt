@@ -290,8 +290,8 @@ private fun placementDay(
     val contractDays = contractDayRanges?.includes(date) ?: false
 
     val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
-    val shiftCare =
-        shiftCareType == ShiftCareType.INTERMITTENT || operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    val alwaysOpen = operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    val shiftCare = alwaysOpen || shiftCareType == ShiftCareType.INTERMITTENT
 
     val isOperationDay = operationDays.contains(date.dayOfWeek.value)
 
@@ -299,7 +299,7 @@ private fun placementDay(
             requiresReservation = placement.type.requiresAttendanceReservations(),
             shiftCare = shiftCare,
             contractDays = contractDays,
-            operationTime = if (isHoliday) null else operationTime,
+            operationTime = if (isHoliday && !alwaysOpen) null else operationTime,
             shiftCareType = shiftCareType
         )
         .takeIf { shiftCare || isOperationDay && !isHoliday }

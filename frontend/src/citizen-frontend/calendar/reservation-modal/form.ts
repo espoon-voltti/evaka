@@ -674,7 +674,7 @@ const getMinimalOverlappingRange = (
     }
   })
 
-  return minValue.start && minValue.end
+  return minValue && minValue.start && minValue.end
     ? { start: minValue.start, end: minValue.end }
     : null
 }

@@ -12,7 +12,7 @@ import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 export type FormatterReservation = {
   startTime: string
   endTime: string
-  isOverdraft: boolean
+  isOverdraft?: boolean
 }
 export type TwoPartReservation = [FormatterReservation, FormatterReservation]
 
@@ -551,10 +551,19 @@ class DayView extends Element {
       .waitUntilVisible()
   }
 
-  async assertReservations(childId: UUID, value: string) {
-    await this.#childSection(childId)
-      .findByDataQa('reservations')
-      .assertTextEquals(value)
+  async assertReservations(
+    childId: UUID,
+    reservations: FormatterReservation[],
+    formatter: (res: FormatterReservation) => string = (
+      r: FormatterReservation
+    ) => `${r.startTime} – ${r.endTime}`
+  ) {
+    const child = this.#childSection(childId)
+    for (const [i, res] of reservations.entries()) {
+      await child
+        .findByDataQa(`reservation-output-${i}`)
+        .assertTextEquals(formatter(res))
+    }
   }
 
   async assertAbsence(childId: UUID, value: string) {

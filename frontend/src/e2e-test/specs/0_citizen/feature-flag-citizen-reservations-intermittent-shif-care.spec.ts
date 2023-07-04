@@ -13,6 +13,7 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, careAreaFixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage, {
+  FormatterReservation,
   StartAndEndTimeReservation,
   TwoPartReservation
 } from '../../pages/citizen/citizen-calendar'
@@ -212,7 +213,8 @@ describe.each(e)(
 
       await dayView.assertReservations(
         child.id,
-        getTwoPartReservationOutput([reservation1, reservation2], ' – ')
+        [reservation1, reservation2],
+        getFormatterReservationOutput
       )
     })
   }
@@ -326,6 +328,11 @@ const addTestData = async (date: LocalDate) => {
 
 const getReservationOverdraftOutput = (res: StartAndEndTimeReservation) =>
   `${res.startTime}–${res.endTime} Ilta-/vuorohoito`
+
+const getFormatterReservationOutput = (res: FormatterReservation) =>
+  res.isOverdraft
+    ? `${res.startTime} – ${res.endTime} Ilta-/vuorohoito`
+    : `${res.startTime} – ${res.endTime}`
 
 const getTwoPartReservationOutput = (
   reservations: TwoPartReservation,
