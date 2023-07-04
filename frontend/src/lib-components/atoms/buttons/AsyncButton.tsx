@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { animated, useSpring } from '@react-spring/web'
 import * as Sentry from '@sentry/browser'
 import classNames from 'classnames'
 import React, {
@@ -12,7 +13,6 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'

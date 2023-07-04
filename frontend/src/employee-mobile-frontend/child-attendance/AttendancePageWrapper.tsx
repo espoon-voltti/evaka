@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { animated, useSpring } from '@react-spring/web'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
