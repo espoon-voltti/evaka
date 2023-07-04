@@ -454,14 +454,14 @@ WHERE
         .bind("range", range)
         .mapTo<ReservationPlacementRow>()
         .groupBy { it.placementId }
-        .map { (_, serviceNeeds) ->
+        .map { (_, rows) ->
             ReservationPlacement(
-                childId = serviceNeeds[0].childId,
-                range = serviceNeeds[0].range,
-                type = serviceNeeds[0].type,
-                operationDays = serviceNeeds[0].operationDays,
-                operationTimes = serviceNeeds[0].operationTimes,
-                serviceNeeds = serviceNeeds.mapNotNull { it.toReservationServiceNeed() }.toList()
+                childId = rows[0].childId,
+                range = rows[0].range,
+                type = rows[0].type,
+                operationDays = rows[0].operationDays,
+                operationTimes = rows[0].operationTimes,
+                serviceNeeds = rows.mapNotNull { it.toReservationServiceNeed() }.toList()
             )
         }
         .groupBy { it.childId }

@@ -320,7 +320,7 @@ data class ReservationResponseDay(
 data class ReservationResponseDayChild(
     val childId: ChildId,
     val requiresReservation: Boolean, // Whether reservations are required
-    val shiftCare: Boolean, // Can make more one reservation for this day
+    val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
     val shiftCareType: ShiftCareType,
     val contractDays: Boolean,
     val absence: AbsenceInfo?,
