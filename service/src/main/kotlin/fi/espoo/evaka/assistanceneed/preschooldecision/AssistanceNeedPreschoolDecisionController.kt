@@ -240,7 +240,7 @@ class AssistanceNeedPreschoolDecisionController(
                             listOf(
                                 AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(id),
                                 AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id),
-                                // todo AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
+                                AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(id)
                             ),
                             runAt = clock.now()
                         )
