@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.occupancy
 
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -123,6 +124,7 @@ data class OccupancyPoint(
 }
 
 fun Database.Read.getChildOccupancyAttendances(
+    assistanceModel: AssistanceModel,
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
 ): List<ChildOccupancyAttendance> =
@@ -144,7 +146,10 @@ fun Database.Read.getChildOccupancyAttendances(
     LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ca.date
     LEFT JOIN service_need_option sno on sn.option_id = sno.id
     LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
-    LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> ca.date
+    ${when (assistanceModel) {
+        AssistanceModel.OLD -> "LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> ca.date"
+        AssistanceModel.NEW -> "LEFT JOIN assistance_factor an on an.child_id = ch.id AND an.valid_during @> ca.date"
+    }}
     WHERE
         ca.unit_id = :unitId AND
         tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && :timeRange

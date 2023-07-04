@@ -5,6 +5,8 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
@@ -22,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PlacementCountReportController(private val accessControl: AccessControl) {
+class PlacementCountReportController(env: EvakaEnv, private val accessControl: AccessControl) {
+    private val assistanceModel = env.assistanceModel
+
     @GetMapping("/reports/placement-count")
     fun getPlacementCountReport(
         db: Database,
@@ -46,6 +50,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementCountReportRows(
+                        assistanceModel,
                         examinationDate,
                         requestedProviderTypes.ifEmpty { ProviderType.values().toList() },
                         requestedPlacementTypes.ifEmpty { PlacementType.values().toList() }
@@ -65,6 +70,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
     }
 
     private fun Database.Read.getPlacementCountReportRows(
+        assistanceModel: AssistanceModel,
         examinationDate: LocalDate,
         providerTypes: List<ProviderType>,
         placementTypes: List<PlacementType>
@@ -97,8 +103,10 @@ FROM daycare d
               ON sn.option_id = sno.id
          LEFT JOIN service_need_option default_sno
               ON pl.type = default_sno.valid_placement_type AND default_sno.default_option
-         LEFT JOIN assistance_need an
-                   ON pl.child_id = an.child_id AND daterange(an.start_date, an.end_date, '[]') @> :examinationDate::date
+        ${when (assistanceModel) {
+            AssistanceModel.OLD -> "LEFT JOIN assistance_need an ON an.child_id = pl.child_id AND daterange(an.start_date, an.end_date, '[]') @> :examinationDate"
+            AssistanceModel.NEW -> "LEFT JOIN assistance_factor an ON an.child_id = pl.child_id AND an.valid_during @> :examinationDate"
+        }}
          JOIN LATERAL (SELECT date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
                        FROM person p
                        WHERE p.id = pl.child_id) cwa

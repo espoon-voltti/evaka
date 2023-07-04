@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.assistanceneed
 
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -100,20 +101,34 @@ fun Database.Read.getAssistanceNeedsByChild(childId: ChildId): List<AssistanceNe
     return createQuery(sql).bind("childId", childId).mapTo<AssistanceNeed>().list()
 }
 
-fun Database.Read.getCapacityFactorsByChild(childId: ChildId): List<AssistanceNeedCapacityFactor> {
-    return createQuery(
-            """
-         SELECT 
-           daterange(start_date, end_date, '[]') as date_range,
-           capacity_factor
-         FROM assistance_need
-         WHERE child_id = :childId
-     """
-        )
-        .bind("childId", childId)
+fun Database.Read.getCapacityFactorsByChild(
+    assistanceModel: AssistanceModel,
+    childId: ChildId
+): List<AssistanceNeedCapacityFactor> =
+    createQuery<Any> {
+            when (assistanceModel) {
+                AssistanceModel.OLD ->
+                    sql(
+                        """
+SELECT
+  daterange(start_date, end_date, '[]') as date_range,
+  capacity_factor
+FROM assistance_need
+WHERE child_id = ${bind(childId)}
+"""
+                    )
+                AssistanceModel.NEW ->
+                    sql(
+                        """
+SELECT valid_during AS date_range, capacity_factor
+FROM assistance_factor
+WHERE child_id = ${bind(childId)}
+"""
+                    )
+            }
+        }
         .mapTo<AssistanceNeedCapacityFactor>()
         .list()
-}
 
 fun Database.Transaction.updateAssistanceNeed(
     user: AuthenticatedUser,

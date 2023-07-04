@@ -34,9 +34,9 @@ export const PreschoolAssistanceRow = React.memo(
       deletePreschoolAssistanceMutation
     )
     return (
-      <Tr>
-        <Td>{t.types.preschoolAssistanceLevel[data.level]}</Td>
-        <Td>{data.validDuring.format()}</Td>
+      <Tr data-qa="preschool-assistance-row">
+        <Td data-qa="level">{t.types.preschoolAssistanceLevel[data.level]}</Td>
+        <Td data-qa="valid-during">{data.validDuring.format()}</Td>
         <Td>
           <StatusLabel
             status={getStatusLabelByDateRange({
@@ -59,6 +59,8 @@ export const PreschoolAssistanceRow = React.memo(
             />
           )}
           <Toolbar
+            dataQaEdit="edit"
+            dataQaDelete="delete"
             onEdit={onEdit}
             editable={permittedActions.includes('UPDATE')}
             onDelete={() =>

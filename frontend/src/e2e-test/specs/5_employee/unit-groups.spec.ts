@@ -2,26 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import config from '../../config'
 import {
-  insertBackupCareFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase,
   terminatePlacement
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
-  createBackupCareFixture,
-  Fixture,
-  uuidv4
-} from '../../dev-api/fixtures'
+import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
 import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
-import ChildInformationPage, {
-  AssistanceNeedSection
-} from '../../pages/employee/child-information'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -29,8 +21,6 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-let childInformationPage: ChildInformationPage
-let assistanceNeeds: AssistanceNeedSection
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
 let child2Fixture: Child
@@ -196,16 +186,14 @@ describe('Unit groups - unit supervisor', () => {
   })
 
   test('Supervisor sees numeric child occupancy factor when not equal to 1', async () => {
-    await page.goto(
-      config.employeeUrl + '/child-information/' + child1Fixture.id
-    )
-    childInformationPage = new ChildInformationPage(page)
-    assistanceNeeds = await childInformationPage.openCollapsible(
-      'assistanceNeed'
-    )
-    await assistanceNeeds.createNewAssistanceNeed()
-    await assistanceNeeds.setAssistanceNeedMultiplier('1,5')
-    await assistanceNeeds.confirmAssistanceNeed()
+    await Fixture.assistanceFactor()
+      .with({
+        childId: child1Fixture.id,
+        capacityFactor: 1.5,
+        validDuring: new FiniteDateRange(placementStartDate, placementEndDate),
+        modifiedBy: systemInternalUser
+      })
+      .save()
 
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)
@@ -236,27 +224,24 @@ describe('Unit groups - unit supervisor', () => {
         endDate: placementEndDate
       })
       .save()
-    const backupCareFixture = createBackupCareFixture(
-      child3Fixture.id,
-      daycare.id,
-      groupId,
-      {
-        start: placementStartDate,
-        end: placementEndDate
-      }
-    )
-    await insertBackupCareFixtures([backupCareFixture])
-
-    await page.goto(
-      config.employeeUrl + '/child-information/' + child3Fixture.id
-    )
-    childInformationPage = new ChildInformationPage(page)
-    assistanceNeeds = await childInformationPage.openCollapsible(
-      'assistanceNeed'
-    )
-    await assistanceNeeds.createNewAssistanceNeed()
-    await assistanceNeeds.setAssistanceNeedMultiplier('1,5')
-    await assistanceNeeds.confirmAssistanceNeed()
+    await Fixture.backupCare()
+      .with({
+        childId: child3Fixture.id,
+        unitId: daycare.id,
+        groupId,
+        period: {
+          start: placementStartDate,
+          end: placementEndDate
+        }
+      })
+      .save()
+    await Fixture.assistanceFactor()
+      .with({
+        childId: child3Fixture.id,
+        validDuring: new FiniteDateRange(placementStartDate, placementEndDate),
+        capacityFactor: 1.5
+      })
+      .save()
 
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)

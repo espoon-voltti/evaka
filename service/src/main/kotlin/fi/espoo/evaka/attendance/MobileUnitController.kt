@@ -5,6 +5,8 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -30,7 +32,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/mobile/units")
-class MobileUnitController(private val accessControl: AccessControl) {
+class MobileUnitController(env: EvakaEnv, private val accessControl: AccessControl) {
+    private val assistanceModel = env.assistanceModel
+
     @GetMapping("/{unitId}")
     fun getUnitInfo(
         db: Database,
@@ -47,7 +51,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
                         Action.Unit.READ_MOBILE_INFO,
                         unitId
                     )
-                    tx.fetchUnitInfo(unitId, clock.today())
+                    tx.fetchUnitInfo(assistanceModel, unitId, clock.today())
                 }
             }
             .also { Audit.UnitRead.log(targetId = unitId) }
@@ -69,7 +73,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
                         Action.Unit.READ_MOBILE_STATS,
                         unitIds
                     )
-                    tx.fetchUnitStats(unitIds, clock.today())
+                    tx.fetchUnitStats(assistanceModel, unitIds, clock.today())
                 }
             }
             .also { Audit.UnitRead.log(targetId = unitIds) }
@@ -97,7 +101,11 @@ data class Staff(
     val groups: List<GroupId>
 )
 
-fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
+fun Database.Read.fetchUnitInfo(
+    assistanceModel: AssistanceModel,
+    unitId: DaycareId,
+    date: LocalDate
+): UnitInfo {
     data class UnitBasics(
         val id: DaycareId,
         val name: String,
@@ -153,7 +161,10 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
                 LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
                 LEFT JOIN service_need_option sno on sn.option_id = sno.id
                 LEFT JOIN service_need_option default_sno on placement_type = default_sno.valid_placement_type AND default_sno.default_option
-                LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date
+                ${when (assistanceModel) {
+                    AssistanceModel.OLD -> "LEFT JOIN assistance_need an ON an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date"
+                    AssistanceModel.NEW -> "LEFT JOIN assistance_factor an ON an.child_id = ca.child_id AND an.valid_during @> :date"
+                }}
             WHERE ca.unit_id = :unitId AND ca.end_time IS NULL
             GROUP BY pl.group_id
         ), staff AS (
@@ -273,7 +284,11 @@ data class UnitStats(
     val utilization: Double
 )
 
-fun Database.Read.fetchUnitStats(unitIds: List<DaycareId>, date: LocalDate): List<UnitStats> {
+fun Database.Read.fetchUnitStats(
+    assistanceModel: AssistanceModel,
+    unitIds: List<DaycareId>,
+    date: LocalDate
+): List<UnitStats> {
     return createQuery(
             """
 WITH present_children AS (
@@ -292,7 +307,10 @@ WITH present_children AS (
     LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
     LEFT JOIN service_need_option sno on sn.option_id = sno.id
     LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
-    LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date
+    ${when (assistanceModel) {
+        AssistanceModel.OLD -> "LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date"
+        AssistanceModel.NEW -> "LEFT JOIN assistance_factor an ON an.child_id = ca.child_id AND an.valid_during @> :date"
+    }}
     WHERE ca.unit_id = ANY(:unitIds) AND ca.end_time IS NULL
     GROUP BY ca.unit_id
 ), total_children AS (

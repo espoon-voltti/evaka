@@ -85,6 +85,7 @@ evaka:
   jwt:
     public_keys_url: classpath:evaka-integration-test/jwks.json
   max_attachments_per_user: 3
+  use_new_assistance_model: true
 espoo:
   integration:
     invoice:

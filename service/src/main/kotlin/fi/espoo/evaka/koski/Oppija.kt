@@ -232,16 +232,14 @@ data class Lisätiedot(
 data class ErityisenTuenPäätös(
     val alku: LocalDate,
     val loppu: LocalDate,
-    val opiskeleeToimintaAlueittain: Boolean,
-    val erityisryhmässä: Boolean
+    val opiskeleeToimintaAlueittain: Boolean
 ) {
     companion object {
-        fun from(aikajakso: FiniteDateRange, erityisryhmässä: Boolean) =
+        fun from(aikajakso: FiniteDateRange) =
             ErityisenTuenPäätös(
                 alku = aikajakso.start,
                 loppu = aikajakso.end,
                 opiskeleeToimintaAlueittain = false, // not used in Espoo
-                erityisryhmässä = erityisryhmässä
             )
     }
 }

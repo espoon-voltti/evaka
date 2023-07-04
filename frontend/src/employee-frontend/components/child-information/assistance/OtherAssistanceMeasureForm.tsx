@@ -86,9 +86,9 @@ export const OtherAssistanceMeasureForm = React.memo(
     )
 
     return (
-      <Tr>
+      <Tr data-qa="other-assistance-measure-form">
         <Td>
-          <SelectF bind={type} />
+          <SelectF data-qa="type" bind={type} />
         </Td>
         <Td>
           <DateRangePickerF

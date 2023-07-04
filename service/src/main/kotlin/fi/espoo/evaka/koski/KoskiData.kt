@@ -151,8 +151,7 @@ data class KoskiActiveDataRaw(
     val developmentalDisability2: List<FiniteDateRange> = emptyList(),
     val extendedCompulsoryEducation: List<FiniteDateRange> = emptyList(),
     val transportBenefit: List<FiniteDateRange> = emptyList(),
-    val specialAssistanceDecisionWithGroup: List<FiniteDateRange> = emptyList(),
-    val specialAssistanceDecisionWithoutGroup: List<FiniteDateRange> = emptyList(),
+    val specialSupportDecision: List<FiniteDateRange> = emptyList(),
     val studyRightId: KoskiStudyRightId,
     val studyRightOid: String?
 ) {
@@ -401,13 +400,10 @@ data class KoskiActiveDataRaw(
                 pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
                 erityisenTuenPäätökset =
-                    (specialAssistanceDecisionWithGroup
-                            .mapNotNull { it.intersection(placementSpan) }
-                            .map { ErityisenTuenPäätös.from(it, erityisryhmässä = true) } +
-                            specialAssistanceDecisionWithoutGroup
-                                .mapNotNull { it.intersection(placementSpan) }
-                                .map { ErityisenTuenPäätös.from(it, erityisryhmässä = false) })
-                        .takeIf { it.isNotEmpty() }
+                    (specialSupportDecision
+                        .mapNotNull { it.intersection(placementSpan) }
+                        .map { ErityisenTuenPäätös.from(it) }
+                        .takeIf { it.isNotEmpty() })
             )
             .takeIf {
                 it.vammainen != null ||

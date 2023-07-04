@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ShiftCareType,
   shiftCareType
@@ -775,39 +776,63 @@ export class PlacementsSection extends Section {
   }
 }
 
-export class AssistanceNeedSection extends Section {
-  #createAssistanceNeedButton = this.find(
-    '[data-qa="assistance-need-create-btn"]'
+export class AssistanceSection extends Section {
+  createAssistanceFactorButton = this.findByDataQa(
+    'assistance-factor-create-btn'
   )
-  #assistanceNeedMultiplierInput = new TextInput(
-    this.find('[data-qa="input-assistance-need-multiplier"]')
+  createDaycareAssistanceButton = this.findByDataQa(
+    'daycare-assistance-create-btn'
   )
-  #confirmAssistanceNeedButton = this.find(
-    '[data-qa="button-assistance-need-confirm"]'
+  createPreschoolAssistanceButton = this.findByDataQa(
+    'preschool-assistance-create-btn'
   )
-  #assistanceNeedMultiplier = this.findAll(
-    '[data-qa="assistance-need-multiplier"]'
+  createOtherAssistanceMeasureButton = this.findByDataQa(
+    'other-assistance-measure-create-btn'
   )
-  #assistanceNeedRow = this.findAll('[data-qa="assistance-need-row"]')
+  assistanceFactorForm = new AssistanceFactorForm(
+    this.findByDataQa('assistance-factor-form')
+  )
+  daycareAssistanceForm = new DaycareAssistanceForm(
+    this.findByDataQa('daycare-assistance-form')
+  )
+  preschoolAssistanceForm = new PreschoolAssistanceForm(
+    this.findByDataQa('preschool-assistance-form')
+  )
+  otherAssistanceMeasureForm = new OtherAssistanceMeasureForm(
+    this.findByDataQa('other-assistance-measure-form')
+  )
+  #assistanceFactorRows = this.findAllByDataQa('assistance-factor-row')
+  #daycareAssistanceRows = this.findAllByDataQa('daycare-assistance-row')
+  #preschoolAssistanceRows = this.findAllByDataQa('preschool-assistance-row')
+  #otherAssistanceMeasureRows = this.findAllByDataQa(
+    'other-assistance-measure-row'
+  )
 
-  async createNewAssistanceNeed() {
-    await this.#createAssistanceNeedButton.click()
+  assistanceFactorRow(nth: number): AssistanceFactorRow {
+    return new AssistanceFactorRow(this.#assistanceFactorRows.nth(nth))
   }
-
-  async setAssistanceNeedMultiplier(multiplier: string) {
-    await this.#assistanceNeedMultiplierInput.fill(multiplier)
+  async assertAssistanceFactorCount(count: number) {
+    await this.#assistanceFactorRows.assertCount(count)
   }
-
-  async confirmAssistanceNeed() {
-    await this.#confirmAssistanceNeedButton.click()
+  daycareAssistanceRow(nth: number): DaycareAssistanceRow {
+    return new DaycareAssistanceRow(this.#daycareAssistanceRows.nth(nth))
   }
-
-  async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
-    await this.#assistanceNeedMultiplier.nth(nth).assertTextEquals(expected)
+  async assertDaycareAssistanceCount(count: number) {
+    await this.#daycareAssistanceRows.assertCount(count)
   }
-
-  async assertAssistanceNeedCount(expectedCount: number) {
-    await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
+  preschoolAssistanceRow(nth: number): PreschoolAssistanceRow {
+    return new PreschoolAssistanceRow(this.#preschoolAssistanceRows.nth(nth))
+  }
+  async assertPreschoolAssistanceCount(count: number) {
+    await this.#preschoolAssistanceRows.assertCount(count)
+  }
+  otherAssistanceMeasureRow(nth: number): OtherAssistanceMeasureRow {
+    return new OtherAssistanceMeasureRow(
+      this.#otherAssistanceMeasureRows.nth(nth)
+    )
+  }
+  async assertOtherAssistanceMeasureCount(count: number) {
+    await this.#otherAssistanceMeasureRows.assertCount(count)
   }
 
   async waitUntilAssistanceNeedDecisionsLoaded() {
@@ -916,6 +941,63 @@ export class AssistanceNeedSection extends Section {
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 }
 
+abstract class InlineAssistanceForm extends Element {
+  validDuring = this.findByDataQa('valid-during')
+  startDate = new DatePicker(this.validDuring.findByDataQa('start-date'))
+  endDate = new DatePicker(this.validDuring.findByDataQa('end-date'))
+  save = this.findByDataQa('save')
+  cancel = this.findByDataQa('cancel')
+
+  async fillValidDuring(dateRange: FiniteDateRange) {
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+  }
+}
+
+abstract class InlineAssistanceRow extends Element {
+  validDuring = this.findByDataQa('valid-during')
+  edit = this.findByDataQa('edit')
+  #deleteButton = this.findByDataQa('delete')
+
+  async delete() {
+    await this.#deleteButton.click()
+    const modal = new Modal(this.locator)
+    await modal.submit()
+  }
+}
+
+class AssistanceFactorForm extends InlineAssistanceForm {
+  capacityFactor = new TextInput(this.findByDataQa('capacity-factor'))
+}
+
+class AssistanceFactorRow extends InlineAssistanceRow {
+  capacityFactor = this.findByDataQa('capacity-factor')
+}
+
+class DaycareAssistanceForm extends InlineAssistanceForm {
+  level = new Select(this.findByDataQa('level'))
+}
+
+class DaycareAssistanceRow extends InlineAssistanceRow {
+  level = this.findByDataQa('level')
+}
+
+class PreschoolAssistanceForm extends InlineAssistanceForm {
+  level = new Select(this.findByDataQa('level'))
+}
+
+class PreschoolAssistanceRow extends InlineAssistanceRow {
+  level = this.findByDataQa('level')
+}
+
+class OtherAssistanceMeasureForm extends InlineAssistanceForm {
+  type = new Select(this.findByDataQa('type'))
+}
+
+class OtherAssistanceMeasureRow extends InlineAssistanceRow {
+  type = this.findByDataQa('type')
+}
+
 class MessageBlocklistSection extends Section {
   async addParentToBlockList(parentId: string) {
     const checkbox = new Checkbox(
@@ -996,9 +1078,9 @@ const collapsibles = {
     selector: '[data-qa="child-placements-collapsible"]',
     section: PlacementsSection
   },
-  assistanceNeed: {
+  assistance: {
     selector: '[data-qa="assistance-collapsible"]',
-    section: AssistanceNeedSection
+    section: AssistanceSection
   },
   messageBlocklist: {
     selector: '[data-qa="child-message-blocklist-collapsible"]',

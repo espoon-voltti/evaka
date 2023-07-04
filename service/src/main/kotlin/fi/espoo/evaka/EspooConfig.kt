@@ -90,8 +90,8 @@ class EspooConfig {
         }
 
     @Bean
-    fun patuReportingService(client: PatuIntegrationClient): PatuReportingService =
-        PatuReportingService(client)
+    fun patuReportingService(env: EvakaEnv, client: PatuIntegrationClient): PatuReportingService =
+        PatuReportingService(env, client)
 
     @Bean
     @Lazy
@@ -107,8 +107,8 @@ class EspooConfig {
     @Bean
     fun espooPatuAsyncJobProcessor(
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
-        patuIntegrationClient: PatuIntegrationClient
-    ) = PatuAsyncJobProcessor(asyncJobRunner, PatuReportingService(patuIntegrationClient))
+        patuReportingService: PatuReportingService
+    ) = PatuAsyncJobProcessor(asyncJobRunner, patuReportingService)
 
     @Bean
     @Profile("local")

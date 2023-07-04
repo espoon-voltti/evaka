@@ -577,6 +577,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceFactor()
+        ),
+        READ_PRE_PRESCHOOL(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1224,6 +1228,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfDaycareAssistance()
+        ),
+        READ_PRE_PRESCHOOL(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1486,6 +1494,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure()
+        ),
+        READ_PRE_PRESCHOOL(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfOtherAssistanceMeasure()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

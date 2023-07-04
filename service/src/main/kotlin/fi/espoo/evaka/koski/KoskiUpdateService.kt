@@ -39,7 +39,7 @@ class KoskiUpdateService(
     ) {
         if (env.koskiEnabled) {
             db.transaction { tx ->
-                val requests = tx.getPendingStudyRights(clock.today(), params)
+                val requests = tx.getPendingStudyRights(env.assistanceModel, clock.today(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(
                     tx,
