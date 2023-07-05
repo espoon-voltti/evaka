@@ -2,11 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, {
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import {
+  daycareAssistanceLevels,
+  otherAssistanceMeasureTypes,
+  preschoolAssistanceLevels
+} from 'lib-common/generated/api-types/assistance'
 import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportRow
@@ -27,6 +38,7 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { distinct, reducePropertySum } from '../../utils'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
@@ -43,7 +55,24 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
+const OldModelOnly = (props: { children: ReactNode }) => {
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
+  return useNewAssistanceModel ? undefined : props.children
+}
+
+function NewModelOnly(props: { children: ReactNode }) {
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
+  return useNewAssistanceModel ? props.children : undefined
+}
+
 export default React.memo(function AssistanceNeedsAndActions() {
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
   const { i18n } = useTranslation()
   const [report, setReport] = useState<Result<AssistanceNeedsAndActionsReport>>(
     Loading.of()
@@ -129,32 +158,48 @@ export default React.memo(function AssistanceNeedsAndActions() {
         {report.isSuccess && (
           <>
             <ReportDownload<Record<string, unknown>>
-              data={filteredRows.map((row) => ({
-                ...row,
-                unitType: row.unitType
-                  ? i18n.reports.common.unitTypes[row.unitType]
-                  : '',
-                unitProviderType:
-                  i18n.reports.common.unitProviderTypes[row.unitProviderType],
-                ...Object.fromEntries(
-                  report.value.bases.map(({ value }) => [
-                    `BASIS-${value}`,
-                    row.basisCounts[value] ?? 0
+              data={filteredRows.map((row) =>
+                /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
+                ({
+                  ...row,
+                  unitType: row.unitType
+                    ? i18n.reports.common.unitTypes[row.unitType]
+                    : '',
+                  unitProviderType:
+                    i18n.reports.common.unitProviderTypes[row.unitProviderType],
+                  ...Object.fromEntries([
+                    ...(useNewAssistanceModel
+                      ? [
+                          ...daycareAssistanceLevels.map((level) => [
+                            `DAYCARE-ASSISTANCE-${level}`,
+                            row.daycareAssistanceCounts[level] ?? 0
+                          ]),
+                          ...preschoolAssistanceLevels.map((level) => [
+                            `PRESCHOOL-ASSISTANCE-${level}`,
+                            row.preschoolAssistanceCounts[level] ?? 0
+                          ]),
+                          ...otherAssistanceMeasureTypes.map((type) => [
+                            `OTHER-ASSISTANCE-MEASURE-${type}`,
+                            row.otherAssistanceMeasureCounts[type] ?? 0
+                          ])
+                        ]
+                      : report.value.bases.map(({ value }) => [
+                          `BASIS-${value}`,
+                          row.basisCounts[value] ?? 0
+                        ])),
+                    ...report.value.actions.map(({ value }) => [
+                      `ACTION-${value}`,
+                      row.actionCounts[value] ?? 0
+                    ]),
+                    ...(useNewAssistanceModel
+                      ? []
+                      : assistanceMeasures.map((value) => [
+                          `MEASURE-${value}`,
+                          row.measureCounts[value] ?? 0
+                        ]))
                   ])
-                ),
-                ...Object.fromEntries(
-                  report.value.actions.map(({ value }) => [
-                    `ACTION-${value}`,
-                    row.actionCounts[value] ?? 0
-                  ])
-                ),
-                ...Object.fromEntries(
-                  assistanceMeasures.map((value) => [
-                    `MEASURE-${value}`,
-                    row.measureCounts[value] ?? 0
-                  ])
-                )
-              }))}
+                })
+              )}
               headers={[
                 {
                   label: i18n.reports.common.careAreaName,
@@ -176,14 +221,38 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   label: i18n.reports.common.unitProviderType,
                   key: 'unitProviderType'
                 },
-                ...report.value.bases.map((basis) => ({
-                  label: basis.nameFi,
-                  key: `BASIS-${basis.value}`
-                })),
-                {
-                  label: i18n.reports.assistanceNeedsAndActions.basisMissing,
-                  key: 'noBasisCount'
-                },
+                ...(useNewAssistanceModel
+                  ? [
+                      ...daycareAssistanceLevels.map((level) => ({
+                        label:
+                          i18n.childInformation.assistance.types
+                            .daycareAssistanceLevel[level],
+                        key: `DAYCARE-ASSISTANCE-${level}`
+                      })),
+                      ...preschoolAssistanceLevels.map((level) => ({
+                        label:
+                          i18n.childInformation.assistance.types
+                            .preschoolAssistanceLevel[level],
+                        key: `PRESCHOOL-ASSISTANCE-${level}`
+                      })),
+                      ...otherAssistanceMeasureTypes.map((type) => ({
+                        label:
+                          i18n.childInformation.assistance.types
+                            .otherAssistanceMeasureType[type],
+                        key: `OTHER-ASSISTANCE-MEASURE-${type}`
+                      }))
+                    ]
+                  : [
+                      ...report.value.bases.map((basis) => ({
+                        label: basis.nameFi,
+                        key: `BASIS-${basis.value}`
+                      })),
+                      {
+                        label:
+                          i18n.reports.assistanceNeedsAndActions.basisMissing,
+                        key: 'noBasisCount'
+                      }
+                    ]),
                 ...report.value.actions.map((action) => ({
                   label: action.nameFi,
                   key: `ACTION-${action.value}`
@@ -202,13 +271,14 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   label: i18n.reports.assistanceNeedsAndActions.actionMissing,
                   key: 'noActionCount'
                 },
-                ...assistanceMeasures.map((measure) => ({
-                  label:
-                    i18n.childInformation.assistanceAction.fields.measureTypes[
-                      measure
-                    ],
-                  key: `MEASURE-${measure}`
-                }))
+                ...(useNewAssistanceModel
+                  ? []
+                  : assistanceMeasures.map((measure) => ({
+                      label:
+                        i18n.childInformation.assistanceAction.fields
+                          .measureTypes[measure],
+                      key: `MEASURE-${measure}`
+                    })))
               ]}
               filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
             />
@@ -220,10 +290,40 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Th>{i18n.reports.common.groupName}</Th>
                   <Th>{i18n.reports.common.unitType}</Th>
                   <Th>{i18n.reports.common.unitProviderType}</Th>
-                  {report.value.bases.map((basis) => (
-                    <Th key={basis.value}>{basis.nameFi}</Th>
-                  ))}
-                  <Th>{i18n.reports.assistanceNeedsAndActions.basisMissing}</Th>
+                  <OldModelOnly>
+                    {report.value.bases.map((basis) => (
+                      <Th key={basis.value}>{basis.nameFi}</Th>
+                    ))}
+                    <Th>
+                      {i18n.reports.assistanceNeedsAndActions.basisMissing}
+                    </Th>
+                  </OldModelOnly>
+                  <NewModelOnly>
+                    {daycareAssistanceLevels.map((level) => (
+                      <Th key={level}>
+                        {
+                          i18n.childInformation.assistance.types
+                            .daycareAssistanceLevel[level]
+                        }
+                      </Th>
+                    ))}
+                    {preschoolAssistanceLevels.map((level) => (
+                      <Th key={level}>
+                        {
+                          i18n.childInformation.assistance.types
+                            .preschoolAssistanceLevel[level]
+                        }
+                      </Th>
+                    ))}
+                    {otherAssistanceMeasureTypes.map((type) => (
+                      <Th key={type}>
+                        {
+                          i18n.childInformation.assistance.types
+                            .otherAssistanceMeasureType[type]
+                        }
+                      </Th>
+                    ))}
+                  </NewModelOnly>
                   {report.value.actions.map((action) => (
                     <Th key={action.value}>{action.nameFi}</Th>
                   ))}
@@ -238,14 +338,16 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Th>
                     {i18n.reports.assistanceNeedsAndActions.actionMissing}
                   </Th>
-                  {assistanceMeasures.map((measure) => (
-                    <Th key={measure}>
-                      {
-                        i18n.childInformation.assistanceAction.fields
-                          .measureTypes[measure]
-                      }
-                    </Th>
-                  ))}
+                  <OldModelOnly>
+                    {assistanceMeasures.map((measure) => (
+                      <Th key={measure}>
+                        {
+                          i18n.childInformation.assistanceAction.fields
+                            .measureTypes[measure]
+                        }
+                      </Th>
+                    ))}
+                  </OldModelOnly>
                 </Tr>
               </Thead>
               <Tbody>
@@ -268,12 +370,31 @@ export default React.memo(function AssistanceNeedsAndActions() {
                         ]
                       }
                     </Td>
-                    {report.value.bases.map((basis) => (
-                      <Td key={basis.value}>
-                        {row.basisCounts[basis.value] ?? 0}
-                      </Td>
-                    ))}
-                    <Td>{row.noBasisCount}</Td>
+                    <OldModelOnly>
+                      {report.value.bases.map((basis) => (
+                        <Td key={basis.value}>
+                          {row.basisCounts[basis.value] ?? 0}
+                        </Td>
+                      ))}
+                      <Td>{row.noBasisCount}</Td>
+                    </OldModelOnly>
+                    <NewModelOnly>
+                      {daycareAssistanceLevels.map((level) => (
+                        <Td key={level}>
+                          {row.daycareAssistanceCounts[level] ?? 0}
+                        </Td>
+                      ))}
+                      {preschoolAssistanceLevels.map((level) => (
+                        <Td key={level}>
+                          {row.preschoolAssistanceCounts[level] ?? 0}
+                        </Td>
+                      ))}
+                      {otherAssistanceMeasureTypes.map((type) => (
+                        <Td key={type}>
+                          {row.otherAssistanceMeasureCounts[type] ?? 0}
+                        </Td>
+                      ))}
+                    </NewModelOnly>
                     {report.value.actions.map((action) => (
                       <Td key={action.value}>
                         {row.actionCounts[action.value] ?? 0}
@@ -283,9 +404,11 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       <Td>{row.otherActionCount}</Td>
                     )}
                     <Td>{row.noActionCount}</Td>
-                    {assistanceMeasures.map((measure) => (
-                      <Td key={measure}>{row.measureCounts[measure] ?? 0}</Td>
-                    ))}
+                    <OldModelOnly>
+                      {assistanceMeasures.map((measure) => (
+                        <Td key={measure}>{row.measureCounts[measure] ?? 0}</Td>
+                      ))}
+                    </OldModelOnly>
                   </Tr>
                 ))}
               </Tbody>
@@ -296,17 +419,45 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Td />
                   <Td />
                   <Td />
-                  {report.value.bases.map((basis) => (
-                    <Td key={basis.value}>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.basisCounts[basis.value] ?? 0
-                      )}
+                  <OldModelOnly>
+                    {report.value.bases.map((basis) => (
+                      <Td key={basis.value}>
+                        {reducePropertySum(
+                          filteredRows,
+                          (r) => r.basisCounts[basis.value] ?? 0
+                        )}
+                      </Td>
+                    ))}
+                    <Td>
+                      {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
                     </Td>
-                  ))}
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.noBasisCount)}
-                  </Td>
+                  </OldModelOnly>
+                  <NewModelOnly>
+                    {daycareAssistanceLevels.map((level) => (
+                      <Td key={level}>
+                        {reducePropertySum(
+                          filteredRows,
+                          (r) => r.daycareAssistanceCounts[level] ?? 0
+                        )}
+                      </Td>
+                    ))}
+                    {preschoolAssistanceLevels.map((level) => (
+                      <Td key={level}>
+                        {reducePropertySum(
+                          filteredRows,
+                          (r) => r.preschoolAssistanceCounts[level] ?? 0
+                        )}
+                      </Td>
+                    ))}
+                    {otherAssistanceMeasureTypes.map((type) => (
+                      <Td key={type}>
+                        {reducePropertySum(
+                          filteredRows,
+                          (r) => r.otherAssistanceMeasureCounts[type] ?? 0
+                        )}
+                      </Td>
+                    ))}
+                  </NewModelOnly>
                   {report.value.actions.map((action) => (
                     <Td key={action.value}>
                       {reducePropertySum(
@@ -326,14 +477,16 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.noActionCount)}
                   </Td>
-                  {assistanceMeasures.map((measure) => (
-                    <Td key={measure}>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.measureCounts[measure] ?? 0
-                      )}
-                    </Td>
-                  ))}
+                  <OldModelOnly>
+                    {assistanceMeasures.map((measure) => (
+                      <Td key={measure}>
+                        {reducePropertySum(
+                          filteredRows,
+                          (r) => r.measureCounts[measure] ?? 0
+                        )}
+                      </Td>
+                    ))}
+                  </OldModelOnly>
                 </Tr>
               </TableFooter>
             </TableScrollable>
