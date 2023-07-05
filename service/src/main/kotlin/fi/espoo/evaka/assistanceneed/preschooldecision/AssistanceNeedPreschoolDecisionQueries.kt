@@ -6,11 +6,13 @@ package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
@@ -112,6 +114,9 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             (ad.document_key IS NOT NULL) has_document,
             
             d.name as unit_name,
+            d.street_address as unit_street_address,
+            d.postal_code as unit_postal_code,
+            d.post_office as unit_post_office,
             CASE WHEN preparer1.id IS NOT NULL THEN coalesce(preparer1.preferred_first_name, preparer1.first_name) || ' ' || preparer1.last_name END as preparer_1_name,
             CASE WHEN preparer2.id IS NOT NULL THEN coalesce(preparer2.preferred_first_name, preparer2.first_name) || ' ' || preparer2.last_name END as preparer_2_name,
             CASE WHEN decision_maker.id IS NOT NULL THEN coalesce(decision_maker.preferred_first_name, decision_maker.first_name) || ' ' || decision_maker.last_name END as decision_maker_name
@@ -232,9 +237,9 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
     // language=sql
     val sql =
         """
-        SELECT ad.id, ad.created, ad.status, ad.type, ad.valid_from,
+        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
             ad.selected_unit selected_unit_id, unit.name selected_unit_name,
-            ad.sent_for_decision, ad.decision_made
+            ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
         FROM assistance_need_preschool_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE child_id = :childId
@@ -252,7 +257,10 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
 
         val followingStart =
             decisions
-                .filter { it.status != AssistanceNeedDecisionStatus.DRAFT && it.validFrom != null }
+                .filter {
+                    (it.id == decision.id || it.status == AssistanceNeedDecisionStatus.ACCEPTED) &&
+                        it.validFrom != null
+                }
                 .sortedWith(
                     compareByDescending<AssistanceNeedPreschoolDecisionBasics> { it.validFrom }
                         .thenByDescending { it.created }
@@ -262,7 +270,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
                 ?.validFrom
                 ?: return@map decision
 
-        decision.copy(validTo = minOf(decision.validFrom, followingStart.minusDays(1)))
+        decision.copy(validTo = maxOf(decision.validFrom, followingStart.minusDays(1)))
     }
 }
 
@@ -319,6 +327,21 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         .updateExactlyOne()
 }
 
+fun Database.Transaction.updateAssistanceNeedPreschoolDocumentKey(
+    id: AssistanceNeedPreschoolDecisionId,
+    key: String
+) {
+    // language=sql
+    val sql =
+        """
+        UPDATE assistance_need_preschool_decision
+        SET document_key = :key
+        WHERE id = :id
+        """
+            .trimIndent()
+    createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
+}
+
 fun Database.Transaction.annulAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId,
     reason: String,
@@ -333,4 +356,103 @@ WHERE id = :id
         .bind("id", id)
         .bind("reason", reason)
         .updateExactlyOne()
+}
+
+fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
+    today: LocalDate,
+    userId: PersonId
+): List<AssistanceNeedPreschoolDecisionCitizenListItem> {
+    val childIds =
+        createQuery(
+                """
+        SELECT child_id FROM guardian WHERE guardian_id = :userId
+        UNION ALL 
+        SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    """
+            )
+            .bind("today", today)
+            .bind("userId", userId)
+            .mapTo<ChildId>()
+            .set()
+
+    return childIds
+        .flatMap { childId -> getAssistanceNeedPreschoolDecisionsByChildId(childId) }
+        .filter { it.status.isDecided() }
+        .mapNotNull {
+            if (
+                it.validFrom == null ||
+                    it.type == null ||
+                    it.decisionMade == null ||
+                    it.selectedUnit?.name == null
+            ) {
+                null
+            } else {
+                AssistanceNeedPreschoolDecisionCitizenListItem(
+                    id = it.id,
+                    childId = it.childId,
+                    validityPeriod = DateRange(it.validFrom, it.validTo),
+                    status = it.status,
+                    type = it.type,
+                    decisionMade = it.decisionMade,
+                    unitName = it.selectedUnit.name,
+                    annulmentReason = it.annulmentReason,
+                    isUnread = it.unreadGuardianIds.contains(userId)
+                )
+            }
+        }
+}
+
+fun Database.Transaction.markAssistanceNeedPreschoolDecisionAsReadByGuardian(
+    decisionId: AssistanceNeedPreschoolDecisionId,
+    guardianId: PersonId
+) {
+    // language=sql
+    val sql =
+        """
+        UPDATE assistance_need_preschool_decision
+        SET unread_guardian_ids = array_remove(unread_guardian_ids, :guardianId)
+        WHERE id = :id
+        """
+            .trimIndent()
+
+    createUpdate(sql).bind("id", decisionId).bind("guardianId", guardianId).updateExactlyOne()
+}
+
+fun Database.Read.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
+    today: LocalDate,
+    userId: PersonId
+): List<UnreadAssistanceNeedDecisionItem> {
+    val sql =
+        """
+        SELECT ad.child_id, COUNT(ad.id) as count
+        FROM assistance_need_preschool_decision ad
+        WHERE (:userId = ANY(ad.unread_guardian_ids)) 
+            AND status IN ('REJECTED', 'ACCEPTED')
+            AND ad.child_id IN (
+                SELECT child_id FROM guardian WHERE guardian_id = :userId
+                UNION ALL 
+                SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+            )
+        GROUP BY ad.child_id
+        """
+
+    return createQuery(sql)
+        .bind("today", today)
+        .bind("userId", userId)
+        .mapTo<UnreadAssistanceNeedDecisionItem>()
+        .list()
+}
+
+fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentKey(
+    id: AssistanceNeedPreschoolDecisionId
+): String? {
+    // language=sql
+    val sql =
+        """
+        SELECT document_key
+        FROM assistance_need_preschool_decision ad
+        WHERE ad.id = :id
+        """
+            .trimIndent()
+    return createQuery(sql).bind("id", id).mapTo<String>().firstOrNull()
 }

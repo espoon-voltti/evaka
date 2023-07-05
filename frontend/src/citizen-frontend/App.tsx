@@ -30,6 +30,7 @@ import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
+import AssistancePreschoolDecisionPage from './decisions/assistance-decision-page/AssistancePreschoolDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
@@ -259,6 +260,16 @@ const Content = React.memo(function Content() {
               <RequireAuth>
                 <ScrollToTop>
                   <AssistanceDecisionPage />
+                </ScrollToTop>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/decisions/assistance-preschool/:id"
+            element={
+              <RequireAuth>
+                <ScrollToTop>
+                  <AssistancePreschoolDecisionPage />
                 </ScrollToTop>
               </RequireAuth>
             }

@@ -13,6 +13,7 @@ import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
 import { assistanceDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries'
+import { assistanceNeedPreschoolDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries-preschool'
 import { applicationNotificationsQuery } from '../decisions/queries'
 import { unreadMessagesCountQuery } from '../messages/queries'
 
@@ -31,6 +32,11 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
   const { data: unreadAssistanceNeedDecisionCounts = [] } = useQuery(
     assistanceDecisionUnreadCountsQuery,
+    { enabled: loggedIn }
+  )
+
+  const { data: unreadAssistanceNeedPreschoolDecisionCounts = [] } = useQuery(
+    assistanceNeedPreschoolDecisionUnreadCountsQuery,
     { enabled: loggedIn }
   )
 
@@ -56,7 +62,11 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
           unreadMessagesCount={unreadMessagesCount ?? 0}
           unreadDecisions={
             waitingConfirmationCount +
-            sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count)
+            sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count) +
+            sumBy(
+              unreadAssistanceNeedPreschoolDecisionCounts,
+              ({ count }) => count
+            )
           }
           hideLoginButton={isLoginPage}
         />

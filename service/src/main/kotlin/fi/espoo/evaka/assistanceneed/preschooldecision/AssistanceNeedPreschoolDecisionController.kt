@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -31,7 +33,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceNeedPreschoolDecisionController(
     private val featureConfig: FeatureConfig,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
@@ -192,14 +195,16 @@ class AssistanceNeedPreschoolDecisionController(
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
         @RequestBody body: DecideAssistanceNeedPreschoolDecisionRequest
     ) {
-        if (
-            body.status == AssistanceNeedDecisionStatus.DRAFT ||
-                body.status == AssistanceNeedDecisionStatus.ANNULLED
-        ) {
-            throw BadRequest(
-                "Assistance need decisions cannot be decided to be a draft or annulled"
-            )
-        }
+        val decided =
+            when (body.status) {
+                AssistanceNeedDecisionStatus.ACCEPTED,
+                AssistanceNeedDecisionStatus.REJECTED -> true
+                AssistanceNeedDecisionStatus.NEEDS_WORK -> false
+                AssistanceNeedDecisionStatus.DRAFT ->
+                    throw BadRequest("Assistance need decisions cannot be decided to be draft")
+                AssistanceNeedDecisionStatus.ANNULLED ->
+                    throw BadRequest("Assistance need decisions cannot be decided to be annulled")
+            }
 
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -213,40 +218,33 @@ class AssistanceNeedPreschoolDecisionController(
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (
-                        decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                            decision.status == AssistanceNeedDecisionStatus.ANNULLED
-                    ) {
+                    if (decision.status.isDecided()) {
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
 
                     tx.decideAssistanceNeedPreschoolDecision(
                         id = id,
                         status = body.status,
-                        decisionMade =
-                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
-                            else clock.today(),
+                        decisionMade = clock.today().takeIf { decided },
                         unreadGuardianIds =
-                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
-                                null
-                            } else {
+                            if (decided) {
                                 tx.getChildGuardians(decision.child.id)
+                            } else {
+                                null
                             }
                     )
 
-                    // todo
-                    /*if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                    if (decided) {
                         asyncJobRunner.plan(
                             tx,
                             listOf(
-                                AsyncJob.SendAssistanceNeedDecisionEmail(id),
-                                AsyncJob.CreateAssistanceNeedDecisionPdf(id),
-                                AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
+                                // todo AsyncJob.SendAssistanceNeedDecisionEmail(id),
+                                AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id),
+                                // todo AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
                             ),
                             runAt = clock.now()
                         )
-                    }*/
+                    }
                 }
             }
             .also {
@@ -327,6 +325,7 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = id) }
     }
 
+    // TODO: Unused endpoint?
     @PutMapping("/assistance-need-preschool-decisions/{id}/decision-maker")
     fun updateAssistanceNeedPreschoolDecisionDecisionMaker(
         db: Database,
@@ -346,12 +345,7 @@ class AssistanceNeedPreschoolDecisionController(
                     )
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (
-                        decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                            decision.status == AssistanceNeedDecisionStatus.ANNULLED ||
-                            decision.sentForDecision == null
-                    ) {
+                    if (decision.status.isDecided() || decision.sentForDecision == null) {
                         throw BadRequest(
                             "Decision maker cannot be changed for already-decided or unsent decisions"
                         )

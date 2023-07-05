@@ -124,6 +124,8 @@ enum class AssistanceNeedDecisionStatus : DatabaseEnum {
     ANNULLED;
 
     override val sqlType: String = "assistance_need_decision_status"
+
+    fun isDecided() = this in listOf(ACCEPTED, REJECTED, ANNULLED)
 }
 
 enum class AssistanceNeedDecisionLanguage {

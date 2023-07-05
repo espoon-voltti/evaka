@@ -1435,6 +1435,162 @@ const sv: Translations = {
       },
       returnToPreviousPage: 'Tillbaka'
     },
+    assistancePreschoolDecisions: {
+      // TODO
+      title: 'Päätös erityisestä tuesta esiopetuksessa',
+      statuses: {
+        DRAFT: 'Luonnos',
+        NEEDS_WORK: 'Korjattava',
+        ACCEPTED: 'Hyväksytty',
+        REJECTED: 'Hylätty',
+        ANNULLED: 'Mitätöity'
+      },
+      pageTitle: 'Päätös tuesta esiopetuksessa',
+      decisionNumber: 'Päätösnumero',
+      confidential: 'Salassa pidettävä',
+      lawReference: 'Perusopetuslaki 17 §',
+      types: {
+        NEW: 'Erityinen tuki alkaa',
+        CONTINUING: 'Erityinen tuki jatkuu',
+        TERMINATED: 'Erityinen tuki päättyy'
+      },
+      decidedAssistance: 'Päätettävä tuki',
+      type: 'Erityisen tuen tila',
+      validFrom: 'Voimassa alkaen',
+      extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
+      extendedCompulsoryEducation:
+        'Kyllä, lapsella on pidennetty oppivelvollisuus',
+      no: 'Ei',
+      extendedCompulsoryEducationInfo:
+        'Lisätiedot pidennetystä oppivelvollisuudesta',
+      grantedAssistanceSection:
+        'Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet',
+      grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
+      grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
+      grantedAssistiveDevices: 'Lapselle myönnetään erityisiä apuvälineitä',
+      grantedNothing: 'Ei valintaa',
+      grantedServicesBasis:
+        'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
+      selectedUnit: 'Esiopetuksen järjestämispaikka',
+      primaryGroup: 'Pääsääntöinen opetusryhmä',
+      decisionBasis: 'Perustelut päätökselle',
+      documentBasis: 'Asiakirjat, joihin päätös perustuu',
+      basisDocumentPedagogicalReport: 'Pedagoginen selvitys',
+      basisDocumentPsychologistStatement: 'Psykologin lausunto',
+      basisDocumentDoctorStatement: 'Lääkärin lausunto',
+      basisDocumentSocialReport: 'Sosiaalinen selvitys',
+      basisDocumentOtherOrMissing: 'Liite puuttuu, tai muu liite, mikä?',
+      basisDocumentsInfo: 'Lisätiedot liitteistä',
+      guardianCollaborationSection: 'Huoltajien kanssa tehty yhteistyö',
+      guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
+      heardGuardians: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+      otherRepresentative:
+        'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
+      viewOfGuardians: 'Huoltajien näkemys esitetystä tuesta',
+      responsiblePeople: 'Vastuuhenkilöt',
+      preparer: 'Päätöksen valmistelija',
+      decisionMaker: 'Päätöksen tekijä',
+      employeeTitle: 'Titteli',
+      phone: 'Puhelinnumero',
+      appealInstructionsTitle: 'Oikaisuvaatimusohje',
+      appealInstructions: (
+        <>
+          <H3>Oikaisuvaatimusoikeus</H3>
+          <P>
+            Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
+            jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
+            vaikuttaa (asianosainen).
+          </P>
+          <H3>Oikaisuvaatimusaika</H3>
+          <P>
+            Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
+            tiedoksisaannista.
+          </P>
+          <H3>Tiedoksisaanti</H3>
+          <P>
+            Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
+            näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
+            saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä.
+            Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen
+            katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä
+            kolmantena päivänä viestin lähettämisestä. Tiedoksisaantipäivää ei
+            lueta määräaikaan. Jos määräajan viimeinen päivä on pyhäpäivä,
+            itsenäisyyspäivä, vapunpäivä, joulu- tai juhannusaatto tai
+            arkilauantai, saa tehtävän toimittaa ensimmäisenä arkipäivänä sen
+            jälkeen.
+          </P>
+          <H3>Oikaisuviranomainen</H3>
+          <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
+          <P>
+            Etelä-Suomen aluehallintovirasto
+            <br />
+            Käyntiosoite: Ratapihantie 9, 00521 Helsinki
+            <br />
+            Virastoaika: ma-pe 8.00–16.15
+            <br />
+            Postiosoite: PL 1, 13035 AVI
+            <br />
+            Sähköposti: kirjaamo.etela@avi.fi
+            <br />
+            Fax: 0295 016 661
+            <br />
+            Puhelin: 0295 016 000
+          </P>
+          <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
+          <P>
+            Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
+            täyttää vaatimuksen kirjallisesta muodosta.
+          </P>
+          <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+          <ul>
+            <li>
+              Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
+              puhelinnumero ja muut asian hoitamiseksi tarvittavat yhteystiedot
+            </li>
+            <li>päätös, johon haetaan oikaisua</li>
+            <li>
+              miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
+              vaaditaan tehtäväksi
+            </li>
+            <li>vaatimuksen perusteet</li>
+          </ul>
+          <P>
+            Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
+            viestinä, yhteystietona pyydetään ilmoittamaan myös
+            sähköpostiosoite.
+          </P>
+          <P>
+            Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen
+            edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana on
+            joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän
+            nimi ja kotikunta.
+          </P>
+          <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+          <ul>
+            <li>
+              päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
+            </li>
+            <li>
+              todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu
+              selvitys oikaisuvaatimusajan alkamisen ajankohdasta
+            </li>
+            <li>
+              asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
+              oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
+              toimitettu viranomaiselle.
+            </li>
+          </ul>
+          <H3>Oikaisuvaatimuksen toimittaminen</H3>
+          <P>
+            Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan kuluessa
+            oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän tulee olla
+            perillä oikaisuvaatimusajan viimeisenä päivänä ennen viraston
+            aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen postitse tai
+            sähköisesti tapahtuu lähettäjän omalla vastuulla.
+          </P>
+        </>
+      )
+    },
     assistanceDecisions: {
       title: 'Beslut om stöd',
       assistanceLevel: 'Nivå av stöd',

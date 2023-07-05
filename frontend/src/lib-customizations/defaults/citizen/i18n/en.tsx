@@ -1490,6 +1490,26 @@ const en: Translations = {
       },
       returnToPreviousPage: 'Return'
     },
+    assistancePreschoolDecisions: {
+      // the actual decision cannot be in English
+      ...fi.decisions.assistancePreschoolDecisions,
+
+      // TODO
+      title: 'Decision of special support in preschool',
+      statuses: {
+        DRAFT: 'Draft',
+        NEEDS_WORK: 'Needs work',
+        ACCEPTED: 'Accepted',
+        REJECTED: 'Rejected',
+        ANNULLED: 'Annulled'
+      },
+      type: 'Special support status',
+      types: {
+        NEW: 'Special support begins',
+        CONTINUING: 'Special support continues',
+        TERMINATED: 'Special support ends'
+      }
+    },
     assistanceDecisions: {
       title: 'Support decision',
       assistanceLevel: 'Level of support',
