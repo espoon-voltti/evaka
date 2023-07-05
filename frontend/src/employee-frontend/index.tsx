@@ -15,7 +15,7 @@ import {
   Tooltip
 } from 'chart.js'
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
@@ -48,7 +48,9 @@ Chart.defaults.font = {
 }
 Chart.defaults.color = colors.grayscale.g100
 
-ReactDOM.render(<App />, document.getElementById('app'))
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const root = createRoot(document.getElementById('app')!)
+root.render(<App />)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {
