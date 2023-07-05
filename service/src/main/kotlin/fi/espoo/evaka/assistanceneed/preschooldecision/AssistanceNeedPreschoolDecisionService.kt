@@ -8,6 +8,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -17,6 +18,7 @@ import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
@@ -67,7 +69,7 @@ class AssistanceNeedPreschoolDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail
     ) {
-        db.transaction { tx ->
+        db.read { tx ->
             this.sendDecisionEmail(tx, msg.decisionId)
             logger.info {
                 "Successfully sent assistance need preschool decision email (id: ${msg.decisionId})."
@@ -75,7 +77,7 @@ class AssistanceNeedPreschoolDecisionService(
         }
     }
 
-    fun sendDecisionEmail(tx: Database.Transaction, decisionId: AssistanceNeedPreschoolDecisionId) {
+    fun sendDecisionEmail(tx: Database.Read, decisionId: AssistanceNeedPreschoolDecisionId) {
         val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
@@ -160,7 +162,9 @@ class AssistanceNeedPreschoolDecisionService(
     fun generatePdf(
         sentDate: LocalDate,
         decision: AssistanceNeedPreschoolDecision,
-        validTo: LocalDate?
+        validTo: LocalDate?,
+        sendAddress: DecisionSendAddress? = null,
+        guardian: PersonDTO? = null
     ): ByteArray {
         return pdfGenerator.render(
             Page(
@@ -171,6 +175,8 @@ class AssistanceNeedPreschoolDecisionService(
                             .setLanguage(decision.form.language.name.lowercase())
                             .build()
                     setVariable("decision", decision)
+                    setVariable("sendAddress", sendAddress)
+                    setVariable("guardian", guardian)
                     setVariable("sentDate", sentDate)
                     setVariable("validTo", validTo)
                 }
@@ -218,7 +224,7 @@ class AssistanceNeedPreschoolDecisionService(
 
                 val sendAddress = getSendAddress(messageProvider, guardian, lang)
 
-                val pdf = generatePdf(clock.today(), decision, endDate)
+                val pdf = generatePdf(clock.today(), decision, endDate, sendAddress, guardian)
 
                 val messageHeader =
                     messageProvider.getAssistanceNeedPreschoolDecisionHeader(lang.messageLang)
