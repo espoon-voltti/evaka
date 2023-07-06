@@ -23,6 +23,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { attendanceTimeDiffers, TimeRange } from 'lib-common/reservations'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { fontWeights, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -215,9 +216,16 @@ export default React.memo(function ChildDay({
           </>
         ) : day.isInHolidayPeriod && reservation == null ? (
           // holiday period, no reservation yet
-          <ReservationTime warning data-qa="holiday-reservation-missing">
-            {i18n.unit.attendanceReservations.missingHolidayReservation}
-          </ReservationTime>
+          <Tooltip
+            tooltip={
+              i18n.unit.attendanceReservations.missingHolidayReservation
+            }
+            position="top"
+          >
+            <ReservationTime warning data-qa="holiday-reservation-missing">
+              {i18n.unit.attendanceReservations.missingHolidayReservationShort}
+            </ReservationTime>
+          </Tooltip>
         ) : serviceTimeOfDay ? (
           // daily service times
           <>
