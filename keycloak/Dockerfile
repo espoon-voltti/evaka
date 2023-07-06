@@ -51,7 +51,7 @@ RUN npm run build
 
 FROM base AS builder-keycloak
 
-ENV KEYCLOAK_VERSION 21.1.0
+ENV KEYCLOAK_VERSION 21.1.2
 ARG KEYCLOAK_DIST=https://github.com/keycloak/keycloak/releases/download/$KEYCLOAK_VERSION/keycloak-$KEYCLOAK_VERSION.tar.gz
 
 RUN dnf install -y tar gzip \
