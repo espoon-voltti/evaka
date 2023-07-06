@@ -59,7 +59,7 @@
             <#if displayRequiredFields>
                 <div class="${properties.kcContentWrapperClass!}">
                     <div class="${properties.kcHeaderFlexClass!}">
-                        <img class="${properties.espooLogo!}" src="${url.resourcesPath}/img/${msg("espooLogo")}.png" alt="${msg("espooLogoAlt")}">
+                        <img class="${properties.espooLogo!}" src="${url.resourcesPath}/img/${msg("espooLogo")}.svg" alt="${msg("espooLogoAlt")}">
                         <span class="${properties.espooLogoDividerClass!}"></span>
                         <h1 id="kc-page-title">${msg("earlyEducation")}</h1>
                     </div>
@@ -73,7 +73,7 @@
                 </div>
             <#else>
                 <div class="${properties.kcHeaderFlexClass!}">
-                    <img class="${properties.espooLogo!}" src="${url.resourcesPath}/img/${msg("espooLogo")}.png" alt="${msg("espooLogoAlt")}">
+                    <img class="${properties.espooLogo!}" src="${url.resourcesPath}/img/${msg("espooLogo")}.svg" alt="${msg("espooLogoAlt")}">
                     <span class="${properties.espooLogoDividerClass!}"></span>
                     <h1 id="kc-page-title">${msg("earlyEducation")}</h1>
                 </div>
@@ -108,7 +108,7 @@
                 <#--  In the case of OTP we don't actually want to show the username and the custom back button  -->
                 <#--  Instead of these we will just show the normal header  -->
                 <div class="${properties.kcHeaderFlexClass!}">
-                    <img class="${properties.espooLogo!}" src="${url.resourcesPath}/img/${msg("espooLogo")}.png" alt="${msg("espooLogoAlt")}">
+                    <img class="${properties.espooLogo!}" src="${url.resourcesPath}/img/${msg("espooLogo")}.svg" alt="${msg("espooLogoAlt")}">
                     <span class="${properties.espooLogoDividerClass!}"></span>
                     <h1 id="kc-page-title">${msg("earlyEducation")}</h1>
                 </div>
