@@ -302,6 +302,7 @@ const sv: Translations = {
     },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',
+    intermittentShiftCareNotification: 'Kvälls-/skiftvård',
     newReservationOrAbsence: 'Närvaro / Frånvaro',
     newHoliday: 'Besvara frånvaroenkäten',
     newAbsence: 'Anmäl frånvaro',

@@ -29,6 +29,7 @@ import {
   ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
@@ -72,10 +73,12 @@ import {
   getChildImages,
   RoundChildImage
 } from './RoundChildImages'
+import { formatReservation } from './calendar-elements'
 import { postReservationsMutation } from './queries'
 import { Day } from './reservation-modal/TimeInputs'
 import {
   day,
+  getUnitTimeForDay,
   HolidayPeriodInfo,
   resetDay,
   toDailyReservationRequest
@@ -209,6 +212,8 @@ function View({
           <Reservations
             reservations={child.reservations}
             requiresReservation={child.requiresReservation}
+            unitTimes={child.unitOperationTime}
+            shiftCareType={child.shiftCareType}
           />
         )
       }}
@@ -279,12 +284,11 @@ function Edit({
       rightButton={rightButton}
     >
       {(childIndex) => {
-        const child = modalData.response.children[childIndex]
         const bind = formElems[childIndex]
         return (
           <div>
             <EditReservation
-              canAddSecondReservation={child.shiftCare}
+              canAddSecondReservation={true}
               showAllErrors={showAllErrors}
               bind={bind}
             />
@@ -551,7 +555,7 @@ function computeModalData(
           ? []
           : [{ ...event, currentAttending }]
       }),
-      unitTimes: unitTimes ? unitTimes[0].unitOperationTime : null
+      unitTimes: unitTimes ? getUnitTimeForDay(unitTimes[0]) : null
     }
   })
 
@@ -714,10 +718,14 @@ const Absence = React.memo(function Absence({
 
 const Reservations = React.memo(function Reservations({
   reservations,
-  requiresReservation
+  requiresReservation,
+  unitTimes,
+  shiftCareType
 }: {
   reservations: Reservation[]
   requiresReservation: boolean
+  unitTimes: TimeRange | null
+  shiftCareType: ShiftCareType
 }) {
   const i18n = useTranslation()
 
@@ -733,14 +741,19 @@ const Reservations = React.memo(function Reservations({
       {i18n.calendar.reservationNoTimes}
     </ReservationStatus>
   ) : withTimes.length > 0 ? (
-    <span data-qa="reservations">
-      {withTimes
-        .map(
-          ({ startTime, endTime }) =>
-            `${startTime.format()} – ${endTime.format()}`
-        )
-        .join(', ')}
-    </span>
+    <div data-qa="reservations">
+      {withTimes.map((reservation, i) => (
+        <ReservationRow data-qa={`reservation-output-${i}`} key={`res-${i}`}>
+          {formatReservation(
+            shiftCareType,
+            unitTimes,
+            reservation,
+            i18n,
+            ' – '
+          )}
+        </ReservationRow>
+      ))}
+    </div>
   ) : requiresReservation ? (
     <ReservationStatus data-qa="no-reservations">
       {i18n.calendar.missingReservation}
@@ -856,4 +869,8 @@ const NonGridLabelLike = styled(LabelLike)`
   @media (max-width: ${tabletMin}) {
     margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
   }
+`
+const ReservationRow = styled.p`
+  margin-top: 0px;
+  margin-bottom: ${defaultMargins.xs};
 `

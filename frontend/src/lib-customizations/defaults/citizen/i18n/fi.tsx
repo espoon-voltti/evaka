@@ -302,6 +302,7 @@ export default {
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
     contactStaffToEditAbsence:
       'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
+    intermittentShiftCareNotification: 'Ilta-/vuorohoito',
     newReservationOrAbsence: 'Läsnäolo / Poissaolo',
     newHoliday: 'Vastaa poissaolokyselyyn',
     newAbsence: 'Ilmoita poissaolo',

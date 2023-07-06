@@ -172,7 +172,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   modalState?.type === 'day' ? modalState.date : undefined
                 }
                 selectDate={openDayModal}
-                includeWeekends={response.includesWeekends}
+                includeWeekends={true}
                 dayIsReservable={dayIsReservable}
                 events={events}
               />

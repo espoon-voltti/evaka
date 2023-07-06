@@ -7,10 +7,14 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
+import { isValidAgainstUnitTime } from 'lib-common/form/fields'
 import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
+import LocalTime from 'lib-common/local-time'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
@@ -22,6 +26,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { Light } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import { Translations, useTranslation } from '../localization'
 
@@ -45,8 +50,8 @@ export const Reservations = React.memo(function Reservations({
   )
 
   const groupedChildren = useMemo(
-    () => groupChildren(data.children),
-    [data.children]
+    () => groupChildren(data.children, i18n),
+    [data.children, i18n]
   )
 
   return data.children.length === 0 && data.holiday && !isReservable ? (
@@ -120,7 +125,10 @@ interface GroupedDailyChildren {
   key: string
 }
 
-const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
+const groupChildren = (
+  relevantChildren: ReservationResponseDayChild[],
+  i18n: Translations
+) =>
   Object.entries(
     groupBy(
       relevantChildren.map((child): DailyChildGroupElement => {
@@ -163,9 +171,13 @@ const groupChildren = (relevantChildren: ReservationResponseDayChild[]) =>
             childId: child.childId,
             type: 'reservation',
             text: withTimes
-              .map(
-                ({ startTime, endTime }) =>
-                  `${startTime.format()}–${endTime.format()}`
+              .map((reservation) =>
+                formatReservation(
+                  child.shiftCareType,
+                  child.unitOperationTime,
+                  reservation,
+                  i18n
+                )
               )
               .join(', ')
           }
@@ -207,5 +219,34 @@ function groupText(group: GroupedDailyChildren, i18n: Translations) {
       return i18n.calendar.missingReservation
     case 'absent-free':
       return i18n.calendar.absentFree
+  }
+}
+
+export const formatReservation = (
+  shiftCareType: ShiftCareType,
+  unitTimes: TimeRange | null,
+  reservationTimes: { startTime: LocalTime; endTime: LocalTime },
+  i18n: Translations,
+  separator = '–'
+) => {
+  const { startTime, endTime } = reservationTimes
+  const timeOutput = `${startTime.format()}${separator}${endTime.format()}`
+
+  if (!featureFlags.experimental?.intermittentShiftCare) {
+    return timeOutput
+  } else {
+    const { start: unitStart, end: unitEnd } = unitTimes ?? {
+      start: null,
+      end: null
+    }
+
+    const showIntermittentShiftCareNotice =
+      shiftCareType === 'INTERMITTENT' &&
+      (!isValidAgainstUnitTime(startTime, unitStart, unitEnd) ||
+        !isValidAgainstUnitTime(endTime, unitStart, unitEnd))
+
+    return showIntermittentShiftCareNotice
+      ? `${timeOutput} ${i18n.calendar.intermittentShiftCareNotification}`
+      : timeOutput
   }
 }

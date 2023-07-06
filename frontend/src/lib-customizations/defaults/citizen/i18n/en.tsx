@@ -305,6 +305,7 @@ const en: Translations = {
     absenceMarkedByEmployee: 'Absence marked by staff',
     contactStaffToEditAbsence:
       'Contact staff if you want to change the absence',
+    intermittentShiftCareNotification: 'Shift care',
     newReservationOrAbsence: 'Attendance / Absence',
     newHoliday: 'Holiday questionnaire',
     newAbsence: 'Register absence',

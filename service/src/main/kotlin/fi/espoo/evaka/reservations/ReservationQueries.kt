@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -396,32 +398,72 @@ data class ReservationPlacement(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationDays: Set<Int>,
-    val operationTimes: List<TimeRange>
+    val operationTimes: List<TimeRange>,
+    val serviceNeeds: List<ReservationServiceNeed>
 )
+
+data class ReservationServiceNeed(val range: FiniteDateRange, val shiftCareType: ShiftCareType)
+
+data class ReservationPlacementRow(
+    val childId: ChildId,
+    val placementId: PlacementId,
+    val range: FiniteDateRange,
+    val type: PlacementType,
+    val operationDays: Set<Int>,
+    val operationTimes: List<TimeRange>,
+    val serviceNeedRange: FiniteDateRange?,
+    val shiftCareType: ShiftCareType?,
+) {
+    fun toReservationServiceNeed(): ReservationServiceNeed? {
+        return if (this.serviceNeedRange == null || this.shiftCareType == null) null
+        else
+            ReservationServiceNeed(
+                range = this.serviceNeedRange,
+                shiftCareType = this.shiftCareType
+            )
+    }
+}
 
 fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
     range: FiniteDateRange
 ): Map<ChildId, List<ReservationPlacement>> {
-    return createQuery(
-            """
+    val sql =
+        """
 SELECT
     pl.child_id,
+    pl.id as placement_id,
     daterange(pl.start_date, pl.end_date, '[]') * :range AS range,
     pl.type,
     u.operation_days,
-    u.operation_times
+    u.operation_times,
+    sn.shift_care as shift_care_type,
+    daterange(sn.start_date, sn.end_date, '[]') * :range AS service_need_range
 FROM placement pl
+LEFT JOIN service_need sn ON sn.placement_id = pl.id
+AND daterange(sn.start_date, sn.end_date, '[]') && :range
 JOIN daycare u ON pl.unit_id = u.id
 WHERE
     pl.child_id = ANY (:childIds) AND
     daterange(pl.start_date, pl.end_date, '[]') && :range AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
-        )
+
+    return createQuery(sql)
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ReservationPlacement>()
+        .mapTo<ReservationPlacementRow>()
+        .groupBy { it.placementId }
+        .map { (_, rows) ->
+            ReservationPlacement(
+                childId = rows[0].childId,
+                range = rows[0].range,
+                type = rows[0].type,
+                operationDays = rows[0].operationDays,
+                operationTimes = rows[0].operationTimes,
+                serviceNeeds = rows.mapNotNull { it.toReservationServiceNeed() }.toList()
+            )
+        }
         .groupBy { it.childId }
 }
 

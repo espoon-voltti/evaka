@@ -275,7 +275,6 @@ export default React.memo(function ReservationModal({
                 {selectedRange ? (
                   <RepetitionTimeInputGrid
                     bind={times}
-                    anyChildInShiftCare={dayProperties.anyChildInShiftCare}
                     showAllErrors={showAllErrors}
                   />
                 ) : (

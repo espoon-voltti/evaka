@@ -16,14 +16,12 @@ import { irregularDay, irregularTimes } from './form'
 
 export interface IrregularRepetitionTimeInputGridProps {
   bind: BoundForm<typeof irregularTimes>
-  anyChildInShiftCare: boolean
   showAllErrors: boolean
 }
 
 export default React.memo(function IrregularRepetitionTimeInputGrid({
   bind,
-  showAllErrors,
-  anyChildInShiftCare
+  showAllErrors
 }: IrregularRepetitionTimeInputGridProps) {
   const irregularDays = useFormElems(bind)
   return (
@@ -36,7 +34,6 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
             bind={irregularDay}
             index={index}
             showAllErrors={showAllErrors}
-            anyChildInShiftCare={anyChildInShiftCare}
           />
         )
       })}
@@ -47,13 +44,11 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
 const IrregularDay = React.memo(function IrregularDay({
   bind,
   index,
-  showAllErrors,
-  anyChildInShiftCare
+  showAllErrors
 }: {
   bind: BoundForm<typeof irregularDay>
   index: number
   showAllErrors: boolean
-  anyChildInShiftCare: boolean
 }) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -73,7 +68,7 @@ const IrregularDay = React.memo(function IrregularDay({
         bind={day}
         label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
         showAllErrors={showAllErrors}
-        allowExtraTimeRange={anyChildInShiftCare}
+        allowExtraTimeRange={true}
         dataQaPrefix={`irregular-${date.formatIso()}`}
         onFocus={(ev) => {
           scrollIntoViewSoftKeyboard(ev.target)

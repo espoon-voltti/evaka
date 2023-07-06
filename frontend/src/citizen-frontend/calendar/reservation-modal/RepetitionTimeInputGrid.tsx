@@ -14,7 +14,6 @@ import { timesUnion } from './form'
 
 export interface RepetitionTimeInputGridProps {
   bind: BoundForm<typeof timesUnion>
-  anyChildInShiftCare: boolean
   showAllErrors: boolean
 }
 

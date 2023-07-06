@@ -25,14 +25,20 @@ import { StateOf } from 'lib-common/form/types'
 import {
   DailyReservationRequest,
   ReservationChild,
-  ReservationResponseDay
+  ReservationResponseDay,
+  ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
-import { Translations } from 'lib-customizations/citizen'
+import { Translations, featureFlags } from 'lib-customizations/citizen'
+
+export const MAX_TIME_RANGE = {
+  start: LocalTime.MIN,
+  end: LocalTime.MAX
+}
 
 interface Dictionary<T> {
   [index: string]: T
@@ -345,7 +351,7 @@ export function resetTimes(
     const unitTimesInRange = calendarDaysInRange.flatMap((d) =>
       d.children
         .filter((c) => selectedChildren.includes(c.childId))
-        .map((c) => c.unitOperationTime)
+        .map(getUnitTimeForDay)
     )
 
     const unitOperationTimeRange = getMinimalOverlappingRange(unitTimesInRange)
@@ -423,7 +429,7 @@ export function resetTimes(
 
         const dailyUnitTimes = calendarDay.children
           .filter((c) => selectedChildren.includes(c.childId))
-          .map((c) => c.unitOperationTime)
+          .map(getUnitTimeForDay)
 
         const unitOperationTimeRange =
           getMinimalOverlappingRange(dailyUnitTimes)
@@ -668,7 +674,7 @@ const getMinimalOverlappingRange = (
     }
   })
 
-  return minValue.start && minValue.end
+  return minValue && minValue.start && minValue.end
     ? { start: minValue.start, end: minValue.end }
     : null
 }
@@ -683,7 +689,7 @@ const getCommonUnitTimeRangesByDayOfWeek = (
     const dayOfWeek = day.date.getIsoDayOfWeek()
     const allChildUnitTimes = day.children
       .filter((c) => selectedChildIds.includes(c.childId))
-      .map((child) => child.unitOperationTime)
+      .map(getUnitTimeForDay)
 
     const dailyTime = weeklyTimes[dayOfWeek]
     const dailyMinimum = getMinimalOverlappingRange(allChildUnitTimes)
@@ -726,9 +732,6 @@ const createTimeInputState = (
 })
 
 export class DayProperties {
-  // Does any child have shift care?
-  readonly anyChildInShiftCare: boolean
-
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly combinedOperationDays: Set<number>
 
@@ -736,7 +739,6 @@ export class DayProperties {
     public readonly calendarDays: ReservationResponseDay[],
     private readonly holidayPeriods: HolidayPeriodInfo[]
   ) {
-    let anyChildInShiftCare = false
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const combinedOperationDays = new Set<number>()
     const holidays = new Set<string>()
@@ -749,8 +751,6 @@ export class DayProperties {
       day.children.forEach((child) => {
         combinedOperationDays.add(dayOfWeek)
 
-        anyChildInShiftCare = anyChildInShiftCare || child.shiftCare
-
         let childReservableDays = reservableDaysByChild[child.childId]
         if (!childReservableDays) {
           childReservableDays = new Set()
@@ -761,7 +761,6 @@ export class DayProperties {
     })
 
     this.calendarDays = calendarDays
-    this.anyChildInShiftCare = anyChildInShiftCare
     this.reservableDaysByChild = reservableDaysByChild
     this.combinedOperationDays = combinedOperationDays
   }
@@ -790,4 +789,13 @@ export class DayProperties {
       holidayPeriod.period.contains(dateRange)
     )?.state
   }
+}
+
+export function getUnitTimeForDay(
+  d: ReservationResponseDayChild
+): TimeRange | null {
+  return featureFlags.experimental?.intermittentShiftCare &&
+    d.shiftCareType === 'INTERMITTENT'
+    ? MAX_TIME_RANGE
+    : d.unitOperationTime
 }

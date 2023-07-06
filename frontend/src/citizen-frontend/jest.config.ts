@@ -7,7 +7,13 @@ import type { Config } from '@jest/types'
 const config: Config.InitialOptions = {
   displayName: 'citizen-frontend',
   preset: 'ts-jest',
-  testEnvironment: 'node',
-  testRunner: 'jest-circus/runner'
+  testEnvironment: 'jsdom',
+  testRunner: 'jest-circus/runner',
+  moduleNameMapper: {
+    Icons: '<rootDir>/../lib-icons/free-icons',
+    '\\.css$': '<rootDir>/utils/mocks/styleMock.js',
+    '\\.svg$': '<rootDir>/utils/mocks/fileMock.js',
+    '@evaka/customizations/(.*)': '<rootDir>/../lib-customizations/espoo/$1'
+  }
 }
 export default config
