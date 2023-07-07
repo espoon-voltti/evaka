@@ -217,9 +217,7 @@ export default React.memo(function ChildDay({
         ) : day.isInHolidayPeriod && reservation == null ? (
           // holiday period, no reservation yet
           <Tooltip
-            tooltip={
-              i18n.unit.attendanceReservations.missingHolidayReservation
-            }
+            tooltip={i18n.unit.attendanceReservations.missingHolidayReservation}
             position="top"
           >
             <ReservationTime warning data-qa="holiday-reservation-missing">
