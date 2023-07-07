@@ -122,6 +122,7 @@ interface AbsenceCellPartsProps {
   requiresBackupCare: boolean
   isSelected: boolean
   isMissingHolidayReservation: boolean
+  intermittentShiftCare: boolean
   toggle: (parts: CellPart[]) => void
 }
 
@@ -135,6 +136,7 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   requiresBackupCare,
   isSelected,
   isMissingHolidayReservation,
+  intermittentShiftCare,
   toggle
 }: AbsenceCellPartsProps) {
   const parts = useMemo(
@@ -147,7 +149,10 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   if (requiresBackupCare) {
     return <RequiresBackupCareDiv />
   }
-  if (parts.length === 0 || holidays[date.formatIso()]) {
+  if (
+    parts.length === 0 ||
+    (holidays[date.formatIso()] && !intermittentShiftCare)
+  ) {
     return <DisabledCell />
   }
 
@@ -304,6 +309,7 @@ export default React.memo(function MonthCalendarCell({
         requiresBackupCare={requiresBackupCare}
         isSelected={isSelected}
         isMissingHolidayReservation={day.missingHolidayReservation}
+        intermittentShiftCare={intermittent}
         toggle={toggle}
       />
     </Tooltip>
