@@ -154,6 +154,7 @@ export type IncomeStatement = IncomeStatement.ChildIncome | IncomeStatement.High
 */
 export interface IncomeStatementAwaitingHandler {
   created: HelsinkiDateTime
+  handlerNote: string
   id: UUID
   personId: UUID
   personName: string

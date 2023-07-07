@@ -1939,8 +1939,11 @@ export const fi = {
       area: 'Alue',
       created: 'Luotu',
       startDate: 'Voimassa',
-      type: 'Tyyppi'
+      type: 'Tyyppi',
+      link: 'Selvitys',
+      note: 'Muistiinpano'
     },
+    noNote: 'Tuloselvityksellä ei muistiinpanoa',
     handlerNotesForm: {
       title: 'Käsittelijän muistiinpanot',
       handled: 'Käsitelty',

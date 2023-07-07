@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCommentAlt, fasCommentAltLines, fasFile } from 'Icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
 import {
@@ -13,6 +16,7 @@ import {
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   SortableTh,
@@ -26,6 +30,7 @@ import {
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 import { getIncomeStatementsAwaitingHandler } from '../../api/income-statement'
 import { useTranslation } from '../../state/i18n'
@@ -82,6 +87,8 @@ function IncomeStatementsList({
             {i18n.incomeStatement.table.startDate}
           </SortableTh>
           <Th>{i18n.incomeStatement.table.type}</Th>
+          <Th minimalWidth={true}>{i18n.incomeStatement.table.link}</Th>
+          <Th minimalWidth={true}>{i18n.incomeStatement.table.note}</Th>
         </Tr>
       </Thead>
       <Tbody>
@@ -104,12 +111,34 @@ function IncomeStatementsList({
             <Td data-qa="income-statement-type">
               {i18n.incomeStatement.statementTypes[row.type].toLowerCase()}
             </Td>
+            <Td>
+              <Link
+                to={`/profile/${encodeURIComponent(
+                  row.personId
+                )}/income-statement/${encodeURIComponent(row.id)}`}
+              >
+                <RowIcon icon={fasFile} />
+              </Link>
+            </Td>
+            <Td>
+              <Tooltip tooltip={row.handlerNote || i18n.incomeStatement.noNote}>
+                <RowIcon
+                  icon={row.handlerNote ? fasCommentAltLines : faCommentAlt}
+                />
+              </Tooltip>
+            </Td>
           </Tr>
         ))}
       </Tbody>
     </Table>
   )
 }
+
+const RowIcon = styled(FontAwesomeIcon)`
+  cursor: pointer;
+  color: ${colors.main.m2};
+  font-size: 20px;
+`
 
 export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
