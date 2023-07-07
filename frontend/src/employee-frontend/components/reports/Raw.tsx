@@ -107,7 +107,7 @@ export default React.memo(function Raw() {
                 hoursPerWeek: mapFloat(row.hoursPerWeek),
                 hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
                 capacityFactor: mapFloat(row.capacityFactor),
-                capacity: mapFloat(row.capacity),
+                groupSize: mapFloat(row.capacity),
                 realizedCapacity: mapFloat(row.realizedCapacity),
                 absencePaid:
                   row.absencePaid &&

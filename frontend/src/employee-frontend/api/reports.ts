@@ -21,6 +21,7 @@ import {
   FamilyConflictReportRow,
   FamilyContactReportRow,
   FamilyDaycareMealReportResult,
+  FuturePreschoolersReportRow,
   InvoiceReport,
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode,
@@ -31,6 +32,7 @@ import {
   PartnersInDifferentAddressReportRow,
   PlacementCountReportResult,
   PlacementSketchingReportRow,
+  PreschoolUnitReportRow,
   PresenceReportRow,
   RawReportRow,
   Report,
@@ -710,4 +712,25 @@ export async function getFamilyDaycareMealCountReport(
 export interface FamilyDaycareMealCountReportFilters {
   startDate: LocalDate
   endDate: LocalDate
+}
+
+export async function getFuturePreschoolersReport(): Promise<
+  Result<FuturePreschoolersReportRow[]>
+> {
+  return client
+    .get<JsonOf<FuturePreschoolersReportRow[]>>('/reports/future-preschoolers')
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getPreschoolUnitsReport(
+  municipal: boolean
+): Promise<Result<PreschoolUnitReportRow[]>> {
+  return client
+    .get<JsonOf<PreschoolUnitReportRow[]>>(
+      '/reports/future-preschoolers/units',
+      { params: { municipal: municipal } }
+    )
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
 }

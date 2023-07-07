@@ -3755,6 +3755,52 @@ export const fi = {
       description:
         'Työkalu uuden laskugeneraattorin analysointiin vs vanha laskugeneraattori',
       report: 'Raportti laskugeneraattorien eroavaisuuksista'
+    },
+    futurePreschoolers: {
+      title: 'Tulevat esikoululaiset',
+      description:
+        'Raportti tulevan vuoden esiopetuksen lapsista ja yksiköistä automaattisijoitustyökalua varten',
+      childSsn: 'Lapsen hetu',
+      childLastName: 'Lapsen sukunimi',
+      childFirstName: 'Lapsen etunimi',
+      childAddress: 'Lapsen osoite',
+      childPostalCode: 'Postinumero',
+      childPostOffice: 'Postitoimipaikka',
+      unitName: 'Yksikkö',
+      unitAddress: 'Yksikön osoite',
+      unitPostalCode: 'Postinumero',
+      unitPostOffice: 'Postitoimipaikka',
+      unitArea: 'Oppilaaksiottoalue',
+      guardian1LastName: 'Huoltajan sukunimi',
+      guardian1FirstName: 'Huoltajan etunimi',
+      guardian1Address: 'Huoltajan osoite',
+      guardian1PostalCode: 'Huoltajan postinumero',
+      guardian1PostOffice: 'Huoltajan postitoimipaikka',
+      guardian1Phone: 'Huoltajan puhelinnumero',
+      guardian1Email: 'Huoltajan sähköposti',
+      guardian2LastName: '2. Huoltajan sukunimi',
+      guardian2FirstName: '2. Huoltajan etunimi',
+      guardian2Address: '2. Huoltajan osoite',
+      guardian2PostalCode: '2. Huoltajan postinumero',
+      guardian2PostOffice: '2. Huoltajan postitoimipaikka',
+      guardian2Phone: '2. Huoltajan puhelinnumero',
+      guardian2Email: '2. Huoltajan sähköposti',
+      shiftCare: 'Vuorohoidon tarve',
+      languageEmphasisGroup: 'Kielikylvyn ryhmä',
+      twoYearPreschool: 'Kaksivuotisessa esiopetuksessa'
+    },
+    preschoolUnits: {
+      titleMunicipal: 'Kunnalliset ryhmät',
+      titleVoucher: 'Palveluseteliryhmät',
+      unit: 'Yksikön nimi',
+      group: 'Ryhmän nimi',
+      address: 'Lähiosoite',
+      postalCode: 'Postinumero',
+      postOffice: 'Postitoimipaikka',
+      groupSize: 'Paikkojen määrä',
+      amongSchool: 'Koulun yhteydessä',
+      shiftCare: 'vuorohoito',
+      languageEmphasis: 'kielikylpy'
     }
   },
   unitEditor: {

@@ -360,6 +360,14 @@ export default React.memo(function Reports() {
                 i18n={i18n.reports.vardaErrors}
               />
             )}
+            {reports.has('FUTURE_PRESCHOOLERS') && (
+              <Report
+                path="/reports/future-preschoolers"
+                color={colors.main.m2}
+                icon={faChild}
+                i18n={i18n.reports.futurePreschoolers}
+              />
+            )}
           </ReportItems>
         ))}
       </ContentArea>

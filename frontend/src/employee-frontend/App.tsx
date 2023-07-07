@@ -77,6 +77,7 @@ import ReportEndedPlacements from './components/reports/EndedPlacements'
 import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
 import FamilyDaycareMealCount from './components/reports/FamilyDaycareMealCount'
+import FuturePreschoolersReport from './components/reports/FuturePreschoolersReport'
 import ReportInvoices from './components/reports/Invoices'
 import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
@@ -670,6 +671,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <FamilyDaycareMealCount />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/future-preschoolers',
+          element: (
+            <EmployeeRoute title="reports">
+              <FuturePreschoolersReport />
             </EmployeeRoute>
           )
         },

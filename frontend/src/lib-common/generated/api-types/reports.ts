@@ -308,6 +308,41 @@ export interface FamilyDaycareMealReportResult {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.FuturePreschoolersReportRow
+*/
+export interface FuturePreschoolersReportRow {
+  childAddress: string
+  childFirstName: string
+  childLastName: string
+  childPostOffice: string
+  childPostalCode: string
+  childSsn: string
+  guardian1Address: string
+  guardian1Email: string | null
+  guardian1FirstName: string
+  guardian1LastName: string
+  guardian1Phone: string | null
+  guardian1PostOffice: string
+  guardian1PostalCode: string
+  guardian2Address: string | null
+  guardian2Email: string | null
+  guardian2FirstName: string | null
+  guardian2LastName: string | null
+  guardian2Phone: string | null
+  guardian2PostOffice: string | null
+  guardian2PostalCode: string | null
+  id: UUID
+  languageEmphasisGroup: string | null
+  shiftCare: boolean
+  twoYearPreschool: boolean
+  unitAddress: string
+  unitArea: string
+  unitName: string
+  unitPostOffice: string
+  unitPostalCode: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.InvoiceReport
 */
 export interface InvoiceReport {
@@ -495,6 +530,22 @@ export interface PlacementSketchingReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.PreschoolUnitReportRow
+*/
+export interface PreschoolUnitReportRow {
+  address: string
+  amongSchool: boolean | null
+  groupName: string
+  groupSize: number
+  id: UUID
+  languageEmphasis: boolean | null
+  postOffice: string
+  postalCode: string
+  shiftCare: boolean
+  unitName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.PresenceReportRow
 */
 export interface PresenceReportRow {
@@ -569,6 +620,7 @@ export type Report =
   | 'ENDED_PLACEMENTS'
   | 'FAMILY_CONFLICT'
   | 'FAMILY_DAYCARE_MEAL_REPORT'
+  | 'FUTURE_PRESCHOOLERS'
   | 'INVOICE'
   | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'
