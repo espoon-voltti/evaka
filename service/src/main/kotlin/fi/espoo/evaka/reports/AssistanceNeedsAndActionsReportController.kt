@@ -5,6 +5,9 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.assistance.DaycareAssistanceLevel
+import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
+import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
@@ -80,7 +83,10 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         @Json val actionCounts: Map<AssistanceActionOptionValue, Int>,
         val otherActionCount: Int,
         val noActionCount: Int,
-        @Json val measureCounts: Map<AssistanceMeasure, Int>
+        @Json val measureCounts: Map<AssistanceMeasure, Int>,
+        @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
+        @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
+        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
     )
 }
 
@@ -159,6 +165,60 @@ WITH basis_counts AS (
         GROUP BY GROUPING SETS ((1, 2), (1, 3), (1, 4))
     ) action_stats
     GROUP BY daycare_group_id
+), daycare_assistance_counts AS (
+    SELECT
+        daycare_group_id,
+        jsonb_object_agg(level, count) AS daycare_assistance_counts
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            level,
+            count(da.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN daycare_assistance da ON da.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND da.valid_during @> ${bind(date)}
+        GROUP BY 1, 2
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id
+), preschool_assistance_counts AS (
+    SELECT
+        daycare_group_id,
+        jsonb_object_agg(level, count) AS preschool_assistance_counts
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            level,
+            count(pa.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN preschool_assistance pa ON pa.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND pa.valid_during @> ${bind(date)}
+        GROUP BY 1, 2
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id
+), other_assistance_measure_counts AS (
+    SELECT
+        daycare_group_id,
+        jsonb_object_agg(type, count) AS other_assistance_measure_counts
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            oam.type,
+            count(oam.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN other_assistance_measure oam ON oam.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND oam.valid_during @> ${bind(date)}
+        GROUP BY 1, 2
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id
 )
 SELECT
     ca.name AS care_area_name,
@@ -173,13 +233,19 @@ SELECT
     coalesce(action_counts, '{}') AS action_counts,
     coalesce(other_action_count, 0) AS other_action_count,
     coalesce(no_action_count, 0) AS no_action_count,
-    coalesce(measure_counts, '{}') AS measure_counts
+    coalesce(measure_counts, '{}') AS measure_counts,
+    coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
+    coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
+    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
 LEFT JOIN basis_counts ON g.id = basis_counts.daycare_group_id
 LEFT JOIN measure_counts ON g.id = measure_counts.daycare_group_id
 LEFT JOIN action_counts ON g.id = action_counts.daycare_group_id
+LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_group_id
+LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id
+LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """

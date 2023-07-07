@@ -15,9 +15,12 @@ import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
 import { AssistanceMeasure } from './assistanceaction'
 import { AssistanceNeedDecisionStatus } from './assistanceneed'
+import { DaycareAssistanceLevel } from './assistance'
 import { DecisionType } from './decision'
 import { OccupancyValues } from './occupancy'
+import { OtherAssistanceMeasureType } from './assistance'
 import { PlacementType } from './placement'
+import { PreschoolAssistanceLevel } from './assistance'
 import { ProviderType } from './daycare'
 import { ServiceNeedOption } from './application'
 import { UUID } from '../../types'
@@ -68,12 +71,15 @@ export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Record<string, number>
   basisCounts: Record<string, number>
   careAreaName: string
+  daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   groupId: UUID
   groupName: string
   measureCounts: Record<AssistanceMeasure, number>
   noActionCount: number
   noBasisCount: number
   otherActionCount: number
+  otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
+  preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
   unitId: UUID
   unitName: string
   unitProviderType: ProviderType
