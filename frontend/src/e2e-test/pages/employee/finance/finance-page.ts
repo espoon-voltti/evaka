@@ -513,7 +513,7 @@ export class IncomeStatementsPage {
   async assertNthIncomeStatement(
     nth: number,
     expectedName: string,
-    expecteTypeText: string
+    expectedTypeText: string
   ) {
     await this.incomeStatementRows
       .nth(nth)
@@ -522,7 +522,7 @@ export class IncomeStatementsPage {
     await this.incomeStatementRows
       .nth(nth)
       .find('[data-qa="income-statement-type"]')
-      .assertTextEquals(expecteTypeText)
+      .assertTextEquals(expectedTypeText)
   }
 }
 
