@@ -38,6 +38,8 @@ declare module 'Icons' {
   const faCircleExclamation: IconDefinition
   const faClock: IconDefinition
   const faCoins: IconDefinition
+  const faComment: IconDefinition
+  const fasComment: IconDefinition
   const faCopy: IconDefinition
   const faCommentAlt: IconDefinition
   const faComments: IconDefinition
@@ -55,7 +57,9 @@ declare module 'Icons' {
   const faExternalLink: IconDefinition
   const faFemale: IconDefinition
   const faFile: IconDefinition
+  const fasFile: IconDefinition
   const faFileAlt: IconDefinition
+  const fasFileAlt: IconDefinition
   const faFileImage: IconDefinition
   const faFilePdf: IconDefinition
   const faFileSpreadsheet: IconDefinition

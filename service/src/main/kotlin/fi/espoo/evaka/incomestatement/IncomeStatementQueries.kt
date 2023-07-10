@@ -476,6 +476,7 @@ data class IncomeStatementAwaitingHandler(
     val id: IncomeStatementId,
     val created: HelsinkiDateTime,
     val startDate: LocalDate,
+    val handlerNote: String,
     val type: IncomeStatementType,
     val personId: PersonId,
     val personName: String,
@@ -490,6 +491,7 @@ SELECT DISTINCT ON (i.created, i.start_date, i.id)
     i.type,
     i.created,
     i.start_date,
+    i.handler_note,
     person.id AS personId,
     person.last_name || ' ' || person.first_name AS personName,
     ca.name AS primaryCareArea
