@@ -101,6 +101,7 @@ function IncomeStatementsList({
                     ? `/profile/${row.personId}`
                     : `/child-information/${row.personId}`
                 }
+                data-qa="person-link"
               >
                 {row.personName}
               </Link>

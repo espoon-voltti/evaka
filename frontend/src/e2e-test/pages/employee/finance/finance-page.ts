@@ -497,14 +497,14 @@ export class IncomeStatementsPage {
   }
 
   async openNthIncomeStatementForGuardian(nth: number) {
-    await this.incomeStatementRows.nth(nth).find('a').click()
+    await this.incomeStatementRows.nth(nth).findByDataQa('person-link').click()
     const page = new GuardianInformationPage(this.page)
     await page.waitUntilLoaded()
     return page
   }
 
   async openNthIncomeStatementForChild(nth: number) {
-    await this.incomeStatementRows.nth(nth).find('a').click()
+    await this.incomeStatementRows.nth(nth).findByDataQa('person-link').click()
     const page = new ChildInformationPage(this.page)
     await page.waitUntilLoaded()
     return page
@@ -517,11 +517,11 @@ export class IncomeStatementsPage {
   ) {
     await this.incomeStatementRows
       .nth(nth)
-      .find('a')
+      .findByDataQa('person-link')
       .assertTextEquals(expectedName)
     await this.incomeStatementRows
       .nth(nth)
-      .find('[data-qa="income-statement-type"]')
+      .findByDataQa('income-statement-type')
       .assertTextEquals(expectedTypeText)
   }
 }
