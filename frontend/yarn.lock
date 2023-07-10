@@ -6539,7 +6539,7 @@ __metadata:
     react-linkify: ^1.0.0-alpha
     react-router-dom: ^6.3.0
     react-select: ^5.7.3
-    seamless-scroll-polyfill: 2.2.0
+    seamless-scroll-polyfill: 2.3.4
     style-loader: ^3.3.3
     styled-components: 5.3.11
     ts-jest: ^29.1.1
@@ -10892,10 +10892,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seamless-scroll-polyfill@npm:2.2.0":
-  version: 2.2.0
-  resolution: "seamless-scroll-polyfill@npm:2.2.0"
-  checksum: 8845d3ff0b71b8afdc5ff4337559bfa973c5ad823b227cda85a21f3f84edcfb28e2aba15affc1cfdfa5654567b912c8f27084edf3edaabed2049f4eeb71d67ef
+"seamless-scroll-polyfill@npm:2.3.4":
+  version: 2.3.4
+  resolution: "seamless-scroll-polyfill@npm:2.3.4"
+  checksum: 98ab968f1d527f95275733b2349f95f4e23ca5dc5c29b5f6e55f22aa8525e8266cf7428cedff14f342c599c9fe87558568d5e3f97b3cf83a7344b83939d02869
   languageName: node
   linkType: hard
 
