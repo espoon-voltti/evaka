@@ -1023,7 +1023,7 @@ class ApplicationsSection extends Section {
     await this.#createApplication.click()
     return new CreateApplicationModal(
       this.page,
-      this.page.find('[data-qa="modal"]')
+      this.page.findByDataQa('modal')
     )
   }
 }
