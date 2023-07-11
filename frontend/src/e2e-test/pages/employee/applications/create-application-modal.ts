@@ -17,7 +17,10 @@ import {
 import ApplicationEditView from './application-edit-view'
 
 export default class CreateApplicationModal extends Element {
-  constructor(private page: Page, root: Element) {
+  constructor(
+    private page: Page,
+    root: Element
+  ) {
     super(root)
   }
 

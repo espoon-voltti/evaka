@@ -28,7 +28,10 @@ export default class ApplicationsPage {
 }
 
 export class ApplicationRow extends Element {
-  constructor(private page: Page, root: Element) {
+  constructor(
+    private page: Page,
+    root: Element
+  ) {
     super(root)
   }
 

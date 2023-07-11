@@ -89,9 +89,9 @@ describe('Income statements', () => {
     await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(1))
 
     await waitUntilTrue(async () =>
-      (
-        await incomesSection.getIncomeStatementInnerText(0)
-      ).includes('this is a note')
+      (await incomesSection.getIncomeStatementInnerText(0)).includes(
+        'this is a note'
+      )
     )
 
     incomeStatementsPage = await navigateToIncomeStatements()

@@ -321,16 +321,14 @@ const Spinner = animated(styled.div`
   }
 `)
 
-const IconWrapper = animated(
-  styled.div`
-    position: absolute;
+const IconWrapper = animated(styled.div`
+  position: absolute;
 
-    svg.svg-inline--fa {
-      width: 24px;
-      height: 24px;
-    }
-  `
-)
+  svg.svg-inline--fa {
+    width: 24px;
+    height: 24px;
+  }
+`)
 
 const TextWrapper = styled.div`
   white-space: pre-wrap;

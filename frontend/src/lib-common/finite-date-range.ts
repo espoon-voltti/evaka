@@ -24,7 +24,10 @@ interface DeprecatedRange {
 }
 
 export default class FiniteDateRange {
-  constructor(readonly start: LocalDate, readonly end: LocalDate) {
+  constructor(
+    readonly start: LocalDate,
+    readonly end: LocalDate
+  ) {
     if (end.isBefore(start)) {
       throw new Error(
         `Attempting to initialize invalid finite date range with start: ${start.formatIso()}, end: ${end.formatIso()}`

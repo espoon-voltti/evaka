@@ -555,9 +555,8 @@ describe('Application transitions', () => {
 
     await employeeLogin(
       page2,
-      (
-        await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-      ).data
+      (await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save())
+        .data
     )
 
     // unit supervisor

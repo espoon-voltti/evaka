@@ -37,11 +37,14 @@ const getUniqueParticipants = (t: MessageThread): string[] => {
           .join(', ')})`
       : ''
   return Object.values(
-    t.messages.reduce((acc, msg) => {
-      acc[msg.sender.id] = msg.sender.name + childStr
-      msg.recipients.forEach((rec) => (acc[rec.id] = rec.name))
-      return acc
-    }, {} as Record<string, string>)
+    t.messages.reduce(
+      (acc, msg) => {
+        acc[msg.sender.id] = msg.sender.name + childStr
+        msg.recipients.forEach((rec) => (acc[rec.id] = rec.name))
+        return acc
+      },
+      {} as Record<string, string>
+    )
   )
 }
 

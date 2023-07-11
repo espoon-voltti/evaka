@@ -48,7 +48,9 @@ export default function MessageEditorPage() {
   const [sending, setSending] = useState(false)
 
   const receivers = useMemo(() => {
-    const findChildReceivers = (receiver: MessageReceiver): MessageReceiver[] =>
+    const findChildReceivers = (
+      receiver: MessageReceiver
+    ): MessageReceiver[] =>
       receiver.type === 'CHILD' && receiver.id === childId
         ? [receiver]
         : 'receivers' in receiver

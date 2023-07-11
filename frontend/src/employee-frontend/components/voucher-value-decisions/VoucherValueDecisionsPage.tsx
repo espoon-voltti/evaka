@@ -104,7 +104,13 @@ export default React.memo(function VoucherValueDecisionsPage() {
     setPage(1)
     setTotalDecisions(undefined)
     setTotalPages(undefined)
-  }, [setPage, setTotalPages, setTotalDecisions, searchFilters, debouncedSearchTerms])
+  }, [
+    setPage,
+    setTotalPages,
+    setTotalDecisions,
+    searchFilters,
+    debouncedSearchTerms
+  ])
 
   const checkAll = useCallback(() => {
     const currentPage = decisions[page]

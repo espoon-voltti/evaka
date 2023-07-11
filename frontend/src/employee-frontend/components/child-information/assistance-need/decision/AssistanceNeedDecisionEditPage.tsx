@@ -213,7 +213,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                 status: 'warning'
               }
             : undefined
-      } as const),
+      }) as const,
     [
       missingFields,
       formState?.guardianInfo,

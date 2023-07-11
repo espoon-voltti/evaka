@@ -482,7 +482,10 @@ export class EmployeeRowEditModal extends Modal {
 }
 
 class AclSection extends Element {
-  constructor(private page: Page, root: Element) {
+  constructor(
+    private page: Page,
+    root: Element
+  ) {
     super(root)
   }
 
@@ -661,7 +664,10 @@ class AclSection extends Element {
 }
 
 class MobileDevicesSection extends Element {
-  constructor(private page: Page, root: Element) {
+  constructor(
+    private page: Page,
+    root: Element
+  ) {
     super(root)
   }
 

@@ -54,15 +54,23 @@ export default React.memo(function ApplicationFilters() {
     void getAreas().then(setAvailableAreas)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    const areas =
-      applicationSearchFilters.area.length > 0
-        ? applicationSearchFilters.area
-        : availableAreas
-            .map((areas) => areas.map(({ shortName }) => shortName))
-            .getOrElse([])
-    void getUnits(areas, applicationSearchFilters.type).then(setAllUnits)
-  }, [applicationSearchFilters.type, availableAreas, applicationSearchFilters.area]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(
+    () => {
+      const areas =
+        applicationSearchFilters.area.length > 0
+          ? applicationSearchFilters.area
+          : availableAreas
+              .map((areas) => areas.map(({ shortName }) => shortName))
+              .getOrElse([])
+      void getUnits(areas, applicationSearchFilters.type).then(setAllUnits)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      applicationSearchFilters.type,
+      availableAreas,
+      applicationSearchFilters.area
+    ]
+  )
 
   useEffect(() => {
     if (
