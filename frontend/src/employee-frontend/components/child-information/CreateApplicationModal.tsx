@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useContext, useMemo, useState } from 'react'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
@@ -56,11 +57,18 @@ function CreateApplicationModal({
   const i18nView = i18n.childInformation.application.create
   const { clearUiMode } = useContext(UIContext)
 
+  const sortedGuardians = useMemo(
+    () => sortBy(guardians, ['lastName', 'firstName']),
+    [guardians]
+  )
+
   const [personType, setPersonType] = useState<PersonType>(
-    guardians.length > 0 ? 'GUARDIAN' : 'DB_SEARCH'
+    sortedGuardians.length > 0 ? 'GUARDIAN' : 'DB_SEARCH'
   )
   const [guardian, setGuardian] = useState(
-    guardians.length > 0 ? personToSelectOption(guardians[0], i18n) : null
+    sortedGuardians.length > 0
+      ? personToSelectOption(sortedGuardians[0], i18n)
+      : null
   )
   const [personId, setPersonId] = useState<UUID | undefined>(undefined)
   const [newVtjPersonSsn, setNewVtjPersonSsn] = useState<string | undefined>(
@@ -186,7 +194,7 @@ function CreateApplicationModal({
           <FixedSpaceColumn>
             <Label>{i18nView.applier}</Label>
 
-            {guardians.length > 0 && (
+            {sortedGuardians.length > 0 && (
               <div>
                 <Radio
                   checked={personType === 'GUARDIAN'}
@@ -196,7 +204,9 @@ function CreateApplicationModal({
                 />
                 <div>
                   <Select
-                    items={guardians.map((g) => personToSelectOption(g, i18n))}
+                    items={sortedGuardians.map((g) =>
+                      personToSelectOption(g, i18n)
+                    )}
                     onChange={setGuardian}
                     selectedItem={guardian}
                     onFocus={() => setPersonType('GUARDIAN')}
