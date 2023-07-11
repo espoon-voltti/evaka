@@ -7,7 +7,6 @@ import ReactCrop, { centerCrop, Crop, makeAspectCrop } from 'react-image-crop'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Success } from 'lib-common/api'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -91,10 +90,9 @@ export default React.memo(function ImageEditor({
 
   const onSave = useCallback(() => {
     if (!imageElem || !crop) return
-    cropImage(imageElem, crop)
-      .then((file) => uploadChildImage({ unitId, childId, file }))
-      .then(() => Success.of())
-      .catch((e) => Failure.fromError(e))
+    return cropImage(imageElem, crop).then((file) =>
+      uploadChildImage({ unitId, childId, file })
+    )
   }, [childId, crop, imageElem, unitId, uploadChildImage])
 
   const onSuccess = useCallback(() => {
