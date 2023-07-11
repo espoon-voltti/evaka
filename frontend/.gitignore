@@ -36,3 +36,5 @@ src/lib-customizations/**/*
 !src/lib-customizations/*.tsx
 
 playwright-filenames.txt
+
+espoo-customizations/

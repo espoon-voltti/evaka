@@ -20,3 +20,5 @@
 !eslint-plugin/rules
 
 !espoo-customizations
+
+!node_modules/@fortawesome/pro-*

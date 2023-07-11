@@ -194,36 +194,34 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Write AWS config
+      - name: Cache fortawesome
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          mkdir -p ~/.aws
-          echo '${{ secrets.AWS_CONFIG }}' > ~/.aws/config
-
-      - name: Configure AWS credentials
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v2
+        id: fortawesome
+        uses: actions/cache@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-          mask-aws-account-id: false
-          role-duration-seconds: 1200
+          path: frontend/node_modules
+          key: fortawesome-${{ hashFiles('frontend/setup-pro-icons.sh') }}
+
+      - uses: actions/setup-node@v3
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
+        with:
+          node-version: 18
+
+      - name: Install fortawesome
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
+        run: |
+          cat << EOF > frontend/.npmrc
+          @fortawesome:registry=https://npm.fontawesome.com/
+          //npm.fontawesome.com/:_authToken="${{ secrets.FONTAWESOME_TOKEN }}"
+          EOF
+          ./frontend/setup-pro-icons.sh
+          rm frontend/.npmrc
 
       - name: Copy customizations
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
-          mkdir -p frontend/espoo-customizations/ frontend/vendor/fortawesome/
+          mkdir -p frontend/espoo-customizations/
           cp -rp customizations/espoo/* frontend/espoo-customizations/
-          aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" frontend/vendor/fortawesome/
-
-      - name: Unset AWS creds env vars
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        run: |
-          echo "AWS_ACCESS_KEY_ID=" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=" >> $GITHUB_ENV
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
