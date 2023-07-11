@@ -114,26 +114,10 @@ EOF
 to avoid accidentally configuring all the public `@fortawesome/` packages to
 target the private registry in `yarn.lock`.
 
-Next, fetch the packages with:
+Fetch and place the packages with:
 
 ```sh
-npm pack @fortawesome/pro-light-svg-icons@6.4.0 --userconfig=<path to your .npmrc>
-# repeat for all packages listed under ./unpack-pro-icons.sh
-```
-
-Place the fetched `.tgz` packages in the `./vendor/fortawesome/` directory,
-and run `./unpack-pro-icons.sh` to install the packages to the `node_modules` directory.
-
-#### Instructions for Voltti developers
-
-Voltti developers can use the helper script to fetch and unpack the icon packages from
-a private S3 bucket: `./init-pro-icons.sh && ./unpack-pro-icons.sh`
-
-For updating the icons, follow [the non-Voltti developer guide](#instructions-for-developers-with-a-license-for-font-awesome-professional-icons)
-for fetching the new versions. Once fetched, upload the packages to S3:
-
-```sh
-aws --profile voltti-local s3 sync ./vendor/fortawesome/ s3://evaka-deployment-local/frontend/vendor/fortawesome/
+./setup-pro-icons.sh
 ```
 
 ## Development
