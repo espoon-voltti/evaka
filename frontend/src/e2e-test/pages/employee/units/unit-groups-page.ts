@@ -95,7 +95,10 @@ export class UnitGroupsPage {
 }
 
 export class TerminatedPlacementsSection extends Element {
-  constructor(private page: Page, self: Element) {
+  constructor(
+    private page: Page,
+    self: Element
+  ) {
     super(self)
   }
 
@@ -112,7 +115,10 @@ export class TerminatedPlacementsSection extends Element {
 }
 
 export class MissingPlacementsSection extends Element {
-  constructor(private page: Page, self: Element) {
+  constructor(
+    private page: Page,
+    self: Element
+  ) {
     super(self)
   }
 
@@ -152,7 +158,10 @@ export class MissingPlacementsSection extends Element {
 }
 
 export class MissingPlacementRow extends Element {
-  constructor(private page: Page, self: Element) {
+  constructor(
+    private page: Page,
+    self: Element
+  ) {
     super(self)
   }
 
@@ -196,7 +205,10 @@ export class MissingPlacementRow extends Element {
 export class CreateGroupPlacementModal extends Modal {}
 
 export class GroupCollapsible extends Element {
-  constructor(private page: Page, self: Element) {
+  constructor(
+    private page: Page,
+    self: Element
+  ) {
     super(self)
   }
 
@@ -288,7 +300,10 @@ export class GroupDailyNoteModal extends Modal {
 }
 
 export class GroupCollapsibleChildRow extends Element {
-  constructor(self: Element, private childId: string) {
+  constructor(
+    self: Element,
+    private childId: string
+  ) {
     super(self)
   }
 

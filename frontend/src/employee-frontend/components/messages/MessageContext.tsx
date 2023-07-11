@@ -585,11 +585,12 @@ export const MessageContextProvider = React.memo(
 
     const appendMessageToSingleThread = useCallback(
       (message: Message) =>
-        setSingleThread((prevState: Result<MessageThread> | undefined) =>
-          prevState?.map((thread) => ({
-            ...thread,
-            messages: [...thread.messages, message]
-          }))
+        setSingleThread(
+          (prevState: Result<MessageThread> | undefined) =>
+            prevState?.map((thread) => ({
+              ...thread,
+              messages: [...thread.messages, message]
+            }))
         ),
       [setSingleThread]
     )

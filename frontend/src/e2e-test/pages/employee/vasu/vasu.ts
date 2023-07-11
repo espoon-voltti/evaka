@@ -261,9 +261,9 @@ export class VasuPreviewPage extends VasuPageCommon {
     expectedText: string
   ) {
     await waitUntilTrue(async () =>
-      (
-        await this.#multiselectAnswer(questionNumber).text
-      ).includes(expectedText)
+      (await this.#multiselectAnswer(questionNumber).text).includes(
+        expectedText
+      )
     )
   }
 }

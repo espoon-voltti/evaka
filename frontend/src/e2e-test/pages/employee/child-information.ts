@@ -112,7 +112,10 @@ export default class ChildInformationPage {
 }
 
 class Section extends Element {
-  constructor(protected page: Page, root: Element) {
+  constructor(
+    protected page: Page,
+    root: Element
+  ) {
     super(root)
   }
 }

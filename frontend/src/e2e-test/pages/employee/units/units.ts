@@ -63,7 +63,10 @@ export default class UnitsPage {
 }
 
 export class UnitRow extends Element {
-  constructor(private page: Page, root: Element) {
+  constructor(
+    private page: Page,
+    root: Element
+  ) {
     super(root)
   }
 

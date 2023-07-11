@@ -10,7 +10,10 @@ import LocalDate from './local-date'
 export type Tense = 'past' | 'present' | 'future'
 
 export default class DateRange {
-  constructor(readonly start: LocalDate, readonly end: LocalDate | null) {
+  constructor(
+    readonly start: LocalDate,
+    readonly end: LocalDate | null
+  ) {
     if (end && end.isBefore(start)) {
       throw new Error(
         `Attempting to initialize invalid date range with start: ${start.formatIso()}, end: ${end.formatIso()}`

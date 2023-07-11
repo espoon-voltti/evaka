@@ -154,9 +154,7 @@ describe('Employee application attachments', () => {
     const page2 = await Page.open()
     await employeeLogin(
       page2,
-      (
-        await Fixture.employeeUnitSupervisor(daycareId).save()
-      ).data
+      (await Fixture.employeeUnitSupervisor(daycareId).save()).data
     )
     const view = new ApplicationReadView(page2)
     await view.navigateToApplication(applicationId)

@@ -82,7 +82,10 @@ export default class GuardianInformationPage {
 }
 
 class Section extends Element {
-  constructor(protected page: Page, root: Element) {
+  constructor(
+    protected page: Page,
+    root: Element
+  ) {
     super(root)
   }
 }
@@ -585,7 +588,10 @@ class InvoiceCorrectionsSection extends Section {
 }
 
 class InvoiceCorrectionRow extends Element {
-  constructor(public parent: Element, self: Element) {
+  constructor(
+    public parent: Element,
+    self: Element
+  ) {
     super(self)
   }
 
@@ -603,7 +609,10 @@ class InvoiceCorrectionRow extends Element {
 }
 
 class InvoiceCorrectionRowEdit extends Element {
-  constructor(public parent: Element, self: Element) {
+  constructor(
+    public parent: Element,
+    self: Element
+  ) {
     super(self)
   }
 

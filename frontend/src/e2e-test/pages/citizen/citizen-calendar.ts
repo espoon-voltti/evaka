@@ -534,7 +534,10 @@ class AbsencesModal {
 }
 
 class DayView extends Element {
-  constructor(private readonly page: Page, root: Element) {
+  constructor(
+    private readonly page: Page,
+    root: Element
+  ) {
     super(root)
   }
 

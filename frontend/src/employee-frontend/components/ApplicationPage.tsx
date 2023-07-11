@@ -107,7 +107,12 @@ export default React.memo(function ApplicationPage() {
           LocalDate.todayInSystemTz()
       ).then(setUnits)
     }
-  }, [editing, editedApplication?.type, editedApplication?.form.preferences.preferredStartDate, editedApplication?.form.preferences.preparatory])
+  }, [
+    editing,
+    editedApplication?.type,
+    editedApplication?.form.preferences.preferredStartDate,
+    editedApplication?.form.preferences.preparatory
+  ])
 
   const [terms, setTerms] = useState<FiniteDateRange[]>()
   useEffect(() => {
@@ -200,7 +205,12 @@ export default React.memo(function ApplicationPage() {
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
-  }, [setServiceNeedOptions, loadServiceNeedOptions, shouldLoadServiceNeedOptions, editedApplication?.type])
+  }, [
+    setServiceNeedOptions,
+    loadServiceNeedOptions,
+    shouldLoadServiceNeedOptions,
+    editedApplication?.type
+  ])
 
   const getSendMessageUrl = useCallback(
     (applicationData: ApplicationResponse) => {

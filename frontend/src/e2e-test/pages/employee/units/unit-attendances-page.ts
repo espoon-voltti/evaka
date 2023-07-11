@@ -225,7 +225,10 @@ export class UnitAttendancesSection {
 }
 
 export class UnitStaffAttendancesTable extends Element {
-  constructor(public page: Page, element: Element) {
+  constructor(
+    public page: Page,
+    element: Element
+  ) {
     super(element)
   }
 
@@ -323,7 +326,10 @@ export class UnitStaffAttendancesTable extends Element {
 }
 
 export class UnitChildReservationsTable extends Element {
-  constructor(public page: Page, element: Element) {
+  constructor(
+    public page: Page,
+    element: Element
+  ) {
     super(element)
   }
 

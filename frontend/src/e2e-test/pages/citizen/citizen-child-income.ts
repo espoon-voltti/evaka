@@ -70,7 +70,10 @@ export class CitizenChildIncomeStatementEditPage {
 }
 
 export class CitizenChildIncomeStatementListPage {
-  constructor(private readonly page: Page, private readonly nth: number) {}
+  constructor(
+    private readonly page: Page,
+    private readonly nth: number
+  ) {}
 
   private childIncomeStatementList = this.page
     .findAll(`[data-qa="child-income-statement"]`)

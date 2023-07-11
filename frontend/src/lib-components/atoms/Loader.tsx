@@ -38,7 +38,10 @@ const Spinner = styled.div`
 `
 
 const Wrapper = styled.div`
-  font-family: Open Sans, Arial, sans-serif;
+  font-family:
+    Open Sans,
+    Arial,
+    sans-serif;
   font-size: 1em;
   font-weight: ${fontWeights.normal};
   border-collapse: collapse;

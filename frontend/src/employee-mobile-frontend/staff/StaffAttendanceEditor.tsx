@@ -141,8 +141,9 @@ export default React.memo(function StaffAttendanceEditor({
 const inc = (value: number, setValue: (newValue: number) => void) => (): void =>
   setValue(value + 0.5)
 
-const dec = (value: number, setValue: (newValue: number) => void) => (): void =>
-  value > 0 ? setValue(value - 0.5) : undefined
+const dec =
+  (value: number, setValue: (newValue: number) => void) => (): void =>
+    value > 0 ? setValue(value - 0.5) : undefined
 
 const Subtitle = styled.h2`
   font-style: normal;
