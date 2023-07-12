@@ -150,7 +150,7 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
       </FlexRow>
       <DataRow>
         <DataLabel>{i18n.childInformation.childDiscussion.offered}</DataLabel>
-        <DataValue data-qa="child-discussion-offered-date">
+        <DataValue>
           {editing ? (
             <DatePicker
               date={offeredDate}
@@ -160,13 +160,15 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
               data-qa="child-discussion-offered-date-input"
             />
           ) : (
-            offeredDate?.format()
+            <span data-qa="child-discussion-offered-date">
+              {offeredDate?.format()}
+            </span>
           )}
         </DataValue>
       </DataRow>
       <DataRow>
         <DataLabel>{i18n.childInformation.childDiscussion.held}</DataLabel>
-        <DataValue data-qa="child-discussion-held-date">
+        <DataValue>
           {editing ? (
             <DatePicker
               date={heldDate}
@@ -176,7 +178,9 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
               data-qa="child-discussion-held-date-input"
             />
           ) : (
-            heldDate?.format()
+            <span data-qa="child-discussion-held-date">
+              {heldDate?.format()}
+            </span>
           )}
         </DataValue>
       </DataRow>
@@ -184,7 +188,7 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
         <DataLabel>
           {i18n.childInformation.childDiscussion.counseling}
         </DataLabel>
-        <DataValue data-qa="child-discussion-counseling-date">
+        <DataValue>
           {editing ? (
             <DatePicker
               date={counselingDate}
@@ -194,7 +198,9 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
               data-qa="child-discussion-counseling-date-input"
             />
           ) : (
-            counselingDate?.format()
+            <span data-qa="child-discussion-counseling-date">
+              {counselingDate?.format()}
+            </span>
           )}
         </DataValue>
       </DataRow>
