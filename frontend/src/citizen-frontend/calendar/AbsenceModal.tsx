@@ -20,13 +20,14 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
@@ -154,7 +155,6 @@ export default React.memo(function AbsenceModal({
   const contractDayAbsenceTypeSettings =
     form.state.contractDayAbsenceTypeSettings
 
-  const { mutateAsync: postAbsences } = useMutationResult(postAbsencesMutation)
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
 
   const duplicateChildInfo = getDuplicateChildInfo(
@@ -292,17 +292,17 @@ export default React.memo(function AbsenceModal({
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
               />
-              <AsyncButton
+              <MutateButton
                 primary
                 text={i18n.common.confirm}
                 disabled={selectedChildren.state.length === 0}
+                mutation={postAbsencesMutation}
                 onClick={() => {
                   if (!form.isValid()) {
                     useShowAllErrors.on()
-                    return
+                    return cancelMutation
                   }
-
-                  return postAbsences(form.value())
+                  return form.value()
                 }}
                 onSuccess={close}
                 data-qa="modal-okBtn"

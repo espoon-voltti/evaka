@@ -15,11 +15,10 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatFirstName } from 'lib-common/names'
-import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
@@ -70,26 +69,18 @@ export default React.memo(function FixedPeriodSelectionModal({
     [setFixedPeriods]
   )
 
-  const { mutateAsync: answerFixedPeriodQuestionnaire } = useMutationResult(
-    answerFixedPeriodQuestionnaireMutation
-  )
-  const onSubmit = useCallback(
-    () =>
-      answerFixedPeriodQuestionnaire({
-        id: questionnaire.id,
-        body: { fixedPeriods }
-      }),
-    [answerFixedPeriodQuestionnaire, fixedPeriods, questionnaire.id]
-  )
-
   const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
 
   return (
     <ModalAccessibilityWrapper>
-      <AsyncFormModal
+      <MutateFormModal
         mobileFullScreen
         title={questionnaire.title[lang]}
-        resolveAction={onSubmit}
+        resolveMutation={answerFixedPeriodQuestionnaireMutation}
+        resolveAction={() => ({
+          id: questionnaire.id,
+          body: { fixedPeriods }
+        })}
         onSuccess={close}
         resolveLabel={i18n.common.confirm}
         rejectAction={close}
@@ -133,7 +124,7 @@ export default React.memo(function FixedPeriodSelectionModal({
             </HolidaySection>
           ))}
         </FixedSpaceColumn>
-      </AsyncFormModal>
+      </MutateFormModal>
     </ModalAccessibilityWrapper>
   )
 })

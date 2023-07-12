@@ -15,12 +15,13 @@ import { combine } from 'lib-common/form/types'
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useMutationResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -167,13 +168,9 @@ export default React.memo(function ReservationModal({
 
   const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
 
-  const { mutateAsync: postReservations } = useMutationResult(
-    postReservationsMutation
-  )
-
   const [saveError, setSaveError] = useState<string | undefined>()
   const showSaveError = useCallback(
-    (reason: Failure<void>) => {
+    (reason: Failure<unknown>) => {
       reason.errorCode === 'NON_RESERVABLE_DAYS' &&
         setSaveError(
           i18n.calendar.reservationModal.saveErrors.NON_RESERVABLE_DAYS
@@ -299,26 +296,23 @@ export default React.memo(function ReservationModal({
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
               />
-              <AsyncButton
+              <MutateButton
                 primary
                 text={i18n.common.confirm}
                 disabled={
                   form.state.selectedChildren.length === 0 || !form.isValid()
                 }
+                mutation={postReservationsMutation}
                 onClick={() => {
                   if (!form.isValid()) {
                     setShowAllErrors(true)
-                    return
+                    return cancelMutation
                   } else {
-                    return postReservations(
-                      form.value().toRequest(dayProperties)
-                    )
+                    return form.value().toRequest(dayProperties)
                   }
                 }}
                 onSuccess={onSuccess}
-                onFailure={(reason) => {
-                  showSaveError(reason)
-                }}
+                onFailure={(reason) => showSaveError(reason)}
                 data-qa="modal-okBtn"
               />
             </CalendarModalButtons>

@@ -7,14 +7,15 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import RequireAuth from 'citizen-frontend/RequireAuth'
 import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { Failure } from 'lib-common/api'
 import {
   ChildConsentType,
   childConsentTypes
 } from 'lib-common/generated/api-types/children'
-import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -70,9 +71,6 @@ const ChildConsentsContent = React.memo(function ChildConsentsContent({
   const t = useTranslation()
 
   const childConsents = useQueryResult(childConsentsQuery)
-  const { mutateAsync: insertChildConsents } = useMutationResult(
-    insertChildConsentsMutation
-  )
 
   const consents = useMemo(
     () =>
@@ -114,24 +112,6 @@ const ChildConsentsContent = React.memo(function ChildConsentsContent({
     []
   )
 
-  const onConfirm = useCallback(() => {
-    if (!form) {
-      return Promise.resolve(Failure.of({ message: 'Form not loaded' }))
-    }
-
-    return insertChildConsents({
-      childId,
-      consents: Object.entries(form)
-        .filter(
-          ([, consent]) => typeof consent.value === 'boolean' && consent.dirty
-        )
-        .map(([type, consent]) => ({
-          type: type as ChildConsentType,
-          given: consent.value as boolean
-        }))
-    })
-  }, [childId, form, insertChildConsents])
-
   // hide section if no consents are enabled
   if (!consents.map((c) => c.size > 0).getOrElse(true)) return null
 
@@ -172,10 +152,26 @@ const ChildConsentsContent = React.memo(function ChildConsentsContent({
           {consents
             .map((c) => c.get('EVAKA_PROFILE_PICTURE') === null)
             .getOrElse(true) ? (
-            <AsyncButton
+            <MutateButton
               primary
               text={t.children.consent.confirm}
-              onClick={onConfirm}
+              mutation={insertChildConsentsMutation}
+              onClick={() =>
+                form
+                  ? {
+                      childId,
+                      consents: Object.entries(form)
+                        .filter(
+                          ([, consent]) =>
+                            typeof consent.value === 'boolean' && consent.dirty
+                        )
+                        .map(([type, consent]) => ({
+                          type: type as ChildConsentType,
+                          given: consent.value as boolean
+                        }))
+                    }
+                  : cancelMutation
+              }
               onSuccess={() => undefined}
               data-qa="consent-confirm"
             />

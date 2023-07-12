@@ -33,16 +33,17 @@ import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useMutationResult } from 'lib-common/query'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -246,27 +247,23 @@ function Edit({
   const formElems = useFormElems(form)
 
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
-  const { mutateAsync: postReservations } = useMutationResult(
-    postReservationsMutation
-  )
-
-  const save = useCallback(() => {
-    if (!form.isValid()) {
-      useShowAllErrors.on()
-      return undefined
-    } else {
-      return postReservations(form.value()(modalData.response.date))
-    }
-  }, [form, modalData.response.date, postReservations, useShowAllErrors])
 
   const leftButton = (
     <Button onClick={onCancel} text={i18n.common.cancel} data-qa="cancel" />
   )
 
   const rightButton = (
-    <AsyncButton
+    <MutateButton
       primary
-      onClick={save}
+      mutation={postReservationsMutation}
+      onClick={() => {
+        if (!form.isValid()) {
+          useShowAllErrors.on()
+          return cancelMutation
+        } else {
+          return form.value()(modalData.response.date)
+        }
+      }}
       disabled={!form.isValid()}
       onSuccess={onCancel}
       text={i18n.common.save}
