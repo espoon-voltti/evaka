@@ -14,6 +14,7 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedRequest
 } from 'lib-common/generated/api-types/assistanceneed'
+import { ChildDiscussionBody } from 'lib-common/generated/api-types/childdiscussion'
 import {
   ChildDocumentCreateRequest,
   DocumentContent
@@ -47,6 +48,11 @@ import {
   updateAssistanceNeed
 } from '../../api/child/assistance-needs'
 import {
+  createChildDiscussion,
+  getChildDiscussion,
+  updateChildDiscussion
+} from '../../api/child/child-discussions'
+import {
   deleteChildDocument,
   getChildDocument,
   getChildDocuments,
@@ -69,8 +75,6 @@ import {
   putAssistanceNeedPreschoolDecisionSend,
   putAssistanceNeedPreschoolDecisionUnsend
 } from './assistance-need/decision/api-preschool'
-import {createChildDiscussion, getChildDiscussion, updateChildDiscussion} from "../../api/child/child-discussions";
-import {ChildDiscussionBody} from "../../../lib-common/generated/api-types/childdiscussion";
 
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],

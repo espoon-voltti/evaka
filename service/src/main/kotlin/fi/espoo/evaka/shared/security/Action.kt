@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
-import fi.espoo.evaka.shared.ChildDiscussionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -1173,19 +1172,19 @@ sealed interface Action {
             HasUnitRole(STAFF, SPECIAL_EDUCATION_TEACHER, UNIT_SUPERVISOR).inPlacementUnitOfChild()
         ),
         CREATE_CHILD_DISCUSSION(
-                HasGlobalRole(ADMIN),
-                HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-                HasGroupRole(STAFF).inPlacementGroupOfChild()
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild()
         ),
         READ_CHILD_DISCUSSION(
-                HasGlobalRole(ADMIN),
-                HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-                HasGroupRole(STAFF).inPlacementGroupOfChild()
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild()
         ),
         UPDATE_CHILD_DISCUSSION(
-                HasGlobalRole(ADMIN),
-                HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-                HasGroupRole(STAFF).inPlacementGroupOfChild()
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

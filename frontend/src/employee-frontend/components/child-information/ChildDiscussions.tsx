@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { faPen } from 'Icons'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
@@ -85,7 +89,7 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
       setCounselingDate(childDiscussionData.value.counselingDate)
     }
     toggleUiMode('child-discussion-editing')
-  }, [toggleUiMode])
+  }, [childDiscussionData, toggleUiMode])
 
   const handleCancel = () => {
     if (childDiscussionData.isSuccess) {

@@ -36,7 +36,7 @@ sealed interface DatabaseTable {
     sealed class CalendarEvent : DatabaseTable
     sealed class ChildConsent : DatabaseTable
     sealed class ChildDailyNote : DatabaseTable
-    sealed class ChildDiscussion: DatabaseTable
+    sealed class ChildDiscussion : DatabaseTable
     sealed class ChildDocument : DatabaseTable
     sealed class ChildImage : DatabaseTable
     sealed class ChildStickyNote : DatabaseTable
