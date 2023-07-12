@@ -71,6 +71,7 @@ describe('Child Information - Child discussion section', () => {
     await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('childDocuments')
+    await section.waitUntilVisible()
   })
 
   test('Can edit child discussion data', async () => {
