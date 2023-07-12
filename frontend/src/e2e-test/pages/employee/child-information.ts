@@ -373,9 +373,39 @@ export class PedagogicalDocumentsSection extends Section {
 
 export class ChildDocumentsSection extends Section {
   readonly #addNewVasu = this.find('[data-qa="add-new-vasu-button"]')
+  readonly #editChildDiscussion = this.find(
+    '[data-qa="edit-child-discussion-button"]'
+  )
+
+  readonly #confirmEditedBtn = this.find(
+    '[data-qa="confirm-edited-child-discussion-button"]'
+  )
+
+  offeredDate = this.find('[data-qa="child-discussion-offered-date"]')
+  offeredDateInput = new TextInput(
+    this.find('[data-qa="child-discussion-offered-date-input"]')
+  )
+
+  heldDate = this.find('[data-qa="child-discussion-held-date"]')
+  heldDateInput = new TextInput(
+    this.find('[data-qa="child-discussion-held-date-input"]')
+  )
+
+  counselingDate = this.find('[data-qa="child-discussion-counseling-date"]')
+  counselingDateInput = new TextInput(
+    this.find('[data-qa="child-discussion-counseling-date-input"]')
+  )
 
   async addNewVasu() {
     return this.#addNewVasu.click()
+  }
+
+  async editChildDiscussion() {
+    return this.#editChildDiscussion.click()
+  }
+
+  async confirmEdited() {
+    return this.#confirmEditedBtn.click()
   }
 
   readonly createDocumentButton = this.page.findByDataQa('create-document')
