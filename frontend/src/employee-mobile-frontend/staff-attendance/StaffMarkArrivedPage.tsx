@@ -20,12 +20,15 @@ import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -37,22 +40,21 @@ import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
-import { Actions, CustomTitle } from '../common/components'
-import { TimeWrapper } from '../common/components'
+import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
-import { postStaffArrival } from './api'
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
-import { StaffAttendanceContext } from './state'
+import { staffArrivalMutation, staffAttendanceQuery } from './queries'
 import { getAttendanceArrivalDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { groupId, employeeId } = useNonNullableParams<{
+  const { unitId, groupId, employeeId } = useNonNullableParams<{
+    unitId: UUID
     groupId: UUID | 'all'
     employeeId: UUID
   }>()
@@ -62,9 +64,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     reloadUnitInfo()
   }, [reloadUnitInfo])
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const staffMember = useMemo(
     () =>
@@ -109,7 +109,7 @@ export default React.memo(function StaffMarkArrivedPage() {
   )
 
   const isValidTimeString = useMemo(
-    () => (LocalTime.tryParseWithPattern(time, 'HH:mm') ? true : false),
+    () => LocalTime.tryParseWithPattern(time, 'HH:mm') !== undefined,
     [time]
   )
 
@@ -205,34 +205,12 @@ export default React.memo(function StaffMarkArrivedPage() {
     if (!hasPlan || !selectedTimeDiffFromPlannedStartOfDayMinutes) return false
     if (Math.abs(selectedTimeDiffFromPlannedStartOfDayMinutes) <= 5)
       return false
-    if (staffAttendanceDifferenceReasons.length < 1) return false
-    return true
+    return staffAttendanceDifferenceReasons.length >= 1
   }, [
     selectedTimeDiffFromPlannedStartOfDayMinutes,
     staffAttendanceDifferenceReasons,
     hasPlan
   ])
-
-  const confirm = useCallback(() => {
-    if (!attendanceGroup) return undefined
-
-    return postStaffArrival({
-      employeeId,
-      groupId: attendanceGroup,
-      time: LocalTime.parse(time),
-      pinCode: pinCode.join(''),
-      type: attendanceType ?? null
-    }).then((res) => {
-      if (res.isFailure) {
-        setErrorCode(res.errorCode)
-        if (res.errorCode === 'WRONG_PIN') {
-          setPinCode(EMPTY_PIN)
-          pinInputRef.current?.focus()
-        }
-      }
-      return res
-    })
-  }, [attendanceGroup, attendanceType, employeeId, pinCode, time])
 
   return (
     <TallContentArea
@@ -382,21 +360,41 @@ export default React.memo(function StaffMarkArrivedPage() {
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />
-                    <AsyncButton
+                    <MutateButton
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}
+                      mutation={staffArrivalMutation}
                       onClick={() => {
                         if (selectedTimeIsWithin30MinsFromNow(getNow()))
-                          return confirm()
+                          if (attendanceGroup) {
+                            return {
+                              unitId,
+                              request: {
+                                employeeId,
+                                groupId: attendanceGroup,
+                                time: LocalTime.parse(time),
+                                pinCode: pinCode.join(''),
+                                type: attendanceType ?? null
+                              }
+                            }
+                          } else {
+                            return cancelMutation
+                          }
                         else {
                           forceRerender()
-                          return
+                          return cancelMutation
                         }
                       }}
                       onSuccess={() => {
-                        reloadStaffAttendance()
                         history.go(-1)
+                      }}
+                      onFailure={({ errorCode }) => {
+                        setErrorCode(errorCode)
+                        if (errorCode === 'WRONG_PIN') {
+                          setPinCode(EMPTY_PIN)
+                          pinInputRef.current?.focus()
+                        }
                       }}
                       data-qa="mark-arrived-btn"
                     />

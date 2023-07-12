@@ -2,13 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -17,23 +20,21 @@ import { Label } from 'lib-components/typography'
 import { UnwrapResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 
-import { postExternalStaffDeparture } from './api'
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { TimeInfo } from './components/staff-components'
-import { StaffAttendanceContext } from './state'
+import { externalStaffDepartureMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function ExternalStaffMemberPage() {
   const navigate = useNavigate()
-  const { attendanceId } = useNonNullableParams<{
+  const { unitId, attendanceId } = useNonNullableParams<{
+    unitId: string
     attendanceId: string
   }>()
   const { i18n } = useTranslation()
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const attendance = useMemo(
     () =>
@@ -79,20 +80,18 @@ export default React.memo(function ExternalStaffMemberPage() {
                   />
                 </TimeInfo>
 
-                <AsyncButton
+                <MutateButton
                   primary
                   text={i18n.attendances.actions.markDeparted}
                   data-qa="mark-departed-btn"
                   disabled={!parsedTime}
+                  mutation={externalStaffDepartureMutation}
                   onClick={() =>
-                    parsedTime &&
-                    postExternalStaffDeparture({
-                      attendanceId,
-                      time: parsedTime
-                    })
+                    parsedTime !== undefined
+                      ? { unitId, request: { attendanceId, time: parsedTime } }
+                      : cancelMutation
                   }
                   onSuccess={() => {
-                    reloadStaffAttendance()
                     navigate(-1)
                   }}
                 />

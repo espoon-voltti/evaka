@@ -7,6 +7,7 @@ import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -22,7 +23,7 @@ import { UnitContext } from '../common/unit'
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { TimeInfo } from './components/staff-components'
-import { StaffAttendanceContext } from './state'
+import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function StaffMemberPage() {
@@ -34,8 +35,9 @@ export default React.memo(function StaffMemberPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
   const { unitInfoResponse } = useContext(UnitContext)
+
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const employeeResponse = useMemo(
     () =>

@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isAfter } from 'date-fns'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -19,11 +13,14 @@ import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -40,9 +37,8 @@ import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
-import { postStaffDeparture } from './api'
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
-import { StaffAttendanceContext } from './state'
+import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkDepartedPage() {
@@ -60,9 +56,7 @@ export default React.memo(function StaffMarkDepartedPage() {
     reloadUnitInfo()
   }, [reloadUnitInfo])
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const staffMember = useMemo(
     () =>
@@ -82,7 +76,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
   const isValidTimeString = (time: string) =>
-    LocalTime.tryParse(time) ? true : false
+    LocalTime.tryParse(time) !== undefined
 
   const staffInfo = useMemo(
     () =>
@@ -148,22 +142,6 @@ export default React.memo(function StaffMarkDepartedPage() {
         .getOrElse([]),
     [staffMember, time]
   )
-
-  const confirm = useCallback(() => {
-    const groupId = memberAttendance
-      .map(({ groupId }) => groupId)
-      .getOrElse(undefined)
-
-    return groupId
-      ? postStaffDeparture({
-          employeeId,
-          groupId,
-          time: LocalTime.parse(time),
-          pinCode: pinCode.join(''),
-          type: attendanceType ?? null
-        })
-      : undefined
-  }, [memberAttendance, employeeId, time, pinCode, attendanceType])
 
   return (
     <TallContentArea
@@ -270,13 +248,32 @@ export default React.memo(function StaffMarkDepartedPage() {
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />
-                    <AsyncButton
+                    <MutateButton
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}
-                      onClick={confirm}
+                      mutation={staffDepartureMutation}
+                      onClick={() => {
+                        const groupId = memberAttendance
+                          .map(({ groupId }) => groupId)
+                          .getOrElse(undefined)
+
+                        if (groupId) {
+                          return {
+                            unitId,
+                            request: {
+                              employeeId,
+                              groupId,
+                              time: LocalTime.parse(time),
+                              pinCode: pinCode.join(''),
+                              type: attendanceType ?? null
+                            }
+                          }
+                        } else {
+                          return cancelMutation
+                        }
+                      }}
                       onSuccess={() => {
-                        reloadStaffAttendance()
                         history.go(-1)
                       }}
                       onFailure={(res) => {
