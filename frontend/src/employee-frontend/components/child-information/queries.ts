@@ -69,10 +69,13 @@ import {
   putAssistanceNeedPreschoolDecisionSend,
   putAssistanceNeedPreschoolDecisionUnsend
 } from './assistance-need/decision/api-preschool'
+import {createChildDiscussion, getChildDiscussion, updateChildDiscussion} from "../../api/child/child-discussions";
+import {ChildDiscussionBody} from "../../../lib-common/generated/api-types/childdiscussion";
 
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
+  childDiscussion: (childId: UUID) => ['childDiscussion', childId],
   assistance: (childId: UUID) => ['assistance', childId],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
     'assistanceNeedPreschoolDecisionBasics',
@@ -315,4 +318,21 @@ export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
 export const preschoolUnitsQuery = query({
   api: () => getUnitsRaw([], 'PRESCHOOL'),
   queryKey: queryKeys.preschoolUnits
+})
+
+export const childDiscussionQuery = query({
+  api: getChildDiscussion,
+  queryKey: queryKeys.childDiscussion
+})
+
+export const createChildDiscussionMutation = mutation({
+  api: (arg: { childId: UUID; data: ChildDiscussionBody }) =>
+    createChildDiscussion(arg.childId, arg.data),
+  invalidateQueryKeys: (arg) => [queryKeys.childDiscussion(arg.childId)]
+})
+
+export const updateChildDiscussionMutation = mutation({
+  api: (arg: { childId: UUID; data: ChildDiscussionBody }) =>
+    updateChildDiscussion(arg.childId, arg.data),
+  invalidateQueryKeys: (arg) => [queryKeys.childDiscussion(arg.childId)]
 })

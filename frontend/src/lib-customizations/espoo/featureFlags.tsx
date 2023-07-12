@@ -29,6 +29,7 @@ const features: Features = {
     preparatory: true,
     urgencyAttachments: true,
     financeDecisionHandlerSelect: false,
+    childDiscussion: false,
     experimental: {
       leops: true,
       voucherUnitPayments: true,
@@ -57,6 +58,7 @@ const features: Features = {
     preparatory: true,
     urgencyAttachments: true,
     financeDecisionHandlerSelect: false,
+    childDiscussion: false,
     experimental: {
       leops: true,
       assistanceNeedDecisions: true,
@@ -83,6 +85,7 @@ const features: Features = {
     preparatory: true,
     urgencyAttachments: true,
     financeDecisionHandlerSelect: false,
+    childDiscussion: false,
     experimental: {
       leops: true,
       assistanceNeedDecisions: true,

@@ -162,6 +162,11 @@ interface BaseFeatureFlags {
   financeDecisionHandlerSelect: boolean
 
   /**
+   * Enable section for child discussion related data (Lapset puheeksi) in child documents section
+   */
+  childDiscussion: boolean
+
+  /**
    * Experimental flags are features in development: features that aren't yet
    * recommended/tested for production usage but can be enabled for testing
    * in eVaka implementations. These flags will either be dropped when features
