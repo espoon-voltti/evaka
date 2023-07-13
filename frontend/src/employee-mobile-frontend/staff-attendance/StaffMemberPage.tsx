@@ -16,7 +16,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 
-import { UnwrapResult } from '../async-rendering'
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
@@ -50,113 +50,110 @@ export default React.memo(function StaffMemberPage() {
     [employeeId, unitInfoResponse, staffAttendanceResponse]
   )
 
-  return (
-    <StaffMemberPageContainer>
-      <UnwrapResult result={employeeResponse}>
-        {({ isOperationalDate, staffMember }) =>
-          staffMember === undefined ? (
-            <ErrorSegment
-              title={i18n.attendances.staff.errors.employeeNotFound}
-            />
-          ) : (
-            <>
-              <EmployeeCardBackground staff={toStaff(staffMember)} />
-              <FixedSpaceColumn>
-                {featureFlags.experimental?.staffAttendanceTypes ? (
-                  <>
-                    {staffMember.spanningPlan && (
-                      <TimeInfo data-qa="shift-time">
+  return renderResult(
+    employeeResponse,
+    ({ isOperationalDate, staffMember }) => (
+      <StaffMemberPageContainer>
+        {staffMember === undefined ? (
+          <ErrorSegment
+            title={i18n.attendances.staff.errors.employeeNotFound}
+          />
+        ) : (
+          <>
+            <EmployeeCardBackground staff={toStaff(staffMember)} />
+            <FixedSpaceColumn>
+              {featureFlags.experimental?.staffAttendanceTypes ? (
+                <>
+                  {staffMember.spanningPlan && (
+                    <TimeInfo data-qa="shift-time">
+                      <span>
+                        {i18n.attendances.staff.plannedAttendance}{' '}
+                        {staffMember.spanningPlan.start.toLocalTime().format()}–
+                        {staffMember.spanningPlan.end.toLocalTime().format()}
+                      </span>
+                    </TimeInfo>
+                  )}
+                  {staffMember.attendances.length > 0 &&
+                    orderBy(staffMember.attendances, ({ arrived }) =>
+                      arrived.formatIso()
+                    ).map(({ arrived, departed, type }) => (
+                      <TimeInfo
+                        key={arrived.formatIso()}
+                        data-qa="attendance-time"
+                      >
+                        <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
                         <span>
-                          {i18n.attendances.staff.plannedAttendance}{' '}
-                          {staffMember.spanningPlan.start
-                            .toLocalTime()
+                          {arrived.toLocalTime().format()}–
+                          {departed?.toLocalTime().format() ?? ''}
+                        </span>
+                      </TimeInfo>
+                    ))}
+                </>
+              ) : (
+                staffMember.latestCurrentDayAttendance && (
+                  <>
+                    <TimeInfo>
+                      <Label>{i18n.attendances.arrivalTime}</Label>{' '}
+                      <span data-qa="arrival-time">
+                        {staffMember.latestCurrentDayAttendance.arrived
+                          .toLocalTime()
+                          .format()}
+                      </span>
+                    </TimeInfo>
+                    {staffMember.latestCurrentDayAttendance.departed && (
+                      <TimeInfo>
+                        <Label>{i18n.attendances.departureTime}</Label>{' '}
+                        <span data-qa="departure-time">
+                          {staffMember.latestCurrentDayAttendance.departed
+                            ?.toLocalTime()
                             .format()}
-                          –{staffMember.spanningPlan.end.toLocalTime().format()}
                         </span>
                       </TimeInfo>
                     )}
-                    {staffMember.attendances.length > 0 &&
-                      orderBy(staffMember.attendances, ({ arrived }) =>
-                        arrived.formatIso()
-                      ).map(({ arrived, departed, type }) => (
-                        <TimeInfo
-                          key={arrived.formatIso()}
-                          data-qa="attendance-time"
-                        >
-                          <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
-                          <span>
-                            {arrived.toLocalTime().format()}–
-                            {departed?.toLocalTime().format() ?? ''}
-                          </span>
-                        </TimeInfo>
-                      ))}
                   </>
-                ) : (
-                  staffMember.latestCurrentDayAttendance && (
+                )
+              )}
+              <ContentArea opaque paddingHorizontal="s">
+                <FixedSpaceColumn>
+                  {staffMember.present ? (
+                    <Button
+                      primary
+                      data-qa="mark-departed-btn"
+                      onClick={() =>
+                        navigate(
+                          `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`
+                        )
+                      }
+                    >
+                      {i18n.attendances.staff.markDeparted}
+                    </Button>
+                  ) : (
                     <>
-                      <TimeInfo>
-                        <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-                        <span data-qa="arrival-time">
-                          {staffMember.latestCurrentDayAttendance.arrived
-                            .toLocalTime()
-                            .format()}
-                        </span>
-                      </TimeInfo>
-                      {staffMember.latestCurrentDayAttendance.departed && (
-                        <TimeInfo>
-                          <Label>{i18n.attendances.departureTime}</Label>{' '}
-                          <span data-qa="departure-time">
-                            {staffMember.latestCurrentDayAttendance.departed
-                              ?.toLocalTime()
-                              .format()}
-                          </span>
-                        </TimeInfo>
+                      {!isOperationalDate && (
+                        <H4 centered={true}>
+                          {i18n.attendances.notOperationalDate}
+                        </H4>
                       )}
-                    </>
-                  )
-                )}
-                <ContentArea opaque paddingHorizontal="s">
-                  <FixedSpaceColumn>
-                    {staffMember.present ? (
                       <Button
                         primary
-                        data-qa="mark-departed-btn"
+                        data-qa="mark-arrived-btn"
+                        disabled={!isOperationalDate}
                         onClick={() =>
                           navigate(
-                            `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`
+                            `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`
                           )
                         }
                       >
-                        {i18n.attendances.staff.markDeparted}
+                        {i18n.attendances.staff.markArrived}
                       </Button>
-                    ) : (
-                      <>
-                        {!isOperationalDate && (
-                          <H4 centered={true}>
-                            {i18n.attendances.notOperationalDate}
-                          </H4>
-                        )}
-                        <Button
-                          primary
-                          data-qa="mark-arrived-btn"
-                          disabled={!isOperationalDate}
-                          onClick={() =>
-                            navigate(
-                              `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`
-                            )
-                          }
-                        >
-                          {i18n.attendances.staff.markArrived}
-                        </Button>
-                      </>
-                    )}
-                  </FixedSpaceColumn>
-                </ContentArea>
-              </FixedSpaceColumn>
-            </>
-          )
-        }
-      </UnwrapResult>
-    </StaffMemberPageContainer>
+                    </>
+                  )}
+                </FixedSpaceColumn>
+              </ContentArea>
+            </FixedSpaceColumn>
+          </>
+        )}
+      </StaffMemberPageContainer>
+    )
   )
 })
