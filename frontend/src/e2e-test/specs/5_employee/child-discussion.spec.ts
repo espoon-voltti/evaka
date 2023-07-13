@@ -66,12 +66,15 @@ beforeAll(async () => {
 describe('Child Information - Child discussion section', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
-    page = await Page.open()
+    page = await Page.open({
+      employeeCustomizations: {
+        featureFlags: { childDiscussion: true }
+      }
+    })
     await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('childDocuments')
-    await section.waitUntilVisible()
   })
 
   test('Can edit child discussion data', async () => {
