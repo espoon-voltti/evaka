@@ -16,7 +16,6 @@ RUN apt-get update \
 
 COPY ./.yarn ./.yarn
 COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
-
 RUN yarn install --immutable
 
 COPY . .
@@ -36,8 +35,7 @@ ENV SENTRY_NO_PROGRESS_BAR="1"
 ENV APP_BUILD="$build"
 ENV APP_COMMIT="$commit"
 
-RUN if [ "$ICONS" = "pro" ]; then ./unpack-pro-icons.sh; fi \
- && if test -d espoo-customizations; then mv espoo-customizations ..; fi \
+RUN if test -d espoo-customizations; then mv espoo-customizations ..; fi \
  && export NODE_OPTIONS="--max-old-space-size=4096" \
  && yarn build
 
