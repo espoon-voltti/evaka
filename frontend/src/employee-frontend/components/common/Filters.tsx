@@ -454,7 +454,11 @@ export function FeeDecisionDistinctionsFilter({
       <Label>{i18n.filters.distinctiveDetails}</Label>
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {feeDecisionDistinctiveParams.map((id) => (
+        {feeDecisionDistinctiveParams.map((id) => {
+          if (id === 'PRESCHOOL_CLUB' && !featureFlags.experimental?.feeDecisionPreschoolClubFilter) {  
+            return
+          }
+          return (
           <Checkbox
             key={id}
             label={i18n.feeDecision.distinctiveDetails[id]}
@@ -462,7 +466,7 @@ export function FeeDecisionDistinctionsFilter({
             onChange={toggle(id)}
             data-qa={`fee-decision-distinction-filter-${id}`}
           />
-        ))}
+        )})}
       </FixedSpaceColumn>
     </>
   )

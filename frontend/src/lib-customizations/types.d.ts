@@ -40,15 +40,15 @@ declare global {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface EvakaWindowConfig {}
+  interface EvakaWindowConfig { }
 }
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
-    ? DeepPartial<U>[]
-    : T[P] extends Readonly<infer U>[]
-    ? Readonly<DeepPartial<U>>[]
-    : DeepPartial<T[P]>
+  ? DeepPartial<U>[]
+  : T[P] extends Readonly<infer U>[]
+  ? Readonly<DeepPartial<U>>[]
+  : DeepPartial<T[P]>
 }
 
 interface ImgProps {
@@ -222,6 +222,11 @@ interface BaseFeatureFlags {
      * Enable support for intermittent shift care
      */
     intermittentShiftCare?: boolean
+
+    /**
+     * Enable support for filtering fee decisions by preschool club placement type
+     */
+    feeDecisionPreschoolClubFilter?: boolean
   }
 }
 
