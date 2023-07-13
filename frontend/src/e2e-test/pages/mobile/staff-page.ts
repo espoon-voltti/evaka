@@ -105,7 +105,7 @@ export class StaffAttendancePage {
   #addNewExternalMemberButton = this.page.findByDataQa(
     'add-external-member-btn'
   )
-  #pinInput = this.page.findByDataQa('pin-input')
+  pinInput = this.page.findByDataQa('pin-input')
 
   #anyArrivalPage = {
     arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),
@@ -121,15 +121,18 @@ export class StaffAttendancePage {
     arrivalTypeCheckbox: (type: StaffAttendanceType) =>
       new Checkbox(this.page.findByDataQa(`attendance-type-${type}`))
   }
-  #staffDeparturePage = {
+  staffDeparturePage = {
     departureTime: new TextInput(this.page.findByDataQa('set-time')),
     markDepartedBtn: this.page.findByDataQa('mark-departed-btn'),
     timeInputWarningText: this.page.findByDataQa('set-time-info'),
     departureTypeCheckbox: (type: StaffAttendanceType) =>
-      new Checkbox(this.page.findByDataQa(`attendance-type-${type}`))
+      new Checkbox(this.page.findByDataQa(`attendance-type-${type}`)),
+    departureIsBeforeArrival: this.page.findByDataQa(
+      'departure-before-arrival-notification'
+    )
   }
 
-  #anyMemberPage = {
+  anyMemberPage = {
     back: this.page.findByDataQa('back-btn'),
     status: this.page.findByDataQa('employee-status'),
     markDeparted: this.page.findByDataQa('mark-departed-btn')
@@ -140,7 +143,7 @@ export class StaffAttendancePage {
     shiftTimeText: this.page.findByDataQa('shift-time'),
     attendanceTimeTexts: this.page.findAllByDataQa('attendance-time')
   }
-  #externalMemberPage = {
+  externalMemberPage = {
     arrivalTime: this.page.findByDataQa('arrival-time'),
     departureTimeInput: new TextInput(
       this.page.findByDataQa('departure-time-input')
@@ -196,7 +199,7 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeStatus(expected: string) {
-    await this.#anyMemberPage.status.assertTextEquals(expected)
+    await this.anyMemberPage.status.assertTextEquals(expected)
   }
 
   async selectTab(tab: 'present' | 'absent') {
@@ -204,7 +207,7 @@ export class StaffAttendancePage {
   }
 
   async goBackFromMemberPage() {
-    await this.#anyMemberPage.back.click()
+    await this.anyMemberPage.back.click()
   }
 
   async assertEmployeeAttendanceTimes(index: number, expected: string) {
@@ -214,7 +217,7 @@ export class StaffAttendancePage {
   }
 
   async assertExternalStaffArrivalTime(expected: string) {
-    await this.#externalMemberPage.arrivalTime.assertTextEquals(expected)
+    await this.externalMemberPage.arrivalTime.assertTextEquals(expected)
   }
 
   async selectAttendanceType(type: StaffAttendanceType) {
@@ -231,7 +234,7 @@ export class StaffAttendancePage {
     group: DaycareGroup
   }) {
     await this.staffMemberPage.markArrivedBtn.click()
-    await this.#pinInput.locator.type(args.pin)
+    await this.pinInput.locator.type(args.pin)
     await this.#anyArrivalPage.arrivedInput.fill(args.time)
     await this.#staffArrivalPage.groupSelect.selectOption(args.group.id)
     await this.#anyArrivalPage.markArrived.click()
@@ -242,33 +245,33 @@ export class StaffAttendancePage {
   }
 
   async markStaffDeparted(args: { pin: string; time?: string }) {
-    await this.#anyMemberPage.markDeparted.click()
-    await this.#pinInput.locator.type(args.pin)
+    await this.anyMemberPage.markDeparted.click()
+    await this.pinInput.locator.type(args.pin)
     if (args.time) {
-      await this.#staffDeparturePage.departureTime.fill(args.time)
+      await this.staffDeparturePage.departureTime.fill(args.time)
     }
-    await this.#staffDeparturePage.markDepartedBtn.click()
+    await this.staffDeparturePage.markDepartedBtn.click()
   }
 
   async clickMarkDepartedButton() {
-    await this.#staffDeparturePage.markDepartedBtn.click()
+    await this.staffDeparturePage.markDepartedBtn.click()
   }
 
   async markExternalStaffDeparted(time?: string) {
     if (time) {
-      await this.#externalMemberPage.departureTimeInput.fill(time)
+      await this.externalMemberPage.departureTimeInput.fill(time)
     }
-    await this.#anyMemberPage.markDeparted.click()
+    await this.anyMemberPage.markDeparted.click()
   }
 
   async clickStaffArrivedAndSetPin(pin: string) {
     await this.staffMemberPage.markArrivedBtn.click()
-    await this.#pinInput.locator.type(pin)
+    await this.pinInput.locator.type(pin)
   }
 
   async clickStaffDepartedAndSetPin(pin: string) {
-    await this.#anyMemberPage.markDeparted.click()
-    await this.#pinInput.locator.type(pin)
+    await this.anyMemberPage.markDeparted.click()
+    await this.pinInput.locator.type(pin)
   }
 
   async setArrivalTime(time: string) {
@@ -276,7 +279,7 @@ export class StaffAttendancePage {
   }
 
   async setDepartureTime(time: string) {
-    await this.#staffDeparturePage.departureTime.fill(time)
+    await this.staffDeparturePage.departureTime.fill(time)
   }
 
   async assertDoneButtonEnabled(enabled: boolean) {
@@ -292,7 +295,7 @@ export class StaffAttendancePage {
 
   async assertMarkDepartedButtonEnabled(enabled: boolean) {
     await waitUntilEqual(
-      () => this.#staffDeparturePage.markDepartedBtn.disabled,
+      () => this.staffDeparturePage.markDepartedBtn.disabled,
       !enabled
     )
   }
@@ -309,7 +312,7 @@ export class StaffAttendancePage {
   }
 
   async assertDepartureTimeInputInfo(expected: string) {
-    await this.#staffDeparturePage.timeInputWarningText.assertTextEquals(
+    await this.staffDeparturePage.timeInputWarningText.assertTextEquals(
       expected
     )
   }
@@ -323,7 +326,7 @@ export class StaffAttendancePage {
     visible: boolean
   ) {
     await waitUntilEqual(
-      () => this.#staffDeparturePage.departureTypeCheckbox(type).visible,
+      () => this.staffDeparturePage.departureTypeCheckbox(type).visible,
       visible
     )
   }

@@ -144,6 +144,41 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.assertPresentStaffCount(0)
   })
 
+  test('Staff member cannot use departure time that is before last arrival time', async () => {
+    const arrivalTime = '05:59'
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0).toSystemTzDate())
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(employeeName)
+
+    await staffAttendancePage.markStaffArrived({
+      pin,
+      time: arrivalTime,
+      group: daycareGroupFixture
+    })
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.assertEmployeeAttendanceTimes(
+      0,
+      `Paikalla ${arrivalTime}–`
+    )
+    await staffAttendancePage.anyMemberPage.markDeparted.click()
+    await staffAttendancePage.pinInput.locator.type(pin)
+
+    for (const departureTime of ['05:58', '05:59']) {
+      await staffAttendancePage.staffDeparturePage.departureTime.fill(
+        departureTime
+      )
+      await staffAttendancePage.staffDeparturePage.departureIsBeforeArrival.waitUntilVisible()
+      await staffAttendancePage.staffDeparturePage.departureIsBeforeArrival.assertText(
+        (text) => text.endsWith(arrivalTime)
+      )
+      await staffAttendancePage.staffDeparturePage.markDepartedBtn.assertDisabled(
+        true
+      )
+    }
+  })
+
   test('Staff member cannot be marked as arrived on a non-operational day', async () => {
     const saturday = LocalDate.of(2022, 5, 7)
     await initPages(

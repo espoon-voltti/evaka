@@ -260,6 +260,8 @@ export const fi = {
       'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',
     departureCannotBeDoneInFuture:
       'Työvuoron uloskirjausta ei voi merkitä ennakkoon.',
+    departureIsBeforeArrival: (arrival: string) =>
+      `Annettu aika on ennen viimeisintä saapumisaikaa ${arrival}`,
     confirmAttendanceChangeCancel:
       'Haluatko varmasti peruuttaa viimeisimmän lähtö- tai saapumismerkinnän?',
     notOperationalDate:
