@@ -626,6 +626,34 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markExternalStaffDeparted('11:09')
     await staffAttendancePage.assertPresentStaffCount(0)
   })
+
+  test('External staff member cannot use departure time that is before arrival', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 0).toSystemTzDate())
+
+    const name = 'Nomen Estomen'
+    const arrivalTime = '08:00'
+    const departureTime = '07:55'
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+
+    await staffAttendancePage.markNewExternalStaffArrived(
+      arrivalTime,
+      name,
+      daycareGroupFixture
+    )
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(name)
+
+    await staffAttendancePage.externalMemberPage.departureTimeInput.fill(
+      departureTime
+    )
+    await staffAttendancePage.externalMemberPage.departureIsBeforeArrival.waitUntilVisible()
+    await staffAttendancePage.externalMemberPage.departureIsBeforeArrival.assertText(
+      (text) => text.endsWith(arrivalTime)
+    )
+    await staffAttendancePage.anyMemberPage.markDeparted.assertDisabled(true)
+  })
+
   test('New external staff member cannot be added on a non-operational day', async () => {
     const saturday = LocalDate.of(2022, 5, 7)
     await initPages(

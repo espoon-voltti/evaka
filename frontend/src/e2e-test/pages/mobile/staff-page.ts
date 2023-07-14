@@ -150,6 +150,9 @@ export class StaffAttendancePage {
     arrivalTime: this.page.findByDataQa('arrival-time'),
     departureTimeInput: new TextInput(
       this.page.findByDataQa('departure-time-input')
+    ),
+    departureIsBeforeArrival: this.page.findByDataQa(
+      'departure-before-arrival-notification'
     )
   }
 

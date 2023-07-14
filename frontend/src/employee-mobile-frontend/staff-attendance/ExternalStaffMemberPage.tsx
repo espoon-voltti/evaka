@@ -15,7 +15,9 @@ import MutateButton, {
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
@@ -49,51 +51,83 @@ export default React.memo(function ExternalStaffMemberPage() {
   )
   const parsedTime = useMemo(() => LocalTime.tryParse(time), [time])
 
-  return renderResult(attendance, (ext) => (
-    <StaffMemberPageContainer>
-      {!ext ? (
-        <ErrorSegment title={i18n.attendances.staff.errors.employeeNotFound} />
-      ) : (
-        <>
-          <EmployeeCardBackground staff={toStaff(ext)} />
-          <FixedSpaceColumn>
-            <TimeInfo>
-              <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-              <span data-qa="arrival-time">
-                {ext.arrived.toLocalTime().format()}
-              </span>
-            </TimeInfo>
+  return renderResult(attendance, (ext) => {
+    if (!ext) {
+      return (
+        <StaffMemberPageContainer>
+          <ErrorSegment
+            title={i18n.attendances.staff.errors.employeeNotFound}
+          />
+        </StaffMemberPageContainer>
+      )
+    }
 
-            <TimeInfo>
-              <Label htmlFor="time-input">
-                {i18n.attendances.departureTime}
-              </Label>
-              <TimeInput
-                id="time-input"
-                data-qa="departure-time-input"
-                value={time}
-                onChange={(val) => setTime(val)}
-              />
-            </TimeInfo>
+    const lastArrivalTime = ext.arrived
+      .toLocalDate()
+      .isEqual(HelsinkiDateTime.now().toLocalDate())
+      ? ext.arrived.toLocalTime()
+      : undefined
+    const timeBeforeArrival =
+      parsedTime !== undefined &&
+      lastArrivalTime !== undefined &&
+      parsedTime.isEqualOrBefore(lastArrivalTime)
+        ? lastArrivalTime
+        : undefined
 
-            <MutateButton
-              primary
-              text={i18n.attendances.actions.markDeparted}
-              data-qa="mark-departed-btn"
-              disabled={!parsedTime}
-              mutation={externalStaffDepartureMutation}
-              onClick={() =>
-                parsedTime !== undefined
-                  ? { unitId, request: { attendanceId, time: parsedTime } }
-                  : cancelMutation
-              }
-              onSuccess={() => {
-                navigate(-1)
-              }}
+    const departDisabled =
+      parsedTime === undefined || timeBeforeArrival !== undefined
+
+    return (
+      <StaffMemberPageContainer>
+        <EmployeeCardBackground staff={toStaff(ext)} />
+        <FixedSpaceColumn>
+          <TimeInfo>
+            <Label>{i18n.attendances.arrivalTime}</Label>{' '}
+            <span data-qa="arrival-time">
+              {ext.arrived.toLocalTime().format()}
+            </span>
+          </TimeInfo>
+
+          <TimeInfo>
+            <Label htmlFor="time-input">{i18n.attendances.departureTime}</Label>
+            <TimeInput
+              id="time-input"
+              data-qa="departure-time-input"
+              value={time}
+              onChange={(val) => setTime(val)}
             />
-          </FixedSpaceColumn>
-        </>
-      )}
-    </StaffMemberPageContainer>
-  ))
+          </TimeInfo>
+
+          {timeBeforeArrival !== undefined ? (
+            <>
+              <InfoBox
+                thin
+                message={i18n.attendances.departureIsBeforeArrival(
+                  timeBeforeArrival.format()
+                )}
+                data-qa="departure-before-arrival-notification"
+              />
+              <Gap size="xs" />
+            </>
+          ) : undefined}
+
+          <MutateButton
+            primary
+            text={i18n.attendances.actions.markDeparted}
+            data-qa="mark-departed-btn"
+            disabled={departDisabled}
+            mutation={externalStaffDepartureMutation}
+            onClick={() =>
+              parsedTime !== undefined
+                ? { unitId, request: { attendanceId, time: parsedTime } }
+                : cancelMutation
+            }
+            onSuccess={() => {
+              navigate(-1)
+            }}
+          />
+        </FixedSpaceColumn>
+      </StaffMemberPageContainer>
+    )
+  })
 })
