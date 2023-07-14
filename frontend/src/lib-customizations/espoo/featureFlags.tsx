@@ -38,8 +38,7 @@ const features: Features = {
       fosterParents: true,
       serviceWorkerMessaging: true,
       childDocuments: true,
-      assistanceNeedPreschoolDecisions: true,
-      feeDecisionPreschoolClubFilter: true
+      assistanceNeedPreschoolDecisions: true
     }
   },
   staging: {
