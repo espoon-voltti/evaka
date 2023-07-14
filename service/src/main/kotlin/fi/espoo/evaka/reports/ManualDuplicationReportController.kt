@@ -53,7 +53,19 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
                 ManualDuplicationReportViewMode.DUPLICATED ->
                     "AND EXISTS(select from person per where per.duplicate_of = p.id)"
                 ManualDuplicationReportViewMode.NONDUPLICATED ->
-                    "AND NOT EXISTS(select from person per where per.duplicate_of = p.id)"
+                    """
+                        AND NOT EXISTS(select
+                             from application transfer_app
+                                      join decision transfer_decision on transfer_app.id = transfer_decision.application_id
+                             where transfer_app.child_id = conn_app.child_id
+                               and transfer_app.id <> conn_app.id
+                               and transfer_decision.status = 'ACCEPTED'
+                               and daterange(transfer_decision.start_date, transfer_decision.end_date, '[]') &&
+                                   daterange(connected_decision.start_date, connected_decision.end_date, '[]')
+                               and transfer_decision.sent_date > connected_decision.sent_date)
+                        AND NOT EXISTS(select from person per where per.duplicate_of = p.id)
+                    """
+                        .trimIndent()
             }
 
         val sql =
