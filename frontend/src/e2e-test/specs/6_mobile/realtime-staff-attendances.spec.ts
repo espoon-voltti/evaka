@@ -179,6 +179,41 @@ describe('Realtime staff attendance page', () => {
     }
   })
 
+  test('Staff member cannot use arrival time that is before last departure time', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0).toSystemTzDate())
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(employeeName)
+
+    const arrivalTime = '07:30'
+    const departureTime = '07:55'
+    await staffAttendancePage.markStaffArrived({
+      pin,
+      time: arrivalTime,
+      group: daycareGroupFixture
+    })
+    await staffAttendancePage.markStaffDeparted({
+      pin,
+      time: departureTime
+    })
+
+    await staffAttendancePage.staffMemberPage.markArrivedBtn.click()
+    await staffAttendancePage.pinInput.locator.type(pin)
+
+    for (const arrivalTime of ['07:54', '07:55']) {
+      await staffAttendancePage.anyArrivalPage.arrivedInput.fill(arrivalTime)
+      await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
+        daycareGroupFixture.id
+      )
+      await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.waitUntilVisible()
+      await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.assertText(
+        (text) => text.endsWith(departureTime)
+      )
+      await staffAttendancePage.anyArrivalPage.markArrived.assertDisabled(true)
+    }
+  })
+
   test('Staff member cannot be marked as arrived on a non-operational day', async () => {
     const saturday = LocalDate.of(2022, 5, 7)
     await initPages(
@@ -243,24 +278,24 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     // Within 30min from planned start so ok, type required
-    await staffAttendancePage.setArrivalTime('7:30')
+    await staffAttendancePage.setArrivalTime('07:30')
     await staffAttendancePage.selectGroup(daycareGroupFixture.id)
     await staffAttendancePage.assertDoneButtonEnabled(false)
     await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Within 5min from planned start so ok, type not required
-    await staffAttendancePage.setArrivalTime('7:55')
+    await staffAttendancePage.setArrivalTime('07:55')
     await staffAttendancePage.selectGroup(daycareGroupFixture.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Not ok because >+-30min from current time
-    await staffAttendancePage.setArrivalTime('8:01')
+    await staffAttendancePage.setArrivalTime('08:01')
     await staffAttendancePage.assertArrivalTimeInputInfo(
       'Oltava välillä 07:00-08:00'
     )
     // Not ok because >30min from current time
-    await staffAttendancePage.setArrivalTime('6:59')
+    await staffAttendancePage.setArrivalTime('06:59')
     await staffAttendancePage.assertArrivalTimeInputInfo(
       'Oltava välillä 07:00-08:00'
     )
@@ -290,19 +325,19 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     // Within 5min from planned start so ok, type not required
-    await staffAttendancePage.setArrivalTime('8:00')
+    await staffAttendancePage.setArrivalTime('08:00')
     await staffAttendancePage.selectGroup(daycareGroupFixture.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // More than 5min from planned start, type is not required but can be selected
-    await staffAttendancePage.setArrivalTime('8:15')
+    await staffAttendancePage.setArrivalTime('08:15')
     await staffAttendancePage.selectGroup(daycareGroupFixture.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Not ok because >+-30min from current time
-    await staffAttendancePage.setArrivalTime('7:59')
+    await staffAttendancePage.setArrivalTime('07:59')
     await staffAttendancePage.assertArrivalTimeInputInfo(
       'Oltava välillä 08:00-09:00'
     )
