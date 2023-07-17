@@ -83,7 +83,7 @@ function log(
   err?: Error
 ): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const extraFields: { [key: string]: any } = {
+  const extraFields: Record<string, any> = {
     meta: { ...meta },
     spanId: req?.spanId,
     traceId: req?.traceId,
