@@ -459,7 +459,7 @@ export function FeeDecisionDistinctionsFilter({
             id === 'PRESCHOOL_CLUB' &&
             !featureFlags.experimental?.feeDecisionPreschoolClubFilter
           ) {
-            return
+            return null
           }
           return (
             <Checkbox

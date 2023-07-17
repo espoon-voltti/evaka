@@ -2698,7 +2698,7 @@ export const fi = {
       RETROACTIVE: 'Takautuva päätös',
       NO_STARTING_PLACEMENTS: 'Piilota uudet aloittavat lapset',
       MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan maksuun',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho'
+      PRESCHOOL_CLUB: 'Vain esiopetuksen kerho'
     },
     status: {
       DRAFT: 'Luonnos',
