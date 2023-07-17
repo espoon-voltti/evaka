@@ -50,10 +50,8 @@ export interface MiscLog extends BaseLog {
   exception?: string
   logLevel: string
   message: string
-  meta?: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: Record<string, any>
   stackTrace?: string
   type: 'app-misc'
   userIdHash: string
@@ -106,10 +104,8 @@ export interface PinoAppAuditLog extends PinoBaseLog {
 export interface PinoMiscLog extends PinoBaseLog {
   exception?: string
   message: string
-  meta?: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: Record<string, any>
   stackTrace?: string
   type: 'app-misc'
   userIdHash: string

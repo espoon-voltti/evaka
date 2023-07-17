@@ -23,6 +23,7 @@ export interface PinoResponse
   // Custom enriched properties
   contentLength?: number
 }
+
 export type PinoReqSerializer = (req: PinoRequest) => PinoRequest
 export type PinoResSerializer = (res: PinoResponse) => PinoResponse
 
@@ -34,11 +35,12 @@ export interface UserPinoRequest extends PinoRequest {
 
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug'
 
-export interface LogMeta {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type LogMeta = Record<string, any>
 
-export interface LogFn {
-  (msg: string, req?: Request, meta?: LogMeta, err?: Error): void
-}
+export type LogFn = (
+  msg: string,
+  req?: Request,
+  meta?: LogMeta,
+  err?: Error
+) => void
