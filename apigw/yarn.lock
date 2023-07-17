@@ -1737,6 +1737,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xmldom/xmldom@npm:^0.8.8":
+  version: 0.8.9
+  resolution: "@xmldom/xmldom@npm:0.8.9"
+  checksum: b324f35170bf1ad43afa9e8c85372149e626d6f54ffc3ea3d34591eb6d945202470f631a53107f634e4258afb0c0067ee243f210ce9b6050189c677c3d481c7c
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:1":
   version: 1.1.1
   resolution: "abbrev@npm:1.1.1"
@@ -3151,7 +3158,7 @@ __metadata:
     ts-node: ^10.9.1
     typescript: ^5.1.6
     uuid: ^9.0.0
-    xml-crypto: ^3.1.0
+    xml-crypto: ^3.2.0
     xml2js: ^0.6.0
     zod: ^3.21.4
   languageName: unknown
@@ -6958,13 +6965,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^3.0.1, xml-crypto@npm:^3.1.0":
+"xml-crypto@npm:^3.0.1":
   version: 3.1.0
   resolution: "xml-crypto@npm:3.1.0"
   dependencies:
     "@xmldom/xmldom": 0.8.7
     xpath: 0.0.32
   checksum: 86f1c7b6b42364b2a48aa3a0970996c16a9733a0ffda461f5504acc5bc92e37eb6ed2ea9587c72651db2617f8596fbbc1d25afbca2504c115d9b44a9c54bc2ad
+  languageName: node
+  linkType: hard
+
+"xml-crypto@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "xml-crypto@npm:3.2.0"
+  dependencies:
+    "@xmldom/xmldom": ^0.8.8
+    xpath: 0.0.32
+  checksum: 6c4974a7518307ea006dcfc1405f61c6738b45574b4d9d1e62f53b602bfcf894d34017f99d618f26f67c40a5e6d78e6228116ded2768b2ca5b2df5c8bf7774b7
   languageName: node
   linkType: hard
 
