@@ -28,7 +28,7 @@
     "@fortawesome/react-fontawesome": "0.2.0",
     "@react-spring/rafz": "^9.7.3",
     "@react-spring/web": "^9.7.3",
-    "@sentry/browser": "^7.57.0",
+    "@sentry/browser": "^7.58.1",
     "@sentry/react": "^7.58.1",
     "@tanstack/react-query": "^4.29.19",
     "axios": "^1.4.0",
