@@ -55,7 +55,6 @@ import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
-import { StaffAttendanceContextProvider } from './staff-attendance/state'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -191,33 +190,25 @@ function StaffRouter() {
 
 function StaffAttendanceRouter() {
   return (
-    <StaffAttendanceContextProvider>
-      <Routes>
-        <Route path="absent" element={<StaffAttendancesPage tab="absent" />} />
-        <Route
-          path="present"
-          element={<StaffAttendancesPage tab="present" />}
-        />
-        <Route
-          path="external"
-          element={<MarkExternalStaffMemberArrivalPage />}
-        />
-        <Route
-          path="external/:attendanceId"
-          element={<ExternalStaffMemberPage />}
-        />
-        <Route path=":employeeId" element={<StaffMemberPage />} />
-        <Route
-          path=":employeeId/mark-arrived"
-          element={<StaffMarkArrivedPage />}
-        />
-        <Route
-          path=":employeeId/mark-departed"
-          element={<StaffMarkDepartedPage />}
-        />
-        <Route index element={<Navigate replace to="absent" />} />
-      </Routes>
-    </StaffAttendanceContextProvider>
+    <Routes>
+      <Route path="absent" element={<StaffAttendancesPage tab="absent" />} />
+      <Route path="present" element={<StaffAttendancesPage tab="present" />} />
+      <Route path="external" element={<MarkExternalStaffMemberArrivalPage />} />
+      <Route
+        path="external/:attendanceId"
+        element={<ExternalStaffMemberPage />}
+      />
+      <Route path=":employeeId" element={<StaffMemberPage />} />
+      <Route
+        path=":employeeId/mark-arrived"
+        element={<StaffMarkArrivedPage />}
+      />
+      <Route
+        path=":employeeId/mark-departed"
+        element={<StaffMarkDepartedPage />}
+      />
+      <Route index element={<Navigate replace to="absent" />} />
+    </Routes>
   )
 }
 

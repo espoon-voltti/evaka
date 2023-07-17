@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -20,7 +21,7 @@ import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
 import StaffListItem from './StaffListItem'
-import { StaffAttendanceContext } from './state'
+import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 const StaticIconContainer = styled.div`
@@ -43,7 +44,8 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
-  const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
+
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {

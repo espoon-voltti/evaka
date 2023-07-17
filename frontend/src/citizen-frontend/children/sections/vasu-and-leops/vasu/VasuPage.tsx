@@ -5,12 +5,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
+import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -52,9 +52,6 @@ export default React.memo(function VasuPage() {
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
   const vasuDocument = useQueryResult(vasuDocumentQuery(id))
-  const { mutateAsync: givePermissionToShareVasu } = useMutationResult(
-    givePermissionToShareVasuMutation
-  )
 
   return (
     <UnwrapResult result={vasuDocument}>
@@ -153,12 +150,12 @@ export default React.memo(function VasuPage() {
                         data-qa="confirm-checkbox"
                       />
                       <Gap />
-                      <AsyncButton
+                      <MutateButton
                         primary
                         text={t.common.confirm}
                         disabled={!givePermissionToShareSelected}
-                        onClick={() => givePermissionToShareVasu(id)}
-                        onSuccess={() => undefined}
+                        mutation={givePermissionToShareVasuMutation}
+                        onClick={() => id}
                         data-qa="confirm-button"
                       />
                     </ContentArea>

@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { desktopMin } from 'lib-components/breakpoints'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
@@ -53,10 +52,10 @@ export const ConfirmDeleteThread = React.memo(function ConfirmDeleteThread({
   onSuccess
 }: ConfirmDeleteThreadProps) {
   const t = useTranslation()
-  const { mutateAsync: archive } = useMutationResult(archiveThreadMutation)
   return (
-    <AsyncFormModal
-      resolveAction={useCallback(() => archive(threadId), [archive, threadId])}
+    <MutateFormModal
+      resolveMutation={archiveThreadMutation}
+      resolveAction={() => threadId}
       rejectAction={onClose}
       title={t.messages.confirmDelete.title}
       text={t.messages.confirmDelete.text}

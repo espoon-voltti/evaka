@@ -32,7 +32,7 @@ const Shadow = styled.div`
 
 export function StaffMemberPageContainer({
   children
-}: React.PropsWithChildren<unknown>) {
+}: React.PropsWithChildren) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 

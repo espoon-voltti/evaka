@@ -20,12 +20,15 @@ import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -37,22 +40,21 @@ import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
-import { Actions, CustomTitle } from '../common/components'
-import { TimeWrapper } from '../common/components'
+import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
-import { postStaffArrival } from './api'
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
-import { StaffAttendanceContext } from './state'
+import { staffArrivalMutation, staffAttendanceQuery } from './queries'
 import { getAttendanceArrivalDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { groupId, employeeId } = useNonNullableParams<{
+  const { unitId, groupId, employeeId } = useNonNullableParams<{
+    unitId: UUID
     groupId: UUID | 'all'
     employeeId: UUID
   }>()
@@ -62,9 +64,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     reloadUnitInfo()
   }, [reloadUnitInfo])
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const staffMember = useMemo(
     () =>
@@ -76,9 +76,11 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
-  const [time, setTime] = useState<string>(() =>
+  const [timeStr, setTimeStr] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
+  const time = useMemo(() => LocalTime.tryParse(timeStr), [timeStr])
+
   const [forceUpdateState, updateState] = useState<boolean>(true)
   const forceRerender = React.useCallback(
     () => updateState(!forceUpdateState),
@@ -108,11 +110,6 @@ export default React.memo(function StaffMarkArrivedPage() {
     [groupId, staffMember, unitInfoResponse]
   )
 
-  const isValidTimeString = useMemo(
-    () => (LocalTime.tryParseWithPattern(time, 'HH:mm') ? true : false),
-    [time]
-  )
-
   useEffect(() => {
     if (
       attendanceGroup === undefined &&
@@ -140,29 +137,25 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const selectedTimeDiffFromPlannedStartOfDayMinutes = useMemo(
     () =>
-      firstPlannedStartOfTheDay && isValidTimeString
+      firstPlannedStartOfTheDay && time !== undefined
         ? differenceInMinutes(
-            HelsinkiDateTime.now()
-              .withTime(LocalTime.parse(time))
-              .toSystemTzDate(),
+            HelsinkiDateTime.now().withTime(time).toSystemTzDate(),
             firstPlannedStartOfTheDay.toSystemTzDate()
           )
         : null,
-    [firstPlannedStartOfTheDay, time, isValidTimeString]
+    [firstPlannedStartOfTheDay, time]
   )
 
   const selectedTimeIsWithin30MinsFromNow = useCallback(
     (now: Date) =>
-      isValidTimeString &&
+      time !== undefined &&
       Math.abs(
         differenceInMinutes(
-          HelsinkiDateTime.now()
-            .withTime(LocalTime.parse(time))
-            .toSystemTzDate(),
+          HelsinkiDateTime.now().withTime(time).toSystemTzDate(),
           now
         )
       ) <= 30,
-    [time, isValidTimeString]
+    [time]
   )
 
   const hasPlan = useMemo(
@@ -186,11 +179,10 @@ export default React.memo(function StaffMarkArrivedPage() {
     () =>
       staffMember
         .map((staff) => {
-          const parsedTime = LocalTime.tryParseWithPattern(time, 'HH:mm')
-          if (!parsedTime || !staff?.spanningPlan) return []
+          if (time === undefined || !staff?.spanningPlan) return []
           const arrived = HelsinkiDateTime.fromLocal(
             LocalDate.todayInHelsinkiTz(),
-            parsedTime
+            time
           )
           return getAttendanceArrivalDifferenceReasons(
             staff.spanningPlan.start,
@@ -205,34 +197,12 @@ export default React.memo(function StaffMarkArrivedPage() {
     if (!hasPlan || !selectedTimeDiffFromPlannedStartOfDayMinutes) return false
     if (Math.abs(selectedTimeDiffFromPlannedStartOfDayMinutes) <= 5)
       return false
-    if (staffAttendanceDifferenceReasons.length < 1) return false
-    return true
+    return staffAttendanceDifferenceReasons.length >= 1
   }, [
     selectedTimeDiffFromPlannedStartOfDayMinutes,
     staffAttendanceDifferenceReasons,
     hasPlan
   ])
-
-  const confirm = useCallback(() => {
-    if (!attendanceGroup) return undefined
-
-    return postStaffArrival({
-      employeeId,
-      groupId: attendanceGroup,
-      time: LocalTime.parse(time),
-      pinCode: pinCode.join(''),
-      type: attendanceType ?? null
-    }).then((res) => {
-      if (res.isFailure) {
-        setErrorCode(res.errorCode)
-        if (res.errorCode === 'WRONG_PIN') {
-          setPinCode(EMPTY_PIN)
-          pinInputRef.current?.focus()
-        }
-      }
-      return res
-    })
-  }, [attendanceGroup, attendanceType, employeeId, pinCode, time])
 
   return (
     <TallContentArea
@@ -265,6 +235,15 @@ export default React.memo(function StaffMarkArrivedPage() {
             const pinSet = staffInfo?.pinSet ?? true
             const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
 
+            const latestCurrentDayDepartureTime =
+              staffMember.latestCurrentDayAttendance?.departed?.toLocalTime()
+            const timeBeforeLastDeparture =
+              latestCurrentDayDepartureTime !== undefined &&
+              time !== undefined &&
+              latestCurrentDayDepartureTime.isEqualOrAfter(time)
+                ? latestCurrentDayDepartureTime
+                : undefined
+
             const disableConfirmBecauseOfPlan =
               showAttendanceTypeSelection &&
               selectedTimeDiffFromPlannedStartOfDayMinutes != null &&
@@ -274,20 +253,19 @@ export default React.memo(function StaffMarkArrivedPage() {
             const confirmDisabled =
               pinLocked ||
               !pinSet ||
-              !isValidTimeString ||
+              time === undefined ||
               pinCode.join('').trim().length < 4 ||
               !selectedTimeIsWithin30MinsFromNow(getNow()) ||
               !attendanceGroup ||
-              disableConfirmBecauseOfPlan
-
-            const parsedTime = LocalTime.tryParse(time)
+              disableConfirmBecauseOfPlan ||
+              timeBeforeLastDeparture !== undefined
 
             const hasFutureCurrentDay =
               staffMember.latestCurrentDayAttendance &&
               (!staffMember.latestCurrentDayAttendance.departed ||
-                (parsedTime &&
+                (time !== undefined &&
                   staffMember.latestCurrentDayAttendance.arrived.isAfter(
-                    HelsinkiDateTime.now().withTime(parsedTime)
+                    HelsinkiDateTime.now().withTime(time)
                   )))
 
             const hasConflictingFuture =
@@ -320,8 +298,8 @@ export default React.memo(function StaffMarkArrivedPage() {
                 <TimeWrapper>
                   <CustomTitle>{i18n.attendances.arrivalTime}</CustomTitle>
                   <TimeInput
-                    onChange={setTime}
-                    value={time}
+                    onChange={setTimeStr}
+                    value={timeStr}
                     data-qa="input-arrived"
                     info={
                       !selectedTimeIsWithin30MinsFromNow(getNow())
@@ -340,6 +318,16 @@ export default React.memo(function StaffMarkArrivedPage() {
                       <InfoBox
                         message={i18n.attendances.timeDiffTooBigNotification}
                         data-qa="time-diff-too-big-notification"
+                      />
+                    </InfoBoxWrapper>
+                  )}
+                  {timeBeforeLastDeparture !== undefined && (
+                    <InfoBoxWrapper>
+                      <InfoBox
+                        message={i18n.attendances.arrivalIsBeforeDeparture(
+                          timeBeforeLastDeparture.format()
+                        )}
+                        data-qa="arrival-before-departure-notification"
                       />
                     </InfoBoxWrapper>
                   )}
@@ -382,21 +370,41 @@ export default React.memo(function StaffMarkArrivedPage() {
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />
-                    <AsyncButton
+                    <MutateButton
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}
+                      mutation={staffArrivalMutation}
                       onClick={() => {
                         if (selectedTimeIsWithin30MinsFromNow(getNow()))
-                          return confirm()
+                          if (time !== undefined && attendanceGroup) {
+                            return {
+                              unitId,
+                              request: {
+                                employeeId,
+                                groupId: attendanceGroup,
+                                time,
+                                pinCode: pinCode.join(''),
+                                type: attendanceType ?? null
+                              }
+                            }
+                          } else {
+                            return cancelMutation
+                          }
                         else {
                           forceRerender()
-                          return
+                          return cancelMutation
                         }
                       }}
                       onSuccess={() => {
-                        reloadStaffAttendance()
                         history.go(-1)
+                      }}
+                      onFailure={({ errorCode }) => {
+                        setErrorCode(errorCode)
+                        if (errorCode === 'WRONG_PIN') {
+                          setPinCode(EMPTY_PIN)
+                          pinInputRef.current?.focus()
+                        }
                       }}
                       data-qa="mark-arrived-btn"
                     />

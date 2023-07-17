@@ -2,12 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { QueryKey } from '@tanstack/react-query'
 import React, { FormEvent, useCallback } from 'react'
 
 import { Failure, Result } from 'lib-common/api'
+import { MutationDescription } from 'lib-common/query'
 
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import Button from '../../atoms/buttons/Button'
+import MutateButton from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
@@ -108,3 +111,55 @@ function AsyncFormModal_<T>({
 export const AsyncFormModal = React.memo(
   AsyncFormModal_
 ) as typeof AsyncFormModal_
+
+type MutateFormModalProps<Arg, Data, Key extends QueryKey> = ModalBaseProps & {
+  resolveMutation: MutationDescription<Arg, Data, Key>
+  resolveAction: () => Arg
+  resolveLabel: string
+  resolveDisabled?: boolean
+  onSuccess: (value: Data) => void
+  onFailure?: (value: Failure<unknown>) => void
+  rejectAction: () => void
+  rejectLabel: string
+}
+
+function MutateFormModal_<Arg, Data, Key extends QueryKey>({
+  children,
+  resolveMutation,
+  resolveAction,
+  resolveLabel,
+  resolveDisabled,
+  onSuccess,
+  onFailure,
+  rejectAction,
+  rejectLabel,
+  ...props
+}: MutateFormModalProps<Arg, Data, Key>) {
+  return (
+    <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
+      {children}
+      <ModalButtons $justifyContent="center">
+        <MutateButton
+          primary
+          mutation={resolveMutation}
+          text={resolveLabel}
+          disabled={resolveDisabled}
+          onClick={resolveAction}
+          onSuccess={onSuccess}
+          onFailure={onFailure}
+          data-qa="modal-okBtn"
+        />
+        <Gap horizontal size="s" />
+        <Button
+          onClick={rejectAction}
+          data-qa="modal-cancelBtn"
+          text={rejectLabel}
+        />
+      </ModalButtons>
+    </BaseModal>
+  )
+}
+
+export const MutateFormModal = React.memo(
+  MutateFormModal_
+) as typeof MutateFormModal_

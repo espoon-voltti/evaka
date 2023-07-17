@@ -7,11 +7,13 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -67,10 +69,6 @@ export default React.memo(function ApplicationCreation() {
     (selectedType === 'DAYCARE' || selectedType === 'PRESCHOOL') &&
     transferApplicationTypes !== undefined &&
     transferApplicationTypes[selectedType]
-
-  const { mutateAsync: createApplication } = useMutationResult(
-    createApplicationMutation
-  )
 
   if (!childName.isLoading && childName.getOrElse(undefined) === undefined) {
     return <Navigate replace to="/applications" />
@@ -167,14 +165,15 @@ export default React.memo(function ApplicationCreation() {
           </ContentArea>
           <ContentArea opaque={false} paddingVertical="L">
             <ButtonContainer justify="center">
-              <AsyncButton
+              <MutateButton
                 primary
                 text={t.applications.creation.create}
                 disabled={selectedType === undefined || duplicateExists}
+                mutation={createApplicationMutation}
                 onClick={() =>
                   selectedType !== undefined
-                    ? createApplication({ childId, type: selectedType })
-                    : undefined
+                    ? { childId, type: selectedType }
+                    : cancelMutation
                 }
                 onSuccess={(id) => navigate(`/applications/${id}/edit`)}
                 data-qa="submit"
