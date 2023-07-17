@@ -10,6 +10,7 @@ import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
@@ -136,12 +137,13 @@ fun getGroupMonthCalendar(
 
                                     GroupMonthCalendarDayChild(
                                         childId = child.id,
-                                        absenceCategories = placement.categories,
+                                        absenceCategories = placement.type.absenceCategories(),
                                         backupCare =
                                             backupCares[child.id]?.any { it.includes(date) }
                                                 ?: false,
                                         missingHolidayReservation =
-                                            isHolidayPeriodDate &&
+                                            placement.type.requiresAttendanceReservations() &&
+                                                isHolidayPeriodDate &&
                                                 childReservations.isEmpty() &&
                                                 childAbsences.isEmpty(),
                                         absences = childAbsences,
@@ -430,7 +432,7 @@ data class ChildServiceNeedInfo(
     val shiftCare: ShiftCareType
 )
 
-data class AbsencePlacement(val dateRange: FiniteDateRange, val categories: Set<AbsenceCategory>)
+data class AbsencePlacement(val dateRange: FiniteDateRange, val type: PlacementType)
 
 data class Absence(
     val id: AbsenceId,
