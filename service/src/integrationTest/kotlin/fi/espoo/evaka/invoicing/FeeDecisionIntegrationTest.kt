@@ -217,6 +217,60 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         )
 
+    val preschoolClubDecisions =
+        listOf(
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.DRAFT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_1.id,
+                period = DateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 31)),
+                children =
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.PRESCHOOL_CLUB,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                        ),
+                        createFeeDecisionChildFixture(
+                            childId = testChild_2.id,
+                            dateOfBirth = testChild_2.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            siblingDiscount = 50,
+                            fee = 14500
+                        )
+                    )
+            ),
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.DRAFT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_1.id,
+                period = DateRange(LocalDate.of(2018, 9, 1), LocalDate.of(2018, 9, 30)),
+                children =
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                        ),
+                        createFeeDecisionChildFixture(
+                            childId = testChild_2.id,
+                            dateOfBirth = testChild_2.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.PRESCHOOL_CLUB,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            siblingDiscount = 50,
+                            fee = 14500
+                        )
+                    )
+            )
+        )
+
     private fun assertEqualEnough(
         expected: List<FeeDecisionSummary>,
         actual: List<FeeDecisionSummary>
@@ -1893,6 +1947,22 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
 
         getPdf(decision.id, adminUser)
+    }
+
+    @Test
+    fun `search works with distinctions param PRESCHOOL_CLUB`() {
+        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions + preschoolClubDecisions) }
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB)
+                )
+            )
+
+        assertEquals(2, result.data.size)
+        assertEqualEnough(preschoolClubDecisions.map { toSummary(it) }, result.data)
     }
 
     private fun getPdf(id: FeeDecisionId, user: AuthenticatedUser.Employee) {
