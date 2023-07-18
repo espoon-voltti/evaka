@@ -8,7 +8,7 @@ set -euo pipefail
 
 # Configuration
 DEBUG=${DEBUG:-false}
-REUSE_VERSION=1.1.2
+REUSE_VERSION="1.1.2"
 REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
 
 REUSE_IMAGE="fsfe/reuse:${REUSE_VERSION}"
