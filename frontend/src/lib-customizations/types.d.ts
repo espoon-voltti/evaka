@@ -227,7 +227,6 @@ interface BaseFeatureFlags {
      * Enable support for intermittent shift care
      */
     intermittentShiftCare?: boolean
-
   }
 }
 
