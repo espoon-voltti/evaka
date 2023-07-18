@@ -457,7 +457,7 @@ export function FeeDecisionDistinctionsFilter({
         {feeDecisionDistinctiveParams.map((id) => {
           if (
             id === 'PRESCHOOL_CLUB' &&
-            !featureFlags.experimental?.feeDecisionPreschoolClubFilter
+            !featureFlags.feeDecisionPreschoolClubFilter
           ) {
             return null
           }
