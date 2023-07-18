@@ -44,7 +44,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Reuse Compliance Check
-      uses: espoon-voltti/reuse-action@master
+      uses: fsfe/reuse-action@v1
 
   proxy:
     runs-on: ubuntu-latest
