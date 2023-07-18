@@ -601,6 +601,55 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
+    fun `calendar does not show missing holiday reservations for placement type that does not need reservations`() {
+        insertGroupPlacement(testChild_1.id, placementType = PlacementType.CLUB)
+        val holidayPeriod =
+            FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
+
+        db.transaction { tx ->
+            tx.insertHolidayPeriod(
+                period = holidayPeriod,
+                reservationDeadline = placementStart // doesn't matter for group month calendar
+            )
+        }
+
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    testDaycareGroup.id,
+                    placementStart.year,
+                    placementStart.monthValue,
+                    includeNonOperationalDays = false
+                )
+            }
+
+        assertEquals(
+            FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
+                .dates()
+                .map { date ->
+                    GroupMonthCalendarDay(
+                        date = date,
+                        holiday = date.isWeekend(),
+                        holidayPeriod = true,
+                        children =
+                            if (date.isWeekend()) null
+                            else
+                                listOf(
+                                    emptyDayChild.copy(
+                                        childId = testChild_1.id,
+                                        missingHolidayReservation = false,
+                                        absenceCategories = setOf(AbsenceCategory.NONBILLABLE)
+                                    )
+                                )
+                    )
+                }
+                .toList(),
+            result.days
+        )
+    }
+
+    @Test
     fun `calendar has correct daily service times`() {
         insertGroupPlacement(testChild_1.id)
         val dailyServiceTimesPeriod1 =
