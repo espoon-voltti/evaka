@@ -10,9 +10,7 @@ import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -284,35 +282,6 @@ WHERE sent_date IS NULL AND id = :decisionId AND planned = true
         )
         .bind("decisionId", decisionId)
         .bind("sentDate", sentDate)
-        .execute()
-}
-
-fun Database.Transaction.insertDecision(
-    decisionId: DecisionId,
-    userId: EvakaUserId,
-    sentDate: LocalDate,
-    applicationId: ApplicationId,
-    unitId: DaycareId,
-    decisionType: DecisionType,
-    startDate: LocalDate,
-    endDate: LocalDate
-) {
-    createUpdate(
-            // language=SQL
-            """
-            INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date) 
-            VALUES (:id, :createdBy, :sentDate, :unitId, :applicationId, :type::decision_type, :startDate, :endDate)
-        """
-                .trimIndent()
-        )
-        .bind("id", decisionId)
-        .bind("createdBy", userId)
-        .bind("sentDate", sentDate)
-        .bind("applicationId", applicationId)
-        .bind("unitId", unitId)
-        .bind("type", decisionType)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
         .execute()
 }
 
