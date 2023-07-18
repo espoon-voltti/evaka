@@ -45,7 +45,7 @@ export interface DecisionDraft {
 }
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionDraftService.DecisionDraftUpdate
+* Generated from fi.espoo.evaka.decision.DecisionDraftUpdate
 */
 export interface DecisionDraftUpdate {
   endDate: LocalDate

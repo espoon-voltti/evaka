@@ -9,12 +9,13 @@ import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
-import fi.espoo.evaka.decision.DecisionDraftService
+import fi.espoo.evaka.decision.DecisionDraftUpdate
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
+import fi.espoo.evaka.decision.updateDecisionDrafts
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.getParentships
@@ -86,8 +87,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @MockBean private lateinit var featureConfig: FeatureConfig
 
     @Autowired private lateinit var service: ApplicationStateService
-
-    @Autowired private lateinit var decisionDraftService: DecisionDraftService
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -1394,7 +1393,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
             tx.fetchDecisionDrafts(applicationId)
                 .map { draft ->
-                    DecisionDraftService.DecisionDraftUpdate(
+                    DecisionDraftUpdate(
                         id = draft.id,
                         unitId = draft.unitId,
                         startDate = draft.startDate,
@@ -1402,9 +1401,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         planned = false
                     )
                 }
-                .let { updates ->
-                    decisionDraftService.updateDecisionDrafts(tx, applicationId, updates)
-                }
+                .let { updates -> updateDecisionDrafts(tx, applicationId, updates) }
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->

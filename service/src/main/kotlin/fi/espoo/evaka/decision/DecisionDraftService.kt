@@ -16,196 +16,190 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 import java.util.UUID
-import org.springframework.stereotype.Service
 
-@Service
-class DecisionDraftService {
-    fun createDecisionDrafts(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        application: ApplicationDetails
-    ) {
-        val placementPlan =
-            tx.getPlacementPlan(application.id)
-                ?: throw NotFound("Application ${application.id} has no placement")
+fun createDecisionDrafts(
+    tx: Database.Transaction,
+    user: AuthenticatedUser,
+    application: ApplicationDetails
+) {
+    val placementPlan =
+        tx.getPlacementPlan(application.id)
+            ?: throw NotFound("Application ${application.id} has no placement")
 
-        val drafts: List<DecisionDraft> =
-            when (placementPlan.type) {
-                PlacementType.CLUB -> planClubDecisionDrafts(placementPlan)
-                PlacementType.DAYCARE,
-                PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
-                PlacementType.PRESCHOOL,
-                PlacementType.PRESCHOOL_DAYCARE,
-                PlacementType.PRESCHOOL_CLUB,
-                PlacementType.PREPARATORY,
-                PlacementType.PREPARATORY_DAYCARE ->
-                    planPreschoolDecisionDrafts(placementPlan, application)
-                PlacementType.SCHOOL_SHIFT_CARE -> listOf()
-                PlacementType.TEMPORARY_DAYCARE,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-                    error(
-                        "Cannot create decision draft from placement of type '${placementPlan.type}'"
-                    )
-            }
+    val drafts: List<DecisionDraft> =
+        when (placementPlan.type) {
+            PlacementType.CLUB -> planClubDecisionDrafts(placementPlan)
+            PlacementType.DAYCARE,
+            PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
+            PlacementType.PRESCHOOL,
+            PlacementType.PRESCHOOL_DAYCARE,
+            PlacementType.PRESCHOOL_CLUB,
+            PlacementType.PREPARATORY,
+            PlacementType.PREPARATORY_DAYCARE ->
+                planPreschoolDecisionDrafts(placementPlan, application)
+            PlacementType.SCHOOL_SHIFT_CARE -> listOf()
+            PlacementType.TEMPORARY_DAYCARE,
+            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+                error("Cannot create decision draft from placement of type '${placementPlan.type}'")
+        }
 
-        // language=sql
-        val sql =
-            """
+    // language=sql
+    val sql =
+        """
             INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
             VALUES (:createdBy, :unitId, :applicationId, :type::decision_type, :startDate, :endDate, :planned);
             """
-                .trimIndent()
-        val batch = tx.prepareBatch(sql)
-        drafts.forEach { draft ->
-            batch
-                .bind("createdBy", user.evakaUserId)
-                .bind("unitId", draft.unitId)
-                .bind("applicationId", application.id)
-                .bind("type", draft.type.toString())
-                .bind("startDate", draft.startDate)
-                .bind("endDate", draft.endDate)
-                .bind("planned", draft.planned)
-                .add()
-        }
-        batch.execute()
+            .trimIndent()
+    val batch = tx.prepareBatch(sql)
+    drafts.forEach { draft ->
+        batch
+            .bind("createdBy", user.evakaUserId)
+            .bind("unitId", draft.unitId)
+            .bind("applicationId", application.id)
+            .bind("type", draft.type.toString())
+            .bind("startDate", draft.startDate)
+            .bind("endDate", draft.endDate)
+            .bind("planned", draft.planned)
+            .add()
     }
+    batch.execute()
+}
 
-    fun updateDecisionDrafts(
-        tx: Database.Transaction,
-        applicationId: ApplicationId,
-        updates: List<DecisionDraftUpdate>
-    ) {
-        // language=sql
-        val sql =
-            """
+fun updateDecisionDrafts(
+    tx: Database.Transaction,
+    applicationId: ApplicationId,
+    updates: List<DecisionDraftUpdate>
+) {
+    // language=sql
+    val sql =
+        """
             UPDATE decision
             SET unit_id = :unitId, start_date = :startDate, end_date = :endDate, planned = :planned
             WHERE id = :decisionId AND application_id = :applicationId
             """
-                .trimIndent()
+            .trimIndent()
 
-        val batch = tx.prepareBatch(sql)
-        updates.forEach {
-            batch
-                .bind("applicationId", applicationId)
-                .bind("decisionId", it.id)
-                .bind("unitId", it.unitId)
-                .bind("startDate", it.startDate)
-                .bind("endDate", it.endDate)
-                .bind("planned", it.planned)
-                .add()
-        }
-        val successfulUpdates = batch.execute().sum()
-
-        if (successfulUpdates < updates.size) {
-            throw NotFound("Some decision draft was not found")
-        }
+    val batch = tx.prepareBatch(sql)
+    updates.forEach {
+        batch
+            .bind("applicationId", applicationId)
+            .bind("decisionId", it.id)
+            .bind("unitId", it.unitId)
+            .bind("startDate", it.startDate)
+            .bind("endDate", it.endDate)
+            .bind("planned", it.planned)
+            .add()
     }
+    val successfulUpdates = batch.execute().sum()
 
-    data class DecisionDraftUpdate(
-        val id: DecisionId,
-        val unitId: DaycareId,
-        val startDate: LocalDate,
-        val endDate: LocalDate,
-        val planned: Boolean
-    )
+    if (successfulUpdates < updates.size) {
+        throw NotFound("Some decision draft was not found")
+    }
+}
 
-    fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> {
-        val sql =
-            """
+data class DecisionDraftUpdate(
+    val id: DecisionId,
+    val unitId: DaycareId,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val planned: Boolean
+)
+
+fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> {
+    val sql =
+        """
             $decisionUnitQuery
             ORDER BY name
             """
-                .trimIndent()
-        return tx.createQuery(sql).mapTo<DecisionUnit>().toList()
-    }
+            .trimIndent()
+    return tx.createQuery(sql).mapTo<DecisionUnit>().toList()
+}
 
-    fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
-        // language=SQL
-        val sql =
-            """
+fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
+    // language=SQL
+    val sql =
+        """
              $decisionUnitQuery
              WHERE u.id = :id
             """
-                .trimIndent()
+            .trimIndent()
 
-        return tx.createQuery(sql).bind("id", unitId).mapTo<DecisionUnit>().first()
-    }
+    return tx.createQuery(sql).bind("id", unitId).mapTo<DecisionUnit>().first()
+}
 
-    private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
-        return listOf(
-            DecisionDraft(
-                id = DecisionId(UUID.randomUUID()), // placeholder
-                unitId = plan.unitId,
-                type = DecisionType.CLUB,
-                startDate = plan.period.start,
-                endDate = plan.period.end,
-                planned = true
-            )
+private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
+    return listOf(
+        DecisionDraft(
+            id = DecisionId(UUID.randomUUID()), // placeholder
+            unitId = plan.unitId,
+            type = DecisionType.CLUB,
+            startDate = plan.period.start,
+            endDate = plan.period.end,
+            planned = true
         )
-    }
+    )
+}
 
-    private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
-        val type =
-            if (plan.type == PlacementType.DAYCARE_PART_TIME) {
-                DecisionType.DAYCARE_PART_TIME
-            } else {
-                DecisionType.DAYCARE
-            }
+private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
+    val type =
+        if (plan.type == PlacementType.DAYCARE_PART_TIME) {
+            DecisionType.DAYCARE_PART_TIME
+        } else {
+            DecisionType.DAYCARE
+        }
 
-        return listOf(
-            DecisionDraft(
-                id = DecisionId(UUID.randomUUID()), // placeholder
-                unitId = plan.unitId,
-                type = type,
-                startDate = plan.period.start,
-                endDate = plan.period.end,
-                planned = true
-            )
+    return listOf(
+        DecisionDraft(
+            id = DecisionId(UUID.randomUUID()), // placeholder
+            unitId = plan.unitId,
+            type = type,
+            startDate = plan.period.start,
+            endDate = plan.period.end,
+            planned = true
         )
-    }
+    )
+}
 
-    private fun planPreschoolDecisionDrafts(
-        plan: PlacementPlan,
-        application: ApplicationDetails
-    ): List<DecisionDraft> {
-        val primaryType =
-            if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE))
-                DecisionType.PREPARATORY_EDUCATION
-            else DecisionType.PRESCHOOL
+private fun planPreschoolDecisionDrafts(
+    plan: PlacementPlan,
+    application: ApplicationDetails
+): List<DecisionDraft> {
+    val primaryType =
+        if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE))
+            DecisionType.PREPARATORY_EDUCATION
+        else DecisionType.PRESCHOOL
 
-        val primary =
-            DecisionDraft(
-                id = DecisionId(UUID.randomUUID()), // placeholder
-                unitId = plan.unitId,
-                type = primaryType,
-                startDate = plan.period.start,
-                endDate = plan.period.end,
-                planned = !application.additionalDaycareApplication
-            )
+    val primary =
+        DecisionDraft(
+            id = DecisionId(UUID.randomUUID()), // placeholder
+            unitId = plan.unitId,
+            type = primaryType,
+            startDate = plan.period.start,
+            endDate = plan.period.end,
+            planned = !application.additionalDaycareApplication
+        )
 
-        val connected =
-            DecisionDraft(
-                id = DecisionId(UUID.randomUUID()), // placeholder
-                unitId = plan.unitId,
-                type =
-                    if (plan.type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
-                    else DecisionType.PRESCHOOL_DAYCARE,
-                startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
-                endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
-                planned =
-                    plan.type in
-                        listOf(
-                            PlacementType.PRESCHOOL_DAYCARE,
-                            PlacementType.PRESCHOOL_CLUB,
-                            PlacementType.PREPARATORY_DAYCARE
-                        )
-            )
+    val connected =
+        DecisionDraft(
+            id = DecisionId(UUID.randomUUID()), // placeholder
+            unitId = plan.unitId,
+            type =
+                if (plan.type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
+                else DecisionType.PRESCHOOL_DAYCARE,
+            startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
+            endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
+            planned =
+                plan.type in
+                    listOf(
+                        PlacementType.PRESCHOOL_DAYCARE,
+                        PlacementType.PRESCHOOL_CLUB,
+                        PlacementType.PREPARATORY_DAYCARE
+                    )
+        )
 
-        return listOf(primary, connected)
-    }
+    return listOf(primary, connected)
 }
 
 fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {

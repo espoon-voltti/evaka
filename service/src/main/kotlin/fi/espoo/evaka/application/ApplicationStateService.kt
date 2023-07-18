@@ -27,11 +27,11 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
-import fi.espoo.evaka.decision.DecisionDraftService
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.clearDecisionDrafts
+import fi.espoo.evaka.decision.createDecisionDrafts
 import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.markApplicationDecisionsSent
@@ -78,7 +78,6 @@ class ApplicationStateService(
     private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService,
     private val decisionService: DecisionService,
-    private val decisionDraftService: DecisionDraftService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val documentClient: DocumentService,
@@ -447,7 +446,7 @@ class ApplicationStateService(
         tx.updateApplicationOtherGuardian(applicationId, secondDecisionTo)
         val placementPlanId =
             placementPlanService.createPlacementPlan(tx, application, placementPlan)
-        decisionDraftService.createDecisionDrafts(tx, user, application)
+        createDecisionDrafts(tx, user, application)
 
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
         return placementPlanId
@@ -1103,7 +1102,7 @@ class ApplicationStateService(
                 // due date is two weeks from application.sentDate or the first attachment,
                 // whichever is later
                 val minAttachmentDate =
-                    attachments.minByOrNull { it.receivedAt }?.let { it.receivedAt.toLocalDate() }
+                    attachments.minByOrNull { it.receivedAt }?.receivedAt?.toLocalDate()
                 listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
             } else {
                 sentDate.plusMonths(4)
@@ -1119,16 +1118,16 @@ class ApplicationStateService(
     ): List<DecisionId> {
         val sendBySfi = canSendDecisionsBySfi(tx, user, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
-        if (decisionDrafts.any { it.planned }) {
+        return if (decisionDrafts.any { it.planned }) {
             val decisionIds =
                 decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
             tx.updateApplicationStatus(
                 application.id,
                 if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
             )
-            return decisionIds
+            decisionIds
         } else {
-            return emptyList()
+            emptyList()
         }
     }
 
