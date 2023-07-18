@@ -43,7 +43,7 @@ FROM node:16 AS builder-theme
 WORKDIR /work
 
 COPY ./theme/package*.json /work/
-RUN npm install
+RUN npm ci
 COPY ./theme/ /work/
 
 RUN npm run build
