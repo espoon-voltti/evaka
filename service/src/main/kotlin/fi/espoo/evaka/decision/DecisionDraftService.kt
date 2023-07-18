@@ -49,7 +49,7 @@ fun createDecisionDrafts(
     val sql =
         """
             INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
-            VALUES (:createdBy, :unitId, :applicationId, :type::decision_type, :startDate, :endDate, :planned);
+            VALUES (:createdBy, :unitId, :applicationId, :type, :startDate, :endDate, :planned);
             """
             .trimIndent()
     val batch = tx.prepareBatch(sql)
@@ -58,7 +58,7 @@ fun createDecisionDrafts(
             .bind("createdBy", user.evakaUserId)
             .bind("unitId", draft.unitId)
             .bind("applicationId", application.id)
-            .bind("type", draft.type.toString())
+            .bind("type", draft.type)
             .bind("startDate", draft.startDate)
             .bind("endDate", draft.endDate)
             .bind("planned", draft.planned)

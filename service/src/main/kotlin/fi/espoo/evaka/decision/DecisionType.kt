@@ -4,12 +4,16 @@
 
 package fi.espoo.evaka.decision
 
-enum class DecisionType {
+import fi.espoo.evaka.shared.db.DatabaseEnum
+
+enum class DecisionType : DatabaseEnum {
     CLUB,
     DAYCARE,
     DAYCARE_PART_TIME,
     PRESCHOOL,
     PRESCHOOL_DAYCARE,
     PRESCHOOL_CLUB,
-    PREPARATORY_EDUCATION
+    PREPARATORY_EDUCATION;
+
+    override val sqlType = "decision_type"
 }
