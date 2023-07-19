@@ -298,7 +298,9 @@ WITH all_placements AS (
   $placementsQuery
 )
 SELECT
-  all_placements.*,
+  all_placements.date_range,
+  all_placements.type,
+  all_placements.child_id,
   person.first_name AS child_first_name,
   person.last_name AS child_last_name,
   person.date_of_birth AS child_date_of_birth
@@ -313,8 +315,7 @@ JOIN person ON child_id = person.id
         .toList()
         .groupBy { it.child }
         .map { (child, queryResults) ->
-            child to
-                queryResults.map { AbsencePlacement(it.dateRange, it.type.absenceCategories()) }
+            child to queryResults.map { AbsencePlacement(it.dateRange, it.type) }
         }
         .toMap()
 }

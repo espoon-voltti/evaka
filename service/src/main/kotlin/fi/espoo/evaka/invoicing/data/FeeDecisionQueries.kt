@@ -394,6 +394,8 @@ fun Database.Read.searchFeeDecisions(
 
     val maxFeeAccepted = distinctiveParams.contains(DistinctiveParams.MAX_FEE_ACCEPTED)
 
+    val preschoolClub = distinctiveParams.contains(DistinctiveParams.PRESCHOOL_CLUB)
+
     val (numberQuery, numberParams) =
         disjointNumberQuery("decision", "decision_number", numberParamsRaw)
 
@@ -430,7 +432,8 @@ fun Database.Read.searchFeeDecisions(
             else null,
             if (maxFeeAccepted)
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
-            else null
+            else null,
+            if (preschoolClub) "decisions_with_preschool_club_placement IS NOT NULL" else null
         )
 
     val youngestChildQuery =
@@ -466,11 +469,25 @@ fun Database.Read.searchFeeDecisions(
     val firstPlacementStartingThisMonthChildIdsQueryJoin =
         "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
 
+    val preschoolClubPlacementQuery =
+        """
+        decisions_with_preschool_club_placement AS (
+            SELECT DISTINCT(fdc.fee_decision_id)
+            FROM fee_decision_child fdc
+            WHERE fdc.placement_type = 'PRESCHOOL_CLUB'::placement_type
+        )
+        """
+            .trimIndent()
+
+    val preschoolClubQueryJoin =
+        "LEFT JOIN decisions_with_preschool_club_placement ON decision.id = decisions_with_preschool_club_placement.fee_decision_id"
+
     val CTEs =
         listOf(
                 if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery
                 else "",
-                if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else ""
+                if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else "",
+                if (preschoolClub) preschoolClubPlacementQuery else ""
             )
             .filter { it.isNotEmpty() }
             .joinToString(",")
@@ -488,6 +505,7 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
             ${if (noStartingPlacements) firstPlacementStartingThisMonthChildIdsQueryJoin else ""}
+            ${if (preschoolClub) preschoolClubQueryJoin else ""}
             ${if (conditions.isNotEmpty()) {
             """
             WHERE ${conditions.joinToString("\nAND ")}

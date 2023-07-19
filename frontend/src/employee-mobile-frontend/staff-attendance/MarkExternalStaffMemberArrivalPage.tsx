@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { isValidTime } from 'lib-common/date'
@@ -11,8 +11,10 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -29,8 +31,7 @@ import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
-import { postExternalStaffArrival } from './api'
-import { StaffAttendanceContext } from './state'
+import { externalStaffArrivalMutation } from './queries'
 
 interface FormState {
   arrived: string
@@ -40,10 +41,12 @@ interface FormState {
 
 export default function MarkExternalStaffMemberArrivalPage() {
   const navigate = useNavigate()
-  const { groupId } = useNonNullableParams<{ groupId: string }>()
+  const { unitId, groupId } = useNonNullableParams<{
+    unitId: string
+    groupId: string
+  }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
-  const { reloadStaffAttendance } = useContext(StaffAttendanceContext)
 
   const [form, setForm] = useState<FormState>(() => ({
     arrived: HelsinkiDateTime.now().toLocalTime().format(),
@@ -52,18 +55,6 @@ export default function MarkExternalStaffMemberArrivalPage() {
       .getOrElse(null),
     name: ''
   }))
-
-  const onSubmit = useCallback(
-    () =>
-      form.group
-        ? postExternalStaffArrival({
-            arrived: LocalTime.parse(form.arrived),
-            groupId: form.group.id,
-            name: form.name.trim()
-          })
-        : undefined,
-    [form.arrived, form.group, form.name]
-  )
 
   const formIsValid = () =>
     !!(isValidTime(form.arrived) && form.name.trim() && form.group)
@@ -132,13 +123,24 @@ export default function MarkExternalStaffMemberArrivalPage() {
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
-                <AsyncButton
+                <MutateButton
                   primary
                   text={i18n.common.confirm}
                   disabled={!unit.isOperationalDate || !formIsValid()}
-                  onClick={onSubmit}
+                  mutation={externalStaffArrivalMutation}
+                  onClick={() =>
+                    form.group
+                      ? {
+                          unitId,
+                          request: {
+                            arrived: LocalTime.parse(form.arrived),
+                            groupId: form.group.id,
+                            name: form.name.trim()
+                          }
+                        }
+                      : cancelMutation
+                  }
                   onSuccess={() => {
-                    reloadStaffAttendance()
                     history.go(-1)
                   }}
                   data-qa="mark-arrived-btn"

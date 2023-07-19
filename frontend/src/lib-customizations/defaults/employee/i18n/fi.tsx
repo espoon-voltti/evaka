@@ -2704,7 +2704,8 @@ export const fi = {
       EXTERNAL_CHILD: 'Ulkopaikkakuntalainen',
       RETROACTIVE: 'Takautuva päätös',
       NO_STARTING_PLACEMENTS: 'Piilota uudet aloittavat lapset',
-      MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan maksuun'
+      MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan maksuun',
+      PRESCHOOL_CLUB: 'Vain esiopetuksen kerho'
     },
     status: {
       DRAFT: 'Luonnos',

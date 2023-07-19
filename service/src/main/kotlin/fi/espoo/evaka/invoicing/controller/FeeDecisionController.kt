@@ -66,7 +66,8 @@ enum class DistinctiveParams {
     EXTERNAL_CHILD,
     RETROACTIVE,
     NO_STARTING_PLACEMENTS,
-    MAX_FEE_ACCEPTED
+    MAX_FEE_ACCEPTED,
+    PRESCHOOL_CLUB
 }
 
 @RestController

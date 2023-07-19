@@ -14,7 +14,8 @@ import {
   UseQueryResult,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
-  InfiniteData
+  InfiniteData,
+  QueryClient
 } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
@@ -184,22 +185,31 @@ export function mutation<Arg, Data, Key extends QueryKey>(
   return description
 }
 
+export async function invalidateDependencies<Arg, Key extends QueryKey>(
+  queryClient: QueryClient,
+  mutationDescription: MutationDescription<Arg, unknown, Key>,
+  arg: Arg
+) {
+  const { invalidateQueryKeys } = mutationDescription
+  if (invalidateQueryKeys) {
+    for (const key of invalidateQueryKeys(arg)) {
+      await queryClient.invalidateQueries(key)
+    }
+  }
+}
+
 export function useMutation<Arg, Data, Key extends QueryKey>(
   mutationDescription: MutationDescription<Arg, Data, Key>,
   options?: Omit<UseMutationOptions<Data, unknown, Arg>, 'mutationFn'>
 ): UseMutationResult<Data, unknown, Arg> {
-  const { api, invalidateQueryKeys } = mutationDescription
+  const { api } = mutationDescription
   const queryClient = useQueryClient()
 
   return useMutationOriginal(api, {
     ...options,
     onSuccess: async (data, arg, context) => {
       await options?.onSuccess?.(data, arg, context)
-      if (invalidateQueryKeys) {
-        for (const key of invalidateQueryKeys(arg)) {
-          await queryClient.invalidateQueries(key)
-        }
-      }
+      await invalidateDependencies(queryClient, mutationDescription, arg)
     }
   })
 }

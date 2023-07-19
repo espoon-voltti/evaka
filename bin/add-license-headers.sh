@@ -7,13 +7,12 @@
 set -euo pipefail
 
 # Configuration
-DEBUG=${DEBUG:-false}
-REUSE_VERSION=1.1.2
+REUSE_VERSION="2.1.0"
 REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
 
 REUSE_IMAGE="fsfe/reuse:${REUSE_VERSION}"
 
-if [ "$DEBUG" = "true" ]; then
+if [ "${DEBUG:-false}" = "true" ]; then
     set -x
 fi
 
@@ -46,7 +45,7 @@ function run_reuse() {
 
 function addheader() {
     local file="$1"
-    run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "$file"
+    run_reuse annotate --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "$file"
 }
 
 # MAIN SCRIPT
@@ -58,7 +57,7 @@ set -e
 
 # No need to continue if everything was OK, or we are just linting
 if [ "$REUSE_EXIT_CODE" = 0 ] || [ "${1:-X}" = "--lint-only" ]; then
-    echo "$REUSE_OUTPUT"
+    echo "OK - $REUSE_OUTPUT"
     exit "$REUSE_EXIT_CODE"
 fi
 
@@ -81,7 +80,7 @@ fi
 MISSING_LICENSES=($(echo "$REUSE_OUTPUT" | grep '^* Missing licenses:' | cut -d ' ' -f 4- | tr ', ' ' '))
 echo "${MISSING_LICENSES[@]}"
 for license in "${MISSING_LICENSES[@]}"; do
-    if [ -z "$license" ]; then
+    if [ -z "$license" ] || [ "$license" = "0" ]; then
         continue
     fi
 
@@ -93,7 +92,8 @@ done
 # Unfortunately reuse tool doesn't provide a machine-readable output currently,
 # so some ugly parsing is necessary.
 NONCOMPLIANT_FILES=$(echo "$REUSE_OUTPUT" \
-    | awk '/^$/ {next} /following/ {next} /MISSING COPYRIGHT AND LICENSING INFORMATION/{flag=1; next} /SUMMARY/{flag=0} flag' \
+    | awk '/following/{ f = 1; next } /SUMMARY/{ f = 0 } f' \
+    | grep -v -e '^$' \
     | cut -d' ' -f2-
 )
 

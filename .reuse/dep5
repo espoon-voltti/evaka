@@ -2,7 +2,7 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: evaka
 Source: https://github.com/espoon-voltti/evaka
 
-Files: .github/*
+Files: .github/PULL_REQUEST_TEMPLATE.md
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
 
@@ -35,14 +35,9 @@ License: BSD-2-Clause
 Files: **/src/main/resources/db/migration/*
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
-License: LGPL-2.1-or-later
 
 Files: .nvmrc
 Copyright: 2017-2022 City of Espoo
-License: LGPL-2.1-or-later
-
-Files: *.gitignore
-Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
 
 Files: *.yarnrc.yml

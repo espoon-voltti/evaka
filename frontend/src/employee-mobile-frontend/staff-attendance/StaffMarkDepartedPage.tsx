@@ -2,28 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isAfter } from 'date-fns'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatTime, isValidTime } from 'lib-common/date'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -40,9 +34,8 @@ import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
-import { postStaffDeparture } from './api'
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
-import { StaffAttendanceContext } from './state'
+import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkDepartedPage() {
@@ -60,9 +53,7 @@ export default React.memo(function StaffMarkDepartedPage() {
     reloadUnitInfo()
   }, [reloadUnitInfo])
 
-  const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
-    StaffAttendanceContext
-  )
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const staffMember = useMemo(
     () =>
@@ -73,16 +64,15 @@ export default React.memo(function StaffMarkDepartedPage() {
   )
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
-  const [time, setTime] = useState<string>(() =>
+  const [timeStr, setTimeStr] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
-  const [now, setNow] = useState<Date>(() => mockNow() ?? new Date())
+  const time = useMemo(() => LocalTime.tryParse(timeStr), [timeStr])
+
+  const [now, setNow] = useState(() => HelsinkiDateTime.now())
 
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
-
-  const isValidTimeString = (time: string) =>
-    LocalTime.tryParse(time) ? true : false
 
   const staffInfo = useMemo(
     () =>
@@ -102,8 +92,22 @@ export default React.memo(function StaffMarkDepartedPage() {
         const attendanceId = staffMember?.attendances.find(
           ({ departed }) => departed === null
         )?.id
+        const latestCurrentDayAttendance =
+          staffMember?.latestCurrentDayAttendance
+        const latestCurrentDayArrival =
+          latestCurrentDayAttendance &&
+          latestCurrentDayAttendance.arrived
+            .toLocalDate()
+            .isEqual(LocalDate.todayInHelsinkiTz())
+            ? latestCurrentDayAttendance.arrived.toLocalTime()
+            : undefined
         const groupId = staffMember?.latestCurrentDayAttendance?.groupId
-        return { staffMember, attendanceId, groupId }
+        return {
+          staffMember,
+          attendanceId,
+          groupId,
+          latestCurrentDayArrival
+        }
       }),
     [employeeId, staffAttendanceResponse]
   )
@@ -122,11 +126,7 @@ export default React.memo(function StaffMarkDepartedPage() {
 
   const timeInFuture = useMemo(
     () =>
-      isValidTime(time) &&
-      isAfter(
-        HelsinkiDateTime.now().withTime(LocalTime.parse(time)).toSystemTzDate(),
-        now
-      ),
+      time !== undefined && HelsinkiDateTime.now().withTime(time).isAfter(now),
     [time, now]
   )
 
@@ -134,11 +134,10 @@ export default React.memo(function StaffMarkDepartedPage() {
     () =>
       staffMember
         .map((staff) => {
-          const parsedTime = LocalTime.tryParse(time)
-          if (!parsedTime || !staff?.spanningPlan) return []
+          if (time === undefined || !staff?.spanningPlan) return []
           const departed = HelsinkiDateTime.fromLocal(
             LocalDate.todayInHelsinkiTz(),
-            parsedTime
+            time
           )
           return getAttendanceDepartureDifferenceReasons(
             staff.spanningPlan.end,
@@ -148,22 +147,6 @@ export default React.memo(function StaffMarkDepartedPage() {
         .getOrElse([]),
     [staffMember, time]
   )
-
-  const confirm = useCallback(() => {
-    const groupId = memberAttendance
-      .map(({ groupId }) => groupId)
-      .getOrElse(undefined)
-
-    return groupId
-      ? postStaffDeparture({
-          employeeId,
-          groupId,
-          time: LocalTime.parse(time),
-          pinCode: pinCode.join(''),
-          type: attendanceType ?? null
-        })
-      : undefined
-  }, [memberAttendance, employeeId, time, pinCode, attendanceType])
 
   return (
     <TallContentArea
@@ -184,7 +167,10 @@ export default React.memo(function StaffMarkDepartedPage() {
       >
         {renderResult(
           combine(staffInfo, memberAttendance),
-          ([{ pinSet, pinLocked }, { staffMember, attendanceId }]) => {
+          ([
+            { pinSet, pinLocked },
+            { staffMember, attendanceId, latestCurrentDayArrival }
+          ]) => {
             if (staffMember === undefined) {
               return (
                 <Navigate
@@ -202,11 +188,19 @@ export default React.memo(function StaffMarkDepartedPage() {
               )
             }
 
+            const timeBeforeLastArrival =
+              latestCurrentDayArrival !== undefined &&
+              time !== undefined &&
+              latestCurrentDayArrival.isEqualOrAfter(time)
+                ? latestCurrentDayArrival
+                : undefined
+
             const confirmDisabled =
               pinLocked ||
               !pinSet ||
-              !isValidTimeString(time) ||
+              time === undefined ||
               timeInFuture ||
+              timeBeforeLastArrival !== undefined ||
               pinCode.join('').trim().length < 4
 
             return (
@@ -230,16 +224,16 @@ export default React.memo(function StaffMarkDepartedPage() {
                 <TimeWrapper>
                   <CustomTitle>{i18n.attendances.departureTime}</CustomTitle>
                   <TimeInput
-                    onChange={setTime}
-                    onFocus={() => setNow(mockNow() ?? new Date())}
-                    value={time}
+                    onChange={setTimeStr}
+                    onFocus={() => setNow(HelsinkiDateTime.now())}
+                    value={timeStr}
                     data-qa="set-time"
                     info={
                       timeInFuture
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateLte(
-                              formatTime(now)
+                              now.toLocalTime().format()
                             )
                           }
                         : undefined
@@ -250,6 +244,16 @@ export default React.memo(function StaffMarkDepartedPage() {
                       <InfoBox
                         message={i18n.attendances.departureCannotBeDoneInFuture}
                         data-qa="departure-cannot-be-done-in-future-notification"
+                      />
+                    </InfoBoxWrapper>
+                  )}
+                  {timeBeforeLastArrival && (
+                    <InfoBoxWrapper>
+                      <InfoBox
+                        message={i18n.attendances.departureIsBeforeArrival(
+                          timeBeforeLastArrival.format()
+                        )}
+                        data-qa="departure-before-arrival-notification"
                       />
                     </InfoBoxWrapper>
                   )}
@@ -270,13 +274,32 @@ export default React.memo(function StaffMarkDepartedPage() {
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />
-                    <AsyncButton
+                    <MutateButton
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}
-                      onClick={confirm}
+                      mutation={staffDepartureMutation}
+                      onClick={() => {
+                        const groupId = memberAttendance
+                          .map(({ groupId }) => groupId)
+                          .getOrElse(undefined)
+
+                        if (groupId && time !== undefined) {
+                          return {
+                            unitId,
+                            request: {
+                              employeeId,
+                              groupId,
+                              time,
+                              pinCode: pinCode.join(''),
+                              type: attendanceType ?? null
+                            }
+                          }
+                        } else {
+                          return cancelMutation
+                        }
+                      }}
                       onSuccess={() => {
-                        reloadStaffAttendance()
                         history.go(-1)
                       }}
                       onFailure={(res) => {
