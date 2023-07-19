@@ -24,6 +24,7 @@ import { useTranslation } from '../../state/i18n'
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' &&
   !(
+    applicationStatus === 'WAITING_DECISION' ||
     applicationStatus === 'WAITING_MAILING' ||
     applicationStatus === 'WAITING_UNIT_CONFIRMATION'
   )
