@@ -2,18 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
+import { boolean, localDate, optionalLocalDate } from 'lib-common/form/fields'
+import { object } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -22,54 +21,37 @@ import {
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { featureFlags } from 'lib-customizations/employee'
 
-import {
-  getMissingHeadOfFamilyReport,
-  MissingHeadOfFamilyReportFilters
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { distinct } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+import { missingHeadOfFamilyReportQuery } from './queries'
 
-interface DisplayFilters {
-  careArea: string
-}
-
-const emptyDisplayFilters: DisplayFilters = {
-  careArea: ''
-}
-
-const Wrapper = styled.div`
-  width: 100%;
-`
+const filterForm = object({
+  startDate: localDate,
+  endDate: optionalLocalDate,
+  showFosterChildren: boolean(),
+  showIntentionalDuplicates: boolean()
+})
 
 export default React.memo(function MissingHeadOfFamily() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<MissingHeadOfFamilyReportRow[]>>(
-    Loading.of()
+
+  const filters = useForm(
+    filterForm,
+    () => ({
+      startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
+      endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth(),
+      showFosterChildren: false,
+      showIntentionalDuplicates: false
+    }),
+    i18n.validationErrors
   )
-  const [filters, setFilters] = useState<MissingHeadOfFamilyReportFilters>({
-    startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
-    endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth(),
-    showIntentionalDuplicates: false
-  })
+  const { startDate, endDate, showFosterChildren, showIntentionalDuplicates } =
+    useFormFields(filters)
 
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: MissingHeadOfFamilyReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
-
-  useEffect(() => {
-    setRows(Loading.of())
-    setDisplayFilters(emptyDisplayFilters)
-    void getMissingHeadOfFamilyReport(filters).then(setRows)
-  }, [filters])
-
-  const filteredRows: MissingHeadOfFamilyReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
-  )
+  const rows = useQueryResult(missingHeadOfFamilyReportQuery(filters.value()))
 
   return (
     <Container>
@@ -80,98 +62,72 @@ export default React.memo(function MissingHeadOfFamily() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
           <DatePickerDeprecated
-            date={filters.startDate}
-            onChange={(startDate) => setFilters({ ...filters, startDate })}
+            date={startDate.state ?? undefined}
+            onChange={startDate.set}
           />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
           <DatePickerClearableDeprecated
-            date={filters.endDate}
-            onChange={(endDate) => setFilters({ ...filters, endDate })}
-            onCleared={() => setFilters({ ...filters, endDate: null })}
+            date={endDate.state ?? undefined}
+            onChange={endDate.set}
+            onCleared={() => endDate.set(null)}
           />
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={[
-                { value: '', label: i18n.common.all },
-                ...rows
-                  .map((rs) =>
-                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
-                      value: s,
-                      label: s
-                    }))
-                  )
-                  .getOrElse([])
-              ]}
-              onChange={(option) =>
-                option
-                  ? setDisplayFilters({
-                      ...displayFilters,
-                      careArea: option.value
-                    })
-                  : undefined
-              }
-              selectedItem={
-                displayFilters.careArea !== ''
-                  ? {
-                      label: displayFilters.careArea,
-                      value: displayFilters.careArea
-                    }
-                  : {
-                      label: i18n.common.all,
-                      value: ''
-                    }
-              }
-              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
-              getItemLabel={(item) => item.label}
-            />
-          </Wrapper>
+          <FilterLabel />
+          <CheckboxF
+            bind={showFosterChildren}
+            label={i18n.reports.missingHeadOfFamily.showFosterChildren}
+            data-qa="show-foster-children-checkbox"
+          />
         </FilterRow>
 
         {featureFlags.experimental?.personDuplicate && (
           <FilterRow>
             <FilterLabel />
-            <Checkbox
-              onChange={(checkedValue) =>
-                setFilters({
-                  ...filters,
-                  showIntentionalDuplicates: checkedValue
-                })
-              }
+            <CheckboxF
+              bind={showIntentionalDuplicates}
               label={i18n.reports.common.filters.showIntentionalDuplicates}
-              checked={filters.showIntentionalDuplicates}
               data-qa="show-intentional-duplicates-checkbox"
             />
           </FilterRow>
         )}
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(rows, (rows) => (
           <>
             <ReportDownload
-              data={filteredRows}
+              data={rows.map((row) => ({
+                ...row,
+                rangesWithoutHead: row.rangesWithoutHead
+                  .map((range) => range.format())
+                  .join(', ')
+              }))}
               headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikön nimi', key: 'unitName' },
-                { label: 'Lapsen sukunimi', key: 'lastName' },
-                { label: 'Lapsen etunimi', key: 'firstName' },
-                { label: 'Puutteellisia päiviä', key: 'daysWithoutHead' }
+                {
+                  label: i18n.reports.missingHeadOfFamily.childLastName,
+                  key: 'lastName'
+                },
+                {
+                  label: i18n.reports.missingHeadOfFamily.childFirstName,
+                  key: 'firstName'
+                },
+                {
+                  label:
+                    i18n.reports.missingHeadOfFamily.daysWithoutHeadOfFamily,
+                  key: 'rangesWithoutHead'
+                }
               ]}
-              filename={`Puuttuvat päämiehet ${filters.startDate.formatIso()}-${
-                filters.endDate?.formatIso() ?? ''
+              filename={`Puuttuvat päämiehet ${filters
+                .value()
+                .startDate.formatIso()}-${
+                filters.value().endDate?.formatIso() ?? ''
               }.csv`}
             />
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
-                  <Th>{i18n.reports.common.unitName}</Th>
                   <Th>{i18n.reports.common.childName}</Th>
                   <Th>
                     {i18n.reports.missingHeadOfFamily.daysWithoutHeadOfFamily}
@@ -179,28 +135,25 @@ export default React.memo(function MissingHeadOfFamily() {
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredRows.map((row: MissingHeadOfFamilyReportRow) => (
-                  <Tr
-                    data-qa="missing-head-of-family-row"
-                    key={`${row.unitId}:${row.childId}`}
-                  >
-                    <Td data-qa="area-name">{row.careAreaName}</Td>
-                    <Td data-qa="unit-name">
-                      <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Td>
+                {rows.map((row) => (
+                  <Tr data-qa="missing-head-of-family-row" key={row.childId}>
                     <Td data-qa="child-name">
                       <Link to={`/child-information/${row.childId}`}>
                         {row.lastName} {row.firstName}
                       </Link>
                     </Td>
-                    <Td data-qa="days-without-head">{row.daysWithoutHead}</Td>
+                    <Td data-qa="ranges-without-head">
+                      {row.rangesWithoutHead
+                        .map((range) => range.format())
+                        .join(', ')}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>
             </TableScrollable>
-            <RowCountInfo rowCount={filteredRows.length} />
+            <RowCountInfo rowCount={rows.length} />
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

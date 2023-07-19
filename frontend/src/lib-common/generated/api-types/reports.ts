@@ -320,13 +320,10 @@ export type ManualDuplicationReportViewMode =
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
-  careAreaName: string
   childId: UUID
-  daysWithoutHead: number
-  firstName: string | null
-  lastName: string | null
-  unitId: UUID
-  unitName: string
+  firstName: string
+  lastName: string
+  rangesWithoutHead: FiniteDateRange[]
 }
 
 /**

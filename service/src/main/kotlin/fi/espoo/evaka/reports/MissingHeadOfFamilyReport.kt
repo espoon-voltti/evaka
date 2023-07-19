@@ -8,10 +8,14 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -31,6 +35,8 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
+        @RequestParam("showFosterChildren", required = false, defaultValue = "false")
+        showFosterChildren: Boolean,
         @RequestParam("showIntentionalDuplicates", required = false, defaultValue = "false")
         showIntentionalDuplicates: Boolean
     ): List<MissingHeadOfFamilyReportRow> {
@@ -44,7 +50,13 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
                             Action.Unit.READ_MISSING_HEAD_OF_FAMILY_REPORT
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getMissingHeadOfFamilyRows(from, to, showIntentionalDuplicates, filter)
+                    it.getMissingHeadOfFamilyRows(
+                        from = from,
+                        to = to,
+                        includeFosterChildren = showFosterChildren,
+                        includeIntentionalDuplicates = showIntentionalDuplicates,
+                        idFilter = filter
+                    )
                 }
             }
             .also {
@@ -58,64 +70,69 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
-    showIntentionalDuplicates: Boolean,
+    includeFosterChildren: Boolean,
+    includeIntentionalDuplicates: Boolean,
     idFilter: AccessControlFilter<DaycareId>
 ): List<MissingHeadOfFamilyReportRow> =
     createQuery<DatabaseTable> {
             val dateRange = DateRange(from, to)
+            val duplicateFilter: Predicate<DatabaseTable.Person> =
+                if (includeIntentionalDuplicates) Predicate.alwaysTrue()
+                else Predicate { where("$it.duplicate_of IS NULL") }
+            val fosterPredicate: Predicate<DatabaseTable.FosterParent> =
+                if (includeFosterChildren) Predicate.alwaysFalse() else Predicate.alwaysTrue()
             sql(
                 """
-        SELECT 
-            ca.name AS care_area_name, daycare.name AS unit_name, unit_id,
-            child_id, first_name, last_name, sum(days_without_head) AS days_without_head
-        FROM (
-          SELECT DISTINCT
-            child_id,
-            unit_id,
-            days - days_with_head AS days_without_head
-          FROM (
-            SELECT
-              pl.child_id,
-              pl.unit_id,
-              days_in_range(pl.period) AS days,
-              coalesce(sum(days_in_range(pl.period * sn.period)) OVER w, 0) AS days_with_head
-            FROM (
-              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * ${bind(dateRange)} AS period
-              FROM placement
-              WHERE placement.type != 'CLUB'::placement_type
-            ) AS pl
-            LEFT JOIN (
-              SELECT child_id, daterange(start_date, end_date, '[]') * ${bind(dateRange)} AS period
-              FROM fridge_child
-              WHERE conflict = FALSE
-            ) AS sn
-            ON pl.child_id = sn.child_id
-            AND pl.period && sn.period
-            WINDOW w AS (PARTITION BY (pl.id))
-          ) AS stats
-          WHERE days - days_with_head > 0
-        ) results
-        JOIN person ON person.id = child_id
-        JOIN daycare ON daycare.id = unit_id
-        JOIN care_area ca ON ca.id = daycare.care_area_id
-        WHERE person.date_of_death IS NULL
-        AND ${predicate(idFilter.forTable("daycare"))}
-        AND (${bind(showIntentionalDuplicates)} IS TRUE OR duplicate_of IS NULL)
-        GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
-        ORDER BY ca.name, daycare.name, last_name, first_name
+SELECT child_id, first_name, last_name, without_head
+FROM (
+    SELECT
+        p.id AS child_id,
+        p.first_name,
+        p.last_name,
+        -- all placement days
+        range_agg(daterange(pl.start_date, pl.end_date, '[]') * ${bind(dateRange)})
+        -- remove days with head of family
+        - coalesce(range_agg(fc.valid_during), '{}')
+        -- remove days with foster parent
+        - coalesce(range_agg(fp.valid_during), '{}')
+        AS without_head
+    FROM person p
+    JOIN child c ON c.id = p.id
+    JOIN placement pl ON pl.child_id = p.id
+    JOIN daycare u ON u.id = pl.unit_id
+    LEFT JOIN (
+        -- convert start/end to daterange before join to avoid infinite date ranges in the outer query
+        SELECT child_id, conflict, daterange(start_date, end_date, '[]') AS valid_during
+        FROM fridge_child
+        WHERE conflict = false
+    ) fc ON fc.child_id = p.id AND fc.valid_during && ${bind(dateRange)}
+    LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during && ${bind(dateRange)} AND ${predicate(fosterPredicate.forTable("fp"))}
+    WHERE
+        ${predicate(idFilter.forTable("u"))} AND
+        ${predicate(duplicateFilter.forTable("p"))} AND
+        p.date_of_death IS NULL AND
+        daterange(pl.start_date, pl.end_date, '[]') && ${bind(dateRange)} AND
+        pl.type <> 'CLUB'
+    GROUP BY p.id, p.first_name, p.last_name
+) s
+WHERE NOT isempty(without_head)
+ORDER BY last_name, first_name
         """
-                    .trimIndent()
             )
         }
-        .mapTo<MissingHeadOfFamilyReportRow>()
+        .map { row ->
+            MissingHeadOfFamilyReportRow(
+                childId = row.mapColumn("child_id"),
+                firstName = row.mapColumn("first_name"),
+                lastName = row.mapColumn("last_name"),
+                rangesWithoutHead = row.mapColumn<Timeline>("without_head").ranges().toList(),
+            )
+        }
         .toList()
 
 data class MissingHeadOfFamilyReportRow(
-    val careAreaName: String,
-    val unitId: DaycareId,
-    val unitName: String,
     val childId: ChildId,
-    val firstName: String?,
-    val lastName: String?,
-    val daysWithoutHead: Int
+    val firstName: String,
+    val lastName: String,
+    val rangesWithoutHead: List<FiniteDateRange>
 )
