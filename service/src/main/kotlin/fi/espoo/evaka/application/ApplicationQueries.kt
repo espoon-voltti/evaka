@@ -1139,15 +1139,16 @@ fun Database.Transaction.removeOldDrafts(
     clock: EvakaClock,
     deleteAttachment: (db: Database.Transaction, id: AttachmentId) -> Unit
 ) {
-    val thresholdDays = 31
+    // ~2 months
+    val thresholdDays = 60
 
     // language=SQL
     val applicationIds =
-        createQuery(
-                """SELECT id FROM application WHERE status = 'CREATED' AND created < :today - :thresholdDays"""
-            )
-            .bind("today", clock.today())
-            .bind("thresholdDays", thresholdDays)
+        createQuery<DatabaseTable> {
+                sql(
+                    "SELECT id FROM application WHERE status = 'CREATED' AND created < ${bind(clock.today())} - ${bind(thresholdDays)}"
+                )
+            }
             .mapTo<ApplicationId>()
             .toList()
 
