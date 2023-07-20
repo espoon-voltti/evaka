@@ -11,6 +11,7 @@ export type QueryKeyPrefix =
   | 'childInformation'
   | 'documentTemplates'
   | 'holidayPeriods'
+  | 'reports'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

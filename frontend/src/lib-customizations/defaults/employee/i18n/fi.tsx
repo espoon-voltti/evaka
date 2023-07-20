@@ -3362,7 +3362,10 @@ export const fi = {
       title: 'Puuttuvat päämiehet',
       description:
         'Raportti listaa lapset, joiden nykyisen sijoituksen ajalta puuttuu tieto päämiehestä.',
-      daysWithoutHeadOfFamily: 'Puutteellisia päiviä'
+      childLastName: 'Lapsen sukunimi',
+      childFirstName: 'Lapsen etunimi',
+      showFosterChildren: 'Näytä myös sijaislapset',
+      daysWithoutHeadOfFamily: 'Puutteelliset päivät'
     },
     missingServiceNeed: {
       title: 'Puuttuvat palveluntarpeet',
