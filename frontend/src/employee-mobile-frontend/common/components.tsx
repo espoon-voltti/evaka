@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
 import {
   defaultMargins,
@@ -16,7 +17,7 @@ import {
 } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-export const WideAsyncButton = styled(AsyncButton)`
+const wideButtonCss = css`
   @media screen and (max-width: 1023px) {
     margin-bottom: ${defaultMargins.s};
     width: 100%;
@@ -24,6 +25,14 @@ export const WideAsyncButton = styled(AsyncButton)`
     height: 64px;
   }
 `
+
+export const WideAsyncButton = styled(AsyncButton)`
+  ${wideButtonCss}
+`
+
+export const WideMutateButton = styled(MutateButton)`
+  ${wideButtonCss}
+` as typeof MutateButton
 
 export const InlineWideAsyncButton = styled(WideAsyncButton)`
   border: none;
