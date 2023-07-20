@@ -329,56 +329,20 @@ class VasuController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 events.forEach { eventType ->
-                    when (eventType) {
-                        PUBLISHED ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.VasuDocument.EVENT_PUBLISHED,
-                                id
-                            )
-                        MOVED_TO_READY ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.VasuDocument.EVENT_MOVED_TO_READY,
-                                id
-                            )
-                        RETURNED_TO_READY ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.VasuDocument.EVENT_RETURNED_TO_READY,
-                                id
-                            )
-                        MOVED_TO_REVIEWED ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.VasuDocument.EVENT_MOVED_TO_REVIEWED,
-                                id
-                            )
-                        RETURNED_TO_REVIEWED ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED,
-                                id
-                            )
-                        MOVED_TO_CLOSED ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.VasuDocument.EVENT_MOVED_TO_CLOSED,
-                                id
-                            )
-                    }.exhaust()
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        when (eventType) {
+                            PUBLISHED -> Action.VasuDocument.EVENT_PUBLISHED
+                            MOVED_TO_READY -> Action.VasuDocument.EVENT_MOVED_TO_READY
+                            RETURNED_TO_READY -> Action.VasuDocument.EVENT_RETURNED_TO_READY
+                            MOVED_TO_REVIEWED -> Action.VasuDocument.EVENT_MOVED_TO_REVIEWED
+                            RETURNED_TO_REVIEWED -> Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED
+                            MOVED_TO_CLOSED -> Action.VasuDocument.EVENT_MOVED_TO_CLOSED
+                        },
+                        id
+                    )
                 }
 
                 val document =
