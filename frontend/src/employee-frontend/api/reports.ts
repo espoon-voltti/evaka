@@ -20,6 +20,7 @@ import {
   EndedPlacementsReportRow,
   FamilyConflictReportRow,
   FamilyContactReportRow,
+  FamilyDaycareMealReportResult,
   InvoiceReport,
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode,
@@ -687,4 +688,31 @@ export async function getManualDuplicationReport(
       )
     )
     .catch((e) => Failure.fromError(e))
+}
+
+export async function getFamilyDaycareMealCountReport(
+  filters: FamilyDaycareMealCountReportFilters
+): Promise<Result<FamilyDaycareMealReportResult>> {
+  if (filters.startDate > filters.endDate) {
+    return Failure.of<FamilyDaycareMealReportResult>({
+      message: 'Start date after end date'
+    })
+  }
+  return client
+    .get<JsonOf<FamilyDaycareMealReportResult>>(
+      `/reports/family-daycare-meal-count`,
+      {
+        params: {
+          startDate: filters.startDate.formatIso(),
+          endDate: filters.endDate.formatIso()
+        }
+      }
+    )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface FamilyDaycareMealCountReportFilters {
+  startDate: LocalDate
+  endDate: LocalDate
 }

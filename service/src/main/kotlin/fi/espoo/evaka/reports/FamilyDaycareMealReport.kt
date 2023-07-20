@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FamilyDaycareMealReport(private val accessControl: AccessControl) {
-    @GetMapping("/reports/family-daycare-meal-report")
+    @GetMapping("/reports/family-daycare-meal-count")
     fun getFamilyDaycareMealReport(
         db: Database,
         user: AuthenticatedUser,
@@ -31,6 +32,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     ): FamilyDaycareMealReportResult {
+        if (endDate < startDate) throw BadRequest("Start date must be before or equal to end date")
         return db.connect { dbc ->
                 dbc.read {
                     val filter =
@@ -64,9 +66,9 @@ select a.id                                                          as area_id,
        p.id                                                          as child_id,
        p.first_name,
        p.last_name,
-       sum(case when day_count.breakfastCount > 0 then 1 else 0 end) as breakfastCount,
-       sum(case when day_count.lunchCount > 0 then 1 else 0 end)     as lunchCount,
-       sum(case when day_count.snackCount > 0 then 1 else 0 end)     as snackCount
+       coalesce(sum(case when day_count.breakfastCount > 0 then 1 else 0 end), 0) as breakfastCount,
+       coalesce(sum(case when day_count.lunchCount > 0 then 1 else 0 end), 0)     as lunchCount,
+       coalesce(sum(case when day_count.snackCount > 0 then 1 else 0 end), 0)     as snackCount
 from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') day
          join LATERAL (
     select ca.child_id,
@@ -100,7 +102,7 @@ from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') 
          join care_area a on d.care_area_id = a.id
          join person p on p.id = day_count.child_id
 GROUP BY ROLLUP ((a.id, a.name), (d.id, d.name), (p.id, p.first_name, p.last_name))
-ORDER BY a.name, d.name, p.last_name, p.first_name ASC;
+ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
 
             """
                             .trimIndent()
