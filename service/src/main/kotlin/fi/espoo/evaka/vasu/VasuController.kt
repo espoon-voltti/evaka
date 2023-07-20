@@ -30,6 +30,7 @@ import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_REVIEWED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.PUBLISHED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -422,5 +423,25 @@ class VasuController(
             }
             .exhaust()
             .let { valid -> if (!valid) throw Conflict("Invalid state transition") }
+    }
+
+    @DeleteMapping("/vasu/{id}")
+    fun deleteDocument(
+        dbc: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: VasuDocumentId,
+    ) {
+        dbc.connect { db ->
+            db.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.VasuDocument.DELETE, id)
+                val doc = tx.getVasuDocumentMaster(clock.today(), id) ?: throw NotFound()
+                if (doc.publishedAt != null || doc.documentState != VasuDocumentState.DRAFT) {
+                    throw Conflict("Cannot delete non-draft document")
+                }
+                tx.deleteVasuDocument(id)
+            }
+        }
+        Audit.VasuDocumentDelete.log(targetId = id)
     }
 }

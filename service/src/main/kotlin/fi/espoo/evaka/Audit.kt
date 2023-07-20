@@ -421,6 +421,7 @@ enum class Audit(
     VasuDocumentReadByGuardian,
     VasuDocumentGivePermissionToShareByGuardian,
     VasuDocumentUpdate,
+    VasuDocumentDelete,
     VasuDocumentEventCreate,
     VasuTemplateCreate,
     VasuTemplateCopy,

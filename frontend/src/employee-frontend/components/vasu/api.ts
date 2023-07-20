@@ -4,7 +4,6 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
 import {
   UpdateDocumentRequest,
   VasuDocumentEvent,
@@ -76,32 +75,29 @@ export async function createVasuDocument(
 
 export async function getVasuDocumentSummaries(
   childId: UUID
-): Promise<Result<VasuDocumentSummaryWithPermittedActions[]>> {
+): Promise<VasuDocumentSummaryWithPermittedActions[]> {
   return client
     .get<JsonOf<VasuDocumentSummaryWithPermittedActions[]>>(
       `/children/${childId}/vasu-summaries`
     )
     .then((res) =>
-      Success.of(
-        res.data.map(
-          ({
-            data: { events, modifiedAt, publishedAt, ...rest },
-            permittedActions
-          }) => ({
-            data: {
-              ...rest,
-              events: events.map(mapVasuDocumentEvent),
-              modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
-              publishedAt: publishedAt
-                ? HelsinkiDateTime.parseIso(publishedAt)
-                : null
-            },
-            permittedActions
-          })
-        )
+      res.data.map(
+        ({
+          data: { events, modifiedAt, publishedAt, ...rest },
+          permittedActions
+        }) => ({
+          data: {
+            ...rest,
+            events: events.map(mapVasuDocumentEvent),
+            modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+            publishedAt: publishedAt
+              ? HelsinkiDateTime.parseIso(publishedAt)
+              : null
+          },
+          permittedActions
+        })
       )
     )
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function getVasuDocument(
@@ -110,15 +106,6 @@ export async function getVasuDocument(
   return client
     .get<JsonOf<VasuDocumentWithPermittedActions>>(`/vasu/${id}`)
     .then((res) => Success.of(mapVasuDocumentResponse(res.data)))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function getPermittedActions(
-  id: UUID
-): Promise<Result<Action.VasuDocument[]>> {
-  return client
-    .get<JsonOf<Action.VasuDocument[]>>(`/vasu/${id}/permitted-actions`)
-    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -140,16 +127,20 @@ export async function putVasuDocument({
     .catch((e) => Failure.fromError(e))
 }
 
-interface UpdateDocumentStateParams {
+export interface UpdateDocumentStateParams {
   documentId: UUID
   eventType: VasuDocumentEventType
 }
+
 export async function updateDocumentState({
   documentId,
   eventType
-}: UpdateDocumentStateParams): Promise<Result<null>> {
+}: UpdateDocumentStateParams): Promise<void> {
   return client
     .post(`/vasu/${documentId}/update-state`, { eventType })
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
+}
+
+export async function deleteVasuDocument(documentId: UUID): Promise<void> {
+  return client.delete(`/vasu/${documentId}`).then(() => undefined)
 }

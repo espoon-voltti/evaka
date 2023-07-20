@@ -4,6 +4,7 @@
 
 import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { useCallback } from 'react'
+import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { invalidateDependencies, MutationDescription } from 'lib-common/query'
@@ -57,3 +58,10 @@ function MutateButton<Arg, Data, Key extends QueryKey>({
 }
 
 export default React.memo(MutateButton) as typeof MutateButton
+
+export const InlineMutateButton = styled(MutateButton)`
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  border: none;
+` as typeof MutateButton

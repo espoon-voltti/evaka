@@ -465,3 +465,11 @@ SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @>
         .bind("userId", userId)
         .mapTo<ChildId>()
         .toList()
+
+fun Database.Transaction.deleteVasuDocument(id: VasuDocumentId) {
+    createUpdate("DELETE FROM curriculum_content WHERE document_id = :id").bind("id", id).execute()
+    createUpdate("DELETE FROM curriculum_document_event WHERE curriculum_document_id = :id")
+        .bind("id", id)
+        .execute()
+    createUpdate("DELETE FROM curriculum_document WHERE id = :id").bind("id", id).execute()
+}
