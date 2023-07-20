@@ -38,7 +38,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { RequireRole } from '../../utils/roles'
 import { renderResult, UnwrapResult } from '../async-rendering'
 import { VasuStateChip } from '../common/VasuStateChip'
 import {
@@ -299,7 +298,7 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                 </StateCell>
                 <Td>
                   {vasu.documentState === 'CLOSED' ? (
-                    <RequireRole oneOf={['ADMIN']}>
+                    permittedActions.includes('EVENT_RETURNED_TO_REVIEWED') ? (
                       <InlineButton
                         onClick={() =>
                           void updateDocumentState({
@@ -311,7 +310,7 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                           i18n.vasu.transitions.RETURNED_TO_REVIEWED.buttonText
                         }
                       />
-                    </RequireRole>
+                    ) : null
                   ) : (
                     <InlineButton
                       onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
