@@ -14,15 +14,16 @@ import { Loading, Result, Success } from 'lib-common/api'
 import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
 import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import {
-  getDaycare,
   getDaycareAclRows,
   getUnitNotifications,
   UnitResponse
 } from '../api/unit'
+import { unitQuery } from '../components/unit/queries'
 import { UnitFilters } from '../utils/UnitFilters'
 
 export interface UnitState {
@@ -57,7 +58,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children: JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)
-  const [unitInformation] = useApiState(() => getDaycare(id), [id])
+  const unitInformation = useQueryResult(unitQuery(id))
   const [unitNotifications, reloadUnitNotifications] = useApiState(
     () => getUnitNotifications(id),
     [id]

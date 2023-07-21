@@ -196,13 +196,12 @@ export async function getFamilyConflictsReport(): Promise<
 
 export async function getFamilyContactsReport(
   unitId: UUID
-): Promise<Result<FamilyContactReportRow[]>> {
+): Promise<FamilyContactReportRow[]> {
   return client
     .get<JsonOf<FamilyContactReportRow[]>>('/reports/family-contacts', {
       params: { unitId }
     })
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function getPartnersInDifferentAddressReport(): Promise<

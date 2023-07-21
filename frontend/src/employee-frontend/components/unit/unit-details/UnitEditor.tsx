@@ -10,7 +10,6 @@ import {
   TimeRangeInput
 } from 'employee-frontend/components/child-information/daily-service-times/DailyServiceTimesForms'
 import { DayOfWeek } from 'employee-frontend/types'
-import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { time } from 'lib-common/form-validation'
@@ -24,8 +23,6 @@ import {
 import { Coordinate, TimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -296,10 +293,11 @@ interface Props {
   financeDecisionHandlerOptions: FinanceDecisionHandlerOption[]
   unit?: Unit
   editable: boolean
-  onClickCancel?: () => void
   onClickEdit?: () => void
-  onSubmit: (fields: DaycareFields, id: UUID | undefined) => void
-  submit: Result<void> | undefined
+  children: (
+    getFormData: () => DaycareFields | undefined,
+    isValid: boolean
+  ) => React.ReactNode
 }
 
 function validateTimeRange(
@@ -663,7 +661,7 @@ function toFormData(unit: Unit | undefined): FormData {
   }
 }
 
-export default function UnitEditor(props: Props): JSX.Element {
+export default function UnitEditor(props: Props) {
   const { i18n } = useTranslation()
   const initialData = useMemo<FormData>(
     () => toFormData(props.unit),
@@ -726,12 +724,13 @@ export default function UnitEditor(props: Props): JSX.Element {
     [form.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
-  const onClickSubmit = (e: React.MouseEvent) => {
-    e.preventDefault()
+  const getFormData = () => {
     const [fields, errors] = validateForm(i18n, form)
     setValidationErrors(errors)
     if (fields && checkFormValidation()) {
-      props.onSubmit(fields, props.unit?.id)
+      return fields
+    } else {
+      return undefined
     }
   }
 
@@ -741,7 +740,6 @@ export default function UnitEditor(props: Props): JSX.Element {
     if (props.onClickEdit) props.onClickEdit()
   }
 
-  const isNewUnit = !props.unit
   const showRequired = props.editable
     ? (label: string) => `${label}*`
     : (label: string) => label
@@ -770,7 +768,7 @@ export default function UnitEditor(props: Props): JSX.Element {
           )}
         </TopBar>
       )}
-      {isNewUnit && <H1>{i18n.titles.createUnit}</H1>}
+      {!props.unit && <H1>{i18n.titles.createUnit}</H1>}
       <H3>{i18n.unit.info.title}</H3>
       <FormPart>
         <label htmlFor="unit-name">
@@ -1587,22 +1585,8 @@ export default function UnitEditor(props: Props): JSX.Element {
             ))}
           </>
           <FixedSpaceRow>
-            <Button
-              onClick={() =>
-                props.onClickCancel ? props.onClickCancel() : undefined
-              }
-              disabled={props.submit?.isLoading}
-              text={i18n.common.cancel}
-            />
-            <Button
-              primary
-              type="submit"
-              onClick={(e) => onClickSubmit(e)}
-              disabled={props.submit?.isLoading || !checkFormValidation()}
-              text={isNewUnit ? i18n.unitEditor.submitNew : i18n.common.save}
-            />
+            {props.children(getFormData, checkFormValidation())}
           </FixedSpaceRow>
-          {props.submit?.isFailure && <div>{i18n.common.error.unknown}</div>}
         </>
       )}
     </form>

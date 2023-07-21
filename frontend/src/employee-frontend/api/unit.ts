@@ -106,22 +106,19 @@ export interface UnitResponse {
   permittedActions: Set<Action.Unit>
 }
 
-export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
+export async function getDaycare(id: UUID): Promise<UnitResponse> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
-    .then(({ data }) =>
-      Success.of({
-        daycare: convertUnitJson(data.daycare),
-        groups: data.groups.map(({ id, name, endDate, permittedActions }) => ({
-          id,
-          name,
-          endDate: LocalDate.parseNullableIso(endDate),
-          permittedActions: new Set(permittedActions)
-        })),
-        permittedActions: new Set(data.permittedActions)
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => ({
+      daycare: convertUnitJson(data.daycare),
+      groups: data.groups.map(({ id, name, endDate, permittedActions }) => ({
+        id,
+        name,
+        endDate: LocalDate.parseNullableIso(endDate),
+        permittedActions: new Set(permittedActions)
+      })),
+      permittedActions: new Set(data.permittedActions)
+    }))
 }
 
 export function getUnitNotifications(
@@ -775,23 +772,22 @@ export async function getPairingStatus(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function createDaycare(
-  fields: DaycareFields
-): Promise<Result<UUID>> {
+export async function createDaycare(fields: DaycareFields): Promise<UUID> {
   return client
     .post<JsonOf<CreateDaycareResponse>>('/daycares', fields)
-    .then(({ data }) => Success.of(data.id))
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => data.id)
 }
 
-export async function updateDaycare(
-  id: UUID,
+export async function updateDaycare({
+  id,
+  fields
+}: {
+  id: UUID
   fields: DaycareFields
-): Promise<Result<Unit>> {
+}): Promise<void> {
   return client
     .put<JsonOf<Unit>>(`/daycares/${encodeURIComponent(id)}`, fields)
-    .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function postReservations(
