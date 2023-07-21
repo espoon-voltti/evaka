@@ -5,11 +5,18 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
+import { getAreas } from '../../api/daycare'
 import { createDaycare, getDaycare, updateDaycare } from '../../api/unit'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('unit', {
+  areas: () => ['areas'],
   unit: (unitId: UUID) => ['unit', unitId]
+})
+
+export const areaQuery = query({
+  api: getAreas,
+  queryKey: queryKeys.areas
 })
 
 export const unitQuery = query({

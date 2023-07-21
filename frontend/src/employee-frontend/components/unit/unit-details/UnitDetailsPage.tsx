@@ -6,7 +6,6 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -16,21 +15,20 @@ import MutateButton, {
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
-import { unitQuery, updateUnitMutation } from '../queries'
+import { areaQuery, unitQuery, updateUnitMutation } from '../queries'
 
 export default React.memo(function UnitDetailsPage() {
   const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const unit = useQueryResult(unitQuery(id))
-  const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
+  const areas = useQueryResult(areaQuery)
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)
@@ -41,7 +39,6 @@ export default React.memo(function UnitDetailsPage() {
   }, [setTitle, unit])
 
   useEffect(() => {
-    void getAreas().then(setAreas)
     void getEmployees().then((employeesResponse) => {
       setFinanceDecisionHandlerOptions(
         employeesResponse.map((employees) =>

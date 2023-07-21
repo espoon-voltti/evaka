@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useContext, useEffect } from 'react'
+import React, { Fragment, useCallback, useContext } from 'react'
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -10,7 +10,6 @@ import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePick
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
@@ -23,14 +22,10 @@ import {
 export default React.memo(function IncomeStatementsFilters() {
   const {
     incomeStatements: { searchFilters, setSearchFilters, clearSearchFilters },
-    shared: { availableAreas, setAvailableAreas }
+    shared: { availableAreas }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-
-  useEffect(() => {
-    void getAreas().then(setAvailableAreas)
-  }, [setAvailableAreas])
 
   const toggleArea = useCallback(
     (code: string) => () => {

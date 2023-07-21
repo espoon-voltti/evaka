@@ -6,30 +6,28 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result } from 'lib-common/api'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import { useQueryResult } from 'lib-common/query'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
-import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
-import { createUnitMutation } from '../queries'
+import { areaQuery, createUnitMutation } from '../queries'
 
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
+  const areas = useQueryResult(areaQuery)
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
 
   useEffect(() => {
-    void getAreas().then(setAreas)
     void getEmployees().then((employeesResponse) => {
       setFinanceDecisionHandlerOptions(
         employeesResponse.map((employees) =>

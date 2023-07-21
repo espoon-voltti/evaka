@@ -52,11 +52,8 @@ export async function getUnits(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getAreas(): Promise<Result<DaycareCareArea[]>> {
-  return client
-    .get<JsonOf<DaycareCareArea[]>>('/areas')
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+export async function getAreas(): Promise<DaycareCareArea[]> {
+  return client.get<JsonOf<DaycareCareArea[]>>('/areas').then((res) => res.data)
 }
 
 export function getApplicationUnits(

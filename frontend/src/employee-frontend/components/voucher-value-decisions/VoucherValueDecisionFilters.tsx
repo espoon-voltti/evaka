@@ -13,7 +13,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas, getUnits } from '../../api/daycare'
+import { getUnits } from '../../api/daycare'
 import { getFinanceDecisionHandlers } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
@@ -42,15 +42,11 @@ export default React.memo(function VoucherValueDecisionFilters() {
       setUnits,
       financeDecisionHandlers,
       setFinanceDecisionHandlers,
-      availableAreas,
-      setAvailableAreas
+      availableAreas
     }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-  useEffect(() => {
-    void getAreas().then(setAvailableAreas)
-  }, [setAvailableAreas])
 
   useEffect(() => {
     void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)

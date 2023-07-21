@@ -298,7 +298,7 @@ export type OccupancyReportRow =
 
 export async function getOccupanciesReport(
   filters: OccupancyReportFilters
-): Promise<Result<OccupancyReportRow[]>> {
+): Promise<OccupancyReportRow[]> {
   return client
     .get<JsonOf<OccupancyReportRow[]>>(
       `/reports/occupancy-by-${filters.type.split('_')[0].toLowerCase()}`,
@@ -310,8 +310,7 @@ export async function getOccupanciesReport(
         }
       }
     )
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export interface InvoiceReportFilters {
@@ -406,20 +405,17 @@ export interface VoucherServiceProvidersFilters {
 
 export async function getVoucherServiceProvidersReport(
   filters: VoucherServiceProvidersFilters
-): Promise<Result<ServiceVoucherReport>> {
+): Promise<ServiceVoucherReport> {
   return client
     .get<JsonOf<ServiceVoucherReport>>(`/reports/service-voucher-value/units`, {
       params: {
         ...filters
       }
     })
-    .then((res) =>
-      Success.of({
-        locked: LocalDate.parseNullableIso(res.data.locked),
-        rows: res.data.rows
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then((res) => ({
+      locked: LocalDate.parseNullableIso(res.data.locked),
+      rows: res.data.rows
+    }))
 }
 
 export function getVoucherServiceProviderUnitReport(

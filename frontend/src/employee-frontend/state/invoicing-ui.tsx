@@ -8,7 +8,8 @@ import React, {
   useCallback,
   useMemo,
   useState,
-  createContext
+  createContext,
+  useContext
 } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
@@ -29,10 +30,14 @@ import {
   FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import { Unit } from '../api/daycare'
+import { areaQuery } from '../components/unit/queries'
+
+import { UserContext } from './user'
 
 export type Checked = Record<string, boolean>
 
@@ -142,7 +147,6 @@ interface SharedState {
     SetStateAction<Result<FinanceDecisionHandlerOption[]>>
   >
   availableAreas: Result<DaycareCareArea[]>
-  setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
 }
 
 interface UiState {
@@ -234,8 +238,7 @@ const defaultState: UiState = {
     setUnits: () => undefined,
     financeDecisionHandlers: Loading.of(),
     setFinanceDecisionHandlers: () => undefined,
-    availableAreas: Loading.of(),
-    setAvailableAreas: () => undefined
+    availableAreas: Loading.of()
   }
 }
 
@@ -243,6 +246,8 @@ export const InvoicingUiContext = createContext<UiState>(defaultState)
 
 export const InvoicingUIContextProvider = React.memo(
   function InvoicingUIContextProvider({ children }: { children: JSX.Element }) {
+    const { loggedIn } = useContext(UserContext)
+
     const [feeDecisionSearchFilters, setFeeDecisionSearchFilters] =
       useState<FeeDecisionSearchFilters>(
         defaultState.feeDecisions.searchFilters
@@ -318,9 +323,7 @@ export const InvoicingUIContextProvider = React.memo(
     const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
       Result<FinanceDecisionHandlerOption[]>
     >(defaultState.shared.financeDecisionHandlers)
-    const [availableAreas, setAvailableAreas] = useState<
-      Result<DaycareCareArea[]>
-    >(defaultState.shared.availableAreas)
+    const availableAreas = useQueryResult(areaQuery, { enabled: loggedIn })
 
     const value = useMemo(
       () => ({
@@ -366,8 +369,7 @@ export const InvoicingUIContextProvider = React.memo(
           setUnits,
           financeDecisionHandlers,
           setFinanceDecisionHandlers,
-          availableAreas,
-          setAvailableAreas
+          availableAreas
         }
       }),
       [
