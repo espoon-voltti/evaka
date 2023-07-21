@@ -77,6 +77,7 @@ interface CsvReportRow {
   breakfastCount: number
   lunchCount: number
   snackCount: number
+  total: number
 }
 
 export default React.memo(function FamilyDaycareMealCount() {
@@ -155,21 +156,30 @@ export default React.memo(function FamilyDaycareMealCount() {
   )
 
   const extractCsvRows = (
-    filteredAreaResult: FamilyDaycareMealAreaResult | undefined
+    filteredAreaResult: FamilyDaycareMealAreaResult | undefined,
+    filteredDaycareResults: FamilyDaycareMealDaycareResult[]
   ): CsvReportRow[] => {
     const areaRows = filteredAreaResult
       ? [
-          ...filteredAreaResult.daycareResults.flatMap((daycareResult) => [
+          ...filteredDaycareResults.flatMap((daycareResult) => [
             ...daycareResult.childResults.map((childResult) => ({
               ...childResult,
               areaName: filteredAreaResult.areaName,
-              daycareName: daycareResult.daycareName
+              daycareName: daycareResult.daycareName,
+              total:
+                childResult.breakfastCount +
+                childResult.lunchCount +
+                childResult.snackCount
             })),
             {
               ...daycareResult,
               firstName: null,
               lastName: null,
-              areaName: filteredAreaResult.areaName
+              areaName: filteredAreaResult.areaName,
+              total:
+                daycareResult.breakfastCount +
+                daycareResult.lunchCount +
+                daycareResult.snackCount
             }
           ]),
           {
@@ -179,7 +189,11 @@ export default React.memo(function FamilyDaycareMealCount() {
             lastName: null,
             breakfastCount: filteredAreaResult.breakfastCount,
             lunchCount: filteredAreaResult.lunchCount,
-            snackCount: filteredAreaResult.snackCount
+            snackCount: filteredAreaResult.snackCount,
+            total:
+              filteredAreaResult.breakfastCount +
+              filteredAreaResult.lunchCount +
+              filteredAreaResult.snackCount
           }
         ]
       : []
@@ -328,15 +342,44 @@ export default React.memo(function FamilyDaycareMealCount() {
               </FilterRow>
 
               <ReportDownload
-                data={extractCsvRows(filteredAreaResult)}
+                data={extractCsvRows(
+                  filteredAreaResult,
+                  filteredDaycareResults
+                )}
                 headers={[
-                  { label: 'Alue', key: 'areaName' },
-                  { label: 'Yksikkö', key: 'daycareName' },
-                  { label: 'Etunimi', key: 'firstName' },
-                  { label: 'Sukunimi', key: 'lastName' },
-                  { label: 'Aamiainen', key: 'breakfastCount' },
-                  { label: 'Lounas', key: 'lunchCount' },
-                  { label: 'Välipala', key: 'snackCount' }
+                  {
+                    label: i18n.reports.familyDaycareMealCount.careArea,
+                    key: 'areaName'
+                  },
+                  {
+                    label: i18n.reports.familyDaycareMealCount.daycareName,
+                    key: 'daycareName'
+                  },
+                  {
+                    label: i18n.reports.familyDaycareMealCount.firstName,
+                    key: 'firstName'
+                  },
+                  {
+                    label: i18n.reports.familyDaycareMealCount.lastName,
+                    key: 'lastName'
+                  },
+                  {
+                    label:
+                      i18n.reports.familyDaycareMealCount.breakfastCountHeader,
+                    key: 'breakfastCount'
+                  },
+                  {
+                    label: i18n.reports.familyDaycareMealCount.lunchCountHeader,
+                    key: 'lunchCount'
+                  },
+                  {
+                    label: i18n.reports.familyDaycareMealCount.snackCountHeader,
+                    key: 'snackCount'
+                  },
+                  {
+                    label: i18n.reports.familyDaycareMealCount.totalHeader,
+                    key: 'total'
+                  }
                 ]}
                 filename={`ateriaraportti_${filters.startDate.formatIso()}-${filters.endDate.formatIso()}.csv`}
               />
@@ -433,7 +476,7 @@ export default React.memo(function FamilyDaycareMealCount() {
                   )}
                 </Tbody>
 
-                {filteredDaycareTotals && (
+                {filteredDaycareTotals && filteredDaycareResults.length > 1 && (
                   <StyledTfoot>
                     <Tr>
                       <BoldTd>{i18n.reports.common.total}</BoldTd>

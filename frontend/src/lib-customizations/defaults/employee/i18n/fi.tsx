@@ -3353,8 +3353,10 @@ export const fi = {
     familyDaycareMealCount: {
       title: 'Perhepäivähoidossa olevien lasten ateriaraportti',
       description:
-        'Raportti listaa perhepäivähoidon ateriakorvauksen perusteena olevat läsnäolot ateria-aikoina ja ryhmittelee ne yksiköittäin ja alueittain.',
+        'Raportti laskee perhepäivähoidossa olevien lasten läsnäolomerkinnät ateria-aikoina ja ryhmittelee tulokset yksiköittäin ja alueittain.',
       childName: 'Lapsen nimi',
+      firstName: 'Etunimi',
+      lastName: 'Sukunimi',
       daycareName: 'Toimintayksikkö',
       timePeriod: 'Ajan jakso',
       careArea: 'Palvelualue',
@@ -3363,7 +3365,6 @@ export const fi = {
       lunchCountHeader: 'Lounas',
       snackCountHeader: 'Välipala',
       totalHeader: 'Aterioita yhteensä',
-      noResults: 'Ei tuloksia',
       noCareAreasFound: 'Ei tuloksia sisältäviä palvelualueita',
       noDaycaresFound: 'Ei tuloksia sisältäviä yksiköitä'
     },

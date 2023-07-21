@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
+import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -33,6 +35,24 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     ): FamilyDaycareMealReportResult {
         if (endDate < startDate) throw BadRequest("Start date must be before or equal to end date")
+        val defaultMealTimes =
+            MealReportConfig(
+                breakfastTime =
+                    MealTimeRange(
+                        startTime = LocalTime.of(8, 0, 0, 0),
+                        endTime = LocalTime.of(8, 45, 0, 0)
+                    ),
+                lunchTime =
+                    MealTimeRange(
+                        startTime = LocalTime.of(10, 30, 0, 0),
+                        endTime = LocalTime.of(12, 30, 0, 0)
+                    ),
+                snackTime =
+                    MealTimeRange(
+                        startTime = LocalTime.of(13, 45, 0, 0),
+                        endTime = LocalTime.of(15, 0, 0, 0)
+                    )
+            )
         return db.connect { dbc ->
                 dbc.read {
                     val filter =
@@ -43,7 +63,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
                             Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getFamilyDaycareMealReportRows(filter, startDate, endDate)
+                    it.getFamilyDaycareMealReportRows(filter, startDate, endDate, defaultMealTimes)
                 }
             }
             .also { Audit.FamilyDaycareMealReport.log() }
@@ -52,7 +72,8 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
     private fun Database.Read.getFamilyDaycareMealReportRows(
         daycareFilter: AccessControlFilter<DaycareId>,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
+        mealTimes: MealReportConfig
     ): FamilyDaycareMealReportResult {
 
         val resultRows =
@@ -77,15 +98,15 @@ from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') 
            d.care_area_id,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + '08:00:00'::time, ca.date + '08:45:00'::time)),
+                                  tsrange(ca.date + ${bind(mealTimes.breakfastTime.startTime)}, ca.date + ${bind(mealTimes.breakfastTime.endTime)})),
                     0) as breakfastCount,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + '10:30:00'::time, ca.date + '12:30:00'::time)),
+                                  tsrange(ca.date + ${bind(mealTimes.lunchTime.startTime)}, ca.date + ${bind(mealTimes.lunchTime.endTime)})),
                     0) as lunchCount,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + '13:45:00'::time, ca.date + '15:00:00'::time)),
+                                  tsrange(ca.date + ${bind(mealTimes.snackTime.startTime)}, ca.date + ${bind(mealTimes.snackTime.endTime)})),
                     0) as snackCount
     from child_attendance ca
              join placement pl on ca.child_id = pl.child_id and
@@ -218,5 +239,15 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
         val breakfastCount: Int,
         val lunchCount: Int,
         val snackCount: Int,
+    )
+
+    data class MealReportConfig(
+        val breakfastTime: MealTimeRange,
+        val lunchTime: MealTimeRange,
+        val snackTime: MealTimeRange
+    )
+    data class MealTimeRange(
+        @ForceCodeGenType(String::class) val startTime: LocalTime,
+        @ForceCodeGenType(String::class) val endTime: LocalTime
     )
 }
