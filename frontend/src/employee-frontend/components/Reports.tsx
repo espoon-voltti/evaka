@@ -342,6 +342,15 @@ export default React.memo(function Reports() {
                 data-qa="report-placement-sketching"
               />
             )}
+            {reports.has('FAMILY_DAYCARE_MEAL_REPORT') && (
+              <Report
+                data-qa="family-daycare-meal-report"
+                path="/reports/family-daycare-meal-count"
+                color={colors.main.m2}
+                icon={faMoneyBillWave}
+                i18n={i18n.reports.familyDaycareMealCount}
+              />
+            )}
             {reports.has('VARDA_ERRORS') && (
               <Report
                 data-qa="report-varda-errors"

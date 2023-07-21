@@ -3350,6 +3350,25 @@ export const fi = {
       phone: 'Puhelinnumero',
       email: 'Sähköpostiosoite'
     },
+    familyDaycareMealCount: {
+      title: 'Perhepäivähoidossa olevien lasten ateriaraportti',
+      description:
+        'Raportti laskee perhepäivähoidossa olevien lasten läsnäolomerkinnät ateria-aikoina ja ryhmittelee tulokset yksiköittäin ja alueittain.',
+      childName: 'Lapsen nimi',
+      firstName: 'Etunimi',
+      lastName: 'Sukunimi',
+      daycareName: 'Toimintayksikkö',
+      timePeriod: 'Ajanjakso',
+      timePeriodTooLong: 'Ajanjakso enintään 6kk',
+      careArea: 'Palvelualue',
+      total: 'Yhteensä',
+      breakfastCountHeader: 'Aamiainen',
+      lunchCountHeader: 'Lounas',
+      snackCountHeader: 'Välipala',
+      totalHeader: 'Aterioita yhteensä',
+      noCareAreasFound: 'Ei tuloksia sisältäviä palvelualueita',
+      noDaycaresFound: 'Ei tuloksia sisältäviä yksiköitä'
+    },
     endedPlacements: {
       title: 'Varhaiskasvatuksessa lopettavat lapset',
       description:
