@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useEffect } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -56,6 +56,7 @@ export default React.memo(function Units() {
     includeClosed,
     setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
+  const navigate = useNavigate()
 
   const sortBy = (column: SearchColumn) => {
     if (sortColumn === column) {
@@ -163,9 +164,7 @@ export default React.memo(function Units() {
               <Button
                 data-qa="create-new-unit"
                 className="units-wrapper-create"
-                onClick={() => {
-                  window.location.href = '/employee/units/new'
-                }}
+                onClick={() => navigate('/units/new')}
                 text={i18n.unit.create}
               />
             </div>
