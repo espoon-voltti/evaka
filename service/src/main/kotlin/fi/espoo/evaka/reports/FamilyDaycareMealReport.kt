@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
@@ -14,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -35,23 +35,15 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     ): FamilyDaycareMealReportResult {
         if (endDate < startDate) throw BadRequest("Start date must be before or equal to end date")
+        if (endDate.minusMonths(6).isAfter(startDate)) throw BadRequest("Maximum date range is 6kk")
         val defaultMealTimes =
             MealReportConfig(
                 breakfastTime =
-                    MealTimeRange(
-                        startTime = LocalTime.of(8, 0, 0, 0),
-                        endTime = LocalTime.of(8, 45, 0, 0)
-                    ),
+                    TimeRange(start = LocalTime.of(8, 0, 0, 0), end = LocalTime.of(8, 45, 0, 0)),
                 lunchTime =
-                    MealTimeRange(
-                        startTime = LocalTime.of(10, 30, 0, 0),
-                        endTime = LocalTime.of(12, 30, 0, 0)
-                    ),
+                    TimeRange(start = LocalTime.of(10, 30, 0, 0), end = LocalTime.of(12, 30, 0, 0)),
                 snackTime =
-                    MealTimeRange(
-                        startTime = LocalTime.of(13, 45, 0, 0),
-                        endTime = LocalTime.of(15, 0, 0, 0)
-                    )
+                    TimeRange(start = LocalTime.of(13, 45, 0, 0), end = LocalTime.of(15, 0, 0, 0))
             )
         return db.connect { dbc ->
                 dbc.read {
@@ -98,15 +90,15 @@ from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') 
            d.care_area_id,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + ${bind(mealTimes.breakfastTime.startTime)}, ca.date + ${bind(mealTimes.breakfastTime.endTime)})),
+                                  tsrange(ca.date + ${bind(mealTimes.breakfastTime.start)}, ca.date + ${bind(mealTimes.breakfastTime.end)})),
                     0) as breakfastCount,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + ${bind(mealTimes.lunchTime.startTime)}, ca.date + ${bind(mealTimes.lunchTime.endTime)})),
+                                  tsrange(ca.date + ${bind(mealTimes.lunchTime.start)}, ca.date + ${bind(mealTimes.lunchTime.end)})),
                     0) as lunchCount,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + ${bind(mealTimes.snackTime.startTime)}, ca.date + ${bind(mealTimes.snackTime.endTime)})),
+                                  tsrange(ca.date + ${bind(mealTimes.snackTime.start)}, ca.date + ${bind(mealTimes.snackTime.end)})),
                     0) as snackCount
     from child_attendance ca
              join placement pl on ca.child_id = pl.child_id and
@@ -242,12 +234,8 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
     )
 
     data class MealReportConfig(
-        val breakfastTime: MealTimeRange,
-        val lunchTime: MealTimeRange,
-        val snackTime: MealTimeRange
-    )
-    data class MealTimeRange(
-        @ForceCodeGenType(String::class) val startTime: LocalTime,
-        @ForceCodeGenType(String::class) val endTime: LocalTime
+        val breakfastTime: TimeRange,
+        val lunchTime: TimeRange,
+        val snackTime: TimeRange
     )
 }

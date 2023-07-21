@@ -221,13 +221,12 @@ export default React.memo(function FamilyDaycareMealCount() {
             hideErrorsBeforeTouched
             locale={lang}
             maxDate={currentLocalDate}
-            minDate={currentLocalDate.subYears(1)}
             isInvalidDate={(d) => {
               if (d > currentLocalDate) {
                 return i18n.validationErrors.dateTooLate
               }
-              if (d < currentLocalDate.subYears(1)) {
-                return i18n.validationErrors.dateTooEarly
+              if (d < filters.endDate.subMonths(6)) {
+                return i18n.reports.familyDaycareMealCount.timePeriodTooLong
               }
               if (d > filters.endDate) {
                 return i18n.validationErrors.dateRangeNotLinear
@@ -246,13 +245,12 @@ export default React.memo(function FamilyDaycareMealCount() {
             hideErrorsBeforeTouched
             locale={lang}
             maxDate={currentLocalDate}
-            minDate={currentLocalDate.subYears(1)}
             isInvalidDate={(d) => {
               if (d > currentLocalDate) {
                 return i18n.validationErrors.dateTooLate
               }
-              if (d < currentLocalDate.subYears(1)) {
-                return i18n.validationErrors.dateTooEarly
+              if (d > filters.startDate.addMonths(6)) {
+                return i18n.reports.familyDaycareMealCount.timePeriodTooLong
               }
               if (d < filters.startDate) {
                 return i18n.validationErrors.dateRangeNotLinear
