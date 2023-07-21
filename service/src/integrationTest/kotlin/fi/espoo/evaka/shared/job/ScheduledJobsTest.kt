@@ -70,37 +70,37 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `Draft application and attachments older than 30 days is cleaned up`() {
-        val id_to_be_deleted = ApplicationId(UUID.randomUUID())
-        val id_not_to_be_deleted = ApplicationId(UUID.randomUUID())
+    fun `Draft application and attachments older than 60 days is cleaned up`() {
+        val idToBeDeleted = ApplicationId(UUID.randomUUID())
+        val idNotToBeDeleted = ApplicationId(UUID.randomUUID())
         val user = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
         db.transaction { tx ->
-            tx.insertApplication(guardian = testAdult_5, applicationId = id_to_be_deleted)
-            setApplicationCreatedDate(tx, id_to_be_deleted, LocalDate.now().minusDays(32))
+            tx.insertApplication(guardian = testAdult_5, applicationId = idToBeDeleted)
+            setApplicationCreatedDate(tx, idToBeDeleted, LocalDate.now().minusDays(61))
 
-            tx.insertApplication(guardian = testAdult_5, applicationId = id_not_to_be_deleted)
-            setApplicationCreatedDate(tx, id_not_to_be_deleted, LocalDate.now().minusDays(31))
+            tx.insertApplication(guardian = testAdult_5, applicationId = idNotToBeDeleted)
+            setApplicationCreatedDate(tx, idNotToBeDeleted, LocalDate.now().minusDays(60))
         }
 
         db.transaction {
-            uploadAttachment(id_to_be_deleted, user)
-            uploadAttachment(id_not_to_be_deleted, user)
+            uploadAttachment(idToBeDeleted, user)
+            uploadAttachment(idNotToBeDeleted, user)
         }
 
         db.read {
-            assertEquals(1, it.getApplicationAttachments(id_to_be_deleted).size)
-            assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
+            assertEquals(1, it.getApplicationAttachments(idToBeDeleted).size)
+            assertEquals(1, it.getApplicationAttachments(idNotToBeDeleted).size)
         }
 
         scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
 
         db.read {
-            assertNull(it.fetchApplicationDetails(id_to_be_deleted))
-            assertEquals(0, it.getApplicationAttachments(id_to_be_deleted).size)
+            assertNull(it.fetchApplicationDetails(idToBeDeleted))
+            assertEquals(0, it.getApplicationAttachments(idToBeDeleted).size)
 
-            assertNotNull(it.fetchApplicationDetails(id_not_to_be_deleted)!!)
-            assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
+            assertNotNull(it.fetchApplicationDetails(idNotToBeDeleted)!!)
+            assertEquals(1, it.getApplicationAttachments(idNotToBeDeleted).size)
         }
     }
 
