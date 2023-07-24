@@ -20,6 +20,7 @@ import {
   EndedPlacementsReportRow,
   FamilyConflictReportRow,
   FamilyContactReportRow,
+  FamilyDaycareMealReportResult,
   InvoiceReport,
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode,
@@ -134,12 +135,13 @@ export async function getPresenceReport(
 export interface MissingHeadOfFamilyReportFilters {
   startDate: LocalDate
   endDate: LocalDate | null
+  showFosterChildren: boolean
   showIntentionalDuplicates: boolean
 }
 
 export async function getMissingHeadOfFamilyReport(
   filters: MissingHeadOfFamilyReportFilters
-): Promise<Result<MissingHeadOfFamilyReportRow[]>> {
+): Promise<MissingHeadOfFamilyReportRow[]> {
   return client
     .get<JsonOf<MissingHeadOfFamilyReportRow[]>>(
       '/reports/missing-head-of-family',
@@ -151,8 +153,14 @@ export async function getMissingHeadOfFamilyReport(
         }
       }
     )
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) =>
+      res.data.map((row) => ({
+        ...row,
+        rangesWithoutHead: row.rangesWithoutHead.map((range) =>
+          FiniteDateRange.parseJson(range)
+        )
+      }))
+    )
 }
 
 export interface MissingServiceNeedReportFilters {
@@ -349,6 +357,7 @@ export async function getEndedPlacementsReport(
     )
     .catch((e) => Failure.fromError(e))
 }
+
 export interface DuplicatePeopleFilters {
   showIntentionalDuplicates: boolean
 }
@@ -687,4 +696,31 @@ export async function getManualDuplicationReport(
       )
     )
     .catch((e) => Failure.fromError(e))
+}
+
+export async function getFamilyDaycareMealCountReport(
+  filters: FamilyDaycareMealCountReportFilters
+): Promise<Result<FamilyDaycareMealReportResult>> {
+  if (filters.startDate > filters.endDate) {
+    return Failure.of<FamilyDaycareMealReportResult>({
+      message: 'Start date after end date'
+    })
+  }
+  return client
+    .get<JsonOf<FamilyDaycareMealReportResult>>(
+      `/reports/family-daycare-meal-count`,
+      {
+        params: {
+          startDate: filters.startDate.formatIso(),
+          endDate: filters.endDate.formatIso()
+        }
+      }
+    )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface FamilyDaycareMealCountReportFilters {
+  startDate: LocalDate
+  endDate: LocalDate
 }

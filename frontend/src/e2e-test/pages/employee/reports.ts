@@ -63,25 +63,19 @@ export class MissingHeadOfFamilyReport {
 
   async assertRows(
     expected: {
-      areaName: string
-      unitName: string
       childName: string
-      daysWithoutHead: string
+      rangesWithoutHead: string
     }[]
   ) {
     const rows = this.page.findAllByDataQa('missing-head-of-family-row')
     await rows.assertCount(expected.length)
-    await Promise.all(
-      expected.map(async (data, index) => {
-        const row = rows.nth(index)
-        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
-        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
-        await row.findByDataQa('child-name').assertTextEquals(data.childName)
-        await row
-          .findByDataQa('days-without-head')
-          .assertTextEquals(data.daysWithoutHead)
-      })
-    )
+    for (const [index, data] of expected.entries()) {
+      const row = rows.nth(index)
+      await row.findByDataQa('child-name').assertTextEquals(data.childName)
+      await row
+        .findByDataQa('ranges-without-head')
+        .assertTextEquals(data.rangesWithoutHead)
+    }
   }
 }
 

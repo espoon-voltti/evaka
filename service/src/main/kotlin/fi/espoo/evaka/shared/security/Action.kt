@@ -1977,6 +1977,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
+        READ_FAMILY_DAYCARE_MEAL_REPORT(
+            HasGlobalRole(ADMIN, DIRECTOR),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+        ),
         READ_MISSING_HEAD_OF_FAMILY_REPORT(HasGlobalRole(ADMIN)),
         READ_MISSING_SERVICE_NEED_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),

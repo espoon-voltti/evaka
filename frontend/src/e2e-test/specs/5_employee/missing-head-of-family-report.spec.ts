@@ -59,36 +59,28 @@ describe('Missing head of family report', () => {
     const report = await navigateToReport(page, admin.data)
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
         childName: `${child.data.lastName} ${child.data.firstName}`,
-        daysWithoutHead: '5'
+        rangesWithoutHead: '12.06.2023 - 16.06.2023'
       }
     ])
 
     await report.toggleShowIntentionalDuplicates()
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
         childName: `${child.data.lastName} ${child.data.firstName}`,
-        daysWithoutHead: '5'
+        rangesWithoutHead: '12.06.2023 - 16.06.2023'
       },
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
         childName: `${duplicate.data.lastName} ${duplicate.data.firstName}`,
-        daysWithoutHead: '3'
+        rangesWithoutHead: '12.06.2023 - 14.06.2023'
       }
     ])
 
     await report.toggleShowIntentionalDuplicates()
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
         childName: `${child.data.lastName} ${child.data.firstName}`,
-        daysWithoutHead: '5'
+        rangesWithoutHead: '12.06.2023 - 16.06.2023'
       }
     ])
   })

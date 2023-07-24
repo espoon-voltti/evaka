@@ -76,6 +76,7 @@ import ReportDuplicatePeople from './components/reports/DuplicatePeople'
 import ReportEndedPlacements from './components/reports/EndedPlacements'
 import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
+import FamilyDaycareMealCount from './components/reports/FamilyDaycareMealCount'
 import ReportInvoices from './components/reports/Invoices'
 import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
@@ -588,6 +589,14 @@ export default function App() {
                       element={
                         <EmployeeRoute title={i18n.titles.reports}>
                           <ManualDuplicationReport />
+                        </EmployeeRoute>
+                      }
+                    />
+                    <Route
+                      path="/reports/family-daycare-meal-count"
+                      element={
+                        <EmployeeRoute title={i18n.titles.reports}>
+                          <FamilyDaycareMealCount />
                         </EmployeeRoute>
                       }
                     />

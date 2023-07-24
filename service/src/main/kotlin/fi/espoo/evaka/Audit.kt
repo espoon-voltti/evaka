@@ -199,6 +199,7 @@ enum class Audit(
     FamilyContactReportRead,
     FamilyContactsRead,
     FamilyContactsUpdate,
+    FamilyDaycareMealReport,
     FeeDecisionConfirm,
     FeeDecisionGenerate,
     FeeDecisionHeadOfFamilyRead,

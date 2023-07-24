@@ -264,6 +264,52 @@ export interface FamilyContactReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealAreaResult
+*/
+export interface FamilyDaycareMealAreaResult {
+  areaId: UUID
+  areaName: string
+  breakfastCount: number
+  daycareResults: FamilyDaycareMealDaycareResult[]
+  lunchCount: number
+  snackCount: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealChildResult
+*/
+export interface FamilyDaycareMealChildResult {
+  breakfastCount: number
+  childId: UUID
+  firstName: string
+  lastName: string
+  lunchCount: number
+  snackCount: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealDaycareResult
+*/
+export interface FamilyDaycareMealDaycareResult {
+  breakfastCount: number
+  childResults: FamilyDaycareMealChildResult[]
+  daycareId: UUID
+  daycareName: string
+  lunchCount: number
+  snackCount: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealReportResult
+*/
+export interface FamilyDaycareMealReportResult {
+  areaResults: FamilyDaycareMealAreaResult[]
+  breakfastCount: number
+  lunchCount: number
+  snackCount: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.InvoiceReport
 */
 export interface InvoiceReport {
@@ -320,13 +366,10 @@ export type ManualDuplicationReportViewMode =
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
-  careAreaName: string
   childId: UUID
-  daysWithoutHead: number
-  firstName: string | null
-  lastName: string | null
-  unitId: UUID
-  unitName: string
+  firstName: string
+  lastName: string
+  rangesWithoutHead: FiniteDateRange[]
 }
 
 /**
@@ -527,6 +570,7 @@ export type Report =
   | 'DUPLICATE_PEOPLE'
   | 'ENDED_PLACEMENTS'
   | 'FAMILY_CONFLICT'
+  | 'FAMILY_DAYCARE_MEAL_REPORT'
   | 'INVOICE'
   | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'

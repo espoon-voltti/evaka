@@ -28,7 +28,7 @@ import { farStickyNote } from 'lib-icons'
 import { renderResult } from '../../async-rendering'
 import { groupNotesQuery } from '../../child-notes/queries'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
-import { Actions, TimeWrapper } from '../../common/components'
+import { Actions, TimeWrapper, WideMutateButton } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
@@ -81,15 +81,6 @@ export default React.memo(function MarkPresent() {
 
   const groupNotes = useQueryResult(groupNotesQuery(groupId))
 
-  const { mutateAsync: returnToPresent } = useMutationResult(
-    returnToPresentMutation
-  )
-
-  // Prevent the "return to present" AsyncButton from unmounting while the success animation is in progress.
-  // It would unmount because childLatestDeparture vanishes after returnToPresent succeeds. The button needs
-  // to remain mounted because onSuccess handles navigation back to list.
-  const [returningToPresent, setReturningToPresent] = useState(false)
-
   return (
     <TallContentArea
       opaque={false}
@@ -108,7 +99,11 @@ export default React.memo(function MarkPresent() {
             paddingVertical="m"
           >
             <TimeWrapper>
-              <CustomTitle>{i18n.attendances.actions.markPresent}</CustomTitle>
+              <TitleNoMargin size={2}>
+                {childLatestDeparture
+                  ? i18n.attendances.actions.returnToPresent
+                  : i18n.attendances.actions.markPresent}
+              </TitleNoMargin>
               <TimeInput onChange={setTime} value={time} data-qa="set-time" />
             </TimeWrapper>
             <Gap size="xs" />
@@ -132,18 +127,17 @@ export default React.memo(function MarkPresent() {
                 />
               </FixedSpaceRow>
             </Actions>
-            {(childLatestDeparture || returningToPresent) && (
+            {childLatestDeparture && (
               <>
-                <Gap size="s" />
+                <Title centered size={2}>
+                  {i18n.attendances.actions.or}
+                </Title>
                 <JustifyContainer>
-                  <InlineWideAsyncButton
+                  <WideMutateButton
                     text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
-                    onClick={() => {
-                      setReturningToPresent(true)
-                      return returnToPresent({ unitId, childId })
-                    }}
+                    mutation={returnToPresentMutation}
+                    onClick={() => ({ unitId, childId })}
                     onSuccess={() => navigate(-2)}
-                    onFailure={() => setReturningToPresent(false)}
                     data-qa="return-to-present-btn"
                   />
                 </JustifyContainer>
@@ -178,17 +172,13 @@ export default React.memo(function MarkPresent() {
   )
 })
 
-const CustomTitle = styled(Title)`
+const TitleNoMargin = styled(Title)`
   margin-top: 0;
   margin-bottom: 0;
 `
 
 const DailyNotes = styled.div`
   display: flex;
-`
-const InlineWideAsyncButton = styled(AsyncButton)`
-  border: none;
-  height: 50px;
 `
 
 const JustifyContainer = styled.div`
