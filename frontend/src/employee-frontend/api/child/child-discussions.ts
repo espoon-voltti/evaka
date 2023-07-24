@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Failure, Result, Success } from 'lib-common/api'
 import {
-  ChildDiscussion,
-  ChildDiscussionBody
+  ChildDiscussionBody,
+  ChildDiscussionWithPermittedActions
 } from 'lib-common/generated/api-types/childdiscussion'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -12,34 +13,60 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export async function getChildDiscussion(
+export async function getChildDiscussions(
   childId: UUID
-): Promise<ChildDiscussion> {
+): Promise<Result<ChildDiscussionWithPermittedActions[]>> {
   return client
-    .get<JsonOf<ChildDiscussion>>(`/child-discussions/${childId}`)
+    .get<JsonOf<ChildDiscussionWithPermittedActions[]>>(
+      `/child-discussions/${childId}`
+    )
     .then((res) => res.data)
-    .then((data) => ({
-      ...data,
-      offeredDate: data.offeredDate
-        ? LocalDate.parseIso(data.offeredDate)
-        : null,
-      heldDate: data.heldDate ? LocalDate.parseIso(data.heldDate) : null,
-      counselingDate: data.counselingDate
-        ? LocalDate.parseIso(data.counselingDate)
-        : null
-    }))
+    .then((dataArr) =>
+      dataArr.map(({ data: discussion, permittedActions }) => ({
+        data: {
+          ...discussion,
+          offeredDate: discussion.offeredDate
+            ? LocalDate.parseIso(discussion.offeredDate)
+            : null,
+          heldDate: discussion.heldDate
+            ? LocalDate.parseIso(discussion.heldDate)
+            : null,
+          counselingDate: discussion.counselingDate
+            ? LocalDate.parseIso(discussion.counselingDate)
+            : null
+        },
+        permittedActions
+      }))
+    )
+    .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createChildDiscussion(
   childId: UUID,
   body: ChildDiscussionBody
-): Promise<void> {
-  return client.post(`/child-discussions/${childId}`, body)
+): Promise<Result<void>> {
+  return client
+    .post(`/child-discussions/${childId}`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateChildDiscussion(
-  childId: UUID,
+  discussionId: UUID,
   body: ChildDiscussionBody
-): Promise<void> {
-  return client.put(`/child-discussions/${childId}`, body)
+): Promise<Result<void>> {
+  return client
+    .put(`/child-discussions/${discussionId}`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteChildDiscussion(
+  discussionId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/child-discussions/${discussionId}`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }

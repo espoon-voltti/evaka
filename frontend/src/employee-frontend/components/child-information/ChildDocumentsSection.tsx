@@ -15,6 +15,7 @@ import { useTranslation } from '../../state/i18n'
 import ChildDiscussion from './ChildDiscussions'
 import ChildDocuments from './ChildDocuments'
 import VasuAndLeops from './VasuAndLeops'
+import HorizontalLine from "../../../lib-components/atoms/HorizontalLine";
 
 interface Props {
   id: UUID
@@ -85,7 +86,13 @@ export default React.memo(function ChildDocumentsSection({
         data-qa="child-documents-collapsible"
       >
         {hasVasuPermission && <VasuAndLeops id={childId} />}
-        {hasChildDiscussionPermission && <ChildDiscussion childId={childId} />}
+        {hasChildDiscussionPermission && (
+          <>
+            {hasVasuPermission && <HorizontalLine dashed slim />}
+            <ChildDiscussion childId={childId} />
+            {hasChildDocumentsPermission && <HorizontalLine dashed slim />}
+          </>
+        )}
         {hasChildDocumentsPermission && <ChildDocuments childId={childId} />}
       </CollapsibleContentArea>
     </div>

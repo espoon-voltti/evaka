@@ -1416,7 +1416,8 @@ export const fi = {
       }
     },
     childDiscussion: {
-      title: 'Lapset puheeksi',
+      title: 'Lapset puheeksi -keskustelu',
+      addNew: 'Lisää uusi',
       offered: 'Tarjottu',
       held: 'Pidetty',
       counseling: 'Neuvonpito'
