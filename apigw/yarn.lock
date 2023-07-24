@@ -454,7 +454,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:^1.5.0":
+"@datadog/native-iast-taint-tracking@npm:1.5.0":
   version: 1.5.0
   resolution: "@datadog/native-iast-taint-tracking@npm:1.5.0"
   dependencies:
@@ -475,9 +475,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@datadog/pprof@npm:3.0.0"
+"@datadog/pprof@npm:3.1.0":
+  version: 3.1.0
+  resolution: "@datadog/pprof@npm:3.1.0"
   dependencies:
     delay: ^5.0.0
     node-gyp: latest
@@ -485,7 +485,7 @@ __metadata:
     p-limit: ^3.1.0
     pprof-format: ^2.0.7
     source-map: ^0.7.4
-  checksum: 366214185c9a1ac62578c3a285ee0c7fdea963b037cc728d98f3a3de20589c5f1d2247eccb7f597132452829b5e6dee691d2c1f5c8a7c7de064d29c1a15046ba
+  checksum: a86fe8c25895ee80870c3416270e3ad683607a7bdb4bc1c1523942b652b1e6eebc0db04cc7b076dab6c0b1b217a1d78b8af6610fffcf16818cad3a5e38cec561
   languageName: node
   linkType: hard
 
@@ -2660,15 +2660,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.7.0":
-  version: 4.7.0
-  resolution: "dd-trace@npm:4.7.0"
+"dd-trace@npm:^4.8.0":
+  version: 4.8.0
+  resolution: "dd-trace@npm:4.8.0"
   dependencies:
     "@datadog/native-appsec": ^3.2.0
     "@datadog/native-iast-rewriter": 2.0.1
-    "@datadog/native-iast-taint-tracking": ^1.5.0
+    "@datadog/native-iast-taint-tracking": 1.5.0
     "@datadog/native-metrics": ^2.0.0
-    "@datadog/pprof": 3.0.0
+    "@datadog/pprof": 3.1.0
     "@datadog/sketches-js": ^2.1.0
     "@opentelemetry/api": ^1.0.0
     "@opentelemetry/core": ^1.14.0
@@ -2695,7 +2695,7 @@ __metadata:
     protobufjs: ^7.2.4
     retry: ^0.10.1
     semver: ^7.3.8
-  checksum: 09c6a410aff6956d95d6cc083ecb0ff134acd990b2044beadc20970bb5235bcbcc54aaa2ff9c91aa2d21c88e3594baf86cbbbdbdcc7f6798e16ee75706a77c9d
+  checksum: 48db99b9a9d47a085429e4d0e942b3fac2738669b20faf33605532292970f346e2fcf2cae99c3258042f9fa12cf53d6b2f73005e058cc7efd9a64527deccb5ce
   languageName: node
   linkType: hard
 
@@ -3211,7 +3211,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^4.7.0
+    dd-trace: ^4.8.0
     eslint: ^8.44.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^5.0.0
