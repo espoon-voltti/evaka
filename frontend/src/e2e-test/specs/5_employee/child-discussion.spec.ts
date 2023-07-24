@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
+  getChildDiscussionsByChildId,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   resetDatabase
@@ -25,6 +26,7 @@ import {
 import ChildInformationPage, {
   ChildDocumentsSection
 } from '../../pages/employee/child-information'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -67,6 +69,7 @@ describe('Child Information - Child discussion section', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
     page = await Page.open({
+      mockedTime: LocalDate.of(2023, 7, 1).toSystemTzDate(),
       employeeCustomizations: {
         featureFlags: { childDiscussion: true }
       }
@@ -77,86 +80,133 @@ describe('Child Information - Child discussion section', () => {
     section = await childInformationPage.openCollapsible('childDocuments')
   })
 
+  test('Can add child discussion data', async () => {
+    await section.addChildDiscussion()
+
+    await section.addOfferedDateInput.assertValueEquals('')
+    await section.addHeldDateInput.assertValueEquals('')
+    await section.addCounselingDateInput.assertValueEquals('')
+
+    const offeredDate = LocalDate.of(2023, 7, 1)
+    const heldDate = LocalDate.of(2023, 7, 3)
+    const counselingDate = LocalDate.of(2023, 7, 5)
+
+    await section.addOfferedDateInput.fill(offeredDate.format())
+    await section.addHeldDateInput.fill(heldDate.format())
+    await section.addCounselingDateInput.fill(counselingDate.format())
+    await section.addCounselingDateInput.press('Enter')
+
+    await section.modalOk.click()
+    await section.modalOk.waitUntilHidden()
+
+    const savedDiscussions = await getChildDiscussionsByChildId(child.id)
+    const newDiscussion = savedDiscussions[0]
+
+    await section
+      .offeredDateText(newDiscussion.id)
+      .assertTextEquals(offeredDate.format())
+    await section
+      .heldDateText(newDiscussion.id)
+      .assertTextEquals(heldDate.format())
+    await section
+      .counselingDateText(newDiscussion.id)
+      .assertTextEquals(counselingDate.format())
+  })
   test('Can edit child discussion data', async () => {
-    await section.editChildDiscussion()
-    await section.offeredDateInput.assertValueEquals('')
-    await section.heldDateInput.assertValueEquals('')
-    await section.counselingDateInput.assertValueEquals('')
+    /* Add discussion entry for editing */
+    await section.addChildDiscussion()
+
+    const offeredDate = LocalDate.of(2023, 7, 1)
+    const heldDate = LocalDate.of(2023, 7, 3)
+    const counselingDate = LocalDate.of(2023, 7, 5)
+
+    await section.addOfferedDateInput.fill(offeredDate.format())
+    await section.addHeldDateInput.fill(heldDate.format())
+    await section.addCounselingDateInput.fill(counselingDate.format())
+    await section.addCounselingDateInput.press('Enter')
+
+    await section.modalOk.click()
+    await section.modalOk.waitUntilHidden()
+
+    const savedDiscussions = await getChildDiscussionsByChildId(child.id)
+    const { id: discussionId } = savedDiscussions[0]
+
+    await section
+      .offeredDateText(discussionId)
+      .assertTextEquals(offeredDate.format())
+    await section.heldDateText(discussionId).assertTextEquals(heldDate.format())
+    await section
+      .counselingDateText(discussionId)
+      .assertTextEquals(counselingDate.format())
+
+    /* Edit discussion entry */
+    await section.editChildDiscussion(discussionId)
+
+    const newOfferedDate = LocalDate.of(2023, 8, 4)
+    const newHeldDate = LocalDate.of(2023, 8, 6)
+    const newCounselingDate = LocalDate.of(2023, 8, 8)
+
+    await section.offeredDateInput(discussionId).fill(newOfferedDate.format())
+    await section.heldDateInput(discussionId).fill(newHeldDate.format())
+    await section
+      .counselingDateInput(discussionId)
+      .fill(newCounselingDate.format())
+    await section.counselingDateInput(discussionId).press('Enter')
+
+    await section.confirmEdited(discussionId)
+
+    await section
+      .offeredDateText(discussionId)
+      .assertTextEquals(newOfferedDate.format())
+    await section
+      .heldDateText(discussionId)
+      .assertTextEquals(newHeldDate.format())
+    await section
+      .counselingDateText(discussionId)
+      .assertTextEquals(newCounselingDate.format())
   })
 
-  test('offered date can be edited', async () => {
-    const offeredDate = LocalDate.todayInSystemTz().format()
+  test('Can delete child discussion entry', async () => {
+    /* Add discussion entry for deletion */
+    await section.addChildDiscussion()
 
-    await section.offeredDate.assertTextEquals('')
+    const offeredDate = LocalDate.of(2023, 7, 1)
+    const heldDate = LocalDate.of(2023, 7, 3)
+    const counselingDate = LocalDate.of(2023, 7, 5)
 
-    await section.editChildDiscussion()
-    await section.offeredDateInput.fill(offeredDate)
-    await section.confirmEdited()
-    await section.offeredDate.assertTextEquals(offeredDate)
+    await section.addOfferedDateInput.fill(offeredDate.format())
+    await section.addHeldDateInput.fill(heldDate.format())
+    await section.addCounselingDateInput.fill(counselingDate.format())
+    await section.addCounselingDateInput.press('Enter')
 
-    await section.editChildDiscussion()
-    await section.offeredDateInput.fill('')
-    await section.confirmEdited()
-    await section.offeredDate.assertTextEquals('')
-  })
+    await section.modalOk.click()
+    await section.modalOk.waitUntilHidden()
 
-  test('held date can be edited', async () => {
-    const heldDate = LocalDate.todayInSystemTz().format()
+    const savedDiscussions = await getChildDiscussionsByChildId(child.id)
+    const { id: discussionId } = savedDiscussions[0]
 
-    await section.heldDate.assertTextEquals('')
+    await section
+      .offeredDateText(discussionId)
+      .assertTextEquals(offeredDate.format())
+    await section.heldDateText(discussionId).assertTextEquals(heldDate.format())
+    await section
+      .counselingDateText(discussionId)
+      .assertTextEquals(counselingDate.format())
 
-    await section.editChildDiscussion()
-    await section.heldDateInput.fill(heldDate)
-    await section.confirmEdited()
-    await section.heldDate.assertTextEquals(heldDate)
+    /* Delete discussion entry */
+    await section.deleteChildDiscussion(discussionId)
 
-    await section.editChildDiscussion()
-    await section.heldDateInput.fill('')
-    await section.confirmEdited()
-    await section.heldDate.assertTextEquals('')
-  })
-
-  test('counseling date can be edited', async () => {
-    const counselingDate = LocalDate.todayInSystemTz().format()
-
-    await section.counselingDate.assertTextEquals('')
-
-    await section.editChildDiscussion()
-    await section.counselingDateInput.fill(counselingDate)
-    await section.confirmEdited()
-    await section.counselingDate.assertTextEquals(counselingDate)
-
-    await section.editChildDiscussion()
-    await section.counselingDateInput.fill('')
-    await section.confirmEdited()
-    await section.counselingDate.assertTextEquals('')
-  })
-
-  test('all fields can be edited', async () => {
-    const offeredDate = LocalDate.todayInSystemTz().format()
-    const heldDate = LocalDate.todayInSystemTz().addDays(2).format()
-    const counselingDate = LocalDate.todayInSystemTz().addDays(5).format()
-
-    await section.offeredDate.assertTextEquals('')
-    await section.heldDate.assertTextEquals('')
-    await section.counselingDate.assertTextEquals('')
-
-    await section.editChildDiscussion()
-    await section.offeredDateInput.fill(offeredDate)
-    await section.heldDateInput.fill(heldDate)
-    await section.counselingDateInput.fill(counselingDate)
-    await section.confirmEdited()
-    await section.offeredDate.assertTextEquals(offeredDate)
-    await section.heldDate.assertTextEquals(heldDate)
-    await section.counselingDate.assertTextEquals(counselingDate)
-
-    await section.editChildDiscussion()
-    await section.offeredDateInput.fill('')
-    await section.heldDateInput.fill('')
-    await section.counselingDateInput.fill('')
-    await section.confirmEdited()
-    await section.offeredDate.assertTextEquals('')
-    await section.heldDate.assertTextEquals('')
-    await section.counselingDate.assertTextEquals('')
+    await waitUntilEqual(
+      () => section.offeredDateText(discussionId).visible,
+      false
+    )
+    await waitUntilEqual(
+      () => section.heldDateText(discussionId).visible,
+      false
+    )
+    await waitUntilEqual(
+      () => section.counselingDateText(discussionId).visible,
+      false
+    )
   })
 })

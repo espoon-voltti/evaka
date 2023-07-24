@@ -75,6 +75,16 @@ export async function waitUntilDefined<T>(
   )
 }
 
+export async function waitUntilUndefined<T>(f: () => Promise<T>): Promise<T> {
+  return waitForCondition(
+    f,
+    (value): value is T => value == null,
+    (value) => {
+      expect(value).toBeUndefined()
+    }
+  )
+}
+
 /**
  * Waits until the given function returns a promise which resolves to the given expected value.
  */

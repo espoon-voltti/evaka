@@ -373,39 +373,9 @@ export class PedagogicalDocumentsSection extends Section {
 
 export class ChildDocumentsSection extends Section {
   readonly #addNewVasu = this.find('[data-qa="add-new-vasu-button"]')
-  readonly #editChildDiscussion = this.find(
-    '[data-qa="edit-child-discussion-button"]'
-  )
-
-  readonly #confirmEditedBtn = this.find(
-    '[data-qa="confirm-edited-child-discussion-button"]'
-  )
-
-  offeredDate = this.find('[data-qa="child-discussion-offered-date"]')
-  offeredDateInput = new TextInput(
-    this.find('[data-qa="child-discussion-offered-date-input"]')
-  )
-
-  heldDate = this.find('[data-qa="child-discussion-held-date"]')
-  heldDateInput = new TextInput(
-    this.find('[data-qa="child-discussion-held-date-input"]')
-  )
-
-  counselingDate = this.find('[data-qa="child-discussion-counseling-date"]')
-  counselingDateInput = new TextInput(
-    this.find('[data-qa="child-discussion-counseling-date-input"]')
-  )
 
   async addNewVasu() {
     return this.#addNewVasu.click()
-  }
-
-  async editChildDiscussion() {
-    return this.#editChildDiscussion.click()
-  }
-
-  async confirmEdited() {
-    return this.#confirmEditedBtn.click()
   }
 
   readonly createDocumentButton = this.page.findByDataQa('create-document')
@@ -427,6 +397,55 @@ export class ChildDocumentsSection extends Section {
       openLink: row.findByDataQa('open-document'),
       status: row.findByDataQa('document-status')
     }
+  }
+
+  /* Child discussion -section */
+  readonly #createChildDiscussion = this.find('[data-qa="create-discussion"]')
+  addOfferedDateInput = new TextInput(
+    this.find('[data-qa="add-discussion-offered-date-input"]')
+  )
+  addHeldDateInput = new TextInput(
+    this.find('[data-qa="add-discussion-held-date-input"]')
+  )
+  addCounselingDateInput = new TextInput(
+    this.find('[data-qa="add-discussion-counseling-date-input"]')
+  )
+  readonly #confirmEditedBtn = (id: string) =>
+    this.find(`[data-qa="confirm-edited-discussion-button-${id}"]`)
+  readonly #editDiscussionBtn = (id: string) =>
+    this.find(`[data-qa="edit-discussion-button-${id}"]`)
+  readonly #deleteDiscussionBtn = (id: string) =>
+    this.find(`[data-qa="delete-discussion-button-${id}"]`)
+  offeredDateText = (id: string) =>
+    this.find(`[data-qa="discussion-offered-date-${id}"]`)
+
+  heldDateText = (id: string) =>
+    this.find(`[data-qa="discussion-held-date-${id}"]`)
+  counselingDateText = (id: string) =>
+    this.find(`[data-qa="discussion-counseling-date-${id}"]`)
+  offeredDateInput = (id: string) =>
+    new TextInput(this.find(`[data-qa="discussion-offered-date-input-${id}"]`))
+  heldDateInput = (id: string) =>
+    new TextInput(this.find(`[data-qa="discussion-held-date-input-${id}"]`))
+  counselingDateInput = (id: string) =>
+    new TextInput(
+      this.find(`[data-qa="discussion-counseling-date-input-${id}"]`)
+    )
+
+  async addChildDiscussion() {
+    return this.#createChildDiscussion.click()
+  }
+
+  async editChildDiscussion(id: string) {
+    return this.#editDiscussionBtn(id).click()
+  }
+
+  async deleteChildDiscussion(id: string) {
+    return this.#deleteDiscussionBtn(id).click()
+  }
+
+  async confirmEdited(id: string) {
+    return this.#confirmEditedBtn(id).click()
   }
 }
 

@@ -69,9 +69,11 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
+  deserializeDiscussionData,
   DevCalendarEvent,
   DevCalendarEventAttendee,
   DevChildConsent,
+  DevChildDiscussion,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
   DevFixedPeriodQuestionnaire,
@@ -98,6 +100,7 @@ import {
   SuomiFiMessage,
   VtjPerson
 } from './types'
+import {ChildDiscussionData} from "../../lib-common/generated/api-types/childdiscussion";
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -1286,6 +1289,19 @@ export async function forceFullVtjRefresh(person: UUID): Promise<void> {
     await devClient.post<void>(
       `/persons/${encodeURIComponent(person)}/force-full-vtj-refresh`
     )
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function getChildDiscussionsByChildId(
+  childId: string
+): Promise<DevChildDiscussion[]> {
+  try {
+    const { data } = await devClient.get<JsonOf<ChildDiscussionData[]>>(
+      `/child-discussions/${childId}`
+    )
+    return data.map(deserializeDiscussionData)
   } catch (e) {
     throw new DevApiError(e)
   }
