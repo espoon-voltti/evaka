@@ -29,7 +29,7 @@
     "@react-spring/rafz": "^9.7.3",
     "@react-spring/web": "^9.7.3",
     "@sentry/browser": "^7.58.1",
-    "@sentry/react": "^7.58.1",
+    "@sentry/react": "^7.60.0",
     "@tanstack/react-query": "^4.29.19",
     "axios": "^1.4.0",
     "babel-plugin-styled-components": "^2.1.4",
