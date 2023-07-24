@@ -2,18 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useMemo
-} from 'react'
+import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
 
-import { getUnitGroupDetails } from 'employee-frontend/api/unit'
 import { combine, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
@@ -22,6 +15,7 @@ import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGrou
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 
+import { unitGroupDetailsQuery } from './queries'
 import TerminatedPlacements from './tab-groups/TerminatedPlacements'
 
 interface Props {
@@ -33,21 +27,11 @@ export default React.memo(function TabGroups({
   openGroups,
   setOpenGroups
 }: Props) {
-  const {
-    unitId,
-    unitInformation,
-    reloadUnitNotifications,
-    filters,
-    setFilters
-  } = useContext(UnitContext)
-  const [groupData, reloadGroupData] = useApiState(
-    () => getUnitGroupDetails(unitId, filters.startDate, filters.endDate),
-    [unitId, filters.startDate, filters.endDate]
+  const { unitId, unitInformation, filters, setFilters } =
+    useContext(UnitContext)
+  const groupData = useQueryResult(
+    unitGroupDetailsQuery(unitId, filters.startDate, filters.endDate)
   )
-  const reloadData = useCallback(() => {
-    void reloadGroupData()
-    reloadUnitNotifications()
-  }, [reloadGroupData, reloadUnitNotifications])
 
   const groupPermittedActions: Result<
     Record<string, Set<Action.Group> | undefined>
@@ -81,10 +65,10 @@ export default React.memo(function TabGroups({
         {groupData.missingGroupPlacements.length > 0 && (
           <ContentArea opaque data-qa="missing-placements-section">
             <MissingGroupPlacements
+              unitId={unitId}
               groups={groupData.groups}
               missingGroupPlacements={groupData.missingGroupPlacements}
               backupCares={groupData.backupCares}
-              reloadGroupData={reloadData}
               permittedPlacementActions={groupData.permittedPlacementActions}
               permittedBackupCareActions={groupData.permittedBackupCareActions}
             />
@@ -109,7 +93,6 @@ export default React.memo(function TabGroups({
               groupData.permittedGroupPlacementActions
             }
             unitChildrenCapacityFactors={groupData.unitChildrenCapacityFactors}
-            reloadGroupData={reloadData}
             openGroups={openGroups}
             setOpenGroups={setOpenGroups}
           />

@@ -9,18 +9,17 @@ import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
-import { createGroup } from '../../../../api/unit'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { allPropertiesTrue } from '../../../../utils/validation/validations'
+import { createGroupMutation } from '../../queries'
 
 interface Props {
   unitId: string
-  reload: () => void
 }
 
 interface FormValidationResult {
@@ -36,7 +35,7 @@ interface CreateGroupForm {
   initialCaretakers: number
 }
 
-export default React.memo(function GroupModal({ unitId, reload }: Props) {
+export default React.memo(function GroupModal({ unitId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
@@ -68,23 +67,17 @@ export default React.memo(function GroupModal({ unitId, reload }: Props) {
     setForm({ ...form, ...values })
   }
 
-  const submit = () => {
-    if (!unitId) return
-
-    void createGroup(
-      unitId,
-      form.name,
-      form.startDate,
-      form.initialCaretakers
-    ).then(() => {
-      reload()
-      clearUiMode()
-    })
-  }
   return (
-    <FormModal
+    <MutateFormModal
       title={i18n.unit.groups.createModal.title}
-      resolveAction={submit}
+      resolveMutation={createGroupMutation}
+      resolveAction={() => ({
+        unitId,
+        name: form.name,
+        startDate: form.startDate,
+        initialCaretakers: form.initialCaretakers
+      })}
+      onSuccess={clearUiMode}
       resolveLabel={i18n.unit.groups.createModal.confirmButton}
       rejectAction={clearUiMode}
       rejectLabel={i18n.unit.groups.createModal.cancelButton}
@@ -128,6 +121,6 @@ export default React.memo(function GroupModal({ unitId, reload }: Props) {
           />
         </div>
       </FixedSpaceColumn>
-    </FormModal>
+    </MutateFormModal>
   )
 })

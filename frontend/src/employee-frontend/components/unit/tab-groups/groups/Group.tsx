@@ -28,6 +28,10 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import {
+  cancelMutation,
+  InlineMutateButton
+} from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -50,9 +54,7 @@ import {
   faUndo
 } from 'lib-icons'
 
-import { updateBackupCare } from '../../../../api/child/backup-care'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
-import { deleteGroup, deleteGroupPlacement } from '../../../../api/unit'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
@@ -73,6 +75,10 @@ import { AgeIndicatorChip } from '../../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../../common/CareTypeLabel'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
+import {
+  deleteGroupMutation,
+  deleteGroupPlacementOrUpdateBackupCareMutation
+} from '../../queries'
 import NotesModal from '../notes/NotesModal'
 
 interface Props {
@@ -86,7 +92,6 @@ interface Props {
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
-  reload: () => void
   open: boolean
   toggleOpen: () => void
   permittedActions: Set<Action.Group>
@@ -146,7 +151,6 @@ export default React.memo(function Group({
   caretakers,
   confirmedOccupancy,
   realizedOccupancy,
-  reload,
   onTransferRequested,
   open,
   toggleOpen,
@@ -175,22 +179,6 @@ export default React.memo(function Group({
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
   const headcounts = getChildMinMaxHeadcounts(confirmedOccupancy)
-
-  const onDeleteGroup = () => {
-    void deleteGroup(unit.id, group.id).then(reload)
-  }
-
-  const onDeletePlacement = (
-    row: DaycareGroupPlacementDetailed | UnitBackupCare
-  ) => {
-    if ('type' in row) {
-      if (!row.id) throw Error('deleting placement without id')
-      void deleteGroupPlacement(row.id).then(reload)
-    } else {
-      const { id, period } = row
-      void updateBackupCare(id, { period, groupId: undefined }).then(reload)
-    }
-  }
 
   const placements = group.placements.filter((placement) => {
     if (filters.endDate == null) {
@@ -353,7 +341,7 @@ export default React.memo(function Group({
       data-status={open ? 'open' : 'closed'}
     >
       {uiMode === `update-group-${group.id}` && (
-        <GroupUpdateModal group={group} reload={reload} />
+        <GroupUpdateModal group={group} />
       )}
       {notesModal && (
         <NotesModal
@@ -416,10 +404,11 @@ export default React.memo(function Group({
           )}
           {permittedActions.has('DELETE') && (
             <>
-              <InlineButton
+              <InlineMutateButton
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
-                onClick={() => onDeleteGroup()}
+                mutation={deleteGroupMutation}
+                onClick={() => ({ unitId: unit.id, groupId: group.id })}
                 disabled={sortedPlacements.length > 0 || !group.deletable}
                 data-qa="btn-remove-group"
               />
@@ -726,8 +715,30 @@ export default React.memo(function Group({
                                 </>
                               )}
                               {canDelete && (
-                                <InlineButton
-                                  onClick={() => onDeletePlacement(placement)}
+                                <InlineMutateButton
+                                  mutation={
+                                    deleteGroupPlacementOrUpdateBackupCareMutation
+                                  }
+                                  onClick={() =>
+                                    'type' in placement
+                                      ? placement.id
+                                        ? {
+                                            type: 'deleteGroupPlacement' as const,
+                                            unitId: unit.id,
+                                            payload: placement.id
+                                          }
+                                        : cancelMutation
+                                      : {
+                                          type: 'updateBackupCare' as const,
+                                          unitId: unit.id,
+                                          payload: {
+                                            backupCareId: placement.id,
+                                            period: placement.period,
+                                            groupId: null
+                                          }
+                                        }
+                                  }
+                                  onSuccess={() => undefined}
                                   data-qa="remove-btn"
                                   icon={faUndo}
                                   text={i18n.unit.groups.returnBtn}

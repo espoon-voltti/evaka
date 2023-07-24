@@ -42,7 +42,6 @@ interface Props {
   allDayRows: ChildDailyRecords[]
   onMakeReservationForChild: (child: Child) => void
   selectedDate: LocalDate
-  reloadReservations: () => void
   childServiceNeedInfos: ChildServiceNeedInfo[]
 }
 
@@ -62,11 +61,7 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
   } = props
   const { i18n } = useTranslation()
   const { editState, stopEditing, startEditing, ...editCallbacks } =
-    useUnitReservationEditState(
-      props.allDayRows,
-      props.reloadReservations,
-      props.unitId
-    )
+    useUnitReservationEditState(props.allDayRows, props.unitId)
 
   const contractDayServiceNeeds = childServiceNeedInfos.filter(
     (c) => c.hasContractDays

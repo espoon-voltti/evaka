@@ -38,6 +38,7 @@ import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
@@ -47,18 +48,17 @@ import {
   DatePickerF,
   DatePickerSpacer
 } from 'lib-components/molecules/date-picker/DatePicker'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/employee'
 import { faPlus, faTrash } from 'lib-icons'
 
-import { postReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
+import { postReservationsMutation } from '../queries'
 
 interface Props {
   onClose: () => void
-  onReload: () => void
   child: Child
   isShiftCareUnit: boolean
   operationalDays: number[]
@@ -233,7 +233,6 @@ function resetTimes(
 
 export default React.memo(function ReservationModalSingleChild({
   onClose,
-  onReload,
   child,
   isShiftCareUnit,
   operationalDays
@@ -297,21 +296,19 @@ export default React.memo(function ReservationModalSingleChild({
   const [showAllErrors, setShowAllErrors] = useState(false)
 
   return (
-    <AsyncFormModal
+    <MutateFormModal
       mobileFullScreen
       title={i18n.unit.attendanceReservations.reservationModal.title}
+      resolveMutation={postReservationsMutation}
       resolveAction={() => {
         if (!form.isValid()) {
           setShowAllErrors(true)
-          return
+          return cancelMutation
         } else {
-          return postReservations(form.value()(child.id))
+          return form.value()(child.id)
         }
       }}
-      onSuccess={() => {
-        onReload()
-        onClose()
-      }}
+      onSuccess={onClose}
       resolveLabel={i18n.common.confirm}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
@@ -422,7 +419,7 @@ export default React.memo(function ReservationModalSingleChild({
           )
         ) : null}
       </TimeInputGrid>
-    </AsyncFormModal>
+    </MutateFormModal>
   )
 })
 

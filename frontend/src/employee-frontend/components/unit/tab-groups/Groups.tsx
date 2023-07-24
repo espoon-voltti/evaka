@@ -49,7 +49,6 @@ function renderGroups(
   permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>,
   backupCares: UnitBackupCare[],
   groupCaretakers: Record<string, Caretakers>,
-  reload: () => void,
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void,
@@ -81,7 +80,6 @@ function renderGroups(
           confirmedOccupancy={confirmedOccupancies?.[group.id]}
           realizedOccupancy={realizedOccupancies?.[group.id]}
           key={group.id}
-          reload={reload}
           onTransferRequested={onTransferRequested}
           open={openGroups[group.id]}
           toggleOpen={() =>
@@ -112,7 +110,6 @@ type Props = {
   groupCaretakers: Record<string, Caretakers>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>
-  reloadGroupData: () => void
   openGroups: Record<string, boolean>
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
   permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
@@ -132,7 +129,6 @@ export default React.memo(function Groups({
   groupCaretakers,
   groupConfirmedOccupancies,
   groupRealizedOccupancies,
-  reloadGroupData,
   openGroups,
   setOpenGroups,
   permittedBackupCareActions,
@@ -217,22 +213,19 @@ export default React.memo(function Groups({
         />
       </FixedSpaceRow>
       <Gap size="s" />
-      {uiMode === 'create-new-daycare-group' && (
-        <GroupModal unitId={unit.id} reload={reloadGroupData} />
-      )}
+      {uiMode === 'create-new-daycare-group' && <GroupModal unitId={unit.id} />}
       {uiMode === 'group-transfer' && transferredPlacement && (
         <>
           {'type' in transferredPlacement ? (
             <GroupTransferModal
+              unitId={unit.id}
               placement={transferredPlacement}
               groups={groups}
-              reload={reloadGroupData}
             />
           ) : (
             <BackupCareGroupModal
               backupCare={transferredPlacement}
               groups={groups}
-              reload={reloadGroupData}
             />
           )}
         </>
@@ -247,7 +240,6 @@ export default React.memo(function Groups({
         permittedGroupPlacementActions,
         backupCares,
         groupCaretakers,
-        reloadGroupData,
         (placement) => {
           setTransferredPlacement(placement)
           toggleUiMode('group-transfer')

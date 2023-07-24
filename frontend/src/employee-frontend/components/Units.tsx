@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -24,12 +25,13 @@ import {
 import { Gap } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
-import { getDaycares } from '../api/unit'
 import { useTranslation } from '../state/i18n'
 import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
 import { UserContext } from '../state/user'
 import { Unit } from '../types/unit'
 import { RequireRole } from '../utils/roles'
+
+import { unitsQuery } from './unit/queries'
 
 const TopBar = styled.div`
   display: flex;
@@ -45,8 +47,6 @@ export default React.memo(function Units() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
   const {
-    units,
-    setUnits,
     filter,
     setFilter,
     sortColumn,
@@ -57,6 +57,7 @@ export default React.memo(function Units() {
     setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
   const navigate = useNavigate()
+  const units = useQueryResult(unitsQuery)
 
   const sortBy = (column: SearchColumn) => {
     if (sortColumn === column) {
@@ -64,12 +65,6 @@ export default React.memo(function Units() {
     }
     setSortColumn(column)
   }
-
-  useEffect(() => {
-    void getDaycares().then((units) => {
-      setUnits(units)
-    })
-  }, [setUnits])
 
   const orderedUnits = useCallback(
     (units: Unit[]) =>

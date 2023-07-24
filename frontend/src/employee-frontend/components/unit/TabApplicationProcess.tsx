@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext } from 'react'
+import React from 'react'
 
-import { getUnitApplications } from 'employee-frontend/api/unit'
-import { UnitContext } from 'employee-frontend/state/unit'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -18,6 +16,7 @@ import { renderResult } from '../async-rendering'
 import TabApplications from './TabApplications'
 import TabPlacementProposals from './TabPlacementProposals'
 import TabWaitingConfirmation from './TabWaitingConfirmation'
+import { unitApplicationsQuery } from './queries'
 
 interface Props {
   unitId: UUID
@@ -25,15 +24,7 @@ interface Props {
 
 export default React.memo(function TabApplicationProcess({ unitId }: Props) {
   const { i18n } = useTranslation()
-  const { reloadUnitNotifications } = useContext(UnitContext)
-  const [applications, reloadApplications] = useApiState(
-    () => getUnitApplications(unitId),
-    [unitId]
-  )
-  const reloadData = useCallback(() => {
-    void reloadApplications()
-    reloadUnitNotifications()
-  }, [reloadApplications, reloadUnitNotifications])
+  const applications = useQueryResult(unitApplicationsQuery(unitId))
 
   return renderResult(
     applications,
@@ -48,7 +39,6 @@ export default React.memo(function TabApplicationProcess({ unitId }: Props) {
         <TabPlacementProposals
           unitId={unitId}
           placementProposals={placementProposals}
-          reloadApplications={reloadData}
         />
         <Gap size="m" />
         <TabApplications applications={applications} />

@@ -4,16 +4,16 @@
 
 import React, { useContext, useState } from 'react'
 
-import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faExchange } from 'lib-icons'
 
-import { transferGroup } from '../../../../../api/unit'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
 import {
@@ -21,11 +21,12 @@ import {
   DaycareGroupPlacementDetailed
 } from '../../../../../types/unit'
 import { formatName } from '../../../../../utils'
+import { transferGroupMutation } from '../../../queries'
 
 interface Props {
+  unitId: UUID
   placement: DaycareGroupPlacementDetailed
   groups: DaycareGroup[]
-  reload: () => void
 }
 
 interface GroupPlacementForm {
@@ -35,9 +36,9 @@ interface GroupPlacementForm {
 }
 
 export default React.memo(function GroupTransferModal({
+  unitId,
   placement,
-  groups,
-  reload
+  groups
 }: Props) {
   const {
     id: groupPlacementId,
@@ -47,7 +48,7 @@ export default React.memo(function GroupTransferModal({
   } = placement
 
   const { i18n } = useTranslation()
-  const { clearUiMode, setErrorMessage } = useContext(UIContext)
+  const { clearUiMode } = useContext(UIContext)
 
   // filter out groups which are not active on any day during the maximum placement time range
   const openGroups = groups
@@ -88,38 +89,26 @@ export default React.memo(function GroupTransferModal({
     })
   }
 
-  const submitForm = () => {
-    if (!form.group) return
-
-    void transferGroup(
-      groupPlacementId || '',
-      form.group.id,
-      form.startDate
-    ).then((res: Result<null>) => {
-      if (res.isFailure) {
-        clearUiMode()
-        setErrorMessage({
-          type: 'error',
-          title: i18n.unit.error.placement.transfer,
-          text: i18n.common.tryAgain,
-          resolveLabel: i18n.common.ok
-        })
-      } else {
-        clearUiMode()
-        reload()
-      }
-    })
-  }
-
   return (
-    <FormModal
+    <MutateFormModal
       data-qa="group-placement-modal"
       title={i18n.unit.placements.modal.transferTitle}
       icon={faExchange}
       type="info"
-      resolveAction={submitForm}
+      resolveMutation={transferGroupMutation}
+      resolveAction={() =>
+        form.group !== null
+          ? {
+              unitId,
+              groupPlacementId: groupPlacementId || '',
+              groupId: form.group.id,
+              startDate: form.startDate
+            }
+          : cancelMutation
+      }
       resolveLabel={i18n.common.confirm}
       resolveDisabled={form.errors.length > 0}
+      onSuccess={clearUiMode}
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
     >
@@ -160,6 +149,6 @@ export default React.memo(function GroupTransferModal({
           </section>
         )}
       </FixedSpaceColumn>
-    </FormModal>
+    </MutateFormModal>
   )
 })

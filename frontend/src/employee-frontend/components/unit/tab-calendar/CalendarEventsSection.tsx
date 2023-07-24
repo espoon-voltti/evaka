@@ -27,6 +27,7 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -51,11 +52,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
 import { client } from '../../../api/client'
-import { getUnitGroupDetails } from '../../../api/unit'
-import { renderResult } from '../../../components/async-rendering'
-import { FlexRow } from '../../../components/common/styled/containers'
 import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
+import { renderResult } from '../../async-rendering'
+import { FlexRow } from '../../common/styled/containers'
+import { unitGroupDetailsQuery } from '../queries'
 
 async function getCalendarEvents(
   unitId: UUID,
@@ -120,6 +121,7 @@ const EventDay = styled.div<{ isToday: boolean }>`
   height: 100%;
   border: ${(p) => `1px solid ${p.theme.colors.grayscale.g15}`};
   padding: ${defaultMargins.s} 0;
+
   ${(p) =>
     p.isToday
       ? `
@@ -127,7 +129,6 @@ const EventDay = styled.div<{ isToday: boolean }>`
     border-top: 4px solid ${p.theme.colors.status.success};
   `
       : ''}
-
   &:not(:first-child) {
     margin-left: -1px;
   }
@@ -401,9 +402,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
     description: ''
   })
 
-  const [groupData] = useApiState(
-    () => getUnitGroupDetails(unitId, form.period.start, form.period.end),
-    [unitId, form.period]
+  const groupData = useQueryResult(
+    unitGroupDetailsQuery(unitId, form.period.start, form.period.end)
   )
 
   const updateForm = useCallback(

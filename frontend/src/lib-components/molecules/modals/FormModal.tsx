@@ -10,7 +10,7 @@ import { MutationDescription } from 'lib-common/query'
 
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import Button from '../../atoms/buttons/Button'
-import MutateButton from '../../atoms/buttons/MutateButton'
+import MutateButton, { cancelMutation } from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
@@ -114,7 +114,7 @@ export const AsyncFormModal = React.memo(
 
 type MutateFormModalProps<Arg, Data, Key extends QueryKey> = ModalBaseProps & {
   resolveMutation: MutationDescription<Arg, Data, Key>
-  resolveAction: () => Arg
+  resolveAction: () => Arg | typeof cancelMutation
   resolveLabel: string
   resolveDisabled?: boolean
   onSuccess: (value: Data) => void

@@ -10,14 +10,9 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-
 import { SearchOrder } from '../types'
-import { Unit } from '../types/unit'
 
 export interface UnitsState {
-  units: Result<Unit[]>
-  setUnits: (request: Result<Unit[]>) => void
   filter: string
   setFilter: (text: string) => void
   sortColumn: string
@@ -29,8 +24,6 @@ export interface UnitsState {
 }
 
 const defaultState: UnitsState = {
-  units: Loading.of(),
-  setUnits: () => undefined,
   filter: '',
   setFilter: () => undefined,
   sortColumn: 'name',
@@ -50,7 +43,6 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
 }: {
   children: JSX.Element
 }) {
-  const [units, setUnits] = useState<Result<Unit[]>>(defaultState.units)
   const [filter, setFilter] = useState<string>(defaultState.filter)
   const [sortColumn, setSortColumn] = useState<string>(defaultState.sortColumn)
   const [sortDirection, setSortDirection] = useState<SearchOrder>(
@@ -60,8 +52,6 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
 
   const value = useMemo(
     () => ({
-      units,
-      setUnits,
       filter,
       setFilter,
       sortColumn,
@@ -72,8 +62,6 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
       setIncludeClosed
     }),
     [
-      units,
-      setUnits,
       filter,
       setFilter,
       sortColumn,

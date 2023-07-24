@@ -20,6 +20,7 @@ import styled from 'styled-components'
 
 import { UnitResponse } from 'employee-frontend/api/unit'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -36,6 +37,7 @@ import { UnitContext, UnitContextProvider } from '../state/unit'
 
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
+import { unitNotificationsQuery } from './unit/queries'
 
 const defaultTab = (unit: UnitResponse) => {
   if (unit.permittedActions.has('READ_ATTENDANCES')) return 'calendar'
@@ -47,8 +49,9 @@ const defaultTab = (unit: UnitResponse) => {
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const { unitInformation, unitNotifications, filters, setFilters } =
-    useContext(UnitContext)
+  const { unitInformation, filters, setFilters } = useContext(UnitContext)
+
+  const unitNotifications = useQueryResult(unitNotificationsQuery(id))
 
   const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {

@@ -16,13 +16,11 @@ import { NotificationCounter } from '../UnitPage'
 interface Props {
   unitId: UUID
   placementProposals: PlacementPlanDetails[]
-  reloadApplications: () => void
 }
 
 export default React.memo(function TabPlacementProposals({
   unitId,
-  placementProposals,
-  reloadApplications
+  placementProposals
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState<boolean>(true)
@@ -43,11 +41,7 @@ export default React.memo(function TabPlacementProposals({
       open={open}
       toggleOpen={() => setOpen(!open)}
     >
-      <PlacementProposals
-        unitId={unitId}
-        placementPlans={placementProposals}
-        reloadApplications={reloadApplications}
-      />
+      <PlacementProposals unitId={unitId} placementPlans={placementProposals} />
     </CollapsibleContentArea>
   )
 })
