@@ -439,6 +439,7 @@ export type Unit =
   | 'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
 
 export type VasuDocument =
+  | 'DELETE'
   | 'EVENT_MOVED_TO_CLOSED'
   | 'EVENT_MOVED_TO_READY'
   | 'EVENT_MOVED_TO_REVIEWED'
