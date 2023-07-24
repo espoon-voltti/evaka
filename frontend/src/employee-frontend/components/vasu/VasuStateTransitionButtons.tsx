@@ -6,21 +6,19 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import { Action } from 'lib-common/generated/action'
 import {
   VasuDocumentEventType,
   VasuDocumentState
 } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -28,8 +26,8 @@ import { faCheck, faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-import { updateDocumentState } from './api'
 import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
+import { updateDocumentStateMutation } from './queries'
 
 const PublishingDisclaimer = styled(FixedSpaceRow)`
   justify-content: flex-end;
@@ -50,14 +48,9 @@ export function VasuStateTransitionButtons({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const [updateResult, setUpdateResult] = useState<Result<null>>()
-  const updateState = useRestApi(updateDocumentState, setUpdateResult)
-
-  const update = (eventType: VasuDocumentEventType) =>
-    updateState({ documentId, eventType })
-
   const [selectedEventType, setSelectedEventType] =
     useState<VasuDocumentEventType>()
+  const [success, useSuccess] = useBoolean(false)
 
   const getStateTransitionButton = (
     eventType: VasuDocumentEventType,
@@ -78,8 +71,8 @@ export function VasuStateTransitionButtons({
 
   return (
     <FullWidthDiv>
-      {selectedEventType && !updateResult?.isSuccess && (
-        <InfoModal
+      {selectedEventType && !success ? (
+        <MutateFormModal
           type="info"
           title={i18n.vasu.transitions[selectedEventType].confirmTitle}
           icon={faQuestion}
@@ -90,24 +83,19 @@ export function VasuStateTransitionButtons({
               ? i18n.vasu.transitions.guardiansWillBeNotified
               : undefined
           }
-          resolve={{
-            action: () => update(selectedEventType),
-            label: i18n.vasu.transitions[selectedEventType].confirmAction,
-            disabled: updateResult?.isLoading
-          }}
-          reject={{
-            action: () => {
-              setUpdateResult(undefined)
-              setSelectedEventType(undefined)
-            },
-            label: i18n.common.goBack
-          }}
-        >
-          {updateResult?.isLoading && <SpinnerSegment />}
-          {updateResult?.isFailure && <ErrorSegment />}
-        </InfoModal>
-      )}
-      {selectedEventType && updateResult?.isSuccess && (
+          resolveMutation={updateDocumentStateMutation}
+          resolveAction={() => ({
+            childId,
+            documentId,
+            eventType: selectedEventType
+          })}
+          resolveLabel={i18n.vasu.transitions[selectedEventType].confirmAction}
+          onSuccess={useSuccess.on}
+          rejectAction={() => setSelectedEventType(undefined)}
+          rejectLabel={i18n.common.goBack}
+        />
+      ) : null}
+      {selectedEventType && success ? (
         <InfoModal
           type="success"
           title={i18n.vasu.transitions[selectedEventType].successTitle}
@@ -118,7 +106,7 @@ export function VasuStateTransitionButtons({
             label: i18n.common.ok
           }}
         />
-      )}
+      ) : null}
       <ButtonContainer>
         {isMovedToReadyAllowed && getStateTransitionButton('MOVED_TO_READY')}
         {isMovedToReviewedAllowed &&

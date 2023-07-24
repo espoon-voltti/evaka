@@ -2092,6 +2092,7 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfVasuDocument()
         ),
+        DELETE(HasGlobalRole(ADMIN)),
         EVENT_PUBLISHED(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)

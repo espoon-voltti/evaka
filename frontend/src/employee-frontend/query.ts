@@ -12,6 +12,7 @@ export type QueryKeyPrefix =
   | 'documentTemplates'
   | 'holidayPeriods'
   | 'reports'
+  | 'vasu'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

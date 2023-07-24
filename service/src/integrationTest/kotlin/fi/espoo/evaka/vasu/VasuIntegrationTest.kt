@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -236,6 +237,33 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `preschool document publishing and state transitions`() {
         documentPublishingAndStateTransitions(CurriculumType.PRESCHOOL)
+    }
+
+    @Test
+    fun `draft document can be deleted`() {
+        val template = getTemplate(CurriculumType.DAYCARE)
+        val documentId =
+            postVasuDocument(
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = template.id)
+            )
+
+        deleteVasuDocument(documentId)
+
+        assertThrows<NotFound> { getVasuDocument(documentId) }
+    }
+
+    @Test
+    fun `published document cannot be deleted`() {
+        val template = getTemplate(CurriculumType.DAYCARE)
+        val documentId =
+            postVasuDocument(
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = template.id)
+            )
+        postVasuDocumentState(documentId, VasuController.ChangeDocumentStateRequest(MOVED_TO_READY))
+
+        assertThrows<Conflict> { deleteVasuDocument(documentId) }
     }
 
     @Test
@@ -599,6 +627,10 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         request: VasuController.ChangeDocumentStateRequest,
     ) {
         vasuController.updateDocumentState(dbInstance(), adminUser, clock, id, request)
+    }
+
+    private fun deleteVasuDocument(id: VasuDocumentId) {
+        vasuController.deleteDocument(dbInstance(), adminUser, clock, id)
     }
 
     private fun postVasuTemplate(

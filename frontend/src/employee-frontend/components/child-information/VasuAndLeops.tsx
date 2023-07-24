@@ -23,33 +23,37 @@ import {
   VasuTemplateSummary
 } from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { InlineMutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import FullScreenDimmedSpinner from 'lib-components/molecules/FullScreenDimmedSpinner'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import FormModal, {
+  MutateFormModal
+} from 'lib-components/molecules/modals/FormModal'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { RequireRole } from '../../utils/roles'
 import { renderResult, UnwrapResult } from '../async-rendering'
 import { VasuStateChip } from '../common/VasuStateChip'
+import { createVasuDocument } from '../vasu/api'
 import {
-  createVasuDocument,
-  getVasuDocumentSummaries,
-  updateDocumentState
-} from '../vasu/api'
+  deleteVasuDocumentMutation,
+  updateDocumentStateMutation,
+  vasuDocumentSummariesQuery
+} from '../vasu/queries'
 import { getVasuTemplateSummaries } from '../vasu/templates/api'
 import { getLastPublished } from '../vasu/vasu-events'
 
-const StateCell = styled(Td)`
+const StateCell = styled.div`
   display: flex;
   justify-content: flex-end;
 `
@@ -239,10 +243,7 @@ interface Props {
 export default React.memo(function VasuAndLeops({ id: childId }: Props) {
   const { i18n } = useTranslation()
   const { placements } = useContext(ChildContext)
-  const [vasus, loadVasus] = useApiState(
-    () => getVasuDocumentSummaries(childId),
-    [childId]
-  )
+  const vasus = useQueryResult(vasuDocumentSummariesQuery(childId))
   const navigate = useNavigate()
 
   const getDates = ({ modifiedAt, events }: VasuDocumentSummary): string => {
@@ -271,6 +272,8 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
     [vasus]
   )
 
+  const [confirmDelete, setConfirmDelete] = useState<UUID | undefined>()
+
   return (
     <div>
       <Title size={4}>{i18n.childInformation.vasu.title}</Title>
@@ -291,27 +294,29 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                   />
                 </Td>
                 <Td>{getDates(vasu)}</Td>
-                <StateCell>
-                  <VasuStateChip
-                    state={vasu.documentState}
-                    labels={i18n.vasu.states}
-                  />
-                </StateCell>
                 <Td>
+                  <StateCell>
+                    <VasuStateChip
+                      state={vasu.documentState}
+                      labels={i18n.vasu.states}
+                    />
+                  </StateCell>
+                </Td>
+                <Td minimalWidth>
                   {vasu.documentState === 'CLOSED' ? (
-                    <RequireRole oneOf={['ADMIN']}>
-                      <InlineButton
-                        onClick={() =>
-                          void updateDocumentState({
-                            documentId: vasu.id,
-                            eventType: 'RETURNED_TO_REVIEWED'
-                          }).finally(() => loadVasus())
-                        }
+                    permittedActions.includes('EVENT_RETURNED_TO_REVIEWED') ? (
+                      <InlineMutateButton
+                        mutation={updateDocumentStateMutation}
+                        onClick={() => ({
+                          childId,
+                          documentId: vasu.id,
+                          eventType: 'RETURNED_TO_REVIEWED' as const
+                        })}
                         text={
                           i18n.vasu.transitions.RETURNED_TO_REVIEWED.buttonText
                         }
                       />
-                    </RequireRole>
+                    ) : null
                   ) : (
                     <InlineButton
                       onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
@@ -320,11 +325,34 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                     />
                   )}
                 </Td>
+                <Td minimalWidth>
+                  {vasu.documentState === 'DRAFT' &&
+                  permittedActions.includes('DELETE') ? (
+                    <InlineButton
+                      onClick={() => setConfirmDelete(vasu.id)}
+                      text={i18n.common.remove}
+                    />
+                  ) : null}
+                </Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
       ))}
+      {confirmDelete ? (
+        <MutateFormModal
+          title={i18n.common.confirm}
+          resolveMutation={deleteVasuDocumentMutation}
+          resolveAction={() => ({
+            childId,
+            documentId: confirmDelete
+          })}
+          resolveLabel={i18n.common.remove}
+          onSuccess={() => setConfirmDelete(undefined)}
+          rejectAction={() => setConfirmDelete(undefined)}
+          rejectLabel={i18n.common.cancel}
+        />
+      ) : null}
     </div>
   )
 })
