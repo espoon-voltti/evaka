@@ -229,7 +229,6 @@ export type Child =
   | 'READ_SENSITIVE_INFO'
   | 'READ_VASU_DOCUMENT'
   | 'UPDATE_ADDITIONAL_INFO'
-  | 'UPDATE_CHILD_DISCUSSION'
   | 'UPDATE_CHILD_RECIPIENT'
   | 'UPDATE_FAMILY_CONTACT_DETAILS'
   | 'UPDATE_FAMILY_CONTACT_PRIORITY'
@@ -237,6 +236,10 @@ export type Child =
   | 'UPSERT_CHILD_CONSENT'
 
 export type ChildDailyNote =
+  | 'DELETE'
+  | 'UPDATE'
+
+export type ChildDiscussion =
   | 'DELETE'
   | 'UPDATE'
 
