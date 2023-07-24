@@ -5,16 +5,15 @@
 package fi.espoo.evaka.childdiscussion
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.children.Child
 import fi.espoo.evaka.shared.ChildDiscussionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,9 +43,6 @@ class ChildDiscussionController(private val accessControl: AccessControl) {
                         Action.Child.CREATE_CHILD_DISCUSSION,
                         childId
                     )
-                    it.getChildDiscussionDataForChild(childId)?.let {
-                        throw Conflict("Discussion data for child already exists")
-                    }
                     it.createChildDiscussion(childId, body)
                 }
                 .also { discussionId ->
@@ -55,12 +51,12 @@ class ChildDiscussionController(private val accessControl: AccessControl) {
         }
     }
 
-    @PutMapping("/{childId}")
+    @PutMapping("/{discussionId}")
     fun updateDiscussion(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable childId: ChildId,
+        @PathVariable discussionId: ChildDiscussionId,
         @RequestBody body: ChildDiscussionBody
     ) {
         db.connect { dbc ->
@@ -69,34 +65,74 @@ class ChildDiscussionController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Child.UPDATE_CHILD_DISCUSSION,
-                        childId
+                        Action.ChildDiscussion.UPDATE,
+                        discussionId
                     )
-                    tx.getChildDiscussionDataForChild(childId)
-                        ?: throw NotFound("Discussion data for child does not exist")
-                    tx.updateChildDiscussion(childId, body)
+                    tx.getChildDiscussionById(discussionId)
+                        ?: throw NotFound("Discussion data not found")
+                    tx.updateChildDiscussion(discussionId, body)
                 }
             }
-            .also { Audit.ChildDiscussionUpdate.log(targetId = childId) }
+            .also { Audit.ChildDiscussionUpdate.log(targetId = discussionId) }
+    }
+
+    @DeleteMapping("/{discussionId}")
+    fun deleteDiscussion(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable discussionId: ChildDiscussionId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDiscussion.DELETE,
+                        discussionId
+                    )
+                    tx.getChildDiscussionById(discussionId)
+                        ?: throw NotFound("Discussion data not found")
+                    tx.deleteChildDiscussion(discussionId)
+                }
+            }
+            .also { Audit.ChildDiscussionDelete.log(targetId = discussionId) }
     }
 
     @GetMapping("/{childId}")
-    fun getDiscussionData(
+    fun getDiscussions(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): ChildDiscussion? {
+    ): List<ChildDiscussionWithPermittedActions> {
         return db.connect { dbc ->
-                dbc.transaction {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Child.READ_CHILD_DISCUSSION,
                         childId
                     )
-                    it.getChildDiscussionDataForChild(childId)
+                    val discussionData = tx.getChildDiscussions(childId)
+                    val permittedActions =
+                        accessControl.getPermittedActions<
+                            ChildDiscussionId, Action.ChildDiscussion
+                        >(
+                            tx,
+                            user,
+                            clock,
+                            discussionData.map { it.id }
+                        )
+
+                    discussionData.map { discussion ->
+                        ChildDiscussionWithPermittedActions(
+                            discussion,
+                            permittedActions[discussion.id] ?: emptySet()
+                        )
+                    }
                 }
             }
             .also { Audit.ChildDiscussionRead.log(targetId = childId) }

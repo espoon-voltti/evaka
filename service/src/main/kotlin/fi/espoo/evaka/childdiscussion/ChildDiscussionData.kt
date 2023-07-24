@@ -6,9 +6,10 @@ package fi.espoo.evaka.childdiscussion
 
 import fi.espoo.evaka.shared.ChildDiscussionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 
-data class ChildDiscussion(
+data class ChildDiscussionData(
     val id: ChildDiscussionId,
     val childId: ChildId,
     val offeredDate: LocalDate?,
@@ -20,4 +21,9 @@ data class ChildDiscussionBody(
     val offeredDate: LocalDate?,
     val heldDate: LocalDate?,
     val counselingDate: LocalDate?
+)
+
+data class ChildDiscussionWithPermittedActions(
+    val data: ChildDiscussionData,
+    val permittedActions: Set<Action.ChildDiscussion>
 )

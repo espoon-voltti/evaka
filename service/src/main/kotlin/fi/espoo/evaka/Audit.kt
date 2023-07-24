@@ -137,6 +137,7 @@ enum class Audit(
     ChildDailyServiceTimeNotificationsDismiss,
     ChildDiscussionCreate,
     ChildDiscussionUpdate,
+    ChildDiscussionDelete,
     ChildDiscussionRead,
     ChildDocumentCreate,
     ChildDocumentDelete,

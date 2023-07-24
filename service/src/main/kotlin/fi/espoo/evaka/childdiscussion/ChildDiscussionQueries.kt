@@ -8,16 +8,28 @@ import fi.espoo.evaka.shared.ChildDiscussionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 
-fun Database.Read.getChildDiscussionDataForChild(childId: ChildId): ChildDiscussion? {
+fun Database.Read.getChildDiscussionById(id: ChildDiscussionId): ChildDiscussionData? {
     // language=sql
     val sql =
         """
         SELECT id, child_id, offered_date, held_date, counseling_date
         FROM child_discussion
-        WHERE child_id = :childId
+        WHERE id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<ChildDiscussion>().firstOrNull()
+    return createQuery(sql).bind("id", id).mapTo<ChildDiscussionData>().firstOrNull()
+}
+
+fun Database.Read.getChildDiscussions(childId: ChildId): List<ChildDiscussionData> {
+    val sql =
+        """
+        SELECT id, child_id, offered_date, held_date, counseling_date
+        FROM child_discussion
+        WHERE child_id = :childId
+        ORDER BY created DESC
+        """
+            .trimIndent()
+    return createQuery(sql).bind("childId", childId).mapTo<ChildDiscussionData>().list()
 }
 
 fun Database.Transaction.createChildDiscussion(
@@ -40,7 +52,7 @@ fun Database.Transaction.createChildDiscussion(
         .one()
 }
 
-fun Database.Transaction.updateChildDiscussion(childId: ChildId, dto: ChildDiscussionBody) {
+fun Database.Transaction.updateChildDiscussion(id: ChildDiscussionId, dto: ChildDiscussionBody) {
     // language=sql
     val sql =
         """
@@ -48,10 +60,22 @@ fun Database.Transaction.updateChildDiscussion(childId: ChildId, dto: ChildDiscu
             offered_date = :offeredDate, 
             held_date = :heldDate, 
             counseling_date = :counselingDate
-        WHERE child_id = :childId
+        WHERE id = :id
         RETURNING *
         """
             .trimIndent()
 
-    createUpdate(sql).bind("childId", childId).bindKotlin(dto).updateExactlyOne()
+    createUpdate(sql).bind("id", id).bindKotlin(dto).updateExactlyOne()
+}
+
+fun Database.Transaction.deleteChildDiscussion(id: ChildDiscussionId) {
+    // language=sql
+    val sql =
+        """
+        DELETE FROM child_discussion
+        WHERE id = :id 
+        """
+            .trimIndent()
+
+    createUpdate(sql).bind("id", id).execute()
 }

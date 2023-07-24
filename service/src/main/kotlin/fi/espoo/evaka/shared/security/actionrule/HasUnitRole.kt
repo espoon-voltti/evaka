@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildDiscussionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -619,6 +620,20 @@ SELECT service_need.id, role, enabled_pilot_features AS unit_features, provider_
 FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementUnitOfChildOfChildDiscussion() =
+        rule<ChildDiscussionId> { user, now ->
+            sql(
+                """
+SELECT child_discussion.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM child_discussion
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
             """

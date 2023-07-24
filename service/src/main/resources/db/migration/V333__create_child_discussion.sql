@@ -10,4 +10,4 @@ CREATE TABLE child_discussion (
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON child_discussion FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 
-CREATE UNIQUE INDEX uniq$child_discussion_child_id ON child_discussion(child_id);
+CREATE INDEX idx$child_discussion_child_id ON child_discussion(child_id);
