@@ -28,6 +28,41 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
+    groups:
+      babel:
+        patterns:
+          - "@babel/*"
+      fontawesome:
+        patterns:
+          - "@fortawesome/*"
+      jest:
+        patterns:
+          - "@types/jest"
+          - "jest*"
+          - "ts-jest"
+        exclude-patterns:
+          - "jest-junit"
+      prettier:
+        patterns:
+          - "prettier"
+          - "eslint-config-prettier"
+          - "eslint-plugin-prettier"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      sentry:
+        patterns:
+          - "@sentry/*"
+      typescript:
+        patterns:
+          - "tslib"
+          - "typescript"
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
   - package-ecosystem: npm
     directory: "/apigw"
     schedule:
@@ -35,3 +70,22 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
+    groups:
+      jest:
+        patterns:
+          - "@types/jest"
+          - "jest*"
+          - "ts-jest"
+        exclude-patterns:
+          - "jest-junit"
+      node-saml:
+        patterns:
+          - "@node-saml/*"
+      prettier:
+        patterns:
+          - "prettier"
+          - "eslint-config-prettier"
+          - "eslint-plugin-prettier"
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
