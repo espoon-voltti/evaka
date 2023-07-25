@@ -7,7 +7,7 @@ import { Child } from 'lib-common/generated/api-types/children'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { UUID } from 'lib-common/types'
 
-const toDuplicatedChildIds = (children: Array<Child | ReservationChild>) =>
+const toDuplicatedChildIds = (children: (Child | ReservationChild)[]) =>
   children.flatMap((child) =>
     child.duplicateOf !== null ? [child.id, child.duplicateOf] : []
   )
@@ -22,7 +22,7 @@ const formatDuplicatedChildIdentifier = (
     : t.common.duplicatedChild.identifier.DAYCARE[format]
 
 export function getDuplicateChildInfo(
-  children: Array<Child | ReservationChild>,
+  children: (Child | ReservationChild)[],
   i18n: Translations,
   format: 'short' | 'long' = 'short'
 ): Record<UUID, string> {

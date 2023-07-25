@@ -198,8 +198,8 @@ const GuardianForm = React.memo(function GuardianForm({
 })
 
 const pageTranslations = {
-  FI: translations['fi'].childInformation.assistanceNeedPreschoolDecision,
-  SV: translations['sv'].childInformation.assistanceNeedPreschoolDecision
+  FI: translations.fi.childInformation.assistanceNeedPreschoolDecision,
+  SV: translations.sv.childInformation.assistanceNeedPreschoolDecision
 }
 
 const DecisionEditor = React.memo(function DecisionEditor({

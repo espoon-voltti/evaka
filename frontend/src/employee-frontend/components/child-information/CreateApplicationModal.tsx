@@ -156,7 +156,7 @@ function CreateApplicationModal({
     if (apiCall) {
       setIsSubmitting(true)
 
-      apiCall()
+      void apiCall()
         .then((id) => {
           id.isSuccess
             ? (window.location.href = `${getEmployeeUrlPrefix()}/employee/applications/${

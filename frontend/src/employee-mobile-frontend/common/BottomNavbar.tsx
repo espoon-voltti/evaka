@@ -100,6 +100,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
   const navigate = useNavigate()
   const { unitId, groupId } = useNonNullableParams<{
     unitId: UUID
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     groupId: UUID | 'all'
   }>()
 

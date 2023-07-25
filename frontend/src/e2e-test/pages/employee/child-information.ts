@@ -462,7 +462,7 @@ export class BackupCaresSection extends Section {
     await this.#error.assertTextEquals(expectedError)
   }
 
-  async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
+  async getBackupCares(): Promise<{ unit: string; period: string }[]> {
     await this.#backupCares.waitUntilVisible()
     return this.evaluate((el) =>
       Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(

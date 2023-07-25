@@ -47,16 +47,12 @@ export const isDateRangeValid = (
   endDate: LocalDate | null
 ) => !endDate || !endDate.isBefore(startDate)
 
-export interface FieldErrors {
-  [error: string]: boolean
-}
+export type FieldErrors = Record<string, boolean>
 
 export const fieldHasErrors = (fieldErrors: FieldErrors) =>
   Object.values(fieldErrors).includes(true)
 
-export interface FormErrors {
-  [fieldOrError: string]: FieldErrors | boolean
-}
+export type FormErrors = Record<string, FieldErrors | boolean>
 
 export const formHasErrors = (formErrors: FormErrors) =>
   Object.values(formErrors)

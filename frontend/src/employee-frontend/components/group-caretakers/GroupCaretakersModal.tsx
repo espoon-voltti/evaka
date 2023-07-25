@@ -78,22 +78,23 @@ function GroupCaretakersModal({
   const submit = () => {
     setSubmitting(true)
     setConflict(false)
-    ;(existing
-      ? putCaretakers(
-          unitId,
-          groupId,
-          existing.id,
-          form.startDate,
-          form.endDate,
-          parseFloat(form.amount)
-        )
-      : postCaretakers(
-          unitId,
-          groupId,
-          form.startDate,
-          form.endDate,
-          parseFloat(form.amount)
-        )
+    void (
+      existing
+        ? putCaretakers(
+            unitId,
+            groupId,
+            existing.id,
+            form.startDate,
+            form.endDate,
+            parseFloat(form.amount)
+          )
+        : postCaretakers(
+            unitId,
+            groupId,
+            form.startDate,
+            form.endDate,
+            parseFloat(form.amount)
+          )
     )
       .then((res: Result<null>) => {
         if (res.isSuccess) onSuccess()

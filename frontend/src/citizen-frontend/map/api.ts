@@ -72,15 +72,16 @@ export const autocompleteAddress = async (
 }
 
 type ItineraryResponse = {
-  data: {
-    [key: string]: {
+  data: Record<
+    string,
+    {
       itineraries: {
         legs: {
           distance: number
         }[]
       }[]
     }
-  }
+  >
 }
 
 const uuidToKey = (id: string) => `id${id.replace(/-/g, '')}`
@@ -202,7 +203,7 @@ export const fetchDistance = async (
       query
     })
     .then((res) => {
-      const plan = res.data.data['plan']
+      const plan = res.data.data.plan
       if (!plan) throw Error('No plan found')
 
       const itineraries = plan.itineraries

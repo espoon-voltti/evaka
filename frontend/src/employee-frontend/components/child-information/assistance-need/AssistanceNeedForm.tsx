@@ -66,7 +66,7 @@ interface FormState {
   startDate: LocalDate
   endDate: LocalDate
   capacityFactor: string
-  bases: Array<string>
+  bases: string[]
 }
 
 const coefficientRegex = /^\d(([.,])(\d){1,2})?$/

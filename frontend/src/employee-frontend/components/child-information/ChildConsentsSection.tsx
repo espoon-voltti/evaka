@@ -178,20 +178,20 @@ export default React.memo(function ChildConsentsSection({
           <Gap size="m" />
           <FixedSpaceRow>
             <Radio
-              checked={form['EVAKA_PROFILE_PICTURE'] === true}
+              checked={form.EVAKA_PROFILE_PICTURE === true}
               disabled={!permittedActions.has('UPSERT_CHILD_CONSENT')}
               label={i18n.common.yes}
               onChange={() => onSetConsent('EVAKA_PROFILE_PICTURE', true)}
               data-qa="consent-profilepic-yes"
             />
             <Radio
-              checked={form['EVAKA_PROFILE_PICTURE'] === false}
+              checked={form.EVAKA_PROFILE_PICTURE === false}
               disabled={!permittedActions.has('UPSERT_CHILD_CONSENT')}
               label={i18n.common.no}
               onChange={() => onSetConsent('EVAKA_PROFILE_PICTURE', false)}
               data-qa="consent-profilepic-no"
             />
-            {form['EVAKA_PROFILE_PICTURE'] !== null && (
+            {form.EVAKA_PROFILE_PICTURE !== null && (
               <>
                 <Gap horizontal size="L" />
                 <InlineButton

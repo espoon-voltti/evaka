@@ -49,7 +49,7 @@ interface Props {
 
 const levelOptions = (
   i18n: Translations
-): Array<OneOfOption<DaycareAssistanceLevel>> =>
+): OneOfOption<DaycareAssistanceLevel>[] =>
   daycareAssistanceLevels.map((level) => ({
     value: level,
     domValue: level,

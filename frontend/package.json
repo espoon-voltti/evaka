@@ -90,8 +90,8 @@
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^9.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.61.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
     "babel-loader": "^9.1.2",
     "concurrently": "^8.2.0",
     "css-loader": "^6.8.1",
@@ -295,9 +295,8 @@
       {
         "files": "**/*.{ts,tsx}",
         "extends": [
-          "plugin:@typescript-eslint/eslint-recommended",
-          "plugin:@typescript-eslint/recommended",
-          "plugin:@typescript-eslint/recommended-requiring-type-checking"
+          "plugin:@typescript-eslint/recommended-type-checked",
+          "plugin:@typescript-eslint/stylistic-type-checked"
         ],
         "parser": "@typescript-eslint/parser",
         "parserOptions": {
@@ -308,24 +307,11 @@
           "react-hooks"
         ],
         "rules": {
+          "jsx-expressions/strict-logical-expressions": "error",
           "@typescript-eslint/no-misused-promises": [
             "error",
             {
               "checksVoidReturn": false
-            }
-          ],
-          "@typescript-eslint/explicit-function-return-type": "off",
-          "@typescript-eslint/explicit-module-boundary-types": "off",
-          "@typescript-eslint/member-delimiter-style": [
-            "warn",
-            {
-              "multiline": {
-                "delimiter": "none"
-              },
-              "singleline": {
-                "delimiter": "semi",
-                "requireLast": false
-              }
             }
           ],
           "@typescript-eslint/no-unused-vars": [
@@ -335,8 +321,9 @@
               "varsIgnorePattern": "^_"
             }
           ],
-          "@typescript-eslint/no-floating-promises": "error",
-          "jsx-expressions/strict-logical-expressions": "error"
+          "@typescript-eslint/consistent-type-definitions": "off",
+          "@typescript-eslint/prefer-nullish-coalescing": "off",
+          "@typescript-eslint/prefer-optional-chain": "off"
         }
       },
       {

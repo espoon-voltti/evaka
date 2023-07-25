@@ -143,7 +143,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
   const missingFields = useMemo(
     () =>
       concat(
-        [] as Array<keyof FieldInfos | undefined | null | false>,
+        [] as (keyof FieldInfos | undefined | null | false)[],
         requiredFormFields.filter((key) => !formState?.[key]),
         // decision-maker is required
         !formState?.decisionMaker?.employeeId && 'decisionMaker',

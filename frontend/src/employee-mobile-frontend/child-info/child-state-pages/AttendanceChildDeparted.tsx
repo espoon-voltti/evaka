@@ -17,6 +17,7 @@ import { useTranslation } from '../../common/i18n'
 interface Props {
   child: Child
   unitId: string
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   groupIdOrAll: string | 'all'
 }
 

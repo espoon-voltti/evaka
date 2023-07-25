@@ -103,6 +103,7 @@ export const MessageContextProvider = React.memo(
     const [loadAccounts] = useDebouncedCallback(getAccounts, 100)
 
     const { groupId } = useNonNullableParams<{
+      // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
       groupId: UUID | 'all'
     }>()
 

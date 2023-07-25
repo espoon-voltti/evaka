@@ -53,10 +53,10 @@ interface OccupancyResponse {
   min: OccupancyPeriod | null
 }
 
-export type OccupancyResponseGroupLevel = Array<{
+export type OccupancyResponseGroupLevel = {
   groupId: UUID
   occupancies: OccupancyResponse
-}>
+}[]
 
 interface OccupancyPeriod {
   period: FiniteDateRange

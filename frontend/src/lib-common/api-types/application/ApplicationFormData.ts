@@ -42,7 +42,7 @@ export type UnitPreferenceFormData = {
   vtjSiblings: VtjSibling[]
   siblingName: string
   siblingSsn: string
-  preferredUnits: Array<{ id: string; name: string }>
+  preferredUnits: { id: string; name: string }[]
 }
 
 export type ContactInfoFormData = {

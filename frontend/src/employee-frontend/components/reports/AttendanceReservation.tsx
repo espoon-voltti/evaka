@@ -387,7 +387,7 @@ const getTableBody = (
 }
 
 export interface AttendanceReservationReportTdProps {
-  borderEdge: Array<'top' | 'left' | 'right'>
+  borderEdge: ('top' | 'left' | 'right')[]
   isToday: boolean
   isFuture: boolean
 }

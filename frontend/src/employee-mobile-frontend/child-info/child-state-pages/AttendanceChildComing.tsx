@@ -14,6 +14,7 @@ import { WideLinkButton } from '../../pairing/components'
 interface Props {
   unitId: string
   child: Child
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   groupIdOrAll: string | 'all'
 }
 

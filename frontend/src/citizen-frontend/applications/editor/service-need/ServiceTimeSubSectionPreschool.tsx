@@ -139,8 +139,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
             .connectedDaycarePreferredStartDate ? (
             <>
               <Label htmlFor={labelId}>
-                {t.applications.editor.serviceNeed.startDate.label['PRESCHOOL']}{' '}
-                *
+                {t.applications.editor.serviceNeed.startDate.label.PRESCHOOL} *
               </Label>
 
               <Gap size="s" />

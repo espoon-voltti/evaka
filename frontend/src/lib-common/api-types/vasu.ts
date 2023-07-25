@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-
+import HelsinkiDateTime from '../helsinki-date-time'
 import LocalDate from '../local-date'
 
 export const vasuQuestionTypes = [
@@ -20,7 +19,7 @@ export const vasuQuestionTypes = [
 
 export type VasuQuestionType = (typeof vasuQuestionTypes)[number] | 'PARAGRAPH'
 
-interface VasuQuestionCommon {
+export interface VasuQuestionCommon {
   type: VasuQuestionType
   name: string
   ophKey: string | null
@@ -139,7 +138,7 @@ export type VasuQuestion =
   | Paragraph
   | StaticInfoSubsection
 
-interface Field {
+export interface Field {
   name: string
   info?: string
 }

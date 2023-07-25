@@ -53,8 +53,8 @@ function renderGroups(
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void,
-  openGroups: { [k: string]: boolean },
-  setOpenGroups: React.Dispatch<React.SetStateAction<{ [k: string]: boolean }>>,
+  openGroups: Record<string, boolean>,
+  setOpenGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>,
   unitChildrenCapacities: UnitChildrenCapacityFactors[],
   confirmedOccupancies?: Record<string, OccupancyResponse>,
   realizedOccupancies?: Record<string, OccupancyResponse>

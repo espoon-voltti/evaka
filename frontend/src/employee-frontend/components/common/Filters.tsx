@@ -1102,7 +1102,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="L"
-            color={applicationBasisColors['ADDITIONAL_INFO']}
+            color={applicationBasisColors.ADDITIONAL_INFO}
             size="m"
             onClick={toggle('ADDITIONAL_INFO')}
             active={toggled.includes('ADDITIONAL_INFO')}
@@ -1114,7 +1114,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="S"
-            color={applicationBasisColors['SIBLING_BASIS']}
+            color={applicationBasisColors.SIBLING_BASIS}
             size="m"
             onClick={toggle('SIBLING_BASIS')}
             active={toggled.includes('SIBLING_BASIS')}
@@ -1126,7 +1126,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="T"
-            color={applicationBasisColors['ASSISTANCE_NEED']}
+            color={applicationBasisColors.ASSISTANCE_NEED}
             size="m"
             onClick={toggle('ASSISTANCE_NEED')}
             active={toggled.includes('ASSISTANCE_NEED')}
@@ -1138,7 +1138,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="K"
-            color={applicationBasisColors['CLUB_CARE']}
+            color={applicationBasisColors.CLUB_CARE}
             size="m"
             onClick={toggle('CLUB_CARE')}
             active={toggled.includes('CLUB_CARE')}
@@ -1150,7 +1150,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="P"
-            color={applicationBasisColors['DAYCARE']}
+            color={applicationBasisColors.DAYCARE}
             size="m"
             onClick={toggle('DAYCARE')}
             active={toggled.includes('DAYCARE')}
@@ -1162,7 +1162,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="V"
-            color={applicationBasisColors['EXTENDED_CARE']}
+            color={applicationBasisColors.EXTENDED_CARE}
             size="m"
             onClick={toggle('EXTENDED_CARE')}
             active={toggled.includes('EXTENDED_CARE')}
@@ -1174,7 +1174,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="2"
-            color={applicationBasisColors['DUPLICATE_APPLICATION']}
+            color={applicationBasisColors.DUPLICATE_APPLICATION}
             size="m"
             onClick={toggle('DUPLICATE_APPLICATION')}
             active={toggled.includes('DUPLICATE_APPLICATION')}
@@ -1184,7 +1184,7 @@ export function ApplicationBasisFilter({
         <Tooltip tooltip={i18n.applications.basisTooltip.URGENT} position="top">
           <RoundIcon
             content="!"
-            color={applicationBasisColors['URGENT']}
+            color={applicationBasisColors.URGENT}
             size="m"
             onClick={toggle('URGENT')}
             active={toggled.includes('URGENT')}
@@ -1196,7 +1196,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content={faPaperclip}
-            color={applicationBasisColors['HAS_ATTACHMENTS']}
+            color={applicationBasisColors.HAS_ATTACHMENTS}
             size="m"
             onClick={toggle('HAS_ATTACHMENTS')}
             active={toggled.includes('HAS_ATTACHMENTS')}
@@ -1277,7 +1277,7 @@ export function ApplicationDistinctionsFilter({
       {disableSecondary ? (
         <Tooltip tooltip={i18n.applications.secondaryTooltip} position="top">
           <Checkbox
-            label={i18n.applications.distinctiveDetails['SECONDARY']}
+            label={i18n.applications.distinctiveDetails.SECONDARY}
             checked={toggled.includes('SECONDARY')}
             onChange={toggle('SECONDARY')}
             data-qa="application-distiction-SECONDARY"
@@ -1286,7 +1286,7 @@ export function ApplicationDistinctionsFilter({
         </Tooltip>
       ) : (
         <Checkbox
-          label={i18n.applications.distinctiveDetails['SECONDARY']}
+          label={i18n.applications.distinctiveDetails.SECONDARY}
           checked={toggled.includes('SECONDARY')}
           onChange={toggle('SECONDARY')}
           data-qa="application-distiction-SECONDARY"
