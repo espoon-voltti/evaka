@@ -387,10 +387,7 @@ export default React.memo(function PlacementSketching() {
               </Thead>
               <Tbody>
                 {filteredRows.map((row: PlacementSketchingReportRow) => (
-                  <Tr
-                    key={`${row.applicationId}`}
-                    data-qa={`${row.applicationId}`}
-                  >
+                  <Tr key={row.applicationId} data-qa={row.applicationId}>
                     <Td data-qa="requested-unit">
                       <Link to={`/units/${row.requestedUnitId}`}>
                         {row.requestedUnitName}

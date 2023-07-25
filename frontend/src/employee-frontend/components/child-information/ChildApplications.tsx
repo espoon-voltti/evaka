@@ -78,7 +78,7 @@ export default React.memo(function ChildApplications({ id, startOpen }: Props) {
               ['desc', 'desc']
             ).map((application: PersonApplicationSummary) => (
               <Tr
-                key={`${application.applicationId}`}
+                key={application.applicationId}
                 data-qa="table-application-row"
               >
                 <NameTd data-qa="application-guardian-name">

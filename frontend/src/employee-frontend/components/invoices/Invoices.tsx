@@ -321,7 +321,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <Td>
               {item.headOfFamily.restrictedDetailsEnabled && (
                 <Tooltip
-                  tooltip={`${i18n.personProfile.restrictedDetails}`}
+                  tooltip={i18n.personProfile.restrictedDetails}
                   position="right"
                 >
                   <StatusIconContainer color={colors.status.danger}>

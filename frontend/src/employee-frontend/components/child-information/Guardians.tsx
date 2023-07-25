@@ -109,7 +109,7 @@ export default React.memo(function Guardians() {
           <Tbody>
             {guardians.map((guardian) => (
               <Tr
-                key={`${guardian.id}`}
+                key={guardian.id}
                 data-qa={`table-guardian-row-${guardian.id}`}
               >
                 <NameTd data-qa="guardian-name">
