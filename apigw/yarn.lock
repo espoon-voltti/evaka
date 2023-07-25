@@ -3214,7 +3214,7 @@ __metadata:
     passport: ^0.6.0
     pino: ^8.14.1
     pino-http: ^8.3.3
-    pino-pretty: ^10.0.0
+    pino-pretty: ^10.1.0
     prettier: ^3.0.0
     pump: ^3.0.0
     query-string: ^8.1.0
@@ -5751,7 +5751,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:*, pino-pretty@npm:^10.0.0":
+"pino-pretty@npm:*":
   version: 10.0.0
   resolution: "pino-pretty@npm:10.0.0"
   dependencies:
@@ -5772,6 +5772,30 @@ __metadata:
   bin:
     pino-pretty: bin.js
   checksum: af45c69fdb50bdd27875d1456b7f2a7227bc1b98ca8b39ff3a4ef0c473ac8bd2ae1cb7de19921dc8cc0217b6d5f800c7af040eae294e5cc26e0fadf0a0a4afd7
+  languageName: node
+  linkType: hard
+
+"pino-pretty@npm:^10.1.0":
+  version: 10.1.0
+  resolution: "pino-pretty@npm:10.1.0"
+  dependencies:
+    colorette: ^2.0.7
+    dateformat: ^4.6.3
+    fast-copy: ^3.0.0
+    fast-safe-stringify: ^2.1.1
+    help-me: ^4.0.1
+    joycon: ^3.1.1
+    minimist: ^1.2.6
+    on-exit-leak-free: ^2.1.0
+    pino-abstract-transport: ^1.0.0
+    pump: ^3.0.0
+    readable-stream: ^4.0.0
+    secure-json-parse: ^2.4.0
+    sonic-boom: ^3.0.0
+    strip-json-comments: ^3.1.1
+  bin:
+    pino-pretty: bin.js
+  checksum: 543a658b0b1d00a0dce5d1015a4fa581ea2b8b4937d3cbef6d03cc9c0bbc2425493d302adbab3a03aa20d0a9c102222b378336a2241e6c493a086c21ad3288d3
   languageName: node
   linkType: hard
 
