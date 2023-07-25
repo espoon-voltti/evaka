@@ -9,6 +9,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type IncomeId = 'new' | UUID
 
 export type IncomeFields = Partial<Record<string, IncomeValue>>

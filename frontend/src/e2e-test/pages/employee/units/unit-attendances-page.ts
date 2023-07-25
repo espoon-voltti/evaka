@@ -208,6 +208,7 @@ export class UnitAttendancesSection {
       .click()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   async selectGroup(groupId: UUID | 'no-group' | 'staff'): Promise<void> {
     const select = new Select(
       this.page.findByDataQa('attendances-group-select')

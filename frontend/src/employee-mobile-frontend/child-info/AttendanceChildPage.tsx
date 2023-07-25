@@ -53,6 +53,7 @@ export default React.memo(function AttendanceChildPage() {
 
   const { unitId, childId, groupId } = useNonNullableParams<{
     unitId: UUID
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     groupId: UUID | 'all'
     childId: UUID
   }>()

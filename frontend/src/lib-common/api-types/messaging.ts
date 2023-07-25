@@ -16,12 +16,10 @@ import HelsinkiDateTime from '../helsinki-date-time'
 import { JsonOf } from '../json'
 
 export type MessageReceiver =
+  | MessageReceiverBase // unit in area, or child, or citizen
   | MessageReceiverArea
-  | MessageReceiverUnitInArea
   | MessageReceiverUnit
   | MessageReceiverGroup
-  | MessageReceiverChild
-  | MessageReceiverCitizen
 
 interface MessageReceiverBase {
   id: UUID
@@ -40,11 +38,8 @@ interface MessageReceiverUnit extends MessageReceiverBase {
 }
 
 interface MessageReceiverGroup extends MessageReceiverBase {
-  receivers: MessageReceiverChild[]
+  receivers: MessageReceiverBase[]
 }
-
-type MessageReceiverChild = MessageReceiverBase
-type MessageReceiverCitizen = MessageReceiverBase
 
 export const deserializeMessageAccount = (
   account: JsonOf<MessageAccount>,

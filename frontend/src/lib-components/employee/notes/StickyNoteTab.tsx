@@ -47,6 +47,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
   smallerHeading = false,
   subHeading
 }: StickyNoteTabProps) {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   const [editing, setEditing] = useState<UUID | 'new' | null>(
     notes.length === 0 ? 'new' : null
   )

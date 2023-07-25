@@ -65,6 +65,7 @@ export default React.memo(function ChildList({ unitId, items, type }: Props) {
   )
 })
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const OrderedList = styled.ol<{ spacing?: SpacingSize | string }>`
   list-style: none;
   padding: 0;
