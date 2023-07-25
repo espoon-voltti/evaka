@@ -25,9 +25,9 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
   : T extends Map<string, infer U>
   ? { [key: string]: JsonOf<U> }
   : T extends Set<infer U>
-  ? Array<JsonOf<U>>
-  : T extends Array<infer U>
-  ? Array<JsonOf<U>>
+  ? JsonOf<U>[]
+  : T extends (infer U)[]
+  ? JsonOf<U>[]
   : T extends object // eslint-disable-line @typescript-eslint/ban-types
   ? { [P in keyof T]: JsonOf<T[P]> }
   : never

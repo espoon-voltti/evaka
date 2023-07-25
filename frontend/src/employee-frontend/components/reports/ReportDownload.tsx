@@ -30,7 +30,7 @@ const LinkText = styled.span`
 
 interface Props<T> {
   data: T[]
-  headers?: Array<{ label: string; key: keyof T }>
+  headers?: { label: string; key: keyof T }[]
   filename: string
   'data-qa'?: string
 }

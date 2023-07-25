@@ -326,7 +326,6 @@
           "@typescript-eslint/no-redundant-type-constituents": "off",
           "@typescript-eslint/dot-notation": "off",
           "@typescript-eslint/prefer-optional-chain": "off",
-          "@typescript-eslint/array-type": "off",
           "@typescript-eslint/consistent-indexed-object-style": "off",
           "@typescript-eslint/no-duplicate-type-constituents": "off"
         }

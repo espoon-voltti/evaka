@@ -22,7 +22,7 @@ import { UIContext } from '../../../state/ui'
 export interface Props {
   childId: UUID
   backupCare: ChildBackupCare
-  permittedActions: Array<Action.BackupCare>
+  permittedActions: Action.BackupCare[]
 }
 
 const Row = styled.section`
