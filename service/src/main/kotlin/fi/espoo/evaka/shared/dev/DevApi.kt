@@ -28,7 +28,6 @@ import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.decision.UnitInfo
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
-import fi.espoo.evaka.attendance.Child
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.childdiscussion.ChildDiscussionData
 import fi.espoo.evaka.childdiscussion.getChildDiscussions
@@ -160,7 +159,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
@@ -1530,11 +1528,7 @@ RETURNING id
         db: Database,
         @PathVariable childId: ChildId
     ): List<ChildDiscussionData> {
-        return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.getChildDiscussions(childId)
-            }
-        }
+        return db.connect { dbc -> dbc.read { tx -> tx.getChildDiscussions(childId) } }
     }
 }
 

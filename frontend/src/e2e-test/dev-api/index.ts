@@ -100,7 +100,7 @@ import {
   SuomiFiMessage,
   VtjPerson
 } from './types'
-import {ChildDiscussionData} from "../../lib-common/generated/api-types/childdiscussion";
+import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {

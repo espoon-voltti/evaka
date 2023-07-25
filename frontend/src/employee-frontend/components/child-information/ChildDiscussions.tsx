@@ -229,7 +229,7 @@ const ChildDiscussionRow = React.memo(function ChildDiscussionRow({
 
   const handleSaveDiscussion = useCallback(
     async () => await updateChildDiscussion(discussionData.id, form.value()),
-    [discussionData.id, form, reloadDiscussionData]
+    [discussionData.id, form]
   )
 
   const handleDeleteDiscussion = useCallback(async () => {

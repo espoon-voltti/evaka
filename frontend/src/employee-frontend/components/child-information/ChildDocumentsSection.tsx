@@ -15,7 +15,7 @@ import { useTranslation } from '../../state/i18n'
 import ChildDiscussion from './ChildDiscussions'
 import ChildDocuments from './ChildDocuments'
 import VasuAndLeops from './VasuAndLeops'
-import HorizontalLine from "../../../lib-components/atoms/HorizontalLine";
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 interface Props {
   id: UUID
