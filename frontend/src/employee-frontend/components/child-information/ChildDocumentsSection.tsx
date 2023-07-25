@@ -5,6 +5,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 
 import { UUID } from 'lib-common/types'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
@@ -15,7 +16,6 @@ import { useTranslation } from '../../state/i18n'
 import ChildDiscussion from './ChildDiscussions'
 import ChildDocuments from './ChildDocuments'
 import VasuAndLeops from './VasuAndLeops'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 interface Props {
   id: UUID

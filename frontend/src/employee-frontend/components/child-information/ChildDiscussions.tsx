@@ -6,6 +6,7 @@ import { faPen, faTrash } from 'Icons'
 import React, { Fragment, useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import { localDate } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
@@ -77,7 +78,7 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
       {permittedActions.has('CREATE_CHILD_DISCUSSION') && creationModalOpen && (
         <CreationModal
           childId={childId}
-          onAfterSubmit={reloadDiscussionData}
+          onAfterSubmitReload={reloadDiscussionData}
           onClose={() => setCreationModalOpen(false)}
         />
       )}
@@ -93,11 +94,11 @@ export default React.memo(function ChildDiscussions({ childId }: Props) {
 
 const CreationModal = React.memo(function CreationModal({
   childId,
-  onAfterSubmit,
+  onAfterSubmitReload,
   onClose
 }: {
   childId: UUID
-  onAfterSubmit: () => any | null
+  onAfterSubmitReload: () => Promise<Result<unknown>> | null
   onClose: () => void
 }) {
   const { i18n, lang } = useTranslation()
@@ -116,14 +117,11 @@ const CreationModal = React.memo(function CreationModal({
   const heldDateState = useFormField(form, 'heldDate')
   const counselingDateState = useFormField(form, 'counselingDate')
 
-  const submit = async () => {
-    const res = await createChildDiscussion(childId, form.value())
-    return res
-  }
+  const submit = async () => await createChildDiscussion(childId, form.value())
 
-  const handleOnSuccess = () => {
-    if (onAfterSubmit) {
-      onAfterSubmit()
+  const handleOnSuccess = async () => {
+    if (onAfterSubmitReload) {
+      await onAfterSubmitReload()
     }
     onClose()
   }

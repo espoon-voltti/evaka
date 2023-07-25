@@ -24,6 +24,7 @@ import {
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
+import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import {
   AbsenceCategory,
   AbsenceType
@@ -100,7 +101,6 @@ import {
   SuomiFiMessage,
   VtjPerson
 } from './types'
-import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
