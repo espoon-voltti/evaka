@@ -72,15 +72,16 @@ export const autocompleteAddress = async (
 }
 
 type ItineraryResponse = {
-  data: {
-    [key: string]: {
+  data: Record<
+    string,
+    {
       itineraries: {
         legs: {
           distance: number
         }[]
       }[]
     }
-  }
+  >
 }
 
 const uuidToKey = (id: string) => `id${id.replace(/-/g, '')}`

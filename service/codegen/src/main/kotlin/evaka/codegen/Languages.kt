@@ -29,7 +29,7 @@ private fun languageFileBody(): String {
         """
 export type IsoLanguage = { id: string; alpha2: string; nameFi: string }
 
-const isoLanguages: { [id: string]: IsoLanguage } = {
+const isoLanguages: Record<string, IsoLanguage> = {
 $languages
 }
 export { isoLanguages }

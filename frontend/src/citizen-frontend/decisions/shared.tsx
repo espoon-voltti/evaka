@@ -39,9 +39,10 @@ export const decisionStatusIcon = {
   }
 }
 
-export const applicationStatusIcon: {
-  [key: string]: { icon: IconDefinition; color: string }
-} = {
+export const applicationStatusIcon: Record<
+  string,
+  { icon: IconDefinition; color: string }
+> = {
   PROCESSING: {
     icon: faPlay,
     color: colors.main.m1
