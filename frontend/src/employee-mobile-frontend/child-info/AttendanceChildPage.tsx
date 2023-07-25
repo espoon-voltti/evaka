@@ -309,7 +309,7 @@ export default React.memo(function AttendanceChildPage() {
           resolve={{
             label: i18n.childInfo.image.modalMenu.deleteConfirm.resolve,
             action: () => {
-              deleteChildImage({ unitId, childId }).finally(() => {
+              void deleteChildImage({ unitId, childId }).finally(() => {
                 setUiMode('default')
               })
             }
@@ -328,7 +328,7 @@ export default React.memo(function AttendanceChildPage() {
           resolve={{
             label: i18n.common.yesIDo,
             action: () => {
-              returnToComing({ unitId, childId }).finally(() => {
+              void returnToComing({ unitId, childId }).finally(() => {
                 setUiMode('default')
                 navigate(-1)
               })

@@ -45,7 +45,7 @@ const defaultState: PersonState = {
   reloadFridgeChildren: () => undefined
 }
 
-const emptyPermittedActions: Set<Action.Person> = new Set()
+const emptyPermittedActions = new Set<Action.Person>()
 
 export const PersonContext = createContext<PersonState>(defaultState)
 

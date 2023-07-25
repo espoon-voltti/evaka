@@ -1008,7 +1008,7 @@ export function useRequiredAttachments(
   const { gross, entrepreneur, alimonyPayer, student } = formData
 
   return useMemo(() => {
-    const result: Set<AttachmentType> = new Set()
+    const result = new Set<AttachmentType>()
     if (gross.selected) {
       if (gross.incomeSource === 'ATTACHMENTS') result.add('PAYSLIP')
       if (gross.otherIncome)

@@ -295,9 +295,8 @@
       {
         "files": "**/*.{ts,tsx}",
         "extends": [
-          "plugin:@typescript-eslint/eslint-recommended",
-          "plugin:@typescript-eslint/recommended",
-          "plugin:@typescript-eslint/recommended-requiring-type-checking"
+          "plugin:@typescript-eslint/recommended-type-checked",
+          "plugin:@typescript-eslint/stylistic-type-checked"
         ],
         "parser": "@typescript-eslint/parser",
         "parserOptions": {
@@ -308,24 +307,11 @@
           "react-hooks"
         ],
         "rules": {
+          "jsx-expressions/strict-logical-expressions": "error",
           "@typescript-eslint/no-misused-promises": [
             "error",
             {
               "checksVoidReturn": false
-            }
-          ],
-          "@typescript-eslint/explicit-function-return-type": "off",
-          "@typescript-eslint/explicit-module-boundary-types": "off",
-          "@typescript-eslint/member-delimiter-style": [
-            "warn",
-            {
-              "multiline": {
-                "delimiter": "none"
-              },
-              "singleline": {
-                "delimiter": "semi",
-                "requireLast": false
-              }
             }
           ],
           "@typescript-eslint/no-unused-vars": [
@@ -335,8 +321,14 @@
               "varsIgnorePattern": "^_"
             }
           ],
-          "@typescript-eslint/no-floating-promises": "error",
-          "jsx-expressions/strict-logical-expressions": "error"
+          "@typescript-eslint/consistent-type-definitions": "off",
+          "@typescript-eslint/prefer-nullish-coalescing": "off",
+          "@typescript-eslint/no-redundant-type-constituents": "off",
+          "@typescript-eslint/dot-notation": "off",
+          "@typescript-eslint/prefer-optional-chain": "off",
+          "@typescript-eslint/array-type": "off",
+          "@typescript-eslint/consistent-indexed-object-style": "off",
+          "@typescript-eslint/no-duplicate-type-constituents": "off"
         }
       },
       {

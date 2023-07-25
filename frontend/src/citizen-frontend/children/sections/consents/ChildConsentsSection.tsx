@@ -167,7 +167,7 @@ const ChildConsentsContent = React.memo(function ChildConsentsContent({
                         )
                         .map(([type, consent]) => ({
                           type: type as ChildConsentType,
-                          given: consent.value as boolean
+                          given: consent.value ?? false
                         }))
                     }
                   : cancelMutation
