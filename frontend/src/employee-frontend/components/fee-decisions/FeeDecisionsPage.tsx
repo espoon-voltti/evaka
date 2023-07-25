@@ -29,9 +29,7 @@ import FeeDecisions from './FeeDecisions'
 
 const pageSize = 200
 
-export type PagedFeeDecisions = {
-  [k: number]: Result<FeeDecisionSummary[]>
-}
+export type PagedFeeDecisions = Record<number, Result<FeeDecisionSummary[]>>
 
 export default React.memo(function FeeDecisionsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)

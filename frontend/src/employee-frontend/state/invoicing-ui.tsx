@@ -34,9 +34,7 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 
 import { Unit } from '../api/daycare'
 
-export interface Checked {
-  [id: string]: boolean
-}
+export type Checked = Record<string, boolean>
 
 interface FeeDecisionSearchFilters {
   area: string[]

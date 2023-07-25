@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   spacing?: SpacingSize | string
   justifyContent?: Property.JustifyContent
   alignItems?: Property.AlignItems
@@ -50,9 +51,11 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
 `
 
 interface FixedSpaceColumnProps {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   spacing?: SpacingSize | string
   justifyContent?: Property.JustifyContent
   alignItems?: Property.AlignItems
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   marginRight?: SpacingSize | string
   fullWidth?: boolean
 }

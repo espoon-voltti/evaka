@@ -29,9 +29,10 @@ import VoucherValueDecisions from './VoucherValueDecisions'
 
 const pageSize = 200
 
-export type PagedValueDecisions = {
-  [k: number]: Result<VoucherValueDecisionSummary[]>
-}
+export type PagedValueDecisions = Record<
+  number,
+  Result<VoucherValueDecisionSummary[]>
+>
 
 export default React.memo(function VoucherValueDecisionsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)

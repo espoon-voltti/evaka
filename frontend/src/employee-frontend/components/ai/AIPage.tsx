@@ -105,13 +105,10 @@ export default React.memo(function AIPage() {
 
             <div>
               cost:{' '}
-              {`${
-                status.value.generations.length > 0
-                  ? status.value.generations[
-                      status.value.generations.length - 1
-                    ].cost
-                  : '-'
-              }`}
+              {status.value.generations.length > 0
+                ? status.value.generations[status.value.generations.length - 1]
+                    .cost
+                : '-'}
             </div>
           </div>
         )}

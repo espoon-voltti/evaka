@@ -117,10 +117,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   )
 
   return (
-    <Tr
-      key={`${pedagogicalDocument.id}`}
-      data-qa="table-pedagogical-document-row"
-    >
+    <Tr key={pedagogicalDocument.id} data-qa="table-pedagogical-document-row">
       <DateTd data-qa="pedagogical-document-start-date">
         {pedagogicalDocument.created.toLocalDate().format()}
       </DateTd>

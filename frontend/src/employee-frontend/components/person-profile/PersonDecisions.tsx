@@ -59,7 +59,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
                 ['startDate', 'preferredUnitName', 'childName'],
                 ['desc', 'desc']
               ).map((decision: Decision) => (
-                <Tr key={`${decision.id}`} data-qa="table-decision-row">
+                <Tr key={decision.id} data-qa="table-decision-row">
                   <NameTd data-qa="decision-child-name">
                     <Link to={`/child-information/${decision.childId}`}>
                       {decision.childName}

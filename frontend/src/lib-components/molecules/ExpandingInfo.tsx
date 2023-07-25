@@ -334,9 +334,7 @@ interface ExpandingInfoGroupProps {
 export const ExpandingInfoGroup = React.memo(function ExpandingInfoGroup({
   children
 }: ExpandingInfoGroupProps) {
-  const [closingCallbacks, setClosingCallbacks] = useState<Array<() => void>>(
-    []
-  )
+  const [closingCallbacks, setClosingCallbacks] = useState<(() => void)[]>([])
 
   return (
     <ExpandingInfoGroupContext.Provider

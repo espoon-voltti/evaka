@@ -41,6 +41,7 @@ export const Container = styled.div<{ verticalMargin?: string }>`
 `
 
 const spacing = (
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   spacing?: SpacingSize | string,
   defaultValue = defaultMargins.s
 ) =>
@@ -55,7 +56,9 @@ type ContentAreaProps = {
   'data-qa'?: string
   opaque: boolean
   fullHeight?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   paddingVertical?: SpacingSize | string
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   paddingHorizontal?: SpacingSize | string
   blue?: boolean
   shadow?: boolean

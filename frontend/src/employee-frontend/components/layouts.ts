@@ -23,7 +23,7 @@ export const getLayout = <Components>(
   const unionOfComponentNames = new Set(
     roles.flatMap((role) => layouts[role]?.map((part) => part.component) || [])
   )
-  const allLayouts = layouts['ADMIN'] ?? []
+  const allLayouts = layouts.ADMIN ?? []
   return allLayouts.filter((layout) =>
     unionOfComponentNames.has(layout.component)
   )

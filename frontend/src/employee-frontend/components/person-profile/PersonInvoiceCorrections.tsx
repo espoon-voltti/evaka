@@ -417,6 +417,7 @@ function useCorrectionEditState(headOfChildId: UUID) {
 }
 
 interface InvoiceCorrectionForm {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   id: 'new' | UUID
   headOfChildId: UUID
   childId: UUID

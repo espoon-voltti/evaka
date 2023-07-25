@@ -81,7 +81,7 @@ export default React.memo(function VardaErrors() {
               </Thead>
               <Tbody>
                 {rows.value.map((row: VardaErrorReportRow) => (
-                  <Tr data-qa="varda-error-row" key={`${row.serviceNeedId}`}>
+                  <Tr data-qa="varda-error-row" key={row.serviceNeedId}>
                     <Td data-qa={`age-${row.childId}`}>
                       {ageInDays(row.created)}
                     </Td>

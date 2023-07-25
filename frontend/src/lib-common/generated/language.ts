@@ -7,7 +7,7 @@
 
 export type IsoLanguage = { id: string; alpha2: string; nameFi: string }
 
-const isoLanguages: { [id: string]: IsoLanguage } = {
+const isoLanguages: Record<string, IsoLanguage> = {
   aar: { id: "aar", alpha2: "aa", nameFi: "afar" },
   abk: { id: "abk", alpha2: "ab", nameFi: "abhaasi" },
   afr: { id: "afr", alpha2: "af", nameFi: "afrikaans" },

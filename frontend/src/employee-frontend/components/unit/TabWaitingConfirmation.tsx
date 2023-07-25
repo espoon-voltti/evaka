@@ -103,7 +103,7 @@ export default React.memo(function TabWaitingConfirmation({
           <Tbody>
             {sortedRows.map((p) => (
               <Tr
-                key={`${p.id}`}
+                key={p.id}
                 data-qa="placement-plan-row"
                 data-application-id={p.applicationId}
                 data-rejected={p.rejectedByCitizen}

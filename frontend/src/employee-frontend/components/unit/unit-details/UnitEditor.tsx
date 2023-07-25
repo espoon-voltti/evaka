@@ -1136,7 +1136,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                       })
                     }}
                     error={validationErrors.rangeErrors[index]}
-                    dataQaPrefix={`${dayOfWeek}`}
+                    dataQaPrefix={dayOfWeek.toString()}
                     hideErrorsBeforeTouched={false}
                   />
                 ) : (

@@ -185,7 +185,7 @@ export function getErrorCount<E extends ErrorsOf<any>>(errors: E): number {
     return 0
   }
 
-  return (Object.keys(errors) as Array<keyof ErrorsOf<E>>).reduce<number>(
+  return (Object.keys(errors) as (keyof ErrorsOf<E>)[]).reduce<number>(
     (acc, key) => {
       const entry = errors[key]
       const isArr = isArrayErrors(entry)

@@ -6,6 +6,7 @@ import styled from 'styled-components'
 
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export default styled.ul<{ spacing?: SpacingSize | string }>`
   margin: 0;
   padding: 0 0 0 1.5em;

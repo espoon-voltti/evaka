@@ -107,16 +107,16 @@ export default class MobileChildPage {
 
   async assertSensitiveInfo(
     additionalInfo: Child,
-    contacts: Array<{
+    contacts: {
       firstName: string
       lastName: string
       phone?: string
       email?: string | null
-    }>,
-    backupPickups: Array<{
+    }[],
+    backupPickups: {
       name: string
       phone: string
-    }>
+    }[]
   ) {
     await this.#sensitiveInfo.allergies.assertTextEquals(
       additionalInfo.allergies ?? 'should be defined'

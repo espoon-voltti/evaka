@@ -50,7 +50,7 @@ export default React.memo(function FosterParents({ id }: Props) {
               ['asc']
             ).map(({ relationshipId, parent, validDuring }) => (
               <Tr
-                key={`${relationshipId}`}
+                key={relationshipId}
                 data-qa={`foster-parent-row-${parent.id}`}
               >
                 <NameTd>

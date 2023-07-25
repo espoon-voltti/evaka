@@ -57,7 +57,7 @@ export default React.memo(function PersonDependants({
               {orderBy(dependants, ['dateOfBirth'], ['asc']).map(
                 (dependant: PersonWithChildrenDTO) => (
                   <Tr
-                    key={`${dependant.id}`}
+                    key={dependant.id}
                     data-qa={`table-dependant-row-${dependant.id}`}
                   >
                     <NameTd data-qa="dependant-name">

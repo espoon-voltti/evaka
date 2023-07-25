@@ -120,7 +120,7 @@ export class ElementCollection {
     return this.locator.allInnerTexts()
   }
 
-  async elementHandles(): Promise<Array<ElementHandle<Node>>> {
+  async elementHandles(): Promise<ElementHandle<Node>[]> {
     return this.locator.elementHandles()
   }
 

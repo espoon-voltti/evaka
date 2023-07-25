@@ -57,7 +57,7 @@ interface Props {
   sortDirection: SortDirection
   setSortDirection: (v: SortDirection) => void
   showCheckboxes: boolean
-  checked: { [id: string]: boolean }
+  checked: Record<string, boolean>
   toggleChecked: (id: string) => void
   checkAll: () => void
   clearChecked: () => void

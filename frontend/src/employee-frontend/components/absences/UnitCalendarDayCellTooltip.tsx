@@ -86,7 +86,7 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
   )
 
   const backupCareTooltip = (
-    <div>{i18n.absences.absenceTypes['TEMPORARY_RELOCATION']}</div>
+    <div>{i18n.absences.absenceTypes.TEMPORARY_RELOCATION}</div>
   )
 
   const absencesTooltip = useMemo(

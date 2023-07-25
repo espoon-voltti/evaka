@@ -4,19 +4,25 @@
 
 import {
   CheckboxQuestion,
+  DateQuestion,
+  Followup,
+  MultiFieldListQuestion,
+  MultiFieldQuestion,
   MultiSelectQuestion,
   RadioGroupQuestion,
-  TextQuestion,
-  Followup
-} from '../vasu-content'
+  TextQuestion
+} from 'lib-common/api-types/vasu'
 
 export interface QuestionProps<
   T extends
-    | TextQuestion
     | CheckboxQuestion
-    | RadioGroupQuestion
-    | MultiSelectQuestion
+    | DateQuestion
     | Followup
+    | MultiFieldListQuestion
+    | MultiFieldQuestion
+    | MultiSelectQuestion
+    | RadioGroupQuestion
+    | TextQuestion
 > {
   questionNumber: string
   question: T

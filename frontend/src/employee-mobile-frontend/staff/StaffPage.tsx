@@ -30,6 +30,7 @@ export default React.memo(function StaffPage() {
   const navigate = useNavigate()
   const { unitId, groupId: groupIdOrAll } = useNonNullableParams<{
     unitId: UUID
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     groupId: UUID | 'all'
   }>()
 

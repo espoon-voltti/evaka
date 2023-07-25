@@ -49,7 +49,7 @@ interface Props {
 
 const typeOptions = (
   i18n: Translations
-): Array<OneOfOption<OtherAssistanceMeasureType>> =>
+): OneOfOption<OtherAssistanceMeasureType>[] =>
   otherAssistanceMeasureTypes.map((type) => ({
     value: type,
     domValue: type,

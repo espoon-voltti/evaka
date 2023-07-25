@@ -56,10 +56,10 @@ const CheckboxRow = styled.div`
 interface FormState {
   startDate: LocalDate
   endDate: LocalDate
-  actions: Array<string>
+  actions: string[]
   otherSelected: boolean
   otherAction: string
-  measures: Array<AssistanceMeasure>
+  measures: AssistanceMeasure[]
 }
 
 interface CommonProps {

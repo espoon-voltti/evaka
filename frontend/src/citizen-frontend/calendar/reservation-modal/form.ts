@@ -40,9 +40,7 @@ export const MAX_TIME_RANGE = {
   end: LocalTime.MAX
 }
 
-interface Dictionary<T> {
-  [index: string]: T
-}
+type Dictionary<T> = Record<string, T>
 
 export const emptyTimeRange: StateOf<typeof localTimeRangeWithUnitTimes> = {
   startTime: {
