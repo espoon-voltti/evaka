@@ -21,7 +21,7 @@ function TerminatedPlacementRow({
 }) {
   const { i18n } = useTranslation()
   return (
-    <Tr key={`${placement.child.id}`} data-qa="terminated-placement-row">
+    <Tr key="$placement.child.id}" data-qa="terminated-placement-row">
       <Td data-qa="child-name">
         <Link to={`/child-information/${placement.child.id}`}>
           {formatName(
@@ -42,10 +42,10 @@ function TerminatedPlacementRow({
           }
         />
       </Td>
-      <Td data-qa="termination-requested-date">{`${
-        placement.terminationRequestedDate?.format() ?? ''
-      }`}</Td>
-      <Td data-qa="placement-end-date">{`${placement.endDate.format()}`}</Td>
+      <Td data-qa="termination-requested-date">
+        {placement.terminationRequestedDate?.format() ?? ''}
+      </Td>
+      <Td data-qa="placement-end-date">{placement.endDate.format()}</Td>
       <Td data-qa="group-name">{placement.currentDaycareGroupName}</Td>
     </Tr>
   )

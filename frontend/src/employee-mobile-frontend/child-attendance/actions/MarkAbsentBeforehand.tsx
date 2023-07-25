@@ -252,7 +252,9 @@ export default React.memo(function MarkAbsentBeforehand() {
                                 key={absenceRange.start.format()}
                                 data-qa="absence-row"
                               >
-                                <AbsenceDate>{`${absenceRange.start.format()}`}</AbsenceDate>
+                                <AbsenceDate>
+                                  {absenceRange.start.format()}
+                                </AbsenceDate>
                                 <IconButton
                                   icon={faTrash}
                                   onClick={() => {

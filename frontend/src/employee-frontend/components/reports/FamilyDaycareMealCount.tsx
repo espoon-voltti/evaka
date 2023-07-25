@@ -401,10 +401,7 @@ export default React.memo(function FamilyDaycareMealCount() {
                   {filteredDaycareResults.map(
                     (daycare: FamilyDaycareMealDaycareResult) => (
                       <React.Fragment key={daycare.daycareName}>
-                        <Tr
-                          key={`${daycare.daycareId}`}
-                          data-qa={`${daycare.daycareId}`}
-                        >
+                        <Tr key={daycare.daycareId} data-qa={daycare.daycareId}>
                           <Td>
                             <div
                               onClick={() =>

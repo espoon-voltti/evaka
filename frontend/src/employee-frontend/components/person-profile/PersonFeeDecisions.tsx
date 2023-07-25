@@ -94,7 +94,7 @@ export default React.memo(function PersonFeeDecisions({
           <Tbody>
             {orderBy(feeDecisions, ['sentAt', 'validFrom'], ['desc']).map(
               (feeDecision: FeeDecision) => (
-                <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
+                <Tr key={feeDecision.id} data-qa="table-fee-decision-row">
                   <Td>
                     <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
                       Maksupäätös {feeDecision.validDuring.format()}

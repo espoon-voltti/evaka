@@ -101,7 +101,7 @@ export default React.memo(function PersonVoucherValueDecisions({
 
               return (
                 <Tr
-                  key={`${decision.id}`}
+                  key={decision.id}
                   data-qa="table-voucher-value-decision-row"
                 >
                   <Td>

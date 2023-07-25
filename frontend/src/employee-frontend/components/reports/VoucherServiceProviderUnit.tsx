@@ -235,7 +235,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
           <>
             <SumRow>
               <FixedSpaceRow>
-                <strong>{`${i18n.reports.voucherServiceProviderUnit.total}`}</strong>
+                <strong>{i18n.reports.voucherServiceProviderUnit.total}</strong>
                 <strong>
                   {formatCents(sortedReport.value.voucherTotal, true)} €
                 </strong>

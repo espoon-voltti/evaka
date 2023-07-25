@@ -326,7 +326,7 @@ export default React.memo(function PlacementCount() {
               <Tbody>
                 {filteredAreaResults.map((area: PlacementCountAreaResult) => (
                   <React.Fragment key={area.areaName}>
-                    <Tr key={`${area.areaId}`} data-qa={`${area.areaId}`}>
+                    <Tr key={area.areaId} data-qa={area.areaId}>
                       <Td>
                         <div
                           onClick={() =>

@@ -108,7 +108,7 @@ const VasuTable = React.memo(function VasuTable({
             </DateTd>
             <LinkTd>
               <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
-                {`${vasu.name}`}
+                {vasu.name}
               </Link>
             </LinkTd>
             <StateTd data-qa={`state-chip-${vasu.id}`}>
@@ -240,7 +240,7 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
                   </FixedSpaceRow>
                   <Gap size="xs" />
                   <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
-                    {`${vasu.name}`}
+                    {vasu.name}
                   </Link>
                   {permissionToShareRequired &&
                     !vasu.guardiansThatHaveGivenPermissionToShare.some(

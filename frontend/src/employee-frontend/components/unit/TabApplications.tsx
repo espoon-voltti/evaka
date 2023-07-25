@@ -53,7 +53,7 @@ export default React.memo(function TabApplications({ applications }: Props) {
           </Thead>
           <Tbody>
             {applications.map((row) => (
-              <Tr key={`${row.applicationId}`} data-qa="application-row">
+              <Tr key={row.applicationId} data-qa="application-row">
                 <Td>
                   <div data-qa="child-name">
                     {formatName(row.firstName, row.lastName, i18n, true)}

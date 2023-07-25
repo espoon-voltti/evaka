@@ -54,7 +54,7 @@ export default React.memo(function PersonInvoices({
             <Tbody>
               {orderBy(invoices, ['sentAt'], ['desc']).map(
                 (invoice: Invoice) => (
-                  <Tr key={`${invoice.id}`} data-qa="table-invoice-row">
+                  <Tr key={invoice.id} data-qa="table-invoice-row">
                     <Td>
                       <Link to={`/finance/invoices/${invoice.id}`}>
                         Lasku{' '}

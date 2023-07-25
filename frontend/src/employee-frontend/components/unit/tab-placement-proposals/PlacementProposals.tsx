@@ -249,7 +249,7 @@ export default React.memo(function PlacementProposals({
           <Tbody>
             {sortedRows.map((p) => (
               <PlacementProposalRow
-                key={`${p.id}`}
+                key={p.id}
                 placementPlan={p}
                 confirmationState={
                   confirmationStates[p.applicationId]?.confirmation ?? null

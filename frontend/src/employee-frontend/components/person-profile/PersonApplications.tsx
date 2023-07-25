@@ -69,7 +69,7 @@ export default React.memo(function PersonApplications({
                 ['desc', 'desc']
               ).map((application: PersonApplicationSummary) => (
                 <Tr
-                  key={`${application.applicationId}`}
+                  key={application.applicationId}
                   data-qa="table-application-row"
                 >
                   <NameTd data-qa="application-child-name">
