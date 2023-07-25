@@ -93,15 +93,15 @@ class ChildDiscussionIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             listOf(
                 ChildDiscussionWithPermittedActions(
                     data =
-                    ChildDiscussionData(
-                        discussionId2,
-                        testChild_1.id,
-                        offeredDate2,
-                        heldDate2,
-                        counselingDate2
-                    ),
+                        ChildDiscussionData(
+                            discussionId2,
+                            testChild_1.id,
+                            offeredDate2,
+                            heldDate2,
+                            counselingDate2
+                        ),
                     permittedActions =
-                    setOf(Action.ChildDiscussion.UPDATE, Action.ChildDiscussion.DELETE)
+                        setOf(Action.ChildDiscussion.UPDATE, Action.ChildDiscussion.DELETE)
                 ),
                 ChildDiscussionWithPermittedActions(
                     data =
