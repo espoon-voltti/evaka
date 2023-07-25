@@ -128,20 +128,20 @@ const ChildConsentsContent = React.memo(function ChildConsentsContent({
           <Gap size="m" />
           <FixedSpaceRow>
             <Radio
-              checked={form['EVAKA_PROFILE_PICTURE'].value === true}
+              checked={form.EVAKA_PROFILE_PICTURE.value === true}
               disabled={
-                form['EVAKA_PROFILE_PICTURE'].value !== null &&
-                !form['EVAKA_PROFILE_PICTURE'].dirty
+                form.EVAKA_PROFILE_PICTURE.value !== null &&
+                !form.EVAKA_PROFILE_PICTURE.dirty
               }
               label={t.common.yes}
               onChange={() => onSetConsent('EVAKA_PROFILE_PICTURE', true)}
               data-qa="consent-profilepic-yes"
             />
             <Radio
-              checked={form['EVAKA_PROFILE_PICTURE'].value === false}
+              checked={form.EVAKA_PROFILE_PICTURE.value === false}
               disabled={
-                form['EVAKA_PROFILE_PICTURE'].value !== null &&
-                !form['EVAKA_PROFILE_PICTURE'].dirty
+                form.EVAKA_PROFILE_PICTURE.value !== null &&
+                !form.EVAKA_PROFILE_PICTURE.dirty
               }
               label={t.common.no}
               onChange={() => onSetConsent('EVAKA_PROFILE_PICTURE', false)}

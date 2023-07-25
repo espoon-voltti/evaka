@@ -261,9 +261,9 @@ const DatePicker = React.memo(function DatePicker({
 
           if (pickerRef.current && (leftOffset !== 0 || rightOffset !== 0)) {
             const left = -overflow + leftOffset - rightOffset
-            pickerRef.current.style['left'] = `${left}px`
+            pickerRef.current.style.left = `${left}px`
             const right = -overflow - leftOffset + rightOffset
-            pickerRef.current.style['right'] = `${right}px`
+            pickerRef.current.style.right = `${right}px`
           }
         }
       }

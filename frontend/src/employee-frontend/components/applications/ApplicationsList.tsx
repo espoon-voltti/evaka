@@ -335,56 +335,56 @@ const ApplicationsList = React.memo(function Applications({
           {application.additionalInfo && (
             <RoundIcon
               content="L"
-              color={applicationBasisColors['ADDITIONAL_INFO']}
+              color={applicationBasisColors.ADDITIONAL_INFO}
               size="s"
             />
           )}
           {application.siblingBasis && (
             <RoundIcon
               content="S"
-              color={applicationBasisColors['SIBLING_BASIS']}
+              color={applicationBasisColors.SIBLING_BASIS}
               size="s"
             />
           )}
           {application.assistanceNeed && (
             <RoundIcon
               content="T"
-              color={applicationBasisColors['ASSISTANCE_NEED']}
+              color={applicationBasisColors.ASSISTANCE_NEED}
               size="s"
             />
           )}
           {application.wasOnClubCare && (
             <RoundIcon
               content="K"
-              color={applicationBasisColors['CLUB_CARE']}
+              color={applicationBasisColors.CLUB_CARE}
               size="s"
             />
           )}
           {application.wasOnDaycare && (
             <RoundIcon
               content="P"
-              color={applicationBasisColors['DAYCARE']}
+              color={applicationBasisColors.DAYCARE}
               size="s"
             />
           )}
           {application.extendedCare && (
             <RoundIcon
               content="V"
-              color={applicationBasisColors['EXTENDED_CARE']}
+              color={applicationBasisColors.EXTENDED_CARE}
               size="s"
             />
           )}
           {application.duplicateApplication && (
             <RoundIcon
               content="2"
-              color={applicationBasisColors['DUPLICATE_APPLICATION']}
+              color={applicationBasisColors.DUPLICATE_APPLICATION}
               size="s"
             />
           )}
           {application.urgent && (
             <RoundIcon
               content="!"
-              color={applicationBasisColors['URGENT']}
+              color={applicationBasisColors.URGENT}
               size="s"
             />
           )}
@@ -392,7 +392,7 @@ const ApplicationsList = React.memo(function Applications({
             application.attachmentCount > 0 && (
               <RoundIcon
                 content={faPaperclip}
-                color={applicationBasisColors['HAS_ATTACHMENTS']}
+                color={applicationBasisColors.HAS_ATTACHMENTS}
                 size="s"
               />
             )}

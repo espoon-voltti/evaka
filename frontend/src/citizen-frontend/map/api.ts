@@ -203,7 +203,7 @@ export const fetchDistance = async (
       query
     })
     .then((res) => {
-      const plan = res.data.data['plan']
+      const plan = res.data.data.plan
       if (!plan) throw Error('No plan found')
 
       const itineraries = plan.itineraries
