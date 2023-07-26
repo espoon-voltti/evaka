@@ -4,6 +4,7 @@
 
 import React, { useCallback, useState } from 'react'
 
+import { Result } from 'lib-common/api'
 import {
   AbsenceCategory,
   AbsenceType
@@ -11,7 +12,7 @@ import {
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 
@@ -40,11 +41,13 @@ export default React.memo(function AbsenceModal({
   showCategorySelection,
   showMissingHolidayReservation,
   onSave,
+  onSuccess,
   onClose
 }: {
   showCategorySelection: boolean
   showMissingHolidayReservation: boolean
-  onSave: (value: AbsenceUpdate) => void
+  onSave: (value: AbsenceUpdate) => Promise<Result<unknown>>
+  onSuccess: () => void
   onClose: () => void
 }) {
   const { i18n } = useTranslation()
@@ -67,7 +70,7 @@ export default React.memo(function AbsenceModal({
   }, [])
 
   return (
-    <FormModal
+    <AsyncFormModal
       title=""
       resolveAction={() =>
         onSave(
@@ -76,6 +79,7 @@ export default React.memo(function AbsenceModal({
             : { ...selectedAbsenceType, absenceCategories: selectedCategories }
         )
       }
+      onSuccess={onSuccess}
       resolveLabel={i18n.absences.modal.saveButton}
       resolveDisabled={showCategorySelection && selectedCategories.length === 0}
       rejectAction={onClose}
@@ -139,6 +143,6 @@ export default React.memo(function AbsenceModal({
           </>
         )}
       </FixedSpaceColumn>
-    </FormModal>
+    </AsyncFormModal>
   )
 })

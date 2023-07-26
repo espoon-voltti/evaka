@@ -154,15 +154,9 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
   }, [groupMonthCalendar.groupName, groupMonthCalendar.daycareName, setTitle])
 
   const updateAbsences = useCallback(
-    (update: AbsenceUpdate) => {
-      sendAbsenceUpdates(groupId, selectedCells, update)
-        .then(reloadData)
-        .catch((e) => console.error(e))
-        .finally(() => {
-          closeModal()
-        })
-    },
-    [closeModal, groupId, reloadData, selectedCells]
+    (update: AbsenceUpdate) =>
+      sendAbsenceUpdates(groupId, selectedCells, update),
+    [groupId, selectedCells]
   )
 
   return (
@@ -172,6 +166,10 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
           showCategorySelection={showCategorySelection}
           showMissingHolidayReservation={showMissingHolidayReservation}
           onSave={updateAbsences}
+          onSuccess={() => {
+            reloadData()
+            closeModal()
+          }}
           onClose={closeModal}
         />
       )}
