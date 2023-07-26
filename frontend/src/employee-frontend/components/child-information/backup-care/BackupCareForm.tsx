@@ -17,6 +17,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import LocalDate from 'lib-common/local-date'
+import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -156,6 +157,35 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     [units]
   )
 
+  const [createOrUpdateBackupCare, onClick] = useSelectMutation(
+    () => (backupCare === undefined ? first() : second(backupCare)),
+    [
+      createBackupCareMutation,
+      () =>
+        formState.unit !== undefined
+          ? {
+              childId,
+              payload: {
+                unitId: formState.unit.id,
+                period: new FiniteDateRange(
+                  formState.startDate,
+                  formState.endDate
+                )
+              }
+            }
+          : cancelMutation
+    ],
+    [
+      updateBackupCareMutation,
+      (backupCare) => ({
+        backupCareId: backupCare.id,
+        groupId: null,
+        unitId: backupCare.unit.id,
+        period: new FiniteDateRange(formState.startDate, formState.endDate)
+      })
+    ]
+  )
+
   return (
     <div>
       <form data-qa="backup-care-form">
@@ -200,49 +230,16 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
         ))}
         <ActionButtons>
           <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
-          {backupCare === undefined ? (
-            <MutateButton
-              primary
-              type="submit"
-              mutation={createBackupCareMutation}
-              onClick={() =>
-                formState.unit === undefined
-                  ? cancelMutation
-                  : {
-                      childId,
-                      payload: {
-                        unitId: formState.unit.id,
-                        period: new FiniteDateRange(
-                          formState.startDate,
-                          formState.endDate
-                        )
-                      }
-                    }
-              }
-              onSuccess={submitSuccess}
-              disabled={formErrors.length > 0 || !formState.unit}
-              data-qa="submit-backup-care-form"
-              text={i18n.common.confirm}
-            />
-          ) : (
-            <MutateButton
-              primary
-              type="submit"
-              mutation={updateBackupCareMutation}
-              onClick={() => ({
-                backupCareId: backupCare.id,
-                groupId: null,
-                period: new FiniteDateRange(
-                  formState.startDate,
-                  formState.endDate
-                )
-              })}
-              onSuccess={submitSuccess}
-              disabled={formErrors.length > 0 || !formState.unit}
-              data-qa="submit-backup-care-form"
-              text={i18n.common.confirm}
-            />
-          )}
+          <MutateButton
+            primary
+            type="submit"
+            mutation={createOrUpdateBackupCare}
+            onClick={onClick}
+            onSuccess={submitSuccess}
+            disabled={formErrors.length > 0 || !formState.unit}
+            data-qa="submit-backup-care-form"
+            text={i18n.common.confirm}
+          />
         </ActionButtons>
       </form>
       {uiMode === 'create-new-backup-care' && <div className="separator" />}
