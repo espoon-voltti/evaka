@@ -303,7 +303,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     'long'
   )
   return (
-    <ModalAccessibilityWrapper>
+    <ModalAccessibilityWrapper data-qa="children-menu">
       <MenuContainer>
         {childrenWithOwnPage.map((child) => (
           <DropDownLink

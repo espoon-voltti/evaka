@@ -8,6 +8,7 @@ import ResponsiveWholePageCollapsible from 'citizen-frontend/children/Responsive
 import { useTranslation } from 'citizen-frontend/localization'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { H3 } from 'lib-components/typography'
@@ -50,6 +51,7 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           <ServiceNeedTable serviceNeeds={serviceNeeds} />
         )
       })}
+      <HorizontalLine slim hiddenOnTabletAndDesktop />
       <H3>{t.children.dailyServiceTime.title}</H3>
       {dailyServiceTimesResponse.mapAll({
         failure: () => <ErrorSegment title={t.common.errors.genericGetError} />,

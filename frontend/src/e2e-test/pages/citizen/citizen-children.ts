@@ -7,8 +7,13 @@ import LocalDate from 'lib-common/local-date'
 import { waitUntilEqual } from '../../utils'
 import { AsyncButton, Page, Radio, TextInput } from '../../utils/page'
 
+import { EnvType } from './citizen-header'
+
 export class CitizenChildPage {
-  constructor(private readonly page: Page) {}
+  constructor(
+    private readonly page: Page,
+    private readonly env: EnvType = 'desktop'
+  ) {}
 
   #placements = this.page.findAllByDataQa('placement')
   #terminatedPlacements = this.page.findAllByDataQa('terminated-placement')
@@ -32,6 +37,12 @@ export class CitizenChildPage {
     await this.page.findByDataQa(`collapsible-${collapsible}`).click()
   }
 
+  async closeCollapsible() {
+    if (this.env === 'mobile') {
+      await this.page.findByDataQa('return-collapsible').click()
+    }
+  }
+
   async assertServiceNeedTable(
     data: {
       dateRange: string
@@ -40,8 +51,12 @@ export class CitizenChildPage {
     }[]
   ) {
     if (data.length > 0) {
-      await this.page.findByDataQa('service-need-table').waitUntilVisible()
-      const rows = this.page.findAllByDataQa('service-need-table-row')
+      await this.page
+        .findByDataQa(`service-need-table-${this.env}`)
+        .waitUntilVisible()
+      const rows = this.page.findAllByDataQa(
+        `service-need-table-row-${this.env}`
+      )
       await rows.assertCount(data.length)
       await Promise.all(
         data.map(async (expected, index) => {
@@ -58,7 +73,9 @@ export class CitizenChildPage {
         })
       )
     } else {
-      await this.page.findByDataQa('service-need-table').waitUntilHidden()
+      await this.page
+        .findByDataQa(`service-need-table-${this.env}`)
+        .waitUntilHidden()
     }
   }
 
@@ -67,9 +84,11 @@ export class CitizenChildPage {
   ) {
     if (data.length > 0) {
       await this.page
-        .findByDataQa('daily-service-time-table')
+        .findByDataQa(`daily-service-time-table-${this.env}`)
         .waitUntilVisible()
-      const rows = this.page.findAllByDataQa('daily-service-time-table-row')
+      const rows = this.page.findAllByDataQa(
+        `daily-service-time-table-row-${this.env}`
+      )
       await rows.assertCount(data.length)
       await Promise.all(
         data.map(async (expected, index) => {
@@ -83,7 +102,9 @@ export class CitizenChildPage {
         })
       )
     } else {
-      await this.page.findByDataQa('daily-service-time-table').waitUntilHidden()
+      await this.page
+        .findByDataQa(`daily-service-time-table-${this.env}`)
+        .waitUntilHidden()
     }
   }
 

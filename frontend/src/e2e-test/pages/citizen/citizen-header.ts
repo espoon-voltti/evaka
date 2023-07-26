@@ -79,9 +79,15 @@ export default class CitizenHeader {
 
   async openChildPage(childId: string) {
     await this.#childrenNav.waitUntilVisible()
-    if (await this.#childrenNav.findByDataQa('drop-down-icon').visible) {
+    if (
+      (await this.#childrenNav.findByDataQa('drop-down-icon').visible) ||
+      this.type === 'mobile'
+    ) {
       await this.#toggleChildrenMenu()
-      await this.page.findByDataQa(`children-menu-${childId}`).click()
+      const selector = this.page.findByDataQa(`children-menu-${childId}`)
+      if (await selector.visible) {
+        await selector.click()
+      }
     } else {
       await this.#childrenNav.click()
     }
