@@ -9,6 +9,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceNeedDecision(
@@ -293,20 +295,23 @@ fun Database.Transaction.updateAssistanceNeedDecision(
 }
 
 fun Database.Read.getAssistanceNeedDecisionsByChildId(
-    childId: ChildId
-): List<AssistanceNeedDecisionBasics> {
-    // language=sql
-    val sql =
-        """
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceNeedDecisionId>
+): List<AssistanceNeedDecisionBasics> =
+    createQuery<Any> {
+            sql(
+                """
         SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,
             selected_unit selected_unit_id, unit.name selected_unit_name
         FROM assistance_need_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE child_id = :childId;
-        """
-            .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<AssistanceNeedDecisionBasics>().list()
-}
+        WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
+    """
+                    .trimIndent()
+            )
+        }
+        .mapTo<AssistanceNeedDecisionBasics>()
+        .list()
 
 fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean {
     // language=sql

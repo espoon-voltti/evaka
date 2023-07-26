@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -566,6 +567,37 @@ describe('Child assistance need decisions for employees', () => {
     const rejectedDecision = await assistance.assistanceNeedDecisions(1)
     expect(rejectedDecision.status).toEqual('REJECTED')
     expect(rejectedDecision.actionCount).toEqual(0)
+  })
+
+  test('Shows acceted decisions for staff', async () => {
+    const staff = await Fixture.employeeStaff(unitId).save()
+    await setupPlacement('DAYCARE')
+    const statuses: AssistanceNeedDecisionStatus[] = [
+      'DRAFT',
+      'NEEDS_WORK',
+      'ACCEPTED',
+      'REJECTED',
+      'ANNULLED'
+    ]
+    await Promise.all(
+      statuses.map((status) =>
+        Fixture.preFilledAssistanceNeedDecision()
+          .withChild(childId)
+          .with({
+            status,
+            annulmentReason: status === 'ANNULLED' ? 'not shown to staff' : ''
+          })
+          .save()
+      )
+    )
+
+    await logUserIn(staff.data)
+    await assistance.waitUntilAssistanceNeedDecisionsLoaded()
+    await assistance.assertAssistanceNeedDecisionCount(1)
+
+    const acceptedDecision = await assistance.assistanceNeedDecisions(0)
+    expect(acceptedDecision.status).toEqual('ACCEPTED')
+    expect(acceptedDecision.actionCount).toEqual(0)
   })
 })
 

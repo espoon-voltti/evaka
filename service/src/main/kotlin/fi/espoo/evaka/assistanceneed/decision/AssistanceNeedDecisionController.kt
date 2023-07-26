@@ -269,14 +269,14 @@ class AssistanceNeedDecisionController(
     ): List<AssistanceNeedDecisionBasicsResponse> {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Child.READ_ASSISTANCE_NEED_DECISIONS,
-                        childId
-                    )
-                    val decisions = tx.getAssistanceNeedDecisionsByChildId(childId)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedDecision.READ
+                        )
+                    val decisions = tx.getAssistanceNeedDecisionsByChildId(childId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<
                             AssistanceNeedDecisionId, Action.AssistanceNeedDecision

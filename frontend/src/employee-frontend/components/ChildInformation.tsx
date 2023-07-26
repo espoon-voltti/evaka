@@ -115,7 +115,11 @@ const components = {
     PedagogicalDocuments,
     'READ_PEDAGOGICAL_DOCUMENTS'
   ),
-  assistance: requireOneOfPermittedActions(Assistance, 'READ_ASSISTANCE'),
+  assistance: requireOneOfPermittedActions(
+    Assistance,
+    'READ_ASSISTANCE',
+    'READ_ASSISTANCE_NEED_DECISIONS'
+  ),
   'backup-care': requireOneOfPermittedActions(BackupCare, 'READ_BACKUP_CARE'),
   'family-contacts': requireOneOfPermittedActions(
     FamilyContacts,
