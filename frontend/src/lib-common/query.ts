@@ -21,6 +21,8 @@ import { useCallback, useMemo } from 'react'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 
+import { useStableCallback } from './utils/useStableCallback'
+
 export interface QueryDescription<Data, Key extends QueryKey> {
   api: () => Promise<Data>
   queryKey: Key
@@ -259,4 +261,86 @@ export function queryKeysNamespace<QueryKeyPrefix extends string>() {
     ) as any
   }
   /* eslint-enable */
+}
+
+export const cancelMutation: unique symbol = Symbol('cancelMutation')
+
+export type Either<A, B> =
+  | { tag: 'first'; value: A }
+  | { tag: 'second'; value: B }
+
+export function first<A>(value: A): Either<A, never>
+export function first(): Either<void, never>
+export function first<A>(value?: A): Either<A | void, never> {
+  return { tag: 'first', value }
+}
+
+export function second<B>(value: B): Either<never, B>
+export function second(): Either<never, void>
+export function second<B>(value?: B): Either<never, B | void> {
+  return { tag: 'second', value }
+}
+
+export function useSelectMutation<
+  ArgA,
+  DataA,
+  KeyA extends QueryKey,
+  SelectA,
+  ArgB,
+  DataB,
+  KeyB extends QueryKey,
+  SelectB
+>(
+  select: () => Either<SelectA, SelectB> | typeof cancelMutation,
+  firstMutation: [
+    MutationDescription<ArgA, DataA, KeyA>,
+    (value: SelectA) => ArgA | typeof cancelMutation
+  ],
+  secondMutation: [
+    MutationDescription<ArgB, DataB, KeyB>,
+    (value: SelectB) => ArgB | typeof cancelMutation
+  ]
+): [
+  MutationDescription<Either<ArgA, ArgB>, Either<DataA, DataB>, QueryKey>,
+  () => Either<ArgA, ArgB> | typeof cancelMutation
+] {
+  const [mutationA, onClickA] = firstMutation
+  const [mutationB, onClickB] = secondMutation
+  const mutation = useMemo(
+    (): MutationDescription<
+      Either<ArgA, ArgB>,
+      Either<DataA, DataB>,
+      QueryKey
+    > => ({
+      api: (arg: Either<ArgA, ArgB>): Promise<Either<DataA, DataB>> =>
+        arg.tag === 'first'
+          ? mutationA.api(arg.value).then((r) => first(r))
+          : mutationB.api(arg.value).then((r) => second(r)),
+      invalidateQueryKeys: (arg: Either<ArgA, ArgB>): KeyA[] | KeyB[] =>
+        arg.tag === 'first'
+          ? mutationA.invalidateQueryKeys?.(arg.value) ?? []
+          : mutationB.invalidateQueryKeys?.(arg.value) ?? []
+    }),
+    [mutationA, mutationB]
+  )
+
+  const select_ = useStableCallback(select)
+  const onClickA_ = useStableCallback(onClickA)
+  const onClickB_ = useStableCallback(onClickB)
+
+  const onClick = useCallback(():
+    | Either<ArgA, ArgB>
+    | typeof cancelMutation => {
+    const selection = select_()
+    if (selection === cancelMutation) return cancelMutation
+    if (selection.tag === 'first') {
+      const value = onClickA_(selection.value)
+      return value === cancelMutation ? cancelMutation : first(value)
+    } else {
+      const value = onClickB_(selection.value)
+      return value === cancelMutation ? cancelMutation : second(value)
+    }
+  }, [onClickA_, onClickB_, select_])
+
+  return [mutation, onClick]
 }

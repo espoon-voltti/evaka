@@ -8,10 +8,11 @@ import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { invalidateDependencies, MutationDescription } from 'lib-common/query'
+import { cancelMutation } from 'lib-common/query'
 
 import AsyncButton, { AsyncButtonProps } from './AsyncButton'
 
-export const cancelMutation: unique symbol = Symbol('cancelMutation')
+export { cancelMutation }
 
 export interface MutateButtonProps<Arg, Data, Key extends QueryKey>
   extends Omit<AsyncButtonProps<unknown>, 'onClick' | 'onSuccess'> {
