@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { UUID } from 'lib-common/types'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -17,11 +18,13 @@ import { formatName } from '../../../../utils'
 import { updateBackupCareMutation } from '../../queries'
 
 interface Props {
+  unitId: UUID
   backupCare: UnitBackupCare
   groups: DaycareGroup[]
 }
 
 export default React.memo(function BackupCareGroupModal({
+  unitId,
   backupCare,
   groups
 }: Props) {
@@ -57,7 +60,8 @@ export default React.memo(function BackupCareGroupModal({
           ? {
               backupCareId: backupCare.id,
               period,
-              groupId: group.id
+              groupId: group.id,
+              unitId
             }
           : cancelMutation
       }

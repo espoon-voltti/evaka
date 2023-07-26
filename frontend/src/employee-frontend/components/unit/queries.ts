@@ -122,56 +122,35 @@ export const unitApplicationsQuery = query({
   queryKey: queryKeys.unitApplications
 })
 
-export type CreateGroupPlacementOrUpdateBackupCare =
-  | {
-      type: 'createGroupPlacement'
-      unitId: UUID
-      payload: CreateGroupPlacement
-    }
-  | {
-      type: 'updateBackupCare'
-      unitId: UUID
-      payload: BackupCareUpdate
-    }
-
-export const createGroupPlacementOrUpdateBackupCareMutation = mutation({
-  api: ({ type, payload }: CreateGroupPlacementOrUpdateBackupCare) =>
-    type === 'createGroupPlacement'
-      ? createGroupPlacement(payload)
-      : updateBackupCare(payload),
+export const createGroupPlacementMutation = mutation({
+  api: ({
+    unitId: _,
+    ...payload
+  }: CreateGroupPlacement & {
+    unitId: UUID
+  }) => createGroupPlacement(payload),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
   ]
 })
 
-export type DeleteGroupPlacementOrUpdateBackupCare =
-  | {
-      type: 'deleteGroupPlacement'
-      unitId: UUID
-      payload: UUID
-    }
-  | {
-      type: 'updateBackupCare'
-      unitId: UUID
-      payload: BackupCareUpdate
-    }
-
-export const deleteGroupPlacementOrUpdateBackupCareMutation = mutation({
-  api: ({ type, payload }: DeleteGroupPlacementOrUpdateBackupCare) =>
-    type === 'deleteGroupPlacement'
-      ? deleteGroupPlacement(payload)
-      : updateBackupCare(payload),
+export const deleteGroupPlacementMutation = mutation({
+  api: ({
+    unitId: _,
+    groupPlacementId
+  }: {
+    unitId: UUID
+    groupPlacementId: UUID
+  }) => deleteGroupPlacement(groupPlacementId),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
   ]
 })
-
-export type TransferGroupMutation = TransferGroup & { unitId: UUID }
 
 export const transferGroupMutation = mutation({
-  api: ({ unitId: _, ...payload }: TransferGroupMutation) =>
+  api: ({ unitId: _, ...payload }: TransferGroup & { unitId: UUID }) =>
     transferGroup(payload),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
@@ -238,7 +217,12 @@ export const createBackupCareMutation = mutation({
 })
 
 export const updateBackupCareMutation = mutation({
-  api: updateBackupCare
+  api: ({ unitId: _, ...payload }: BackupCareUpdate & { unitId: UUID }) =>
+    updateBackupCare(payload),
+  invalidateQueryKeys: ({ unitId }) => [
+    queryKeys.unitGroupDetails(unitId),
+    queryKeys.unitNotifications(unitId)
+  ]
 })
 
 export const unitAttendanceReservationsQuery = query({

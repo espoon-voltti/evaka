@@ -224,6 +224,7 @@ export default React.memo(function Groups({
             />
           ) : (
             <BackupCareGroupModal
+              unitId={unit.id}
               backupCare={transferredPlacement}
               groups={groups}
             />

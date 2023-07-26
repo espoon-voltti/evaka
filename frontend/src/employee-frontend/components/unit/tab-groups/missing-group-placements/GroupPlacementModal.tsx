@@ -9,6 +9,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
+import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -23,7 +24,10 @@ import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
-import { createGroupPlacementOrUpdateBackupCareMutation } from '../../queries'
+import {
+  createGroupPlacementMutation,
+  updateBackupCareMutation
+} from '../../queries'
 
 const FieldWrapper = styled.section`
   display: flex;
@@ -113,37 +117,42 @@ export default React.memo(function GroupPlacementModal({
       }
     : {}
 
+  const [createGroupPlacementOrBackupCare, onClick] = useSelectMutation(
+    () =>
+      form.groupId === null
+        ? cancelMutation
+        : !missingPlacement.backup
+        ? first(form.groupId)
+        : second(form.groupId),
+    [
+      createGroupPlacementMutation,
+      (groupId) => ({
+        unitId,
+        daycarePlacementId: placementId,
+        groupId,
+        startDate: form.startDate,
+        endDate: form.endDate
+      })
+    ],
+    [
+      updateBackupCareMutation,
+      (groupId) => ({
+        unitId,
+        backupCareId: placementId,
+        period: new FiniteDateRange(form.startDate, form.endDate),
+        groupId
+      })
+    ]
+  )
+
   return (
     <MutateFormModal
       data-qa="group-placement-modal"
       title={i18n.unit.placements.modal.createTitle}
       icon={faChild}
       type="info"
-      resolveMutation={createGroupPlacementOrUpdateBackupCareMutation}
-      resolveAction={() =>
-        form.groupId === null
-          ? cancelMutation
-          : missingPlacement.backup
-          ? {
-              type: 'updateBackupCare' as const,
-              unitId,
-              payload: {
-                backupCareId: placementId,
-                period: new FiniteDateRange(form.startDate, form.endDate),
-                groupId: form.groupId
-              }
-            }
-          : {
-              type: 'createGroupPlacement' as const,
-              unitId,
-              payload: {
-                daycarePlacementId: placementId,
-                groupId: form.groupId,
-                startDate: form.startDate,
-                endDate: form.endDate
-              }
-            }
-      }
+      resolveMutation={createGroupPlacementOrBackupCare}
+      resolveAction={onClick}
       onSuccess={clearUiMode}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={form.errors.length > 0}
