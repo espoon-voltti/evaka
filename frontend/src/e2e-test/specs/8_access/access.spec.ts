@@ -217,7 +217,7 @@ describe('Child information page sections', () => {
       feeAlterations: false,
       guardians: false,
       placements: true,
-      assistance: false,
+      assistance: true,
       backupCares: true,
       familyContacts: true,
       applications: false,
