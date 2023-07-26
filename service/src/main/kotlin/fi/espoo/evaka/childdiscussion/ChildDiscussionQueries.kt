@@ -61,7 +61,6 @@ fun Database.Transaction.updateChildDiscussion(id: ChildDiscussionId, dto: Child
             held_date = :heldDate, 
             counseling_date = :counselingDate
         WHERE id = :id
-        RETURNING *
         """
             .trimIndent()
 
@@ -77,5 +76,5 @@ fun Database.Transaction.deleteChildDiscussion(id: ChildDiscussionId) {
         """
             .trimIndent()
 
-    createUpdate(sql).bind("id", id).execute()
+    createUpdate(sql).bind("id", id).updateExactlyOne()
 }

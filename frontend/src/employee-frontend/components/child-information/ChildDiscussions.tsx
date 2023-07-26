@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faPen, faTrash } from 'Icons'
-import React, { Fragment, useCallback, useContext, useState } from 'react'
-import styled from 'styled-components'
+import React, { useCallback, useContext, useState } from 'react'
 
 import { Result } from 'lib-common/api'
 import { localDate } from 'lib-common/form/fields'
@@ -21,7 +20,8 @@ import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -45,12 +45,6 @@ import { FlexRow } from '../common/styled/containers'
 interface Props {
   childId: UUID
 }
-
-const LineBreak = styled.div`
-  width: 100%;
-  border: 1px solid #d8d8d8;
-  margin: 40px 0 20px 0;
-`
 
 export default React.memo(function ChildDiscussions({ childId }: Props) {
   const { i18n } = useTranslation()
@@ -173,17 +167,29 @@ const ChildDiscussionSummary = React.memo(function ChildDiscussionSummary({
   discussions: ChildDiscussionWithPermittedActions[]
   reloadDiscussionData: () => void
 }) {
+  const { i18n } = useTranslation()
+
   return (
     <>
-      {discussions.map((discussion, index) => (
-        <Fragment key={discussion.data.id}>
-          <ChildDiscussionRow
-            discussion={discussion}
-            reloadDiscussionData={reloadDiscussionData}
-          />
-          {index != discussions.length - 1 && <LineBreak />}
-        </Fragment>
-      ))}
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.childInformation.childDiscussion.offered}</Th>
+            <Th>{i18n.childInformation.childDiscussion.held}</Th>
+            <Th>{i18n.childInformation.childDiscussion.counseling}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {discussions.map((discussion) => (
+            <ChildDiscussionRow
+              key={discussion.data.id}
+              discussion={discussion}
+              reloadDiscussionData={reloadDiscussionData}
+            />
+          ))}
+        </Tbody>
+      </Table>
     </>
   )
 })
@@ -256,52 +262,47 @@ const ChildDiscussionRow = React.memo(function ChildDiscussionRow({
     discussionData.counselingDate != counselingDateState.value()
 
   return (
-    <div>
-      <FlexRow justifyContent="space-between">
-        <FixedSpaceColumn alignItems="center" justifyContent="center">
-          <Label>{i18n.childInformation.childDiscussion.offered}</Label>
-          {editing ? (
-            <DatePickerF
-              bind={offeredDateState}
-              locale={lang}
-              data-qa={`discussion-offered-date-input-${discussionData.id}`}
-            />
-          ) : (
-            <span data-qa={`discussion-offered-date-${discussionData.id}`}>
-              {offeredDateState.value()?.format()}
-            </span>
-          )}
-        </FixedSpaceColumn>
-
-        <FixedSpaceColumn alignItems="center" justifyContent="center">
-          <Label>{i18n.childInformation.childDiscussion.held}</Label>
-          {editing ? (
-            <DatePickerF
-              bind={heldDateState}
-              locale={lang}
-              data-qa={`discussion-held-date-input-${discussionData.id}`}
-            />
-          ) : (
-            <span data-qa={`discussion-held-date-${discussionData.id}`}>
-              {heldDateState.value()?.format()}
-            </span>
-          )}
-        </FixedSpaceColumn>
-
-        <FixedSpaceColumn alignItems="center" justifyContent="center">
-          <Label>{i18n.childInformation.childDiscussion.counseling}</Label>
-          {editing ? (
-            <DatePickerF
-              bind={counselingDateState}
-              locale={lang}
-              data-qa={`discussion-counseling-date-input-${discussionData.id}`}
-            />
-          ) : (
-            <span data-qa={`discussion-counseling-date-${discussionData.id}`}>
-              {counselingDateState.value()?.format()}
-            </span>
-          )}
-        </FixedSpaceColumn>
+    <Tr key={discussion.data.id}>
+      <Td>
+        {editing ? (
+          <DatePickerF
+            bind={offeredDateState}
+            locale={lang}
+            data-qa={`discussion-offered-date-input-${discussionData.id}`}
+          />
+        ) : (
+          <span data-qa={`discussion-offered-date-${discussionData.id}`}>
+            {offeredDateState.value()?.format()}
+          </span>
+        )}
+      </Td>
+      <Td>
+        {editing ? (
+          <DatePickerF
+            bind={heldDateState}
+            locale={lang}
+            data-qa={`discussion-held-date-input-${discussionData.id}`}
+          />
+        ) : (
+          <span data-qa={`discussion-held-date-${discussionData.id}`}>
+            {heldDateState.value()?.format()}
+          </span>
+        )}
+      </Td>
+      <Td>
+        {editing ? (
+          <DatePickerF
+            bind={counselingDateState}
+            locale={lang}
+            data-qa={`discussion-counseling-date-input-${discussionData.id}`}
+          />
+        ) : (
+          <span data-qa={`discussion-counseling-date-${discussionData.id}`}>
+            {counselingDateState.value()?.format()}
+          </span>
+        )}
+      </Td>
+      <Td>
         {editing ? (
           <FixedSpaceColumn alignItems="center" justifyContent="center">
             <Button onClick={handleCancel} text={i18n.common.cancel} />
@@ -315,24 +316,24 @@ const ChildDiscussionRow = React.memo(function ChildDiscussionRow({
             />
           </FixedSpaceColumn>
         ) : (
-          <FixedSpaceColumn alignItems="center" justifyContent="center">
-            <InlineButton
+          <FixedSpaceRow>
+            <IconButton
               disabled={!permittedActions.includes('UPDATE')}
               icon={faPen}
               onClick={startEdit}
               data-qa={`edit-discussion-button-${discussionData.id}`}
-              text={i18n.common.edit}
+              aria-label={i18n.common.edit}
             />
-            <InlineButton
+            <IconButton
               disabled={!permittedActions.includes('DELETE')}
               icon={faTrash}
               onClick={handleDeleteDiscussion}
               data-qa={`delete-discussion-button-${discussionData.id}`}
-              text={i18n.common.remove}
+              aria-label={i18n.common.remove}
             />
-          </FixedSpaceColumn>
+          </FixedSpaceRow>
         )}
-      </FlexRow>
-    </div>
+      </Td>
+    </Tr>
   )
 })

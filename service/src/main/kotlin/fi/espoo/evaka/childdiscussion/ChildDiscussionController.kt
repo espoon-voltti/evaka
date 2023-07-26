@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -68,8 +67,6 @@ class ChildDiscussionController(private val accessControl: AccessControl) {
                         Action.ChildDiscussion.UPDATE,
                         discussionId
                     )
-                    tx.getChildDiscussionById(discussionId)
-                        ?: throw NotFound("Discussion data not found")
                     tx.updateChildDiscussion(discussionId, body)
                 }
             }
@@ -92,8 +89,6 @@ class ChildDiscussionController(private val accessControl: AccessControl) {
                         Action.ChildDiscussion.DELETE,
                         discussionId
                     )
-                    tx.getChildDiscussionById(discussionId)
-                        ?: throw NotFound("Discussion data not found")
                     tx.deleteChildDiscussion(discussionId)
                 }
             }
