@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.bind.DatatypeConverter;
-
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.Map;
 
 public class EvakaLoggingEventListenerProvider extends JBossLoggingEventListenerProvider {
@@ -53,8 +53,9 @@ public class EvakaLoggingEventListenerProvider extends JBossLoggingEventListener
     }
 
     public static String sha256(String source) {
+        byte[] decodedBytes = Base64.getDecoder().decode("encodedUserPassword");
         return source != null
-                ? DatatypeConverter.printHexBinary(digest.digest(source.getBytes(StandardCharsets.UTF_8))).toLowerCase()
+                ? HexFormat.of().formatHex(digest.digest(source.getBytes(StandardCharsets.UTF_8))).toLowerCase()
                 : null;
     }
 
