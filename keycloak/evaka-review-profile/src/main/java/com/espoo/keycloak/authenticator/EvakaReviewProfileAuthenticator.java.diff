@@ -1,5 +1,5 @@
---- IdpReviewProfileAuthenticator.java.orig	2023-03-10 14:15:52.462843088 +0200
-+++ EvakaReviewProfileAuthenticator.java	2023-03-10 14:41:45.668407095 +0200
+--- ../../../../../../../../update/IdpReviewProfileAuthenticator.java.22.0.1.orig	2023-07-26 15:30:36.526859613 +0300
++++ EvakaReviewProfileAuthenticator.java	2023-07-26 18:24:16.097553061 +0300
 @@ -15,7 +15,7 @@
   * limitations under the License.
   */
@@ -11,8 +11,8 @@
  import org.keycloak.authentication.AuthenticationFlowContext;
 @@ -41,16 +41,21 @@
  
- import javax.ws.rs.core.MultivaluedMap;
- import javax.ws.rs.core.Response;
+ import jakarta.ws.rs.core.MultivaluedMap;
+ import jakarta.ws.rs.core.Response;
 +import java.util.ArrayList;
  import java.util.List;
  import java.util.Map;

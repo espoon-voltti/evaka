@@ -23,6 +23,7 @@ evaka/account/resources/css/
 role-condition/target
 compose-resources/deployments/
 *.orig
+*.new
 
 */target
 */.classpath
