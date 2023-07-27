@@ -576,11 +576,17 @@ function findAdjacentDates(
   if (todayIndex === undefined) {
     return { navigateToPreviousDate: undefined, navigateToNextDate: undefined }
   }
-  const previousDate = reservationsResponse.days[todayIndex - 1]?.date
-  const nextDate = reservationsResponse.days[todayIndex + 1]?.date
+  const previousDate =
+    todayIndex > 1 ? reservationsResponse.days[todayIndex - 1].date : undefined
+  const nextDate =
+    todayIndex < reservationsResponse.days.length - 1
+      ? reservationsResponse.days[todayIndex + 1].date
+      : undefined
   return {
-    navigateToPreviousDate: () => selectDate(previousDate),
-    navigateToNextDate: () => selectDate(nextDate)
+    navigateToPreviousDate: previousDate
+      ? () => selectDate(previousDate)
+      : undefined,
+    navigateToNextDate: nextDate ? () => selectDate(nextDate) : undefined
   }
 }
 
