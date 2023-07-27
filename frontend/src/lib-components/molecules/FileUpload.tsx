@@ -508,13 +508,15 @@ export default React.memo(function FileUpload({
                         {file.name}
                       </span>
                     )}
-                    <FileDeleteButton
-                      icon={faTimes}
-                      disabled={file.deleteInProgress}
-                      onClick={() => deleteFile(file)}
-                      aria-label={`${i18n.upload.deleteFile} ${file.name}`}
-                      data-qa={`file-delete-button-${file.name}`}
-                    />
+                    {!inProgress(file) && (
+                      <FileDeleteButton
+                        icon={faTimes}
+                        disabled={file.deleteInProgress}
+                        onClick={() => deleteFile(file)}
+                        aria-label={`${i18n.upload.deleteFile} ${file.name}`}
+                        data-qa={`file-delete-button-${file.name}`}
+                      />
+                    )}
                   </FileHeader>
                   {inProgress(file) && (
                     <ProgressBarContainer>
