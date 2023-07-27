@@ -1628,23 +1628,37 @@ const en: Translations = {
         Population Data Services Agency (DVV).
       </P>
     ),
-    noEmailAlert:
-      'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
-    noPhoneAlert: 'Your phone number is missing. Please fill it down below.',
-    personalInfo: 'Personal information',
-    name: 'Name',
-    preferredName: 'Preferred first name',
-    contactInfo: 'Contact information',
-    address: 'Address',
-    phone: 'Phone number',
-    backupPhone: 'Additional phone number',
-    backupPhonePlaceholder: 'Eg. work phone number',
-    email: 'Email',
-    emailMissing: 'Email missing',
-    phoneMissing: 'Phone number missing',
-    noEmail: 'I have no email address',
-    emailInfo:
-      'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+    detailsSection: {
+      noEmailAlert:
+        'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
+      noPhoneAlert: 'Your phone number is missing. Please fill it down below.',
+      title: 'Personal information',
+      name: 'Name',
+      preferredName: 'Preferred first name',
+      contactInfo: 'Contact information',
+      address: 'Address',
+      phone: 'Phone number',
+      backupPhone: 'Additional phone number',
+      backupPhonePlaceholder: 'Eg. work phone number',
+      email: 'Email',
+      emailMissing: 'Email missing',
+      phoneMissing: 'Phone number missing',
+      noEmail: 'I have no email address',
+      emailInfo:
+        'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+    },
+    notificationsSection: {
+      title: 'Email notifications',
+      info: 'You can choose which notifications you want to receive by email. Click edit to change your settings.',
+      subtitle: 'You will receive notifications about the following',
+      message: 'eVaka messages sent by the staff',
+      bulletin: 'General eVaka bulletins',
+      outdatedIncome: 'Reminders about missing income information',
+      calendarEvent: 'Reminders about new events in the calendar',
+      document: 'Reminders about new documents',
+      missingAttendanceReservation:
+        'Reminders about missing attendance reservations'
+    }
   },
   income: {
     title: 'Income information',

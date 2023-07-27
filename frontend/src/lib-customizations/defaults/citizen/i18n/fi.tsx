@@ -1848,23 +1848,25 @@ export default {
         muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
       </P>
     ),
-    noEmailAlert:
-      'Sähköpostiosoitteesi puuttuu, ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset',
-    noPhoneAlert: 'Puhelinnumerosi puuttuu, ole hyvä ja täydennä se alle',
-    personalInfo: 'Henkilötiedot',
-    name: 'Nimi',
-    preferredName: 'Kutsumanimi',
-    contactInfo: 'Yhteystiedot',
-    address: 'Osoite',
-    phone: 'Puhelinnumero',
-    backupPhone: 'Varapuhelinnumero',
-    backupPhonePlaceholder: 'Esim. työpuhelin',
-    email: 'Sähköpostiosoite',
-    emailMissing: 'Sähköpostiosoite puuttuu',
-    phoneMissing: 'Puhelinnumero puuttuu',
-    noEmail: 'Minulla ei ole sähköpostiosoitetta',
-    emailInfo:
-      'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+    detailsSection: {
+      title: 'Henkilötiedot',
+      noEmailAlert:
+        'Sähköpostiosoitteesi puuttuu, ole hyvä ja täydennä se alle, jotta pystyt vastaanottamaan eVakasta lähetetyt ilmoitukset',
+      noPhoneAlert: 'Puhelinnumerosi puuttuu, ole hyvä ja täydennä se alle',
+      name: 'Nimi',
+      preferredName: 'Kutsumanimi',
+      contactInfo: 'Yhteystiedot',
+      address: 'Osoite',
+      phone: 'Puhelinnumero',
+      backupPhone: 'Varapuhelinnumero',
+      backupPhonePlaceholder: 'Esim. työpuhelin',
+      email: 'Sähköpostiosoite',
+      emailMissing: 'Sähköpostiosoite puuttuu',
+      phoneMissing: 'Puhelinnumero puuttuu',
+      noEmail: 'Minulla ei ole sähköpostiosoitetta',
+      emailInfo:
+        'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+    }
   },
   income: {
     title: 'Tulotiedot',
