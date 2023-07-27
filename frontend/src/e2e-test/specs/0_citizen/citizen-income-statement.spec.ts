@@ -24,9 +24,7 @@ beforeEach(async () => {
   incomeStatementsPage = new IncomeStatementsPage(page)
 })
 
-async function assertIncomeStatementCreated(
-  startDate = LocalDate.todayInSystemTz().format()
-) {
+async function assertIncomeStatementCreated(startDate: string) {
   await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
   await incomeStatementsPage.rows
     .only()
@@ -46,10 +44,10 @@ const assertRequiredAttachment = async (attachment: string, present = true) =>
   )
 
 describe('Income statements', () => {
+  const startDate = '24.12.2044'
+
   describe('With the bare minimum selected', () => {
     test('Highest fee', async () => {
-      const startDate = '24.12.2044'
-
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
@@ -63,13 +61,14 @@ describe('Income statements', () => {
     test('Gross income', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated()
+      await assertIncomeStatementCreated(startDate)
     })
   })
 
@@ -77,6 +76,7 @@ describe('Income statements', () => {
     test('Limited liability company', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -109,11 +109,12 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated()
+      await assertIncomeStatementCreated(startDate)
     })
     test('Self employed', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -144,12 +145,13 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated()
+      await assertIncomeStatementCreated(startDate)
     })
 
     test('Light entrepreneur', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -176,12 +178,13 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated()
+      await assertIncomeStatementCreated(startDate)
     })
 
     test('Partnership', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -201,7 +204,7 @@ describe('Income statements', () => {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await assertIncomeStatementCreated()
+      await assertIncomeStatementCreated(startDate)
     })
   })
 })

@@ -64,8 +64,8 @@ export interface Accountant {
   phone: string
 }
 
-export const empty: IncomeStatementForm = {
-  startDate: LocalDate.todayInSystemTz(),
+export const emptyIncomeStatementForm: IncomeStatementForm = {
+  startDate: null,
   endDate: null,
   highestFee: false,
   childIncome: false,
@@ -111,25 +111,11 @@ export const empty: IncomeStatementForm = {
   assure: false
 }
 
-function findValidStartDate(existingStartDates: LocalDate[]): LocalDate {
-  const yesterday = LocalDate.todayInSystemTz().subDays(1)
-  return existingStartDates
-    .reduce((a, b) => (a.isAfter(b) ? a : b), yesterday)
-    .addDays(1)
-}
-
-export const initialFormData = (
-  existingStartDates: LocalDate[]
-): IncomeStatementForm => ({
-  ...empty,
-  startDate: findValidStartDate(existingStartDates)
-})
-
 export function fromIncomeStatement(
   incomeStatement: ApiTypes.IncomeStatement
 ): IncomeStatementForm {
   return {
-    ...empty,
+    ...emptyIncomeStatementForm,
     startDate: incomeStatement.startDate,
     endDate: incomeStatement.endDate,
     highestFee: incomeStatement.type === 'HIGHEST_FEE',
@@ -153,7 +139,7 @@ export function fromIncomeStatement(
 }
 
 function mapGross(gross: ApiTypes.Gross | null): Gross {
-  if (!gross) return empty.gross
+  if (!gross) return emptyIncomeStatementForm.gross
   return {
     selected: true,
     incomeSource: gross.incomeSource,
@@ -179,7 +165,7 @@ function mapEstimation(estimatedIncome: ApiTypes.EstimatedIncome | null): {
 function mapEntrepreneur(
   entrepreneur: ApiTypes.Entrepreneur | null
 ): Entrepreneur {
-  if (!entrepreneur) return empty.entrepreneur
+  if (!entrepreneur) return emptyIncomeStatementForm.entrepreneur
   return {
     selected: true,
     fullTime: entrepreneur.fullTime,
@@ -191,14 +177,16 @@ function mapEntrepreneur(
     limitedCompany: mapLimitedCompany(entrepreneur.limitedCompany),
     partnership: entrepreneur.partnership,
     lightEntrepreneur: entrepreneur.lightEntrepreneur,
-    accountant: entrepreneur.accountant ?? empty.entrepreneur.accountant
+    accountant:
+      entrepreneur.accountant ??
+      emptyIncomeStatementForm.entrepreneur.accountant
   }
 }
 
 function mapSelfEmployed(
   selfEmployed: ApiTypes.SelfEmployed | null
 ): SelfEmployed {
-  if (!selfEmployed) return empty.entrepreneur.selfEmployed
+  if (!selfEmployed) return emptyIncomeStatementForm.entrepreneur.selfEmployed
   return {
     selected: true,
     attachments: selfEmployed.attachments,
@@ -210,7 +198,8 @@ function mapSelfEmployed(
 function mapLimitedCompany(
   limitedCompany: ApiTypes.LimitedCompany | null
 ): LimitedCompany {
-  if (!limitedCompany) return empty.entrepreneur.limitedCompany
+  if (!limitedCompany)
+    return emptyIncomeStatementForm.entrepreneur.limitedCompany
   return {
     selected: true,
     incomeSource: limitedCompany.incomeSource

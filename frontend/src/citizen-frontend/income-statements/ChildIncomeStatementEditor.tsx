@@ -24,7 +24,7 @@ import {
 } from './queries'
 import { fromBody } from './types/body'
 import * as Form from './types/form'
-import { initialFormData } from './types/form'
+import { emptyIncomeStatementForm } from './types/form'
 
 interface EditorState {
   id: string | undefined
@@ -50,7 +50,7 @@ function useInitialEditorState(
       startDates,
       formData:
         incomeStatement === undefined
-          ? { ...initialFormData(startDates), childIncome: true }
+          ? { ...emptyIncomeStatementForm, childIncome: true }
           : Form.fromIncomeStatement(incomeStatement)
     })
   )

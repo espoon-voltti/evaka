@@ -346,7 +346,7 @@ const IncomeTypeSelection = React.memo(
                 date={formData.startDate}
                 onChange={useFieldDispatch(onChange, 'startDate')}
                 info={startDateInputInfo}
-                hideErrorsBeforeTouched
+                hideErrorsBeforeTouched={!showFormErrors}
                 locale={lang}
                 isInvalidDate={(d) =>
                   isValidStartDate(d)
