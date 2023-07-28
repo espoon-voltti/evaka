@@ -19,6 +19,7 @@ import {
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import { first, second, useSelectMutation } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
@@ -28,6 +29,10 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import {
+  cancelMutation,
+  InlineMutateButton
+} from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -50,11 +55,9 @@ import {
   faUndo
 } from 'lib-icons'
 
-import { updateBackupCare } from '../../../../api/child/backup-care'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
-import { deleteGroup, deleteGroupPlacement } from '../../../../api/unit'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
-import { useTranslation } from '../../../../state/i18n'
+import { Translations, useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
 import {
@@ -73,6 +76,11 @@ import { AgeIndicatorChip } from '../../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../../common/CareTypeLabel'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
+import {
+  deleteGroupMutation,
+  deleteGroupPlacementMutation,
+  updateBackupCareMutation
+} from '../../queries'
 import NotesModal from '../notes/NotesModal'
 
 interface Props {
@@ -86,7 +94,6 @@ interface Props {
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void
-  reload: () => void
   open: boolean
   toggleOpen: () => void
   permittedActions: Set<Action.Group>
@@ -146,7 +153,6 @@ export default React.memo(function Group({
   caretakers,
   confirmedOccupancy,
   realizedOccupancy,
-  reload,
   onTransferRequested,
   open,
   toggleOpen,
@@ -175,22 +181,6 @@ export default React.memo(function Group({
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
   const headcounts = getChildMinMaxHeadcounts(confirmedOccupancy)
-
-  const onDeleteGroup = () => {
-    void deleteGroup(unit.id, group.id).then(reload)
-  }
-
-  const onDeletePlacement = (
-    row: DaycareGroupPlacementDetailed | UnitBackupCare
-  ) => {
-    if ('type' in row) {
-      if (!row.id) throw Error('deleting placement without id')
-      void deleteGroupPlacement(row.id).then(reload)
-    } else {
-      const { id, period } = row
-      void updateBackupCare(id, { period, groupId: undefined }).then(reload)
-    }
-  }
 
   const placements = group.placements.filter((placement) => {
     if (filters.endDate == null) {
@@ -234,117 +224,10 @@ export default React.memo(function Group({
     unitChildrenCapacityFactors &&
     unitChildrenCapacityFactors.length > 0
 
-  const formatSleepingTooltipText = (childNote: ChildDailyNote) =>
-    [
-      childNote.sleepingNote
-        ? i18n.unit.groups.daycareDailyNote.level[childNote.sleepingNote]
-        : null,
-      childNote.sleepingMinutes
-        ? Number(childNote.sleepingMinutes) / 60 >= 1
-          ? `${Math.floor(
-              Number(childNote.sleepingMinutes) / 60
-            )}h ${Math.round(Number(childNote.sleepingMinutes) % 60)}min`
-          : `${Math.floor(Number(childNote.sleepingMinutes) / 60)}min`
-        : null
-    ]
-      .filter((s) => s !== null)
-      .join(',')
-
   const canManageCaretakers =
     permittedActions.has('UPDATE_CARETAKERS') ||
     permittedActions.has('CREATE_CARETAKERS') ||
     permittedActions.has('DELETE_CARETAKERS')
-
-  const renderDaycareDailyNote = (
-    placement: DaycareGroupPlacementDetailed | UnitBackupCare
-  ) => {
-    if (!mobileEnabled) return null
-
-    return renderResult(notesResponse, (notes) => {
-      const childNote = notes.childDailyNotes.find(
-        (note) => note.childId === placement.child.id
-      )
-      return (
-        <Tooltip
-          data-qa={`daycare-daily-note-hover-${placement.child.id}`}
-          position="top"
-          tooltip={
-            childNote ? (
-              <div>
-                <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
-                <p>{childNote.note}</p>
-                <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
-                <p>
-                  {childNote.feedingNote
-                    ? i18n.unit.groups.daycareDailyNote.level[
-                        childNote.feedingNote
-                      ]
-                    : ''}
-                </p>
-                <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
-                <p>{formatSleepingTooltipText(childNote)}</p>
-                <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
-                <p>
-                  {childNote.reminders
-                    .map(
-                      (reminder) =>
-                        i18n.unit.groups.daycareDailyNote.reminderType[reminder]
-                    )
-                    .join(',')}
-                </p>
-                <h5>
-                  {
-                    i18n.unit.groups.daycareDailyNote
-                      .otherThingsToRememberHeader
-                  }
-                </h5>
-                <p>{childNote.reminderNote}</p>
-                {notes.childStickyNotes.length > 0 && (
-                  <>
-                    <h5>
-                      {i18n.unit.groups.daycareDailyNote.stickyNotesHeader}
-                    </h5>
-                    {notes.childStickyNotes.map((stickyNote) => (
-                      <p key={stickyNote.id}>{stickyNote.note}</p>
-                    ))}
-                  </>
-                )}
-                {notes.groupNotes.length > 0 && (
-                  <>
-                    <h5>
-                      {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
-                    </h5>
-                    {notes.groupNotes.map((groupNote) => (
-                      <p key={groupNote.id}>{groupNote.note}</p>
-                    ))}
-                  </>
-                )}
-              </div>
-            ) : (
-              <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
-            )
-          }
-        >
-          <RoundIcon
-            active={childNote != null || notes.childStickyNotes.length > 0}
-            data-qa={`daycare-daily-note-icon-${placement.child.id}`}
-            content={faStickyNote}
-            color={colors.main.m2}
-            size="m"
-            onClick={() =>
-              setNotesModal({
-                group: { id: group.id, name: group.name },
-                child: {
-                  id: placement.child.id,
-                  name: formatPersonName(placement.child, i18n)
-                }
-              })
-            }
-          />
-        </Tooltip>
-      )
-    })
-  }
 
   return (
     <DaycareGroup
@@ -353,7 +236,7 @@ export default React.memo(function Group({
       data-status={open ? 'open' : 'closed'}
     >
       {uiMode === `update-group-${group.id}` && (
-        <GroupUpdateModal group={group} reload={reload} />
+        <GroupUpdateModal group={group} />
       )}
       {notesModal && (
         <NotesModal
@@ -416,10 +299,11 @@ export default React.memo(function Group({
           )}
           {permittedActions.has('DELETE') && (
             <>
-              <InlineButton
+              <InlineMutateButton
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
-                onClick={() => onDeleteGroup()}
+                mutation={deleteGroupMutation}
+                onClick={() => ({ unitId: unit.id, groupId: group.id })}
                 disabled={sortedPlacements.length > 0 || !group.deletable}
                 data-qa="btn-remove-group"
               />
@@ -535,210 +419,31 @@ export default React.memo(function Group({
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {sortedPlacements.map((placement) => {
-                    const missingServiceNeedDays =
-                      'type' in placement
-                        ? placement.daycarePlacementMissingServiceNeedDays
-                        : placement.missingServiceNeedDays
-                    const canTransfer = !!(
-                      placement.id &&
-                      ('type' in placement
-                        ? permittedGroupPlacementActions[
-                            placement.id
-                          ]?.includes('UPDATE')
-                        : permittedBackupCareActions[placement.id]?.includes(
-                            'UPDATE'
-                          ))
-                    )
-                    const canDelete = !!(
-                      placement.id &&
-                      ('type' in placement
-                        ? permittedGroupPlacementActions[
-                            placement.id
-                          ]?.includes('DELETE')
-                        : permittedBackupCareActions[placement.id]?.includes(
-                            'DELETE'
-                          ))
-                    )
-
-                    const dateOfBirth =
-                      'type' in placement
-                        ? placement.child.dateOfBirth
-                        : placement.child.birthDate
-
-                    const { assistanceNeedFactor, serviceNeedFactor } =
-                      unitChildrenCapacityFactors.find(
-                        (item) => item.childId === placement.child.id
-                      ) ?? {}
-
-                    const multipliedCapacityFactor =
-                      serviceNeedFactor && assistanceNeedFactor
-                        ? serviceNeedFactor * assistanceNeedFactor
-                        : undefined
-
-                    return (
-                      <Tr
-                        key={placement.id || ''}
-                        className="group-placement-row"
-                        data-qa={`group-placement-row-${placement.child.id}`}
-                      >
-                        {mobileEnabled &&
-                          permittedActions.has('READ_NOTES') && (
-                            <Td data-qa="daily-note">
-                              {renderDaycareDailyNote(placement)}
-                            </Td>
-                          )}
-                        <Td data-qa="child-name">
-                          <Link to={`/child-information/${placement.child.id}`}>
-                            {formatPersonName(placement.child, i18n, true)}
-                          </Link>
-                        </Td>
-                        <Td>
-                          <FixedSpaceRow spacing="xs" alignItems="center">
-                            <AgeIndicatorChip
-                              age={filters.startDate.differenceInYears(
-                                dateOfBirth
-                              )}
-                            />
-                            <span data-qa="child-dob">
-                              {dateOfBirth.format()}
-                            </span>
-                          </FixedSpaceRow>
-                        </Td>
-                        <Td data-qa="placement-type">
-                          <FixedSpaceColumn
-                            spacing="xs"
-                            alignItems="flex-start"
-                          >
-                            <CareTypeChip
-                              type={
-                                'type' in placement
-                                  ? placement.type
-                                  : 'backup-care'
-                              }
-                            />
-                            {'fromUnits' in placement &&
-                              placement.fromUnits.map((unit) => (
-                                <Light key={unit}>{unit}</Light>
-                              ))}
-                          </FixedSpaceColumn>
-                        </Td>
-                        <Td data-qa="placement-subtype">
-                          {'type' in placement ? (
-                            <PlacementCircle
-                              type={
-                                isPartDayPlacement(placement.type)
-                                  ? 'half'
-                                  : 'full'
-                              }
-                              label={
-                                <ServiceNeedTooltipLabel
-                                  placement={placement}
-                                  filters={filters}
-                                />
-                              }
-                            />
-                          ) : null}
-                        </Td>
-                        {showServiceNeed ? (
-                          <Td data-qa="service-need">
-                            {missingServiceNeedDays > 0 ? (
-                              <Tooltip
-                                tooltip={
-                                  <span>{`${i18n.unit.groups.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.unit.groups.serviceNeedMissing2}`}</span>
-                                }
-                              >
-                                <StatusIconContainer
-                                  color={colors.status.warning}
-                                >
-                                  <FontAwesomeIcon icon={faTimes} inverse />
-                                </StatusIconContainer>
-                              </Tooltip>
-                            ) : (
-                              <Tooltip
-                                tooltip={
-                                  <span>
-                                    {i18n.unit.groups.serviceNeedChecked}
-                                  </span>
-                                }
-                              >
-                                <StatusIconContainer
-                                  color={colors.status.success}
-                                >
-                                  <FontAwesomeIcon icon={faCheck} inverse />
-                                </StatusIconContainer>
-                              </Tooltip>
-                            )}
-                          </Td>
-                        ) : null}
-                        {showChildCapacityFactor && (
-                          <Td data-qa="child-capacity-factor-column">
-                            <Tooltip
-                              tooltip={
-                                <ChildCapacityFactorList>
-                                  <li>
-                                    {i18n.unit.groups.childServiceNeedFactor}:{' '}
-                                    {serviceNeedFactor === 1
-                                      ? '—'
-                                      : serviceNeedFactor}
-                                  </li>
-                                  <li>
-                                    {i18n.unit.groups.childAssistanceNeedFactor}
-                                    :{' '}
-                                    {assistanceNeedFactor === 1
-                                      ? '—'
-                                      : assistanceNeedFactor}
-                                  </li>
-                                </ChildCapacityFactorList>
-                              }
-                            >
-                              <span
-                                data-qa={`child-capacity-factor-${placement.child.id}`}
-                              >
-                                {multipliedCapacityFactor
-                                  ? multipliedCapacityFactor === 1
-                                    ? '—'
-                                    : multipliedCapacityFactor.toFixed(2)
-                                  : ''}
-                              </span>
-                            </Tooltip>
-                          </Td>
-                        )}
-                        <Td data-qa="placement-duration">
-                          {'type' in placement
-                            ? `${placement.startDate.format()}- ${placement.endDate.format()}`
-                            : `${placement.period.start.format()}- ${placement.period.end.format()}`}
-                        </Td>
-                        {canTransfer || canDelete ? (
-                          <Td align="right">
-                            <RowActionContainer>
-                              {canTransfer && (
-                                <>
-                                  <InlineButton
-                                    onClick={() =>
-                                      onTransferRequested(placement)
-                                    }
-                                    data-qa="transfer-btn"
-                                    icon={faExchange}
-                                    text={i18n.unit.groups.transferBtn}
-                                  />
-                                  <Gap size="s" horizontal />
-                                </>
-                              )}
-                              {canDelete && (
-                                <InlineButton
-                                  onClick={() => onDeletePlacement(placement)}
-                                  data-qa="remove-btn"
-                                  icon={faUndo}
-                                  text={i18n.unit.groups.returnBtn}
-                                />
-                              )}
-                            </RowActionContainer>
-                          </Td>
-                        ) : null}
-                      </Tr>
-                    )
-                  })}
+                  {sortedPlacements.map((placement) => (
+                    <GroupPlacementRow
+                      key={placement.id}
+                      placement={placement}
+                      unitId={unit.id}
+                      filters={filters}
+                      mobileEnabled={mobileEnabled}
+                      showServiceNeed={showServiceNeed}
+                      showChildCapacityFactor={showChildCapacityFactor}
+                      notesResponse={notesResponse}
+                      permittedActions={permittedActions}
+                      permittedGroupPlacementActions={
+                        permittedGroupPlacementActions
+                      }
+                      permittedBackupCareActions={permittedBackupCareActions}
+                      unitChildrenCapacityFactors={unitChildrenCapacityFactors}
+                      onShowNote={(child) =>
+                        setNotesModal({
+                          child,
+                          group: { id: group.id, name: group.name }
+                        })
+                      }
+                      onTransferRequested={onTransferRequested}
+                    />
+                  ))}
                 </Tbody>
               </Table>
               {mobileEnabled &&
@@ -774,6 +479,335 @@ export default React.memo(function Group({
     </DaycareGroup>
   )
 })
+
+interface GroupPlacementRowProps {
+  placement: DaycareGroupPlacementDetailed | UnitBackupCare
+  unitId: UUID
+  filters: UnitFilters
+  mobileEnabled: boolean
+  showServiceNeed: boolean
+  showChildCapacityFactor: boolean
+  notesResponse: Result<NotesByGroupResponse>
+  permittedActions: Set<Action.Group>
+  permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
+  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
+  unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
+  onShowNote: (child?: IdAndName | undefined) => void
+  onTransferRequested: (
+    placement: DaycareGroupPlacementDetailed | UnitBackupCare
+  ) => void
+}
+
+const GroupPlacementRow = React.memo(function GroupPlacementRow({
+  placement,
+  unitId,
+  filters,
+  mobileEnabled,
+  showServiceNeed,
+  showChildCapacityFactor,
+  notesResponse,
+  permittedActions,
+  permittedGroupPlacementActions,
+  permittedBackupCareActions,
+  unitChildrenCapacityFactors,
+  onShowNote,
+  onTransferRequested
+}: GroupPlacementRowProps) {
+  const { i18n } = useTranslation()
+
+  const missingServiceNeedDays =
+    'type' in placement
+      ? placement.daycarePlacementMissingServiceNeedDays
+      : placement.missingServiceNeedDays
+  const canTransfer = !!(
+    placement.id &&
+    ('type' in placement
+      ? permittedGroupPlacementActions[placement.id]?.includes('UPDATE')
+      : permittedBackupCareActions[placement.id]?.includes('UPDATE'))
+  )
+  const canDelete = !!(
+    placement.id &&
+    ('type' in placement
+      ? permittedGroupPlacementActions[placement.id]?.includes('DELETE')
+      : permittedBackupCareActions[placement.id]?.includes('DELETE'))
+  )
+
+  const dateOfBirth =
+    'type' in placement
+      ? placement.child.dateOfBirth
+      : placement.child.birthDate
+
+  const { assistanceNeedFactor, serviceNeedFactor } =
+    unitChildrenCapacityFactors.find(
+      (item) => item.childId === placement.child.id
+    ) ?? {}
+
+  const multipliedCapacityFactor =
+    serviceNeedFactor && assistanceNeedFactor
+      ? serviceNeedFactor * assistanceNeedFactor
+      : undefined
+
+  const [deleteMutation, onClick] = useSelectMutation(
+    () => ('type' in placement ? first(placement) : second(placement)),
+    [
+      deleteGroupPlacementMutation,
+      (placement) =>
+        placement.id
+          ? { unitId, groupPlacementId: placement.id }
+          : cancelMutation
+    ],
+    [
+      updateBackupCareMutation,
+      (placement) => ({
+        unitId,
+        backupCareId: placement.id,
+        period: placement.period,
+        groupId: null
+      })
+    ]
+  )
+
+  return (
+    <Tr
+      key={placement.id || ''}
+      className="group-placement-row"
+      data-qa={`group-placement-row-${placement.child.id}`}
+    >
+      {mobileEnabled && permittedActions.has('READ_NOTES') && (
+        <Td data-qa="daily-note">
+          <DailyNote
+            placement={placement}
+            notesResponse={notesResponse}
+            onOpen={onShowNote}
+          />
+        </Td>
+      )}
+      <Td data-qa="child-name">
+        <Link to={`/child-information/${placement.child.id}`}>
+          {formatPersonName(placement.child, i18n, true)}
+        </Link>
+      </Td>
+      <Td>
+        <FixedSpaceRow spacing="xs" alignItems="center">
+          <AgeIndicatorChip
+            age={filters.startDate.differenceInYears(dateOfBirth)}
+          />
+          <span data-qa="child-dob">{dateOfBirth.format()}</span>
+        </FixedSpaceRow>
+      </Td>
+      <Td data-qa="placement-type">
+        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+          <CareTypeChip
+            type={'type' in placement ? placement.type : 'backup-care'}
+          />
+          {'fromUnits' in placement &&
+            placement.fromUnits.map((unit) => <Light key={unit}>{unit}</Light>)}
+        </FixedSpaceColumn>
+      </Td>
+      <Td data-qa="placement-subtype">
+        {'type' in placement ? (
+          <PlacementCircle
+            type={isPartDayPlacement(placement.type) ? 'half' : 'full'}
+            label={
+              <ServiceNeedTooltipLabel
+                placement={placement}
+                filters={filters}
+              />
+            }
+          />
+        ) : null}
+      </Td>
+      {showServiceNeed ? (
+        <Td data-qa="service-need">
+          {missingServiceNeedDays > 0 ? (
+            <Tooltip
+              tooltip={
+                <span>{`${i18n.unit.groups.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.unit.groups.serviceNeedMissing2}`}</span>
+              }
+            >
+              <StatusIconContainer color={colors.status.warning}>
+                <FontAwesomeIcon icon={faTimes} inverse />
+              </StatusIconContainer>
+            </Tooltip>
+          ) : (
+            <Tooltip
+              tooltip={<span>{i18n.unit.groups.serviceNeedChecked}</span>}
+            >
+              <StatusIconContainer color={colors.status.success}>
+                <FontAwesomeIcon icon={faCheck} inverse />
+              </StatusIconContainer>
+            </Tooltip>
+          )}
+        </Td>
+      ) : null}
+      {showChildCapacityFactor && (
+        <Td data-qa="child-capacity-factor-column">
+          <Tooltip
+            tooltip={
+              <ChildCapacityFactorList>
+                <li>
+                  {i18n.unit.groups.childServiceNeedFactor}:{' '}
+                  {serviceNeedFactor === 1 ? '—' : serviceNeedFactor}
+                </li>
+                <li>
+                  {i18n.unit.groups.childAssistanceNeedFactor}:{' '}
+                  {assistanceNeedFactor === 1 ? '—' : assistanceNeedFactor}
+                </li>
+              </ChildCapacityFactorList>
+            }
+          >
+            <span data-qa={`child-capacity-factor-${placement.child.id}`}>
+              {multipliedCapacityFactor
+                ? multipliedCapacityFactor === 1
+                  ? '—'
+                  : multipliedCapacityFactor.toFixed(2)
+                : ''}
+            </span>
+          </Tooltip>
+        </Td>
+      )}
+      <Td data-qa="placement-duration">
+        {'type' in placement
+          ? `${placement.startDate.format()}- ${placement.endDate.format()}`
+          : `${placement.period.start.format()}- ${placement.period.end.format()}`}
+      </Td>
+      {canTransfer || canDelete ? (
+        <Td align="right">
+          <RowActionContainer>
+            {canTransfer && (
+              <>
+                <InlineButton
+                  onClick={() => onTransferRequested(placement)}
+                  data-qa="transfer-btn"
+                  icon={faExchange}
+                  text={i18n.unit.groups.transferBtn}
+                />
+                <Gap size="s" horizontal />
+              </>
+            )}
+            {canDelete && (
+              <InlineMutateButton
+                mutation={deleteMutation}
+                onClick={onClick}
+                data-qa="remove-btn"
+                icon={faUndo}
+                text={i18n.unit.groups.returnBtn}
+              />
+            )}
+          </RowActionContainer>
+        </Td>
+      ) : null}
+    </Tr>
+  )
+})
+
+interface DaycareDailyNoteProps {
+  placement: DaycareGroupPlacementDetailed | UnitBackupCare
+  notesResponse: Result<NotesByGroupResponse>
+  onOpen: (child: IdAndName) => void
+}
+
+const DailyNote = React.memo(function DaycareDailyNote({
+  placement,
+  notesResponse,
+  onOpen
+}: DaycareDailyNoteProps) {
+  const { i18n } = useTranslation()
+
+  return renderResult(notesResponse, (notes) => {
+    const childNote = notes.childDailyNotes.find(
+      (note) => note.childId === placement.child.id
+    )
+    return (
+      <Tooltip
+        data-qa={`daycare-daily-note-hover-${placement.child.id}`}
+        position="top"
+        tooltip={
+          childNote ? (
+            <div>
+              <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
+              <p>{childNote.note}</p>
+              <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
+              <p>
+                {childNote.feedingNote
+                  ? i18n.unit.groups.daycareDailyNote.level[
+                      childNote.feedingNote
+                    ]
+                  : ''}
+              </p>
+              <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
+              <p>{formatSleepingTooltipText(childNote, i18n)}</p>
+              <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
+              <p>
+                {childNote.reminders
+                  .map(
+                    (reminder) =>
+                      i18n.unit.groups.daycareDailyNote.reminderType[reminder]
+                  )
+                  .join(',')}
+              </p>
+              <h5>
+                {i18n.unit.groups.daycareDailyNote.otherThingsToRememberHeader}
+              </h5>
+              <p>{childNote.reminderNote}</p>
+              {notes.childStickyNotes.length > 0 && (
+                <>
+                  <h5>{i18n.unit.groups.daycareDailyNote.stickyNotesHeader}</h5>
+                  {notes.childStickyNotes.map((stickyNote) => (
+                    <p key={stickyNote.id}>{stickyNote.note}</p>
+                  ))}
+                </>
+              )}
+              {notes.groupNotes.length > 0 && (
+                <>
+                  <h5>{i18n.unit.groups.daycareDailyNote.groupNotesHeader}</h5>
+                  {notes.groupNotes.map((groupNote) => (
+                    <p key={groupNote.id}>{groupNote.note}</p>
+                  ))}
+                </>
+              )}
+            </div>
+          ) : (
+            <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
+          )
+        }
+      >
+        <RoundIcon
+          active={childNote != null || notes.childStickyNotes.length > 0}
+          data-qa={`daycare-daily-note-icon-${placement.child.id}`}
+          content={faStickyNote}
+          color={colors.main.m2}
+          size="m"
+          onClick={() =>
+            onOpen({
+              id: placement.child.id,
+              name: formatPersonName(placement.child, i18n)
+            })
+          }
+        />
+      </Tooltip>
+    )
+  })
+})
+
+const formatSleepingTooltipText = (
+  childNote: ChildDailyNote,
+  i18n: Translations
+) =>
+  [
+    childNote.sleepingNote
+      ? i18n.unit.groups.daycareDailyNote.level[childNote.sleepingNote]
+      : null,
+    childNote.sleepingMinutes
+      ? Number(childNote.sleepingMinutes) / 60 >= 1
+        ? `${Math.floor(Number(childNote.sleepingMinutes) / 60)}h ${Math.round(
+            Number(childNote.sleepingMinutes) % 60
+          )}min`
+        : `${Math.floor(Number(childNote.sleepingMinutes) / 60)}min`
+      : null
+  ]
+    .filter((s) => s !== null)
+    .join(',')
 
 const TitleBar = styled.div`
   display: flex;

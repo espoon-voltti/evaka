@@ -8,8 +8,7 @@ import styled from 'styled-components'
 
 import {
   PlacementPlanConfirmationStatus,
-  PlacementPlanDetails,
-  PlacementPlanRejectReason
+  PlacementPlanDetails
 } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
@@ -44,11 +43,7 @@ type Props = {
   placementPlan: PlacementPlanDetails
   confirmationState: PlacementPlanConfirmationStatus
   submitting: boolean
-  onChange: (
-    state: PlacementPlanConfirmationStatus,
-    reason?: PlacementPlanRejectReason,
-    otherReason?: string
-  ) => undefined | void
+  onChange: (state: PlacementPlanConfirmationStatus) => undefined | void
   openModal: () => void
 }
 

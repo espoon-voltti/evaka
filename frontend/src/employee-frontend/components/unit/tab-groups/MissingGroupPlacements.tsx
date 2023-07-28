@@ -129,18 +129,18 @@ const ServiceNeedTooltipLabel = ({
 }
 
 type Props = {
+  unitId: UUID
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
   backupCares: UnitBackupCare[]
-  reloadGroupData: () => void
   permittedPlacementActions: Record<UUID, Action.Placement[]>
   permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
 }
 
 export default React.memo(function MissingGroupPlacements({
+  unitId,
   groups,
   missingGroupPlacements,
-  reloadGroupData,
   permittedPlacementActions,
   permittedBackupCareActions
 }: Props) {
@@ -200,9 +200,9 @@ export default React.memo(function MissingGroupPlacements({
       {['group-placement', 'backup-care-group'].includes(uiMode) &&
         activeMissingPlacement && (
           <GroupPlacementModal
+            unitId={unitId}
             groups={groups}
             missingPlacement={activeMissingPlacement}
-            reload={reloadGroupData}
           />
         )}
     </>

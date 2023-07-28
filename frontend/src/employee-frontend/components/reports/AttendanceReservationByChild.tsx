@@ -6,13 +6,12 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DefaultTheme, useTheme } from 'styled-components'
 
-import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
 import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -34,6 +33,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
+import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { AttendanceReservationReportTd } from './AttendanceReservation'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -64,14 +64,10 @@ export default React.memo(function AttendanceReservationByChild() {
   )
   const [orderBy, setOrderBy] = useState<OrderBy>('start')
 
-  const [units] = useApiState(getDaycares, [])
-  const [groups] = useApiState(
-    () =>
-      unitId !== null
-        ? getDaycareGroups(unitId)
-        : Promise.resolve(Loading.of<DaycareGroup[]>()),
-    [unitId]
-  )
+  const units = useQueryResult(unitsQuery)
+  const groups = useQueryResult(unitGroupsQuery(unitId ?? ''), {
+    enabled: unitId !== null
+  })
   const [report] = useApiState(
     () =>
       unitId !== null

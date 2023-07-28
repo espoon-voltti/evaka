@@ -10,9 +10,9 @@ import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -25,7 +25,7 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
 
-import { getDaycareGroups, UnitResponse } from '../../api/unit'
+import { UnitResponse } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { DayOfWeek } from '../../types'
@@ -33,6 +33,7 @@ import { DaycareGroup } from '../../types/unit'
 import GroupMonthCalendar from '../absences/GroupMonthCalendar'
 import { renderResult } from '../async-rendering'
 
+import { unitGroupsQuery } from './queries'
 import AttendanceGroupFilterSelect from './tab-calendar/AttendanceGroupFilterSelect'
 import CalendarEventsSection from './tab-calendar/CalendarEventsSection'
 import Occupancy from './tab-unit-information/Occupancy'
@@ -147,7 +148,7 @@ const Calendar = React.memo(function Calendar({
   unitId: string
   unitInformation: UnitResponse
 }) {
-  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
+  const groups = useQueryResult(unitGroupsQuery(unitId))
   return renderResult(groups, (groups) => (
     <CalendarContent unitInformation={unitInformation} groups={groups} />
   ))

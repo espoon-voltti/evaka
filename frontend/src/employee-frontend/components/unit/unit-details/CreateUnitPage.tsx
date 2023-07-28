@@ -6,30 +6,28 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result } from 'lib-common/api'
-import {
-  DaycareCareArea,
-  DaycareFields
-} from 'lib-common/generated/api-types/daycare'
+import { useQueryResult } from 'lib-common/query'
+import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
-import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import { createDaycare } from '../../../api/unit'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
+import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
+import { areaQuery, createUnitMutation } from '../queries'
 
 export default React.memo(function CreateUnitPage() {
+  const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
+  const areas = useQueryResult(areaQuery)
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
-  const [submitState, setSubmitState] = useState<Result<void> | undefined>(
-    undefined
-  )
 
   useEffect(() => {
-    void getAreas().then(setAreas)
     void getEmployees().then((employeesResponse) => {
       setFinanceDecisionHandlerOptions(
         employeesResponse.map((employees) =>
@@ -44,16 +42,6 @@ export default React.memo(function CreateUnitPage() {
     })
   }, [])
 
-  const onSubmit = (fields: DaycareFields) => {
-    setSubmitState(Loading.of())
-    void createDaycare(fields).then((result) => {
-      setSubmitState(result.map(() => undefined))
-      if (result.isSuccess) {
-        navigate(`/units/${result.value}/unit-info`)
-      }
-    })
-  }
-
   return (
     <Container>
       <ContentArea opaque>
@@ -65,10 +53,26 @@ export default React.memo(function CreateUnitPage() {
               areas={areas}
               financeDecisionHandlerOptions={financeDecisionHandlerOptions}
               unit={undefined}
-              submit={submitState}
-              onSubmit={onSubmit}
-              onClickCancel={() => window.history.back()}
-            />
+            >
+              {(getFormData, isValid) => (
+                <>
+                  <Button
+                    onClick={() => navigate(-1)}
+                    text={i18n.common.cancel}
+                  />
+                  <MutateButton
+                    primary
+                    type="submit"
+                    preventDefault
+                    mutation={createUnitMutation}
+                    onClick={() => getFormData() ?? cancelMutation}
+                    onSuccess={(id) => navigate(`/units/${id}/unit-info`)}
+                    disabled={!isValid}
+                    text={i18n.unitEditor.submitNew}
+                  />
+                </>
+              )}
+            </UnitEditor>
           )
         )}
       </ContentArea>

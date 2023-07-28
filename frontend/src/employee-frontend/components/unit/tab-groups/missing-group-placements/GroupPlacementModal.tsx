@@ -5,26 +5,29 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
+import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold } from 'lib-components/typography'
 import { faChild } from 'lib-icons'
 
-import { updateBackupCare } from '../../../../api/child/backup-care'
-import { createGroupPlacement } from '../../../../api/unit'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
+import {
+  createGroupPlacementMutation,
+  updateBackupCareMutation
+} from '../../queries'
 
 const FieldWrapper = styled.section`
   display: flex;
@@ -32,9 +35,9 @@ const FieldWrapper = styled.section`
 `
 
 interface Props {
+  unitId: UUID
   groups: DaycareGroup[]
   missingPlacement: MissingGroupPlacement
-  reload: () => void
 }
 
 interface GroupPlacementForm {
@@ -45,9 +48,9 @@ interface GroupPlacementForm {
 }
 
 export default React.memo(function GroupPlacementModal({
+  unitId,
   groups,
-  missingPlacement,
-  reload
+  missingPlacement
 }: Props) {
   const {
     placementId,
@@ -57,7 +60,7 @@ export default React.memo(function GroupPlacementModal({
   } = missingPlacement
 
   const { i18n } = useTranslation()
-  const { clearUiMode, setErrorMessage } = useContext(UIContext)
+  const { clearUiMode } = useContext(UIContext)
 
   // filter out groups which are not active on any day during the maximum placement time range
   const openGroups = groups
@@ -106,56 +109,6 @@ export default React.memo(function GroupPlacementModal({
     })
   }
 
-  const submitGroupPlacement = () => {
-    if (form.groupId == null) return
-
-    void createGroupPlacement(
-      placementId,
-      form.groupId,
-      form.startDate,
-      form.endDate
-    ).then((res: Result<string>) => {
-      if (res.isFailure) {
-        clearUiMode()
-        setErrorMessage({
-          type: 'error',
-          title: i18n.unit.error.placement.create,
-          text: i18n.common.tryAgain,
-          resolveLabel: i18n.common.ok
-        })
-      } else {
-        clearUiMode()
-        reload()
-      }
-    })
-  }
-
-  const submitBackupCarePlacement = () => {
-    if (form.groupId == null) return
-
-    void updateBackupCare(placementId, {
-      period: new FiniteDateRange(form.startDate, form.endDate),
-      groupId: form.groupId
-    }).then((res) => {
-      if (res.isFailure) {
-        clearUiMode()
-        setErrorMessage({
-          type: 'error',
-          title: i18n.unit.error.placement.create,
-          text: i18n.common.tryAgain,
-          resolveLabel: i18n.common.ok
-        })
-      } else {
-        clearUiMode()
-        reload()
-      }
-    })
-  }
-
-  const submitForm = missingPlacement.backup
-    ? submitBackupCarePlacement
-    : submitGroupPlacement
-
   const disableDateEditIfBackupPlacement = missingPlacement.backup
     ? {
         disabled: true,
@@ -164,13 +117,43 @@ export default React.memo(function GroupPlacementModal({
       }
     : {}
 
+  const [createGroupPlacementOrBackupCare, onClick] = useSelectMutation(
+    () =>
+      form.groupId === null
+        ? cancelMutation
+        : !missingPlacement.backup
+        ? first(form.groupId)
+        : second(form.groupId),
+    [
+      createGroupPlacementMutation,
+      (groupId) => ({
+        unitId,
+        daycarePlacementId: placementId,
+        groupId,
+        startDate: form.startDate,
+        endDate: form.endDate
+      })
+    ],
+    [
+      updateBackupCareMutation,
+      (groupId) => ({
+        unitId,
+        backupCareId: placementId,
+        period: new FiniteDateRange(form.startDate, form.endDate),
+        groupId
+      })
+    ]
+  )
+
   return (
-    <FormModal
+    <MutateFormModal
       data-qa="group-placement-modal"
       title={i18n.unit.placements.modal.createTitle}
       icon={faChild}
       type="info"
-      resolveAction={submitForm}
+      resolveMutation={createGroupPlacementOrBackupCare}
+      resolveAction={onClick}
+      onSuccess={clearUiMode}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={form.errors.length > 0}
       rejectAction={clearUiMode}
@@ -230,6 +213,6 @@ export default React.memo(function GroupPlacementModal({
           </section>
         )}
       </FixedSpaceColumn>
-    </FormModal>
+    </MutateFormModal>
   )
 })

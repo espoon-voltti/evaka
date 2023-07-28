@@ -5,6 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  BackupCareUpdateRequest,
   ChildBackupCareResponse,
   ChildBackupCaresResponse
 } from 'lib-common/generated/api-types/backupcare'
@@ -32,7 +33,7 @@ export async function getChildBackupCares(
     .catch((e) => Failure.fromError(e))
 }
 
-interface NewBackupCare {
+export interface NewBackupCare {
   unitId: UUID
   groupId?: UUID
   period: FiniteDateRange
@@ -42,32 +43,33 @@ interface BackupCareCreateResponse {
   id: UUID
 }
 
-export async function createBackupCare(
-  childId: UUID,
+export async function createBackupCare({
+  childId,
+  payload
+}: {
+  childId: UUID
   payload: NewBackupCare
-): Promise<Result<UUID>> {
+}): Promise<UUID> {
   return client
     .post<JsonOf<BackupCareCreateResponse>>(
       `/children/${childId}/backup-cares`,
       payload
     )
-    .then((res) => Success.of(res.data.id))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data.id)
 }
 
-interface BackupCareUpdateRequest {
-  period: FiniteDateRange
-  groupId?: UUID
-}
+export type BackupCareUpdate = {
+  backupCareId: UUID
+} & BackupCareUpdateRequest
 
-export async function updateBackupCare(
-  backupCareId: UUID,
-  payload: BackupCareUpdateRequest
-): Promise<Result<void>> {
+// TODO: invalidates getChildBackupCares
+export async function updateBackupCare({
+  backupCareId,
+  ...payload
+}: BackupCareUpdate): Promise<void> {
   return client
     .post(`/backup-cares/${backupCareId}`, payload)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function removeBackupCare(

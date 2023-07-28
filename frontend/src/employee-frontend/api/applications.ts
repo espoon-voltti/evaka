@@ -16,14 +16,11 @@ import {
   ApplicationNoteResponse,
   ApplicationSummary,
   ApplicationType,
-  ApplicationSortColumn
+  ApplicationSortColumn,
+  PlacementProposalConfirmationUpdate
 } from 'lib-common/generated/api-types/application'
 import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import {
-  PlacementPlanConfirmationStatus,
-  PlacementPlanRejectReason
-} from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -207,12 +204,16 @@ export async function withdrawPlacementProposal(
   )
 }
 
-export async function respondToPlacementProposal(
-  applicationId: UUID,
-  status: PlacementPlanConfirmationStatus,
-  reason?: PlacementPlanRejectReason,
-  otherReason?: string
-): Promise<Result<void>> {
+export type RespondToPlacementProposal = {
+  applicationId: UUID
+} & PlacementProposalConfirmationUpdate
+
+export async function respondToPlacementProposal({
+  applicationId,
+  status,
+  reason,
+  otherReason
+}: RespondToPlacementProposal): Promise<void> {
   return client
     .post(
       `/v2/applications/${applicationId}/actions/respond-to-placement-proposal`,
@@ -222,8 +223,7 @@ export async function respondToPlacementProposal(
         otherReason
       }
     )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function confirmDecisionMailed(
@@ -271,13 +271,10 @@ export async function createPlacementPlan(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function acceptPlacementProposal(
-  unitId: UUID
-): Promise<Result<void>> {
+export async function acceptPlacementProposal(unitId: UUID): Promise<void> {
   return client
     .post(`/v2/applications/placement-proposals/${unitId}/accept`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function acceptDecision(

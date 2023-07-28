@@ -17,18 +17,17 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import LocalDate from 'lib-common/local-date'
+import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { fontWeights } from 'lib-components/typography'
 
-import {
-  createBackupCare,
-  updateBackupCare
-} from '../../../api/child/backup-care'
 import { getUnits, Unit } from '../../../api/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
@@ -38,6 +37,10 @@ import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '../../../utils/validation/validations'
+import {
+  createBackupCareMutation,
+  updateBackupCareMutation
+} from '../../unit/queries'
 
 export interface Props {
   childId: UUID
@@ -72,10 +75,7 @@ const ActionButtons = styled(FixedSpaceRow)`
   justify-content: flex-end;
 `
 
-export default function BackupCareForm({
-  childId,
-  backupCare
-}: Props): JSX.Element {
+export default function BackupCareForm({ childId, backupCare }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
   const { backupCares, consecutivePlacementRanges, loadBackupCares } =
@@ -142,25 +142,6 @@ export default function BackupCareForm({
     validateForm(newState)
   }
 
-  const submitForm = useCallback((): Promise<Result<unknown>> | undefined => {
-    if (!formState.unit) return
-
-    return backupCare == undefined
-      ? createBackupCare(childId, {
-          unitId: formState.unit.id,
-          period: new FiniteDateRange(formState.startDate, formState.endDate)
-        })
-      : updateBackupCare(backupCare.id, {
-          period: new FiniteDateRange(formState.startDate, formState.endDate)
-        })
-  }, [
-    backupCare,
-    childId,
-    formState.endDate,
-    formState.startDate,
-    formState.unit
-  ])
-
   const submitSuccess = useCallback(() => {
     clearUiMode()
     return loadBackupCares()
@@ -174,6 +155,35 @@ export default function BackupCareForm({
         )
         .getOrElse([]),
     [units]
+  )
+
+  const [createOrUpdateBackupCare, onClick] = useSelectMutation(
+    () => (backupCare === undefined ? first() : second(backupCare)),
+    [
+      createBackupCareMutation,
+      () =>
+        formState.unit !== undefined
+          ? {
+              childId,
+              payload: {
+                unitId: formState.unit.id,
+                period: new FiniteDateRange(
+                  formState.startDate,
+                  formState.endDate
+                )
+              }
+            }
+          : cancelMutation
+    ],
+    [
+      updateBackupCareMutation,
+      (backupCare) => ({
+        backupCareId: backupCare.id,
+        groupId: null,
+        unitId: backupCare.unit.id,
+        period: new FiniteDateRange(formState.startDate, formState.endDate)
+      })
+    ]
   )
 
   return (
@@ -220,10 +230,11 @@ export default function BackupCareForm({
         ))}
         <ActionButtons>
           <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
-          <AsyncButton
+          <MutateButton
             primary
             type="submit"
-            onClick={submitForm}
+            mutation={createOrUpdateBackupCare}
+            onClick={onClick}
             onSuccess={submitSuccess}
             disabled={formErrors.length > 0 || !formState.unit}
             data-qa="submit-backup-care-form"

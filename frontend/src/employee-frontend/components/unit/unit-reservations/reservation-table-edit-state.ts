@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 
 import { Loading, Result, Success } from 'lib-common/api'
@@ -11,6 +12,7 @@ import { DailyReservationRequest } from 'lib-common/generated/api-types/reservat
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useMutationResult } from 'lib-common/query'
 import {
   TimeRange,
   TimeRangeErrors,
@@ -19,7 +21,11 @@ import {
 import { UUID } from 'lib-common/types'
 
 import { deleteChildAbsences } from '../../../api/absences'
-import { postAttendances, postReservations } from '../../../api/unit'
+import {
+  queryKeys as unitQueryKeys,
+  postAttendancesMutation,
+  postReservationsMutation
+} from '../queries'
 
 export interface EditState {
   childId: string
@@ -39,7 +45,6 @@ let requestId = 0
 
 export function useUnitReservationEditState(
   dailyData: ChildDailyRecords[],
-  reloadReservations: () => void,
   unitId: UUID
 ) {
   const [state, setState] = useState<EditState>()
@@ -67,10 +72,17 @@ export function useUnitReservationEditState(
     []
   )
 
+  const queryClient = useQueryClient()
   const stopEditing = useCallback(() => {
     setState(undefined)
-    reloadReservations()
-  }, [reloadReservations])
+
+    // TODO: It would be better if the data was saved on stopEditing instead of
+    // on-the-fly. This would allow to invalidate the query normally after a
+    // successful mutation.
+    void queryClient.invalidateQueries(
+      unitQueryKeys.unitAttendanceReservations()
+    )
+  }, [queryClient])
 
   const startEditing = useCallback(
     (childId: string, date: LocalDate) => {
@@ -175,6 +187,10 @@ export function useUnitReservationEditState(
     []
   )
 
+  const { mutateAsync: postReservations } = useMutationResult(
+    postReservationsMutation
+  )
+
   const saveReservation = useCallback(
     (date: LocalDate) => {
       if (!state?.childId) return
@@ -232,7 +248,7 @@ export function useUnitReservationEditState(
           )
         )
     },
-    [state, startRequest, updateRequestStatus]
+    [state, startRequest, postReservations, updateRequestStatus]
   )
 
   const updateAttendance = useCallback(
@@ -260,6 +276,10 @@ export function useUnitReservationEditState(
     []
   )
 
+  const { mutateAsync: postAttendances } = useMutationResult(
+    postAttendancesMutation
+  )
+
   const saveAttendance = useCallback(
     (date: LocalDate) => {
       if (!state?.childId) return
@@ -282,7 +302,11 @@ export function useUnitReservationEditState(
       }
 
       const reqId = startRequest()
-      void postAttendances(state.childId, unitId, body)
+      void postAttendances({
+        childId: state.childId,
+        unitId,
+        attendances: body
+      })
         .then(updateRequestStatus(reqId))
         .then(() =>
           setState((previousState) =>
@@ -304,7 +328,7 @@ export function useUnitReservationEditState(
           )
         )
     },
-    [unitId, state, startRequest, updateRequestStatus]
+    [unitId, state, startRequest, postAttendances, updateRequestStatus]
   )
 
   return {

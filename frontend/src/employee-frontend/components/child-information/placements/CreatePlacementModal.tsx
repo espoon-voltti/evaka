@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -22,10 +21,9 @@ import { placementTypes } from 'lib-customizations/employee'
 import { faMapMarkerAlt } from 'lib-icons'
 
 import { createPlacement } from '../../../api/child/placements'
-import { getDaycares } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { Unit } from '../../../types/unit'
+import { unitsQuery } from '../../unit/queries'
 
 export interface Props {
   childId: UUID
@@ -42,7 +40,7 @@ interface Form {
 function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
-  const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
+  const units = useQueryResult(unitsQuery)
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unit: null,
@@ -87,12 +85,6 @@ function CreatePlacementModal({ childId, reload }: Props) {
 
     return errors
   }, [i18n, form])
-
-  const loadUnits = useRestApi(getDaycares, setUnits)
-
-  useEffect(() => {
-    void loadUnits()
-  }, [loadUnits])
 
   const submitForm = () => {
     if (!form.unit?.id) return

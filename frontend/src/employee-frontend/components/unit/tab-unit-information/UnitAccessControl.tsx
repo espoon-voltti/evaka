@@ -702,90 +702,82 @@ export default React.memo(function UnitAccessControl({
       <ContentArea opaque data-qa="daycare-acl-staff">
         <H2>{i18n.unit.accessControl.staff}</H2>
         {renderResult(staff, (staff) => (
-          <>
-            <AclTable
-              rows={staff}
-              onDeleteAclRow={(employee) =>
-                openRemoveModal({
-                  employee,
-                  removeFn: employee.temporary
-                    ? deleteTemporaryEmployeeAcl
-                    : removeDaycareAclStaff
-                })
-              }
-              unitGroups={groups}
-              onClickEdit={openEmployeeAclRowEditModal}
-              editPermitted={
-                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
-                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
-              }
-              deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
-              coefficientPermitted={permittedActions.has(
-                'READ_STAFF_OCCUPANCY_COEFFICIENTS'
-              )}
-            />
-            {(permittedActions.has('INSERT_ACL_STAFF') ||
-              permittedActions.has('CREATE_TEMPORARY_EMPLOYEE')) && (
-              <>
-                <Gap />
-                <AddButton
-                  text={i18n.unit.accessControl.addDaycareAclModal.title}
-                  onClick={openAddStaffModal}
-                  data-qa="open-add-daycare-acl-modal"
-                />
-              </>
+          <AclTable
+            rows={staff}
+            onDeleteAclRow={(employee) =>
+              openRemoveModal({
+                employee,
+                removeFn: employee.temporary
+                  ? deleteTemporaryEmployeeAcl
+                  : removeDaycareAclStaff
+              })
+            }
+            unitGroups={groups}
+            onClickEdit={openEmployeeAclRowEditModal}
+            editPermitted={
+              permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
+              permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+            }
+            deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
+            coefficientPermitted={permittedActions.has(
+              'READ_STAFF_OCCUPANCY_COEFFICIENTS'
             )}
-            {permittedActions.has('READ_TEMPORARY_EMPLOYEE') && (
-              <>
-                {renderResult(candidateTemporaryEmployees, (employees) => (
-                  <>
-                    {employees.length > 0 && (
-                      <>
-                        <HorizontalLine />
-                        <H4>
-                          {i18n.unit.accessControl.previousTemporaryEmployees}
-                        </H4>
-                        <AclTable
-                          dataQa="previous-temporary-employee-table"
-                          rows={employees.map((employee) => ({
-                            id: employee.id,
-                            firstName: employee.firstName ?? '',
-                            lastName: employee.lastName ?? '',
-                            name: formatName(
-                              employee.firstName,
-                              employee.lastName,
-                              i18n
-                            ),
-                            email: employee.email ?? '',
-                            groupIds: [],
-                            hasStaffOccupancyEffect: false,
-                            temporary: true
-                          }))}
-                          hideTemporaryChip={true}
-                          onDeleteAclRow={(employee) =>
-                            openRemoveTemporaryEmployeeModal({
-                              employee,
-                              removeFn: deleteTemporaryEmployee
-                            })
-                          }
-                          unitGroups={groups}
-                          onClickEdit={openEmployeeAclRowEditModal}
-                          editPermitted={permittedActions.has(
-                            'UPDATE_TEMPORARY_EMPLOYEE'
-                          )}
-                          deletePermitted={permittedActions.has(
-                            'DELETE_TEMPORARY_EMPLOYEE'
-                          )}
-                          coefficientPermitted={true}
-                        />
-                      </>
-                    )}
-                  </>
-                ))}
-              </>
-            )}
-          </>
+          />
         ))}
+        {(permittedActions.has('INSERT_ACL_STAFF') ||
+          permittedActions.has('CREATE_TEMPORARY_EMPLOYEE')) && (
+          <>
+            <Gap />
+            <AddButton
+              text={i18n.unit.accessControl.addDaycareAclModal.title}
+              onClick={openAddStaffModal}
+              data-qa="open-add-daycare-acl-modal"
+            />
+          </>
+        )}
+        {permittedActions.has('READ_TEMPORARY_EMPLOYEE')
+          ? renderResult(candidateTemporaryEmployees, (employees) =>
+              employees.length > 0 ? (
+                <>
+                  <HorizontalLine />
+                  <H4>{i18n.unit.accessControl.previousTemporaryEmployees}</H4>
+                  <AclTable
+                    dataQa="previous-temporary-employee-table"
+                    rows={employees.map((employee) => ({
+                      id: employee.id,
+                      firstName: employee.firstName ?? '',
+                      lastName: employee.lastName ?? '',
+                      name: formatName(
+                        employee.firstName,
+                        employee.lastName,
+                        i18n
+                      ),
+                      email: employee.email ?? '',
+                      groupIds: [],
+                      hasStaffOccupancyEffect: false,
+                      temporary: true
+                    }))}
+                    hideTemporaryChip={true}
+                    onDeleteAclRow={(employee) =>
+                      openRemoveTemporaryEmployeeModal({
+                        employee,
+                        removeFn: deleteTemporaryEmployee
+                      })
+                    }
+                    unitGroups={groups}
+                    onClickEdit={openEmployeeAclRowEditModal}
+                    editPermitted={permittedActions.has(
+                      'UPDATE_TEMPORARY_EMPLOYEE'
+                    )}
+                    deletePermitted={permittedActions.has(
+                      'DELETE_TEMPORARY_EMPLOYEE'
+                    )}
+                    coefficientPermitted={true}
+                  />
+                </>
+              ) : null
+            )
+          : null}
       </ContentArea>
     </div>
   )

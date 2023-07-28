@@ -10,6 +10,7 @@ import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -25,12 +26,12 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { getStaffAttendances } from '../../../api/staff-attendance'
-import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
 import { renderResult } from '../../async-rendering'
 import LabelValueList from '../../common/LabelValueList'
 import { AttendanceGroupFilter } from '../TabCalendar'
+import { unitAttendanceReservationsQuery } from '../queries'
 
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
@@ -73,14 +74,12 @@ export default React.memo(function UnitAttendanceReservationsView({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [childReservations, reloadChildReservations] = useApiState(
-    () =>
-      getUnitAttendanceReservations(
-        unitId,
-        weekRange,
-        featureFlags.experimental?.intermittentShiftCare ?? false
-      ),
-    [unitId, weekRange]
+  const childReservations = useQueryResult(
+    unitAttendanceReservationsQuery(
+      unitId,
+      weekRange,
+      featureFlags.experimental?.intermittentShiftCare ?? false
+    )
   )
 
   const [staffAttendances, reloadStaffAttendances] = useApiState(
@@ -127,7 +126,6 @@ export default React.memo(function UnitAttendanceReservationsView({
       {creatingReservationChild && (
         <ReservationModalSingleChild
           child={creatingReservationChild}
-          onReload={reloadChildReservations}
           onClose={() => setCreatingReservationChild(undefined)}
           isShiftCareUnit={isShiftCareUnit}
           operationalDays={operationalDays}
@@ -179,7 +177,6 @@ export default React.memo(function UnitAttendanceReservationsView({
               }
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}
-              reloadReservations={reloadChildReservations}
               childServiceNeedInfos={
                 selectedGroup.type === 'all-children'
                   ? childData.unitServiceNeedInfo.groups

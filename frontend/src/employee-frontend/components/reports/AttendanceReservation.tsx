@@ -12,17 +12,15 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { getDaycareGroups, getDaycares } from 'employee-frontend/api/unit'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -40,6 +38,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
+import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
@@ -78,14 +77,10 @@ export default React.memo(function AttendanceReservation() {
     filters.range.start.addMonths(2)
   )
 
-  const [units] = useApiState(getDaycares, [])
-  const [groups] = useApiState(
-    () =>
-      unitId !== null
-        ? getDaycareGroups(unitId)
-        : Promise.resolve(Loading.of<DaycareGroup[]>()),
-    [unitId]
-  )
+  const units = useQueryResult(unitsQuery)
+  const groups = useQueryResult(unitGroupsQuery(unitId ?? ''), {
+    enabled: unitId !== null
+  })
 
   const [report, setReport] = useState<
     Result<AttendanceReservationReportRow[]>

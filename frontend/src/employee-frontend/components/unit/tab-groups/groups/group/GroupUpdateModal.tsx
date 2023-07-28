@@ -12,21 +12,20 @@ import {
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faPen } from 'lib-icons'
 
-import { editGroup } from '../../../../../api/unit'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
 import { DaycareGroup } from '../../../../../types/unit'
+import { updateGroupMutation } from '../../../queries'
 
 interface Props {
   group: DaycareGroup
-  reload: () => void
 }
 
-export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
+export default React.memo(function GroupUpdateModal({ group }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
@@ -36,27 +35,26 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
     endDate: LocalDate | null
   }>({ name: group.name, startDate: group.startDate, endDate: group.endDate })
 
-  const submitForm = () => {
-    void editGroup(group.daycareId, group.id, {
-      ...data,
-      name: data.name.trim()
-    }).then(() => {
-      clearUiMode()
-      reload()
-    })
-  }
-
   return (
-    <FormModal
+    <MutateFormModal
       data-qa="group-update-modal"
       title={i18n.unit.groups.updateModal.title}
       icon={faPen}
       type="info"
-      resolveAction={submitForm}
+      resolveMutation={updateGroupMutation}
+      resolveAction={() => ({
+        unitId: group.daycareId,
+        groupId: group.id,
+        body: {
+          ...data,
+          name: data.name.trim()
+        }
+      })}
       resolveLabel={i18n.common.confirm}
       resolveDisabled={
         data.name.trim().length === 0 || data.endDate?.isBefore(data.startDate)
       }
+      onSuccess={clearUiMode}
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
     >
@@ -90,6 +88,6 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
         </section>
         <InfoBox message={i18n.unit.groups.updateModal.info} thin />
       </FixedSpaceColumn>
-    </FormModal>
+    </MutateFormModal>
   )
 })

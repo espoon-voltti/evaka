@@ -8,7 +8,8 @@ import React, {
   createContext,
   Dispatch,
   SetStateAction,
-  useCallback
+  useCallback,
+  useContext
 } from 'react'
 
 import { Result, Loading, Paged } from 'lib-common/api'
@@ -19,6 +20,7 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
@@ -31,12 +33,14 @@ import {
   ApplicationSummaryStatusAllOptions,
   ApplicationDistinctions
 } from '../components/common/Filters'
+import { areaQuery } from '../components/unit/queries'
+
+import { UserContext } from './user'
 
 interface UIState {
   applicationsResult: Result<Paged<ApplicationSummary>>
   setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
   availableAreas: Result<DaycareCareArea[]>
-  setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
   allUnits: Result<Unit[]>
   setAllUnits: Dispatch<SetStateAction<Result<Unit[]>>>
   applicationSearchFilters: ApplicationSearchFilters
@@ -94,7 +98,6 @@ const defaultState: UIState = {
   applicationsResult: Loading.of(),
   setApplicationsResult: () => undefined,
   availableAreas: Loading.of(),
-  setAvailableAreas: () => undefined,
   allUnits: Loading.of(),
   setAllUnits: () => undefined,
   applicationSearchFilters: clearApplicationSearchFilters,
@@ -114,12 +117,12 @@ export const ApplicationUIContextProvider = React.memo(
   }: {
     children: JSX.Element
   }) {
+    const { loggedIn } = useContext(UserContext)
+
     const [applicationsResult, setApplicationsResult] = useState<
       Result<Paged<ApplicationSummary>>
     >(Loading.of())
-    const [availableAreas, setAvailableAreas] = useState<
-      Result<DaycareCareArea[]>
-    >(defaultState.availableAreas)
+    const availableAreas = useQueryResult(areaQuery, { enabled: loggedIn })
     const [allUnits, setAllUnits] = useState<Result<Unit[]>>(
       defaultState.allUnits
     )
@@ -149,7 +152,6 @@ export const ApplicationUIContextProvider = React.memo(
         applicationsResult,
         setApplicationsResult,
         availableAreas,
-        setAvailableAreas,
         allUnits,
         setAllUnits,
         applicationSearchFilters,
@@ -164,7 +166,6 @@ export const ApplicationUIContextProvider = React.memo(
         applicationsResult,
         setApplicationsResult,
         availableAreas,
-        setAvailableAreas,
         allUnits,
         setAllUnits,
         applicationSearchFilters,

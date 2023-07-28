@@ -405,9 +405,9 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields
-    ): Daycare {
+    ) {
         fields.validate()
-        return db.connect { dbc ->
+        db.connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -418,7 +418,6 @@ class DaycareController(
                     )
                     it.updateDaycareManager(daycareId, fields.unitManager)
                     it.updateDaycare(daycareId, fields)
-                    it.getDaycare(daycareId)!!
                 }
             }
             .also { Audit.UnitUpdate.log(targetId = daycareId) }

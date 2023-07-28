@@ -27,9 +27,11 @@ import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
   AclUpdate,
   CreateDaycareResponse,
+  CreateGroupRequest,
   DaycareAclResponse,
   DaycareFields,
   GroupOccupancies,
+  GroupUpdateRequest,
   UnitGroupDetails,
   UnitNotifications
 } from 'lib-common/generated/api-types/daycare'
@@ -46,6 +48,7 @@ import {
 import { Employee, TemporaryEmployee } from 'lib-common/generated/api-types/pis'
 import {
   DaycarePlacementWithDetails,
+  GroupTransferRequestBody,
   MissingGroupPlacement,
   PlacementPlanDetails,
   TerminatedPlacement
@@ -86,11 +89,10 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
   }
 }
 
-export async function getDaycares(): Promise<Result<Unit[]>> {
+export async function getDaycares(): Promise<Unit[]> {
   return client
     .get<JsonOf<Unit[]>>('/daycares')
-    .then(({ data }) => Success.of(data.map(convertUnitJson)))
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => data.map(convertUnitJson))
 }
 
 export interface DaycareGroupSummary {
@@ -106,83 +108,70 @@ export interface UnitResponse {
   permittedActions: Set<Action.Unit>
 }
 
-export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
+export async function getDaycare(id: UUID): Promise<UnitResponse> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
-    .then(({ data }) =>
-      Success.of({
-        daycare: convertUnitJson(data.daycare),
-        groups: data.groups.map(({ id, name, endDate, permittedActions }) => ({
-          id,
-          name,
-          endDate: LocalDate.parseNullableIso(endDate),
-          permittedActions: new Set(permittedActions)
-        })),
-        permittedActions: new Set(data.permittedActions)
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => ({
+      daycare: convertUnitJson(data.daycare),
+      groups: data.groups.map(({ id, name, endDate, permittedActions }) => ({
+        id,
+        name,
+        endDate: LocalDate.parseNullableIso(endDate),
+        permittedActions: new Set(permittedActions)
+      })),
+      permittedActions: new Set(data.permittedActions)
+    }))
 }
 
-export function getUnitNotifications(
-  id: UUID
-): Promise<Result<UnitNotifications>> {
+export function getUnitNotifications(id: UUID): Promise<UnitNotifications> {
   return client
     .get<JsonOf<UnitNotifications>>(`/daycares/${id}/notifications`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export function getUnitOccupancies(
   id: UUID,
   from: LocalDate,
   to: LocalDate
-): Promise<Result<UnitOccupancies>> {
+): Promise<UnitOccupancies> {
   return client
     .get<JsonOf<UnitOccupancies>>(`/occupancy/units/${id}`, {
       params: { from: from.formatIso(), to: to.formatIso() }
     })
-    .then((res) => Success.of(mapUnitOccupancyJson(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => mapUnitOccupancyJson(res.data))
 }
 
-export function getUnitApplications(
-  id: UUID
-): Promise<Result<UnitApplications>> {
+export function getUnitApplications(id: UUID): Promise<UnitApplications> {
   return client
     .get<JsonOf<UnitApplications>>(`/v2/applications/units/${id}`)
-    .then((res) => Success.of(mapUnitApplicationsJson(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => mapUnitApplicationsJson(res.data))
 }
 
 export function getUnitGroupDetails(
-  id: UUID,
+  unitId: UUID,
   from: LocalDate,
   to: LocalDate
-): Promise<Result<UnitGroupDetails>> {
+): Promise<UnitGroupDetails> {
   return client
-    .get<JsonOf<UnitGroupDetails>>(`/daycares/${id}/group-details`, {
+    .get<JsonOf<UnitGroupDetails>>(`/daycares/${unitId}/group-details`, {
       params: { from: from.formatIso(), to: to.formatIso() }
     })
-    .then((response) =>
-      Success.of({
-        ...response.data,
-        groups: response.data.groups.map(mapGroupJson),
-        placements: response.data.placements.map(mapPlacementJson),
-        backupCares: response.data.backupCares.map(mapBackupCareJson),
-        missingGroupPlacements: response.data.missingGroupPlacements.map(
-          mapMissingGroupPlacementJson
+    .then((response) => ({
+      ...response.data,
+      groups: response.data.groups.map(mapGroupJson),
+      placements: response.data.placements.map(mapPlacementJson),
+      backupCares: response.data.backupCares.map(mapBackupCareJson),
+      missingGroupPlacements: response.data.missingGroupPlacements.map(
+        mapMissingGroupPlacementJson
+      ),
+      recentlyTerminatedPlacements:
+        response.data.recentlyTerminatedPlacements.map(
+          mapRecentlyTerminatedPlacementJson
         ),
-        recentlyTerminatedPlacements:
-          response.data.recentlyTerminatedPlacements.map(
-            mapRecentlyTerminatedPlacementJson
-          ),
-        groupOccupancies:
-          response.data.groupOccupancies &&
-          mapGroupOccupancyJson(response.data.groupOccupancies)
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+      groupOccupancies:
+        response.data.groupOccupancies &&
+        mapGroupOccupancyJson(response.data.groupOccupancies)
+    }))
 }
 
 function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
@@ -413,94 +402,108 @@ function mapApplicationsJson(
   }
 }
 
-export async function createGroupPlacement(
-  daycarePlacementId: UUID,
-  groupId: UUID,
-  startDate: LocalDate,
+export interface CreateGroupPlacement {
+  daycarePlacementId: UUID
+  groupId: UUID
+  startDate: LocalDate
   endDate: LocalDate
-): Promise<Result<UUID>> {
+}
+
+export async function createGroupPlacement({
+  daycarePlacementId,
+  groupId,
+  startDate,
+  endDate
+}: CreateGroupPlacement): Promise<void> {
   const url = `/placements/${daycarePlacementId}/group-placements`
   const data = {
     groupId,
     startDate: startDate.formatIso(),
     endDate: endDate.formatIso()
   }
-  return client
-    .post<JsonOf<UUID>>(url, data)
-    .then((res) => Success.of(res.data || ''))
-    .catch((e) => Failure.fromError(e))
+  return client.post<JsonOf<UUID>>(url, data).then(() => undefined)
 }
 
-export async function transferGroup(
-  groupPlacementId: UUID,
-  groupId: UUID,
-  startDate: LocalDate
-): Promise<Result<null>> {
-  const url = `/group-placements/${groupPlacementId}/transfer`
-  const data = {
-    groupId,
-    startDate: startDate.formatIso()
-  }
+export type TransferGroup = {
+  groupPlacementId: UUID
+} & GroupTransferRequestBody
+
+export async function transferGroup({
+  groupPlacementId,
+  groupId,
+  startDate
+}: TransferGroup): Promise<void> {
   return client
-    .post(url, data)
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
+    .post(`/group-placements/${groupPlacementId}/transfer`, {
+      groupId,
+      startDate: startDate.formatIso()
+    })
+    .then(() => undefined)
 }
 
 export async function deleteGroupPlacement(
   groupPlacementId: UUID
-): Promise<Result<null>> {
-  const url = `/group-placements/${groupPlacementId}`
+): Promise<void> {
   return client
-    .delete(url)
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
+    .delete(`/group-placements/${groupPlacementId}`)
+    .then(() => undefined)
 }
 
-export async function createGroup(
-  daycareId: UUID,
-  name: string,
-  startDate: LocalDate,
-  initialCaretakers: number
-) {
-  const url = `/daycares/${daycareId}/groups`
-  const data = {
+export type CreateGroup = { unitId: UUID } & CreateGroupRequest
+
+export async function createGroup({
+  unitId,
+  name,
+  startDate,
+  initialCaretakers
+}: CreateGroup): Promise<void> {
+  return client.post(`/daycares/${unitId}/groups`, {
     name,
     startDate,
     initialCaretakers
-  }
-  await client.post(url, data)
+  })
 }
 
-export async function getDaycareGroups(
-  unitId: UUID
-): Promise<Result<DaycareGroup[]>> {
+export async function getDaycareGroups(unitId: UUID): Promise<DaycareGroup[]> {
   return client
     .get<JsonOf<DaycareGroup[]>>(`/daycares/${unitId}/groups`)
     .then(({ data }) =>
-      Success.of(
-        data.map((group) => ({
-          ...group,
-          startDate: LocalDate.parseIso(group.startDate),
-          endDate: LocalDate.parseNullableIso(group.endDate)
-        }))
-      )
+      data.map((group) => ({
+        ...group,
+        startDate: LocalDate.parseIso(group.startDate),
+        endDate: LocalDate.parseNullableIso(group.endDate)
+      }))
     )
-    .catch((e) => Failure.fromError(e))
 }
 
-export async function editGroup(
-  daycareId: UUID,
-  groupId: UUID,
-  data: Partial<DaycareGroup>
-) {
-  const url = `/daycares/${daycareId}/groups/${groupId}`
-  await client.put(url, data)
+export interface UpdateGroup {
+  unitId: UUID
+  groupId: UUID
+  body: GroupUpdateRequest
 }
 
-export async function deleteGroup(daycareId: UUID, groupId: UUID) {
-  const url = `/daycares/${daycareId}/groups/${groupId}`
-  await client.delete(url)
+export async function updateGroup({
+  unitId,
+  groupId,
+  body
+}: UpdateGroup): Promise<void> {
+  return client
+    .put(`/daycares/${unitId}/groups/${groupId}`, body)
+    .then(() => undefined)
+}
+
+export interface DeleteGroup {
+  unitId: UUID
+  groupId: UUID
+}
+
+export async function deleteGroup({
+  unitId,
+  groupId
+}: DeleteGroup): Promise<void> {
+  return client
+    .delete(`/daycares/${unitId}/groups/${groupId}`)
+    .then(() => undefined)
 }
 
 export async function getSpeculatedOccupancyRates(
@@ -510,7 +513,7 @@ export async function getSpeculatedOccupancyRates(
   to: LocalDate,
   preschoolDaycareFrom?: LocalDate,
   preschoolDaycareTo?: LocalDate
-): Promise<Result<OccupancyResponseSpeculated>> {
+): Promise<OccupancyResponseSpeculated> {
   return client
     .get<JsonOf<OccupancyResponseSpeculated>>(
       `/occupancy/by-unit/${unitId}/speculated/${applicationId}`,
@@ -523,8 +526,7 @@ export async function getSpeculatedOccupancyRates(
         }
       }
     )
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function getDaycareAclRows(
@@ -775,50 +777,51 @@ export async function getPairingStatus(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function createDaycare(
-  fields: DaycareFields
-): Promise<Result<UUID>> {
+export async function createDaycare(fields: DaycareFields): Promise<UUID> {
   return client
     .post<JsonOf<CreateDaycareResponse>>('/daycares', fields)
-    .then(({ data }) => Success.of(data.id))
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => data.id)
 }
 
-export async function updateDaycare(
-  id: UUID,
+export async function updateDaycare({
+  id,
+  fields
+}: {
+  id: UUID
   fields: DaycareFields
-): Promise<Result<Unit>> {
+}): Promise<void> {
   return client
     .put<JsonOf<Unit>>(`/daycares/${encodeURIComponent(id)}`, fields)
-    .then(({ data }) => Success.of(convertUnitJson(data)))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function postReservations(
   reservations: DailyReservationRequest[]
-): Promise<Result<void>> {
+): Promise<void> {
   return client
     .post('/attendance-reservations', reservations)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
-export async function postAttendances(
-  childId: UUID,
-  unitId: UUID,
+export async function postAttendances({
+  childId,
+  unitId,
+  attendances
+}: {
+  childId: UUID
+  unitId: UUID
   attendances: AttendancesRequest
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
     .post(`/attendances/units/${unitId}/children/${childId}`, attendances)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function getUnitAttendanceReservations(
   unitId: UUID,
   dateRange: FiniteDateRange,
   includeNonOperationalDays: boolean
-): Promise<Result<UnitAttendanceReservations>> {
+): Promise<UnitAttendanceReservations> {
   return client
     .get<JsonOf<UnitAttendanceReservations>>('/attendance-reservations', {
       params: {
@@ -828,31 +831,28 @@ export async function getUnitAttendanceReservations(
         includeNonOperationalDays
       }
     })
-    .then(({ data }) =>
-      Success.of({
-        unit: data.unit,
-        operationalDays: data.operationalDays.map((operationalDay) => ({
-          ...operationalDay,
-          date: LocalDate.parseIso(operationalDay.date),
-          time:
-            operationalDay.time !== null
-              ? {
-                  start: LocalTime.parseIso(operationalDay.time.start),
-                  end: LocalTime.parseIso(operationalDay.time.end)
-                }
-              : null
-        })),
-        groups: data.groups.map(({ group, children }) => ({
-          group,
-          children: children.map(toChildDayRows)
-        })),
-        ungrouped: data.ungrouped.map(toChildDayRows),
-        unitServiceNeedInfo: deserializeUnitServiceNeedInfo(
-          data.unitServiceNeedInfo
-        )
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => ({
+      unit: data.unit,
+      operationalDays: data.operationalDays.map((operationalDay) => ({
+        ...operationalDay,
+        date: LocalDate.parseIso(operationalDay.date),
+        time:
+          operationalDay.time !== null
+            ? {
+                start: LocalTime.parseIso(operationalDay.time.start),
+                end: LocalTime.parseIso(operationalDay.time.end)
+              }
+            : null
+      })),
+      groups: data.groups.map(({ group, children }) => ({
+        group,
+        children: children.map(toChildDayRows)
+      })),
+      ungrouped: data.ungrouped.map(toChildDayRows),
+      unitServiceNeedInfo: deserializeUnitServiceNeedInfo(
+        data.unitServiceNeedInfo
+      )
+    }))
 }
 
 const toChildDayRows = (

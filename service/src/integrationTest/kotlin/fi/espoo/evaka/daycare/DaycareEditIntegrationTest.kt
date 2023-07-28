@@ -4,9 +4,6 @@
 
 package fi.espoo.evaka.daycare
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isSuccessful
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.controllers.DaycareController
 import fi.espoo.evaka.daycare.domain.Language
@@ -14,12 +11,12 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
@@ -27,11 +24,13 @@ import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var daycareController: DaycareController
+
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val standardOpTime =
         TimeRange(start = LocalTime.parse("08:00"), end = LocalTime.parse("18:00"))
@@ -112,37 +111,25 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun testCreate() {
-        val (_, res, body) =
-            http
-                .post("/daycares")
-                .jsonBody(jsonMapper.writeValueAsString(fields))
-                .asUser(admin)
-                .responseObject<DaycareController.CreateDaycareResponse>()
-        assertTrue(res.isSuccessful)
-
-        getAndAssertDaycareFields(body.get().id, fields)
+        val result = daycareController.createDaycare(dbInstance(), admin, RealEvakaClock(), fields)
+        getAndAssertDaycareFields(result.id, fields)
     }
 
     @Test
     fun testUpdate() {
-        val (_, res, _) =
-            http
-                .put("/daycares/${testDaycare.id}")
-                .jsonBody(jsonMapper.writeValueAsString(fields))
-                .asUser(admin)
-                .response()
-        assertTrue(res.isSuccessful)
-
+        daycareController.updateDaycare(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            testDaycare.id,
+            fields
+        )
         getAndAssertDaycareFields(testDaycare.id, fields)
     }
 
     private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
-        val (_, _, body) =
-            http
-                .get("/daycares/$daycareId")
-                .asUser(admin)
-                .responseObject<DaycareController.DaycareResponse>(jsonMapper)
-        val daycare = body.get().daycare
+        val body = daycareController.getDaycare(dbInstance(), admin, RealEvakaClock(), daycareId)
+        val daycare = body.daycare
 
         assertEquals(fields.name, daycare.name)
         assertEquals(fields.openingDate, daycare.openingDate)

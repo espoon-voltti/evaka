@@ -2,53 +2,42 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
-import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
+import { combine } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 
-import { getFamilyContactsReport } from '../../api/reports'
-import { getDaycare, UnitResponse } from '../../api/unit'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
+import { unitQuery } from '../unit/queries'
 
 import { TableScrollable } from './common'
+import { familyContactsReportQuery } from './queries'
 
 export default React.memo(function FamilyContacts() {
   const { unitId } = useNonNullableParams<{ unitId: UUID }>()
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<FamilyContactReportRow[]>>(
-    Loading.of()
-  )
-  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
 
-  useEffect(() => {
-    setRows(Loading.of())
-    setUnit(Loading.of())
-    void getFamilyContactsReport(unitId).then(setRows)
-    void getDaycare(unitId).then(setUnit)
-  }, [unitId])
+  const rows = useQueryResult(familyContactsReportQuery(unitId))
+  const unit = useQueryResult(unitQuery(unitId))
 
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {unit.isSuccess && <Title size={1}>{unit.value.daycare.name}</Title>}
-
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(combine(unit, rows), ([unit, rows]) => (
           <>
+            <Title size={1}>{unit.daycare.name}</Title>
             <ReportDownload
-              data={rows.value.map((row) => ({
+              data={rows.map((row) => ({
                 name: `${row.lastName} ${row.firstName}`,
                 ssn: row.ssn,
                 groupName: row.groupName,
@@ -128,7 +117,7 @@ export default React.memo(function FamilyContacts() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.value.map((row) => (
+                {rows.map((row) => (
                   <Tr key={row.id}>
                     <Td>
                       <Link
@@ -172,7 +161,7 @@ export default React.memo(function FamilyContacts() {
               </Tbody>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

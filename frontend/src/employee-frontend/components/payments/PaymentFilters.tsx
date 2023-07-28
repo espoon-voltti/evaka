@@ -19,7 +19,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
 
-import { getAreas, getUnits } from '../../api/daycare'
+import { getUnits } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { AreaFilter, Filters, UnitFilter } from '../common/Filters'
@@ -34,14 +34,10 @@ export default React.memo(function PaymentFilters() {
       setSearchTerms,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas, setAvailableAreas }
+    shared: { units, setUnits, availableAreas }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-
-  useEffect(() => {
-    void getAreas().then(setAvailableAreas)
-  }, [setAvailableAreas])
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useCallback } from 'react'
+import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { isLoading, Result } from 'lib-common/api'
@@ -10,8 +10,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
 import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
@@ -19,11 +19,11 @@ import { Bold, H1, InformationText, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { getSpeculatedOccupancyRates } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
+import { unitSpeculatedOccupancyRatesQuery } from '../unit/queries'
 
 const Numbers = styled.div`
   display: flex;
@@ -104,24 +104,29 @@ const OccupancyContainer = styled.div`
   justify-content: center;
 `
 
-async function getSpeculatedOccupancies(
+function useSpeculatedOccupancies(
   applicationId: UUID,
   unitId: UUID,
   period: FiniteDateRange,
   preschoolDaycarePeriod: FiniteDateRange | undefined
-): Promise<Result<OccupancyResponseSpeculated>> {
-  const start = period.start.isBefore(LocalDate.todayInSystemTz())
-    ? LocalDate.todayInSystemTz()
-    : period.start
-  const maxDate = start.addYears(1)
-  const end = period.end.isAfter(maxDate) ? maxDate : period.end
-  return getSpeculatedOccupancyRates(
-    applicationId,
-    unitId,
-    start,
-    end,
-    preschoolDaycarePeriod?.start,
-    preschoolDaycarePeriod?.end
+): Result<OccupancyResponseSpeculated> {
+  const { start, end } = useMemo(() => {
+    const start = period.start.isBefore(LocalDate.todayInSystemTz())
+      ? LocalDate.todayInSystemTz()
+      : period.start
+    const maxDate = start.addYears(1)
+    const end = period.end.isAfter(maxDate) ? maxDate : period.end
+    return { start, end }
+  }, [period.end, period.start])
+  return useQueryResult(
+    unitSpeculatedOccupancyRatesQuery(
+      applicationId,
+      unitId,
+      start,
+      end,
+      preschoolDaycarePeriod?.start,
+      preschoolDaycarePeriod?.end
+    )
   )
 }
 
@@ -152,15 +157,11 @@ export default React.memo(function UnitCard({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [occupancies] = useApiState(
-    () =>
-      getSpeculatedOccupancies(
-        applicationId,
-        unitId,
-        period,
-        preschoolDaycarePeriod
-      ),
-    [applicationId, unitId, period, preschoolDaycarePeriod]
+  const occupancies = useSpeculatedOccupancies(
+    applicationId,
+    unitId,
+    period,
+    preschoolDaycarePeriod
   )
 
   const isRemovable = additionalUnits.some((item) => item.id === unitId)

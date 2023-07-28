@@ -6,8 +6,8 @@ import React, { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 
 import { Caretakers } from 'lib-common/generated/api-types/daycare'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -16,7 +16,6 @@ import {
 import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getUnitOccupancies } from '../../../api/unit'
 import OccupancyCard from '../../../components/unit/tab-unit-information/occupancy/OccupancyCard'
 import OccupancyGraph from '../../../components/unit/tab-unit-information/occupancy/OccupancyGraph'
 import OccupancySingleDay from '../../../components/unit/tab-unit-information/occupancy/OccupancySingleDay'
@@ -25,6 +24,7 @@ import { UnitFilters } from '../../../utils/UnitFilters'
 import { renderResult } from '../../async-rendering'
 import { DataList } from '../../common/DataList'
 import UnitDataFilters from '../UnitDataFilters'
+import { unitOccupanciesQuery } from '../queries'
 
 const Container = styled.div`
   display: flex;
@@ -75,9 +75,8 @@ export default React.memo(function OccupancyContainer({
   const { startDate, endDate } = filters
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(true)
-  const [occupancies] = useApiState(
-    () => getUnitOccupancies(unitId, startDate, endDate),
-    [unitId, startDate, endDate]
+  const occupancies = useQueryResult(
+    unitOccupanciesQuery(unitId, startDate, endDate)
   )
   const [selections, setSelections] = useState<SelectionsState>({
     confirmed: true,

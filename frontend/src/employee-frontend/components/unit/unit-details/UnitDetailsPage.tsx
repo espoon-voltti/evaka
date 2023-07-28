@@ -5,33 +5,33 @@
 import React, { useContext, useEffect, useState } from 'react'
 
 import { combine, Loading, Result } from 'lib-common/api'
-import {
-  DaycareCareArea,
-  DaycareFields
-} from 'lib-common/generated/api-types/daycare'
+import { useBoolean } from 'lib-common/form/hooks'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import Button from 'lib-components/atoms/buttons/Button'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import { getDaycare, UnitResponse, updateDaycare } from '../../../api/unit'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
+import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
+import { areaQuery, unitQuery, updateUnitMutation } from '../queries'
 
 export default React.memo(function UnitDetailsPage() {
   const { id } = useNonNullableParams<{ id: string }>()
+  const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
-  const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
+  const unit = useQueryResult(unitQuery(id))
+  const areas = useQueryResult(areaQuery)
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
-  const [editable, setEditable] = useState(false)
-  const [submitState, setSubmitState] = useState<Result<void> | undefined>(
-    undefined
-  )
+  const [editable, useEditable] = useBoolean(false)
   useEffect(() => {
     if (unit.isSuccess) {
       setTitle(unit.value.daycare.name)
@@ -39,7 +39,6 @@ export default React.memo(function UnitDetailsPage() {
   }, [setTitle, unit])
 
   useEffect(() => {
-    void getAreas().then(setAreas)
     void getEmployees().then((employeesResponse) => {
       setFinanceDecisionHandlerOptions(
         employeesResponse.map((employees) =>
@@ -52,20 +51,7 @@ export default React.memo(function UnitDetailsPage() {
         )
       )
     })
-    void getDaycare(id).then(setUnit)
   }, [id])
-
-  const onSubmit = (fields: DaycareFields, currentUnit: UnitResponse) => {
-    if (!id) return
-    setSubmitState(Loading.of())
-    void updateDaycare(id, fields).then((result) => {
-      if (result.isSuccess) {
-        setUnit(result.map((r) => ({ ...currentUnit, daycare: r })))
-        setEditable(false)
-      }
-      setSubmitState(result.map((_r) => undefined))
-    })
-  }
 
   return (
     <Container>
@@ -79,11 +65,27 @@ export default React.memo(function UnitDetailsPage() {
               areas={areas}
               financeDecisionHandlerOptions={financeDecisionHandlerOptions}
               unit={unit.daycare}
-              submit={submitState}
-              onSubmit={(fields) => onSubmit(fields, unit)}
-              onClickCancel={() => setEditable(false)}
-              onClickEdit={() => setEditable(true)}
-            />
+              onClickEdit={useEditable.on}
+            >
+              {(getFormData, isValid) => (
+                <>
+                  <Button onClick={useEditable.off} text={i18n.common.cancel} />
+                  <MutateButton
+                    primary
+                    type="submit"
+                    preventDefault
+                    mutation={updateUnitMutation}
+                    onClick={() => {
+                      const fields = getFormData()
+                      return fields ? { id, fields } : cancelMutation
+                    }}
+                    onSuccess={useEditable.off}
+                    disabled={!isValid}
+                    text={i18n.common.save}
+                  />
+                </>
+              )}
+            </UnitEditor>
           )
         )}
       </ContentArea>

@@ -11,7 +11,7 @@ import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas, getUnits } from '../../api/daycare'
+import { getUnits } from '../../api/daycare'
 import {
   ApplicationUIContext,
   VoucherApplicationFilter
@@ -41,7 +41,6 @@ export default React.memo(function ApplicationFilters() {
     allUnits,
     setAllUnits,
     availableAreas,
-    setAvailableAreas,
     clearSearchFilters,
     setApplicationsResult,
     applicationSearchFilters,
@@ -49,10 +48,6 @@ export default React.memo(function ApplicationFilters() {
   } = useContext(ApplicationUIContext)
 
   const { i18n } = useTranslation()
-
-  useEffect(() => {
-    void getAreas().then(setAvailableAreas)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(
     () => {

@@ -6,20 +6,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import mapValues from 'lodash/mapValues'
 import range from 'lodash/range'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import {
-  careTypes,
-  DaycareCareArea
-} from 'lib-common/generated/api-types/daycare'
+import { careTypes } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { mockNow } from 'lib-common/utils/helpers'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -31,18 +28,19 @@ import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import { getAreas } from '../../api/daycare'
 import {
-  getOccupanciesReport,
   OccupancyReportFilters,
   OccupancyReportRow,
   OccupancyReportType
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { Translations, useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { occupanciesReportQuery } from './queries'
 
 const StyledTfoot = styled(Tfoot)`
   background-color: ${(props) => props.theme.colors.grayscale.g4};
@@ -223,6 +221,7 @@ type Averages = {
     { average: number | null; byDate: Record<string, number | null> }
   >
 }
+
 interface Division {
   dividend: number
   divider: number
@@ -311,8 +310,7 @@ function formatAverage(
 
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success.of([]))
-  const [areas, setAreas] = useState<DaycareCareArea[]>([])
+  const areas = useQueryResult(areaQuery)
   const now = mockNow() ?? new Date()
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: now.getFullYear(),
@@ -324,17 +322,7 @@ export default React.memo(function Occupancies() {
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
-
-  useEffect(() => {
-    void getAreas().then((res) => res.isSuccess && setAreas(res.value))
-  }, [])
-
-  useEffect(() => {
-    if (filters.careAreaId === null) return
-
-    setRows(Loading.of())
-    void getOccupanciesReport(filters).then(setRows)
-  }, [filters])
+  const rows = useQueryResult(occupanciesReportQuery(filters))
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
   const displayCells: string[][] = rows
@@ -361,357 +349,381 @@ export default React.memo(function Occupancies() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.occupancies.title}</Title>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.period}</FilterLabel>
-          <FlexRow>
-            <Wrapper>
-              <Combobox
-                items={monthOptions}
-                selectedItem={filters.month}
-                onChange={(month) => {
-                  if (month !== null) {
-                    setFilters({ ...filters, month })
-                  }
-                }}
-                getItemLabel={(month) => i18n.datePicker.months[month - 1]}
-              />
-            </Wrapper>
-            <Wrapper>
-              <Combobox
-                items={yearOptions}
-                selectedItem={filters.year}
-                onChange={(year) => {
-                  if (year !== null) {
-                    setFilters({ ...filters, year })
-                  }
-                }}
-              />
-            </Wrapper>
-          </FlexRow>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={[careAreaAll, ...areas]}
-              onChange={(item) => {
-                if (item) {
-                  setFilters({ ...filters, careAreaId: item.id })
-                }
-              }}
-              selectedItem={
-                filters.careAreaId === undefined
-                  ? careAreaAll
-                  : areas.find((area) => area.id === filters.careAreaId) ?? null
-              }
-              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
-              getItemLabel={(item) => item.name}
-            />
-          </Wrapper>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitProviderType}</FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={[
-                {
-                  value: undefined,
-                  label: i18n.common.all
-                },
-                ...unitProviderTypes.map((providerType) => ({
-                  value: providerType,
-                  label: i18n.reports.common.unitProviderTypes[providerType]
-                }))
-              ]}
-              selectedItem={{
-                value: filters.providerType,
-                label: filters.providerType
-                  ? i18n.reports.common.unitProviderTypes[filters.providerType]
-                  : i18n.common.all
-              }}
-              onChange={(value) => {
-                if (value) {
-                  setFilters({
-                    ...filters,
-                    providerType: value.value
-                  })
-                }
-              }}
-              getItemLabel={(item) => item.label}
-            />
-          </Wrapper>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitType}</FilterLabel>
-          <Wrapper>
-            <MultiSelect
-              options={careTypes}
-              onChange={(selectedItems) =>
-                setFilters({
-                  ...filters,
-                  unitTypes: selectedItems.map((selectedItem) => selectedItem)
-                })
-              }
-              value={careTypes.filter((unitType) =>
-                filters.unitTypes.includes(unitType)
-              )}
-              getOptionId={(unitType) => unitType}
-              getOptionLabel={(unitType) => i18n.common.types[unitType]}
-              placeholder=""
-            />
-          </Wrapper>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={[
-                {
-                  value: 'UNIT_CONFIRMED',
-                  label: i18n.reports.occupancies.filters.types.UNIT_CONFIRMED
-                },
-                {
-                  value: 'UNIT_PLANNED',
-                  label: i18n.reports.occupancies.filters.types.UNIT_PLANNED
-                },
-                {
-                  value: 'UNIT_REALIZED',
-                  label: i18n.reports.occupancies.filters.types.UNIT_REALIZED
-                },
-                {
-                  value: 'GROUP_CONFIRMED',
-                  label: i18n.reports.occupancies.filters.types.GROUP_CONFIRMED
-                },
-                {
-                  value: 'GROUP_REALIZED',
-                  label: i18n.reports.occupancies.filters.types.GROUP_REALIZED
-                }
-              ]}
-              selectedItem={{
-                value: filters.type,
-                label: i18n.reports.occupancies.filters.types[filters.type]
-              }}
-              onChange={(value) => {
-                if (value) {
-                  setFilters({
-                    ...filters,
-                    type: value.value as OccupancyReportType
-                  })
-                }
-              }}
-              getItemLabel={(item) => item.label}
-            />
-          </Wrapper>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>
-            {i18n.reports.occupancies.filters.valueOnReport}
-          </FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={[
-                {
-                  value: 'percentage' as ValueOnReport,
-                  label:
-                    i18n.reports.occupancies.filters.valuesOnReport.percentage
-                },
-                {
-                  value: 'headcount' as ValueOnReport,
-                  label:
-                    i18n.reports.occupancies.filters.valuesOnReport.headcount
-                },
-                {
-                  value: 'raw' as ValueOnReport,
-                  label: i18n.reports.occupancies.filters.valuesOnReport.raw
-                }
-              ]}
-              selectedItem={{
-                value: usedValues,
-                label:
-                  i18n.reports.occupancies.filters.valuesOnReport[usedValues]
-              }}
-              onChange={(value) => {
-                if (value) {
-                  setUsedValues(value.value)
-                }
-              }}
-              getItemLabel={(item) => item.label}
-            />
-          </Wrapper>
-        </FilterRow>
-
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && filters.careAreaId !== null && (
+        {renderResult(areas, (areas) => (
           <>
-            <ReportDownload
-              data={[
-                [
-                  i18n.reports.common.careAreaName,
-                  i18n.reports.common.unitName,
-                  includeGroups ? i18n.reports.common.groupName : undefined,
-                  usedValues !== 'raw'
-                    ? i18n.reports.occupancies.average
-                    : undefined,
-                  ...dateCols.map((date) => formatDate(date, 'dd.MM.'))
-                ].filter((label) => label !== undefined),
-                ...displayCells
-              ]}
-              filename={getFilename(
-                i18n,
-                filters.year,
-                filters.month,
-                filters.type,
-                filters.careAreaId === undefined
-                  ? i18n.common.all
-                  : areas.find((area) => area.id == filters.careAreaId)?.name ??
-                      ''
-              )}
-            />
-            <TableScrollable>
-              <Thead>
-                <Tr>
-                  <Th>
-                    {filters.careAreaId === undefined
-                      ? i18n.reports.occupancies.unitsGroupedByArea
-                      : i18n.reports.common.unitName}
-                  </Th>
-                  {includeGroups && <Th>{i18n.reports.common.groupName}</Th>}
-                  {usedValues !== 'raw' && (
-                    <Th>{i18n.reports.occupancies.average}</Th>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.period}</FilterLabel>
+              <FlexRow>
+                <Wrapper>
+                  <Combobox
+                    items={monthOptions}
+                    selectedItem={filters.month}
+                    onChange={(month) => {
+                      if (month !== null) {
+                        setFilters({ ...filters, month })
+                      }
+                    }}
+                    getItemLabel={(month) => i18n.datePicker.months[month - 1]}
+                  />
+                </Wrapper>
+                <Wrapper>
+                  <Combobox
+                    items={yearOptions}
+                    selectedItem={filters.year}
+                    onChange={(year) => {
+                      if (year !== null) {
+                        setFilters({ ...filters, year })
+                      }
+                    }}
+                  />
+                </Wrapper>
+              </FlexRow>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+              <Wrapper>
+                <Combobox
+                  items={[careAreaAll, ...areas]}
+                  onChange={(item) => {
+                    if (item) {
+                      setFilters({ ...filters, careAreaId: item.id })
+                    }
+                  }}
+                  selectedItem={
+                    filters.careAreaId === undefined
+                      ? careAreaAll
+                      : areas.find((area) => area.id === filters.careAreaId) ??
+                        null
+                  }
+                  placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+                  getItemLabel={(item) => item.name}
+                />
+              </Wrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitProviderType}</FilterLabel>
+              <Wrapper>
+                <Combobox
+                  items={[
+                    {
+                      value: undefined,
+                      label: i18n.common.all
+                    },
+                    ...unitProviderTypes.map((providerType) => ({
+                      value: providerType,
+                      label: i18n.reports.common.unitProviderTypes[providerType]
+                    }))
+                  ]}
+                  selectedItem={{
+                    value: filters.providerType,
+                    label: filters.providerType
+                      ? i18n.reports.common.unitProviderTypes[
+                          filters.providerType
+                        ]
+                      : i18n.common.all
+                  }}
+                  onChange={(value) => {
+                    if (value) {
+                      setFilters({
+                        ...filters,
+                        providerType: value.value
+                      })
+                    }
+                  }}
+                  getItemLabel={(item) => item.label}
+                />
+              </Wrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitType}</FilterLabel>
+              <Wrapper>
+                <MultiSelect
+                  options={careTypes}
+                  onChange={(selectedItems) =>
+                    setFilters({
+                      ...filters,
+                      unitTypes: selectedItems.map(
+                        (selectedItem) => selectedItem
+                      )
+                    })
+                  }
+                  value={careTypes.filter((unitType) =>
+                    filters.unitTypes.includes(unitType)
                   )}
-                  {dates.map((date) => (
-                    <Th
-                      align="center"
-                      key={date.toDateString()}
-                      colSpan={usedValues === 'raw' ? 2 : undefined}
-                    >
-                      {formatDate(date, 'dd.MM.')}
-                    </Th>
-                  ))}
-                </Tr>
-              </Thead>
-              <Tbody>
-                {displayAreas.map((areaName) => (
-                  <React.Fragment key={areaName}>
-                    {filters.careAreaId === undefined && (
-                      <Tr>
-                        <StyledTd
-                          colSpan={
-                            usedValues === 'raw'
-                              ? 2 + dateCols.length
-                              : undefined
-                          }
+                  getOptionId={(unitType) => unitType}
+                  getOptionLabel={(unitType) => i18n.common.types[unitType]}
+                  placeholder=""
+                />
+              </Wrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
+              <Wrapper>
+                <Combobox
+                  items={[
+                    {
+                      value: 'UNIT_CONFIRMED',
+                      label:
+                        i18n.reports.occupancies.filters.types.UNIT_CONFIRMED
+                    },
+                    {
+                      value: 'UNIT_PLANNED',
+                      label: i18n.reports.occupancies.filters.types.UNIT_PLANNED
+                    },
+                    {
+                      value: 'UNIT_REALIZED',
+                      label:
+                        i18n.reports.occupancies.filters.types.UNIT_REALIZED
+                    },
+                    {
+                      value: 'GROUP_CONFIRMED',
+                      label:
+                        i18n.reports.occupancies.filters.types.GROUP_CONFIRMED
+                    },
+                    {
+                      value: 'GROUP_REALIZED',
+                      label:
+                        i18n.reports.occupancies.filters.types.GROUP_REALIZED
+                    }
+                  ]}
+                  selectedItem={{
+                    value: filters.type,
+                    label: i18n.reports.occupancies.filters.types[filters.type]
+                  }}
+                  onChange={(value) => {
+                    if (value) {
+                      setFilters({
+                        ...filters,
+                        type: value.value as OccupancyReportType
+                      })
+                    }
+                  }}
+                  getItemLabel={(item) => item.label}
+                />
+              </Wrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>
+                {i18n.reports.occupancies.filters.valueOnReport}
+              </FilterLabel>
+              <Wrapper>
+                <Combobox
+                  items={[
+                    {
+                      value: 'percentage' as ValueOnReport,
+                      label:
+                        i18n.reports.occupancies.filters.valuesOnReport
+                          .percentage
+                    },
+                    {
+                      value: 'headcount' as ValueOnReport,
+                      label:
+                        i18n.reports.occupancies.filters.valuesOnReport
+                          .headcount
+                    },
+                    {
+                      value: 'raw' as ValueOnReport,
+                      label: i18n.reports.occupancies.filters.valuesOnReport.raw
+                    }
+                  ]}
+                  selectedItem={{
+                    value: usedValues,
+                    label:
+                      i18n.reports.occupancies.filters.valuesOnReport[
+                        usedValues
+                      ]
+                  }}
+                  onChange={(value) => {
+                    if (value) {
+                      setUsedValues(value.value)
+                    }
+                  }}
+                  getItemLabel={(item) => item.label}
+                />
+              </Wrapper>
+            </FilterRow>
+          </>
+        ))}
+
+        {renderResult(combine(rows, areas), ([rows, areas]) => (
+          <>
+            {filters.careAreaId !== null && (
+              <>
+                <ReportDownload
+                  data={[
+                    [
+                      i18n.reports.common.careAreaName,
+                      i18n.reports.common.unitName,
+                      includeGroups ? i18n.reports.common.groupName : undefined,
+                      usedValues !== 'raw'
+                        ? i18n.reports.occupancies.average
+                        : undefined,
+                      ...dateCols.map((date) => formatDate(date, 'dd.MM.'))
+                    ].filter((label) => label !== undefined),
+                    ...displayCells
+                  ]}
+                  filename={getFilename(
+                    i18n,
+                    filters.year,
+                    filters.month,
+                    filters.type,
+                    filters.careAreaId === undefined
+                      ? i18n.common.all
+                      : areas.find((area) => area.id == filters.careAreaId)
+                          ?.name ?? ''
+                  )}
+                />
+                <TableScrollable>
+                  <Thead>
+                    <Tr>
+                      <Th>
+                        {filters.careAreaId === undefined
+                          ? i18n.reports.occupancies.unitsGroupedByArea
+                          : i18n.reports.common.unitName}
+                      </Th>
+                      {includeGroups && (
+                        <Th>{i18n.reports.common.groupName}</Th>
+                      )}
+                      {usedValues !== 'raw' && (
+                        <Th>{i18n.reports.occupancies.average}</Th>
+                      )}
+                      {dates.map((date) => (
+                        <Th
+                          align="center"
+                          key={date.toDateString()}
+                          colSpan={usedValues === 'raw' ? 2 : undefined}
                         >
-                          <div
-                            onClick={() =>
-                              setAreasOpen({
-                                ...areasOpen,
-                                [areaName]: !(areasOpen[areaName] ?? false)
-                              })
-                            }
-                          >
-                            <span>
-                              <AccordionIcon
-                                icon={
-                                  areasOpen[areaName]
-                                    ? faChevronUp
-                                    : faChevronDown
+                          {formatDate(date, 'dd.MM.')}
+                        </Th>
+                      ))}
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {displayAreas.map((areaName) => (
+                      <React.Fragment key={areaName}>
+                        {filters.careAreaId === undefined && (
+                          <Tr>
+                            <StyledTd
+                              colSpan={
+                                usedValues === 'raw'
+                                  ? 2 + dateCols.length
+                                  : undefined
+                              }
+                            >
+                              <div
+                                onClick={() =>
+                                  setAreasOpen({
+                                    ...areasOpen,
+                                    [areaName]: !(areasOpen[areaName] ?? false)
+                                  })
                                 }
-                              />
-                            </span>
-                            <span>{areaName}</span>
-                          </div>
-                        </StyledTd>
-                        {usedValues !== 'raw' && (
-                          <>
-                            <StyledTd>
-                              {formatAverage(
-                                averages?.byArea[areaName]?.average ?? null,
-                                usedValues
-                              )}
+                              >
+                                <span>
+                                  <AccordionIcon
+                                    icon={
+                                      areasOpen[areaName]
+                                        ? faChevronUp
+                                        : faChevronDown
+                                    }
+                                  />
+                                </span>
+                                <span>{areaName}</span>
+                              </div>
                             </StyledTd>
-                            {dateCols.map((dateCol) => (
-                              <StyledTd key={dateCol.toDateString()}>
-                                {formatAverage(
-                                  averages?.byArea[areaName]?.byDate[
-                                    toOccupancyKey(dateCol)
-                                  ] ?? null,
-                                  usedValues
-                                )}
-                              </StyledTd>
-                            ))}
-                          </>
-                        )}
-                      </Tr>
-                    )}
-                    {rows.value.map(
-                      (row, rowNum) =>
-                        row.areaName === areaName &&
-                        (filters.careAreaId !== undefined ||
-                          areasOpen[areaName]) && (
-                          <Tr key={row.unitId}>
-                            <StyledTd>
-                              <Link to={`/units/${row.unitId}`}>
-                                {row.unitName}
-                              </Link>
-                            </StyledTd>
-                            {displayCells[rowNum]
-                              .slice(2)
-                              .map((cell, colNum) => (
-                                <StyledTd
-                                  key={colNum}
-                                  borderEdge={
-                                    usedValues === 'raw'
-                                      ? colNum % 2 === (includeGroups ? 1 : 0)
-                                        ? 'left'
-                                        : 'right'
-                                      : undefined
-                                  }
-                                >
-                                  {usedValues === 'raw' &&
-                                  (!includeGroups || colNum > 0) ? (
-                                    <Tooltip
-                                      tooltip={
-                                        colNum % 2 === (includeGroups ? 1 : 0)
-                                          ? i18n.reports.occupancies.sum
-                                          : i18n.reports.occupancies.caretakers
-                                      }
-                                    >
-                                      {cell}
-                                    </Tooltip>
-                                  ) : (
-                                    <>{cell}</>
+                            {usedValues !== 'raw' && (
+                              <>
+                                <StyledTd>
+                                  {formatAverage(
+                                    averages?.byArea[areaName]?.average ?? null,
+                                    usedValues
                                   )}
                                 </StyledTd>
-                              ))}
+                                {dateCols.map((dateCol) => (
+                                  <StyledTd key={dateCol.toDateString()}>
+                                    {formatAverage(
+                                      averages?.byArea[areaName]?.byDate[
+                                        toOccupancyKey(dateCol)
+                                      ] ?? null,
+                                      usedValues
+                                    )}
+                                  </StyledTd>
+                                ))}
+                              </>
+                            )}
                           </Tr>
-                        )
-                    )}
-                  </React.Fragment>
-                ))}
-              </Tbody>
-              {usedValues !== 'raw' && (
-                <StyledTfoot>
-                  <Tr>
-                    <Td colSpan={includeGroups ? 2 : undefined}>
-                      {i18n.reports.common.total}
-                    </Td>
-                    <Td colSpan={1 + dateCols.length}>
-                      {formatAverage(averages?.average ?? null, usedValues)}
-                    </Td>
-                  </Tr>
-                </StyledTfoot>
-              )}
-            </TableScrollable>
-            <Gap size="s" />
-            <Legend>
-              <i>
-                {`${caretakersMissingSymbol} = ${i18n.reports.occupancies.missingCaretakersLegend}`}
-              </i>
-            </Legend>
+                        )}
+                        {rows.map(
+                          (row, rowNum) =>
+                            row.areaName === areaName &&
+                            (filters.careAreaId !== undefined ||
+                              areasOpen[areaName]) && (
+                              <Tr key={row.unitId}>
+                                <StyledTd>
+                                  <Link to={`/units/${row.unitId}`}>
+                                    {row.unitName}
+                                  </Link>
+                                </StyledTd>
+                                {displayCells[rowNum]
+                                  .slice(2)
+                                  .map((cell, colNum) => (
+                                    <StyledTd
+                                      key={colNum}
+                                      borderEdge={
+                                        usedValues === 'raw'
+                                          ? colNum % 2 ===
+                                            (includeGroups ? 1 : 0)
+                                            ? 'left'
+                                            : 'right'
+                                          : undefined
+                                      }
+                                    >
+                                      {usedValues === 'raw' &&
+                                      (!includeGroups || colNum > 0) ? (
+                                        <Tooltip
+                                          tooltip={
+                                            colNum % 2 ===
+                                            (includeGroups ? 1 : 0)
+                                              ? i18n.reports.occupancies.sum
+                                              : i18n.reports.occupancies
+                                                  .caretakers
+                                          }
+                                        >
+                                          {cell}
+                                        </Tooltip>
+                                      ) : (
+                                        <>{cell}</>
+                                      )}
+                                    </StyledTd>
+                                  ))}
+                              </Tr>
+                            )
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </Tbody>
+                  {usedValues !== 'raw' && (
+                    <StyledTfoot>
+                      <Tr>
+                        <Td colSpan={includeGroups ? 2 : undefined}>
+                          {i18n.reports.common.total}
+                        </Td>
+                        <Td colSpan={1 + dateCols.length}>
+                          {formatAverage(averages?.average ?? null, usedValues)}
+                        </Td>
+                      </Tr>
+                    </StyledTfoot>
+                  )}
+                </TableScrollable>
+                <Gap size="s" />
+                <Legend>
+                  <i>
+                    {`${caretakersMissingSymbol} = ${i18n.reports.occupancies.missingCaretakersLegend}`}
+                  </i>
+                </Legend>
+              </>
+            )}
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

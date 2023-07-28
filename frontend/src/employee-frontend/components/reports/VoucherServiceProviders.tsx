@@ -4,19 +4,17 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import range from 'lodash/range'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
-import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
+import { combine } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
+import { useQueryResult } from 'lib-common/query'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Loader from 'lib-components/atoms/Loader'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -28,17 +26,16 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faLockAlt, faSearch } from 'lib-icons'
 
-import { getAreas } from '../../api/daycare'
-import {
-  getVoucherServiceProvidersReport,
-  VoucherServiceProvidersFilters
-} from '../../api/reports'
+import { VoucherServiceProvidersFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { voucherServiceProvidersReportQuery } from './queries'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -71,9 +68,7 @@ export default React.memo(function VoucherServiceProviders() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const [report, setReport] = useState<Result<ServiceVoucherReport>>(
-    Success.of({ locked: null, rows: [] })
-  )
+  const areas = useQueryResult(areaQuery)
   const allAreasOption = useMemo(
     () => ({
       id: 'all',
@@ -82,9 +77,13 @@ export default React.memo(function VoucherServiceProviders() {
     }),
     [i18n]
   )
-  const [areaOptions, setAreaOptions] = useState<DaycareCareArea[]>([
-    allAreasOption
-  ])
+  const areaOptions = useMemo(
+    () =>
+      areas
+        .map((areas) => [allAreasOption, ...areas])
+        .getOrElse([allAreasOption]),
+    [allAreasOption, areas]
+  )
   const [filters, setFilters] = useState<VoucherServiceProvidersFilters>(() => {
     const { search } = location
     const queryParams = new URLSearchParams(search)
@@ -116,45 +115,35 @@ export default React.memo(function VoucherServiceProviders() {
   useSyncQueryParams(params)
   const query = new URLSearchParams(params).toString()
 
-  useEffect(() => {
-    void getAreas().then((res) =>
-      setAreaOptions(
-        res
-          .map((areas) => [allAreasOption, ...areas])
-          .getOrElse([allAreasOption])
-      )
-    )
-  }, [allAreasOption])
-
   const allAreas = !roles.find((r) =>
     ['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR'].includes(r)
   )
-  useEffect(() => {
-    if (!allAreas && filters.areaId === undefined) return
 
-    setReport(Loading.of())
-    const { areaId, ...otherFilters } = filters
-    void getVoucherServiceProvidersReport(
+  const { areaId, ...otherFilters } = filters
+  const report = useQueryResult(
+    voucherServiceProvidersReportQuery(
       allAreas || areaId === 'all' ? otherFilters : filters
-    ).then(setReport)
-  }, [filters, allAreas])
-
-  const mappedData = report
-    .map((rs) =>
-      rs.rows
-        .filter(({ unit }) =>
-          unit.name.toLowerCase().includes(unitFilter.toLowerCase())
-        )
-        .map(({ unit, childCount, monthlyPaymentSum }) => ({
-          unitId: unit.id,
-          unitName: unit.name,
-          areaName: unit.areaName,
-          childCount: childCount,
-          sum: formatCents(monthlyPaymentSum, true)
-        }))
-        .sort((l, r) => l.unitName.localeCompare(r.unitName, 'fi'))
     )
-    .getOrElse(undefined)
+  )
+
+  const mappedData = useMemo(
+    () =>
+      report.map((rs) =>
+        rs.rows
+          .filter(({ unit }) =>
+            unit.name.toLowerCase().includes(unitFilter.toLowerCase())
+          )
+          .map(({ unit, childCount, monthlyPaymentSum }) => ({
+            unitId: unit.id,
+            unitName: unit.name,
+            areaName: unit.areaName,
+            childCount: childCount,
+            sum: formatCents(monthlyPaymentSum, true)
+          }))
+          .sort((l, r) => l.unitName.localeCompare(r.unitName, 'fi'))
+      ),
+    [report, unitFilter]
+  )
 
   return (
     <Container>
@@ -224,23 +213,21 @@ export default React.memo(function VoucherServiceProviders() {
           </>
         ) : null}
 
-        {report.isSuccess && report.value.locked && (
-          <LockedDate spacing="xs" alignItems="center">
-            <FontAwesomeIcon icon={faLockAlt} />
-            <span>
-              {`${
-                i18n.reports.voucherServiceProviders.locked
-              }: ${report.value.locked.format()}`}
-            </span>
-          </LockedDate>
-        )}
-
-        <HorizontalLine slim />
-
-        {report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {mappedData && (
+        {renderResult(combine(report, mappedData), ([report, mappedData]) => (
           <>
+            {report.locked && (
+              <LockedDate spacing="xs" alignItems="center">
+                <FontAwesomeIcon icon={faLockAlt} />
+                <span>
+                  {`${
+                    i18n.reports.voucherServiceProviders.locked
+                  }: ${report.locked.format()}`}
+                </span>
+              </LockedDate>
+            )}
+
+            <HorizontalLine slim />
+
             <ReportDownload
               data={mappedData}
               headers={[
@@ -295,7 +282,7 @@ export default React.memo(function VoucherServiceProviders() {
               </Tbody>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

@@ -11,7 +11,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas, getUnits } from '../../api/daycare'
+import { getUnits } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
@@ -32,14 +32,10 @@ export default React.memo(function InvoiceFilters() {
       setSearchTerms,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas, setAvailableAreas }
+    shared: { units, setUnits, availableAreas }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-
-  useEffect(() => {
-    void getAreas().then(setAvailableAreas)
-  }, [setAvailableAreas])
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)

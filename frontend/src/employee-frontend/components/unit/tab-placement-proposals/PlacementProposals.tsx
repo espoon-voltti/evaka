@@ -18,24 +18,27 @@ import {
   PlacementPlanDetails,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import MutateButton, {
+  cancelMutation
+} from 'lib-components/atoms/buttons/MutateButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
 
-import {
-  acceptPlacementProposal,
-  respondToPlacementProposal
-} from '../../../api/applications'
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import {
+  acceptPlacementProposalMutation,
+  respondToPlacementProposalMutation
+} from '../queries'
 
 const ButtonRow = styled.div`
   display: flex;
@@ -51,13 +54,11 @@ interface DynamicState {
 type Props = {
   unitId: UUID
   placementPlans: PlacementPlanDetails[]
-  reloadApplications: () => void
 }
 
 export default React.memo(function PlacementProposals({
   unitId,
-  placementPlans,
-  reloadApplications
+  placementPlans
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -96,51 +97,47 @@ export default React.memo(function PlacementProposals({
     )
   }, [placementPlans, setConfirmationStates])
 
-  const sendConfirmation = useCallback(
-    async (
-      applicationId: UUID,
-      confirmation: PlacementPlanConfirmationStatus,
-      reason?: PlacementPlanRejectReason,
-      otherReason?: string
-    ) => {
+  const { mutateAsync: respondToPlacementProposal } = useMutationResult(
+    respondToPlacementProposalMutation
+  )
+
+  const sendConfirmation = async (
+    applicationId: UUID,
+    status: PlacementPlanConfirmationStatus
+  ) => {
+    setConfirmationStates((state) => ({
+      ...state,
+      [applicationId]: {
+        ...state[applicationId],
+        submitting: true
+      }
+    }))
+    const result = await respondToPlacementProposal({
+      unitId,
+      applicationId,
+      status,
+      reason: null,
+      otherReason: null
+    })
+    if (!isMounted.current) return
+    if (result.isSuccess) {
+      setConfirmationStates((state) => ({
+        ...state,
+        [applicationId]: {
+          confirmation: status,
+          submitting: false
+        }
+      }))
+    } else {
       setConfirmationStates((state) => ({
         ...state,
         [applicationId]: {
           ...state[applicationId],
-          submitting: true
+          submitting: false
         }
       }))
-      const result = await respondToPlacementProposal(
-        applicationId,
-        confirmation,
-        reason,
-        otherReason
-      )
-      if (!isMounted.current) return result
-      if (result.isSuccess) {
-        setConfirmationStates((state) => ({
-          ...state,
-          [applicationId]: {
-            confirmation,
-            submitting: false
-          }
-        }))
-      } else {
-        setConfirmationStates((state) => ({
-          ...state,
-          [applicationId]: {
-            ...state[applicationId],
-            submitting: false
-          }
-        }))
-        void reloadApplications()
-      }
-      return result
-    },
-    [reloadApplications]
-  )
-
-  const onAccept = useCallback(() => acceptPlacementProposal(unitId), [unitId])
+    }
+  }
 
   const onAcceptFailure = useCallback(() => {
     setErrorMessage({
@@ -171,30 +168,52 @@ export default React.memo(function PlacementProposals({
     setModalOpen(false)
   }, [])
 
-  const resolveProposal = useCallback(() => {
-    if (reason != null && currentApplicationId != null) {
-      return sendConfirmation(
-        currentApplicationId,
-        'REJECTED_NOT_CONFIRMED',
-        reason,
-        otherReason
-      )
-    }
-    return undefined
-  }, [currentApplicationId, otherReason, reason, sendConfirmation])
-
-  const onConfirmationSuccess = useCallback(() => {
-    closeModal()
-    reloadApplications()
-  }, [closeModal, reloadApplications])
-
   return (
     <>
       {modalOpen && (
-        <AsyncFormModal
+        <MutateFormModal
           title={i18n.unit.placementProposals.rejectTitle}
-          resolveAction={resolveProposal}
-          onSuccess={onConfirmationSuccess}
+          resolveMutation={respondToPlacementProposalMutation}
+          resolveAction={() => {
+            if (reason == null || currentApplicationId == null) {
+              return cancelMutation
+            }
+            setConfirmationStates((state) => ({
+              ...state,
+              [currentApplicationId]: {
+                ...state[currentApplicationId],
+                submitting: true
+              }
+            }))
+            return {
+              unitId,
+              applicationId: currentApplicationId,
+              status: 'REJECTED_NOT_CONFIRMED' as const,
+              reason,
+              otherReason
+            }
+          }}
+          onSuccess={() => {
+            if (currentApplicationId === null) return
+            setConfirmationStates((state) => ({
+              ...state,
+              [currentApplicationId]: {
+                confirmation: 'REJECTED_NOT_CONFIRMED',
+                submitting: false
+              }
+            }))
+            closeModal()
+          }}
+          onFailure={() => {
+            if (currentApplicationId === null) return
+            setConfirmationStates((state) => ({
+              ...state,
+              [currentApplicationId]: {
+                ...state[currentApplicationId],
+                submitting: false
+              }
+            }))
+          }}
           resolveLabel={i18n.common.save}
           resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
           rejectAction={closeModal}
@@ -220,7 +239,7 @@ export default React.memo(function PlacementProposals({
             )}
           </FixedSpaceColumn>
           <Gap />
-        </AsyncFormModal>
+        </MutateFormModal>
       )}
 
       {placementPlans.length > 0 && (
@@ -261,13 +280,8 @@ export default React.memo(function PlacementProposals({
                   setCurrentApplicationId(p.applicationId)
                   setModalOpen(true)
                 }}
-                onChange={(state, reason, otherReason) =>
-                  void sendConfirmation(
-                    p.applicationId,
-                    state,
-                    reason,
-                    otherReason
-                  )
+                onChange={(status) =>
+                  void sendConfirmation(p.applicationId, status)
                 }
               />
             ))}
@@ -278,10 +292,11 @@ export default React.memo(function PlacementProposals({
 
       {placementPlans.length > 0 && (
         <ButtonRow>
-          <AsyncButton
+          <MutateButton
             data-qa="placement-proposals-accept-button"
-            onClick={onAccept}
-            onSuccess={reloadApplications}
+            mutation={acceptPlacementProposalMutation}
+            onClick={() => unitId}
+            onSuccess={() => undefined}
             onFailure={onAcceptFailure}
             disabled={acceptDisabled}
             text={i18n.unit.placementProposals.acceptAllButton}

@@ -5,30 +5,32 @@
 import React, { useContext, useState } from 'react'
 
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { UUID } from 'lib-common/types'
+import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faChild, faExchange } from 'lib-icons'
 
-import { updateBackupCare } from '../../../../api/child/backup-care'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
+import { updateBackupCareMutation } from '../../queries'
 
 interface Props {
+  unitId: UUID
   backupCare: UnitBackupCare
   groups: DaycareGroup[]
-  reload: () => void
 }
 
 export default React.memo(function BackupCareGroupModal({
+  unitId,
   backupCare,
-  groups,
-  reload
+  groups
 }: Props) {
   const { period, child } = backupCare
   const { i18n } = useTranslation()
-  const { clearUiMode, setErrorMessage } = useContext(UIContext)
+  const { clearUiMode } = useContext(UIContext)
 
   // filter out groups which are not active on any day during the maximum placement time range
   const openGroups = groups
@@ -41,31 +43,9 @@ export default React.memo(function BackupCareGroupModal({
       : null
   )
 
-  const submitForm = () => {
-    if (group == null) return
-
-    void updateBackupCare(backupCare.id, {
-      period,
-      groupId: group.id
-    }).then((res) => {
-      if (res.isFailure) {
-        clearUiMode()
-        setErrorMessage({
-          type: 'error',
-          title: i18n.unit.error.placement.create,
-          text: i18n.common.tryAgain,
-          resolveLabel: i18n.common.ok
-        })
-      } else {
-        clearUiMode()
-        reload()
-      }
-    })
-  }
-
   const isTransfer = !!backupCare.group
   return (
-    <FormModal
+    <MutateFormModal
       data-qa="backup-care-group-modal"
       title={
         isTransfer
@@ -74,9 +54,20 @@ export default React.memo(function BackupCareGroupModal({
       }
       icon={isTransfer ? faExchange : faChild}
       type="info"
-      resolveAction={submitForm}
+      resolveMutation={updateBackupCareMutation}
+      resolveAction={() =>
+        group !== null
+          ? {
+              backupCareId: backupCare.id,
+              period,
+              groupId: group.id,
+              unitId
+            }
+          : cancelMutation
+      }
       resolveLabel={i18n.common.confirm}
       resolveDisabled={!group}
+      onSuccess={clearUiMode}
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
     >
@@ -109,6 +100,6 @@ export default React.memo(function BackupCareGroupModal({
           </div>
         </section>
       )}
-    </FormModal>
+    </MutateFormModal>
   )
 })
