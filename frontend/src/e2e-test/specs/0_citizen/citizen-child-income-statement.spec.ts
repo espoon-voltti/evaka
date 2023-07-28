@@ -68,6 +68,7 @@ describe('Child Income statements', () => {
     await child1ISList.assertChildCount(1)
 
     const editPage = await child1ISList.createIncomeStatement()
+    await editPage.setValidFromDate('01.02.2034')
     await editPage.uploadAttachment(testFilePath1)
     await editPage.selectAssure()
     await editPage.save()

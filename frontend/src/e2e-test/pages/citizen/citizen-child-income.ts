@@ -41,13 +41,19 @@ export class CitizenChildIncomeStatementViewPage {
 export class CitizenChildIncomeStatementEditPage {
   constructor(private readonly page: Page) {}
 
-  private startDateInput = this.page.findByDataQa('start-date')
+  startDateInput = new TextInput(this.page.findByDataQa('start-date'))
+
   private otherInfoInput = new TextInput(this.page.findByDataQa('other-info'))
   private assure = this.page.findByDataQa('assure-checkbox')
   private saveButton = this.page.findByDataQa('save-btn')
 
   async waitUntilReady() {
     await this.startDateInput.waitUntilVisible()
+  }
+
+  async setValidFromDate(date: string) {
+    await this.startDateInput.fill(date)
+    await this.startDateInput.press('Enter')
   }
 
   async typeOtherInfo(text: string) {

@@ -174,7 +174,7 @@ const ChildIncomeTimeRangeSelection = React.memo(
               date={formData.startDate}
               onChange={useFieldDispatch(onChange, 'startDate')}
               info={startDateInputInfo}
-              hideErrorsBeforeTouched
+              hideErrorsBeforeTouched={!showFormErrors}
               locale={lang}
               isInvalidDate={(d) =>
                 isValidStartDate(d) ? null : t.validationErrors.unselectableDate
