@@ -6,6 +6,8 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -30,16 +32,16 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         @RequestBody body: PersonalDataUpdate
     ) {
         db.connect { dbc ->
-            dbc.transaction {
+            dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
-                    it,
+                    tx,
                     user,
                     clock,
                     Action.Citizen.Person.UPDATE_PERSONAL_DATA,
                     user.id
                 )
 
-                val person = it.getPersonById(user.id) ?: error("User not found")
+                val person = tx.getPersonById(user.id) ?: error("User not found")
 
                 val validationErrors =
                     listOfNotNull(
@@ -58,12 +60,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                 if (validationErrors.isNotEmpty())
                     throw BadRequest(validationErrors.joinToString(", "))
 
-                it.createUpdate(
-                        "UPDATE person SET preferred_name = :preferredName, phone = :phone, backup_phone = :backupPhone, email = :email WHERE id = :id"
-                    )
-                    .bind("id", user.id)
-                    .bindKotlin(body)
-                    .execute()
+                tx.updatePersonalDetails(user.id, body)
             }
         }
         Audit.PersonalDataUpdate.log(targetId = user.id)
@@ -76,3 +73,19 @@ data class PersonalDataUpdate(
     val backupPhone: String,
     val email: String
 )
+
+fun Database.Transaction.updatePersonalDetails(personId: PersonId, body: PersonalDataUpdate) {
+    createUpdate<DatabaseTable> {
+            sql(
+                """
+                UPDATE person SET
+                    preferred_name = ${bind(body.preferredName)},
+                    phone = ${bind(body.phone)},
+                    backup_phone = ${bind(body.backupPhone)},
+                    email = ${bind(body.email)}
+                WHERE id = ${bind(personId)}
+                """
+            )
+        }
+        .updateExactlyOne()
+}
