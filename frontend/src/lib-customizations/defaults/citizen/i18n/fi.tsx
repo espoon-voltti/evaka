@@ -1866,6 +1866,19 @@ export default {
       noEmail: 'Minulla ei ole sähköpostiosoitetta',
       emailInfo:
         'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
+    },
+    notificationsSection: {
+      title: 'Sähköposti-ilmoitukset',
+      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
+      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
+      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
+      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
+      calendarEvent:
+        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
+      document: 'Saapuneista dokumenteista',
+      missingAttendanceReservation:
+        'Muistutukset puuttuvista läsnäoloilmoituksista'
     }
   },
   income: {

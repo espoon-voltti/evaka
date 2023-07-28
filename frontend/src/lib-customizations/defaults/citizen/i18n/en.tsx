@@ -1646,6 +1646,19 @@ const en: Translations = {
       noEmail: 'I have no email address',
       emailInfo:
         'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+    },
+    notificationsSection: {
+      title: 'Sähköposti-ilmoitukset',
+      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
+      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
+      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
+      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
+      calendarEvent:
+        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
+      document: 'Saapuneista dokumenteista',
+      missingAttendanceReservation:
+        'Muistutukset puuttuvista läsnäoloilmoituksista'
     }
   },
   income: {

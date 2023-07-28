@@ -5,9 +5,12 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.EmailNotificationSettings
+import fi.espoo.evaka.pis.PersonalDataUpdate
+import fi.espoo.evaka.pis.getEnabledEmailTypes
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.pis.updateEnabledEmailTypes
+import fi.espoo.evaka.pis.updatePersonalDetails
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -16,6 +19,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -65,27 +69,49 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         }
         Audit.PersonalDataUpdate.log(targetId = user.id)
     }
-}
 
-data class PersonalDataUpdate(
-    val preferredName: String,
-    val phone: String,
-    val backupPhone: String,
-    val email: String
-)
+    @GetMapping("/notification-settings")
+    fun getNotificationSettings(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): EmailNotificationSettings {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_NOTIFICATION_SETTINGS,
+                        user.id
+                    )
+                    EmailNotificationSettings.fromNotificationTypes(
+                        tx.getEnabledEmailTypes(user.id)
+                    )
+                }
+            }
+            .also { Audit.CitizenNotificationSettingsRead.log(targetId = user.id) }
+    }
 
-fun Database.Transaction.updatePersonalDetails(personId: PersonId, body: PersonalDataUpdate) {
-    createUpdate<DatabaseTable> {
-            sql(
-                """
-                UPDATE person SET
-                    preferred_name = ${bind(body.preferredName)},
-                    phone = ${bind(body.phone)},
-                    backup_phone = ${bind(body.backupPhone)},
-                    email = ${bind(body.email)}
-                WHERE id = ${bind(personId)}
-                """
-            )
+    @PutMapping("/notification-settings")
+    fun updateNotificationSettings(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: EmailNotificationSettings
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.UPDATE_NOTIFICATION_SETTINGS,
+                    user.id
+                )
+                tx.updateEnabledEmailTypes(user.id, body.toNotificationTypes())
+            }
         }
-        .updateExactlyOne()
+        Audit.PersonalDataUpdate.log(targetId = user.id)
+    }
 }

@@ -71,6 +71,18 @@ export interface DisableSsnRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.EmailNotificationSettings
+*/
+export interface EmailNotificationSettings {
+  bulletin: boolean
+  calendarEvent: boolean
+  document: boolean
+  message: boolean
+  missingAttendanceReservation: boolean
+  outdatedIncome: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.Employee
 */
 export interface Employee {
@@ -466,7 +478,7 @@ export interface PersonWithChildrenDTO {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataUpdate
+* Generated from fi.espoo.evaka.pis.PersonalDataUpdate
 */
 export interface PersonalDataUpdate {
   backupPhone: string

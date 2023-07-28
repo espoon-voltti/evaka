@@ -86,6 +86,7 @@ import fi.espoo.evaka.pairing.challengePairing
 import fi.espoo.evaka.pairing.incrementAttempts
 import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getEmployeeByExternalId
@@ -1896,7 +1897,8 @@ data class DevPerson(
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String = "",
-    val duplicateOf: PersonId? = null
+    val duplicateOf: PersonId? = null,
+    val enabledEmailTypes: List<EmailMessageType>? = null,
 ) {
     fun toPersonDTO() =
         PersonDTO(

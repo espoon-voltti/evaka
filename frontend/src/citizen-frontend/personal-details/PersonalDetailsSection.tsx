@@ -20,7 +20,6 @@ import {
   requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
@@ -140,14 +139,13 @@ export default React.memo(function PersonalDetailsSection({
   const canEdit = authLevel === 'STRONG'
 
   return (
-    <>
+    <div data-qa="personal-details-section">
       {(email === null || !phone) && (
         <AlertBox
           message={getAlertMessage(email, phone)}
           data-qa="missing-email-or-phone-box"
         />
       )}
-      <HorizontalLine />
       <EditButtonRow>
         <InlineButton
           text={t.common.edit}
@@ -273,7 +271,7 @@ export default React.memo(function PersonalDetailsSection({
           )}
         </>
       )}
-    </>
+    </div>
   )
 })
 

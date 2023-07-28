@@ -162,6 +162,8 @@ enum class Audit(
     CitizenChildrenRead(securityEvent = true, securityLevel = "high"),
     CitizenChildServiceNeedRead(securityEvent = true, securityLevel = "high"),
     CitizenChildDailyServiceTimeRead(securityEvent = true, securityLevel = "high"),
+    CitizenNotificationSettingsRead,
+    CitizenNotificationSettingsUpdate,
     CitizenLogin(securityEvent = true, securityLevel = "high"),
     DaycareAssistanceCreate,
     DaycareAssistanceUpdate,
