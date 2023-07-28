@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faLockAlt, faPen } from 'Icons'
-import React, { useCallback, useContext, useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import React, { useCallback } from 'react'
 
-import { Result } from 'lib-common/api'
 import { boolean, string } from 'lib-common/form/fields'
 import {
   chained,
@@ -23,9 +21,9 @@ import {
   requiredPhoneNumber
 } from 'lib-common/form/validators'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -42,17 +40,23 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { renderResult } from '../async-rendering'
-import { AuthContext, User } from '../auth/state'
+import { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
-import { updatePersonalData } from './api'
 import { EditButtonRow, MandatoryValueMissingWarning } from './components'
+import { updatePersonalDetailsMutation } from './queries'
 
-export default React.memo(function PersonalDetailsSection() {
+export interface Props {
+  user: User
+  reloadUser: () => void
+}
+
+export default React.memo(function PersonalDetailsSection({
+  user,
+  reloadUser
+}: Props) {
   const t = useTranslation()
-  const { user, refreshAuthStatus } = useContext(AuthContext)
 
   const [editing, setEditing] = useBoolean(false)
   const [emailInfo, setEmailInfo] = useBoolean(false)
@@ -69,21 +73,9 @@ export default React.memo(function PersonalDetailsSection() {
   const emailState = useFormField(emailObjectState, 'email')
   const noEmailState = useFormField(emailObjectState, 'noEmail')
 
-  const set = form.set
-  useEffect(() => {
-    if (user.isSuccess) {
-      set(initialFormState(user))
-    }
-  }, [set, user])
-
   const navigateToLogin = useCallback(
     () => window.location.replace(getStrongLoginUri()),
     []
-  )
-
-  const save = useCallback(
-    async () => await updatePersonalData(form.value()),
-    [form]
   )
 
   const formWrapper = (children: React.ReactNode) =>
@@ -99,13 +91,14 @@ export default React.memo(function PersonalDetailsSection() {
               form.set(initialFormState(user))
             }}
           />
-          <AsyncButton
+          <MutateButton
             primary
             type="submit"
             text={t.common.save}
-            onClick={save}
+            mutation={updatePersonalDetailsMutation}
+            onClick={() => form.value()}
             onSuccess={() => {
-              refreshAuthStatus()
+              reloadUser()
               setEditing.off()
             }}
             disabled={!form.isValid()}
@@ -131,156 +124,157 @@ export default React.memo(function PersonalDetailsSection() {
     return alerts.join('. ').concat('.')
   }
 
-  return renderResult(user, (personalData) => {
-    if (personalData === undefined) {
-      return <Navigate replace to="/" />
-    }
+  const {
+    firstName,
+    lastName,
+    preferredName,
+    streetAddress,
+    postalCode,
+    postOffice,
+    phone,
+    backupPhone,
+    email,
+    authLevel
+  } = user
 
-    const {
-      firstName,
-      lastName,
-      preferredName,
-      streetAddress,
-      postalCode,
-      postOffice,
-      phone,
-      backupPhone,
-      email,
-      authLevel
-    } = personalData
+  const canEdit = authLevel === 'STRONG'
 
-    const canEdit = authLevel === 'STRONG'
-
-    return (
-      <>
-        {(email === null || !phone) && (
-          <AlertBox
-            message={getAlertMessage(email, phone)}
-            data-qa="missing-email-or-phone-box"
-          />
-        )}
-        <HorizontalLine />
-        <EditButtonRow>
-          <InlineButton
-            text={t.common.edit}
-            icon={canEdit ? faPen : faLockAlt}
-            onClick={canEdit ? setEditing.on : navigateToLogin}
-            disabled={editing}
-            data-qa={canEdit ? 'start-editing' : 'start-editing-login'}
-          />
-        </EditButtonRow>
-        {formWrapper(
-          <>
-            <ListGrid rowGap="s" columnGap="L" labelWidth="max-content">
-              <H2 noMargin>{t.personalDetails.detailsSection.title}</H2>
-              <div />
-              <Label>{t.personalDetails.detailsSection.name}</Label>
-              <div>
-                {firstName} {lastName}
-              </div>
-              <Label>{t.personalDetails.detailsSection.preferredName}</Label>
+  return (
+    <>
+      {(email === null || !phone) && (
+        <AlertBox
+          message={getAlertMessage(email, phone)}
+          data-qa="missing-email-or-phone-box"
+        />
+      )}
+      <HorizontalLine />
+      <EditButtonRow>
+        <InlineButton
+          text={t.common.edit}
+          icon={canEdit ? faPen : faLockAlt}
+          onClick={
+            canEdit
+              ? () => {
+                  form.set(initialFormState(user))
+                  setEditing.on()
+                }
+              : navigateToLogin
+          }
+          disabled={editing}
+          data-qa={canEdit ? 'start-editing' : 'start-editing-login'}
+        />
+      </EditButtonRow>
+      {formWrapper(
+        <>
+          <ListGrid rowGap="s" columnGap="L" labelWidth="max-content">
+            <H2 noMargin>{t.personalDetails.detailsSection.title}</H2>
+            <div />
+            <Label>{t.personalDetails.detailsSection.name}</Label>
+            <div>
+              {firstName} {lastName}
+            </div>
+            <Label>{t.personalDetails.detailsSection.preferredName}</Label>
+            {editing ? (
+              <SelectF bind={preferredNameState} data-qa="preferred-name" />
+            ) : (
+              <div data-qa="preferred-name">{preferredName}</div>
+            )}
+            <H2 noMargin>{t.personalDetails.detailsSection.contactInfo}</H2>
+            <div />
+            <Label>{t.personalDetails.detailsSection.address}</Label>
+            <div>
+              {!!streetAddress &&
+                `${streetAddress}, ${postalCode} ${postOffice}`}
+            </div>
+            <Label>{t.personalDetails.detailsSection.phone}</Label>
+            <div data-qa="phone">
               {editing ? (
-                <SelectF bind={preferredNameState} data-qa="preferred-name" />
+                <InputFieldF
+                  type="text"
+                  width="m"
+                  bind={phoneState}
+                  hideErrorsBeforeTouched
+                  placeholder="0401234567"
+                />
               ) : (
-                <div data-qa="preferred-name">{preferredName}</div>
-              )}
-              <H2 noMargin>{t.personalDetails.detailsSection.contactInfo}</H2>
-              <div />
-              <Label>{t.personalDetails.detailsSection.address}</Label>
-              <div>
-                {!!streetAddress &&
-                  `${streetAddress}, ${postalCode} ${postOffice}`}
-              </div>
-              <Label>{t.personalDetails.detailsSection.phone}</Label>
-              <div data-qa="phone">
-                {editing ? (
-                  <InputFieldF
-                    type="text"
-                    width="m"
-                    bind={phoneState}
-                    hideErrorsBeforeTouched
-                    placeholder="0401234567"
-                  />
-                ) : (
-                  <div>
-                    {phone ? (
-                      phone
-                    ) : (
-                      <MandatoryValueMissingWarning
-                        text={t.personalDetails.detailsSection.phoneMissing}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-              <Label>{t.personalDetails.detailsSection.backupPhone}</Label>
-              <div data-qa="backup-phone">
-                {editing ? (
-                  <InputFieldF
-                    type="text"
-                    width="m"
-                    bind={backupPhoneState}
-                    hideErrorsBeforeTouched
-                    placeholder={
-                      t.personalDetails.detailsSection.backupPhonePlaceholder
-                    }
-                  />
-                ) : (
-                  backupPhone
-                )}
-              </div>
-              <Label>{t.personalDetails.detailsSection.email}</Label>
-              {editing ? (
-                <FixedSpaceColumn spacing="xs">
-                  <div data-qa="email">
-                    <InputFieldF
-                      type="text"
-                      width="m"
-                      bind={emailState}
-                      readonly={noEmailState.state}
-                      hideErrorsBeforeTouched
-                      placeholder={t.personalDetails.detailsSection.email}
-                    />
-                  </div>
-                  <FixedSpaceRow alignItems="center">
-                    <CheckboxF
-                      label={t.personalDetails.detailsSection.noEmail}
-                      bind={noEmailState}
-                      data-qa="no-email"
-                    />
-                    <InfoButton
-                      onClick={setEmailInfo.toggle}
-                      aria-label={t.common.openExpandingInfo}
-                    />
-                  </FixedSpaceRow>
-                </FixedSpaceColumn>
-              ) : (
-                <div data-qa="email">
-                  {email ? (
-                    email
+                <div>
+                  {phone ? (
+                    phone
                   ) : (
                     <MandatoryValueMissingWarning
-                      text={t.personalDetails.detailsSection.emailMissing}
+                      text={t.personalDetails.detailsSection.phoneMissing}
                     />
                   )}
                 </div>
               )}
-            </ListGrid>
-            {emailInfo && (
-              <>
-                <ExpandingInfoBox
-                  info={t.personalDetails.detailsSection.emailInfo}
-                  close={setEmailInfo.off}
-                  closeLabel={t.common.close}
+            </div>
+            <Label>{t.personalDetails.detailsSection.backupPhone}</Label>
+            <div data-qa="backup-phone">
+              {editing ? (
+                <InputFieldF
+                  type="text"
+                  width="m"
+                  bind={backupPhoneState}
+                  hideErrorsBeforeTouched
+                  placeholder={
+                    t.personalDetails.detailsSection.backupPhonePlaceholder
+                  }
                 />
-                <Gap size="s" />
-              </>
+              ) : (
+                backupPhone
+              )}
+            </div>
+            <Label>{t.personalDetails.detailsSection.email}</Label>
+            {editing ? (
+              <FixedSpaceColumn spacing="xs">
+                <div data-qa="email">
+                  <InputFieldF
+                    type="text"
+                    width="m"
+                    bind={emailState}
+                    readonly={noEmailState.state}
+                    hideErrorsBeforeTouched
+                    placeholder={t.personalDetails.detailsSection.email}
+                  />
+                </div>
+                <FixedSpaceRow alignItems="center">
+                  <CheckboxF
+                    label={t.personalDetails.detailsSection.noEmail}
+                    bind={noEmailState}
+                    data-qa="no-email"
+                  />
+                  <InfoButton
+                    onClick={setEmailInfo.toggle}
+                    aria-label={t.common.openExpandingInfo}
+                  />
+                </FixedSpaceRow>
+              </FixedSpaceColumn>
+            ) : (
+              <div data-qa="email">
+                {email ? (
+                  email
+                ) : (
+                  <MandatoryValueMissingWarning
+                    text={t.personalDetails.detailsSection.emailMissing}
+                  />
+                )}
+              </div>
             )}
-          </>
-        )}
-      </>
-    )
-  })
+          </ListGrid>
+          {emailInfo && (
+            <>
+              <ExpandingInfoBox
+                info={t.personalDetails.detailsSection.emailInfo}
+                close={setEmailInfo.off}
+                closeLabel={t.common.close}
+              />
+              <Gap size="s" />
+            </>
+          )}
+        </>
+      )}
+    </>
+  )
 })
 
 const personForm = object({
@@ -301,13 +295,7 @@ const personForm = object({
   )
 })
 
-function initialFormState(
-  userResult: Result<User | undefined>
-): StateOf<typeof personForm> {
-  if (!userResult.isSuccess || userResult.value === undefined) {
-    throw new Error('User not loaded')
-  }
-  const user = userResult.value
+function initialFormState(user: User): StateOf<typeof personForm> {
   const firstNames = user.firstName.split(' ')
 
   const preferredNameOptions = firstNames.map((name) => ({

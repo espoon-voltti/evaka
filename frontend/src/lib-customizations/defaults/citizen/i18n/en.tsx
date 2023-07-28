@@ -1646,18 +1646,6 @@ const en: Translations = {
       noEmail: 'I have no email address',
       emailInfo:
         'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
-    },
-    notificationsSection: {
-      title: 'Email notifications',
-      info: 'You can choose which notifications you want to receive by email. Click edit to change your settings.',
-      subtitle: 'You will receive notifications about the following',
-      message: 'eVaka messages sent by the staff',
-      bulletin: 'General eVaka bulletins',
-      outdatedIncome: 'Reminders about missing income information',
-      calendarEvent: 'Reminders about new events in the calendar',
-      document: 'Reminders about new documents',
-      missingAttendanceReservation:
-        'Reminders about missing attendance reservations'
     }
   },
   income: {

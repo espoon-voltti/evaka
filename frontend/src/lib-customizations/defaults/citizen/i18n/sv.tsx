@@ -1875,19 +1875,6 @@ const sv: Translations = {
       noEmail: 'Jag har ingen e-postadress',
       emailInfo:
         'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
-    },
-    notificationsSection: {
-      title: 'Sähköposti-ilmoitukset',
-      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
-      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
-      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
-      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
-      calendarEvent:
-        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
-      document: 'Saapuneista dokumenteista',
-      missingAttendanceReservation:
-        'Muistutukset puuttuvista läsnäoloilmoituksista'
     }
   },
   income: {
