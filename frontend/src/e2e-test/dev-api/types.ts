@@ -13,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import { Language } from 'lib-common/generated/api-types/daycare'
 import {
   DecisionStatus,
@@ -643,4 +644,25 @@ export interface DevStaffAttendancePlan {
 export interface DevHoliday {
   date: LocalDate
   description: string
+}
+
+export interface DevChildDiscussion {
+  id: UUID
+  childId: UUID
+  offeredDate?: LocalDate | null
+  heldDate?: LocalDate | null
+  counselingDate?: LocalDate | null
+}
+
+export function deserializeDiscussionData(
+  data: JsonOf<ChildDiscussionData>
+): DevChildDiscussion {
+  return {
+    ...data,
+    offeredDate: data.offeredDate ? LocalDate.parseIso(data.offeredDate) : null,
+    heldDate: data.heldDate ? LocalDate.parseIso(data.heldDate) : null,
+    counselingDate: data.counselingDate
+      ? LocalDate.parseIso(data.counselingDate)
+      : null
+  }
 }

@@ -24,6 +24,7 @@ import {
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
+import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import {
   AbsenceCategory,
   AbsenceType
@@ -69,9 +70,11 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
+  deserializeDiscussionData,
   DevCalendarEvent,
   DevCalendarEventAttendee,
   DevChildConsent,
+  DevChildDiscussion,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
   DevFixedPeriodQuestionnaire,
@@ -1286,6 +1289,19 @@ export async function forceFullVtjRefresh(person: UUID): Promise<void> {
     await devClient.post<void>(
       `/persons/${encodeURIComponent(person)}/force-full-vtj-refresh`
     )
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function getChildDiscussionsByChildId(
+  childId: string
+): Promise<DevChildDiscussion[]> {
+  try {
+    const { data } = await devClient.get<JsonOf<ChildDiscussionData[]>>(
+      `/child-discussions/${childId}`
+    )
+    return data.map(deserializeDiscussionData)
   } catch (e) {
     throw new DevApiError(e)
   }

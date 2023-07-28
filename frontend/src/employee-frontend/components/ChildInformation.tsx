@@ -109,7 +109,8 @@ const components = {
   childDocuments: requireOneOfPermittedActions(
     ChildDocumentsSection,
     'READ_VASU_DOCUMENT',
-    'READ_CHILD_DOCUMENT'
+    'READ_CHILD_DOCUMENT',
+    'READ_CHILD_DISCUSSION'
   ),
   pedagogicalDocuments: requireOneOfPermittedActions(
     PedagogicalDocuments,

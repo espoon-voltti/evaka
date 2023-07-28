@@ -30,6 +30,7 @@ val generatedFiles =
                 generateEnum<Action.BackupPickup>(),
                 generateEnum<Action.Child>(),
                 generateEnum<Action.ChildDailyNote>(),
+                generateEnum<Action.ChildDiscussion>(),
                 generateEnum<Action.ChildDocument>(),
                 generateEnum<Action.DailyServiceTime>(),
                 generateEnum<Action.DaycareAssistance>(),
