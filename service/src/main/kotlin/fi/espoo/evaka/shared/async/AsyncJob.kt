@@ -208,7 +208,19 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendAssistanceNeedPreschoolDecisionEmail(
+        val decisionId: AssistanceNeedPreschoolDecisionId
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class CreateAssistanceNeedPreschoolDecisionPdf(
+        val decisionId: AssistanceNeedPreschoolDecisionId
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendAssistanceNeedPreschoolDecisionSfiMessage(
         val decisionId: AssistanceNeedPreschoolDecisionId
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -284,6 +296,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     RunScheduledJob::class,
                     ScheduleKoskiUploads::class,
                     SendAssistanceNeedDecisionSfiMessage::class,
+                    SendAssistanceNeedPreschoolDecisionSfiMessage::class,
                     SendDecision::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
@@ -298,6 +311,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                 setOf(
                     SendApplicationEmail::class,
                     SendAssistanceNeedDecisionEmail::class,
+                    SendAssistanceNeedPreschoolDecisionEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
                     SendOutdatedIncomeNotificationEmail::class,

@@ -112,6 +112,12 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
                     .trimIndent()
         }
 
+    override fun getAssistanceNeedPreschoolDecisionHeader(lang: MessageLanguage): String =
+        getAssistanceNeedDecisionHeader(lang)
+
+    override fun getAssistanceNeedPreschoolDecisionContent(lang: MessageLanguage): String =
+        getAssistanceNeedDecisionContent(lang)
+
     override fun getDefaultDecisionAddress(lang: MessageLanguage): DecisionSendAddress =
         when (lang) {
             MessageLanguage.FI ->

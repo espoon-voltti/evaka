@@ -72,7 +72,7 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionEmail
     ) {
-        db.transaction { tx ->
+        db.read { tx ->
             this.sendDecisionEmail(tx, msg.decisionId)
             logger.info {
                 "Successfully sent assistance need decision email (id: ${msg.decisionId})."
@@ -80,7 +80,7 @@ class AssistanceNeedDecisionService(
         }
     }
 
-    fun sendDecisionEmail(tx: Database.Transaction, decisionId: AssistanceNeedDecisionId) {
+    fun sendDecisionEmail(tx: Database.Read, decisionId: AssistanceNeedDecisionId) {
         val decision = tx.getAssistanceNeedDecisionById(decisionId)
 
         if (decision.child?.id == null) {

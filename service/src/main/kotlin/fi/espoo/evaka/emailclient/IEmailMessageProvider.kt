@@ -28,6 +28,8 @@ interface IEmailMessageProvider {
 
     fun assistanceNeedDecisionNotification(language: Language): EmailContent
 
+    fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent
+
     fun missingReservationsNotification(
         language: Language,
         checkedRange: FiniteDateRange

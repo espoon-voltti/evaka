@@ -631,6 +631,9 @@ There are missing attendance reservations for the week starting $start. Please m
                     .trimIndent()
         )
 
+    override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
+        assistanceNeedDecisionNotification(language) // currently same content
+
     override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent {
         val messageUrl = "${baseUrl(language)}/messages/${thread.id}"
         val (typeFi, typeSv, typeEn) =
