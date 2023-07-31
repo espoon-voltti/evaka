@@ -282,6 +282,20 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision() =
+        rule<AssistanceNeedDecisionId> { user, now ->
+            sql(
+                """
+SELECT ad.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM assistance_need_decision ad
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)} AND ad.status = 'ACCEPTED'
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementUnitOfChildOfDaycareAssistance() =
         rule<DaycareAssistanceId> { user, now ->
             sql(

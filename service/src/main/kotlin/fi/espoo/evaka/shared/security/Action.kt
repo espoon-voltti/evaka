@@ -657,7 +657,8 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision()
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(),
+            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision()
         ),
         SEND(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
@@ -973,7 +974,7 @@ sealed interface Action {
         ),
         READ_ASSISTANCE_NEED_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),

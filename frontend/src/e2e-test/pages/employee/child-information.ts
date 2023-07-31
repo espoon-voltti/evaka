@@ -893,6 +893,11 @@ export class AssistanceSection extends Section {
       .waitUntilVisible()
   }
 
+  async assertAssistanceNeedDecisionCount(count: number) {
+    const rows = this.page.findAllByDataQa('table-assistance-need-decision-row')
+    await rows.assertCount(count)
+  }
+
   async assistanceNeedDecisions(nth: number) {
     const row = this.page
       .findByDataQa('table-of-assistance-need-decisions')
