@@ -2658,9 +2658,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.8.0":
-  version: 4.8.0
-  resolution: "dd-trace@npm:4.8.0"
+"dd-trace@npm:^4.10.0":
+  version: 4.10.0
+  resolution: "dd-trace@npm:4.10.0"
   dependencies:
     "@datadog/native-appsec": ^3.2.0
     "@datadog/native-iast-rewriter": 2.0.1
@@ -2672,10 +2672,10 @@ __metadata:
     "@opentelemetry/core": ^1.14.0
     crypto-randomuuid: ^1.0.0
     diagnostics_channel: ^1.1.0
-    ignore: ^5.2.0
-    import-in-the-middle: ^1.3.5
+    ignore: ^5.2.4
+    import-in-the-middle: ^1.4.1
     int64-buffer: ^0.1.9
-    ipaddr.js: ^2.0.1
+    ipaddr.js: ^2.1.0
     istanbul-lib-coverage: 3.2.0
     koalas: ^1.0.2
     limiter: ^1.1.4
@@ -2687,13 +2687,13 @@ __metadata:
     methods: ^1.1.2
     module-details-from-path: ^1.0.3
     msgpack-lite: ^0.1.26
-    node-abort-controller: ^3.0.1
+    node-abort-controller: ^3.1.1
     opentracing: ">=0.12.1"
     path-to-regexp: ^0.1.2
     protobufjs: ^7.2.4
-    retry: ^0.10.1
-    semver: ^7.3.8
-  checksum: 48db99b9a9d47a085429e4d0e942b3fac2738669b20faf33605532292970f346e2fcf2cae99c3258042f9fa12cf53d6b2f73005e058cc7efd9a64527deccb5ce
+    retry: ^0.13.1
+    semver: ^7.5.4
+  checksum: 2c80217b2f133464ad45be140b5260c13bf925acf977c8289f4973106ebb2dc5f993a2ea44f59ada6cdf3844d834d1a545c892ae7b710fe2cafbed2df2d81f93
   languageName: node
   linkType: hard
 
@@ -3190,7 +3190,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^4.8.0
+    dd-trace: ^4.10.0
     eslint: ^8.45.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^5.0.0
@@ -3985,7 +3985,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.3.5":
+"import-in-the-middle@npm:^1.4.1":
   version: 1.4.1
   resolution: "import-in-the-middle@npm:1.4.1"
   dependencies:
@@ -4068,10 +4068,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ipaddr.js@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "ipaddr.js@npm:2.0.1"
-  checksum: dd194a394a843d470f88d17191b0948f383ed1c8e320813f850c336a0fcb5e9215d97ec26ca35ab4fbbd31392c8b3467f3e8344628029ed3710b2ff6b5d1034e
+"ipaddr.js@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "ipaddr.js@npm:2.1.0"
+  checksum: 807a054f2bd720c4d97ee479d6c9e865c233bea21f139fb8dabd5a35c4226d2621c42e07b4ad94ff3f82add926a607d8d9d37c625ad0319f0e08f9f2bd1968e2
   languageName: node
   linkType: hard
 
@@ -5311,7 +5311,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-abort-controller@npm:^3.0.1":
+"node-abort-controller@npm:^3.1.1":
   version: 3.1.1
   resolution: "node-abort-controller@npm:3.1.1"
   checksum: 2c340916af9710328b11c0828223fc65ba320e0d082214a211311bf64c2891028e42ef276b9799188c4ada9e6e1c54cf7a0b7c05dd9d59fcdc8cd633304c8047
@@ -6211,17 +6211,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"retry@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "retry@npm:0.10.1"
-  checksum: 133ef7c2028bcb09544a6fb9bed9f8266fffeaf72c855f73c2918ace9ef2abd7ccba03744564bcd1a8e948ed70518f8970852f46e649f9e3db6fefb0148cda35
-  languageName: node
-  linkType: hard
-
 "retry@npm:^0.12.0":
   version: 0.12.0
   resolution: "retry@npm:0.12.0"
   checksum: 623bd7d2e5119467ba66202d733ec3c2e2e26568074923bc0585b6b99db14f357e79bdedb63cab56cec47491c4a0da7e6021a7465ca6dc4f481d3898fdd3158c
+  languageName: node
+  linkType: hard
+
+"retry@npm:^0.13.1":
+  version: 0.13.1
+  resolution: "retry@npm:0.13.1"
+  checksum: 47c4d5be674f7c13eee4cfe927345023972197dbbdfba5d3af7e461d13b44de1bfd663bfc80d2f601f8ef3fc8164c16dd99655a221921954a65d044a2fc1233b
   languageName: node
   linkType: hard
 
