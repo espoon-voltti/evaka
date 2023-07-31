@@ -55,7 +55,7 @@ dependencies {
         api("org.postgresql:postgresql:42.6.0")
         api("org.skyscreamer:jsonassert:1.5.1")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
-        api("org.thymeleaf:thymeleaf:3.1.1.RELEASE")
+        api("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
         api("org.yaml:snakeyaml:1.33")
