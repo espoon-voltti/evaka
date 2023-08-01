@@ -53,9 +53,55 @@ data class FeeDecision(
     override val validTo: LocalDate? = validDuring.end
     override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
-    override fun contentEquals(decision: FeeDecision): Boolean =
-        FeeDecisionDifference.getDifference(this, decision).isEmpty()
+    override fun contentEquals(decision: FeeDecision): Boolean {
+        val diff = FeeDecisionDifference.getDifference(this, decision)
+        if (diff.isEmpty()) return true
+        else {
+            if (diff.size == 1 && diff.first() == FeeDecisionDifference.INCOME) {
+                return incomeEffectiveTypesAreLogicallyEqual(this, decision)
+            } else return false
+        }
+    }
 
+    private fun incomesAreEqualOrDiffOnlyByCertainEffects(
+        i1: DecisionIncome?,
+        i2: DecisionIncome?
+    ): Boolean {
+        if (i1 == null && i2 == null) return true
+        if (i1 != null && i2 != null) {
+            if (i1.effect == IncomeEffect.NOT_AVAILABLE && i2.effect == IncomeEffect.INCOMPLETE)
+                return i1.equals(i2.copy(effect = IncomeEffect.NOT_AVAILABLE))
+            if (i1.effect == IncomeEffect.INCOMPLETE && i2.effect == IncomeEffect.NOT_AVAILABLE)
+                return i1.equals(i2.copy(effect = IncomeEffect.INCOMPLETE))
+            return i1.equals(i2)
+        }
+        return false
+    }
+
+    private fun incomeEffectiveTypesAreLogicallyEqual(d1: FeeDecision, d2: FeeDecision): Boolean {
+        val headOfFamilyIncomesAreEffectivelyEqual =
+            incomesAreEqualOrDiffOnlyByCertainEffects(d1.headOfFamilyIncome, d2.headOfFamilyIncome)
+
+        val partnerIncomesAreEffectivelyEqual =
+            incomesAreEqualOrDiffOnlyByCertainEffects(d1.partnerIncome, d2.partnerIncome)
+
+        val d1ChildIncomes = d1.children.mapNotNull { Pair(it.child.id, it.childIncome) }
+        val d2ChildIncomes = d2.children.mapNotNull { Pair(it.child.id, it.childIncome) }
+        val childIncomesAreEffectivelyEqual =
+            d1ChildIncomes.size == d2ChildIncomes.size &&
+                d1ChildIncomes.all { child ->
+                    val matchingChild =
+                        d2ChildIncomes.find { d2Child -> d2Child.first == child.first }
+                    matchingChild != null &&
+                        incomesAreEqualOrDiffOnlyByCertainEffects(
+                            child.second,
+                            matchingChild.second
+                        )
+                }
+        return headOfFamilyIncomesAreEffectivelyEqual &&
+            partnerIncomesAreEffectivelyEqual &&
+            childIncomesAreEffectivelyEqual
+    }
     override fun overlapsWith(other: FeeDecision): Boolean {
         return DateRange(this.validFrom, this.validTo)
             .overlaps(DateRange(other.validFrom, other.validTo)) &&

@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -2586,6 +2587,52 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             }
         }
     }
+    @Test
+    fun `a new fee decision is not generated if incomes change from NOT_AVAILABLE to INCOMPLETE`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val incomePeriod = period.copy(end = null)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testAdult_1.id, 310200, incomePeriod, IncomeEffect.NOT_AVAILABLE)
+        insertIncome(testChild_1.id, 310200, incomePeriod, IncomeEffect.NOT_AVAILABLE)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+
+        feeDecisionController.confirmDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            RealEvakaClock(),
+            listOf(decisions.get(0).id),
+            null
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        db.transaction { it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute() }
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                incomePeriod.start
+            )
+        }
+
+        // No new DRAFT is generated because the only diff was head of family income type change
+        // NOT_AVAILABLE -> INCOMPLETE
+        assertEquals(1, getAllFeeDecisions().size)
+    }
 
     @Test
     fun `fee decision generation works as expected with removed income`() {
@@ -3919,14 +3966,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
-        db.transaction { tx ->
+    private fun insertIncome(
+        adultId: PersonId,
+        amount: Int,
+        period: DateRange,
+        effect: IncomeEffect = IncomeEffect.INCOME
+    ): IncomeId {
+        return db.transaction { tx ->
             tx.insertTestIncome(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
                     validTo = period.end,
-                    effect = IncomeEffect.INCOME,
+                    effect = effect,
                     data =
                         mapOf(
                             "MAIN_INCOME" to
