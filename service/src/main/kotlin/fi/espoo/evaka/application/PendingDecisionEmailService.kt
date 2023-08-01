@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
@@ -124,17 +125,20 @@ GROUP BY application.guardian_id
         clock: EvakaClock,
         pendingDecision: AsyncJob.SendPendingDecisionEmail
     ) {
+        logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
+        val lang = getLanguage(pendingDecision.language)
+
+        emailClient.sendEmail(
+            db,
+            pendingDecision.guardianId,
+            EmailMessageType.DOCUMENT_NOTIFICATION,
+            pendingDecision.email,
+            emailEnv.sender(lang),
+            emailMessageProvider.pendingDecisionNotification(lang),
+            "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
+        )
+
         db.transaction { tx ->
-            logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
-            val lang = getLanguage(pendingDecision.language)
-
-            emailClient.sendEmail(
-                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
-                pendingDecision.email,
-                emailEnv.sender(lang),
-                emailMessageProvider.pendingDecisionNotification(lang)
-            )
-
             // Mark as sent
             pendingDecision.decisionIds.forEach { decisionId ->
                 tx.createUpdate(

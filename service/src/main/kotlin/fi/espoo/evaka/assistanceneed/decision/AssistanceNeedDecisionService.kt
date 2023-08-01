@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
@@ -72,16 +73,12 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionEmail
     ) {
-        db.read { tx ->
-            this.sendDecisionEmail(tx, msg.decisionId)
-            logger.info {
-                "Successfully sent assistance need decision email (id: ${msg.decisionId})."
-            }
-        }
+        this.sendDecisionEmail(db, msg.decisionId)
+        logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
     }
 
-    fun sendDecisionEmail(tx: Database.Read, decisionId: AssistanceNeedDecisionId) {
-        val decision = tx.getAssistanceNeedDecisionById(decisionId)
+    fun sendDecisionEmail(dbc: Database.Connection, decisionId: AssistanceNeedDecisionId) {
+        val decision = dbc.read { tx -> tx.getAssistanceNeedDecisionById(decisionId) }
 
         if (decision.child?.id == null) {
             throw IllegalStateException(
@@ -91,6 +88,13 @@ class AssistanceNeedDecisionService(
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
+        val guardians =
+            dbc.read { tx ->
+                tx.getChildGuardians(decision.child.id).map {
+                    Pair(it, tx.getPersonById(it)?.email)
+                }
+            }
+
         val language =
             when (decision.language) {
                 AssistanceNeedDecisionLanguage.SV -> Language.sv
@@ -99,19 +103,19 @@ class AssistanceNeedDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
-        tx.getChildGuardians(decision.child.id)
-            .map { Pair(it, tx.getPersonById(it)?.email) }
-            .toMap()
-            .forEach { (guardianId, toAddress) ->
-                if (toAddress != null) {
-                    emailClient.sendEmail(
-                        "$decisionId - $guardianId",
-                        toAddress,
-                        fromAddress,
-                        content
-                    )
-                }
+        guardians.forEach { (guardianId, toAddress) ->
+            if (toAddress != null) {
+                emailClient.sendEmail(
+                    dbc,
+                    guardianId,
+                    EmailMessageType.DOCUMENT_NOTIFICATION,
+                    toAddress,
+                    fromAddress,
+                    content,
+                    "$decisionId - $guardianId",
+                )
             }
+        }
     }
 
     fun runCreateAssistanceNeedDecisionPdf(

@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.FeatureConfig
@@ -95,10 +96,13 @@ AND email IS NOT NULL
             }
                 ?: return
         emailClient.sendEmail(
-            traceId = msg.guardian.toString(),
+            dbc = db,
+            personId = msg.guardian,
+            emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
             toAddress = recipient,
             fromAddress = emailEnv.sender(language),
-            content = emailMessageProvider.missingReservationsNotification(language, msg.range)
+            content = emailMessageProvider.missingReservationsNotification(language, msg.range),
+            traceId = msg.guardian.toString(),
         )
     }
 }

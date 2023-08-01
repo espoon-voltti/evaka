@@ -421,6 +421,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `valid email is sent`() {
         applicationReceivedEmailService.sendApplicationEmail(
+            db,
             testAdult_1.id,
             "working@test.fi",
             Language.fi,
@@ -436,6 +437,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         )
 
         applicationReceivedEmailService.sendApplicationEmail(
+            db,
             testAdult_1.id,
             "Working.Email@Test.Com",
             Language.sv,
@@ -454,12 +456,14 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `email with invalid toAddress is not sent`() {
         applicationReceivedEmailService.sendApplicationEmail(
+            db,
             testAdult_1.id,
             "not.working.com",
             Language.fi,
             ApplicationType.DAYCARE
         )
         applicationReceivedEmailService.sendApplicationEmail(
+            db,
             testAdult_1.id,
             "@test.fi",
             Language.fi,

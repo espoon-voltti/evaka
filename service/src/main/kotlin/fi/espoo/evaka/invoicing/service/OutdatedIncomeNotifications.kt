@@ -12,6 +12,7 @@ import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -143,10 +144,13 @@ AND email IS NOT NULL
 
         logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
         emailClient.sendEmail(
-            traceId = msg.guardianId.toString(),
+            dbc = db,
+            emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
+            personId = msg.guardianId,
             toAddress = recipient,
             fromAddress = emailEnv.sender(language),
-            content = emailMessageProvider.outdatedIncomeNotification(msg.type, language)
+            content = emailMessageProvider.outdatedIncomeNotification(msg.type, language),
+            traceId = msg.guardianId.toString()
         )
 
         db.transaction {

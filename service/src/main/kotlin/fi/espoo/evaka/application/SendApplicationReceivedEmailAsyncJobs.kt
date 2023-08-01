@@ -37,6 +37,7 @@ class SendApplicationReceivedEmailAsyncJobs(
 
         if (!guardian.email.isNullOrBlank()) {
             applicationReceivedEmailService.sendApplicationEmail(
+                db,
                 guardian.id,
                 guardian.email,
                 msg.language,

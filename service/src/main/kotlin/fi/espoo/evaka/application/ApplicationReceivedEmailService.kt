@@ -8,7 +8,9 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -21,6 +23,7 @@ class ApplicationReceivedEmailService(
     private val emailEnv: EmailEnv
 ) {
     fun sendApplicationEmail(
+        dbc: Database.Connection,
         personId: PersonId,
         toAddress: String,
         language: Language,
@@ -39,6 +42,14 @@ class ApplicationReceivedEmailService(
                     )
             }
         logger.info { "Sending application email (personId: $personId)" }
-        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, content)
+        emailClient.sendEmail(
+            dbc = dbc,
+            personId = personId,
+            emailType = EmailMessageType.TRANSACTIONAL,
+            toAddress = toAddress,
+            fromAddress = fromAddress,
+            content = content,
+            traceId = personId.toString()
+        )
     }
 }

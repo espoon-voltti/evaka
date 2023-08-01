@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -39,6 +40,7 @@ class PedagogicalDocumentNotificationService(
         val sql =
             """
         SELECT DISTINCT
+            p.id as recipient_id,
             p.email as recipient_email,
             coalesce(lower(p.language), 'fi') as language
         FROM pedagogical_document doc 
@@ -56,6 +58,7 @@ class PedagogicalDocumentNotificationService(
             .map { row ->
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
+                    recipientId = row.mapColumn("recipient_id"),
                     recipientEmail = row.mapColumn("recipient_email"),
                     language = getLanguage(row.mapColumn("language"))
                 )
@@ -128,16 +131,17 @@ SELECT EXISTS(
         clock: EvakaClock,
         msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
     ) {
-        val (pedagogicalDocumentId, recipientEmail, language) = msg
-
+        emailClient.sendEmail(
+            dbc = db,
+            personId = msg.recipientId,
+            emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+            toAddress = msg.recipientEmail,
+            fromAddress = emailEnv.sender(msg.language),
+            content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
+            traceId = msg.pedagogicalDocumentId.toString(),
+        )
         db.transaction { tx ->
-            emailClient.sendEmail(
-                traceId = pedagogicalDocumentId.toString(),
-                toAddress = recipientEmail,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.pedagogicalDocumentNotification(language)
-            )
-            tx.markPedagogicalDocumentNotificationSent(pedagogicalDocumentId)
+            tx.markPedagogicalDocumentNotificationSent(msg.pedagogicalDocumentId)
         }
     }
 }

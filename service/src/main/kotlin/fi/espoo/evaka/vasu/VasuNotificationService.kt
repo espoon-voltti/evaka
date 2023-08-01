@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -58,6 +59,7 @@ class VasuNotificationService(
 SELECT 
     doc.id AS vasu_document_id,
     child.id AS child_id,
+    parent.id AS recipient_id,
     parent.email AS recipient_email,
     parent.language AS language
 FROM curriculum_document doc
@@ -75,6 +77,7 @@ WHERE
                 AsyncJob.SendVasuNotificationEmail(
                     vasuDocumentId = vasuDocumentId,
                     childId = row.mapColumn("child_id"),
+                    recipientId = row.mapColumn("recipient_id"),
                     recipientEmail = row.mapColumn("recipient_email"),
                     language = getLanguage(row.mapColumn("language"))
                 )
@@ -92,10 +95,13 @@ WHERE
         )
 
         emailClient.sendEmail(
-            traceId = msg.vasuDocumentId.toString(),
+            dbc = db,
+            personId = msg.recipientId,
+            emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
             toAddress = msg.recipientEmail,
             fromAddress = emailEnv.sender(msg.language),
-            content = emailMessageProvider.vasuNotification(msg.language, msg.childId)
+            content = emailMessageProvider.vasuNotification(msg.language, msg.childId),
+            traceId = msg.vasuDocumentId.toString(),
         )
     }
 }

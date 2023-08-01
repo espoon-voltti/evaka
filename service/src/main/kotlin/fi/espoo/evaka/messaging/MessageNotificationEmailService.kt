@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -65,6 +66,7 @@ class MessageNotificationEmailService(
                     messageId = row.mapColumn("message_id"),
                     messageRecipientId = row.mapColumn("message_recipient_id"),
                     recipientId = row.mapColumn("recipient_id"),
+                    personId = row.mapColumn("person_id"),
                     personEmail = row.mapColumn("person_email"),
                     language = getLanguage(row.mapColumn("language")),
                     urgent = row.mapColumn("urgent")
@@ -107,24 +109,32 @@ class MessageNotificationEmailService(
         clock: EvakaClock,
         msg: AsyncJob.SendMessageNotificationEmail
     ) {
-        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language) = msg
-
-        db.transaction { tx ->
-            // The message has been undone and the recipient should no longer get an email
-            // notification
-            if (!tx.unreadMessageForRecipientExists(messageId, recipientId)) {
-                return@transaction
+        val thread =
+            db.transaction { tx ->
+                // The message has been undone and the recipient should no longer get an email
+                // notification
+                if (!tx.unreadMessageForRecipientExists(msg.messageId, msg.recipientId)) {
+                    null
+                } else {
+                    tx.getMessageThreadStub(msg.threadId)
+                }
             }
+                ?: return
 
-            val thread = tx.getMessageThreadStub(threadId)
+        emailClient.sendEmail(
+            db,
+            personId = msg.personId,
+            emailType =
+                when (thread.type) {
+                    MessageType.MESSAGE -> EmailMessageType.MESSAGE_NOTIFICATION
+                    MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
+                },
+            toAddress = msg.personEmail,
+            fromAddress = emailEnv.sender(msg.language),
+            content = emailMessageProvider.messageNotification(msg.language, thread),
+            traceId = msg.messageRecipientId.toString(),
+        )
 
-            emailClient.sendEmail(
-                traceId = messageRecipientId.toString(),
-                toAddress = personEmail,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.messageNotification(language, thread)
-            )
-            tx.markEmailNotificationAsSent(messageRecipientId, clock.now())
-        }
+        db.transaction { tx -> tx.markEmailNotificationAsSent(msg.messageRecipientId, clock.now()) }
     }
 }
