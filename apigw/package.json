@@ -72,7 +72,6 @@
     "@types/through2": "^2.0.38",
     "@types/tough-cookie": "^4.0.2",
     "@types/uuid": "^9.0.2",
-    "@types/xml-crypto": "^1.4.2",
     "@types/xml2js": "^0.4.11",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
@@ -90,7 +89,7 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6",
-    "xml-crypto": "^3.2.0",
+    "xml-crypto": "^4.1.0",
     "xml2js": "^0.6.0"
   },
   "jest": {
