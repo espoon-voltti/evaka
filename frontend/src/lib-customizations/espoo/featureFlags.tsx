@@ -40,7 +40,8 @@ const features: Features = {
       fosterParents: true,
       serviceWorkerMessaging: true,
       childDocuments: true,
-      assistanceNeedPreschoolDecisions: true
+      assistanceNeedPreschoolDecisions: true,
+      citizenEmailNotificationSettings: true
     }
   },
   staging: {
@@ -68,7 +69,8 @@ const features: Features = {
       staffAttendanceTypes: true,
       fosterParents: true,
       serviceWorkerMessaging: true,
-      childDocuments: true
+      childDocuments: true,
+      citizenEmailNotificationSettings: true
     }
   },
   prod: {
@@ -96,7 +98,8 @@ const features: Features = {
       staffAttendanceTypes: false,
       fosterParents: true,
       serviceWorkerMessaging: true,
-      childDocuments: false
+      childDocuments: false,
+      citizenEmailNotificationSettings: false
     }
   }
 }

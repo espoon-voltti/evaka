@@ -12,6 +12,7 @@ import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
@@ -56,13 +57,17 @@ export default React.memo(function PersonalDetails() {
               <Navigate replace to="/" />
             )
           )}
-          <HorizontalLine />
-          {renderResult(notificationSettings, (notificationSettings) => (
-            <NotificationSettingsSection
-              initialData={notificationSettings}
-              ref={notificationSettingsSection}
-            />
-          ))}
+          {featureFlags.experimental?.citizenEmailNotificationSettings
+            ? renderResult(notificationSettings, (notificationSettings) => (
+                <>
+                  <HorizontalLine />
+                  <NotificationSettingsSection
+                    initialData={notificationSettings}
+                    ref={notificationSettingsSection}
+                  />
+                </>
+              ))
+            : null}
         </ContentArea>
       </Container>
       <Footer />
