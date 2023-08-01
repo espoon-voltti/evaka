@@ -71,6 +71,7 @@ import {
   DecisionFixture,
   deserializeDecision,
   deserializeDiscussionData,
+  DevAssistanceNeedPreschoolDecision,
   DevCalendarEvent,
   DevCalendarEventAttendee,
   DevChildConsent,
@@ -374,6 +375,16 @@ export async function insertAssistanceNeedDecisionFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/assistance-need-decisions`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertAssistanceNeedPreschoolDecisionFixtures(
+  fixture: DevAssistanceNeedPreschoolDecision[]
+): Promise<void> {
+  try {
+    await devClient.post(`/assistance-need-preschool-decisions`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

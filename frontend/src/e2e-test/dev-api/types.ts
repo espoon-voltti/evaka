@@ -11,7 +11,10 @@ import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedDecisionStatus,
+  AssistanceNeedPreschoolDecisionForm
+} from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import { Language } from 'lib-common/generated/api-types/daycare'
@@ -459,6 +462,16 @@ export interface AssistanceNeed {
   capacityFactor: number
   description: string
   otherBasis: string
+}
+
+export interface DevAssistanceNeedPreschoolDecision {
+  id: UUID
+  decisionNumber: number
+  childId: UUID
+  form: AssistanceNeedPreschoolDecisionForm
+  status: AssistanceNeedDecisionStatus
+  sentForDecision: LocalDate | null
+  decisionMade: LocalDate | null
 }
 
 export interface AssistanceNeedDecision {

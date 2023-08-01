@@ -460,12 +460,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               <H2>{decision.child.name}</H2>
             </FixedSpaceColumn>
             <FixedSpaceColumn>
-              <span>
+              <span data-qa="decision-number">
                 {t.decisionNumber} {decision.decisionNumber}
               </span>
               <AssistanceNeedDecisionStatusChip
                 decisionStatus={decision.status}
                 texts={t.statuses}
+                data-qa="status"
               />
               <span>{t.confidential}</span>
               <span>{t.lawReference}</span>
@@ -572,6 +573,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   bind={primaryGroup}
                   width="L"
                   info={info('primaryGroup')}
+                  data-qa="primary-group"
                 />
               </LabeledValue>
 
@@ -800,6 +802,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       }
                       clearable
                       info={info('decisionMakerEmployeeId')}
+                      data-qa="decision-maker-select"
                     />
                   </ComboboxWrapper>
                 </LabeledValue>
@@ -830,7 +833,12 @@ const DecisionEditor = React.memo(function DecisionEditor({
               }
               data-qa="leave-page-button"
             />
-            <FixedSpaceRow alignItems="center" spacing="xs">
+            <FixedSpaceRow
+              alignItems="center"
+              spacing="xs"
+              data-qa="autosave-indicator"
+              data-status={!saved ? 'saving' : 'saved'}
+            >
               <span>
                 {i18n.common.saved}{' '}
                 {formatInTimeZone(
