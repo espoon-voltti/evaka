@@ -45,10 +45,10 @@ export function createDevSfiRouter(): Router {
           <body>
             <h1>Devausympäristön Suomi.fi-kirjautuminen</h1>
             <form action="${formUri}" method="post">
-                ${citizenInputs.join('\n')}
-                <div style="margin-top: 20px">
-                  <button type="submit">Kirjaudu</button>
-                </div>
+              <div style="margin-bottom: 20px">
+                <button type="submit">Kirjaudu</button>
+              </div>
+              ${citizenInputs.join('\n')}
             </form>
           </body>
           </html>
