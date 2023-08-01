@@ -96,7 +96,6 @@ GROUP BY application.guardian_id
                                             listOf(
                                                 AsyncJob.SendPendingDecisionEmail(
                                                     guardianId = pendingDecision.guardianId,
-                                                    email = guardian.email,
                                                     language = guardian.language,
                                                     decisionIds = pendingDecision.decisionIds
                                                 )
@@ -132,7 +131,6 @@ GROUP BY application.guardian_id
             db,
             pendingDecision.guardianId,
             EmailMessageType.DOCUMENT_NOTIFICATION,
-            pendingDecision.email,
             emailEnv.sender(lang),
             emailMessageProvider.pendingDecisionNotification(lang),
             "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",

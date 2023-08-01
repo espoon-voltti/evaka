@@ -74,7 +74,6 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class SendPendingDecisionEmail(
         val guardianId: PersonId,
-        val email: String,
         val language: String?,
         val decisionIds: List<DecisionId>
     ) : AsyncJob {
@@ -87,7 +86,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         val recipientId: MessageAccountId,
         val messageRecipientId: MessageRecipientId,
         val personId: PersonId,
-        val personEmail: String,
         val language: Language,
         val urgent: Boolean = false
     ) : AsyncJob {
@@ -176,7 +174,6 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendPedagogicalDocumentNotificationEmail(
         val pedagogicalDocumentId: PedagogicalDocumentId,
         val recipientId: PersonId,
-        val recipientEmail: String,
         val language: Language
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -186,7 +183,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         val vasuDocumentId: VasuDocumentId,
         val childId: ChildId,
         val recipientId: PersonId,
-        val recipientEmail: String,
         val language: Language
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null

@@ -25,7 +25,6 @@ class ApplicationReceivedEmailService(
     fun sendApplicationEmail(
         dbc: Database.Connection,
         personId: PersonId,
-        toAddress: String,
         language: Language,
         type: ApplicationType,
         sentWithinPreschoolApplicationPeriod: Boolean? = null
@@ -46,7 +45,6 @@ class ApplicationReceivedEmailService(
             dbc = dbc,
             personId = personId,
             emailType = EmailMessageType.TRANSACTIONAL,
-            toAddress = toAddress,
             fromAddress = fromAddress,
             content = content,
             traceId = personId.toString()

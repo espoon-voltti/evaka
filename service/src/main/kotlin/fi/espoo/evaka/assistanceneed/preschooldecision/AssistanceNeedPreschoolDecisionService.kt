@@ -89,24 +89,16 @@ class AssistanceNeedPreschoolDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedPreschoolDecisionNotification(language)
 
-        val guardians =
-            dbc.read { tx ->
-                tx.getChildGuardians(decision.child.id).associateWith {
-                    tx.getPersonById(it)?.email
-                }
-            }
-        guardians.forEach { (guardianId, toAddress) ->
-            if (toAddress != null) {
-                emailClient.sendEmail(
-                    dbc,
-                    guardianId,
-                    EmailMessageType.DOCUMENT_NOTIFICATION,
-                    toAddress,
-                    fromAddress,
-                    content,
-                    "$decisionId - $guardianId",
-                )
-            }
+        val guardians = dbc.read { tx -> tx.getChildGuardians(decision.child.id) }
+        guardians.forEach { guardianId ->
+            emailClient.sendEmail(
+                dbc,
+                guardianId,
+                EmailMessageType.DOCUMENT_NOTIFICATION,
+                fromAddress,
+                content,
+                "$decisionId - $guardianId",
+            )
         }
     }
 

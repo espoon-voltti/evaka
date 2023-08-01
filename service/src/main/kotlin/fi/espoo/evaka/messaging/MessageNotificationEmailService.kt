@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.JobParams
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
@@ -44,7 +43,6 @@ class MessageNotificationEmailService(
                 mr.id as message_recipient_id,
                 mr.recipient_id,
                 p.id as person_id,
-                p.email as person_email,
                 coalesce(lower(p.language), 'fi') as language,
                 t.urgent
             FROM message m
@@ -60,18 +58,7 @@ class MessageNotificationEmailService(
                     .trimIndent()
             )
             .bind("messageIds", messageIds)
-            .map { row ->
-                AsyncJob.SendMessageNotificationEmail(
-                    threadId = row.mapColumn("thread_id"),
-                    messageId = row.mapColumn("message_id"),
-                    messageRecipientId = row.mapColumn("message_recipient_id"),
-                    recipientId = row.mapColumn("recipient_id"),
-                    personId = row.mapColumn("person_id"),
-                    personEmail = row.mapColumn("person_email"),
-                    language = getLanguage(row.mapColumn("language")),
-                    urgent = row.mapColumn("urgent")
-                )
-            }
+            .mapTo<AsyncJob.SendMessageNotificationEmail>()
             .toList()
     }
 
@@ -129,7 +116,6 @@ class MessageNotificationEmailService(
                     MessageType.MESSAGE -> EmailMessageType.MESSAGE_NOTIFICATION
                     MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
                 },
-            toAddress = msg.personEmail,
             fromAddress = emailEnv.sender(msg.language),
             content = emailMessageProvider.messageNotification(msg.language, thread),
             traceId = msg.messageRecipientId.toString(),

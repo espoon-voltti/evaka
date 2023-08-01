@@ -117,26 +117,21 @@ class OutdatedIncomeNotifications(
         clock: EvakaClock,
         msg: AsyncJob.SendOutdatedIncomeNotificationEmail
     ) {
-        val (recipient, language) =
+        val language =
             db.read { tx ->
                 tx.createQuery(
                         """
-SELECT email, language
-FROM person p
-WHERE p.id = :guardianId
-AND email IS NOT NULL
-        """
+                        SELECT language
+                        FROM person p
+                        WHERE p.id = :guardianId
+                        AND email IS NOT NULL
+                        """
                             .trimIndent()
                     )
                     .bind("guardianId", msg.guardianId)
                     .map { row ->
-                        Pair(
-                            row.mapColumn<String>("email"),
-                            row.mapColumn<String?>("language")
-                                ?.lowercase()
-                                ?.let(Language::tryValueOf)
-                                ?: Language.fi
-                        )
+                        row.mapColumn<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                            ?: Language.fi
                     }
                     .firstOrNull()
             }
@@ -147,7 +142,6 @@ AND email IS NOT NULL
             dbc = db,
             emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
             personId = msg.guardianId,
-            toAddress = recipient,
             fromAddress = emailEnv.sender(language),
             content = emailMessageProvider.outdatedIncomeNotification(msg.type, language),
             traceId = msg.guardianId.toString()

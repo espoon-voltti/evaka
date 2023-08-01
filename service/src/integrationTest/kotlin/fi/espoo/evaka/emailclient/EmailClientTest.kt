@@ -7,6 +7,7 @@ package fi.espoo.evaka.emailclient
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.updateEnabledEmailTypes
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
@@ -80,15 +81,15 @@ class EmailClientTest : PureJdbiTest(resetDbBeforeEach = true) {
         emailType: EmailMessageType = EmailMessageType.TRANSACTIONAL,
         toAddress: String = "test@example.com"
     ) {
-        client.sendEmail(
-            db,
-            testAdult_1.id,
-            emailType,
-            toAddress,
-            "sender@example.com",
-            testContent,
-            "traceid"
-        )
+        db.transaction { tx ->
+            tx.createUpdate<DatabaseTable> {
+                    sql(
+                        "UPDATE person SET email = ${bind(toAddress)} WHERE id = ${bind(testAdult_1.id)}"
+                    )
+                }
+                .execute()
+        }
+        client.sendEmail(db, testAdult_1.id, emailType, toAddress, testContent, "traceid")
     }
 }
 

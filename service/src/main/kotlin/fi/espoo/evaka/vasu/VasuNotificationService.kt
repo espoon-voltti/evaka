@@ -60,7 +60,6 @@ SELECT
     doc.id AS vasu_document_id,
     child.id AS child_id,
     parent.id AS recipient_id,
-    parent.email AS recipient_email,
     parent.language AS language
 FROM curriculum_document doc
     JOIN person child ON doc.child_id = child.id
@@ -78,7 +77,6 @@ WHERE
                     vasuDocumentId = vasuDocumentId,
                     childId = row.mapColumn("child_id"),
                     recipientId = row.mapColumn("recipient_id"),
-                    recipientEmail = row.mapColumn("recipient_email"),
                     language = getLanguage(row.mapColumn("language"))
                 )
             }
@@ -91,14 +89,12 @@ WHERE
         msg: AsyncJob.SendVasuNotificationEmail
     ) {
         logger.info(
-            "Sending vasu/leops notification email for document ${msg.vasuDocumentId} to ${msg.recipientEmail}"
+            "Sending vasu/leops notification email for document ${msg.vasuDocumentId} to person ${msg.recipientId}"
         )
-
         emailClient.sendEmail(
             dbc = db,
             personId = msg.recipientId,
             emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
-            toAddress = msg.recipientEmail,
             fromAddress = emailEnv.sender(msg.language),
             content = emailMessageProvider.vasuNotification(msg.language, msg.childId),
             traceId = msg.vasuDocumentId.toString(),

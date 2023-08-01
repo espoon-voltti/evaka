@@ -16,7 +16,9 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -420,10 +422,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `valid email is sent`() {
+        setPersonEmail(testAdult_1.id, "working@test.fi")
         applicationReceivedEmailService.sendApplicationEmail(
             db,
             testAdult_1.id,
-            "working@test.fi",
             Language.fi,
             ApplicationType.DAYCARE
         )
@@ -436,10 +438,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika"
         )
 
+        setPersonEmail(testAdult_1.id, "Working.Email@Test.Com")
         applicationReceivedEmailService.sendApplicationEmail(
             db,
             testAdult_1.id,
-            "Working.Email@Test.Com",
             Language.sv,
             ApplicationType.DAYCARE
         )
@@ -453,24 +455,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         )
     }
 
-    @Test
-    fun `email with invalid toAddress is not sent`() {
-        applicationReceivedEmailService.sendApplicationEmail(
-            db,
-            testAdult_1.id,
-            "not.working.com",
-            Language.fi,
-            ApplicationType.DAYCARE
-        )
-        applicationReceivedEmailService.sendApplicationEmail(
-            db,
-            testAdult_1.id,
-            "@test.fi",
-            Language.fi,
-            ApplicationType.DAYCARE
-        )
-
-        assertEquals(0, MockEmailClient.emails.size)
+    private fun setPersonEmail(personId: PersonId, email: String) {
+        db.transaction { tx ->
+            tx.createUpdate<DatabaseTable> {
+                    sql("UPDATE person SET email = ${bind(email)} where id = ${bind(personId)}")
+                }
+                .execute()
+        }
     }
 
     private fun assertEmail(

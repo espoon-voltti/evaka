@@ -88,12 +88,7 @@ class AssistanceNeedDecisionService(
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
-        val guardians =
-            dbc.read { tx ->
-                tx.getChildGuardians(decision.child.id).map {
-                    Pair(it, tx.getPersonById(it)?.email)
-                }
-            }
+        val guardians = dbc.read { tx -> tx.getChildGuardians(decision.child.id) }
 
         val language =
             when (decision.language) {
@@ -103,18 +98,15 @@ class AssistanceNeedDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
-        guardians.forEach { (guardianId, toAddress) ->
-            if (toAddress != null) {
-                emailClient.sendEmail(
-                    dbc,
-                    guardianId,
-                    EmailMessageType.DOCUMENT_NOTIFICATION,
-                    toAddress,
-                    fromAddress,
-                    content,
-                    "$decisionId - $guardianId",
-                )
-            }
+        guardians.forEach { guardianId ->
+            emailClient.sendEmail(
+                dbc,
+                guardianId,
+                EmailMessageType.DOCUMENT_NOTIFICATION,
+                fromAddress,
+                content,
+                "$decisionId - $guardianId",
+            )
         }
     }
 

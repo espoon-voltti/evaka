@@ -5,7 +5,7 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.pis.getEnabledEmailTypes
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
@@ -21,13 +21,22 @@ interface IEmailClient {
         dbc: Database.Connection,
         personId: PersonId,
         emailType: EmailMessageType,
-        toAddress: String,
         fromAddress: String,
         content: EmailContent,
         traceId: String,
     ) {
+        val (toAddress, enabledEmailTypes) =
+            dbc.read { tx -> tx.getEmailAddressAndEnabledTypes(personId) }
+
+        if (toAddress == null) {
+            logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
+            return
+        }
+
         if (!toAddress.matches(EMAIL_PATTERN)) {
-            logger.warn("Will not send email due to invalid toAddress: (traceId: $traceId)")
+            logger.warn(
+                "Will not send email due to invalid toAddress \"$toAddress\": (traceId: $traceId)"
+            )
             return
         }
 
@@ -39,8 +48,7 @@ interface IEmailClient {
             return
         }
 
-        val enabledEmailTypes = dbc.read { tx -> tx.getEnabledEmailTypes(personId) }
-        if (emailType !in enabledEmailTypes) {
+        if (emailType !in (enabledEmailTypes ?: EmailMessageType.values().toList())) {
             logger.info {
                 "Not sending email (traceId: $traceId): $emailType not enabled for person $personId"
             }
@@ -57,4 +65,19 @@ interface IEmailClient {
         content: EmailContent,
         traceId: String,
     )
+}
+
+private data class EmailAndEnabledEmailTypes(
+    val email: String?,
+    val enabledEmailTypes: List<EmailMessageType>?
+)
+
+private fun Database.Read.getEmailAddressAndEnabledTypes(
+    personId: PersonId
+): EmailAndEnabledEmailTypes {
+    return createQuery<DatabaseTable> {
+            sql("""SELECT email, enabled_email_types FROM person WHERE id = ${bind(personId)}""")
+        }
+        .mapTo<EmailAndEnabledEmailTypes>()
+        .single()
 }

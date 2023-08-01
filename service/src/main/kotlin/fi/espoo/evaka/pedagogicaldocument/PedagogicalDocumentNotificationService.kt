@@ -40,8 +40,8 @@ class PedagogicalDocumentNotificationService(
         val sql =
             """
         SELECT DISTINCT
+            doc.id as pedagogical_document_id,
             p.id as recipient_id,
-            p.email as recipient_email,
             coalesce(lower(p.language), 'fi') as language
         FROM pedagogical_document doc 
         JOIN guardian g ON doc.child_id = g.child_id
@@ -59,7 +59,6 @@ class PedagogicalDocumentNotificationService(
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
                     recipientId = row.mapColumn("recipient_id"),
-                    recipientEmail = row.mapColumn("recipient_email"),
                     language = getLanguage(row.mapColumn("language"))
                 )
             }
@@ -135,7 +134,6 @@ SELECT EXISTS(
             dbc = db,
             personId = msg.recipientId,
             emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
-            toAddress = msg.recipientEmail,
             fromAddress = emailEnv.sender(msg.language),
             content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
             traceId = msg.pedagogicalDocumentId.toString(),

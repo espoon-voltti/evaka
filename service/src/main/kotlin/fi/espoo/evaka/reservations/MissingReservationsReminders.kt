@@ -69,12 +69,12 @@ WHERE p.email IS NOT NULL
     }
 
     fun sendReminder(db: Database.Connection, msg: AsyncJob.SendMissingReservationsReminder) {
-        val (recipient, language) =
+        val language =
             db.read { tx ->
                 tx.createQuery<DatabaseTable> {
                         sql(
                             """
-SELECT email, language
+SELECT language
 FROM (${subquery(missingReservationsQuery(msg.range, msg.guardian))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
@@ -84,13 +84,8 @@ AND email IS NOT NULL
                         )
                     }
                     .map { row ->
-                        Pair(
-                            row.mapColumn<String>("email"),
-                            row.mapColumn<String?>("language")
-                                ?.lowercase()
-                                ?.let(Language::tryValueOf)
-                                ?: Language.fi
-                        )
+                        row.mapColumn<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                            ?: Language.fi
                     }
                     .firstOrNull()
             }
@@ -99,7 +94,6 @@ AND email IS NOT NULL
             dbc = db,
             personId = msg.guardian,
             emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
-            toAddress = recipient,
             fromAddress = emailEnv.sender(language),
             content = emailMessageProvider.missingReservationsNotification(language, msg.range),
             traceId = msg.guardian.toString(),

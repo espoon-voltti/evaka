@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -29,25 +28,12 @@ class SendApplicationReceivedEmailAsyncJobs(
         db: Database.Connection,
         msg: AsyncJob.SendApplicationEmail
     ) {
-        val guardian =
-            db.read { it.getPersonById(msg.guardianId) }
-                ?: throw Exception(
-                    "Didn't find guardian when sending application email (guardianId: ${msg.guardianId})"
-                )
-
-        if (!guardian.email.isNullOrBlank()) {
-            applicationReceivedEmailService.sendApplicationEmail(
-                db,
-                guardian.id,
-                guardian.email,
-                msg.language,
-                msg.type,
-                msg.sentWithinPreschoolApplicationPeriod
-            )
-        } else {
-            logger.warn(
-                "Cannot send application received email to guardian ${guardian.id}: missing email"
-            )
-        }
+        applicationReceivedEmailService.sendApplicationEmail(
+            db,
+            msg.guardianId,
+            msg.language,
+            msg.type,
+            msg.sentWithinPreschoolApplicationPeriod
+        )
     }
 }
