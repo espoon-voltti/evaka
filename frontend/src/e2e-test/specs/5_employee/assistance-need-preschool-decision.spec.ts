@@ -16,6 +16,7 @@ import {
 } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
+  daycareFixture,
   daycareGroupFixture,
   Fixture,
   uuidv4
@@ -92,9 +93,7 @@ describe('Assistance Need Decisions - Edit page', () => {
   })
 
   test('Autosave works', async () => {
-    await assistanceNeedDecisionEditPage.primaryGroupInput.fill(
-      'this is a motivation'
-    )
+    await assistanceNeedDecisionEditPage.primaryGroupInput.fill('Keijukaiset')
     await waitUntilEqual(
       () =>
         assistanceNeedDecisionEditPage.autoSaveIndicator.getAttribute(
@@ -108,6 +107,52 @@ describe('Assistance Need Decisions - Edit page', () => {
           'data-status'
         ),
       'saved'
+    )
+  })
+
+  test('Clicking the preview button opens the decision in preview mode', async () => {
+    await assistanceNeedDecisionEditPage.primaryGroupInput.fill('Keijukaiset')
+    await assistanceNeedDecisionEditPage.typeRadioNew.click()
+    await assistanceNeedDecisionEditPage.validFromInput.fill('01.08.2022')
+    await page.keyboard.press('Enter')
+    await assistanceNeedDecisionEditPage.unitSelect.fillAndSelectFirst(
+      daycareFixture.name
+    )
+    await assistanceNeedDecisionEditPage.decisionBasisInput.fill(
+      'Hyvät perustelut'
+    )
+    await assistanceNeedDecisionEditPage.basisPedagogicalReportCheckbox.check()
+    await assistanceNeedDecisionEditPage.guardiansHeardInput.fill('01.06.2022')
+    await page.keyboard.press('Enter')
+    await assistanceNeedDecisionEditPage.guardianHeardCheckbox(0).click()
+    await assistanceNeedDecisionEditPage
+      .guardianDetailsInput(0)
+      .fill('Puhelimitse')
+    await assistanceNeedDecisionEditPage.guardianHeardCheckbox(1).click()
+    await assistanceNeedDecisionEditPage
+      .guardianDetailsInput(1)
+      .fill('Telepaattisesti')
+    await assistanceNeedDecisionEditPage.viewOfGuardiansInput.fill('ok')
+    await assistanceNeedDecisionEditPage.preparer1Select.fillAndSelectFirst(
+      serviceWorker.firstName
+    )
+    await assistanceNeedDecisionEditPage.preparer1TitleInput.fill(
+      'Valmistelija'
+    )
+    await assistanceNeedDecisionEditPage.decisionMakerSelect.fillAndSelectFirst(
+      serviceWorker.firstName
+    )
+    await assistanceNeedDecisionEditPage.decisionMakerTitleInput.fill(
+      'Päättäjä'
+    )
+    await assistanceNeedDecisionEditPage.previewButton.click()
+
+    await page.page.waitForURL(
+      `${
+        config.employeeUrl
+      }/child-information/${childId}/assistance-need-preschool-decisions/${
+        assistanceNeedDecision?.id ?? ''
+      }`
     )
   })
 })
