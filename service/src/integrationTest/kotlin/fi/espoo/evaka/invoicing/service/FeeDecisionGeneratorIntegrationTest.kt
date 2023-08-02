@@ -1634,8 +1634,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 { it.children.map { child -> child.placement.unitId } }
             )
             .containsExactlyInAnyOrder(
-                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id))
+                Tuple(period, emptySet<FeeDecisionDifference>(), listOf(testDaycare2.id))
             )
     }
 
@@ -1847,45 +1846,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 ),
                 Tuple(
                     LocalDate.of(2022, 4, 1),
-                    LocalDate.of(2022, 6, 30),
-                    setOf(FeeDecisionDifference.INCOME)
-                ),
-                Tuple(
-                    LocalDate.of(2022, 7, 1),
                     LocalDate.of(2022, 9, 1),
-                    setOf(FeeDecisionDifference.PLACEMENT)
+                    setOf(FeeDecisionDifference.INCOME)
                 ),
                 Tuple(
                     LocalDate.of(2022, 9, 2),
                     LocalDate.of(2022, 12, 31),
                     setOf(FeeDecisionDifference.INCOME)
                 )
-            )
-    }
-
-    @Test
-    fun `difference between sent and draft`() {
-        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
-        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
-        db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
-            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
-        }
-        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
-
-        db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
-        }
-
-        assertThat(getAllFeeDecisions())
-            .extracting({ it.validDuring }, { it.status }, { it.difference })
-            .containsExactlyInAnyOrder(
-                Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT))
             )
     }
 
@@ -1912,9 +1880,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertThat(getAllFeeDecisions())
             .extracting({ it.validDuring }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
-                Tuple(period, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod1, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT))
+                Tuple(period, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>())
             )
     }
 
@@ -3794,8 +3760,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
-        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testChild_1.id, 12345678, subPeriod1)
+        insertIncome(testChild_1.id, 0, subPeriod2)
 
         db.transaction {
             generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)

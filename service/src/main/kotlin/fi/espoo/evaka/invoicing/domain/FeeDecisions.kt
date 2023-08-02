@@ -143,7 +143,7 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
             setOf(d2.headOfFamilyIncome, d2.partnerIncome) &&
             decisionChildrenEquals(d1, d2) { it.childIncome }
     }),
-    PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
+    PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement.type } }),
     SERVICE_NEED({ d1, d2 ->
         decisionChildrenEquals(d1, d2) { it.serviceNeed.copy(optionId = null) }
     }),
