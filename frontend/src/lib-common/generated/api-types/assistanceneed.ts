@@ -275,7 +275,7 @@ export interface AssistanceNeedPreschoolDecisionBasics {
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
   type: AssistanceNeedPreschoolDecisionType | null
-  unreadGuardianIds: UUID[]
+  unreadGuardianIds: UUID[] | null
   validFrom: LocalDate | null
   validTo: LocalDate | null
 }
