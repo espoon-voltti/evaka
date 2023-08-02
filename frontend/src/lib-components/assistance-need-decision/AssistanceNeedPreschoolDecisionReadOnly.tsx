@@ -123,6 +123,7 @@ export default React.memo(function DecisionFormReadView({
             <AssistanceNeedDecisionStatusChip
               decisionStatus={decision.status}
               texts={t.statuses}
+              data-qa="status"
             />
             <span>{t.confidential}</span>
             <span>{t.lawReference}</span>

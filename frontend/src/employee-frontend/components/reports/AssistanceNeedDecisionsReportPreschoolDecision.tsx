@@ -102,6 +102,7 @@ const DecisionView = React.memo(function DecisionView({
                 text={i18n.reports.assistanceNeedDecisions.rejectDecision}
                 disabled={submitting || !isDecisionMaker}
                 onClick={() => setConfirmationModal('REJECT')}
+                data-qa="reject-button"
               />
               <Button
                 text={
@@ -115,12 +116,14 @@ const DecisionView = React.memo(function DecisionView({
                     status: 'NEEDS_WORK'
                   })
                 }
+                data-qa="return-for-edit-button"
               />
               <Button
                 primary
                 text={i18n.reports.assistanceNeedDecisions.approveDecision}
                 disabled={submitting || !isDecisionMaker}
                 onClick={() => setConfirmationModal('ACCEPT')}
+                data-qa="approve-button"
               />
             </FixedSpaceRow>
           )}

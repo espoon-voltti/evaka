@@ -373,3 +373,14 @@ export class AssistanceNeedDecisionsReportDecision {
     }
   }
 }
+
+export class AssistanceNeedPreschoolDecisionsReportDecision {
+  constructor(private page: Page) {}
+
+  returnForEditBtn = this.page.findByDataQa('return-for-edit-button')
+  approveBtn = this.page.findByDataQa('approve-button')
+  rejectBtn = this.page.findByDataQa('reject-button')
+  modalOkBtn = this.page.findByDataQa('modal-okBtn')
+
+  status = this.page.findByDataQa('status')
+}

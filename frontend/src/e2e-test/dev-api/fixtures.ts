@@ -2336,6 +2336,34 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
     return this
   }
 
+  withRequiredFieldsFilled(
+    unitId: UUID,
+    preparerId: UUID,
+    decisionMakerId: UUID
+  ) {
+    this.data.form = {
+      ...this.data.form,
+      type: 'NEW',
+      validFrom: LocalDate.of(2022, 8, 1),
+      selectedUnit: unitId,
+      primaryGroup: 'Perhoset',
+      decisionBasis: 'Perustelu',
+      basisDocumentPedagogicalReport: true,
+      guardiansHeardOn: LocalDate.of(2022, 8, 1),
+      guardianInfo: this.data.form.guardianInfo.map((g) => ({
+        ...g,
+        isHeard: true,
+        details: 'kasvotusten'
+      })),
+      viewOfGuardians: 'ok',
+      preparer1EmployeeId: preparerId,
+      preparer1Title: 'Käsittelijä',
+      decisionMakerEmployeeId: decisionMakerId,
+      decisionMakerTitle: 'Päättäjä'
+    }
+    return this
+  }
+
   // Note: shallow copy
   copy() {
     return new AssistanceNeedPreschoolDecisionBuilder({ ...this.data })

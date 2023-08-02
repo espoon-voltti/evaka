@@ -4,7 +4,7 @@
 
 import { Checkbox, Combobox, Page, TextInput } from '../../../utils/page'
 
-export default class AssistanceNeedPreschoolDecisionEditPage {
+export default class AssistanceNeedPreschoolDecisionPage {
   constructor(private readonly page: Page) {}
 
   readonly autoSaveIndicator = this.page.findByDataQa('autosave-indicator')
@@ -45,4 +45,6 @@ export default class AssistanceNeedPreschoolDecisionEditPage {
     this.page.findByDataQa('preparer-1-title')
   )
   readonly previewButton = this.page.findByDataQa('preview-button')
+  readonly editButton = this.page.findByDataQa('edit-button')
+  readonly sendDecisionButton = this.page.findByDataQa('send-decision')
 }
