@@ -145,7 +145,7 @@ data class AssistanceNeedPreschoolDecisionBasics(
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
     val annulmentReason: String,
-    val unreadGuardianIds: List<PersonId>
+    val unreadGuardianIds: List<PersonId>?
 )
 
 data class AssistanceNeedPreschoolDecisionGuardian(

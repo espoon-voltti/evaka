@@ -396,7 +396,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
                     decisionMade = it.decisionMade,
                     unitName = it.selectedUnit.name,
                     annulmentReason = it.annulmentReason,
-                    isUnread = it.unreadGuardianIds.contains(userId)
+                    isUnread = it.unreadGuardianIds?.contains(userId) ?: true
                 )
             }
         }
