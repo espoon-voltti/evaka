@@ -818,6 +818,39 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             )
     }
 
+    // TODO
+    @Test
+    fun `no new draft is generated if the only difference is income type change from NOT_AVAILABLE to INCOMPLETE `() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertIncome(testAdult_1.id, 10000, period, IncomeEffect.NOT_AVAILABLE)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+        }
+        val voucherValueDecisions = getAllVoucherValueDecisions()
+        assertEquals(1, voucherValueDecisions.size)
+
+        voucherValueDecisionController.sendDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            RealEvakaClock(),
+            listOf(voucherValueDecisions.first().id),
+            null
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        db.transaction { it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute() }
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+        }
+        assertEquals(1, getAllVoucherValueDecisions().size)
+    }
+
     @Test
     fun `partner income difference`() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
@@ -1521,14 +1554,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .shuffled() // randomize order to expose assumptions
     }
 
-    private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
+    private fun insertIncome(
+        adultId: PersonId,
+        amount: Int,
+        period: DateRange,
+        effect: IncomeEffect = IncomeEffect.INCOME
+    ) {
         db.transaction { tx ->
             tx.insertTestIncome(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
                     validTo = period.end,
-                    effect = IncomeEffect.INCOME,
+                    effect = effect,
                     data =
                         mapOf(
                             "MAIN_INCOME" to

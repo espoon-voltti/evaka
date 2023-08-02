@@ -57,8 +57,33 @@ data class VoucherValueDecision(
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
-    override fun contentEquals(decision: VoucherValueDecision): Boolean =
-        VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
+    override fun contentEquals(decision: VoucherValueDecision): Boolean {
+        val diff = VoucherValueDecisionDifference.getDifference(this, decision)
+        if (diff.isEmpty()) return true
+        else {
+            if (diff.size == 1 && diff.first() == VoucherValueDecisionDifference.INCOME) {
+                return incomeEffectiveTypesAreLogicallyEqual(this, decision)
+            } else return false
+        }
+    }
+
+    private fun incomeEffectiveTypesAreLogicallyEqual(
+        d1: VoucherValueDecision,
+        d2: VoucherValueDecision
+    ): Boolean {
+        val headOfFamilyIncomesAreEffectivelyEqual =
+            incomesAreEqualOrDiffOnlyByCertainEffects(d1.headOfFamilyIncome, d2.headOfFamilyIncome)
+
+        val partnerIncomesAreEffectivelyEqual =
+            incomesAreEqualOrDiffOnlyByCertainEffects(d1.partnerIncome, d2.partnerIncome)
+
+        val childIncomesAreEffectivelyEqual =
+            incomesAreEqualOrDiffOnlyByCertainEffects(d1.childIncome, d2.childIncome)
+
+        return headOfFamilyIncomesAreEffectivelyEqual &&
+            partnerIncomesAreEffectivelyEqual &&
+            childIncomesAreEffectivelyEqual
+    }
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
         return this.child.id == other.child.id &&

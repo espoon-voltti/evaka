@@ -73,6 +73,18 @@ data class DecisionIncome(
 fun incomeTotal(data: Map<String, IncomeValue>) =
     data.entries.sumOf { (_, value) -> value.multiplier * value.monthlyAmount() }
 
+fun incomesAreEqualOrDiffOnlyByCertainEffects(i1: DecisionIncome?, i2: DecisionIncome?): Boolean {
+    if (i1 == null && i2 == null) return true
+    if (i1 != null && i2 != null) {
+        if (i1.effect == IncomeEffect.NOT_AVAILABLE && i2.effect == IncomeEffect.INCOMPLETE)
+            return i1.equals(i2.copy(effect = IncomeEffect.NOT_AVAILABLE))
+        if (i1.effect == IncomeEffect.INCOMPLETE && i2.effect == IncomeEffect.NOT_AVAILABLE)
+            return i1.equals(i2.copy(effect = IncomeEffect.INCOMPLETE))
+        return i1.equals(i2)
+    }
+    return false
+}
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient, val multiplier: Int) {
     @JsonProperty("monthlyAmount")
