@@ -19,7 +19,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
+import { EmployeeDetail } from '../../dev-api/types'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
+import AssistanceNeedPreschoolDecisionPage from '../../pages/citizen/citizen-assistance-need-preschool-decision'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
@@ -30,11 +32,13 @@ let page: Page
 let header: CitizenHeader
 let citizenDecisionsPage: CitizenDecisionsPage
 let fixtures: AreaAndPersonFixtures
+let decisionMaker: EmployeeDetail
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+  decisionMaker = (await Fixture.employeeServiceWorker().save()).data
 
   page = await Page.open({ mockedTime: now.toSystemTzDate() })
   header = new CitizenHeader(page)
@@ -433,6 +437,256 @@ describe('Citizen assistance decisions', () => {
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.decisionMaker,
       `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
+    )
+  })
+})
+
+describe('Citizen assistance preschool decisions', () => {
+  test('Decisions are properly listed', async () => {
+    const decision = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'ACCEPTED',
+        sentForDecision: LocalDate.of(2020, 1, 1),
+        decisionMade: LocalDate.of(2020, 1, 2),
+        unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
+      })
+      .withForm({
+        type: 'NEW',
+        validFrom: LocalDate.of(2020, 1, 3)
+      })
+      .save()
+
+    const decision2 = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'ACCEPTED',
+        sentForDecision: LocalDate.of(2020, 2, 1),
+        decisionMade: LocalDate.of(2020, 2, 2),
+        unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
+      })
+      .withForm({
+        type: 'CONTINUING',
+        validFrom: LocalDate.of(2020, 2, 3)
+      })
+      .save()
+
+    const decision3 = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'REJECTED',
+        sentForDecision: LocalDate.of(2020, 3, 1),
+        decisionMade: LocalDate.of(2020, 3, 2),
+        unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
+      })
+      .withForm({
+        type: 'TERMINATED',
+        validFrom: LocalDate.of(2020, 3, 3)
+      })
+      .save()
+
+    const decision4 = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'ACCEPTED',
+        sentForDecision: LocalDate.of(2020, 4, 1),
+        decisionMade: LocalDate.of(2020, 4, 2),
+        unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
+      })
+      .withForm({
+        type: 'TERMINATED',
+        validFrom: LocalDate.of(2020, 4, 3)
+      })
+      .save()
+
+    // should not be shown
+    await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'DRAFT',
+        sentForDecision: LocalDate.of(2020, 1, 10)
+      })
+      .withForm({
+        type: 'TERMINATED',
+        validFrom: LocalDate.of(2020, 1, 12)
+      })
+      .save()
+
+    // should not be shown
+    await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'NEEDS_WORK',
+        sentForDecision: LocalDate.of(2020, 1, 10)
+      })
+      .withForm({
+        type: 'TERMINATED',
+        validFrom: LocalDate.of(2020, 1, 12)
+      })
+      .save()
+
+    await header.selectTab('decisions')
+
+    await citizenDecisionsPage.assertChildDecisionCount(
+      4,
+      fixtures.enduserChildFixtureKaarina.id
+    )
+
+    await citizenDecisionsPage.assertAssistancePreschoolDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision.data.id ?? '',
+      {
+        type: 'Erityinen tuki alkaa',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: `03.01.2020 - 02.02.2020`,
+        decisionMade: '02.01.2020',
+        status: 'Hyväksytty'
+      }
+    )
+
+    await citizenDecisionsPage.assertAssistancePreschoolDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision2.data.id ?? '',
+      {
+        type: 'Erityinen tuki jatkuu',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: `03.02.2020 - 02.04.2020`,
+        decisionMade: '02.02.2020',
+        status: 'Hyväksytty'
+      }
+    )
+
+    await citizenDecisionsPage.assertAssistancePreschoolDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision3.data.id ?? '',
+      {
+        type: 'Erityinen tuki päättyy',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: `03.03.2020 - 02.04.2020`,
+        decisionMade: '02.03.2020',
+        status: 'Hylätty'
+      }
+    )
+
+    await citizenDecisionsPage.assertAssistancePreschoolDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision4.data.id ?? '',
+      {
+        type: 'Erityinen tuki päättyy',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: `03.04.2020 -`,
+        decisionMade: '02.04.2020',
+        status: 'Hyväksytty'
+      }
+    )
+  })
+
+  test('Preview shows filled information', async () => {
+    const decision = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'ACCEPTED',
+        sentForDecision: LocalDate.of(2020, 1, 1),
+        decisionMade: LocalDate.of(2020, 1, 2),
+        unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
+      })
+      .withForm({
+        type: 'NEW',
+        validFrom: LocalDate.of(2020, 1, 3),
+        grantedAssistanceService: true,
+        grantedServicesBasis: 'Tarvitsee avustajan',
+        primaryGroup: 'ryhmä',
+        decisionBasis: 'perustelut',
+        basisDocumentPedagogicalReport: true,
+        basisDocumentsInfo: 'VEO:n arvio',
+        guardiansHeardOn: LocalDate.of(2020, 1, 1)
+      })
+      .save()
+
+    await header.selectTab('decisions')
+    await citizenDecisionsPage.openAssistanceDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision.data.id ?? ''
+    )
+    await page.page.waitForURL(
+      `${config.enduserUrl}/decisions/assistance-preschool/${
+        decision.data.id ?? ''
+      }`
+    )
+
+    const decisionPage = new AssistanceNeedPreschoolDecisionPage(page)
+    await decisionPage.status.assertTextEquals('Hyväksytty')
+    await decisionPage.type.assertTextEquals('Erityinen tuki alkaa')
+    await decisionPage.validFrom.assertTextEquals('03.01.2020')
+    await decisionPage.extendedCompulsoryEducation.assertTextEquals('Ei')
+    await decisionPage.grantedServices.assertText((s) =>
+      s.includes('Lapselle myönnetään avustajapalveluita')
+    )
+    await decisionPage.grantedServicesBasis.assertText(
+      (s) => s.trim() === 'Tarvitsee avustajan'
+    )
+    await decisionPage.selectedUnit.assertTextEquals(
+      fixtures.daycareFixture.name
+    )
+    await decisionPage.primaryGroup.assertTextEquals('ryhmä')
+    await decisionPage.decisionBasis.assertText(
+      (s) => s.trim() === 'perustelut'
+    )
+    await decisionPage.documentBasis.assertText((s) =>
+      s.includes('Pedagoginen selvitys')
+    )
+    await decisionPage.basisDocumentsInfo.assertText(
+      (s) => s.trim() === 'VEO:n arvio'
+    )
+    await decisionPage.guardiansHeardOn.assertTextEquals('01.01.2020')
+    await decisionPage.viewOfGuardians.assertText((s) => s.trim() === 'ok')
+    await decisionPage.preparer1.assertTextEquals(
+      'Paula Palveluohjaaja, Käsittelijä'
+    )
+    await decisionPage.decisionMaker.assertTextEquals(
+      'Paula Palveluohjaaja, Päättäjä'
     )
   })
 })

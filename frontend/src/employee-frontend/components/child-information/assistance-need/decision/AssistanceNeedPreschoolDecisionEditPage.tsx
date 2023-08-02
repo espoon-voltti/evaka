@@ -37,6 +37,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -61,6 +62,7 @@ import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { translations } from 'lib-customizations/employee'
 
 import { Unit } from '../../../../api/daycare'
+import { getEmployees } from '../../../../api/employees'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
@@ -172,7 +174,11 @@ const GuardianForm = React.memo(function GuardianForm({
   return (
     <FixedSpaceColumn spacing="zero">
       <FixedSpaceRow alignItems="center">
-        <CheckboxF bind={isHeard} label={name.value()} />
+        <CheckboxF
+          bind={isHeard}
+          label={name.value()}
+          data-qa="guardian-heard"
+        />
         {displayValidation && validationErrors.isHeard && (
           <AlertBox
             message={i18n.validationErrors[validationErrors.isHeard]}
@@ -191,6 +197,7 @@ const GuardianForm = React.memo(function GuardianForm({
                 }
               : undefined
           }
+          data-qa="guardian-details"
         />
       </WidthLimiter>
     </FixedSpaceColumn>
@@ -205,11 +212,13 @@ const pageTranslations = {
 const DecisionEditor = React.memo(function DecisionEditor({
   decision,
   units,
-  decisionMakers
+  decisionMakers,
+  employees
 }: {
   decision: AssistanceNeedPreschoolDecision
   units: Unit[]
   decisionMakers: Employee[]
+  employees: Employee[]
 }) {
   const { i18n, lang: uiLang } = useTranslation()
   const navigate = useNavigate()
@@ -460,12 +469,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               <H2>{decision.child.name}</H2>
             </FixedSpaceColumn>
             <FixedSpaceColumn>
-              <span>
+              <span data-qa="decision-number">
                 {t.decisionNumber} {decision.decisionNumber}
               </span>
               <AssistanceNeedDecisionStatusChip
                 decisionStatus={decision.status}
                 texts={t.statuses}
+                data-qa="status"
               />
               <span>{t.confidential}</span>
               <span>{t.lawReference}</span>
@@ -496,6 +506,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                         domValue: opt.domValue
                       }))
                     }
+                    data-qa={`type-radio-${opt.value}`}
                   />
                 ))}
               </FixedSpaceColumn>
@@ -506,6 +517,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   bind={validFrom}
                   locale={uiLang}
                   info={info('validFrom')}
+                  data-qa="valid-from"
                 />
               </LabeledValue>
 
@@ -563,6 +575,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   getItemLabel={(u) => u?.name ?? ''}
                   onChange={(u) => selectedUnit.set(u?.id ?? null)}
                   info={info('selectedUnit')}
+                  data-qa="unit-select"
                 />
               </LabeledValue>
 
@@ -572,6 +585,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   bind={primaryGroup}
                   width="L"
                   info={info('primaryGroup')}
+                  data-qa="primary-group"
                 />
               </LabeledValue>
 
@@ -581,6 +595,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <TextAreaF
                     bind={decisionBasis}
                     info={info('decisionBasis')}
+                    data-qa="decision-basis"
                   />
                 </WidthLimiter>
               </LabeledValue>
@@ -600,6 +615,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                 <CheckboxF
                   bind={basisDocumentPedagogicalReport}
                   label={t.basisDocumentPedagogicalReport}
+                  data-qa="basis-pedagogical-report"
                 />
                 <CheckboxF
                   bind={basisDocumentPsychologistStatement}
@@ -643,6 +659,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   bind={guardiansHeardOn}
                   locale={uiLang}
                   info={info('guardiansHeardOn')}
+                  data-qa="guardians-heard"
                 />
               </LabeledValue>
 
@@ -687,6 +704,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <TextAreaF
                     bind={viewOfGuardians}
                     info={info('viewOfGuardians')}
+                    data-qa="view-of-guardians"
                   />
                 </WidthLimiter>
               </LabeledValue>
@@ -699,7 +717,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <Label>{t.preparer} *</Label>
                   <ComboboxWrapper>
                     <Combobox
-                      items={decisionMakers}
+                      items={employees}
                       getItemLabel={(e) =>
                         e
                           ? `${e.preferredFirstName ?? e.firstName} ${
@@ -709,7 +727,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       }
                       selectedItem={
                         preparer1EmployeeId
-                          ? decisionMakers.find(
+                          ? employees.find(
                               (e) => e.id === preparer1EmployeeId.value()
                             ) ?? null
                           : null
@@ -717,6 +735,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       onChange={(e) => preparer1EmployeeId.set(e?.id ?? null)}
                       clearable
                       info={info('preparer1EmployeeId')}
+                      data-qa="preparer-1-select"
                     />
                   </ComboboxWrapper>
                 </LabeledValue>
@@ -726,6 +745,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     bind={preparer1Title}
                     width="L"
                     info={info('preparer1Title')}
+                    data-qa="preparer-1-title"
                   />
                 </LabeledValue>
                 <LabeledValue>
@@ -738,10 +758,10 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <Label>{t.preparer}</Label>
                   <ComboboxWrapper>
                     <Combobox
-                      items={decisionMakers}
+                      items={employees}
                       selectedItem={
                         preparer2EmployeeId
-                          ? decisionMakers.find(
+                          ? employees.find(
                               (e) => e.id === preparer2EmployeeId.value()
                             ) ?? null
                           : null
@@ -800,6 +820,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                       }
                       clearable
                       info={info('decisionMakerEmployeeId')}
+                      data-qa="decision-maker-select"
                     />
                   </ComboboxWrapper>
                 </LabeledValue>
@@ -809,6 +830,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     bind={decisionMakerTitle}
                     width="L"
                     info={info('decisionMakerTitle')}
+                    data-qa="decision-maker-title"
                   />
                 </LabeledValue>
               </FixedSpaceRow>
@@ -830,7 +852,12 @@ const DecisionEditor = React.memo(function DecisionEditor({
               }
               data-qa="leave-page-button"
             />
-            <FixedSpaceRow alignItems="center" spacing="xs">
+            <FixedSpaceRow
+              alignItems="center"
+              spacing="xs"
+              data-qa="autosave-indicator"
+              data-status={!saved ? 'saving' : 'saved'}
+            >
               <span>
                 {i18n.common.saved}{' '}
                 {formatInTimeZone(
@@ -878,6 +905,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   const decisionMakersResult = useQueryResult(
     assistanceNeedPreschoolDecisionMakerOptionsQuery(decisionId)
   )
+  const [employeesResult] = useApiState(() => getEmployees(), [])
 
   // invalidate cached decision on onmount
   const queryClient = useQueryClient()
@@ -900,12 +928,13 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   )
 
   return renderResult(
-    combine(decisionResult, unitsResult, decisionMakersResult),
-    ([decisionResponse, units, decisionMakers]) => (
+    combine(decisionResult, unitsResult, decisionMakersResult, employeesResult),
+    ([decisionResponse, units, decisionMakers, employees]) => (
       <DecisionEditor
         decision={decisionResponse.decision}
         units={units}
         decisionMakers={decisionMakers}
+        employees={employees}
       />
     )
   )

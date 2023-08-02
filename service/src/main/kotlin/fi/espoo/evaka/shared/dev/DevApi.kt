@@ -26,6 +26,7 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.decision.UnitInfo
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
@@ -109,6 +110,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.CalendarEventId
@@ -1375,6 +1377,18 @@ RETURNING id
         }
     }
 
+    @PostMapping("/assistance-need-preschool-decisions")
+    fun createAssistanceNeedPreschoolDecisions(
+        db: Database,
+        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedPreschoolDecision>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                assistanceNeedDecisions.forEach { tx.insertTestAssistanceNeedPreschoolDecision(it) }
+            }
+        }
+    }
+
     @PostMapping("/attendances")
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
         db.connect { dbc ->
@@ -1810,6 +1824,18 @@ data class DevAssistanceNeedDecision(
     val motivationForDecision: String?,
     val unreadGuardianIds: List<PersonId>?,
     val annulmentReason: String,
+)
+
+data class DevAssistanceNeedPreschoolDecision(
+    val id: AssistanceNeedPreschoolDecisionId =
+        AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
+    val decisionNumber: Long,
+    val childId: ChildId,
+    val form: AssistanceNeedPreschoolDecisionForm,
+    val status: AssistanceNeedDecisionStatus,
+    val sentForDecision: LocalDate?,
+    val decisionMade: LocalDate?,
+    val unreadGuardianIds: Set<PersonId>?
 )
 
 data class DevChildAttendance(

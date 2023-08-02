@@ -19,6 +19,10 @@ import {
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
 import {
+  AssistanceNeedPreschoolDecisionForm,
+  AssistanceNeedPreschoolDecisionGuardian
+} from 'lib-common/generated/api-types/assistanceneed'
+import {
   FixedPeriodQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
@@ -53,6 +57,7 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement,
   DecisionFixture,
+  DevAssistanceNeedPreschoolDecision,
   DevCalendarEvent,
   DevCalendarEventAttendee,
   DevChildConsent,
@@ -122,7 +127,8 @@ import {
   insertAssistanceFactorFixtures,
   insertDaycareAssistanceFixtures,
   insertPreschoolAssistanceFixtures,
-  insertOtherAssistanceMeasureFixtures
+  insertOtherAssistanceMeasureFixtures,
+  insertAssistanceNeedPreschoolDecisionFixtures
 } from './index'
 
 export const fullDayTimeRange: TimeRange = {
@@ -1603,6 +1609,52 @@ export class Fixture {
     })
   }
 
+  static assistanceNeedPreschoolDecision(): AssistanceNeedPreschoolDecisionBuilder {
+    return new AssistanceNeedPreschoolDecisionBuilder({
+      id: uuidv4(),
+      decisionNumber: 1000,
+      childId: 'not_set',
+      status: 'DRAFT',
+      sentForDecision: null,
+      decisionMade: null,
+      unreadGuardianIds: null,
+      form: {
+        language: 'FI',
+        type: null,
+        validFrom: null,
+        extendedCompulsoryEducation: false,
+        extendedCompulsoryEducationInfo: '',
+        grantedAssistanceService: false,
+        grantedInterpretationService: false,
+        grantedAssistiveDevices: false,
+        grantedServicesBasis: '',
+        selectedUnit: '',
+        primaryGroup: '',
+        decisionBasis: '',
+        basisDocumentPedagogicalReport: false,
+        basisDocumentPsychologistStatement: false,
+        basisDocumentSocialReport: false,
+        basisDocumentDoctorStatement: false,
+        basisDocumentOtherOrMissing: false,
+        basisDocumentOtherOrMissingInfo: '',
+        basisDocumentsInfo: '',
+        guardiansHeardOn: null,
+        guardianInfo: [],
+        otherRepresentativeHeard: false,
+        otherRepresentativeDetails: '',
+        viewOfGuardians: '',
+        preparer1EmployeeId: null,
+        preparer1Title: '',
+        preparer1PhoneNumber: '',
+        preparer2EmployeeId: null,
+        preparer2Title: '',
+        preparer2PhoneNumber: '',
+        decisionMakerEmployeeId: null,
+        decisionMakerTitle: ''
+      }
+    })
+  }
+
   static daycareCaretakers(): DaycareCaretakersBuilder {
     return new DaycareCaretakersBuilder({
       groupId: 'not_set',
@@ -2258,6 +2310,75 @@ export class AssistanceNeedDecisionBuilder extends FixtureBuilder<AssistanceNeed
   // Note: shallow copy
   copy() {
     return new AssistanceNeedDecisionBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAssistanceNeedPreschoolDecision> {
+  async save() {
+    await insertAssistanceNeedPreschoolDecisionFixtures([this.data])
+    return this
+  }
+
+  withChild(childId: UUID) {
+    this.data.childId = childId
+    return this
+  }
+
+  withGuardian(guardianId: UUID) {
+    this.data.form.guardianInfo.push({
+      id: uuidv4(),
+      personId: guardianId,
+      name: '',
+      isHeard: false,
+      details: ''
+    })
+    return this
+  }
+
+  withGuardianInfo(info: AssistanceNeedPreschoolDecisionGuardian) {
+    this.data.form.guardianInfo.push(info)
+    return this
+  }
+
+  withForm(form: Partial<AssistanceNeedPreschoolDecisionForm>) {
+    this.data.form = {
+      ...this.data.form,
+      ...form
+    }
+    return this
+  }
+
+  withRequiredFieldsFilled(
+    unitId: UUID,
+    preparerId: UUID,
+    decisionMakerId: UUID
+  ) {
+    this.data.form = {
+      ...this.data.form,
+      type: 'NEW',
+      validFrom: LocalDate.of(2022, 8, 1),
+      selectedUnit: unitId,
+      primaryGroup: 'Perhoset',
+      decisionBasis: 'Perustelu',
+      basisDocumentPedagogicalReport: true,
+      guardiansHeardOn: LocalDate.of(2022, 8, 1),
+      guardianInfo: this.data.form.guardianInfo.map((g) => ({
+        ...g,
+        isHeard: true,
+        details: 'kasvotusten'
+      })),
+      viewOfGuardians: 'ok',
+      preparer1EmployeeId: preparerId,
+      preparer1Title: 'Käsittelijä',
+      decisionMakerEmployeeId: decisionMakerId,
+      decisionMakerTitle: 'Päättäjä'
+    }
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceNeedPreschoolDecisionBuilder({ ...this.data })
   }
 }
 

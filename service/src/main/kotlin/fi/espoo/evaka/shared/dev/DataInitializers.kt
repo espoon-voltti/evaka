@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
@@ -798,6 +799,66 @@ fun Database.Transaction.insertTestCaretakers(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .execute()
+}
+
+fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
+    decision: DevAssistanceNeedPreschoolDecision
+): AssistanceNeedPreschoolDecisionId {
+    createUpdate(
+            """
+        INSERT INTO assistance_need_preschool_decision (
+            id, decision_number, child_id, status, language, type, valid_from, 
+            extended_compulsory_education, extended_compulsory_education_info, 
+            granted_assistance_service, granted_interpretation_service, 
+            granted_assistive_devices, granted_services_basis, selected_unit, primary_group, 
+            decision_basis, basis_document_pedagogical_report, basis_document_psychologist_statement, 
+            basis_document_social_report, basis_document_doctor_statement, basis_document_other_or_missing, 
+            basis_document_other_or_missing_info, basis_documents_info, guardians_heard_on, other_representative_heard, 
+            other_representative_details, view_of_guardians, preparer_1_employee_id, preparer_1_title, preparer_1_phone_number, 
+            preparer_2_employee_id, preparer_2_title, preparer_2_phone_number, 
+            decision_maker_employee_id, decision_maker_title, 
+            sent_for_decision, decision_made, unread_guardian_ids
+        ) VALUES (
+            :id, :decisionNumber, :childId, :status, :language, :type, :validFrom, 
+            :extendedCompulsoryEducation, :extendedCompulsoryEducationInfo, 
+            :grantedAssistanceService, :grantedInterpretationService, 
+            :grantedAssistiveDevices, :grantedServicesBasis, :selectedUnit, :primaryGroup, 
+            :decisionBasis, :basisDocumentPedagogicalReport, :basisDocumentPsychologistStatement, 
+            :basisDocumentSocialReport, :basisDocumentDoctorStatement, :basisDocumentOtherOrMissing, 
+            :basisDocumentOtherOrMissingInfo, :basisDocumentsInfo, :guardiansHeardOn, :otherRepresentativeHeard, 
+            :otherRepresentativeDetails, :viewOfGuardians, :preparer1EmployeeId, :preparer1Title, :preparer1PhoneNumber, 
+            :preparer2EmployeeId, :preparer2Title, :preparer2PhoneNumber, 
+            :decisionMakerEmployeeId, :decisionMakerTitle, 
+            :sentForDecision, :decisionMade, :unreadGuardianIds
+        )
+    """
+        )
+        .bind("id", decision.id)
+        .bind("decisionNumber", decision.decisionNumber)
+        .bind("childId", decision.childId)
+        .bind("status", decision.status)
+        .bindKotlin(decision.form)
+        .bind("sentForDecision", decision.sentForDecision)
+        .bind("decisionMade", decision.decisionMade)
+        .bind("unreadGuardianIds", decision.unreadGuardianIds)
+        .execute()
+
+    decision.form.guardianInfo.forEach { guardian ->
+        createUpdate(
+                """
+            INSERT INTO assistance_need_preschool_decision_guardian (
+                id, assistance_need_decision_id, person_id, is_heard, details
+            ) VALUES (
+                :id, :decisionId, :personId, :isHeard, :details
+            )
+            """
+            )
+            .bind("decisionId", decision.id)
+            .bindKotlin(guardian)
+            .execute()
+    }
+
+    return decision.id
 }
 
 fun Database.Transaction.insertTestAssistanceNeedDecision(
