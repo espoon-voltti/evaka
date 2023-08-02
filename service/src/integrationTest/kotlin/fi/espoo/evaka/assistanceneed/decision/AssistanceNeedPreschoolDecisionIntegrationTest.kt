@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecision
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionBasics
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionGuardian
@@ -19,6 +20,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionGuardianId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -148,6 +150,26 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             ),
             assistanceNeedDecision.form
         )
+    }
+
+    @Test
+    fun `listing decisions`() {
+        val expected = createAndFillDecision(testForm)
+
+        val received =
+            getDecisionsByChild(expected.child.id).also { assertEquals(1, it.size) }.first()
+
+        assertEquals(expected.id, received.id)
+        assertEquals(expected.child.id, received.childId)
+        assertEquals(expected.status, received.status)
+        assertEquals(expected.form.type, received.type)
+        assertEquals(expected.form.validFrom, received.validFrom)
+        assertEquals(null, received.validTo)
+        assertEquals(UnitInfoBasics(testDaycare.id, testDaycare.name), received.selectedUnit)
+        assertEquals(expected.sentForDecision, received.sentForDecision)
+        assertEquals(expected.decisionMade, received.decisionMade)
+        assertEquals(expected.annulmentReason, received.annulmentReason)
+        assertEquals(null, received.unreadGuardianIds)
     }
 
     @Test
@@ -383,6 +405,17 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                 id
             )
             .decision
+    }
+
+    private fun getDecisionsByChild(childId: ChildId): List<AssistanceNeedPreschoolDecisionBasics> {
+        return assistanceNeedDecisionController
+            .getAssistanceNeedPreschoolDecisions(
+                dbInstance(),
+                assistanceWorker,
+                RealEvakaClock(),
+                childId
+            )
+            .map { it.decision }
     }
 
     private fun createAndFillDecision(
