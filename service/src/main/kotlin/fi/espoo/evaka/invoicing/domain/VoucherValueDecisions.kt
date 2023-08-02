@@ -57,33 +57,8 @@ data class VoucherValueDecision(
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
-    override fun contentEquals(decision: VoucherValueDecision): Boolean {
-        val diff = VoucherValueDecisionDifference.getDifference(this, decision)
-        if (diff.isEmpty()) return true
-        else {
-            if (diff.size == 1 && diff.first() == VoucherValueDecisionDifference.INCOME) {
-                return incomeEffectiveTypesAreLogicallyEqual(this, decision)
-            } else return false
-        }
-    }
-
-    private fun incomeEffectiveTypesAreLogicallyEqual(
-        d1: VoucherValueDecision,
-        d2: VoucherValueDecision
-    ): Boolean {
-        val headOfFamilyIncomesAreEffectivelyEqual =
-            incomesAreEqualOrDiffOnlyByCertainEffects(d1.headOfFamilyIncome, d2.headOfFamilyIncome)
-
-        val partnerIncomesAreEffectivelyEqual =
-            incomesAreEqualOrDiffOnlyByCertainEffects(d1.partnerIncome, d2.partnerIncome)
-
-        val childIncomesAreEffectivelyEqual =
-            incomesAreEqualOrDiffOnlyByCertainEffects(d1.childIncome, d2.childIncome)
-
-        return headOfFamilyIncomesAreEffectivelyEqual &&
-            partnerIncomesAreEffectivelyEqual &&
-            childIncomesAreEffectivelyEqual
-    }
+    override fun contentEquals(decision: VoucherValueDecision): Boolean =
+        VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
         return this.child.id == other.child.id &&
@@ -171,6 +146,29 @@ enum class VoucherValueDecisionStatus {
     }
 }
 
+private fun incomeEffectiveTypesAreLogicallyEqual(
+    d1: VoucherValueDecision,
+    d2: VoucherValueDecision
+): Boolean {
+    val headOfFamilyIncomesAreEffectivelyEqual =
+        incomesAreEqualOrDiffOnlyByCertainEffects(d1.headOfFamilyIncome, d2.headOfFamilyIncome)
+
+    val partnerIncomesAreEffectivelyEqual =
+        incomesAreEqualOrDiffOnlyByCertainEffects(d1.partnerIncome, d2.partnerIncome)
+
+    val childIncomesAreEffectivelyEqual =
+        incomesAreEqualOrDiffOnlyByCertainEffects(d1.childIncome, d2.childIncome)
+
+    return headOfFamilyIncomesAreEffectivelyEqual &&
+        partnerIncomesAreEffectivelyEqual &&
+        childIncomesAreEffectivelyEqual
+}
+
+private fun incomeContentEqualsEnough(d1: VoucherValueDecision, d2: VoucherValueDecision): Boolean =
+    (setOf(d1.headOfFamilyIncome, d1.partnerIncome) ==
+        setOf(d2.headOfFamilyIncome, d2.partnerIncome) && d1.childIncome == d2.childIncome) ||
+        incomeEffectiveTypesAreLogicallyEqual(d1, d2)
+
 @ConstList("voucherValueDecisionDifferences")
 enum class VoucherValueDecisionDifference(
     val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean
@@ -178,10 +176,7 @@ enum class VoucherValueDecisionDifference(
     GUARDIANS({ d1, d2 ->
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
-    INCOME({ d1, d2 ->
-        setOf(d1.headOfFamilyIncome, d1.partnerIncome) ==
-            setOf(d2.headOfFamilyIncome, d2.partnerIncome) && d1.childIncome == d2.childIncome
-    }),
+    INCOME({ d1, d2 -> incomeContentEqualsEnough(d1, d2) }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
     SERVICE_NEED({ d1, d2 -> d1.serviceNeed == d2.serviceNeed }),

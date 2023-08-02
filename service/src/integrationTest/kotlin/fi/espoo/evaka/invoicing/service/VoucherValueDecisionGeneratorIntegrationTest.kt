@@ -818,7 +818,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             )
     }
 
-    // TODO
     @Test
     fun `no new draft is generated if the only difference is income type change from NOT_AVAILABLE to INCOMPLETE `() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))

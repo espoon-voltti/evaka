@@ -2599,7 +2599,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForAdult(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testAdult_1.id,
                 period.start
             )
@@ -2611,19 +2611,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         feeDecisionController.confirmDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
-            RealEvakaClock(),
+            mockedNow,
             listOf(decisions.get(0).id),
             null
         )
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(mockedNow)
 
         db.transaction { it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute() }
 
         db.transaction {
             generator.generateNewDecisionsForAdult(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testAdult_1.id,
                 incomePeriod.start
             )
