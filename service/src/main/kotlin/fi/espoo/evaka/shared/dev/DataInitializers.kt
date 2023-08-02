@@ -804,7 +804,8 @@ fun Database.Transaction.insertTestCaretakers(
 fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
     decision: DevAssistanceNeedPreschoolDecision
 ): AssistanceNeedPreschoolDecisionId {
-    createUpdate("""
+    createUpdate(
+            """
         INSERT INTO assistance_need_preschool_decision (
             id, decision_number, child_id, status, language, type, valid_from, 
             extended_compulsory_education, extended_compulsory_education_info, 
@@ -816,7 +817,7 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
             other_representative_details, view_of_guardians, preparer_1_employee_id, preparer_1_title, preparer_1_phone_number, 
             preparer_2_employee_id, preparer_2_title, preparer_2_phone_number, 
             decision_maker_employee_id, decision_maker_title, 
-            sent_for_decision, decision_made
+            sent_for_decision, decision_made, unread_guardian_ids
         ) VALUES (
             :id, :decisionNumber, :childId, :status, :language, :type, :validFrom, 
             :extendedCompulsoryEducation, :extendedCompulsoryEducationInfo, 
@@ -828,9 +829,10 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
             :otherRepresentativeDetails, :viewOfGuardians, :preparer1EmployeeId, :preparer1Title, :preparer1PhoneNumber, 
             :preparer2EmployeeId, :preparer2Title, :preparer2PhoneNumber, 
             :decisionMakerEmployeeId, :decisionMakerTitle, 
-            :sentForDecision, :decisionMade
+            :sentForDecision, :decisionMade, :unreadGuardianIds
         )
-    """)
+    """
+        )
         .bind("id", decision.id)
         .bind("decisionNumber", decision.decisionNumber)
         .bind("childId", decision.childId)
@@ -838,18 +840,19 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
         .bindKotlin(decision.form)
         .bind("sentForDecision", decision.sentForDecision)
         .bind("decisionMade", decision.decisionMade)
+        .bind("unreadGuardianIds", decision.unreadGuardianIds)
         .execute()
 
     decision.form.guardianInfo.forEach { guardian ->
         createUpdate(
-            """
+                """
             INSERT INTO assistance_need_preschool_decision_guardian (
                 id, assistance_need_decision_id, person_id, is_heard, details
             ) VALUES (
                 :id, :decisionId, :personId, :isHeard, :details
             )
             """
-        )
+            )
             .bind("decisionId", decision.id)
             .bindKotlin(guardian)
             .execute()

@@ -102,6 +102,49 @@ export default class CitizenDecisionsPage {
     }
   }
 
+  async assertAssistancePreschoolDecision(
+    childId: string,
+    decisionId: string,
+    contents: {
+      type: string
+      selectedUnit: string
+      validityPeriod: string
+      decisionMade: string
+      status: string
+      annulmentReason?: string
+    }
+  ) {
+    await this.openAssistanceDecisionCollapsible(childId, decisionId)
+    const decision = this.page
+      .findByDataQa(`child-decisions-${childId}`)
+      .findByDataQa(`assistance-decision-${decisionId}`)
+    await decision.findByDataQa('type').assertTextEquals(contents.type)
+    await decision
+      .findByDataQa('selected-unit')
+      .assertTextEquals(contents.selectedUnit)
+    await decision
+      .findByDataQa('validity-period')
+      .assertTextEquals(contents.validityPeriod)
+    await decision
+      .findByDataQa('decision-made')
+      .assertTextEquals(contents.decisionMade)
+    await decision
+      .findByDataQa('decision-status')
+      .assertTextEquals(contents.status)
+    if (contents.annulmentReason !== undefined) {
+      await decision
+        .findByDataQa('annulment-reason')
+        .assertTextEquals(contents.annulmentReason)
+    }
+  }
+
+  async assertChildDecisionCount(n: number, childId: string) {
+    await this.page
+      .findByDataQa(`child-decisions-${childId}`)
+      .findAll('section')
+      .assertCount(n)
+  }
+
   async assertUnreadAssistanceNeedDecisions(childId: string, count: number) {
     await waitUntilEqual(
       () =>

@@ -1384,9 +1384,7 @@ RETURNING id
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                assistanceNeedDecisions.forEach {
-                    tx.insertTestAssistanceNeedPreschoolDecision(it)
-                }
+                assistanceNeedDecisions.forEach { tx.insertTestAssistanceNeedPreschoolDecision(it) }
             }
         }
     }
@@ -1829,13 +1827,15 @@ data class DevAssistanceNeedDecision(
 )
 
 data class DevAssistanceNeedPreschoolDecision(
-    val id: AssistanceNeedPreschoolDecisionId = AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
+    val id: AssistanceNeedPreschoolDecisionId =
+        AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
     val decisionNumber: Long,
     val childId: ChildId,
     val form: AssistanceNeedPreschoolDecisionForm,
     val status: AssistanceNeedDecisionStatus,
     val sentForDecision: LocalDate?,
-    val decisionMade: LocalDate?
+    val decisionMade: LocalDate?,
+    val unreadGuardianIds: Set<PersonId>?
 )
 
 data class DevChildAttendance(

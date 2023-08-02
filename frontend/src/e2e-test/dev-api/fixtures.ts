@@ -18,7 +18,10 @@ import {
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
-import { AssistanceNeedPreschoolDecisionGuardian } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedPreschoolDecisionForm,
+  AssistanceNeedPreschoolDecisionGuardian
+} from 'lib-common/generated/api-types/assistanceneed'
 import {
   FixedPeriodQuestionnaire,
   HolidayPeriod
@@ -1614,6 +1617,7 @@ export class Fixture {
       status: 'DRAFT',
       sentForDecision: null,
       decisionMade: null,
+      unreadGuardianIds: null,
       form: {
         language: 'FI',
         type: null,
@@ -2333,6 +2337,14 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
 
   withGuardianInfo(info: AssistanceNeedPreschoolDecisionGuardian) {
     this.data.form.guardianInfo.push(info)
+    return this
+  }
+
+  withForm(form: Partial<AssistanceNeedPreschoolDecisionForm>) {
+    this.data.form = {
+      ...this.data.form,
+      ...form
+    }
     return this
   }
 

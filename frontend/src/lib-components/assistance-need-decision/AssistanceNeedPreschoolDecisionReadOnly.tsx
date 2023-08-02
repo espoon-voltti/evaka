@@ -30,12 +30,14 @@ const StyledUl = styled.ul`
 `
 
 const ReadOnlyTextArea = React.memo(function ReadOnlyTextArea({
-  text
+  text,
+  'data-qa': dataQa
 }: {
   text: string
+  'data-qa'?: string
 }) {
   return (
-    <WidthLimiter>
+    <WidthLimiter data-qa={dataQa}>
       {text.split('\n').map((line, i) => (
         <Fragment key={i}>
           {line}
@@ -135,20 +137,22 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.type}</Label>
-              <span>
+              <span data-qa="type">
                 {decision.form.type ? t.types[decision.form.type] : ''}
               </span>
             </LabeledValue>
 
             <LabeledValue>
               <Label>{t.validFrom}</Label>
-              <span>{decision.form.validFrom?.format() ?? ''}</span>
+              <span data-qa="valid-from">
+                {decision.form.validFrom?.format() ?? ''}
+              </span>
             </LabeledValue>
 
             <LabeledValue>
               <Label>{t.extendedCompulsoryEducationSection}</Label>
               <StyledUl>
-                <li>
+                <li data-qa="extended-compulsory-education">
                   {decision.form.extendedCompulsoryEducation
                     ? t.extendedCompulsoryEducation
                     : t.no}
@@ -165,7 +169,7 @@ export default React.memo(function DecisionFormReadView({
               {decision.form.grantedAssistanceService ||
               decision.form.grantedInterpretationService ||
               decision.form.grantedAssistiveDevices ? (
-                <StyledUl>
+                <StyledUl data-qa="granted-services">
                   {decision.form.grantedAssistanceService && (
                     <li>{t.grantedAssistanceService}</li>
                   )}
@@ -185,27 +189,33 @@ export default React.memo(function DecisionFormReadView({
               <Label>{t.grantedServicesBasis}</Label>
               <ReadOnlyTextArea
                 text={decision.form.grantedServicesBasis || '-'}
+                data-qa="granted-services-basis"
               />
             </LabeledValue>
 
             <LabeledValue>
               <Label>{t.selectedUnit}</Label>
-              <span>{decision.unitName ?? '-'}</span>
+              <span data-qa="unit">{decision.unitName ?? '-'}</span>
             </LabeledValue>
 
             <LabeledValue>
               <Label>{t.primaryGroup}</Label>
-              <span>{decision.form.primaryGroup ?? '-'}</span>
+              <span data-qa="primary-group">
+                {decision.form.primaryGroup ?? '-'}
+              </span>
             </LabeledValue>
 
             <LabeledValue>
               <Label>{t.decisionBasis}</Label>
-              <ReadOnlyTextArea text={decision.form.decisionBasis} />
+              <ReadOnlyTextArea
+                text={decision.form.decisionBasis}
+                data-qa="decision-basis"
+              />
             </LabeledValue>
 
             <LabeledValue>
               <Label>{t.documentBasis}</Label>
-              <StyledUl>
+              <StyledUl data-qa="document-basis">
                 {decision.form.basisDocumentPedagogicalReport && (
                   <li>{t.basisDocumentPedagogicalReport}</li>
                 )}
@@ -233,7 +243,10 @@ export default React.memo(function DecisionFormReadView({
             <LabeledValue>
               <Label>{t.basisDocumentsInfo}</Label>
               {decision.form.basisDocumentsInfo ? (
-                <ReadOnlyTextArea text={decision.form.basisDocumentsInfo} />
+                <ReadOnlyTextArea
+                  text={decision.form.basisDocumentsInfo}
+                  data-qa="basis-documents-info"
+                />
               ) : (
                 <span>-</span>
               )}
@@ -245,7 +258,9 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.guardiansHeardOn}</Label>
-              <span>{decision.form.guardiansHeardOn?.format() ?? '-'}</span>
+              <span data-qa="guardians-heard-on">
+                {decision.form.guardiansHeardOn?.format() ?? '-'}
+              </span>
             </LabeledValue>
 
             <FixedSpaceColumn>
@@ -269,7 +284,10 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.viewOfGuardians}</Label>
-              <ReadOnlyTextArea text={decision.form.viewOfGuardians} />
+              <ReadOnlyTextArea
+                text={decision.form.viewOfGuardians}
+                data-qa="view-of-guardians"
+              />
             </LabeledValue>
           </SectionSpacer>
 
@@ -278,7 +296,7 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.preparer}</Label>
-              <span>
+              <span data-qa="preparer-1">
                 {decision.preparer1Name}, {decision.form.preparer1Title}
               </span>
               {!!decision.form.preparer1PhoneNumber && (
@@ -300,7 +318,7 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.decisionMaker}</Label>
-              <span>
+              <span data-qa="decision-maker">
                 {decision.decisionMakerName}, {decision.form.decisionMakerTitle}
               </span>
             </LabeledValue>
