@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import java.time.Duration
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -39,6 +40,7 @@ class KoskiUpdateService(
     ) {
         if (env.koskiEnabled) {
             db.transaction { tx ->
+                tx.setStatementTimeout(Duration.ofMinutes(2))
                 val requests = tx.getPendingStudyRights(env.assistanceModel, clock.today(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(
