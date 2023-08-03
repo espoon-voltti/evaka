@@ -158,7 +158,11 @@ enum class VoucherValueDecisionDifference(
             setOf(d2.headOfFamilyIncome, d2.partnerIncome) && d1.childIncome == d2.childIncome
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
-    PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
+    PLACEMENT({ d1, d2 ->
+        (d1.placement == null && d2.placement == null) ||
+            ((d1.placement != null && d2.placement != null) &&
+                d1.placement.type == d2.placement.type)
+    }),
     SERVICE_NEED({ d1, d2 -> d1.serviceNeed == d2.serviceNeed }),
     SIBLING_DISCOUNT({ d1, d2 -> d1.siblingDiscount == d2.siblingDiscount }),
     CO_PAYMENT({ d1, d2 -> d1.coPayment == d2.coPayment }),
