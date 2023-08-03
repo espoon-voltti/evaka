@@ -29,6 +29,10 @@ enum class WebPushPayloadType {
     NotificationV1,
 }
 
+enum class Urgency {
+    VeryLow, Low, Normal, High,
+}
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class WebPushPayload(val type: WebPushPayloadType) {
     data class NotificationV1(val title: String) :
@@ -53,6 +57,7 @@ class WebPushRequest(
         // Reference: https://datatracker.ietf.org/doc/html/rfc8291
         fun createEncryptedPushMessage(
             ttl: Duration,
+            urgency: Urgency,
             endpoint: WebPushEndpoint,
             messageKeyPair: WebPushKeyPair,
             salt: ByteArray,
@@ -69,7 +74,13 @@ class WebPushRequest(
                 headers =
                     WebPushRequestHeaders(
                         ttl = ttl.toSeconds().toString(),
-                        contentEncoding = "aes128gcm"
+                        contentEncoding = "aes128gcm",
+                        urgency = when (urgency) {
+                            Urgency.VeryLow -> "very-low"
+                            Urgency.Low -> "low"
+                            Urgency.Normal -> "normal"
+                            Urgency.High -> "high"
+                        }
                     ),
                 body =
                     httpEncryptedContentEncoding(
@@ -88,12 +99,14 @@ data class WebPushRequestHeaders(
     val ttl: String,
     val contentEncoding: String,
     val authorization: String? = null,
+    val urgency: String? = null,
 ) {
     fun toTypedArray(): Array<Pair<String, String>> =
         listOfNotNull(
                 "TTL" to ttl,
                 "Content-Encoding" to contentEncoding,
                 authorization?.let { "Authorization" to it },
+                urgency?.let { "Urgency" to it },
             )
             .toTypedArray()
 }
@@ -118,7 +131,8 @@ class WebPush(env: WebPushEnv) {
                     endpoint = notification.endpoint,
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
-                    data = jsonMapper.writeValueAsBytes(notification.payloads)
+                    data = jsonMapper.writeValueAsBytes(notification.payloads),
+                    urgency = Urgency.Normal
                 )
                 .withVapid(keyPair = vapidKeyPair, expiresAt = clock.now().plusHours(6).toInstant())
         val (request, _, result) =
