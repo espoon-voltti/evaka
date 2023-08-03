@@ -82,7 +82,8 @@ export const pilotFeatures = [
   'VASU_AND_PEDADOC',
   'MOBILE_MESSAGING',
   'PLACEMENT_TERMINATION',
-  'REALTIME_STAFF_ATTENDANCE'
+  'REALTIME_STAFF_ATTENDANCE',
+  'PUSH_NOTIFICATIONS'
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]

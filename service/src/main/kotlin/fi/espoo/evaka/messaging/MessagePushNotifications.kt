@@ -44,12 +44,14 @@ SELECT mr.id AS recipient, mdps.device AS device
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
 JOIN daycare_group dg ON ma.daycare_group_id = dg.id
+JOIN daycare d ON d.id = dg.daycare_id
 JOIN mobile_device md ON dg.daycare_id = md.unit_id
 JOIN mobile_device_push_subscription mdps ON md.id = mdps.device
 WHERE mr.message_id = ANY(${bind(messages)})
 AND mr.read_at IS NULL
 AND ma.type = 'GROUP'
-            """
+AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
+"""
                 )
             }
             .mapTo<AsyncJob.SendMessagePushNotification>()
@@ -68,13 +70,15 @@ SELECT dg.name AS group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
 JOIN daycare_group dg ON ma.daycare_group_id = dg.id
+JOIN daycare d ON d.id = dg.daycare_id
 JOIN mobile_device md ON dg.daycare_id = md.unit_id
 JOIN mobile_device_push_subscription mdps ON md.id = mdps.device
 WHERE mr.id = ${bind(messageRecipient)}
 AND md.id = ${bind(device)}
 AND mr.read_at IS NULL
 AND ma.type = 'GROUP'
-       """
+AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
+"""
                 )
             }
             .map { row ->

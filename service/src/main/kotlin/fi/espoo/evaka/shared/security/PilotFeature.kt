@@ -15,7 +15,8 @@ enum class PilotFeature : DatabaseEnum {
     VASU_AND_PEDADOC,
     MOBILE_MESSAGING,
     PLACEMENT_TERMINATION,
-    REALTIME_STAFF_ATTENDANCE;
+    REALTIME_STAFF_ATTENDANCE,
+    PUSH_NOTIFICATIONS;
 
     override val sqlType: String = "pilot_feature"
 }

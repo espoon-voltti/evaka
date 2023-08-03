@@ -4176,7 +4176,8 @@ export const fi = {
       VASU_AND_PEDADOC: 'Vasu ja pedagoginen dokumentointi',
       MOBILE_MESSAGING: 'Mobiili-viestintä',
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
-      REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo'
+      REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
+      PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot'
     }
   },
   roles: {
