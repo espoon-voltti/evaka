@@ -19,6 +19,7 @@ import fi.espoo.evaka.webpush.WebPushNotification
 import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
+import mu.KotlinLogging
 import java.time.Duration
 import org.springframework.stereotype.Service
 
@@ -32,6 +33,8 @@ class MessagePushNotifications(
             db.transaction { tx -> send(tx, clock, job.recipient, job.device) }
         }
     }
+
+    private val logger = KotlinLogging.logger {}
 
     fun getAsyncJobs(
         tx: Database.Read,
