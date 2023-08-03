@@ -54,6 +54,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label } from 'lib-components/typography'
@@ -512,7 +513,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </FixedSpaceColumn>
 
               <LabeledValue>
-                <Label>{t.validFrom} *</Label>
+                <ExpandingInfo
+                  info={t.validFromInfo}
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  closeLabel={i18n.common.openExpandingInfo}
+                >
+                  <Label>{t.validFrom} *</Label>
+                </ExpandingInfo>
                 <DatePickerF
                   bind={validFrom}
                   locale={uiLang}
@@ -529,7 +536,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
                 />
                 {extendedCompulsoryEducation.value() && (
                   <LabeledValue>
-                    <Label>{t.extendedCompulsoryEducationInfo} *</Label>
+                    <ExpandingInfo
+                      info={t.extendedCompulsoryEducationInfoInfo}
+                      ariaLabel={i18n.common.openExpandingInfo}
+                      closeLabel={i18n.common.openExpandingInfo}
+                    >
+                      <Label>{t.extendedCompulsoryEducationInfo} *</Label>
+                    </ExpandingInfo>
                     <WidthLimiter>
                       <TextAreaF
                         bind={extendedCompulsoryEducationInfo}
@@ -541,7 +554,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </FixedSpaceColumn>
 
               <FixedSpaceColumn>
-                <Label>{t.grantedAssistanceSection}</Label>
+                <ExpandingInfo
+                  info={t.grantedAssistanceSectionInfo}
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  closeLabel={i18n.common.openExpandingInfo}
+                >
+                  <Label>{t.grantedAssistanceSection}</Label>
+                </ExpandingInfo>
                 <CheckboxF
                   bind={grantedAssistanceService}
                   label={t.grantedAssistanceService}
@@ -580,7 +599,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </LabeledValue>
 
               <LabeledValue>
-                <Label>{t.primaryGroup} *</Label>
+                <ExpandingInfo
+                  info={t.primaryGroupInfo}
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  closeLabel={i18n.common.openExpandingInfo}
+                >
+                  <Label>{t.primaryGroup} *</Label>
+                </ExpandingInfo>
                 <InputFieldF
                   bind={primaryGroup}
                   width="L"
@@ -590,7 +615,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </LabeledValue>
 
               <LabeledValue>
-                <Label>{t.decisionBasis} *</Label>
+                <ExpandingInfo
+                  info={t.decisionBasisInfo}
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  closeLabel={i18n.common.openExpandingInfo}
+                >
+                  <Label>{t.decisionBasis} *</Label>
+                </ExpandingInfo>
                 <WidthLimiter>
                   <TextAreaF
                     bind={decisionBasis}
@@ -602,7 +633,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <FixedSpaceColumn>
                 <FixedSpaceRow alignItems="center">
-                  <Label>{t.documentBasis} *</Label>
+                  <ExpandingInfo
+                    info={t.documentBasisInfo}
+                    ariaLabel={i18n.common.openExpandingInfo}
+                    closeLabel={i18n.common.openExpandingInfo}
+                  >
+                    <Label>{t.documentBasis} *</Label>
+                  </ExpandingInfo>
                   {displayValidation && validationErrors.documentBasis && (
                     <AlertBox
                       message={
@@ -664,7 +701,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </LabeledValue>
 
               <FixedSpaceColumn>
-                <Label>{t.heardGuardians} *</Label>
+                <ExpandingInfo
+                  info={t.heardGuardiansInfo}
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  closeLabel={i18n.common.openExpandingInfo}
+                >
+                  <Label>{t.heardGuardians} *</Label>
+                </ExpandingInfo>
                 {guardians.map((guardian, i) => (
                   <GuardianForm
                     key={guardian.state.id}
@@ -699,7 +742,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </FixedSpaceColumn>
 
               <LabeledValue>
-                <Label>{t.viewOfGuardians} *</Label>
+                <ExpandingInfo
+                  info={t.viewOfGuardiansInfo}
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  closeLabel={i18n.common.openExpandingInfo}
+                >
+                  <Label>{t.viewOfGuardians} *</Label>
+                </ExpandingInfo>
                 <WidthLimiter>
                   <TextAreaF
                     bind={viewOfGuardians}
