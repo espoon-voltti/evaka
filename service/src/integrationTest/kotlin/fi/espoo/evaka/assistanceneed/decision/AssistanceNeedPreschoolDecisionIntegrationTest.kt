@@ -228,7 +228,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     }
 
     @Test
-    fun `Decision maker can make a decision`() {
+    fun `Decision maker can make a decision and annul it`() {
         MockSfiMessagesClient.clearMessages()
 
         val assistanceNeedDecision = createAndFillDecision(testForm)
@@ -280,6 +280,11 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertEquals(1, messages.size)
         assertContains(messages[0].first.messageContent, "päätös tuesta")
         assertNotNull(messages[0].second)
+
+        annulDecision(decision.id, "oops", decisionMaker)
+        val annulled = getDecision(decision.id)
+        assertEquals(AssistanceNeedDecisionStatus.ANNULLED, annulled.status)
+        assertEquals("oops", annulled.annulmentReason)
     }
 
     @Test
@@ -333,11 +338,6 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                 decisionMaker,
             )
         }
-    }
-
-    @Test
-    fun `End date is calculated`() {
-        // TODO
     }
 
     @Test
@@ -489,6 +489,22 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             id,
             AssistanceNeedPreschoolDecisionController.DecideAssistanceNeedPreschoolDecisionRequest(
                 status = status
+            )
+        )
+    }
+
+    private fun annulDecision(
+        id: AssistanceNeedPreschoolDecisionId,
+        reason: String,
+        user: AuthenticatedUser,
+    ) {
+        assistanceNeedDecisionController.annulAssistanceNeedDecision(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id,
+            AssistanceNeedPreschoolDecisionController.AnnulAssistanceNeedPreschoolDecisionRequest(
+                reason = reason
             )
         )
     }
