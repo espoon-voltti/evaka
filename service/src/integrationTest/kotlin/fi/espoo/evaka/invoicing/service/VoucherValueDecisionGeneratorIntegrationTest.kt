@@ -48,7 +48,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFiveYearOldsFullDayPartWeek25
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareFullDayPartWeek25
@@ -83,6 +82,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     @Autowired private lateinit var generator: FinanceDecisionGenerator
     @Autowired private lateinit var voucherValueDecisionController: VoucherValueDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    val mockedNow =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 8, 3), LocalTime.of(14, 21)))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
@@ -95,12 +98,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -135,12 +133,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFeeAlteration(testChild_1.id, 50.0, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -179,12 +172,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -224,12 +212,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -269,12 +252,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -305,12 +283,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -336,12 +309,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_2.id, period, PlacementType.PRESCHOOL, testVoucherDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -355,12 +323,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_2.id, period, PlacementType.PREPARATORY, testVoucherDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -389,12 +352,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -426,12 +384,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -489,12 +442,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(twin1.id, twin2.id), placementPeriod)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                twin1.id,
-                placementPeriod.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, twin1.id, placementPeriod.start)
         }
 
         val decisions = getAllVoucherValueDecisions()
@@ -515,12 +463,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertAssistanceNeed(testChild_2.id, period.asFiniteDateRange()!!, 3.0)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -547,12 +490,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertAssistanceNeedCoefficient(testChild_2.id, period.asFiniteDateRange()!!, 3.55)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
@@ -581,12 +519,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_2.id,
-                firstPeriod.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_2.id, firstPeriod.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -626,12 +559,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertIncome(testChild_1.id, 600000, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
@@ -673,12 +601,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, period.start)
         }
         assertEquals(1, getAllVoucherValueDecisions().size)
     }
@@ -698,12 +621,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_2.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_2.id, period.start)
         }
         assertEquals(1, getAllVoucherValueDecisions().size)
     }
@@ -1388,12 +1306,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertIncome(testAdult_1.id, 0, subPeriod2)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
         val decisions = getAllVoucherValueDecisions()
         assertEquals(2, decisions.size)
@@ -1404,12 +1317,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         voucherValueDecisionController.sendDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
-            RealEvakaClock(),
+            mockedNow,
             listOf(firstDecision.id),
             null
         )
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(mockedNow)
 
         getAllVoucherValueDecisions().let {
             assertEquals(2, it.size)
@@ -1418,12 +1331,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         getAllVoucherValueDecisions().let {

@@ -264,7 +264,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `value decision is replaced when child is placed into another voucher unit`() {
+    fun `value decision is not replaced when child is placed into another voucher unit`() {
         createPlacement(startDate, endDate)
         sendAllValueDecisions()
 
@@ -278,19 +278,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         createPlacement(newStartDate, endDate, testVoucherDaycare2.id)
 
         sendAllValueDecisions()
-        getAllValueDecisions()
-            .sortedBy { it.validFrom }
-            .let { decisions ->
-                assertEquals(2, decisions.size)
-
-                assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-                assertEquals(startDate, decisions.first().validFrom)
-                assertEquals(newStartDate.minusDays(1), decisions.first().validTo)
-
-                assertEquals(VoucherValueDecisionStatus.SENT, decisions.last().status)
-                assertEquals(newStartDate, decisions.last().validFrom)
-                assertEquals(endDate, decisions.last().validTo)
-            }
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(endDate, decisions.first().validTo)
+        }
     }
 
     @Test
