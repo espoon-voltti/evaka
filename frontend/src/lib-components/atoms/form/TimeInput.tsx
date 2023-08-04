@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { localTimeWithUnitTimes } from 'lib-common/form/fields'
+import { limitedLocalTime } from 'lib-common/form/fields'
 import { BoundFormState } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { autocomplete } from 'lib-common/time'
@@ -126,7 +126,7 @@ export const TimeInputF = React.memo(function TimeInputF({
 
 export interface TimeInputFWithUnitTimesProps
   extends Omit<TimeInputProps, 'value' | 'onChange'> {
-  bind: BoundFormState<StateOf<typeof localTimeWithUnitTimes>>
+  bind: BoundFormState<StateOf<typeof limitedLocalTime>>
 }
 
 export const TimeInputFWithUnitTimes = React.memo(

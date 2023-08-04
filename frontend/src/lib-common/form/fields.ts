@@ -74,26 +74,18 @@ export const localOpenEndedDateRange = transformed(
   }
 )
 
-export const localTimeWithUnitTimes = transformed(
+export const limitedLocalTime = transformed(
   object({
     value: string(),
-    unitStartTime: value<LocalTime | null>(),
-    unitEndTime: value<LocalTime | null>()
+    validRange: value<TimeRange>()
   }),
-  (
-    v
-  ): ValidationResult<
-    LocalTime | undefined,
-    'timeFormat' | 'outsideUnitOperationTime'
-  > => {
+  (v): ValidationResult<LocalTime | undefined, 'timeFormat' | 'range'> => {
     if (v.value === '') return ValidationSuccess.of(undefined)
     const parsed = LocalTime.tryParse(v.value)
     if (parsed === undefined) {
       return ValidationError.of('timeFormat')
-    } else if (
-      !isValidAgainstUnitTime(parsed, v.unitStartTime, v.unitEndTime)
-    ) {
-      return ValidationError.of('outsideUnitOperationTime')
+    } else if (!timeRangeContains(parsed, v.validRange)) {
+      return ValidationError.of('range')
     }
     return ValidationSuccess.of(parsed)
   }
@@ -111,17 +103,17 @@ export const localTime = transformed(
   }
 )
 
-export const localTimeRangeWithUnitTimes = transformed(
+export const limitedLocalTimeRange = transformed(
   object({
-    startTime: localTimeWithUnitTimes,
-    endTime: localTimeWithUnitTimes
+    startTime: limitedLocalTime,
+    endTime: limitedLocalTime
   }),
   ({
     startTime,
     endTime
   }): ValidationResult<
     TimeRange | undefined,
-    ObjectFieldError | 'timeFormat' | 'outsideUnitOperationTime'
+    ObjectFieldError | 'timeFormat' | 'range'
   > => {
     if (startTime === undefined && endTime === undefined) {
       return ValidationSuccess.of(undefined)
@@ -169,15 +161,9 @@ export const localTimeRange = transformed(
 
 const midnight = LocalTime.of(0, 0)
 
-export function isValidAgainstUnitTime(
+export function timeRangeContains(
   inputTime: LocalTime,
-  unitStartTime: LocalTime | null,
-  unitEndTime: LocalTime | null
+  { start, end }: TimeRange
 ) {
-  return (
-    unitStartTime &&
-    unitEndTime &&
-    !inputTime.isBefore(unitStartTime) &&
-    !inputTime.isAfter(unitEndTime)
-  )
+  return inputTime.isEqualOrAfter(start) && inputTime.isEqualOrBefore(end)
 }

@@ -401,6 +401,9 @@ const en: Translations = {
         </>
       ),
       ok: 'OK'
+    },
+    validationErrors: {
+      range: 'Outside opening hours'
     }
   },
   messages: {
@@ -2113,7 +2116,6 @@ const en: Translations = {
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',
     unselectableDate: 'Invalid date',
-    outsideUnitOperationTime: 'Outside opening hours',
     ...components.datePicker.validationErrors
   },
   placement: {

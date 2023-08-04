@@ -6,7 +6,12 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { BoundForm, useFormElem, useFormUnion } from 'lib-common/form/hooks'
+import {
+  BoundForm,
+  useFormElem,
+  useFormField,
+  useFormUnion
+} from 'lib-common/form/hooks'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -18,14 +23,7 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import {
-  day,
-  emptyTimeRange,
-  noTimes,
-  timeRanges,
-  reservation,
-  getEmptyTimeRangeWithUnitTimes
-} from './form'
+import { day, emptyTimeRange, noTimes, timeRanges, reservation } from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>
@@ -89,9 +87,12 @@ const ReservationTimes = React.memo(function ReservationTimes({
   onFocus
 }: ReservationTimesProps) {
   const i18n = useTranslation()
-  const { set } = bind
 
-  const { branch, form } = useFormUnion(bind)
+  const validTimeRange = bind.state.validTimeRange
+  const reservation = useFormField(bind, 'reservation')
+
+  const { set } = reservation
+  const { branch, form } = useFormUnion(reservation)
 
   switch (branch) {
     case 'absent':
@@ -106,7 +107,10 @@ const ReservationTimes = React.memo(function ReservationTimes({
               }
               icon={fasUserMinus}
               onClick={() => {
-                set({ branch: 'timeRanges', state: [emptyTimeRange] })
+                set({
+                  branch: 'timeRanges',
+                  state: [emptyTimeRange(validTimeRange)]
+                })
               }}
               aria-label={i18n.calendar.absentDisable}
             />
@@ -287,19 +291,22 @@ const TimeRanges = React.memo(function Times({
                   dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
                 }
                 onClick={() =>
-                  bind.update((prev) => {
-                    //use same unit times as first reservation
-                    const { unitStartTime, unitEndTime } = prev[0].startTime
-                    if (unitStartTime && unitEndTime)
-                      return [
-                        prev[0],
-                        getEmptyTimeRangeWithUnitTimes({
-                          start: unitStartTime,
-                          end: unitEndTime
-                        })
-                      ]
-                    else return [prev[0], emptyTimeRange]
-                  })
+                  bind.update((prev) =>
+                    // use same unit times as first reservation
+                    [
+                      prev[0],
+                      {
+                        startTime: {
+                          value: '',
+                          validRange: prev[0].startTime.validRange
+                        },
+                        endTime: {
+                          value: '',
+                          validRange: prev[0].endTime.validRange
+                        }
+                      }
+                    ]
+                  )
                 }
                 aria-label={i18n.common.add}
               />

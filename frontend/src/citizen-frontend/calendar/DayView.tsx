@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import groupBy from 'lodash/groupBy'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -25,12 +24,11 @@ import {
 import {
   AbsenceInfo,
   DailyReservationRequest,
+  ReservableTimeRange,
   Reservation,
   ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import {
@@ -79,7 +77,6 @@ import { postReservationsMutation } from './queries'
 import { Day } from './reservation-modal/TimeInputs'
 import {
   day,
-  getUnitTimeForDay,
   HolidayPeriodInfo,
   resetDay,
   toDailyReservationRequest
@@ -213,8 +210,7 @@ function View({
           <Reservations
             reservations={child.reservations}
             requiresReservation={child.requiresReservation}
-            unitTimes={child.unitOperationTime}
-            shiftCareType={child.shiftCareType}
+            reservableTimeRange={child.reservableTimeRange}
           />
         )
       }}
@@ -242,7 +238,7 @@ function Edit({
         modalData,
         holidayPeriods.find((p) => p.period.includes(modalData.response.date))
       ),
-    i18n.validationErrors
+    { ...i18n.validationErrors, ...i18n.calendar.validationErrors }
   )
   const formElems = useFormElems(form)
 
@@ -480,7 +476,6 @@ interface ModalRow {
   attendances: React.ReactNode
   showAttendanceWarning: boolean
   events: ModalRowEvent[]
-  unitTimes: TimeRange | null
 }
 
 interface ModalRowEvent extends CitizenCalendarEvent {
@@ -508,8 +503,6 @@ function computeModalData(
     i18n
   )
 
-  const unitTimesByChild = groupBy(response.children, (item) => item.childId)
-
   const rows = response.children.flatMap((child) => {
     const person = reservationsResponse.children.find(
       (c) => c.id === child.childId
@@ -519,8 +512,6 @@ function computeModalData(
       // Should not happen
       return []
     }
-
-    const unitTimes = unitTimesByChild[child.childId]
 
     return {
       childId: child.childId,
@@ -551,8 +542,7 @@ function computeModalData(
         return currentAttending === undefined
           ? []
           : [{ ...event, currentAttending }]
-      }),
-      unitTimes: unitTimes ? getUnitTimeForDay(unitTimes[0]) : null
+      })
     }
   })
 
@@ -615,13 +605,12 @@ const childForm = object({
 
 function initialChildFormState(
   childId: UUID,
-  child: ReservationResponseDay,
-  holidayPeriod: HolidayPeriodInfo | undefined,
-  unitTimes: (TimeRange | null)[]
+  day: ReservationResponseDay,
+  holidayPeriod: HolidayPeriodInfo | undefined
 ): StateOf<typeof childForm> {
   return {
     childId,
-    day: resetDay(holidayPeriod?.state, [child], [childId], unitTimes[0])
+    day: resetDay(holidayPeriod?.state, [day], [childId])
   }
 }
 
@@ -641,14 +630,7 @@ function initialFormState(
   holidayPeriod: HolidayPeriodInfo | undefined
 ): StateOf<typeof editorForm> {
   return day.response.children.map((child) =>
-    initialChildFormState(
-      child.childId,
-      day.response,
-      holidayPeriod,
-      day.rows
-        .filter((row) => row.childId === child.childId)
-        .map((row) => row.unitTimes)
-    )
+    initialChildFormState(child.childId, day.response, holidayPeriod)
   )
 }
 
@@ -722,13 +704,11 @@ const Absence = React.memo(function Absence({
 const Reservations = React.memo(function Reservations({
   reservations,
   requiresReservation,
-  unitTimes,
-  shiftCareType
+  reservableTimeRange
 }: {
   reservations: Reservation[]
   requiresReservation: boolean
-  unitTimes: TimeRange | null
-  shiftCareType: ShiftCareType
+  reservableTimeRange: ReservableTimeRange
 }) {
   const i18n = useTranslation()
 
@@ -747,13 +727,7 @@ const Reservations = React.memo(function Reservations({
     <div data-qa="reservations">
       {withTimes.map((reservation, i) => (
         <ReservationRow data-qa={`reservation-output-${i}`} key={`res-${i}`}>
-          {formatReservation(
-            shiftCareType,
-            unitTimes,
-            reservation,
-            i18n,
-            ' – '
-          )}
+          {formatReservation(reservation, reservableTimeRange, i18n, ' – ')}
         </ReservationRow>
       ))}
     </div>

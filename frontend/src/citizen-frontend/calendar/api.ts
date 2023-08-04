@@ -4,6 +4,7 @@
 
 import mapValues from 'lodash/mapValues'
 
+import { parseIsoTimeRange } from 'lib-common/api-types/daily-service-times'
 import {
   deserializeActiveQuestionnaire,
   deserializeHolidayPeriod
@@ -46,12 +47,22 @@ export async function getReservations(
           date: LocalDate.parseIso(day.date),
           children: day.children.map((child) => ({
             ...child,
-            unitOperationTime: child.unitOperationTime
-              ? {
-                  start: LocalTime.parseIso(child.unitOperationTime.start),
-                  end: LocalTime.parseIso(child.unitOperationTime.end)
-                }
-              : null,
+            reservableTimeRange:
+              child.reservableTimeRange.type === 'NORMAL'
+                ? {
+                    type: 'NORMAL',
+                    range: parseIsoTimeRange(child.reservableTimeRange.range)
+                  }
+                : {
+                    type: 'INTERMITTENT_SHIFT_CARE',
+                    placementUnitOperationTime:
+                      child.reservableTimeRange.placementUnitOperationTime !==
+                      null
+                        ? parseIsoTimeRange(
+                            child.reservableTimeRange.placementUnitOperationTime
+                          )
+                        : null
+                  },
             attendances: child.attendances.map((r) => ({
               startTime: LocalTime.parseIso(r.startTime),
               endTime: r.endTime ? LocalTime.parseIso(r.endTime) : null

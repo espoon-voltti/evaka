@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.reservations
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
@@ -132,8 +134,6 @@ class ReservationControllerCitizen(
                                                             requiresReservation =
                                                                 placementDay.requiresReservation,
                                                             shiftCare = placementDay.shiftCare,
-                                                            shiftCareType =
-                                                                placementDay.shiftCareType,
                                                             contractDays =
                                                                 placementDay.contractDays,
                                                             absence = absences[key],
@@ -141,8 +141,8 @@ class ReservationControllerCitizen(
                                                                     ?: listOf(),
                                                             attendances = attendances[key]
                                                                     ?: listOf(),
-                                                            unitOperationTime =
-                                                                placementDay.operationTime
+                                                            reservableTimeRange =
+                                                                placementDay.reservableTimeRange
                                                         )
                                                     }
                                             }
@@ -265,8 +265,7 @@ data class PlacementDay(
     val requiresReservation: Boolean,
     val shiftCare: Boolean,
     val contractDays: Boolean,
-    val operationTime: TimeRange?,
-    val shiftCareType: ShiftCareType
+    val reservableTimeRange: ReservableTimeRange
 )
 
 private fun placementDay(
@@ -280,29 +279,38 @@ private fun placementDay(
 
     val serviceNeed = placement.serviceNeeds.find { it.range.includes(date) }
     val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
-    // Backup placements take precedence
-    val operationDays = backupPlacementForDate?.operationDays ?: placement.operationDays
 
     // Backup placements take precedence
-    val operationTime =
-        (backupPlacementForDate?.operationTimes
-            ?: placement.operationTimes)[date.dayOfWeek.value - 1]
+    val operationTimes = backupPlacementForDate?.operationTimes ?: placement.operationTimes
     val contractDays = contractDayRanges?.includes(date) ?: false
 
     val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
-    val alwaysOpen = operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    val alwaysOpen = operationTimes.all { it != null }
     val shiftCare = alwaysOpen || shiftCareType == ShiftCareType.INTERMITTENT
 
-    val isOperationDay = operationDays.contains(date.dayOfWeek.value)
+    // null means that the unit is not open today
+    val operationTime =
+        if (isHoliday && !alwaysOpen) {
+            null
+        } else {
+            operationTimes[date.dayOfWeek.value - 1]
+        }
 
-    return PlacementDay(
+    return if (operationTime != null || shiftCare) {
+        PlacementDay(
             requiresReservation = placement.type.requiresAttendanceReservations(),
-            shiftCare = shiftCare,
             contractDays = contractDays,
-            operationTime = if (isHoliday && !alwaysOpen) null else operationTime,
-            shiftCareType = shiftCareType
+            shiftCare = shiftCare,
+            reservableTimeRange =
+                if (shiftCareType == ShiftCareType.INTERMITTENT) {
+                    ReservableTimeRange.IntermittentShiftCare(operationTime)
+                } else {
+                    ReservableTimeRange.Normal(operationTime!!)
+                }
         )
-        .takeIf { shiftCare || isOperationDay && !isHoliday }
+    } else {
+        null
+    }
 }
 
 data class ReservationsResponse(
@@ -321,13 +329,26 @@ data class ReservationResponseDayChild(
     val childId: ChildId,
     val requiresReservation: Boolean, // Whether reservations are required
     val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
-    val shiftCareType: ShiftCareType,
     val contractDays: Boolean,
     val absence: AbsenceInfo?,
     val reservations: List<Reservation>,
     val attendances: List<OpenTimeRange>,
-    val unitOperationTime: TimeRange?
+    val reservableTimeRange: ReservableTimeRange
 )
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class ReservableTimeRange {
+    // Child is in normal daycare: The child can make reservations on days according to the
+    // placement unit's operation times
+    @JsonTypeName("NORMAL") data class Normal(val range: TimeRange) : ReservableTimeRange()
+
+    // Child is in intermittent shift care: The child can make any reservations on any days, and we
+    // return the placement unit's operational times just for showing it as information in the UI.
+    // `null` means that the placement unit is closed on this day.
+    @JsonTypeName("INTERMITTENT_SHIFT_CARE")
+    data class IntermittentShiftCare(val placementUnitOperationTime: TimeRange?) :
+        ReservableTimeRange()
+}
 
 data class AbsenceInfo(val type: AbsenceType, val editable: Boolean)
 
