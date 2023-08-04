@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
@@ -91,13 +92,14 @@ WHERE
         logger.info(
             "Sending vasu/leops notification email for document ${msg.vasuDocumentId} to person ${msg.recipientId}"
         )
-        emailClient.sendEmail(
-            dbc = db,
-            personId = msg.recipientId,
-            emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
-            fromAddress = emailEnv.sender(msg.language),
-            content = emailMessageProvider.vasuNotification(msg.language, msg.childId),
-            traceId = msg.vasuDocumentId.toString(),
-        )
+        Email.create(
+                dbc = db,
+                personId = msg.recipientId,
+                emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+                fromAddress = emailEnv.sender(msg.language),
+                content = emailMessageProvider.vasuNotification(msg.language, msg.childId),
+                traceId = msg.vasuDocumentId.toString(),
+            )
+            ?.also { emailClient.send(it) }
     }
 }

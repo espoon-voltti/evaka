@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
@@ -41,13 +42,14 @@ class ApplicationReceivedEmailService(
                     )
             }
         logger.info { "Sending application email (personId: $personId)" }
-        emailClient.sendEmail(
-            dbc = dbc,
-            personId = personId,
-            emailType = EmailMessageType.TRANSACTIONAL,
-            fromAddress = fromAddress,
-            content = content,
-            traceId = personId.toString()
-        )
+        Email.create(
+                dbc = dbc,
+                personId = personId,
+                emailType = EmailMessageType.TRANSACTIONAL,
+                fromAddress = fromAddress,
+                content = content,
+                traceId = personId.toString()
+            )
+            ?.also { emailClient.send(it) }
     }
 }

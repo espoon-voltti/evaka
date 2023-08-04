@@ -9,6 +9,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.decision.getSendAddress
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -99,14 +100,15 @@ class AssistanceNeedDecisionService(
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
         guardians.forEach { guardianId ->
-            emailClient.sendEmail(
-                dbc,
-                guardianId,
-                EmailMessageType.DOCUMENT_NOTIFICATION,
-                fromAddress,
-                content,
-                "$decisionId - $guardianId",
-            )
+            Email.create(
+                    dbc,
+                    guardianId,
+                    EmailMessageType.DOCUMENT_NOTIFICATION,
+                    fromAddress,
+                    content,
+                    "$decisionId - $guardianId",
+                )
+                ?.also { emailClient.send(it) }
         }
     }
 

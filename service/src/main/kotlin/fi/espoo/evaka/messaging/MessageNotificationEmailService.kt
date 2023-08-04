@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
@@ -108,19 +109,23 @@ class MessageNotificationEmailService(
             }
                 ?: return
 
-        emailClient.sendEmail(
-            db,
-            personId = msg.personId,
-            emailType =
-                when (thread.type) {
-                    MessageType.MESSAGE -> EmailMessageType.MESSAGE_NOTIFICATION
-                    MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
-                },
-            fromAddress = emailEnv.sender(msg.language),
-            content = emailMessageProvider.messageNotification(msg.language, thread),
-            traceId = msg.messageRecipientId.toString(),
-        )
-
-        db.transaction { tx -> tx.markEmailNotificationAsSent(msg.messageRecipientId, clock.now()) }
+        Email.create(
+                dbc = db,
+                personId = msg.personId,
+                emailType =
+                    when (thread.type) {
+                        MessageType.MESSAGE -> EmailMessageType.MESSAGE_NOTIFICATION
+                        MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
+                    },
+                fromAddress = emailEnv.sender(msg.language),
+                content = emailMessageProvider.messageNotification(msg.language, thread),
+                traceId = msg.messageRecipientId.toString(),
+            )
+            ?.also {
+                emailClient.send(it)
+                db.transaction { tx ->
+                    tx.markEmailNotificationAsSent(msg.messageRecipientId, clock.now())
+                }
+            }
     }
 }

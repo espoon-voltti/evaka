@@ -12,8 +12,6 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 class MockEmailClient : IEmailClient {
-    override val whitelist: List<Regex>? = null
-
     companion object {
         private val data = mutableListOf<MockEmail>()
         private val lock = ReentrantReadWriteLock()
@@ -29,15 +27,19 @@ class MockEmailClient : IEmailClient {
             lock.read { emails.find { email -> email.toAddress == toAddress } }
     }
 
-    override fun sendValidatedEmail(
-        toAddress: String,
-        fromAddress: String,
-        content: EmailContent,
-        traceId: String,
-    ) {
-        logger.info { "Mock sending email (personId: $traceId toAddress: $toAddress)" }
+    override fun send(email: Email) {
+        logger.info {
+            "Mock sending email (personId: ${email.traceId} toAddress: ${email.toAddress})"
+        }
         addEmail(
-            MockEmail(traceId, toAddress, fromAddress, content.subject, content.html, content.text)
+            MockEmail(
+                email.traceId,
+                email.toAddress,
+                email.fromAddress,
+                email.content.subject,
+                email.content.html,
+                email.content.text
+            )
         )
     }
 }

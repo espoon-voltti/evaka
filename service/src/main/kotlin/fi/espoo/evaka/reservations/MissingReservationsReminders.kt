@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
@@ -90,14 +91,16 @@ AND email IS NOT NULL
                     .firstOrNull()
             }
                 ?: return
-        emailClient.sendEmail(
-            dbc = db,
-            personId = msg.guardian,
-            emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
-            fromAddress = emailEnv.sender(language),
-            content = emailMessageProvider.missingReservationsNotification(language, msg.range),
-            traceId = msg.guardian.toString(),
-        )
+
+        Email.create(
+                dbc = db,
+                personId = msg.guardian,
+                emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
+                fromAddress = emailEnv.sender(language),
+                content = emailMessageProvider.missingReservationsNotification(language, msg.range),
+                traceId = msg.guardian.toString(),
+            )
+            ?.also { emailClient.send(it) }
     }
 }
 

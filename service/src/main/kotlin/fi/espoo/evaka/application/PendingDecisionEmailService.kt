@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
@@ -127,17 +128,19 @@ GROUP BY application.guardian_id
         logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
         val lang = getLanguage(pendingDecision.language)
 
-        emailClient.sendEmail(
-            db,
-            pendingDecision.guardianId,
-            EmailMessageType.DOCUMENT_NOTIFICATION,
-            emailEnv.sender(lang),
-            emailMessageProvider.pendingDecisionNotification(lang),
-            "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
-        )
+        Email.create(
+                db,
+                pendingDecision.guardianId,
+                EmailMessageType.DOCUMENT_NOTIFICATION,
+                emailEnv.sender(lang),
+                emailMessageProvider.pendingDecisionNotification(lang),
+                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
+            )
+            ?.also { emailClient.send(it) }
 
         db.transaction { tx ->
-            // Mark as sent
+            // Mark as sent even if the recipient didn't want the email, to stop sending reminders
+            // when the count reaches a threshold
             pendingDecision.decisionIds.forEach { decisionId ->
                 tx.createUpdate(
                         """

@@ -21,17 +21,24 @@ private val logger = KotlinLogging.logger {}
 
 class EmailClient(
     private val client: SesClient,
-    override val whitelist: List<Regex>?,
+    private val whitelist: List<Regex>?,
     private val subjectPostfix: String?
 ) : IEmailClient {
     private val charset = "UTF-8"
 
-    override fun sendValidatedEmail(
-        toAddress: String,
-        fromAddress: String,
-        content: EmailContent,
-        traceId: String,
-    ) {
+    override fun send(email: Email) {
+        val toAddress = email.toAddress
+        val fromAddress = email.fromAddress
+        val content = email.content
+        val traceId = email.traceId
+
+        if (whitelist != null && !whitelist.any { it.matches(toAddress) }) {
+            logger.info {
+                "Not sending email to $toAddress because it does not match any of the entries in whitelist"
+            }
+            return
+        }
+
         val html =
             """
 <!DOCTYPE html>
@@ -44,6 +51,7 @@ ${content.html}
 </body>
 </html>
 """
+        logger.info { "Sending email (traceId: $traceId)" }
         try {
             val request =
                 SendEmailRequest.builder()

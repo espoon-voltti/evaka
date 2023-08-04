@@ -14,57 +14,55 @@ private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
 private val logger = KotlinLogging.logger {}
 
-interface IEmailClient {
-    val whitelist: List<Regex>?
-
-    fun sendEmail(
-        dbc: Database.Connection,
-        personId: PersonId,
-        emailType: EmailMessageType,
-        fromAddress: String,
-        content: EmailContent,
-        traceId: String,
-    ) {
-        val (toAddress, enabledEmailTypes) =
-            dbc.read { tx -> tx.getEmailAddressAndEnabledTypes(personId) }
-
-        if (toAddress == null) {
-            logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
-            return
-        }
-
-        if (!toAddress.matches(EMAIL_PATTERN)) {
-            logger.warn(
-                "Will not send email due to invalid toAddress \"$toAddress\": (traceId: $traceId)"
-            )
-            return
-        }
-
-        val whitelist = this.whitelist
-        if (whitelist != null && !whitelist.any { it.matches(toAddress) }) {
-            logger.info {
-                "Not sending email to $toAddress because it does not match any of the entries in whitelist"
-            }
-            return
-        }
-
-        if (emailType !in (enabledEmailTypes ?: EmailMessageType.values().toList())) {
-            logger.info {
-                "Not sending email (traceId: $traceId): $emailType not enabled for person $personId"
-            }
-            return
-        }
-
-        logger.info { "Sending email (traceId: $traceId)" }
-        sendValidatedEmail(toAddress, fromAddress, content, traceId)
+class Email
+private constructor(
+    val toAddress: String,
+    val fromAddress: String,
+    val content: EmailContent,
+    val traceId: String
+) {
+    fun send(emailClient: IEmailClient) {
+        emailClient.send(this)
     }
 
-    fun sendValidatedEmail(
-        toAddress: String,
-        fromAddress: String,
-        content: EmailContent,
-        traceId: String,
-    )
+    companion object {
+        fun create(
+            dbc: Database.Connection,
+            personId: PersonId,
+            emailType: EmailMessageType,
+            fromAddress: String,
+            content: EmailContent,
+            traceId: String,
+        ): Email? {
+            val (toAddress, enabledEmailTypes) =
+                dbc.read { tx -> tx.getEmailAddressAndEnabledTypes(personId) }
+
+            if (toAddress == null) {
+                logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
+                return null
+            }
+
+            if (!toAddress.matches(EMAIL_PATTERN)) {
+                logger.warn(
+                    "Will not send email due to invalid toAddress \"$toAddress\": (traceId: $traceId)"
+                )
+                return null
+            }
+
+            if (emailType !in (enabledEmailTypes ?: EmailMessageType.values().toList())) {
+                logger.info {
+                    "Not sending email (traceId: $traceId): $emailType not enabled for person $personId"
+                }
+                return null
+            }
+
+            return Email(toAddress, fromAddress, content, traceId)
+        }
+    }
+}
+
+interface IEmailClient {
+    fun send(email: Email)
 }
 
 private data class EmailAndEnabledEmailTypes(

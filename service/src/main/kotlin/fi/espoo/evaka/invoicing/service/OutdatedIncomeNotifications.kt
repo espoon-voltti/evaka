@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.data.upsertIncome
@@ -138,14 +139,16 @@ class OutdatedIncomeNotifications(
                 ?: return
 
         logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
-        emailClient.sendEmail(
-            dbc = db,
-            emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
-            personId = msg.guardianId,
-            fromAddress = emailEnv.sender(language),
-            content = emailMessageProvider.outdatedIncomeNotification(msg.type, language),
-            traceId = msg.guardianId.toString()
-        )
+
+        Email.create(
+                dbc = db,
+                emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
+                personId = msg.guardianId,
+                fromAddress = emailEnv.sender(language),
+                content = emailMessageProvider.outdatedIncomeNotification(msg.type, language),
+                traceId = msg.guardianId.toString()
+            )
+            ?.also { emailClient.send(it) }
 
         db.transaction {
             it.createIncomeNotification(msg.guardianId, msg.type)

@@ -6,6 +6,7 @@ package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
@@ -130,17 +131,20 @@ SELECT EXISTS(
         clock: EvakaClock,
         msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
     ) {
-        emailClient.sendEmail(
-            dbc = db,
-            personId = msg.recipientId,
-            emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
-            fromAddress = emailEnv.sender(msg.language),
-            content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
-            traceId = msg.pedagogicalDocumentId.toString(),
-        )
-        db.transaction { tx ->
-            tx.markPedagogicalDocumentNotificationSent(msg.pedagogicalDocumentId)
-        }
+        Email.create(
+                dbc = db,
+                personId = msg.recipientId,
+                emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+                fromAddress = emailEnv.sender(msg.language),
+                content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
+                traceId = msg.pedagogicalDocumentId.toString(),
+            )
+            ?.also {
+                emailClient.send(it)
+                db.transaction { tx ->
+                    tx.markPedagogicalDocumentNotificationSent(msg.pedagogicalDocumentId)
+                }
+            }
     }
 }
 
