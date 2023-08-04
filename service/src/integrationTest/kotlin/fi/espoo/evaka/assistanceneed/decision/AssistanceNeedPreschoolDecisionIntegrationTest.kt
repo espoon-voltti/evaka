@@ -153,6 +153,32 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     }
 
     @Test
+    fun `updating only updates one`() {
+        val decision1 = createAndFillDecision(testForm)
+        val decision2 =
+            createAndFillDecision(
+                testForm.copy(
+                    guardianInfo =
+                        testForm.guardianInfo
+                            .map {
+                                it.copy(
+                                    id =
+                                        AssistanceNeedPreschoolDecisionGuardianId(
+                                            (UUID.randomUUID())
+                                        )
+                                )
+                            }
+                            .toSet()
+                )
+            )
+
+        updateDecision(decision2.form.copy(decisionBasis = "changed"), decision2)
+
+        assertEquals(decision1.form.decisionBasis, getDecision(decision1.id).form.decisionBasis)
+        assertEquals("changed", getDecision(decision2.id).form.decisionBasis)
+    }
+
+    @Test
     fun `listing decisions`() {
         val expected = createAndFillDecision(testForm)
 
