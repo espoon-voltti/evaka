@@ -36,6 +36,101 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
 
         <div class="decision-details-container">
+          <h2 th:text="#{decidedAssistance}"></h2>
+
+          <div class="decision-details">
+            <h3 th:text="#{decisionType}"></h3>
+            <div th:text="#{'decisionType.' + ${decision.form.type}}"></div>
+          </div>
+
+          <div class="decision-details">
+            <h3 th:text="#{extendedCompulsoryEducationTitle}"></h3>
+            <div th:if="${decision.form.extendedCompulsoryEducation}">
+              <ul>
+                <li th:text="#{extendedCompulsoryEducationYes}"></li>
+              </ul>
+              <div class="multi-line" th:text="${decision.form.extendedCompulsoryEducationInfo}"></div>
+            </div>
+            <div th:if="${!decision.form.extendedCompulsoryEducation}">
+              <ul>
+                <li th:text="#{no}"></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="decision-details">
+            <h3 th:text="#{grantedServices}"></h3>
+            <ul>
+              <li th:if="${decision.form.grantedAssistanceService}" th:text="#{grantedAssistanceService}"></li>
+              <li th:if="${decision.form.grantedInterpretationService}" th:text="#{grantedInterpretationService}"></li>
+              <li th:if="${decision.form.grantedAssistiveDevices}" th:text="#{grantedAssistiveDevices}"></li>
+              <li
+                      th:if="${!decision.form.grantedAssistanceService && !decision.form.grantedInterpretationService && !decision.form.grantedAssistiveDevices}"
+                      th:text="#{grantedNothing}"
+              ></li>
+            </ul>
+          </div>
+
+          <div class="decision-details" th:if="${decision.form.grantedServicesBasis != ''}">
+            <h3 th:text="#{grantedServicesBasis}"></h3>
+            <div class="multi-line" th:text="${decision.form.grantedServicesBasis}"></div>
+          </div>
+
+          <div class="decision-details">
+            <h3 th:text="#{selectedUnit}"></h3>
+            <div>
+              <div th:text="${decision.unitName}"></div>
+              <div
+                th:text="${decision.unitStreetAddress} + ', ' + ${decision.unitPostalCode} + ' ' + ${decision.unitPostOffice}"
+              ></div>
+            </div>
+          </div>
+
+          <div class="decision-details" th:text="#{unitMayChange}"></div>
+
+          <div class="decision-details">
+            <h3 th:text="#{primaryGroup}"></h3>
+            <div th:text="${decision.form.primaryGroup}"></div>
+          </div>
+
+          <div class="decision-details">
+            <h3 th:text="#{decisionBasis}"></h3>
+            <div class="multi-line" th:text="${decision.form.decisionBasis}"></div>
+          </div>
+
+          <div class="decision-details">
+            <h3 th:text="#{basisDocuments}"></h3>
+            <ul>
+              <li
+                th:if="${decision.form.basisDocumentPedagogicalReport}"
+                th:text="#{basisDocumentPedagogicalReport}"
+              ></li>
+              <li
+                th:if="${decision.form.basisDocumentPsychologistStatement}"
+                th:text="#{basisDocumentPsychologistStatement}"
+              ></li>
+              <li
+                th:if="${decision.form.basisDocumentSocialReport}"
+                th:text="#{basisDocumentSocialReport}"
+              ></li>
+              <li
+                th:if="${decision.form.basisDocumentDoctorStatement}"
+                th:text="#{basisDocumentDoctorStatement}"
+              ></li>
+              <li
+                th:if="${decision.form.basisDocumentOtherOrMissing}"
+                th:text="${decision.form.basisDocumentOtherOrMissingInfo}"
+              ></li>
+            </ul>
+          </div>
+
+          <div class="decision-details" th:if="${decision.form.basisDocumentsInfo != ''}">
+            <h3 th:text="#{basisDocumentsInfo}"></h3>
+            <div class="multi-line" th:text="${decision.form.basisDocumentsInfo}"></div>
+          </div>
+        </div>
+
+        <div class="decision-details-container">
           <h2 th:text="#{collaborationWithGuardians}"></h2>
           <div class="decision-details">
             <h3 th:text="#{guardiansHeardAt}"></h3>
@@ -64,19 +159,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <h3 th:text="#{viewOfTheGuardians}"></h3>
             <div class="multi-line" th:text="${decision.form.viewOfGuardians}"></div>
           </div>
-        </div>
-
-        <div class="decision-details-container">
-          <div class="decision-details">
-            <h3 th:text="#{selectedUnit}"></h3>
-            <div>
-              <div th:text="${decision.unitName}"></div>
-              <div
-                th:text="${decision.unitStreetAddress} + ', ' + ${decision.unitPostalCode} + ' ' + ${decision.unitPostOffice}"
-              ></div>
-            </div>
-          </div>
-          <div class="decision-details" th:text="#{unitMayChange}"></div>
         </div>
 
         <div class="decision-details-container">
