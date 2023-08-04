@@ -24,12 +24,8 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
   const i18n = useTranslation()
 
   const { weekDayRange, day } = useFormFields(bind)
-
-  if (weekDayRange.state === undefined) {
-    return <div>{i18n.calendar.reservationModal.noReservableDays}</div>
-  }
-
   const [firstWeekDay, lastWeekDay] = weekDayRange.state
+
   const label = (
     <Label>{`${i18n.common.datetime.weekdaysShort[firstWeekDay - 1]}-${
       i18n.common.datetime.weekdaysShort[lastWeekDay - 1]

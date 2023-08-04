@@ -17,11 +17,16 @@ import {
   object,
   oneOf,
   required,
+  transformed,
   union,
   validated,
   value
 } from 'lib-common/form/form'
-import { StateOf } from 'lib-common/form/types'
+import {
+  StateOf,
+  ValidationError,
+  ValidationSuccess
+} from 'lib-common/form/types'
 import {
   DailyReservationRequest,
   ReservationChild,
@@ -135,16 +140,8 @@ export const day = mapped(
   }
 )
 
-const emptyDay: StateOf<typeof day> = {
-  branch: 'reservation',
-  state: {
-    branch: 'timeRanges',
-    state: [emptyTimeRange]
-  }
-}
-
 export const dailyTimes = object({
-  weekDayRange: value<[number, number] | undefined>(),
+  weekDayRange: value<[number, number]>(),
   day
 })
 
@@ -162,11 +159,18 @@ export const irregularDay = object({
 
 export const irregularTimes = array(irregularDay)
 
-export const timesUnion = union({
-  dailyTimes,
-  weeklyTimes,
-  irregularTimes
-})
+export const timesUnion = transformed(
+  union({
+    dailyTimes,
+    weeklyTimes,
+    irregularTimes,
+    notInitialized: value<undefined>()
+  }),
+  (value) =>
+    value.branch === 'notInitialized'
+      ? ValidationError.of('required')
+      : ValidationSuccess.of(value)
+)
 
 export function toDailyReservationRequest(
   childId: UUID,
@@ -302,13 +306,7 @@ export function initialState(
             selectedRange: new FiniteDateRange(initialStart, initialEnd),
             selectedChildren
           })
-        : {
-            branch: 'dailyTimes',
-            state: {
-              weekDayRange: undefined,
-              day: emptyDay
-            }
-          }
+        : { branch: 'notInitialized', state: undefined }
   }
 }
 
@@ -338,10 +336,14 @@ export function resetTimes(
       selectedRangeDates.some((date) => date.getIsoDayOfWeek() === dayOfWeek)
   )
   if (repetition === 'DAILY') {
-    const weekDayRange: [number, number] | undefined =
-      includedWeekDays.length > 0
-        ? [includedWeekDays[0], includedWeekDays[includedWeekDays.length - 1]]
-        : undefined
+    if (includedWeekDays.length === 0) {
+      // This doesn't happen in practice because selectedRange is limited
+      // so that at least one child has a placement
+      return {
+        branch: 'notInitialized',
+        state: undefined
+      }
+    }
 
     const holidayPeriodState =
       dayProperties.holidayPeriodStateForRange(selectedRange)
@@ -357,7 +359,10 @@ export function resetTimes(
     return {
       branch: 'dailyTimes',
       state: {
-        weekDayRange,
+        weekDayRange: [
+          includedWeekDays[0],
+          includedWeekDays[includedWeekDays.length - 1]
+        ],
         day: resetDay(
           holidayPeriodState,
           calendarDaysInRange,

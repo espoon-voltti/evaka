@@ -76,6 +76,9 @@ const buildTimeInputState = (
 describe('resetTimes', () => {
   describe('DAILY', () => {
     it('No reservable days', () => {
+      // This doesn't happen in practice because selectedRange is limited
+      // so that at least one child has a placement. It shouldn't break nevertheless.
+
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
       const dayProperties = new DayProperties(emptyCalendarDays, [])
@@ -87,14 +90,8 @@ describe('resetTimes', () => {
           selectedChildren: ['child-1', 'child-2']
         })
       ).toEqual({
-        branch: 'dailyTimes',
-        state: {
-          weekDayRange: undefined,
-          day: {
-            branch: 'readOnly',
-            state: 'noChildren'
-          }
-        }
+        branch: 'notInitialized',
+        state: undefined
       })
     })
 
