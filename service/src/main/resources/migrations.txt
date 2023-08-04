@@ -332,3 +332,4 @@ V332__alter_assistance_need_preschool_decision_constraints.sql
 V333__create_child_discussion.sql
 V334__person_enabled_email_types.sql
 V335__push_notifications_pilot_feature.sql
+V336__vapid_jwt.sql

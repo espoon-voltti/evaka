@@ -19,8 +19,8 @@ import fi.espoo.evaka.webpush.WebPushNotification
 import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
-import mu.KotlinLogging
 import java.time.Duration
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
@@ -30,7 +30,7 @@ class MessagePushNotifications(
 ) {
     init {
         asyncJobRunner.registerHandler { db, clock, job: AsyncJob.SendMessagePushNotification ->
-            db.transaction { tx -> send(tx, clock, job.recipient, job.device) }
+            send(db, clock, job.recipient, job.device)
         }
     }
 
@@ -98,34 +98,42 @@ AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
             .singleOrNull()
 
     fun send(
-        tx: Database.Transaction,
+        dbc: Database.Connection,
         clock: EvakaClock,
         recipient: MessageRecipientId,
         device: MobileDeviceId
     ) {
-        val notification = tx.getNotification(recipient, device) ?: return
-        if (webPush != null) {
-            logger.info(mapOf("endpoint" to notification.endpoint.uri)) {
-                "Sending push notification to $device"
+        if (webPush == null) return
+
+        val (vapidJwt, notification) =
+            dbc.transaction { tx ->
+                tx.getNotification(recipient, device)?.let {
+                    Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it)
+                }
             }
-            try {
-                webPush.send(
-                    clock,
-                    WebPushNotification(
-                        notification.endpoint,
-                        ttl = Duration.ofDays(1),
-                        payloads =
-                            listOf(
-                                WebPushPayload.NotificationV1(
-                                    title = "Uusi viesti ryhmälle ${notification.groupName}"
-                                )
+                ?: return
+        dbc.close()
+
+        logger.info(mapOf("endpoint" to notification.endpoint.uri)) {
+            "Sending push notification to $device"
+        }
+        try {
+            webPush.send(
+                vapidJwt,
+                WebPushNotification(
+                    notification.endpoint,
+                    ttl = Duration.ofDays(1),
+                    payloads =
+                        listOf(
+                            WebPushPayload.NotificationV1(
+                                title = "Uusi viesti ryhmälle ${notification.groupName}"
                             )
-                    )
+                        )
                 )
-            } catch (e: WebPush.SubscriptionExpired) {
-                logger.error("Subscription expired for device $device -> deleting", e)
-                tx.deletePushSubscription(device)
-            }
+            )
+        } catch (e: WebPush.SubscriptionExpired) {
+            logger.error("Subscription expired for device $device -> deleting", e)
+            dbc.transaction { it.deletePushSubscription(device) }
         }
     }
 }
