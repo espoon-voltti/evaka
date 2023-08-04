@@ -8,7 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
@@ -169,7 +169,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     private fun assertEmail(
-        email: MockEmail?,
+        email: Email?,
         expectedToAddress: String,
         expectedFromAddress: String,
         expectedSubject: String,
@@ -179,9 +179,9 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)
         assertEquals(expectedFromAddress, email.fromAddress)
-        assertEquals(expectedSubject, email.subject)
-        assert(email.htmlBody.contains(expectedHtmlPart, true))
-        assert(email.textBody.contains(expectedTextPart, true))
+        assertEquals(expectedSubject, email.content.subject)
+        assert(email.content.html.contains(expectedHtmlPart, true))
+        assert(email.content.text.contains(expectedTextPart, true))
     }
 
     private fun createPendingDecision(

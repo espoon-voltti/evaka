@@ -13,17 +13,17 @@ private val logger = KotlinLogging.logger {}
 
 class MockEmailClient : EmailClient {
     companion object {
-        private val data = mutableListOf<MockEmail>()
+        private val data = mutableListOf<Email>()
         private val lock = ReentrantReadWriteLock()
 
-        val emails: List<MockEmail>
+        val emails: List<Email>
             get() = lock.read { data.toList() }
 
         fun clear() = lock.write { data.clear() }
 
-        fun addEmail(email: MockEmail) = lock.write { data.add(email) }
+        fun addEmail(email: Email) = lock.write { data.add(email) }
 
-        fun getEmail(toAddress: String): MockEmail? =
+        fun getEmail(toAddress: String): Email? =
             lock.read { emails.find { email -> email.toAddress == toAddress } }
     }
 
@@ -31,24 +31,6 @@ class MockEmailClient : EmailClient {
         logger.info {
             "Mock sending email (personId: ${email.traceId} toAddress: ${email.toAddress})"
         }
-        addEmail(
-            MockEmail(
-                email.traceId,
-                email.toAddress,
-                email.fromAddress,
-                email.content.subject,
-                email.content.html,
-                email.content.text
-            )
-        )
+        addEmail(email)
     }
 }
-
-data class MockEmail(
-    val traceId: String,
-    val toAddress: String,
-    val fromAddress: String,
-    val subject: String,
-    val htmlBody: String,
-    val textBody: String
-)

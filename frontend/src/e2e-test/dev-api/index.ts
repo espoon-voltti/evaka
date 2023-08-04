@@ -87,13 +87,13 @@ import {
   DevStaffAttendancePlan,
   DevVardaReset,
   DevVardaServiceNeed,
+  Email,
   EmployeeDetail,
   EmployeePin,
   FamilyContact,
   FosterParent,
   FridgeChild,
   FridgePartner,
-  MockEmail,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
@@ -836,9 +836,9 @@ export function personToVtjPerson(
   }
 }
 
-export async function getSentEmails(): Promise<MockEmail[]> {
+export async function getSentEmails(): Promise<Email[]> {
   try {
-    const { data } = await devClient.get<MockEmail[]>(`/emails`)
+    const { data } = await devClient.get<Email[]>(`/emails`)
     return data
   } catch (e) {
     throw new DevApiError(e)

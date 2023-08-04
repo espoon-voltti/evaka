@@ -9,7 +9,7 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
@@ -124,7 +124,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
-            getEmailFor(testGuardianFi).subject
+            getEmailFor(testGuardianFi).content.subject
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
@@ -210,7 +210,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
-            getEmailFor(testGuardianFi).subject
+            getEmailFor(testGuardianFi).content.subject
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
@@ -256,7 +256,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             .also { assertEquals(200, it.second.statusCode) }
     }
 
-    private fun getEmailFor(person: DevPerson): MockEmail {
+    private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }

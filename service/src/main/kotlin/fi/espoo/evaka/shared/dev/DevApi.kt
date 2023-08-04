@@ -52,7 +52,7 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
@@ -836,7 +836,7 @@ RETURNING id
     }
 
     @GetMapping("/emails")
-    fun getApplicationEmails(): List<MockEmail> {
+    fun getSentEmails(): List<Email> {
         return MockEmailClient.emails
     }
 

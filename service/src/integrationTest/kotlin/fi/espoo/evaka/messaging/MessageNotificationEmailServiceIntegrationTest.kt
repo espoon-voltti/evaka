@@ -5,7 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -136,7 +136,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
-            getEmailFor(testPersonFi).subject
+            getEmailFor(testPersonFi).content.subject
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
@@ -183,7 +183,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi tiedote eVakassa / Nytt allmänt meddelande i eVaka / New bulletin in eVaka",
-            getEmailFor(testPersonFi).subject
+            getEmailFor(testPersonFi).content.subject
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
@@ -290,7 +290,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         clock: EvakaClock
     ) = messageController.undoMessage(dbInstance(), user, clock, sender, contentId)
 
-    private fun getEmailFor(person: DevPerson): MockEmail {
+    private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }

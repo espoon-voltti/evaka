@@ -10,7 +10,7 @@ import fi.espoo.evaka.application.persistence.daycare.Address
 import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -126,7 +126,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.subject
+            sentMail.content.subject
         )
     }
 
@@ -176,7 +176,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.subject
+            sentMail.content.subject
         )
     }
 
@@ -263,7 +263,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.subject
+            sentMail.content.subject
         )
     }
 
@@ -299,7 +299,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.subject
+            sentMail.content.subject
         )
     }
 
@@ -465,7 +465,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     private fun assertEmail(
-        email: MockEmail?,
+        email: Email?,
         expectedToAddress: String,
         expectedFromAddress: String,
         expectedSubject: String,
@@ -475,9 +475,9 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)
         assertEquals(expectedFromAddress, email.fromAddress)
-        assertEquals(expectedSubject, email.subject)
-        assert(email.htmlBody.contains(expectedHtmlPart, true))
-        assert(email.textBody.contains(expectedTextPart, true))
+        assertEquals(expectedSubject, email.content.subject)
+        assert(email.content.html.contains(expectedHtmlPart, true))
+        assert(email.content.text.contains(expectedTextPart, true))
     }
 
     private fun assertApplicationIsSent(applicationId: ApplicationId) {
