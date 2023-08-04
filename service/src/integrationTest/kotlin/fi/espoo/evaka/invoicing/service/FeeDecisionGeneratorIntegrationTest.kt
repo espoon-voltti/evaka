@@ -1638,6 +1638,94 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
     }
 
+    // Old logic created a new decision if there was a new placement. New logic does not.
+    // Test that old SENT decisions are not replaced because of the logic change
+    @Test
+    fun `old SENT unit change decisions are not replaced`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+        }
+
+        feeDecisionController.confirmDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            mockedNow,
+            listOf(getAllFeeDecisions().get(0).id),
+            null
+        )
+
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, subPeriod2.start)
+            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
+        }
+
+        // Now there is two SENT fee decisions, 2022-01-01 -> 2022-06-60 and 2022-07-01 > 2022-12-31
+        // like the previous
+        // logic did if the placement unit changed.
+        assertThat(getAllFeeDecisions())
+            .extracting(
+                { it.validDuring },
+                { it.difference },
+                { it.children.map { child -> child.placement.unitId } },
+                { it.status }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(
+                    subPeriod1,
+                    emptySet<FeeDecisionDifference>(),
+                    listOf(testDaycare.id),
+                    FeeDecisionStatus.SENT
+                ),
+                Tuple(
+                    subPeriod2,
+                    emptySet<FeeDecisionDifference>(),
+                    listOf(testDaycare2.id),
+                    FeeDecisionStatus.SENT
+                )
+            )
+
+        // Create opposite placements for the SENT periods
+        db.transaction { it.createUpdate("DELETE FROM placement").execute() }
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare.id)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+        }
+
+        // Expect no new draft fee decisions being generated
+        assertThat(getAllFeeDecisions())
+            .extracting(
+                { it.validDuring },
+                { it.difference },
+                { it.children.map { child -> child.placement.unitId } },
+                { it.status }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(
+                    subPeriod1,
+                    emptySet<FeeDecisionDifference>(),
+                    listOf(testDaycare.id),
+                    FeeDecisionStatus.SENT
+                ),
+                Tuple(
+                    subPeriod2,
+                    emptySet<FeeDecisionDifference>(),
+                    listOf(testDaycare2.id),
+                    FeeDecisionStatus.SENT
+                )
+            )
+    }
+
     @Test
     fun `placement type difference`() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
