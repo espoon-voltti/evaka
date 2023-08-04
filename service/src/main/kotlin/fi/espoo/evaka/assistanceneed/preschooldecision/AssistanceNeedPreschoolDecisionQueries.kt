@@ -178,7 +178,7 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecision(
             decision_maker_employee_id = :decisionMakerEmployeeId,
             decision_maker_title = :decisionMakerTitle,
             decision_maker_has_opened = COALESCE(:decisionMakerHasOpened, decision_maker_has_opened)
-        WHERE id = :id AND status = 'NEEDS_WORK' OR (status = 'DRAFT' AND sent_for_decision IS NULL )
+        WHERE id = :id AND (status = 'NEEDS_WORK' OR (status = 'DRAFT' AND sent_for_decision IS NULL))
         """
 
     createUpdate(sql)
