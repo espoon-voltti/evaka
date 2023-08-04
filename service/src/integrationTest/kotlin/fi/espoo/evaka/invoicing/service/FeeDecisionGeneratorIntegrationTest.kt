@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -64,7 +64,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
@@ -113,6 +112,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val mockedNow =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 8, 4), LocalTime.of(12, 1)))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
@@ -126,7 +128,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -145,7 +147,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -169,7 +171,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -193,7 +195,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -218,7 +220,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -238,7 +240,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -257,7 +259,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -269,7 +271,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -310,7 +312,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -341,7 +343,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -361,7 +363,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -381,7 +383,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -412,7 +414,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -458,7 +460,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -497,7 +499,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -522,7 +524,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -543,7 +545,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -570,7 +572,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -592,7 +594,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -610,7 +612,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -630,7 +632,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -650,7 +652,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -687,7 +689,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -714,7 +716,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.execute("DELETE FROM service_need WHERE placement_id = ?", placementId)
             generator.generateNewDecisionsForChild(
                 tx,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 serviceNeedPeriod.start
             )
@@ -735,12 +737,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -773,12 +770,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -812,12 +804,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -843,7 +830,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -893,7 +880,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -943,7 +930,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -991,7 +978,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1034,7 +1021,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1084,7 +1071,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1134,7 +1121,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1181,7 +1168,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1238,12 +1225,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(twin1.id, twin2.id), placementPeriod)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                twin1.id,
-                placementPeriod.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, twin1.id, placementPeriod.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -1281,7 +1263,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1331,7 +1313,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForChild(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testChild_1.id,
                 placementPeriod.start
             )
@@ -1394,12 +1376,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -2032,12 +2009,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -2075,12 +2047,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2181,12 +2148,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                newerPeriod.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, newerPeriod.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2237,12 +2199,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2339,12 +2296,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_3.id, period_3, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period_1.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period_1.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2410,12 +2362,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2476,12 +2423,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2541,12 +2483,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val adultDecisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2611,12 +2548,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_1.id, 310200, subPeriod_1)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2664,12 +2596,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_1.id, 310200, incomePeriod)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2695,7 +2622,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForAdult(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testAdult_1.id,
                 incomePeriod.start
             )
@@ -2731,12 +2658,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_1.id, 310200, subPeriod_1)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -2776,12 +2698,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         deleteIncomes()
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                subPeriod_1.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, subPeriod_1.start)
         }
 
         val newDecisions = getAllFeeDecisions()
@@ -2821,12 +2738,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_4.id, wholePeriod, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                wholePeriod.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, wholePeriod.start)
         }
 
         val decisions =
@@ -2906,18 +2818,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_2.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_2.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -2954,18 +2856,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_2.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_2.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -3011,18 +2903,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_2.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_2.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -3072,12 +2954,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -3127,12 +3004,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_1.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -3179,12 +3051,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFeeAlteration(testChild_1.id, 50.0, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -3220,7 +3087,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             generator.generateNewDecisionsForAdult(
                 it,
-                RealEvakaClock(),
+                mockedNow,
                 testAdult_1.id,
                 combinedPeriod.start
             )
@@ -3290,12 +3157,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, newPeriod, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                newPeriod.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, newPeriod.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -3329,12 +3191,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, newPeriod, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                newPeriod.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, newPeriod.start)
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -3354,12 +3211,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -3407,7 +3259,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
             generator.generateNewDecisionsForAdult(
                 tx,
-                RealEvakaClock(),
+                mockedNow,
                 testAdult_1.id,
                 familyPeriod.start
             )
@@ -3467,7 +3319,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     tx.upsertFeeDecisions(listOf(fixture))
                     generator.generateNewDecisionsForAdult(
                         tx,
-                        RealEvakaClock(),
+                        mockedNow,
                         testAdult_1.id,
                         period.start
                     )
@@ -3512,12 +3364,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         val feeDecisions = getAllFeeDecisions()
@@ -3546,12 +3393,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_1.id, period.start)
         }
         assertEquals(1, getAllFeeDecisions().size)
     }
@@ -3566,12 +3408,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(
-                it,
-                RealEvakaClock(),
-                testChild_2.id,
-                period.start
-            )
+            generator.generateNewDecisionsForChild(it, mockedNow, testChild_2.id, period.start)
         }
         assertEquals(1, getAllFeeDecisions().size)
     }
@@ -3609,12 +3446,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { it.upsertFeeDecisions(listOf(sentDecision)) }
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
         val feeDecisions = getAllFeeDecisions()
         assertEquals(2, feeDecisions.size)
@@ -3681,12 +3513,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(sentDecisions)
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, period.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -3898,12 +3725,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(sentDecisions)
-            generator.generateNewDecisionsForAdult(
-                tx,
-                RealEvakaClock(),
-                testAdult_1.id,
-                wholePeriod.start
-            )
+            generator.generateNewDecisionsForAdult(tx, mockedNow, testAdult_1.id, wholePeriod.start)
         }
 
         val decisions = getAllFeeDecisions()
@@ -3918,12 +3740,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -3932,12 +3749,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         feeDecisionController.confirmDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
-            RealEvakaClock(),
+            mockedNow,
             listOf(decisions.get(0).id),
             null
         )
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(mockedNow)
 
         getAllFeeDecisions().let {
             assertEquals(1, it.size)
@@ -3949,12 +3766,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         getAllFeeDecisions().let {
@@ -3966,12 +3778,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         getAllFeeDecisions().let {
@@ -3990,12 +3797,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
         val decisions = getAllFeeDecisions()
         assertEquals(2, decisions.size)
@@ -4006,12 +3808,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         feeDecisionController.confirmDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
-            RealEvakaClock(),
+            mockedNow,
             listOf(firstDecision.id),
             null
         )
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(mockedNow)
 
         getAllFeeDecisions().let {
             assertEquals(2, it.size)
@@ -4020,12 +3822,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(
-                it,
-                RealEvakaClock(),
-                testAdult_1.id,
-                period.start
-            )
+            generator.generateNewDecisionsForAdult(it, mockedNow, testAdult_1.id, period.start)
         }
 
         getAllFeeDecisions().let {
