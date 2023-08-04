@@ -6,8 +6,10 @@ package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -23,7 +25,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class PedagogicalDocumentNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
@@ -39,7 +41,8 @@ class PedagogicalDocumentNotificationService(
         val sql =
             """
         SELECT DISTINCT
-            p.email as recipient_email,
+            doc.id as pedagogical_document_id,
+            p.id as recipient_id,
             coalesce(lower(p.language), 'fi') as language
         FROM pedagogical_document doc 
         JOIN guardian g ON doc.child_id = g.child_id
@@ -56,7 +59,7 @@ class PedagogicalDocumentNotificationService(
             .map { row ->
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
-                    recipientEmail = row.mapColumn("recipient_email"),
+                    recipientId = row.mapColumn("recipient_id"),
                     language = getLanguage(row.mapColumn("language"))
                 )
             }
@@ -128,17 +131,20 @@ SELECT EXISTS(
         clock: EvakaClock,
         msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
     ) {
-        val (pedagogicalDocumentId, recipientEmail, language) = msg
-
-        db.transaction { tx ->
-            emailClient.sendEmail(
-                traceId = pedagogicalDocumentId.toString(),
-                toAddress = recipientEmail,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.pedagogicalDocumentNotification(language)
+        Email.create(
+                dbc = db,
+                personId = msg.recipientId,
+                emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+                fromAddress = emailEnv.sender(msg.language),
+                content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
+                traceId = msg.pedagogicalDocumentId.toString(),
             )
-            tx.markPedagogicalDocumentNotificationSent(pedagogicalDocumentId)
-        }
+            ?.also {
+                emailClient.send(it)
+                db.transaction { tx ->
+                    tx.markPedagogicalDocumentNotificationSent(msg.pedagogicalDocumentId)
+                }
+            }
     }
 }
 

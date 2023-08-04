@@ -1857,23 +1857,38 @@ const sv: Translations = {
         myndigheten för digitalisering och befolkningsdata (DVV).
       </P>
     ),
-    noEmailAlert:
-      'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',
-    noPhoneAlert: 'Din telefonnummer saknas.',
-    personalInfo: 'Personuppgifter',
-    name: 'Namn',
-    preferredName: 'Tilltalsnamn',
-    contactInfo: 'Kontakt information',
-    address: 'Adress',
-    phone: 'Telefonnummer',
-    backupPhone: 'Reservtelefonnummer',
-    backupPhonePlaceholder: 'T.ex. arbetstelefon',
-    email: 'E-postadress',
-    emailMissing: 'E-postadress saknas',
-    phoneMissing: 'Telefonnummer saknas',
-    noEmail: 'Jag har ingen e-postadress',
-    emailInfo:
-      'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
+    detailsSection: {
+      noEmailAlert:
+        'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',
+      noPhoneAlert: 'Din telefonnummer saknas.',
+      title: 'Personuppgifter',
+      name: 'Namn',
+      preferredName: 'Tilltalsnamn',
+      contactInfo: 'Kontakt information',
+      address: 'Adress',
+      phone: 'Telefonnummer',
+      backupPhone: 'Reservtelefonnummer',
+      backupPhonePlaceholder: 'T.ex. arbetstelefon',
+      email: 'E-postadress',
+      emailMissing: 'E-postadress saknas',
+      phoneMissing: 'Telefonnummer saknas',
+      noEmail: 'Jag har ingen e-postadress',
+      emailInfo:
+        'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
+    },
+    notificationsSection: {
+      title: 'Sähköposti-ilmoitukset',
+      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
+      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
+      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
+      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
+      calendarEvent:
+        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
+      document: 'Saapuneista dokumenteista',
+      missingAttendanceReservation:
+        'Muistutukset puuttuvista läsnäoloilmoituksista'
+    }
   },
   income: {
     title: 'Inkomstuppgifter',

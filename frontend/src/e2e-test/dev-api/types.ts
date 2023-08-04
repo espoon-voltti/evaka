@@ -377,14 +377,16 @@ export function deserializeDecision(json: JsonOf<Decision>): Decision {
   }
 }
 
-export interface MockEmail {
+export interface Email {
   traceId: string
   toAddress: string
   fromAddress: string
-  subject: string
-  htmlBody: string
-  language: string
-  textBody: string
+  content: {
+    subject: string
+    html: string
+    language: string
+    text: string
+  }
 }
 
 export interface FamilyContact {

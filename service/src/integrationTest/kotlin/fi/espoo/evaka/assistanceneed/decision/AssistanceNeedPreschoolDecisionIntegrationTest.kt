@@ -12,7 +12,7 @@ import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDe
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionGuardian
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionService
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Employee
@@ -355,7 +355,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertEquals(setOf(testAdult_2.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
-            getEmailFor(testAdult_2).subject
+            getEmailFor(testAdult_2).content.subject
         )
         assertEquals(
             "Test email sender fi <testemail_fi@test.com>",
@@ -388,7 +388,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         logger.debug { "Generated assistance need decision PDF to ${file.absolutePath}" }
     }
 
-    private fun getEmailFor(person: DevPerson): MockEmail {
+    private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }

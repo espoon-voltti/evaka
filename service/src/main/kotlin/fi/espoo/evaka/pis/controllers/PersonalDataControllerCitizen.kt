@@ -5,7 +5,12 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.EmailNotificationSettings
+import fi.espoo.evaka.pis.PersonalDataUpdate
+import fi.espoo.evaka.pis.getEnabledEmailTypes
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.updateEnabledEmailTypes
+import fi.espoo.evaka.pis.updatePersonalDetails
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -14,6 +19,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -30,16 +36,16 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         @RequestBody body: PersonalDataUpdate
     ) {
         db.connect { dbc ->
-            dbc.transaction {
+            dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
-                    it,
+                    tx,
                     user,
                     clock,
                     Action.Citizen.Person.UPDATE_PERSONAL_DATA,
                     user.id
                 )
 
-                val person = it.getPersonById(user.id) ?: error("User not found")
+                val person = tx.getPersonById(user.id) ?: error("User not found")
 
                 val validationErrors =
                     listOfNotNull(
@@ -58,21 +64,54 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                 if (validationErrors.isNotEmpty())
                     throw BadRequest(validationErrors.joinToString(", "))
 
-                it.createUpdate(
-                        "UPDATE person SET preferred_name = :preferredName, phone = :phone, backup_phone = :backupPhone, email = :email WHERE id = :id"
+                tx.updatePersonalDetails(user.id, body)
+            }
+        }
+        Audit.PersonalDataUpdate.log(targetId = user.id)
+    }
+
+    @GetMapping("/notification-settings")
+    fun getNotificationSettings(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): EmailNotificationSettings {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_NOTIFICATION_SETTINGS,
+                        user.id
                     )
-                    .bind("id", user.id)
-                    .bindKotlin(body)
-                    .execute()
+                    EmailNotificationSettings.fromNotificationTypes(
+                        tx.getEnabledEmailTypes(user.id)
+                    )
+                }
+            }
+            .also { Audit.CitizenNotificationSettingsRead.log(targetId = user.id) }
+    }
+
+    @PutMapping("/notification-settings")
+    fun updateNotificationSettings(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: EmailNotificationSettings
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.UPDATE_NOTIFICATION_SETTINGS,
+                    user.id
+                )
+                tx.updateEnabledEmailTypes(user.id, body.toNotificationTypes())
             }
         }
         Audit.PersonalDataUpdate.log(targetId = user.id)
     }
 }
-
-data class PersonalDataUpdate(
-    val preferredName: String,
-    val phone: String,
-    val backupPhone: String,
-    val email: String
-)

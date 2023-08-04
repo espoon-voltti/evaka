@@ -6,8 +6,10 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.FeatureConfig
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Service
 class MissingReservationsReminders(
     private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
@@ -68,12 +70,12 @@ WHERE p.email IS NOT NULL
     }
 
     fun sendReminder(db: Database.Connection, msg: AsyncJob.SendMissingReservationsReminder) {
-        val (recipient, language) =
+        val language =
             db.read { tx ->
                 tx.createQuery<DatabaseTable> {
                         sql(
                             """
-SELECT email, language
+SELECT language
 FROM (${subquery(missingReservationsQuery(msg.range, msg.guardian))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
@@ -83,23 +85,22 @@ AND email IS NOT NULL
                         )
                     }
                     .map { row ->
-                        Pair(
-                            row.mapColumn<String>("email"),
-                            row.mapColumn<String?>("language")
-                                ?.lowercase()
-                                ?.let(Language::tryValueOf)
-                                ?: Language.fi
-                        )
+                        row.mapColumn<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                            ?: Language.fi
                     }
                     .firstOrNull()
             }
                 ?: return
-        emailClient.sendEmail(
-            traceId = msg.guardian.toString(),
-            toAddress = recipient,
-            fromAddress = emailEnv.sender(language),
-            content = emailMessageProvider.missingReservationsNotification(language, msg.range)
-        )
+
+        Email.create(
+                dbc = db,
+                personId = msg.guardian,
+                emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
+                fromAddress = emailEnv.sender(language),
+                content = emailMessageProvider.missingReservationsNotification(language, msg.range),
+                traceId = msg.guardian.toString(),
+            )
+            ?.also { emailClient.send(it) }
     }
 }
 

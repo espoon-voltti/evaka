@@ -3,21 +3,28 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Checkbox, Page, Select, TextInput } from '../../utils/page'
+import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 
 export default class CitizenPersonalDetails {
   constructor(private readonly page: Page) {}
 
-  #missingEmailOrPhoneBox = this.page.find(
-    '[data-qa="missing-email-or-phone-box"]'
+  personalDetailsSection = new CitizenPersonalDetailsSection(
+    this.page.findByDataQa('personal-details-section')
   )
-  #startEditing = this.page.find('[data-qa="start-editing"]')
-  #preferredName = this.page.find('[data-qa="preferred-name"]')
-  #phone = this.page.find('[data-qa="phone"]')
-  #backupPhone = this.page.find('[data-qa="backup-phone"]')
-  #email = this.page.find('[data-qa="email"]')
-  #noEmail = new Checkbox(this.page.find('[data-qa="no-email"]'))
-  #save = this.page.find('[data-qa="save"]')
+  notificationSettingsSectiong = new CitizenNotificationSettingsSection(
+    this.page.findByDataQa('notification-settings-section')
+  )
+}
+
+export class CitizenPersonalDetailsSection extends Element {
+  #missingEmailOrPhoneBox = this.find('[data-qa="missing-email-or-phone-box"]')
+  #startEditing = this.find('[data-qa="start-editing"]')
+  #preferredName = this.find('[data-qa="preferred-name"]')
+  #phone = this.find('[data-qa="phone"]')
+  #backupPhone = this.find('[data-qa="backup-phone"]')
+  #email = this.find('[data-qa="email"]')
+  #noEmail = new Checkbox(this.find('[data-qa="no-email"]'))
+  #save = this.find('[data-qa="save"]')
 
   async checkMissingEmailWarningIsShown() {
     await this.#missingEmailOrPhoneBox.waitUntilVisible()
@@ -87,5 +94,34 @@ export default class CitizenPersonalDetails {
     await this.#email.assertTextEquals(
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
+  }
+}
+
+export class CitizenNotificationSettingsSection extends Element {
+  startEditing = this.findByDataQa('start-editing')
+  cancel = this.findByDataQa('cancel')
+  save = this.findByDataQa('save')
+
+  checkboxes = {
+    message: new Checkbox(this.findByDataQa('message')),
+    bulletin: new Checkbox(this.findByDataQa('bulletin')),
+    outdatedIncome: new Checkbox(this.findByDataQa('outdated-income')),
+    calendarEvent: new Checkbox(this.findByDataQa('calendar-event')),
+    document: new Checkbox(this.findByDataQa('document')),
+    missingAttendanceReservation: new Checkbox(
+      this.findByDataQa('missing-attendance-reservation')
+    )
+  }
+
+  async assertEditable(editable: boolean) {
+    for (const checkbox of Object.values(this.checkboxes)) {
+      await checkbox.assertDisabled(!editable)
+    }
+  }
+
+  async assertAllChecked(checked: boolean) {
+    for (const checkbox of Object.values(this.checkboxes)) {
+      await checkbox.waitUntilChecked(checked)
+    }
   }
 }

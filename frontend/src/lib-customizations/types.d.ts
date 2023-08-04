@@ -232,6 +232,11 @@ interface BaseFeatureFlags {
      * Enable support for intermittent shift care
      */
     intermittentShiftCare?: boolean
+
+    /**
+     * Show email notification settings in citizen's personal details page
+     */
+    citizenEmailNotificationSettings?: boolean
   }
 }
 

@@ -1,115 +1,81 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.emailclient
 
+import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
-import org.unbescape.html.HtmlEscape
-import software.amazon.awssdk.services.ses.SesClient
-import software.amazon.awssdk.services.ses.model.AccountSendingPausedException
-import software.amazon.awssdk.services.ses.model.Body
-import software.amazon.awssdk.services.ses.model.ConfigurationSetDoesNotExistException
-import software.amazon.awssdk.services.ses.model.ConfigurationSetSendingPausedException
-import software.amazon.awssdk.services.ses.model.Content
-import software.amazon.awssdk.services.ses.model.Destination
-import software.amazon.awssdk.services.ses.model.MailFromDomainNotVerifiedException
-import software.amazon.awssdk.services.ses.model.Message
-import software.amazon.awssdk.services.ses.model.SendEmailRequest
+
+private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
 private val logger = KotlinLogging.logger {}
 
-class EmailClient(
-    private val client: SesClient,
-    private val whitelist: List<Regex>?,
-    private val subjectPostfix: String?
-) : IEmailClient {
-    private val charset = "UTF-8"
+class Email
+private constructor(
+    val toAddress: String,
+    val fromAddress: String,
+    val content: EmailContent,
+    val traceId: String
+) {
+    fun send(emailClient: EmailClient) {
+        emailClient.send(this)
+    }
 
-    override fun sendEmail(
-        traceId: String,
-        toAddress: String,
-        fromAddress: String,
-        content: EmailContent
-    ) {
-        logger.info { "Sending email (traceId: $traceId)" }
+    companion object {
+        fun create(
+            dbc: Database.Connection,
+            personId: PersonId,
+            emailType: EmailMessageType,
+            fromAddress: String,
+            content: EmailContent,
+            traceId: String,
+        ): Email? {
+            val (toAddress, enabledEmailTypes) =
+                dbc.read { tx -> tx.getEmailAddressAndEnabledTypes(personId) }
 
-        if (validateToAddress(traceId, toAddress) && checkWhitelist(toAddress)) {
-            val html =
-                """
-<!DOCTYPE html>
-<html>
-<head>
-<title>${HtmlEscape.escapeHtml5(content.subject)}</title>
-</head>
-<body>
-${content.html}
-</body>
-</html>
-"""
-            try {
-                val request =
-                    SendEmailRequest.builder()
-                        .destination(Destination.builder().toAddresses(toAddress).build())
-                        .message(
-                            Message.builder()
-                                .body(
-                                    Body.builder()
-                                        .html(Content.builder().charset(charset).data(html).build())
-                                        .text(
-                                            Content.builder()
-                                                .charset(charset)
-                                                .data(content.text)
-                                                .build()
-                                        )
-                                        .build()
-                                )
-                                .subject(
-                                    Content.builder()
-                                        .charset(charset)
-                                        .data(
-                                            when (subjectPostfix) {
-                                                null,
-                                                "" -> content.subject
-                                                else -> "${content.subject} [$subjectPostfix]"
-                                            }
-                                        )
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .source(fromAddress)
-                        .build()
+            if (toAddress == null) {
+                logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
+                return null
+            }
 
-                client.sendEmail(request)
-                logger.info { "Email sent (traceId: $traceId)" }
-            } catch (e: Exception) {
-                when (e) {
-                    is MailFromDomainNotVerifiedException,
-                    is ConfigurationSetDoesNotExistException,
-                    is ConfigurationSetSendingPausedException,
-                    is AccountSendingPausedException ->
-                        logger.error(e) { "Will not send email (traceId: $traceId): ${e.message}" }
-                    else -> {
-                        logger.error(e) { "Couldn't send email (traceId: $traceId): ${e.message}" }
-                        throw e
-                    }
+            if (!toAddress.matches(EMAIL_PATTERN)) {
+                logger.warn(
+                    "Will not send email due to invalid toAddress \"$toAddress\": (traceId: $traceId)"
+                )
+                return null
+            }
+
+            if (emailType !in (enabledEmailTypes ?: EmailMessageType.values().toList())) {
+                logger.info {
+                    "Not sending email (traceId: $traceId): $emailType not enabled for person $personId"
                 }
+                return null
             }
-        } else {
-            logger.warn("Will not send email due to invalid toAddress: (traceId: $traceId)")
+
+            return Email(toAddress, fromAddress, content, traceId)
         }
     }
+}
 
-    private fun checkWhitelist(address: String): Boolean {
-        val isWhitelisted = whitelist?.any { it.matches(address) } ?: true
+interface EmailClient {
+    fun send(email: Email)
+}
 
-        if (!isWhitelisted) {
-            logger.info {
-                "Not sending email to $address because it does not match any of the entries in whitelist"
-            }
+private data class EmailAndEnabledEmailTypes(
+    val email: String?,
+    val enabledEmailTypes: List<EmailMessageType>?
+)
+
+private fun Database.Read.getEmailAddressAndEnabledTypes(
+    personId: PersonId
+): EmailAndEnabledEmailTypes {
+    return createQuery<DatabaseTable> {
+            sql("""SELECT email, enabled_email_types FROM person WHERE id = ${bind(personId)}""")
         }
-
-        return isWhitelisted
-    }
+        .mapTo<EmailAndEnabledEmailTypes>()
+        .single()
 }

@@ -9,13 +9,15 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.decision.getSendAddress
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
@@ -48,7 +50,7 @@ const val assistanceNeedDecisionsBucketPrefix = "assistance-need-decisions/"
 
 @Component
 class AssistanceNeedDecisionService(
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val pdfGenerator: PdfGenerator,
     private val documentClient: DocumentService,
@@ -72,16 +74,12 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionEmail
     ) {
-        db.read { tx ->
-            this.sendDecisionEmail(tx, msg.decisionId)
-            logger.info {
-                "Successfully sent assistance need decision email (id: ${msg.decisionId})."
-            }
-        }
+        this.sendDecisionEmail(db, msg.decisionId)
+        logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
     }
 
-    fun sendDecisionEmail(tx: Database.Read, decisionId: AssistanceNeedDecisionId) {
-        val decision = tx.getAssistanceNeedDecisionById(decisionId)
+    fun sendDecisionEmail(dbc: Database.Connection, decisionId: AssistanceNeedDecisionId) {
+        val decision = dbc.read { tx -> tx.getAssistanceNeedDecisionById(decisionId) }
 
         if (decision.child?.id == null) {
             throw IllegalStateException(
@@ -91,6 +89,8 @@ class AssistanceNeedDecisionService(
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
+        val guardians = dbc.read { tx -> tx.getChildGuardians(decision.child.id) }
+
         val language =
             when (decision.language) {
                 AssistanceNeedDecisionLanguage.SV -> Language.sv
@@ -99,19 +99,17 @@ class AssistanceNeedDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
-        tx.getChildGuardians(decision.child.id)
-            .map { Pair(it, tx.getPersonById(it)?.email) }
-            .toMap()
-            .forEach { (guardianId, toAddress) ->
-                if (toAddress != null) {
-                    emailClient.sendEmail(
-                        "$decisionId - $guardianId",
-                        toAddress,
-                        fromAddress,
-                        content
-                    )
-                }
-            }
+        guardians.forEach { guardianId ->
+            Email.create(
+                    dbc,
+                    guardianId,
+                    EmailMessageType.DOCUMENT_NOTIFICATION,
+                    fromAddress,
+                    content,
+                    "$decisionId - $guardianId",
+                )
+                ?.also { emailClient.send(it) }
+        }
     }
 
     fun runCreateAssistanceNeedDecisionPdf(

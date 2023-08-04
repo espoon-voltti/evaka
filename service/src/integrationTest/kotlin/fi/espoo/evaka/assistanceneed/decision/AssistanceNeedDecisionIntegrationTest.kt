@@ -5,7 +5,7 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Employee
@@ -639,7 +639,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(setOf(testAdult_4.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
-            getEmailFor(testAdult_4).subject
+            getEmailFor(testAdult_4).content.subject
         )
         assertEquals(
             "Test email sender fi <testemail_fi@test.com>",
@@ -763,7 +763,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(AssistanceNeedDecisionStatus.ANNULLED, decisionAfter.status)
     }
 
-    private fun getEmailFor(person: DevPerson): MockEmail {
+    private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }

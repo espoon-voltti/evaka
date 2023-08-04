@@ -6,8 +6,10 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
@@ -26,7 +28,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
@@ -95,7 +97,6 @@ GROUP BY application.guardian_id
                                             listOf(
                                                 AsyncJob.SendPendingDecisionEmail(
                                                     guardianId = pendingDecision.guardianId,
-                                                    email = guardian.email,
                                                     language = guardian.language,
                                                     decisionIds = pendingDecision.decisionIds
                                                 )
@@ -124,18 +125,22 @@ GROUP BY application.guardian_id
         clock: EvakaClock,
         pendingDecision: AsyncJob.SendPendingDecisionEmail
     ) {
-        db.transaction { tx ->
-            logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
-            val lang = getLanguage(pendingDecision.language)
+        logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
+        val lang = getLanguage(pendingDecision.language)
 
-            emailClient.sendEmail(
-                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
-                pendingDecision.email,
+        Email.create(
+                db,
+                pendingDecision.guardianId,
+                EmailMessageType.DOCUMENT_NOTIFICATION,
                 emailEnv.sender(lang),
-                emailMessageProvider.pendingDecisionNotification(lang)
+                emailMessageProvider.pendingDecisionNotification(lang),
+                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
             )
+            ?.also { emailClient.send(it) }
 
-            // Mark as sent
+        db.transaction { tx ->
+            // Mark as sent even if the recipient didn't want the email, to stop sending reminders
+            // when the count reaches a threshold
             pendingDecision.decisionIds.forEach { decisionId ->
                 tx.createUpdate(
                         """

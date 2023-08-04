@@ -7,11 +7,13 @@ package fi.espoo.evaka.invoicing.service
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -32,7 +34,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class OutdatedIncomeNotifications(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
     private val mapper: JsonMapper
@@ -116,38 +118,37 @@ class OutdatedIncomeNotifications(
         clock: EvakaClock,
         msg: AsyncJob.SendOutdatedIncomeNotificationEmail
     ) {
-        val (recipient, language) =
+        val language =
             db.read { tx ->
                 tx.createQuery(
                         """
-SELECT email, language
-FROM person p
-WHERE p.id = :guardianId
-AND email IS NOT NULL
-        """
+                        SELECT language
+                        FROM person p
+                        WHERE p.id = :guardianId
+                        AND email IS NOT NULL
+                        """
                             .trimIndent()
                     )
                     .bind("guardianId", msg.guardianId)
                     .map { row ->
-                        Pair(
-                            row.mapColumn<String>("email"),
-                            row.mapColumn<String?>("language")
-                                ?.lowercase()
-                                ?.let(Language::tryValueOf)
-                                ?: Language.fi
-                        )
+                        row.mapColumn<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                            ?: Language.fi
                     }
                     .firstOrNull()
             }
                 ?: return
 
         logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
-        emailClient.sendEmail(
-            traceId = msg.guardianId.toString(),
-            toAddress = recipient,
-            fromAddress = emailEnv.sender(language),
-            content = emailMessageProvider.outdatedIncomeNotification(msg.type, language)
-        )
+
+        Email.create(
+                dbc = db,
+                emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
+                personId = msg.guardianId,
+                fromAddress = emailEnv.sender(language),
+                content = emailMessageProvider.outdatedIncomeNotification(msg.type, language),
+                traceId = msg.guardianId.toString()
+            )
+            ?.also { emailClient.send(it) }
 
         db.transaction {
             it.createIncomeNotification(msg.guardianId, msg.type)

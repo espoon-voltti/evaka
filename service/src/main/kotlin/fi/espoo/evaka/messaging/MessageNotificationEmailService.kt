@@ -6,14 +6,15 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.JobParams
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Service
 @Service
 class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
@@ -43,7 +44,6 @@ class MessageNotificationEmailService(
                 mr.id as message_recipient_id,
                 mr.recipient_id,
                 p.id as person_id,
-                p.email as person_email,
                 coalesce(lower(p.language), 'fi') as language,
                 t.urgent
             FROM message m
@@ -59,17 +59,7 @@ class MessageNotificationEmailService(
                     .trimIndent()
             )
             .bind("messageIds", messageIds)
-            .map { row ->
-                AsyncJob.SendMessageNotificationEmail(
-                    threadId = row.mapColumn("thread_id"),
-                    messageId = row.mapColumn("message_id"),
-                    messageRecipientId = row.mapColumn("message_recipient_id"),
-                    recipientId = row.mapColumn("recipient_id"),
-                    personEmail = row.mapColumn("person_email"),
-                    language = getLanguage(row.mapColumn("language")),
-                    urgent = row.mapColumn("urgent")
-                )
-            }
+            .mapTo<AsyncJob.SendMessageNotificationEmail>()
             .toList()
     }
 
@@ -107,24 +97,35 @@ class MessageNotificationEmailService(
         clock: EvakaClock,
         msg: AsyncJob.SendMessageNotificationEmail
     ) {
-        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language) = msg
-
-        db.transaction { tx ->
-            // The message has been undone and the recipient should no longer get an email
-            // notification
-            if (!tx.unreadMessageForRecipientExists(messageId, recipientId)) {
-                return@transaction
+        val thread =
+            db.transaction { tx ->
+                // The message has been undone and the recipient should no longer get an email
+                // notification
+                if (!tx.unreadMessageForRecipientExists(msg.messageId, msg.recipientId)) {
+                    null
+                } else {
+                    tx.getMessageThreadStub(msg.threadId)
+                }
             }
+                ?: return
 
-            val thread = tx.getMessageThreadStub(threadId)
-
-            emailClient.sendEmail(
-                traceId = messageRecipientId.toString(),
-                toAddress = personEmail,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.messageNotification(language, thread)
+        Email.create(
+                dbc = db,
+                personId = msg.personId,
+                emailType =
+                    when (thread.type) {
+                        MessageType.MESSAGE -> EmailMessageType.MESSAGE_NOTIFICATION
+                        MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
+                    },
+                fromAddress = emailEnv.sender(msg.language),
+                content = emailMessageProvider.messageNotification(msg.language, thread),
+                traceId = msg.messageRecipientId.toString(),
             )
-            tx.markEmailNotificationAsSent(messageRecipientId, clock.now())
-        }
+            ?.also {
+                emailClient.send(it)
+                db.transaction { tx ->
+                    tx.markEmailNotificationAsSent(msg.messageRecipientId, clock.now())
+                }
+            }
     }
 }

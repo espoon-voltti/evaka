@@ -348,6 +348,10 @@ export class Checkable extends Element {
     }
   }
 
+  async assertDisabled(disabled: boolean) {
+    await waitUntilEqual(() => this.#input.isDisabled(), disabled)
+  }
+
   async waitUntilChecked(checked = true) {
     await waitUntilEqual(() => this.checked, checked)
   }

@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.insertServiceNeedOptions
@@ -328,7 +328,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertTrue(
             mails
                 .get(0)
-                .textBody
+                .content
+                .text
                 .contains(
                     "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain"
                 )
@@ -361,7 +362,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertTrue(
             mails
                 .get(0)
-                .textBody
+                .content
+                .text
                 .contains(
                     "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain"
                 )
@@ -370,7 +372,11 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val secondMails = getEmails()
         assertEquals(1, secondMails.size)
         assertTrue(
-            secondMails.get(0).textBody.contains("Ette ole vielä toimittaneet uusia tulotietoja")
+            secondMails
+                .get(0)
+                .content
+                .text
+                .contains("Ette ole vielä toimittaneet uusia tulotietoja")
         )
 
         // A check that no new income has yet been generated (it is generated only after the third
@@ -448,7 +454,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertTrue(
             mails
                 .get(0)
-                .textBody
+                .content
+                .text
                 .contains("Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan")
         )
 
@@ -521,7 +528,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         )
     }
 
-    private fun getEmails(): List<MockEmail> {
+    private fun getEmails(): List<Email> {
         scheduledJobs.sendOutdatedIncomeNotifications(db, clock)
         asyncJobRunner.runPendingJobsSync(clock)
         val emails = MockEmailClient.emails

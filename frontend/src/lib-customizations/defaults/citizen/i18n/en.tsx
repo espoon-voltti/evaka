@@ -1628,23 +1628,38 @@ const en: Translations = {
         Population Data Services Agency (DVV).
       </P>
     ),
-    noEmailAlert:
-      'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
-    noPhoneAlert: 'Your phone number is missing. Please fill it down below.',
-    personalInfo: 'Personal information',
-    name: 'Name',
-    preferredName: 'Preferred first name',
-    contactInfo: 'Contact information',
-    address: 'Address',
-    phone: 'Phone number',
-    backupPhone: 'Additional phone number',
-    backupPhonePlaceholder: 'Eg. work phone number',
-    email: 'Email',
-    emailMissing: 'Email missing',
-    phoneMissing: 'Phone number missing',
-    noEmail: 'I have no email address',
-    emailInfo:
-      'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+    detailsSection: {
+      noEmailAlert:
+        'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
+      noPhoneAlert: 'Your phone number is missing. Please fill it down below.',
+      title: 'Personal information',
+      name: 'Name',
+      preferredName: 'Preferred first name',
+      contactInfo: 'Contact information',
+      address: 'Address',
+      phone: 'Phone number',
+      backupPhone: 'Additional phone number',
+      backupPhonePlaceholder: 'Eg. work phone number',
+      email: 'Email',
+      emailMissing: 'Email missing',
+      phoneMissing: 'Phone number missing',
+      noEmail: 'I have no email address',
+      emailInfo:
+        'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
+    },
+    notificationsSection: {
+      title: 'Sähköposti-ilmoitukset',
+      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
+      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
+      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
+      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
+      calendarEvent:
+        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
+      document: 'Saapuneista dokumenteista',
+      missingAttendanceReservation:
+        'Muistutukset puuttuvista läsnäoloilmoituksista'
+    }
   },
   income: {
     title: 'Income information',

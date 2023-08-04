@@ -52,7 +52,7 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
-import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
@@ -86,6 +86,7 @@ import fi.espoo.evaka.pairing.challengePairing
 import fi.espoo.evaka.pairing.incrementAttempts
 import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getEmployeeByExternalId
@@ -835,7 +836,7 @@ RETURNING id
     }
 
     @GetMapping("/emails")
-    fun getApplicationEmails(): List<MockEmail> {
+    fun getSentEmails(): List<Email> {
         return MockEmailClient.emails
     }
 
@@ -1896,7 +1897,8 @@ data class DevPerson(
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String = "",
-    val duplicateOf: PersonId? = null
+    val duplicateOf: PersonId? = null,
+    val enabledEmailTypes: List<EmailMessageType>? = null,
 ) {
     fun toPersonDTO() =
         PersonDTO(
