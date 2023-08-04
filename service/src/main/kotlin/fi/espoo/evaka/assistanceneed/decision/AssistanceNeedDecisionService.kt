@@ -10,7 +10,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.Email
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
@@ -50,7 +50,7 @@ const val assistanceNeedDecisionsBucketPrefix = "assistance-need-decisions/"
 
 @Component
 class AssistanceNeedDecisionService(
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val pdfGenerator: PdfGenerator,
     private val documentClient: DocumentService,

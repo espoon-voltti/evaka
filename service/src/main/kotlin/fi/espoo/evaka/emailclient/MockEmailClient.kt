@@ -11,7 +11,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class MockEmailClient : IEmailClient {
+class MockEmailClient : EmailClient {
     companion object {
         private val data = mutableListOf<MockEmail>()
         private val lock = ReentrantReadWriteLock()

@@ -7,7 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
-import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.MessageId
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service
 @Service
 class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val emailClient: IEmailClient,
+    private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv
 ) {
