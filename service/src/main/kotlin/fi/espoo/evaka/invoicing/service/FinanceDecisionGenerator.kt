@@ -172,9 +172,9 @@ private fun Database.Read.findFamiliesByChild(
         val fridgeChildren =
             getParentships(it.headOfChildId, null, includeConflicts = false, period = dateRange)
         val fridgePartnerParentships =
-            fridgePartners.flatMap { partner ->
-                getParentships(partner.person.id, null, false, dateRange)
-            }
+            fridgePartners
+                .flatMap { partner -> getParentships(partner.person.id, null, false, dateRange) }
+                .distinct()
 
         generateFamilyCompositions(
             maxOf(dateRange.start, it.startDate),
@@ -223,7 +223,7 @@ private fun Database.Read.findFamiliesByHeadOfFamily(
     val partners =
         getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = dateRange)
     val fridgePartnerParentships =
-        partners.flatMap { getParentships(it.person.id, null, false, dateRange) }
+        partners.flatMap { getParentships(it.person.id, null, false, dateRange) }.distinct()
 
     return generateFamilyCompositions(
         from,
