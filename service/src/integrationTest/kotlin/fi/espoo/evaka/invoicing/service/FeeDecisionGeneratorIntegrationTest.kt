@@ -2455,6 +2455,153 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `fee decision generation works as expected with temporary partnership cease`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
+        val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusMonths(1))
+        val gapPeriod = DateRange(subPeriod_1.end!!.plusDays(1), subPeriod_2.start.minusDays(1))
+
+        // There is a 1-month gap in the partnership (temporary breakup)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_1)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2)
+
+        // Child's head of family is adult 1 until breakup, adult 2 from then on
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod_1)
+        insertFamilyRelations(
+            testAdult_2.id,
+            listOf(testChild_1.id),
+            DateRange(gapPeriod.start, period.end)
+        )
+
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                period.start
+            )
+        }
+
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
+        assertEquals(3, decisions.size)
+        decisions[0].let { decision ->
+            assertEquals(subPeriod_1.start, decision.validFrom)
+            assertEquals(subPeriod_1.end, decision.validTo)
+            assertEquals(28900, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(3, decision.familySize)
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+        }
+        decisions[1].let { decision ->
+            assertEquals(2, decision.familySize)
+            assertEquals(gapPeriod.start, decision.validFrom)
+            assertEquals(gapPeriod.end, decision.validTo)
+            assertEquals(28900, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+        }
+        decisions[2].let { decision ->
+            assertEquals(3, decision.familySize)
+            assertEquals(subPeriod_2.start, decision.validFrom)
+            assertEquals(subPeriod_2.end, decision.validTo)
+            assertEquals(28900, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+        }
+
+        db.transaction {
+            it.createUpdate("DELETE FROM fee_decision_child").execute()
+            it.createUpdate("DELETE FROM fee_decision").execute()
+        }
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        val adultDecisions = getAllFeeDecisions().sortedBy { it.validFrom }
+        assertEquals(3, adultDecisions.size)
+        adultDecisions[0].let { decision ->
+            assertEquals(subPeriod_1.start, decision.validFrom)
+            assertEquals(subPeriod_1.end, decision.validTo)
+            assertEquals(28900, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(3, decision.familySize)
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+        }
+        adultDecisions[1].let { decision ->
+            assertEquals(2, decision.familySize)
+            assertEquals(gapPeriod.start, decision.validFrom)
+            assertEquals(gapPeriod.end, decision.validTo)
+            assertEquals(28900, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+        }
+        adultDecisions[2].let { decision ->
+            assertEquals(3, decision.familySize)
+            assertEquals(subPeriod_2.start, decision.validFrom)
+            assertEquals(subPeriod_2.end, decision.validTo)
+            assertEquals(28900, decision.totalFee)
+            assertEquals(1, decision.children.size)
+            decision.children[0].let { child ->
+                assertEquals(testChild_1.id, child.child.id)
+                assertEquals(28900, child.baseFee)
+                assertEquals(DAYCARE, child.placement.type)
+                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(0, child.siblingDiscount)
+                assertEquals(28900, child.fee)
+                assertEquals(28900, child.finalFee)
+            }
+        }
+    }
+
+    @Test
     fun `fee decision generation works as expected with changing income`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
