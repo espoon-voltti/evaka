@@ -380,7 +380,10 @@ export class AssistanceNeedPreschoolDecisionsReportDecision {
   returnForEditBtn = this.page.findByDataQa('return-for-edit-button')
   approveBtn = this.page.findByDataQa('approve-button')
   rejectBtn = this.page.findByDataQa('reject-button')
+  annulBtn = this.page.findByDataQa('annul-button')
+  annulReasonInput = new TextInput(this.page.findByDataQa('annul-reason-input'))
   modalOkBtn = this.page.findByDataQa('modal-okBtn')
 
   status = this.page.findByDataQa('status')
+  annulmentReason = this.page.findByDataQa('annulment-reason')
 }

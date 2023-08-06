@@ -96,7 +96,7 @@ const AnnulModal = React.memo(function AnnulModal({
       rejectAction={onClose}
       resolveDisabled={!boundForm.isValid()}
     >
-      <InputFieldF bind={reason} />
+      <InputFieldF bind={reason} data-qa="annul-reason-input" />
     </MutateFormModal>
   )
 })

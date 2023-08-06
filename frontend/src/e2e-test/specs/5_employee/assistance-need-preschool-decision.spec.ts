@@ -168,7 +168,7 @@ describe('Assistance Need Decisions - Decision process', () => {
     decisionPage = new AssistanceNeedPreschoolDecisionPage(page)
   })
 
-  test('Sending for decision, returning, editing, resending and accepting', async () => {
+  test('Sending for decision, returning, editing, resending, accepting and annulling', async () => {
     await decisionPage.sendDecisionButton.click()
     await waitUntilEqual(() => decisionPage.sendDecisionButton.visible, false)
     await decisionPage.editButton.assertDisabled(true)
@@ -208,6 +208,13 @@ describe('Assistance Need Decisions - Decision process', () => {
     await reportDecisionPage.approveBtn.click()
     await reportDecisionPage.modalOkBtn.click()
     await reportDecisionPage.status.assertTextEquals('Hyväksytty')
+
+    await reportDecisionPage.annulBtn.click()
+    await reportDecisionPage.modalOkBtn.assertDisabled(true)
+    await reportDecisionPage.annulReasonInput.fill('Joku syy')
+    await reportDecisionPage.modalOkBtn.click()
+    await reportDecisionPage.status.assertTextEquals('Mitätöity')
+    await reportDecisionPage.annulmentReason.assertTextEquals('Joku syy')
   })
 
   test('Sending for decision and rejecting', async () => {
