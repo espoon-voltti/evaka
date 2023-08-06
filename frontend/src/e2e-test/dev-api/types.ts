@@ -470,6 +470,7 @@ export interface DevAssistanceNeedPreschoolDecision {
   childId: UUID
   form: AssistanceNeedPreschoolDecisionForm
   status: AssistanceNeedDecisionStatus
+  annulmentReason: string
   sentForDecision: LocalDate | null
   decisionMade: LocalDate | null
   unreadGuardianIds: UUID[] | null

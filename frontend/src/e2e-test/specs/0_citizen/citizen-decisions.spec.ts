@@ -523,6 +523,27 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
+    const decision5 = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .withGuardian(fixtures.enduserGuardianFixture.id)
+      .withRequiredFieldsFilled(
+        fixtures.daycareFixture.id,
+        decisionMaker.id,
+        decisionMaker.id
+      )
+      .with({
+        status: 'ANNULLED',
+        annulmentReason: 'Hyvä syy',
+        sentForDecision: LocalDate.of(2020, 5, 1),
+        decisionMade: LocalDate.of(2020, 5, 2),
+        unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
+      })
+      .withForm({
+        type: 'TERMINATED',
+        validFrom: LocalDate.of(2020, 5, 3)
+      })
+      .save()
+
     // should not be shown
     await Fixture.assistanceNeedPreschoolDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
@@ -564,7 +585,7 @@ describe('Citizen assistance preschool decisions', () => {
     await header.selectTab('decisions')
 
     await citizenDecisionsPage.assertChildDecisionCount(
-      4,
+      5,
       fixtures.enduserChildFixtureKaarina.id
     )
 
@@ -613,6 +634,19 @@ describe('Citizen assistance preschool decisions', () => {
         validityPeriod: `03.04.2020 -`,
         decisionMade: '02.04.2020',
         status: 'Hyväksytty'
+      }
+    )
+
+    await citizenDecisionsPage.assertAssistancePreschoolDecision(
+      fixtures.enduserChildFixtureKaarina.id,
+      decision5.data.id ?? '',
+      {
+        type: 'Erityinen tuki päättyy',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: `03.05.2020 -`,
+        decisionMade: '02.05.2020',
+        status: 'Mitätöity',
+        annulmentReason: 'Hyvä syy'
       }
     )
   })

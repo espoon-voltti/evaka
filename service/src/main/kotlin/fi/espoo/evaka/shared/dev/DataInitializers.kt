@@ -807,7 +807,7 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
     createUpdate(
             """
         INSERT INTO assistance_need_preschool_decision (
-            id, decision_number, child_id, status, language, type, valid_from, 
+            id, decision_number, child_id, status, annulment_reason, language, type, valid_from, 
             extended_compulsory_education, extended_compulsory_education_info, 
             granted_assistance_service, granted_interpretation_service, 
             granted_assistive_devices, granted_services_basis, selected_unit, primary_group, 
@@ -819,7 +819,7 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
             decision_maker_employee_id, decision_maker_title, 
             sent_for_decision, decision_made, unread_guardian_ids
         ) VALUES (
-            :id, :decisionNumber, :childId, :status, :language, :type, :validFrom, 
+            :id, :decisionNumber, :childId, :status, :annulmentReason, :language, :type, :validFrom, 
             :extendedCompulsoryEducation, :extendedCompulsoryEducationInfo, 
             :grantedAssistanceService, :grantedInterpretationService, 
             :grantedAssistiveDevices, :grantedServicesBasis, :selectedUnit, :primaryGroup, 
@@ -837,6 +837,7 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
         .bind("decisionNumber", decision.decisionNumber)
         .bind("childId", decision.childId)
         .bind("status", decision.status)
+        .bind("annulmentReason", decision.annulmentReason)
         .bindKotlin(decision.form)
         .bind("sentForDecision", decision.sentForDecision)
         .bind("decisionMade", decision.decisionMade)
