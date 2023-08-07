@@ -444,6 +444,38 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => modal.arrivalTimeInfo(0), 'Pakollinen tieto')
       await modal.assertDepartureTimeInfoHidden(0)
     })
+    test('If there is an open arrival, new arrival cannot be marked', async () => {
+      await prepareTest({
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)).subHours(24)
+      })
+
+      let modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.openAttendanceWarning.waitUntilVisible()
+      await modal.arrivalTimeInputInfo.assertText((text) =>
+        text.includes('Avoin kirjaus')
+      )
+
+      await modal.setDepartureTime(0, '06:00')
+      await modal.save()
+
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 1,
+        attendances: [['07:00', '→']]
+      })
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 2,
+        attendances: [['→', '06:00']]
+      })
+
+      modal = await staffAttendances.openDetails(1, mockedToday)
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '→ – 06:00',
+        hours: '23:00'
+      })
+    })
   })
   describe('Staff count sums in the table', () => {
     let staffAttendances: UnitStaffAttendancesTable

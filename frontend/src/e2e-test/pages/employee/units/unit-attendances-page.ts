@@ -553,6 +553,9 @@ export class UnitOccupanciesSection extends Element {
 }
 
 export class StaffAttendanceDetailsModal extends Element {
+  openAttendanceWarning = this.findByDataQa(`open-attendance-warning`)
+  arrivalTimeInputInfo = this.findByDataQa('arrival-time-input-info')
+
   async setGroup(row: number, groupId: UUID) {
     await new Select(
       this.findAllByDataQa('group-indicator')

@@ -170,7 +170,7 @@ describe('validateEditState', () => {
     expect(errors).toEqual([{ arrived: 'required' }])
   })
 
-  it('does not require the arrived timestamp for the first entry for an ongoing overnight attendance', () => {
+  it('does not allow the arrived timestamp for the first entry for an ongoing overnight attendance', () => {
     const validate = staffAttendanceValidator(
       getConfig([
         {
@@ -191,16 +191,8 @@ describe('validateEditState', () => {
         departed: ''
       }
     ])
-    expect(body).toEqual([
-      {
-        id: 'id1',
-        groupId: 'group1',
-        arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-        departed: null,
-        type: 'PRESENT'
-      }
-    ])
-    expect(errors).toEqual([{}])
+    expect(body).toEqual(undefined)
+    expect(errors).toEqual([{ arrived: 'openAttendance' }])
   })
   it('requires departed timestamp for all except the last entry', () => {
     const validate = staffAttendanceValidator(getConfig([]))
@@ -256,7 +248,7 @@ describe('validateEditState', () => {
         id: 'id1',
         type: 'PRESENT',
         groupId: 'group1',
-        arrived: '08:00',
+        arrived: '',
         departed: '07:00'
       },
       {
@@ -267,8 +259,23 @@ describe('validateEditState', () => {
         departed: '09:00'
       }
     ])
-    expect(body).toBeUndefined()
-    expect(errors).toEqual([{ departed: 'timeFormat' }, {}])
+    expect(body).toEqual([
+      {
+        id: 'id1',
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
+        departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(7, 0))
+      },
+      {
+        id: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)),
+        departed: HelsinkiDateTime.fromLocal(tomorrow, LocalTime.of(9, 0))
+      }
+    ])
+    expect(errors).toEqual([{}, {}])
   })
 
   it('requires a value only for arrival if editing a day that IS today', () => {
