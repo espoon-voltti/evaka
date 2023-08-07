@@ -22,3 +22,4 @@
 !espoo-customizations
 
 !node_modules/@fortawesome/pro-*
+!proxy/files/

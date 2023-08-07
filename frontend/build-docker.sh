@@ -9,7 +9,7 @@ set -euo pipefail
 cd "$( dirname "${BASH_SOURCE[0]}")"
 
 rm ./espoo-customizations -rf
-cp ../espoo-customizations . -r
+cp ../espoo-customizations . -rp
 
 if [ "${1:-}" = "test" ] || [ "${1:-}" = "builder" ]; then
     docker build -t evaka/frontend-builder \

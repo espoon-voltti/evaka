@@ -721,6 +721,10 @@ jobs:
               '--exclude=*.map'
             )
           fi
+
+          mkdir ./citizen
+          find . -maxdepth 1 -type f -exec cp "{}" ./citizen/  \;
+
           aws --profile="voltti-${{ matrix.environment }}" s3 sync --exact-timestamps "${EXTRA_ARGS[@]}" \
             ./citizen \
             "s3://evaka-static-${{ matrix.environment }}/frontend/citizen/${{ github.event.pull_request.head.sha || github.sha }}"
@@ -748,6 +752,36 @@ jobs:
             aws s3 cp metadata.yaml s3://evaka-static-${{ matrix.environment }}/frontend/master.metadata.yaml \
               --profile "voltti-${{ matrix.environment }}"
           fi
+
+  frontend-s3:
+    if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
+    needs:
+      - frontend
+      - frontend-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-duration-seconds: 1200
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Extract frontend files
+        run: |
+          rm -rf ./frontend-build/
+          docker create -ti --name frontend_instance "${{ needs.frontend.outputs.image }}" sh
+          docker cp frontend_instance:/static ./frontend-build
+          docker rm -f frontend_instance
+
+      - run: |
+          cd ./frontend-build/
+          aws s3 sync --exclude="index.html" --exact-timestamps . s3://evaka-static-common/
 
   tag:
     if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -802,6 +836,7 @@ jobs:
     needs:
       - tag
       - frontend-install
+      - frontend-s3
     steps:
       - uses: actions/github-script@v6
         with:
