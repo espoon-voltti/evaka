@@ -6,6 +6,11 @@ import 'react'
 import type { LatLngExpression } from 'leaflet'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  DaycareAssistanceLevel,
+  OtherAssistanceMeasureType,
+  PreschoolAssistanceLevel
+} from 'lib-common/generated/api-types/assistance'
 import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
 import {
   AbsenceType,
@@ -256,7 +261,10 @@ export interface EmployeeCustomizations {
   placementTypes: PlacementType[]
   absenceTypes: AbsenceType[]
   assistanceMeasures: AssistanceMeasure[]
+  daycareAssistanceLevels: DaycareAssistanceLevel[]
+  otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
+  preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   unitProviderTypes: ProviderType[]
   voucherValueDecisionTypes: VoucherValueDecisionType[]
 }

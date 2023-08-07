@@ -17,7 +17,6 @@ import { useForm, useFormFields } from 'lib-common/form/hooks'
 import {
   PreschoolAssistance,
   PreschoolAssistanceLevel,
-  preschoolAssistanceLevels,
   PreschoolAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -25,6 +24,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { preschoolAssistanceLevels } from 'lib-customizations/employee'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
@@ -65,7 +65,7 @@ export const PreschoolAssistanceForm = React.memo(
       preschoolAssistanceForm,
       () => ({
         level: {
-          domValue: initialData?.level ?? 'INTENSIFIED_SUPPORT',
+          domValue: initialData?.level ?? preschoolAssistanceLevels[0],
           options: levelOptions(i18n)
         },
         validDuring: {
