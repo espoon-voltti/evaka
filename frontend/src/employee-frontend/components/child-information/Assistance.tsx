@@ -4,6 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 
+import { Action } from 'lib-common/generated/action'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -36,10 +37,6 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
 
   const { permittedActions, assistanceNeedVoucherCoefficientsEnabled } =
     useContext(ChildContext)
-  const assistanceResult = useQueryResult(assistanceQuery(id))
-  const { user } = useContext(UserContext)
-  const useNewAssistanceModel =
-    user?.accessibleFeatures.useNewAssistanceModel ?? false
 
   const [open, setOpen] = useState(startOpen)
 
@@ -53,72 +50,9 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         paddingVertical="L"
         data-qa="assistance-collapsible"
       >
-        {useNewAssistanceModel && (
-          <>
-            {permittedActions.has('READ_ASSISTANCE_FACTORS') && (
-              <AssistanceFactorSection
-                childId={id}
-                rows={assistanceResult.map(
-                  ({ assistanceFactors }) => assistanceFactors
-                )}
-              />
-            )}
-            {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
-              <>
-                <HorizontalLine dashed slim />
-                <DaycareAssistanceSection
-                  childId={id}
-                  rows={assistanceResult.map(
-                    ({ daycareAssistances }) => daycareAssistances
-                  )}
-                />
-              </>
-            )}
-            {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
-              <>
-                <HorizontalLine dashed slim />
-                <PreschoolAssistanceSection
-                  childId={id}
-                  rows={assistanceResult.map(
-                    ({ preschoolAssistances }) => preschoolAssistances
-                  )}
-                />
-              </>
-            )}
-          </>
+        {permittedActions.has('READ_ASSISTANCE') && (
+          <AssistanceContent id={id} permittedActions={permittedActions} />
         )}
-        {permittedActions.has('READ_ASSISTANCE_NEED') &&
-          !useNewAssistanceModel && (
-            <AssistanceNeed
-              id={id}
-              assistanceNeeds={assistanceResult.map(
-                ({ assistanceNeeds }) => assistanceNeeds
-              )}
-            />
-          )}
-        {permittedActions.has('READ_ASSISTANCE_ACTION') && (
-          <>
-            <HorizontalLine dashed slim />
-            <AssistanceAction
-              id={id}
-              assistanceActions={assistanceResult.map(
-                ({ assistanceActions }) => assistanceActions
-              )}
-            />
-          </>
-        )}
-        {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') &&
-          useNewAssistanceModel && (
-            <>
-              <HorizontalLine dashed slim />
-              <OtherAssistanceMeasureSection
-                childId={id}
-                rows={assistanceResult.map(
-                  ({ otherAssistanceMeasures }) => otherAssistanceMeasures
-                )}
-              />
-            </>
-          )}
         {featureFlags.experimental?.assistanceNeedDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
             <>
@@ -144,3 +78,86 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
     </div>
   )
 })
+
+const AssistanceContent = ({
+  id,
+  permittedActions
+}: {
+  id: UUID
+  permittedActions: Set<Action.Child | Action.Person>
+}) => {
+  const assistanceResult = useQueryResult(assistanceQuery(id))
+  const { user } = useContext(UserContext)
+  const useNewAssistanceModel =
+    user?.accessibleFeatures.useNewAssistanceModel ?? false
+  return (
+    <>
+      {useNewAssistanceModel && (
+        <>
+          {permittedActions.has('READ_ASSISTANCE_FACTORS') && (
+            <AssistanceFactorSection
+              childId={id}
+              rows={assistanceResult.map(
+                ({ assistanceFactors }) => assistanceFactors
+              )}
+            />
+          )}
+          {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
+            <>
+              <HorizontalLine dashed slim />
+              <DaycareAssistanceSection
+                childId={id}
+                rows={assistanceResult.map(
+                  ({ daycareAssistances }) => daycareAssistances
+                )}
+              />
+            </>
+          )}
+          {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
+            <>
+              <HorizontalLine dashed slim />
+              <PreschoolAssistanceSection
+                childId={id}
+                rows={assistanceResult.map(
+                  ({ preschoolAssistances }) => preschoolAssistances
+                )}
+              />
+            </>
+          )}
+        </>
+      )}
+      {permittedActions.has('READ_ASSISTANCE_NEED') &&
+        !useNewAssistanceModel && (
+          <AssistanceNeed
+            id={id}
+            assistanceNeeds={assistanceResult.map(
+              ({ assistanceNeeds }) => assistanceNeeds
+            )}
+          />
+        )}
+      {permittedActions.has('READ_ASSISTANCE_ACTION') && (
+        <>
+          <HorizontalLine dashed slim />
+          <AssistanceAction
+            id={id}
+            assistanceActions={assistanceResult.map(
+              ({ assistanceActions }) => assistanceActions
+            )}
+          />
+        </>
+      )}
+      {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') &&
+        useNewAssistanceModel && (
+          <>
+            <HorizontalLine dashed slim />
+            <OtherAssistanceMeasureSection
+              childId={id}
+              rows={assistanceResult.map(
+                ({ otherAssistanceMeasures }) => otherAssistanceMeasures
+              )}
+            />
+          </>
+        )}
+    </>
+  )
+}
