@@ -42,6 +42,9 @@ const {
   featureFlags,
   absenceTypes,
   assistanceMeasures,
+  daycareAssistanceLevels,
+  otherAssistanceMeasureTypes,
+  preschoolAssistanceLevels,
   placementTypes,
   placementPlanRejectReasons,
   unitProviderTypes,
@@ -53,8 +56,11 @@ export {
   featureFlags,
   absenceTypes,
   assistanceMeasures,
+  daycareAssistanceLevels,
+  otherAssistanceMeasureTypes,
   placementTypes,
   placementPlanRejectReasons,
+  preschoolAssistanceLevels,
   unitProviderTypes,
   voucherValueDecisionTypes
 }

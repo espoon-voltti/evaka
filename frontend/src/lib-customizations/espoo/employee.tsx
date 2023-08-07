@@ -4,6 +4,11 @@
 
 import React from 'react'
 
+import {
+  daycareAssistanceLevels,
+  otherAssistanceMeasureTypes,
+  preschoolAssistanceLevels
+} from 'lib-common/generated/api-types/assistance'
 import type { EmployeeCustomizations } from 'lib-customizations/types'
 
 import { employeeConfig } from './appConfigs'
@@ -62,7 +67,10 @@ const customizations: EmployeeCustomizations = {
     'CHILD_ACCULTURATION_SUPPORT',
     'TRANSPORT_BENEFIT'
   ],
+  daycareAssistanceLevels: [...daycareAssistanceLevels],
+  otherAssistanceMeasureTypes: [...otherAssistanceMeasureTypes],
   placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER'],
+  preschoolAssistanceLevels: [...preschoolAssistanceLevels],
   unitProviderTypes: [
     'MUNICIPAL',
     'PURCHASED',

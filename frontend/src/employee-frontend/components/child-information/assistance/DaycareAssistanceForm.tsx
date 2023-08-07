@@ -17,7 +17,6 @@ import { useForm, useFormFields } from 'lib-common/form/hooks'
 import {
   DaycareAssistance,
   DaycareAssistanceLevel,
-  daycareAssistanceLevels,
   DaycareAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -25,6 +24,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { daycareAssistanceLevels } from 'lib-customizations/employee'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
@@ -65,7 +65,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
     daycareAssistanceForm,
     () => ({
       level: {
-        domValue: initialData?.level ?? 'GENERAL_SUPPORT',
+        domValue: initialData?.level ?? daycareAssistanceLevels[0],
         options: levelOptions(i18n)
       },
       validDuring: {
