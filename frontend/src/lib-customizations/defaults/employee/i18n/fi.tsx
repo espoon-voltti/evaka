@@ -703,7 +703,8 @@ export const fi = {
       assistanceFactor: {
         title: 'Tuen kerroin',
         create: 'Luo uusi tuen kertoimen ajanjakso',
-        removeConfirmation: 'Haluatko poistaa tuen kertoimen ajanjakson?'
+        removeConfirmation: 'Haluatko poistaa tuen kertoimen ajanjakson?',
+        info: (): React.ReactNode => undefined
       },
       daycareAssistance: {
         title: 'Tuen taso varhaiskasvatuksessa',
@@ -718,7 +719,12 @@ export const fi = {
       otherAssistanceMeasure: {
         title: 'Muut toimet',
         create: 'Lisää muu toimi',
-        removeConfirmation: 'Haluatko poistaa muun toimen?'
+        removeConfirmation: 'Haluatko poistaa muun toimen?',
+        infoList: 'Lisätietoja muista toimista:',
+        info: {
+          TRANSPORT_BENEFIT: (): React.ReactNode => undefined,
+          ACCULTURATION_SUPPORT: (): React.ReactNode => undefined
+        }
       }
     },
     assistanceNeed: {

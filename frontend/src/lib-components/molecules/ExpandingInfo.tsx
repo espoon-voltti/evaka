@@ -286,7 +286,7 @@ export const InfoButton = React.memo(function InfoButton({
   )
 })
 
-const InlineInfoButton = styled(InfoButton)`
+export const InlineInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
 `
 
