@@ -7,15 +7,26 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
+import { string } from 'lib-common/form/fields'
+import { object, validated } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { nonEmpty } from 'lib-common/form/validators'
+import {
+  AssistanceNeedPreschoolDecision,
+  AssistanceNeedPreschoolDecisionResponse
+} from 'lib-common/generated/api-types/assistanceneed'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import Button from 'lib-components/atoms/buttons/Button'
+import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import {
+  AsyncFormModal,
+  MutateFormModal
+} from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { translations } from 'lib-customizations/employee'
 
@@ -24,6 +35,7 @@ import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { putAssistanceNeedPreschoolDecisionMarkAsOpened } from '../child-information/assistance-need/decision/api-preschool'
 import {
+  annulAssistanceNeedPreschoolDecisionMutation,
   assistanceNeedPreschoolDecisionQuery,
   decideAssistanceNeedPreschoolDecisionMutation
 } from '../child-information/queries'
@@ -49,6 +61,46 @@ const DangerButton = styled(Button)`
   }
 `
 
+const annulForm = object({
+  reason: validated(string(), nonEmpty)
+})
+
+const AnnulModal = React.memo(function AnnulModal({
+  decision,
+  onClose
+}: {
+  decision: AssistanceNeedPreschoolDecision
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+  const boundForm = useForm(
+    annulForm,
+    () => ({ reason: '' }),
+    i18n.validationErrors
+  )
+  const { reason } = useFormFields(boundForm)
+
+  return (
+    <MutateFormModal
+      title={i18n.reports.assistanceNeedDecisions.annulModal.title}
+      text={i18n.reports.assistanceNeedDecisions.annulModal.text}
+      resolveLabel={i18n.reports.assistanceNeedDecisions.annulModal.okBtn}
+      resolveMutation={annulAssistanceNeedPreschoolDecisionMutation}
+      resolveAction={() => ({
+        childId: decision.child.id,
+        id: decision.id,
+        reason: reason.value()
+      })}
+      onSuccess={onClose}
+      rejectLabel={i18n.common.cancel}
+      rejectAction={onClose}
+      resolveDisabled={!boundForm.isValid()}
+    >
+      <InputFieldF bind={reason} data-qa="annul-reason-input" />
+    </MutateFormModal>
+  )
+})
+
 const DecisionView = React.memo(function DecisionView({
   decision: { decision }
 }: {
@@ -57,7 +109,7 @@ const DecisionView = React.memo(function DecisionView({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const [confirmationModal, setConfirmationModal] = useState<
-    'REJECT' | 'ACCEPT' | null
+    'REJECT' | 'ACCEPT' | 'ANNUL' | null
   >(null)
 
   const { user } = useContext(UserContext)
@@ -127,6 +179,15 @@ const DecisionView = React.memo(function DecisionView({
               />
             </FixedSpaceRow>
           )}
+
+          {decision.status === 'ACCEPTED' && (
+            <DangerButton
+              text={i18n.reports.assistanceNeedDecisions.annulDecision}
+              disabled={submitting || !isDecisionMaker}
+              onClick={() => setConfirmationModal('ANNUL')}
+              data-qa="annul-button"
+            />
+          )}
         </FixedSpaceRow>
       </StickyFooter>
 
@@ -163,6 +224,13 @@ const DecisionView = React.memo(function DecisionView({
           onSuccess={() => setConfirmationModal(null)}
           rejectAction={() => setConfirmationModal(null)}
           rejectLabel={i18n.common.cancel}
+        />
+      )}
+
+      {confirmationModal === 'ANNUL' && (
+        <AnnulModal
+          decision={decision}
+          onClose={() => setConfirmationModal(null)}
         />
       )}
     </div>

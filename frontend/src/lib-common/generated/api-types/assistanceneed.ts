@@ -20,6 +20,13 @@ export interface AnnulAssistanceNeedDecisionRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.AnnulAssistanceNeedPreschoolDecisionRequest
+*/
+export interface AnnulAssistanceNeedPreschoolDecisionRequest {
+  reason: string
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.AssistanceBasisOption
 */
 export interface AssistanceBasisOption {

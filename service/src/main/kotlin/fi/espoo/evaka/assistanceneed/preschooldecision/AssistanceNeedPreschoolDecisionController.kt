@@ -255,6 +255,40 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
+    @PutMapping("/assistance-need-preschool-decisions/{id}/annul")
+    fun annulAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
+        @RequestBody body: AnnulAssistanceNeedPreschoolDecisionRequest
+    ) {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.ANNUL,
+                        id
+                    )
+
+                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
+
+                    if (!decision.status.isDecided()) {
+                        throw BadRequest("Cannot annul undecided decision")
+                    }
+
+                    if (decision.status == AssistanceNeedDecisionStatus.ANNULLED) {
+                        throw BadRequest("Already annulled")
+                    }
+
+                    tx.annulAssistanceNeedPreschoolDecision(id, body.reason)
+                }
+            }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = id) }
+    }
+
     @GetMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun getAssistanceNeedPreschoolDecisions(
         db: Database,
@@ -408,6 +442,8 @@ class AssistanceNeedPreschoolDecisionController(
     data class DecideAssistanceNeedPreschoolDecisionRequest(
         val status: AssistanceNeedDecisionStatus
     )
+
+    data class AnnulAssistanceNeedPreschoolDecisionRequest(val reason: String)
 
     data class UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest(val title: String)
 }

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  AnnulAssistanceNeedDecisionRequest,
   AssistanceNeedDecisionStatus,
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionBasicsResponse,
@@ -120,6 +121,19 @@ export async function putAssistanceNeedPreschoolDecisionDecide(
   }
   await client.put(
     `/assistance-need-preschool-decisions/${decisionId}/decide`,
+    body
+  )
+}
+
+export async function putAssistanceNeedPreschoolDecisionAnnul(
+  decisionId: UUID,
+  reason: string
+): Promise<void> {
+  const body: AnnulAssistanceNeedDecisionRequest = {
+    reason
+  }
+  await client.put(
+    `/assistance-need-preschool-decisions/${decisionId}/annul`,
     body
   )
 }

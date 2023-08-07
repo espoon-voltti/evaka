@@ -65,6 +65,7 @@ import {
   getAssistanceNeedPreschoolDecisionMakerOptions,
   postAssistanceNeedPreschoolDecision,
   putAssistanceNeedPreschoolDecision,
+  putAssistanceNeedPreschoolDecisionAnnul,
   putAssistanceNeedPreschoolDecisionDecide,
   putAssistanceNeedPreschoolDecisionSend,
   putAssistanceNeedPreschoolDecisionUnsend
@@ -298,6 +299,15 @@ export const decideAssistanceNeedPreschoolDecisionMutation = mutation({
     id: UUID
     status: AssistanceNeedDecisionStatus
   }) => putAssistanceNeedPreschoolDecisionDecide(arg.id, arg.status),
+  invalidateQueryKeys: (arg) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
+    queryKeys.assistanceNeedPreschoolDecision(arg.id)
+  ]
+})
+
+export const annulAssistanceNeedPreschoolDecisionMutation = mutation({
+  api: (arg: { childId: UUID; id: UUID; reason: string }) =>
+    putAssistanceNeedPreschoolDecisionAnnul(arg.id, arg.reason),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)

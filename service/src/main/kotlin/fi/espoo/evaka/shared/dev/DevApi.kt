@@ -1834,6 +1834,7 @@ data class DevAssistanceNeedPreschoolDecision(
     val childId: ChildId,
     val form: AssistanceNeedPreschoolDecisionForm,
     val status: AssistanceNeedDecisionStatus,
+    val annulmentReason: String,
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
     val unreadGuardianIds: Set<PersonId>?

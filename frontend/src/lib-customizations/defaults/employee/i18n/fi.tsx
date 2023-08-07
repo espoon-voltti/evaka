@@ -810,6 +810,7 @@ export const fi = {
         REJECTED: 'Hylätty',
         ANNULLED: 'Mitätöity'
       },
+      annulmentReason: 'Päätöksen mitätöinnin perustelu',
       pageTitle: 'Päätös tuesta esiopetuksessa',
       decisionNumber: 'Päätösnumero',
       confidential: 'Salassa pidettävä',

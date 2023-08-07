@@ -1615,6 +1615,7 @@ export class Fixture {
       decisionNumber: 1000,
       childId: 'not_set',
       status: 'DRAFT',
+      annulmentReason: '',
       sentForDecision: null,
       decisionMade: null,
       unreadGuardianIds: null,

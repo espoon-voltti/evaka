@@ -56,6 +56,7 @@ interface ViewTranslations {
     REJECTED: string
     ANNULLED: string
   }
+  annulmentReason: string
   pageTitle: string
   decisionNumber: string
   confidential: string
@@ -132,6 +133,13 @@ export default React.memo(function DecisionFormReadView({
           </FixedSpaceColumn>
         </FixedSpaceRow>
         <FixedSpaceColumn spacing="XL">
+          {decision.status === 'ANNULLED' && (
+            <LabeledValue>
+              <Label>{t.annulmentReason}</Label>
+              <span data-qa="annulment-reason">{decision.annulmentReason}</span>
+            </LabeledValue>
+          )}
+
           <SectionSpacer>
             <H2>{t.decidedAssistance}</H2>
 
