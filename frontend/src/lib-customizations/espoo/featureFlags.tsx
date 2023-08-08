@@ -70,6 +70,7 @@ const features: Features = {
       fosterParents: true,
       serviceWorkerMessaging: true,
       childDocuments: true,
+      assistanceNeedPreschoolDecisions: true,
       citizenEmailNotificationSettings: true
     }
   },
