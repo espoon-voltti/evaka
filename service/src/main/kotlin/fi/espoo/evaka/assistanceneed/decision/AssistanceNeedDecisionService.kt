@@ -23,7 +23,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -74,11 +74,15 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionEmail
     ) {
-        this.sendDecisionEmail(db, msg.decisionId)
+        this.sendDecisionEmail(db, msg.decisionId, clock.today())
         logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
     }
 
-    fun sendDecisionEmail(dbc: Database.Connection, decisionId: AssistanceNeedDecisionId) {
+    fun sendDecisionEmail(
+        dbc: Database.Connection,
+        decisionId: AssistanceNeedDecisionId,
+        today: LocalDate
+    ) {
         val decision = dbc.read { tx -> tx.getAssistanceNeedDecisionById(decisionId) }
 
         if (decision.child?.id == null) {
@@ -89,7 +93,8 @@ class AssistanceNeedDecisionService(
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
-        val guardians = dbc.read { tx -> tx.getChildGuardians(decision.child.id) }
+        val guardians =
+            dbc.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
 
         val language =
             when (decision.language) {
@@ -181,7 +186,7 @@ class AssistanceNeedDecisionService(
             if (decision.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
             else DocumentLang.FI
 
-        tx.getChildGuardians(decision.child.id)
+        tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
             .mapNotNull { tx.getPersonById(it) }
             .forEach { guardian ->
                 if (guardian.identity !is ExternalIdentifier.SSN) {

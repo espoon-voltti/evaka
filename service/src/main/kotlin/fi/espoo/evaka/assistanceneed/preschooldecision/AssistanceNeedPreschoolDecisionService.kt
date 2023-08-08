@@ -21,7 +21,7 @@ import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -71,13 +71,17 @@ class AssistanceNeedPreschoolDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail
     ) {
-        this.sendDecisionEmail(db, msg.decisionId)
+        this.sendDecisionEmail(db, msg.decisionId, clock.today())
         logger.info {
             "Successfully sent assistance need preschool decision email (id: ${msg.decisionId})."
         }
     }
 
-    fun sendDecisionEmail(dbc: Database.Connection, decisionId: AssistanceNeedPreschoolDecisionId) {
+    fun sendDecisionEmail(
+        dbc: Database.Connection,
+        decisionId: AssistanceNeedPreschoolDecisionId,
+        today: LocalDate
+    ) {
         val decision = dbc.read { tx -> tx.getAssistanceNeedPreschoolDecisionById(decisionId) }
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
@@ -90,7 +94,8 @@ class AssistanceNeedPreschoolDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedPreschoolDecisionNotification(language)
 
-        val guardians = dbc.read { tx -> tx.getChildGuardians(decision.child.id) }
+        val guardians =
+            dbc.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
         guardians.forEach { guardianId ->
             Email.create(
                     dbc,
@@ -212,7 +217,7 @@ class AssistanceNeedPreschoolDecisionService(
             if (decision.form.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
             else DocumentLang.FI
 
-        tx.getChildGuardians(decision.child.id)
+        tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
             .mapNotNull { tx.getPersonById(it) }
             .forEach { guardian ->
                 if (guardian.identity !is ExternalIdentifier.SSN) {
