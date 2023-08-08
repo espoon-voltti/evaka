@@ -271,6 +271,10 @@ export class TextInput extends Element {
     await this.locator.fill(text)
   }
 
+  async blur(): Promise<void> {
+    await this.locator.blur()
+  }
+
   async clear(): Promise<void> {
     await this.locator.fill('')
   }
