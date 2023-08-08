@@ -605,42 +605,30 @@ class DayView extends Element {
 }
 
 class DayViewEditor extends Element {
-  #saveButton = this.findByDataQa('save')
+  saveButton = this.findByDataQa('save')
 
-  #childSection(childId: UUID) {
-    return this.findByDataQa(`child-${childId}`)
+  childSection(childId: UUID) {
+    return new DayViewEditorChildSection(this.findByDataQa(`child-${childId}`))
   }
+}
 
-  async addSecondReservation(
-    childId: UUID,
-    startTime: string,
-    endTime: string
-  ) {
-    const child = this.#childSection(childId)
-    await child.findByDataQa('edit-reservation-add-res-button').click()
-    await this.fillReservationTimes(childId, startTime, endTime, 1)
-  }
-
-  async fillReservationTimes(
-    childId: UUID,
-    startTime: string,
-    endTime: string,
-    reservationIndex = 0
-  ) {
-    const child = this.#childSection(childId)
-    await new TextInput(
-      child.findByDataQa(`edit-reservation-time-${reservationIndex}-start`)
-    ).fill(startTime)
-    const endInput = new TextInput(
-      child.findByDataQa(`edit-reservation-time-${reservationIndex}-end`)
-    )
-    await endInput.fill(endTime)
-    await endInput.press('Tab')
-  }
-
-  async save() {
-    await this.#saveButton.click()
-  }
+class DayViewEditorChildSection extends Element {
+  absentButton = this.findByDataQa('edit-reservation-absent-button')
+  addSecondReservationButton = this.findByDataQa(
+    'edit-reservation-add-res-button'
+  )
+  reservationStart = new TextInput(
+    this.findByDataQa('edit-reservation-time-0-start')
+  )
+  reservationEnd = new TextInput(
+    this.findByDataQa('edit-reservation-time-0-end')
+  )
+  reservation2Start = new TextInput(
+    this.findByDataQa('edit-reservation-time-1-start')
+  )
+  reservation2End = new TextInput(
+    this.findByDataQa('edit-reservation-time-1-end')
+  )
 }
 
 class HolidayModal extends Element {

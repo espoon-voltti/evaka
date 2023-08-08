@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { localTimeRangeWithUnitTimes } from 'lib-common/form/fields'
+import { limitedLocalTimeRange } from 'lib-common/form/fields'
 import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
 import { ShapeOf, StateOf } from 'lib-common/form/types'
 import UnderRowStatusIcon, { InfoStatus } from 'lib-components/atoms/StatusIcon'
@@ -16,8 +16,8 @@ import { useTranslation } from '../localization'
 
 export interface Props {
   bind: BoundFormShape<
-    StateOf<typeof localTimeRangeWithUnitTimes>,
-    ShapeOf<typeof localTimeRangeWithUnitTimes>
+    StateOf<typeof limitedLocalTimeRange>,
+    ShapeOf<typeof limitedLocalTimeRange>
   >
   hideErrorsBeforeTouched?: boolean
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void

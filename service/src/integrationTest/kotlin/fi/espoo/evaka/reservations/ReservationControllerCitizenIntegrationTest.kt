@@ -36,10 +36,12 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
@@ -88,7 +90,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     startDate = monday,
                     endDate = tuesday
                 )
-                .let { placementId ->
+                .also { placementId ->
                     it.insertTestServiceNeed(
                         confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         placementId = placementId,
@@ -175,17 +177,26 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                         dayChild(
                                             testChild_1.id,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_2.id,
                                             contractDays = true,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_3.id,
                                             requiresReservation = false,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         )
                                     )
                                     .sortedBy { it.childId }
@@ -197,17 +208,26 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                         dayChild(
                                             testChild_1.id,
-                                            unitOperationTime = testDaycare.operationTimes[1]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[1]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_2.id,
                                             contractDays = true,
-                                            unitOperationTime = testDaycare.operationTimes[1]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[1]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_3.id,
                                             requiresReservation = false,
-                                            unitOperationTime = testDaycare.operationTimes[1]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[1]!!
+                                                )
                                         )
                                     )
                                     .sortedBy { it.childId }
@@ -229,7 +249,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `get reservations returns correct children every day in range with a child in shift care`() {
+    fun `get reservations returns correct children every day in range with children in shift care`() {
         val roundTheClockDaycare =
             testRoundTheClockDaycare.copy(
                 id = DaycareId(UUID.randomUUID()),
@@ -239,6 +259,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insertTestHoliday(tuesday)
 
+            // Normal shift care
             tx.insertTestDaycare(roundTheClockDaycare)
             tx.insertTestPlacement(
                 childId = testChild_3.id,
@@ -248,6 +269,25 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 endDate = tuesday
             )
             tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
+
+            // Intermittent shift care
+            tx.insertTestPlacement(
+                    childId = testChild_4.id,
+                    unitId = testDaycare.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = sunday,
+                    endDate = wednesday
+                )
+                .also { placementId ->
+                    tx.insertTestServiceNeed(
+                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        placementId = placementId,
+                        period = FiniteDateRange(sunday, tuesday),
+                        optionId = snDaycareFullDay35.id,
+                        shiftCare = ShiftCareType.INTERMITTENT,
+                    )
+                }
+            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_4.id)
         }
 
         val res = getReservations(FiniteDateRange(sunday, wednesday))
@@ -289,6 +329,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                         ),
+                        ReservationChild(
+                            id = testChild_4.id,
+                            firstName = testChild_4.firstName,
+                            lastName = testChild_4.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.DAYCARE,
+                        ),
                     ),
                 days =
                     listOf(
@@ -297,13 +346,26 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children =
                                 listOf(
-                                    // sunday, only shift care is eligible
-                                    dayChild(
-                                        testChild_3.id,
-                                        shiftCare = true,
-                                        unitOperationTime = roundTheClockDaycare.operationTimes[6]
-                                    ),
-                                )
+                                        // Sunday, only shift care is eligible
+                                        dayChild(
+                                            testChild_3.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    roundTheClockDaycare.operationTimes[6]!!
+                                                )
+                                        ),
+                                        dayChild(
+                                            testChild_4.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.IntermittentShiftCare(
+                                                    // Placement unit is not open on Sundays
+                                                    null
+                                                )
+                                        ),
+                                    )
+                                    .sortedBy { it.childId }
                         ),
                         ReservationResponseDay(
                             date = monday,
@@ -312,18 +374,34 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                         dayChild(
                                             testChild_1.id,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_2.id,
                                             contractDays = true,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_3.id,
                                             shiftCare = true,
-                                            unitOperationTime =
-                                                roundTheClockDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    roundTheClockDaycare.operationTimes[0]!!
+                                                )
+                                        ),
+                                        dayChild(
+                                            testChild_4.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.IntermittentShiftCare(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                     )
                                     .sortedBy { it.childId }
@@ -333,18 +411,42 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = true,
                             children =
                                 listOf(
-                                    // holiday, only shift care is eligible
-                                    dayChild(
-                                        testChild_3.id,
-                                        shiftCare = true,
-                                        unitOperationTime = roundTheClockDaycare.operationTimes[1]
-                                    ),
-                                )
+                                        // Holiday, only shift care is eligible
+                                        dayChild(
+                                            testChild_3.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[1]!!
+                                                )
+                                        ),
+                                        dayChild(
+                                            testChild_4.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.IntermittentShiftCare(
+                                                    // Placement unit is not open on holidays
+                                                    null
+                                                )
+                                        ),
+                                    )
+                                    .sortedBy { it.childId }
                         ),
                         ReservationResponseDay(
                             date = wednesday,
                             holiday = false,
-                            children = emptyList()
+                            children =
+                                listOf(
+                                    // Intermittent shift care ended on Tuesday
+                                    dayChild(
+                                        testChild_4.id,
+                                        shiftCare = false,
+                                        reservableTimeRange =
+                                            ReservableTimeRange.Normal(
+                                                testDaycare.operationTimes[2]!!
+                                            )
+                                    ),
+                                )
                         )
                     )
             ),
@@ -420,12 +522,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                                     AbsenceType.OTHER_ABSENCE,
                                                     editable = false
                                                 ),
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_2.id,
                                             contractDays = true,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[0]!!
+                                                )
                                         ),
                                     )
                                     .sortedBy { it.childId }
@@ -437,12 +545,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                         dayChild(
                                             testChild_1.id,
-                                            unitOperationTime = testDaycare.operationTimes[1]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[1]!!
+                                                )
                                         ),
                                         dayChild(
                                             testChild_2.id,
                                             contractDays = true,
-                                            unitOperationTime = testDaycare.operationTimes[0]
+                                            reservableTimeRange =
+                                                ReservableTimeRange.Normal(
+                                                    testDaycare.operationTimes[1]!!
+                                                )
                                         ),
                                     )
                                     .sortedBy { it.childId }
@@ -507,13 +621,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             testChild_1.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -528,13 +644,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             testChild_1.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -575,12 +693,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             testChild_1.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -596,12 +716,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             testChild_1.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -657,14 +779,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             testChild_1.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -680,14 +804,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             testChild_1.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -740,13 +866,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(monday, day.date)
             assertEquals(
                 listOf(
-                        dayChild(testChild_1.id, unitOperationTime = testDaycare.operationTimes[0]),
+                        dayChild(
+                            testChild_1.id,
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
+                        ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = false),
-                            unitOperationTime = testDaycare.operationTimes[0]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
                         ),
                     )
                     .sortedBy { it.childId },
@@ -758,13 +889,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(tuesday, day.date)
             assertEquals(
                 listOf(
-                        dayChild(testChild_1.id, unitOperationTime = testDaycare.operationTimes[1]),
+                        dayChild(
+                            testChild_1.id,
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                        ),
                         dayChild(
                             testChild_2.id,
                             contractDays = true,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            unitOperationTime = testDaycare.operationTimes[1]
+                            reservableTimeRange =
+                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -777,25 +913,23 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     private fun dayChild(
         childId: ChildId,
-        unitOperationTime: TimeRange?,
+        reservableTimeRange: ReservableTimeRange,
         requiresReservation: Boolean = true,
         shiftCare: Boolean = false,
         contractDays: Boolean = false,
         absence: AbsenceInfo? = null,
         reservations: List<Reservation> = emptyList(),
         attendances: List<OpenTimeRange> = emptyList(),
-        shiftCareType: ShiftCareType = ShiftCareType.NONE
     ) =
         ReservationResponseDayChild(
             childId,
             requiresReservation,
             shiftCare,
-            shiftCareType,
             contractDays,
             absence,
             reservations,
             attendances,
-            unitOperationTime
+            reservableTimeRange
         )
 
     private fun postReservations(request: List<DailyReservationRequest>) {

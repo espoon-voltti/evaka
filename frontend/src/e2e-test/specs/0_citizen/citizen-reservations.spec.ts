@@ -265,12 +265,10 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await dayView.assertNoReservation(children[2].id)
 
     const editor = await dayView.edit()
-    await editor.fillReservationTimes(
-      children[1].id,
-      reservation1.startTime,
-      reservation1.endTime
-    )
-    await editor.save()
+    const child = editor.childSection(children[1].id)
+    await child.reservationStart.fill(reservation1.startTime)
+    await child.reservationEnd.fill(reservation1.endTime)
+    await editor.saveButton.click()
 
     await dayView.assertNoReservation(children[0].id)
     await dayView.assertReservations(children[1].id, [reservation1])
@@ -487,19 +485,93 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const dayView = await calendarPage.openDayView(reservationDay)
 
     const editor = await dayView.edit()
-    await editor.fillReservationTimes(
-      fixtures.enduserChildFixturePorriHatterRestricted.id,
-      '00:00',
-      '23:59'
+    const child = editor.childSection(
+      fixtures.enduserChildFixturePorriHatterRestricted.id
     )
+    await child.reservationStart.fill('00:00')
+    await child.reservationEnd.fill('23:59')
+    await child.reservationEnd.blur()
 
-    await editor.findByDataQa('save').assertDisabled(true)
+    await editor.saveButton.assertDisabled(true)
     await editor
       .findByDataQa('edit-reservation-time-0-start-info')
       .waitUntilVisible()
     await editor
       .findByDataQa('edit-reservation-time-0-end-info')
       .waitUntilVisible()
+  })
+
+  test('Citizen creates an absence and turns it back to a reservation', async () => {
+    const reservationDay = today.addWeeks(2)
+
+    const calendarPage = await openCalendarPage(env)
+    let dayView = await calendarPage.openDayView(reservationDay)
+
+    let editor = await dayView.edit()
+    let childSection = editor.childSection(fixtures.enduserChildFixtureJari.id)
+    await childSection.absentButton.click()
+    await editor.saveButton.click()
+
+    await dayView.assertAbsence(fixtures.enduserChildFixtureJari.id, 'Poissa')
+    await dayView.close()
+
+    dayView = await calendarPage.openDayView(reservationDay)
+    editor = await dayView.edit()
+    childSection = editor.childSection(fixtures.enduserChildFixtureJari.id)
+    await childSection.absentButton.click()
+    await childSection.reservationStart.fill('08:00')
+    await childSection.reservationEnd.fill('16:00')
+    await editor.saveButton.click()
+
+    await dayView.assertReservations(fixtures.enduserChildFixtureJari.id, [
+      { startTime: '08:00', endTime: '16:00' }
+    ])
+  })
+
+  test('Citizen creates a weekly reservation that spans a holiday', async () => {
+    // Monday
+    const reservationDay = today.addDays(19)
+    const reservationRange = new FiniteDateRange(
+      reservationDay,
+      reservationDay.addWeeks(2)
+    )
+
+    // Wednesday
+    const holiday = today.addDays(21)
+    await Fixture.holiday().with({ date: holiday }).save()
+
+    const calendarPage = await openCalendarPage(env)
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+
+    // Reservations should cover entire work week from monday to friday
+    const reservations = [0, 1, 2, 3, 4].map(() => ({
+      startTime: '08:00',
+      endTime: '16:00',
+      childIds: [fixtures.enduserChildFixtureJari.id]
+    }))
+
+    await reservationsModal.fillWeeklyReservationInfo(
+      reservationRange,
+      reservations
+    )
+    await reservationsModal.save()
+
+    for (const date of reservationRange.dates()) {
+      if (date.isWeekend()) continue
+      if (date.isEqual(holiday)) continue
+      await calendarPage.assertReservations(date, [
+        {
+          childIds: [
+            fixtures.enduserChildFixtureJari.id,
+            fixtures.enduserChildFixtureKaarina.id,
+            fixtures.enduserChildFixturePorriHatterRestricted.id
+          ],
+          endTime: '16:00',
+          startTime: '08:00'
+        }
+      ])
+    }
   })
 })
 
@@ -746,25 +818,22 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
 
     await dayView.assertNoReservation(fixtures.enduserChildFixtureKaarina.id)
 
-    const editor = await dayView.edit()
-    await editor.fillReservationTimes(
-      fixtures.enduserChildFixtureKaarina.id,
-      reservation1.startTime,
-      reservation1.endTime
-    )
-    await editor.save()
+    let editor = await dayView.edit()
+    let child = editor.childSection(fixtures.enduserChildFixtureKaarina.id)
+    await child.reservationStart.fill(reservation1.startTime)
+    await child.reservationEnd.fill(reservation1.endTime)
+    await editor.saveButton.click()
 
     await dayView.assertReservations(fixtures.enduserChildFixtureKaarina.id, [
       reservation1
     ])
 
-    const editor2 = await dayView.edit()
-    await editor2.addSecondReservation(
-      fixtures.enduserChildFixtureKaarina.id,
-      reservation2.startTime,
-      reservation2.endTime
-    )
-    await editor2.save()
+    editor = await dayView.edit()
+    child = editor.childSection(fixtures.enduserChildFixtureKaarina.id)
+    await child.addSecondReservationButton.click()
+    await child.reservation2Start.fill(reservation2.startTime)
+    await child.reservation2End.fill(reservation2.endTime)
+    await editor.saveButton.click()
 
     await dayView.assertReservations(fixtures.enduserChildFixtureKaarina.id, [
       reservation1,
