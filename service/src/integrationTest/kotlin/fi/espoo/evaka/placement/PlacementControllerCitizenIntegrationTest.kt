@@ -4,12 +4,10 @@
 
 package fi.espoo.evaka.placement
 
-import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.*
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -25,13 +23,9 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.snPreschoolDaycare45
-import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.test.getApplicationStatus
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.AfterEach
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -42,6 +36,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -67,6 +62,11 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id))
             tx.insertGuardian(parent.id, child.id)
         }
+    }
+
+    @AfterEach
+    fun afterEach() {
+        MDC.clear()
     }
 
     @Test
@@ -783,6 +783,42 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         val backupCares = db.transaction { it.getBackupCaresForChild(child.id) }
         assertEquals(0, backupCares.size)
+    }
+
+    @Test
+    fun `should log a PlacementTerminate Audit event`(){
+        withTestLoggers {
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = daycareId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+                tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = daycare2Id,
+                    startDate = placementEnd.plusDays(1),
+                    endDate = placementEnd.plusMonths(2)
+                )
+            }
+
+            val placementTerminationDate = today.plusDays(1)
+
+            terminatePlacements(
+                child.id,
+                PlacementControllerCitizen.PlacementTerminationRequestBody(
+                    type = TerminatablePlacementType.DAYCARE,
+                    terminationDate = placementTerminationDate,
+                    unitId = daycareId,
+                    terminateDaycareOnly = false
+                )
+            )
+
+            it.withLatestSanitized { actual ->
+                Assertions.assertThat(actual["message"] as String).contains("NAKKIMUUSSi")
+            }
+        }
     }
 
     private fun terminatePlacements(

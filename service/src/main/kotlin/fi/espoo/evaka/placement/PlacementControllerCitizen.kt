@@ -7,6 +7,7 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.cancelAllActiveTransferApplicationsAfterDate
 import fi.espoo.evaka.daycare.getUnitFeatures
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -88,8 +89,12 @@ class PlacementControllerCitizen(
             body.terminationDate.also {
                 if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate")
             }
+
+        lateinit var terminatablePlacementGroup: TerminatablePlacementGroup
+        lateinit var cancelableTransferApplicationIds: List<ApplicationId>
+
         db.connect { dbc ->
-            val terminatablePlacementGroup =
+            terminatablePlacementGroup =
                 dbc.read { tx ->
                     if (
                         tx.getUnitFeatures(body.unitId)
@@ -137,7 +142,8 @@ class PlacementControllerCitizen(
                         }
                 }
 
-                tx.cancelAllActiveTransferApplicationsAfterDate(childId, terminationDate)
+                cancelableTransferApplicationIds =
+                    tx.cancelAllActiveTransferApplicationsAfterDate(childId, terminationDate)
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -150,6 +156,13 @@ class PlacementControllerCitizen(
                 )
             }
         }
-        Audit.PlacementTerminate.log(targetId = body.unitId, objectId = body.type)
+
+        val placements =
+            terminatablePlacementGroup.placements + terminatablePlacementGroup.additionalPlacements
+
+        Audit.PlacementTerminate.log(
+            targetId = listOf(body.unitId, body.type, childId),
+            objectId = listOf(listOf(placements.map { it.id }, cancelableTransferApplicationIds)),
+        )
     }
 }
