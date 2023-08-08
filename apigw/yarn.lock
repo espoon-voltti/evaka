@@ -2658,9 +2658,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.11.0":
-  version: 4.11.0
-  resolution: "dd-trace@npm:4.11.0"
+"dd-trace@npm:^4.11.1":
+  version: 4.11.1
+  resolution: "dd-trace@npm:4.11.1"
   dependencies:
     "@datadog/native-appsec": ^3.2.0
     "@datadog/native-iast-rewriter": 2.0.1
@@ -2673,7 +2673,7 @@ __metadata:
     crypto-randomuuid: ^1.0.0
     diagnostics_channel: ^1.1.0
     ignore: ^5.2.4
-    import-in-the-middle: ^1.4.1
+    import-in-the-middle: ^1.4.2
     int64-buffer: ^0.1.9
     ipaddr.js: ^2.1.0
     istanbul-lib-coverage: 3.2.0
@@ -2693,7 +2693,7 @@ __metadata:
     protobufjs: ^7.2.4
     retry: ^0.13.1
     semver: ^7.5.4
-  checksum: f7112ff02e6ba5275b7b76a538fe45ee4593c712500951ceaaf056d2bdb1e020737e8ff10558d5e41ea7fe7b47ea39429c2cfe49bacc1e3c38d19426ac5a6efa
+  checksum: 8f1742f273b907874bb8e15c1a648aab017aaef9465ae55895605eb3d62911a00a04508b5c38e16e321e6b7b6f7010fc8d7b8fa984865cc83fc8eedb6e66acbc
   languageName: node
   linkType: hard
 
@@ -3207,7 +3207,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^4.11.0
+    dd-trace: ^4.11.1
     eslint: ^8.46.0
     eslint-config-prettier: ^9.0.0
     eslint-plugin-prettier: ^5.0.0
@@ -4002,15 +4002,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "import-in-the-middle@npm:1.4.1"
+"import-in-the-middle@npm:^1.4.2":
+  version: 1.4.2
+  resolution: "import-in-the-middle@npm:1.4.2"
   dependencies:
     acorn: ^8.8.2
     acorn-import-assertions: ^1.9.0
     cjs-module-lexer: ^1.2.2
     module-details-from-path: ^1.0.3
-  checksum: 39cf8ba24f660dfd7f57cd871ea39b0162cb80d6fefd9150988b8836e50c3c64d9ea8793777f631730de929e90d8bd5cf18bcb65338d05e810c8d26075cddb26
+  checksum: 52971f821e9a3c94834cd5cf0ab5178321c07d4f4babd547b3cb24c4de21670d05b42ca1523890e7e90525c3bba6b7db7e54cf45421919b0b2712a34faa96ea5
   languageName: node
   linkType: hard
 
