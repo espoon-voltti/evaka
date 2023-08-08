@@ -209,6 +209,13 @@ export default React.memo(function CreateQuestionModal({
           />
         </FixedSpaceColumn>
 
+        {type === 'CHECKBOX' && (
+          <FixedSpaceColumn spacing="xxs">
+            <Label>{t.checkboxLabel}</Label>
+            <InputField value={label} onChange={setLabel} width="full" />
+          </FixedSpaceColumn>
+        )}
+
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
           <InputField value={name} onChange={setName} width="full" />
@@ -387,13 +394,6 @@ export default React.memo(function CreateQuestionModal({
               checked={continuesNumbering}
               onChange={setContinuesNumbering}
             />
-          </FixedSpaceColumn>
-        )}
-
-        {type === 'CHECKBOX' && (
-          <FixedSpaceColumn spacing="xxs">
-            <Label>{t.checkboxLabel}</Label>
-            <InputField value={label} onChange={setLabel} width="full" />
           </FixedSpaceColumn>
         )}
 

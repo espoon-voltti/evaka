@@ -4108,7 +4108,7 @@ export const fi = {
       id: 'Viitetunniste',
       dependsOn: 'Riippuvuudet',
       continuesNumbering: 'Jatkaa numerointia',
-      checkboxLabel: 'Rastin yläpuolella oleva otsikko',
+      checkboxLabel: 'Kysymyksen otsikko',
       multifieldSeparateRows: 'Tekstikentät erillisillä riveillä'
     },
     questionTypes: {
