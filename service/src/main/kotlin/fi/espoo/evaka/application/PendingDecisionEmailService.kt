@@ -131,7 +131,7 @@ GROUP BY application.guardian_id
         Email.create(
                 db,
                 pendingDecision.guardianId,
-                EmailMessageType.DOCUMENT_NOTIFICATION,
+                EmailMessageType.DECISION_NOTIFICATION,
                 emailEnv.sender(lang),
                 emailMessageProvider.pendingDecisionNotification(lang),
                 "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",

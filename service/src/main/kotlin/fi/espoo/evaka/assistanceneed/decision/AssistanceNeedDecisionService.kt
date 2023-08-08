@@ -108,7 +108,7 @@ class AssistanceNeedDecisionService(
             Email.create(
                     dbc,
                     guardianId,
-                    EmailMessageType.DOCUMENT_NOTIFICATION,
+                    EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
                     content,
                     "$decisionId - $guardianId",

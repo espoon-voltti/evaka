@@ -30,8 +30,17 @@ enum class EmailMessageType {
     /** Notifications about new calendar events of daycare groups */
     CALENDAR_EVENT_NOTIFICATION,
 
-    /** Notifications about new decisions, pedagogical documents, etc. */
+    /** Notifications about new decisions (e.g. daycare decision, assistance decision) */
+    DECISION_NOTIFICATION,
+
+    /**
+     * Notifications about *official documents* that are not decisions (e.g. vasu, pedagogical
+     * assesments, etc.)
+     */
     DOCUMENT_NOTIFICATION,
+
+    /** Notifications about informal documents (photos of children's drawings, etc.) */
+    INFORMAL_DOCUMENT_NOTIFICATION,
 
     /** Reminders about making attendance reservations */
     MISSING_ATTENDANCE_RESERVATION_NOTIFICATION
@@ -42,7 +51,9 @@ data class EmailNotificationSettings(
     val bulletin: Boolean,
     val outdatedIncome: Boolean,
     val calendarEvent: Boolean,
+    val decision: Boolean,
     val document: Boolean,
+    val informalDocument: Boolean,
     val missingAttendanceReservation: Boolean
 ) {
     fun toNotificationTypes() =
@@ -52,7 +63,9 @@ data class EmailNotificationSettings(
             EmailMessageType.BULLETIN_NOTIFICATION.takeIf { bulletin },
             EmailMessageType.OUTDATED_INCOME_NOTIFICATION.takeIf { outdatedIncome },
             EmailMessageType.CALENDAR_EVENT_NOTIFICATION.takeIf { calendarEvent },
+            EmailMessageType.DECISION_NOTIFICATION.takeIf { decision },
             EmailMessageType.DOCUMENT_NOTIFICATION.takeIf { document },
+            EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION.takeIf { informalDocument },
             EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION.takeIf {
                 missingAttendanceReservation
             }
@@ -67,7 +80,9 @@ data class EmailNotificationSettings(
                     bulletin = true,
                     outdatedIncome = true,
                     calendarEvent = true,
+                    decision = true,
                     document = true,
+                    informalDocument = true,
                     missingAttendanceReservation = true
                 )
             } else {
@@ -78,7 +93,10 @@ data class EmailNotificationSettings(
                         EmailMessageType.OUTDATED_INCOME_NOTIFICATION in enabledNotificationTypes,
                     calendarEvent =
                         EmailMessageType.CALENDAR_EVENT_NOTIFICATION in enabledNotificationTypes,
+                    decision = EmailMessageType.DECISION_NOTIFICATION in enabledNotificationTypes,
                     document = EmailMessageType.DOCUMENT_NOTIFICATION in enabledNotificationTypes,
+                    informalDocument =
+                        EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION in enabledNotificationTypes,
                     missingAttendanceReservation =
                         EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION in
                             enabledNotificationTypes

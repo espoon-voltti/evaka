@@ -1880,7 +1880,9 @@ export default {
       outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
       calendarEvent:
         'Muistutukset kalenteriin merkityistä uusista tapahtumista',
-      document: 'Saapuneista dokumenteista',
+      decision: 'Saapuneista päätöksistä',
+      document: 'Uusista asiakirjoista',
+      informalDocument: 'Muista lapsen arkeen liittyvistä dokumenteista',
       missingAttendanceReservation:
         'Muistutukset puuttuvista läsnäoloilmoituksista'
     }

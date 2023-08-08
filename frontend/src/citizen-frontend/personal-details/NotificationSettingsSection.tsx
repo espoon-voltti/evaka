@@ -27,7 +27,9 @@ const notificationSettingsForm = object({
   bulletin: boolean(),
   outdatedIncome: boolean(),
   calendarEvent: boolean(),
+  decision: boolean(),
   document: boolean(),
+  informalDocument: boolean(),
   missingAttendanceReservation: boolean()
 })
 
@@ -52,7 +54,9 @@ export default React.memo(
       bulletin,
       outdatedIncome,
       calendarEvent,
+      decision,
       document,
+      informalDocument,
       missingAttendanceReservation
     } = useFormFields(form)
 
@@ -101,10 +105,24 @@ export default React.memo(
         />
         <Gap size="s" />
         <CheckboxF
+          bind={decision}
+          label={t.personalDetails.notificationsSection.decision}
+          disabled={!editing}
+          data-qa="decision"
+        />
+        <Gap size="s" />
+        <CheckboxF
           bind={document}
           label={t.personalDetails.notificationsSection.document}
           disabled={!editing}
           data-qa="document"
+        />
+        <Gap size="s" />
+        <CheckboxF
+          bind={informalDocument}
+          label={t.personalDetails.notificationsSection.informalDocument}
+          disabled={!editing}
+          data-qa="informal-document"
         />
         <Gap size="s" />
         <CheckboxF
