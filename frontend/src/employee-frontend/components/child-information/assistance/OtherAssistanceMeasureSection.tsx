@@ -12,13 +12,22 @@ import React, {
 } from 'react'
 
 import { Result } from 'lib-common/api'
-import { OtherAssistanceMeasureResponse } from 'lib-common/generated/api-types/assistance'
+import {
+  OtherAssistanceMeasureResponse,
+  OtherAssistanceMeasureType
+} from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  ExpandingInfoBox,
+  InlineInfoButton
+} from 'lib-components/molecules/ExpandingInfo'
+import { otherAssistanceMeasureTypes } from 'lib-customizations/employee'
 
 import { ChildContext, ChildState } from '../../../state/child'
 import { useTranslation } from '../../../state/i18n'
@@ -54,6 +63,9 @@ export const OtherAssistanceMeasureSection = React.memo(
     )
     const [mode, setMode] = useState<Mode | undefined>(undefined)
     const clearMode = useCallback(() => setMode(undefined), [setMode])
+    const [info, setInfo] = useState<OtherAssistanceMeasureType | undefined>(
+      undefined
+    )
 
     const childId = props.childId
     const rowsResult = useMemo(
@@ -69,6 +81,10 @@ export const OtherAssistanceMeasureSection = React.memo(
           )
         ),
       [props.rows]
+    )
+
+    const showInfoList = Object.values(t.otherAssistanceMeasure.info).some(
+      (fn) => fn()
     )
 
     return renderResult(rowsResult, (rows) => (
@@ -88,6 +104,33 @@ export const OtherAssistanceMeasureSection = React.memo(
             />
           )}
         </TitleRow>
+        {showInfoList && (
+          <div>
+            {t.otherAssistanceMeasure.infoList}
+            <UnorderedList spacing="zero">
+              {otherAssistanceMeasureTypes.map((type) =>
+                t.otherAssistanceMeasure.info[type]() ? (
+                  <li key={type}>
+                    {t.types.otherAssistanceMeasureType[type]}
+                    <InlineInfoButton
+                      onClick={() =>
+                        info === type ? setInfo(undefined) : setInfo(type)
+                      }
+                      aria-label={i18n.common.openExpandingInfo}
+                    />
+                  </li>
+                ) : undefined
+              )}
+            </UnorderedList>
+          </div>
+        )}
+        {info && (
+          <ExpandingInfoBox
+            info={t.otherAssistanceMeasure.info[info]()}
+            close={() => setInfo(undefined)}
+            closeLabel={i18n.common.close}
+          />
+        )}
         {(mode?.type || rows.length > 0) && (
           <Table>
             <Thead>
