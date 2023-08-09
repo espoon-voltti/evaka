@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.assistance.AssistanceModel
+import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.MobileDeviceDetails
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.EmployeeFeatures
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
@@ -224,13 +226,22 @@ class SystemController(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable id: MobileDeviceId
-    ): MobileDeviceDetails {
-        return db.connect { dbc ->
-                dbc.read { it.getDevice(id) }
-                    .copy(pushApplicationServerKey = webPush?.applicationServerKey)
+    ): MobileDeviceDetails =
+        db.connect { dbc ->
+                dbc.read { tx ->
+                    val device = tx.getDevice(id)
+                    device.copy(
+                        pushApplicationServerKey =
+                            webPush?.applicationServerKey.takeIf {
+                                tx.anyUnitHasFeature(
+                                    device.unitIds,
+                                    PilotFeature.PUSH_NOTIFICATIONS
+                                )
+                            }
+                    )
+                }
             }
             .also { Audit.MobileDevicesRead.log(targetId = id) }
-    }
 
     @GetMapping("/system/mobile-identity/{token}")
     fun mobileIdentity(

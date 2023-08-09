@@ -6,6 +6,7 @@ package fi.espoo.evaka.webpush
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigInteger
 import java.net.URI
 import java.security.KeyFactory
@@ -16,8 +17,8 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
-import java.time.Instant
 import java.util.Base64
+import java.util.Objects
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.Mac
@@ -49,24 +50,48 @@ data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateK
 
 // Voluntary Application Server Identification (VAPID) for Web Push
 // Reference: https://datatracker.ietf.org/doc/html/rfc8292
-fun vapidAuthorizationHeader(keyPair: WebPushKeyPair, expiresAt: Instant, uri: URI): String {
-    fun URI.origin(): String {
-        val port = ":$port".takeIf { port != -1 } ?: ""
-        return "$scheme://$host$port"
-    }
-
-    // 2. Application Server Self-Identification
-    // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-2
-    val jwt =
-        JWT.create()
-            .withAudience(uri.origin())
-            .withExpiresAt(expiresAt)
-            .withSubject("https://github.com/espoon-voltti/evaka")
-            .sign(Algorithm.ECDSA256(keyPair.privateKey))
+data class VapidJwt(
+    val origin: String,
+    val publicKey: ByteArray,
+    val jwt: String,
+    val expiresAt: HelsinkiDateTime
+) {
 
     // 3. VAPID Authentication Scheme
     // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-3
-    return "vapid t=$jwt, k=${keyPair.publicKeyBase64()}"
+    fun toAuthorizationHeader(): String = "vapid t=$jwt, k=${WebPushCrypto.base64Encode(publicKey)}"
+
+    override fun equals(other: Any?): Boolean =
+        (other as? VapidJwt)?.let {
+            this.origin == it.origin &&
+                this.publicKey.contentEquals(it.publicKey) &&
+                this.jwt == it.jwt &&
+                this.expiresAt == it.expiresAt
+        }
+            ?: false
+
+    override fun hashCode(): Int = Objects.hash(origin, publicKey.contentHashCode(), jwt, expiresAt)
+
+    companion object {
+        private fun URI.origin(): String {
+            val port = ":$port".takeIf { port != -1 } ?: ""
+            return "$scheme://$host$port"
+        }
+        fun create(keyPair: WebPushKeyPair, expiresAt: HelsinkiDateTime, uri: URI) =
+            VapidJwt(
+                origin = uri.origin(),
+                publicKey = WebPushCrypto.encode(keyPair.publicKey),
+                // 2. Application Server Self-Identification
+                // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-2
+                jwt =
+                    JWT.create()
+                        .withAudience(uri.origin())
+                        .withExpiresAt(expiresAt.toInstant())
+                        .withSubject("https://github.com/espoon-voltti/evaka")
+                        .sign(Algorithm.ECDSA256(keyPair.privateKey)),
+                expiresAt = expiresAt
+            )
+    }
 }
 
 // HTTP Encrypted Content Encoding (ECE)

@@ -462,6 +462,22 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
         .mapTo<UnitFeatures>()
         .firstOrNull()
 
+fun Database.Read.anyUnitHasFeature(ids: Collection<DaycareId>, feature: PilotFeature): Boolean =
+    createQuery<Any> {
+            sql(
+                """
+SELECT EXISTS(
+    SELECT 1
+    FROM daycare
+    WHERE id = ANY(${bind(ids)})
+    AND ${bind(feature)} = ANY(enabled_pilot_features)
+)
+"""
+            )
+        }
+        .mapTo<Boolean>()
+        .single()
+
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 
 fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> =
