@@ -1881,27 +1881,25 @@ const sv: Translations = {
         'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
     },
     notificationsSection: {
-      title: 'Sähköposti-ilmoitukset',
-      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaa-nappia painamalla.',
-      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
-      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
-      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
+      title: 'E-postmeddelanden',
+      info: 'Du kan få e-postmeddelanden om följande ämnen. Du kan redigera inställningarna genom att klicka på redigera-knappen.',
+      subtitle: 'Meddelande skickade till e-post',
+      message: 'eVaka-meddelanden skickat av personalen',
+      bulletin: 'eVaka-bulletiner',
+      outdatedIncome: 'Påminnelser om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
-        'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
-      calendarEvent:
-        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
-      decision: 'Saapuneista päätöksistä',
-      document: 'Uusista asiakirjoista',
+        'Om du inte betalar den högsta avgiften för småbarnspedagogik, måste dina inkomstuppgifter uppdateras regelbundet. Om inkomstuppgifter saknas eller är föråldrade tas högsta avgiften ut för småbarnspedagogik.',
+      calendarEvent: 'Påminnelser om nya händelser markerade i kalendern',
+      decision: 'Nya beslut',
+      document: 'Nya dokument',
       documentInfo:
-        'Asiakirjoilla tarkoitetaan virallisia asiakirjoja, jotka eivät ole päätöksiä. Tällaisia ovat esimerkiksi varhaiskasvatussuunnitelmat ja pedagogiset arviot.',
-      informalDocument: 'Muista lapsen arkeen liittyvistä dokumenteista',
+        'Dokument avser officiella dokument som inte är beslut. Exempel på sådana är plan för småbarnspedagogik och pedagogiska bedömningar.',
+      informalDocument: 'Andra dokument relaterade till barnets vardag',
       informalDocumentInfo:
-        'Muut lapsen arkeen liittyvät dokumentit voivat olla esimerkiksi kuvia lapsen tekemistä piirustuksista.',
-      missingAttendanceReservation:
-        'Muistutukset puuttuvista läsnäoloilmoituksista',
+        'Andra dokument relaterade till barnets vardag kan vara till exempel bilder på barnets tecknignar.',
+      missingAttendanceReservation: 'Påminnelser om saknade närvaro',
       missingAttendanceReservationInfo:
-        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.'
+        'En påminnelse skickas innan tidsfristen för närvaroanmälan, om ett av dina barn saknar närvaroanmälan eller frånvaroanmälan för de kommande två veckorna.'
     }
   },
   income: {
