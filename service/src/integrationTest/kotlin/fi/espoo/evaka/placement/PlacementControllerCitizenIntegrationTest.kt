@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.test.getApplicationStatus
-import org.junit.jupiter.api.AfterEach
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -37,8 +36,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
@@ -46,8 +43,6 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 @ExtendWith(OutputCaptureExtension::class)
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
-
-    val logger = LoggerFactory.getLogger(Audit::class.java)
 
     private val child = testChild_1
     private val parent = testAdult_1
@@ -69,11 +64,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id))
             tx.insertGuardian(parent.id, child.id)
         }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        MDC.clear()
     }
 
     @Test
