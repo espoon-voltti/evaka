@@ -44,7 +44,12 @@ class MessageNotificationEmailService(
                 mr.id as message_recipient_id,
                 mr.recipient_id,
                 p.id as person_id,
-                coalesce(lower(p.language), 'fi') as language,
+                CASE 
+                    WHEN lower(p.language) = 'fi' THEN 'fi'
+                    WHEN lower(p.language) = 'sv' THEN 'sv'
+                    WHEN lower(p.language) = 'en' THEN 'en'
+                    ELSE 'fi'
+                END language,   
                 t.urgent
             FROM message m
             JOIN message_recipients mr ON mr.message_id = m.id

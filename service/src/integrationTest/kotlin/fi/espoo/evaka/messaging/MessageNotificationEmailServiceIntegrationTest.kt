@@ -51,9 +51,11 @@ class MessageNotificationEmailServiceIntegrationTest :
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
     private val testPersonEn = DevPerson(email = "en@example.com", language = "en")
+    private val testPersonEl = DevPerson(email = "el@example.com", language = "el")
     private val testPersonNoEmail = DevPerson(email = null, language = "fi")
 
-    private val testPersons = listOf(testPersonFi, testPersonSv, testPersonEn, testPersonNoEmail)
+    private val testPersons =
+        listOf(testPersonFi, testPersonSv, testPersonEn, testPersonEl, testPersonNoEmail)
     private val testAddresses = testPersons.mapNotNull { it.email }
 
     private val employeeId = EmployeeId(UUID.randomUUID())
@@ -178,7 +180,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         clock.tick(Duration.ofSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS))
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertEquals(3, MockEmailClient.emails.size)
+        assertEquals(4, MockEmailClient.emails.size)
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
@@ -192,6 +194,10 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             getEmailFor(testPersonEn).fromAddress
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEl).fromAddress
         )
     }
 
@@ -257,7 +263,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
         )
 
-        assertEquals(2, MockEmailClient.emails.size)
+        assertEquals(3, MockEmailClient.emails.size)
         assertTrue(MockEmailClient.emails.none { email -> email.toAddress == testPersonFi.email })
     }
 
