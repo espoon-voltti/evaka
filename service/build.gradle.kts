@@ -137,6 +137,7 @@ dependencies {
     implementation("org.bouncycastle:bcpkix-jdk18on")
     implementation("org.apache.tika:tika-core")
     implementation("org.apache.commons:commons-imaging")
+    implementation("org.jsoup:jsoup")
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")

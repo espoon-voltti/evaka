@@ -9,12 +9,44 @@ import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import org.jsoup.Jsoup
 
 data class EmailContent(
     val subject: String,
     val text: String,
     @org.intellij.lang.annotations.Language("html") val html: String
-)
+) {
+    companion object {
+        private val TOO_MANY_NEWLINES = Regex("\n{3,}")
+        fun fromHtml(
+            subject: String,
+            @org.intellij.lang.annotations.Language("html") html: String
+        ) =
+            Jsoup.parseBodyFragment(html).let { doc ->
+                val parsedHtml = doc.body().html()
+
+                doc.select("hr").forEach { it.replaceWith(doc.createElement("p").text("-----")) }
+                doc.select("p").forEach { it.prependText("\n").appendText("\n") }
+                doc.select("a").forEach { a ->
+                    val replacement = doc.createElement("a")
+                    replacement.text(a.attr("href").removePrefix("mailto:"))
+                    a.replaceWith(replacement)
+                }
+
+                EmailContent(
+                    subject,
+                    text =
+                        doc.body()
+                            .wholeText()
+                            .lineSequence()
+                            .joinToString(separator = "\n") { it.trim() }
+                            .replace(TOO_MANY_NEWLINES, "\n\n")
+                            .trim(),
+                    html = parsedHtml,
+                )
+            }
+    }
+}
 
 interface IEmailMessageProvider {
     fun pendingDecisionNotification(language: Language): EmailContent
