@@ -1889,6 +1889,8 @@ const sv: Translations = {
       outdatedIncome: 'Påminnelser om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
         'Om du inte betalar den högsta avgiften för småbarnspedagogik, måste dina inkomstuppgifter uppdateras regelbundet. Om inkomstuppgifter saknas eller är föråldrade tas högsta avgiften ut för småbarnspedagogik.',
+      outdatedIncomeWarning:
+        'Om inkomstuppgifter saknas eller är föråldrade tas högsta avgiften ut för småbarnspedagogik.',
       calendarEvent: 'Påminnelser om nya händelser markerade i kalendern',
       decision: 'Nya beslut',
       document: 'Nya dokument',

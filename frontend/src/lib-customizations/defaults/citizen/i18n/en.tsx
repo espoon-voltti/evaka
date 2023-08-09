@@ -1659,6 +1659,8 @@ const en: Translations = {
       outdatedIncome: 'Reminders to update income information',
       outdatedIncomeInfo:
         'If you do not pay the highest early childhood education fee, your income information must be updated regularly. If the income information is missing or out of date, the highest payment for early childhood education is charged.',
+      outdatedIncomeWarning:
+        'If income information is missing or out of date, the highest payment for early childhood education is charged.',
       calendarEvent: 'Reminders about new events marked in the calendar',
       decision: 'New decisions',
       document: 'New documents',

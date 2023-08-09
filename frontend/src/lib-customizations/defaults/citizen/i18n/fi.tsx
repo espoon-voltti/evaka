@@ -1880,6 +1880,8 @@ export default {
       outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
       outdatedIncomeInfo:
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
+      outdatedIncomeWarning:
+        'Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
       calendarEvent:
         'Muistutukset kalenteriin merkityistä uusista tapahtumista',
       decision: 'Saapuneista päätöksistä',

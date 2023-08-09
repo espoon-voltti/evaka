@@ -15,6 +15,7 @@ import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H2, P, Strong } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -103,6 +104,17 @@ export default React.memo(
             data-qa="outdated-income"
           />
         </ExpandingInfo>
+        {outdatedIncome.state === false ? (
+          <>
+            <Gap size="s" />
+            <AlertBox
+              noMargin
+              message={
+                t.personalDetails.notificationsSection.outdatedIncomeWarning
+              }
+            />
+          </>
+        ) : null}
         <Gap size="s" />
         <CheckboxF
           bind={calendarEvent}
