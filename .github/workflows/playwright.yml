@@ -4,7 +4,6 @@
 
 name: Build playwright
 on:
-  pull_request:
   push:
     branches:
       - master
@@ -22,7 +21,6 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup Docker building
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
         uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
@@ -40,6 +38,5 @@ jobs:
         with:
           name: evaka/e2e-playwright
           path: ./compose/e2e
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
+          dockerfile: playwright.Dockerfile
           registry: ${{ env.ECR_PUBLIC_REGISTRY }}
