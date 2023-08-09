@@ -115,8 +115,8 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         )
                     },
                     Report.MISSING_HEAD_OF_FAMILY.takeIf {
-                        permittedActionsForSomeUnit.contains(
-                            Action.Unit.READ_MISSING_HEAD_OF_FAMILY_REPORT
+                        permittedGlobalActions.contains(
+                            Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT
                         )
                     },
                     Report.MISSING_SERVICE_NEED.takeIf {

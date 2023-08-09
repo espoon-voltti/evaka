@@ -7,7 +7,6 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -18,7 +17,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
@@ -42,20 +40,18 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
     ): List<MissingHeadOfFamilyReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    val filter =
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            user,
-                            clock,
-                            Action.Unit.READ_MISSING_HEAD_OF_FAMILY_REPORT
-                        )
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getMissingHeadOfFamilyRows(
                         from = from,
                         to = to,
                         includeFosterChildren = showFosterChildren,
                         includeIntentionalDuplicates = showIntentionalDuplicates,
-                        idFilter = filter
                     )
                 }
             }
@@ -72,7 +68,6 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
     to: LocalDate?,
     includeFosterChildren: Boolean,
     includeIntentionalDuplicates: Boolean,
-    idFilter: AccessControlFilter<DaycareId>
 ): List<MissingHeadOfFamilyReportRow> =
     createQuery<DatabaseTable> {
             val dateRange = DateRange(from, to)
@@ -99,7 +94,6 @@ FROM (
     FROM person p
     JOIN child c ON c.id = p.id
     JOIN placement pl ON pl.child_id = p.id
-    JOIN daycare u ON u.id = pl.unit_id
     LEFT JOIN (
         -- convert start/end to daterange before join to avoid infinite date ranges in the outer query
         SELECT child_id, conflict, daterange(start_date, end_date, '[]') AS valid_during
@@ -108,7 +102,6 @@ FROM (
     ) fc ON fc.child_id = p.id AND fc.valid_during && ${bind(dateRange)}
     LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during && ${bind(dateRange)} AND ${predicate(fosterPredicate.forTable("fp"))}
     WHERE
-        ${predicate(idFilter.forTable("u"))} AND
         ${predicate(duplicateFilter.forTable("p"))} AND
         p.date_of_death IS NULL AND
         daterange(pl.start_date, pl.end_date, '[]') && ${bind(dateRange)} AND
