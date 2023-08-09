@@ -14,6 +14,7 @@ import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -24,7 +25,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.test.getApplicationStatus
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import java.time.LocalDate
 import java.util.UUID
@@ -36,11 +36,18 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.system.CapturedOutput
+import org.springframework.boot.test.system.OutputCaptureExtension
 
+@ExtendWith(OutputCaptureExtension::class)
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
+
+    val logger = LoggerFactory.getLogger(Audit::class.java)
 
     private val child = testChild_1
     private val parent = testAdult_1
@@ -786,39 +793,47 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     }
 
     @Test
-    fun `should log a PlacementTerminate Audit event`(){
-        withTestLoggers {
-            db.transaction { tx ->
+    fun `should log a PlacementTerminate Audit event`(capturedOutput: CapturedOutput) {
+
+        lateinit var terminatedPlacementId: PlacementId
+
+        db.transaction { tx ->
+            terminatedPlacementId =
                 tx.insertTestPlacement(
                     childId = child.id,
                     unitId = daycareId,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
-                tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare2Id,
-                    startDate = placementEnd.plusDays(1),
-                    endDate = placementEnd.plusMonths(2)
-                )
-            }
-
-            val placementTerminationDate = today.plusDays(1)
-
-            terminatePlacements(
-                child.id,
-                PlacementControllerCitizen.PlacementTerminationRequestBody(
-                    type = TerminatablePlacementType.DAYCARE,
-                    terminationDate = placementTerminationDate,
-                    unitId = daycareId,
-                    terminateDaycareOnly = false
-                )
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare2Id,
+                startDate = placementEnd.plusDays(1),
+                endDate = placementEnd.plusMonths(2)
             )
-
-            it.withLatestSanitized { actual ->
-                Assertions.assertThat(actual["message"] as String).contains("NAKKIMUUSSi")
-            }
         }
+
+        val placementTerminationDate = today.plusDays(1)
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.DAYCARE,
+                terminationDate = placementTerminationDate,
+                unitId = daycareId,
+                terminateDaycareOnly = false
+            )
+        )
+
+        assertTrue(
+            capturedOutput.out.contains("\"targetId\":[\"$daycareId\",\"DAYCARE\",\"${child.id}")
+        )
+        assertTrue(capturedOutput.out.contains("\"objectId\":[\"$terminatedPlacementId\"]"))
+        assertTrue(
+            capturedOutput.out.contains(
+                "\"meta\":{\"placementIds\":[\"$terminatedPlacementId\"],\"transferApplicationIds\":[]}"
+            )
+        )
     }
 
     private fun terminatePlacements(

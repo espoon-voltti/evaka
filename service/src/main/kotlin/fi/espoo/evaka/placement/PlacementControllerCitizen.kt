@@ -162,7 +162,12 @@ class PlacementControllerCitizen(
 
         Audit.PlacementTerminate.log(
             targetId = listOf(body.unitId, body.type, childId),
-            objectId = listOf(listOf(placements.map { it.id }, cancelableTransferApplicationIds)),
+            objectId = placements.map { it.id } + cancelableTransferApplicationIds,
+            meta =
+                mapOf(
+                    "placementIds" to placements.map { it.id },
+                    "transferApplicationIds" to cancelableTransferApplicationIds
+                )
         )
     }
 }
