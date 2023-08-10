@@ -311,7 +311,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
             data-qa={`children-menu-${child.id}`}
             to={`/children/${child.id}`}
             onClick={closeMenu}
-            alignRight
+            $alignRight
           >
             {formatFirstName(child)} {child.lastName}
             {unreadChildNotifications[child.id] ? (

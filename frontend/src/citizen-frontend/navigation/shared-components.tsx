@@ -70,14 +70,13 @@ const dropDownButtonStyles = css`
   }
 `
 
-export const DropDownButton = styled.button<{ alignRight?: boolean }>`
+export const DropDownButton = styled.button<{ $alignRight?: boolean }>`
   ${dropDownButtonStyles}
-  ${(p) => p.alignRight && 'float: right;'}
 `
 
-export const DropDownLink = styled(NavLink)<{ alignRight?: boolean }>`
+export const DropDownLink = styled(NavLink)<{ $alignRight?: boolean }>`
   ${dropDownButtonStyles}
-  ${(p) => p.alignRight && 'justify-content: flex-end;'}
+  ${(p) => p.$alignRight && 'justify-content: flex-end;'}
 `
 
 export const DropDownLocalLink = styled.a`
@@ -102,7 +101,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   return (
     <DropDownContainer ref={dropDownRef}>
       <DropDownButton
-        alignRight={alignRight}
+        $alignRight={alignRight}
         onClick={toggleOpen}
         data-qa="button-select-language"
       >
