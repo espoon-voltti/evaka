@@ -6,6 +6,10 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -13,8 +17,11 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.LocalDate
 import java.util.UUID
@@ -492,3 +499,92 @@ data class FollowupEntryEditDetails(
     val editorId: EmployeeId? = null,
     val editorName: String? = null
 )
+
+/** Returns true if an email notification needs to be sent */
+fun updateVasuDocumentState(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    employeeId: EmployeeId,
+    id: VasuDocumentId,
+    eventType: VasuDocumentEventType
+): Boolean {
+    val events =
+        if (
+            eventType in
+                listOf(
+                    VasuDocumentEventType.MOVED_TO_READY,
+                    VasuDocumentEventType.MOVED_TO_REVIEWED
+                )
+        ) {
+            listOf(VasuDocumentEventType.PUBLISHED, eventType)
+        } else {
+            listOf(eventType)
+        }
+
+    val document =
+        tx.getVasuDocumentMaster(now.toLocalDate(), id) ?: throw NotFound("Vasu was not found")
+
+    val currentState = document.documentState
+    events.forEach {
+        when (it) {
+                VasuDocumentEventType.PUBLISHED -> currentState !== VasuDocumentState.CLOSED
+                VasuDocumentEventType.MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
+                VasuDocumentEventType.RETURNED_TO_READY ->
+                    currentState === VasuDocumentState.REVIEWED
+                VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
+                VasuDocumentEventType.RETURNED_TO_REVIEWED ->
+                    currentState === VasuDocumentState.CLOSED
+                VasuDocumentEventType.MOVED_TO_CLOSED -> true
+            }
+            .exhaust()
+            .let { valid -> if (!valid) throw Conflict("Invalid state transition") }
+    }
+
+    if (events.contains(VasuDocumentEventType.PUBLISHED)) {
+        tx.publishVasuDocument(now, id)
+    }
+
+    if (events.contains(VasuDocumentEventType.MOVED_TO_CLOSED)) {
+        tx.freezeVasuPlacements(now.toLocalDate(), id)
+    }
+
+    val addedEvents =
+        events.map {
+            tx.insertVasuDocumentEvent(documentId = id, eventType = it, employeeId = employeeId)
+        }
+
+    if (events.contains(VasuDocumentEventType.MOVED_TO_CLOSED)) {
+        val duplicates = tx.listPersonByDuplicateOf(document.basics.child.id)
+        if (duplicates.isNotEmpty()) {
+            val child = tx.getChild(document.basics.child.id)!!
+            val template = tx.getVasuTemplate(document.templateId)!!
+            val allEvents = document.events + addedEvents
+            duplicates.forEach { duplicate ->
+                val duplicateChild =
+                    tx.getChild(duplicate.id) ?: tx.createChild(child.copy(id = duplicate.id))
+                val duplicateDocumentId =
+                    tx.insertVasuDocument(
+                        now = now,
+                        childId = duplicateChild.id,
+                        template = template
+                    )
+                tx.updateVasuDocumentMaster(
+                    now = now,
+                    id = duplicateDocumentId,
+                    content = document.content,
+                    childLanguage = document.basics.childLanguage
+                )
+                allEvents.forEach { event ->
+                    tx.insertVasuDocumentEvent(
+                        documentId = duplicateDocumentId,
+                        eventType = event.eventType,
+                        employeeId = event.employeeId
+                    )
+                }
+            }
+        }
+    }
+
+    // An email notification needs to be sent if the document was published
+    return events.contains(VasuDocumentEventType.PUBLISHED)
+}

@@ -5,11 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.daycare.createChild
-import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
-import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -81,7 +77,7 @@ class VasuController(
                         throw BadRequest("Template is not currently valid")
                     }
 
-                    tx.insertVasuDocument(clock, childId, template)
+                    tx.insertVasuDocument(clock.now(), childId, template)
                 }
             }
             .also { documentId ->
@@ -281,7 +277,7 @@ class VasuController(
                     )
 
                 tx.updateVasuDocumentMaster(
-                    clock,
+                    clock.now(),
                     id,
                     transformedFollowupsVasu.content,
                     body.childLanguage
@@ -320,109 +316,31 @@ class VasuController(
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
     ) {
-        val events =
-            if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
-                listOf(PUBLISHED, body.eventType)
-            } else {
-                listOf(body.eventType)
-            }
-
         db.connect { dbc ->
             dbc.transaction { tx ->
-                events.forEach { eventType ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        when (eventType) {
-                            PUBLISHED -> Action.VasuDocument.EVENT_PUBLISHED
-                            MOVED_TO_READY -> Action.VasuDocument.EVENT_MOVED_TO_READY
-                            RETURNED_TO_READY -> Action.VasuDocument.EVENT_RETURNED_TO_READY
-                            MOVED_TO_REVIEWED -> Action.VasuDocument.EVENT_MOVED_TO_REVIEWED
-                            RETURNED_TO_REVIEWED -> Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED
-                            MOVED_TO_CLOSED -> Action.VasuDocument.EVENT_MOVED_TO_CLOSED
-                        },
-                        id
-                    )
-                }
-
-                val document =
-                    tx.getVasuDocumentMaster(clock.today(), id)
-                        ?: throw NotFound("Vasu was not found")
-                validateStateTransition(
-                    eventType = body.eventType,
-                    currentState = document.documentState
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    when (body.eventType) {
+                        PUBLISHED -> Action.VasuDocument.EVENT_PUBLISHED
+                        MOVED_TO_READY -> Action.VasuDocument.EVENT_MOVED_TO_READY
+                        RETURNED_TO_READY -> Action.VasuDocument.EVENT_RETURNED_TO_READY
+                        MOVED_TO_REVIEWED -> Action.VasuDocument.EVENT_MOVED_TO_REVIEWED
+                        RETURNED_TO_REVIEWED -> Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED
+                        MOVED_TO_CLOSED -> Action.VasuDocument.EVENT_MOVED_TO_CLOSED
+                    },
+                    id
                 )
 
-                if (events.contains(PUBLISHED)) {
-                    tx.publishVasuDocument(clock, id)
+                val sendNotification =
+                    updateVasuDocumentState(tx, clock.now(), user.id, id, body.eventType)
+                if (sendNotification) {
                     vasuNotificationService.scheduleEmailNotification(tx, id)
-                }
-
-                if (events.contains(MOVED_TO_CLOSED)) {
-                    tx.freezeVasuPlacements(clock.today(), id)
-                }
-
-                val addedEvents =
-                    events.map { eventType ->
-                        tx.insertVasuDocumentEvent(
-                            documentId = id,
-                            eventType = eventType,
-                            employeeId = user.id
-                        )
-                    }
-
-                if (events.contains(MOVED_TO_CLOSED)) {
-                    val duplicates = tx.listPersonByDuplicateOf(document.basics.child.id)
-                    if (duplicates.isNotEmpty()) {
-                        val child = tx.getChild(document.basics.child.id)!!
-                        val template = tx.getVasuTemplate(document.templateId)!!
-                        val allEvents = document.events + addedEvents
-                        duplicates.forEach { duplicate ->
-                            val duplicateChild =
-                                tx.getChild(duplicate.id)
-                                    ?: tx.createChild(child.copy(id = duplicate.id))
-                            val duplicateDocumentId =
-                                tx.insertVasuDocument(
-                                    clock = clock,
-                                    childId = duplicateChild.id,
-                                    template = template
-                                )
-                            tx.updateVasuDocumentMaster(
-                                clock = clock,
-                                id = duplicateDocumentId,
-                                content = document.content,
-                                childLanguage = document.basics.childLanguage
-                            )
-                            allEvents.forEach { event ->
-                                tx.insertVasuDocumentEvent(
-                                    documentId = duplicateDocumentId,
-                                    eventType = event.eventType,
-                                    employeeId = event.employeeId
-                                )
-                            }
-                        }
-                    }
                 }
             }
         }
         Audit.VasuDocumentEventCreate.log(targetId = id)
-    }
-
-    private fun validateStateTransition(
-        eventType: VasuDocumentEventType,
-        currentState: VasuDocumentState
-    ) {
-        when (eventType) {
-                PUBLISHED -> currentState !== VasuDocumentState.CLOSED
-                MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
-                RETURNED_TO_READY -> currentState === VasuDocumentState.REVIEWED
-                MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
-                RETURNED_TO_REVIEWED -> currentState === VasuDocumentState.CLOSED
-                MOVED_TO_CLOSED -> true
-            }
-            .exhaust()
-            .let { valid -> if (!valid) throw Conflict("Invalid state transition") }
     }
 
     @DeleteMapping("/vasu/{id}")

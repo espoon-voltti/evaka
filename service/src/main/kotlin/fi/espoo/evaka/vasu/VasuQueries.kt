@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
@@ -18,7 +17,7 @@ import java.util.UUID
 import org.jdbi.v3.json.Json
 
 fun Database.Transaction.insertVasuDocument(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     childId: ChildId,
     template: VasuTemplate
 ): VasuDocumentId {
@@ -46,7 +45,7 @@ fun Database.Transaction.insertVasuDocument(
                     .trimIndent()
             )
             .bind("id", childId)
-            .bind("today", clock.today())
+            .bind("today", now.toLocalDate())
             .mapTo<VasuGuardian>(qualifiers = emptyArray())
             .list()
 
@@ -71,7 +70,7 @@ fun Database.Transaction.insertVasuDocument(
         """
                     .trimIndent()
             )
-            .bind("now", clock.now())
+            .bind("now", now)
             .bind("childId", childId)
             .bind("basics", basics)
             .bind("templateId", template.id)
@@ -184,7 +183,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
 }
 
 fun Database.Transaction.updateVasuDocumentMaster(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     id: VasuDocumentId,
     content: VasuContent,
     childLanguage: ChildLanguage?
@@ -204,13 +203,13 @@ fun Database.Transaction.updateVasuDocumentMaster(
         """
                 .trimIndent()
         )
-        .bind("now", clock.now())
+        .bind("now", now)
         .bind("id", id)
         .bind("childLanguage", childLanguage)
         .updateExactlyOne()
 }
 
-fun Database.Transaction.publishVasuDocument(clock: EvakaClock, id: VasuDocumentId) {
+fun Database.Transaction.publishVasuDocument(now: HelsinkiDateTime, id: VasuDocumentId) {
     // language=sql
     val insertContentSql =
         """
@@ -221,10 +220,10 @@ fun Database.Transaction.publishVasuDocument(clock: EvakaClock, id: VasuDocument
     """
             .trimIndent()
 
-    createUpdate(insertContentSql).bind("now", clock.now()).bind("id", id).updateExactlyOne()
+    createUpdate(insertContentSql).bind("now", now).bind("id", id).updateExactlyOne()
 
     createUpdate("UPDATE curriculum_document SET modified_at = :now WHERE id = :id")
-        .bind("now", clock.now())
+        .bind("now", now)
         .bind("id", id)
         .updateExactlyOne()
 }
