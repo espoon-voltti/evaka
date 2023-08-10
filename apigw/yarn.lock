@@ -3195,7 +3195,7 @@ __metadata:
     node-forge: ^1.3.1
     nodemon: ^3.0.1
     passport: ^0.6.0
-    pino: ^8.14.1
+    pino: ^8.15.0
     pino-http: ^8.4.0
     pino-pretty: ^10.2.0
     prettier: ^3.0.0
@@ -5745,9 +5745,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^8.0.0, pino@npm:^8.14.1":
-  version: 8.14.1
-  resolution: "pino@npm:8.14.1"
+"pino@npm:^8.0.0, pino@npm:^8.15.0":
+  version: 8.15.0
+  resolution: "pino@npm:8.15.0"
   dependencies:
     atomic-sleep: ^1.0.0
     fast-redact: ^3.1.1
@@ -5762,7 +5762,7 @@ __metadata:
     thread-stream: ^2.0.0
   bin:
     pino: bin.js
-  checksum: 72dcae8f550d375695bb8745f11b30c42aaa20d0bcab8f546ca5af0684d784453850949fe1b244206793e813a46d72cbbf0dda8aed2cee86e9491ba44a643e3e
+  checksum: 9a54d0757f0256201fad01346be1c18b0a4378704fa383df867189da12151d664d2bd18b1e53df70633fbff6c90fd3175228c0c971eaaa734939709cc1a0005b
   languageName: node
   linkType: hard
 
