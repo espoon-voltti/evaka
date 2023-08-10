@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import java.time.LocalDate
 
 private data class GuardianChildPair(val guardianId: PersonId, val childId: ChildId)
 
@@ -88,6 +89,23 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
             .trimIndent()
 
     return createQuery(sql).bind("childId", childId).mapTo<PersonId>().list()
+}
+
+fun Database.Read.getChildGuardiansAndFosterParents(
+    childId: ChildId,
+    today: LocalDate
+): List<PersonId> {
+    return createQuery(
+            """
+    SELECT guardian_id AS id FROM guardian WHERE child_id = :childId
+    UNION
+    SELECT parent_id AS id FROM foster_parent WHERE child_id = :childId AND valid_during @> :today
+    """
+        )
+        .bind("childId", childId)
+        .bind("today", today)
+        .mapTo<PersonId>()
+        .list()
 }
 
 fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
