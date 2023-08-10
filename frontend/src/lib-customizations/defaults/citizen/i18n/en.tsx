@@ -2215,7 +2215,8 @@ const en: Translations = {
       empty: 'Not defined'
     },
     vasu: {
-      title: 'Early childhood education and care plan and learning plan for pre-primary education',
+      title:
+        'Early childhood education and care plan and learning plan for pre-primary education',
       lastModified: 'Last modified',
       lastPublished: 'Last published',
       noVasus: 'No early childhood education or pre-primary learning plans',
