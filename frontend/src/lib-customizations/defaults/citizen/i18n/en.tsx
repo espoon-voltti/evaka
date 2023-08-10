@@ -2116,6 +2116,8 @@ const en: Translations = {
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',
     unselectableDate: 'Invalid date',
+    outsideUnitOperationTime: 'Outside opening hours',
+    openAttendance: 'Open attendance',
     ...components.datePicker.validationErrors
   },
   placement: {

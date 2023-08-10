@@ -248,6 +248,18 @@ function StaffAttendanceDetailsModal<
     [gaplessAttendances]
   )
 
+  const arrivalWithoutDeparture = useMemo(() => {
+    const arrivalWithoutDeparture = gaplessAttendances.find(
+      ({ arrived, departed }) =>
+        !arrived.toLocalDate().isEqual(LocalDate.todayInHelsinkiTz()) &&
+        !departed
+    )
+
+    return arrivalWithoutDeparture
+      ? arrivalWithoutDeparture.arrived.format()
+      : undefined
+  }, [gaplessAttendances])
+
   const diffPlannedTotalMinutes = useMemo(
     () =>
       totalMinutes === 'incalculable'
@@ -355,6 +367,26 @@ function StaffAttendanceDetailsModal<
         ) : null}
 
         <H3>{i18n.unit.staffAttendance.dailyAttendances}</H3>
+        {!!arrivalWithoutDeparture && (
+          <FullGridWidth>
+            <FixedSpaceRow
+              justifyContent="left"
+              alignItems="center"
+              spacing="s"
+            >
+              <FontAwesomeIcon
+                icon={faExclamationTriangle}
+                color={colors.status.warning}
+              />
+              <div data-qa="open-attendance-warning">
+                {i18n.unit.staffAttendance.openAttendanceWarning(
+                  arrivalWithoutDeparture
+                )}
+              </div>
+            </FixedSpaceRow>
+            <Gap size="s" />
+          </FullGridWidth>
+        )}
         <ListGrid rowGap="s" labelWidth="auto">
           {editState.map(({ arrived, departed, type, groupId }, index) => {
             const gap = getGapBefore(index)

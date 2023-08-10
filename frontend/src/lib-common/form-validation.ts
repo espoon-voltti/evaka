@@ -31,6 +31,7 @@ export type ErrorKey =
   | 'preferredStartDate'
   | 'emailsDoNotMatch'
   | 'httpUrl'
+  | 'openAttendance'
 
 export const required = (
   val: unknown,

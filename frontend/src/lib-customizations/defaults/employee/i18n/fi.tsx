@@ -2365,6 +2365,7 @@ export const fi = {
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
+      openAttendanceWarning: (arrival: string) => `Avoin kirjaus ${arrival}`,
       personCount: 'Läsnäolleiden yhteismäärä',
       personCountAbbr: 'hlö',
       unlinkOvernight: 'Erota yön yli menevä läsnäolo',
@@ -4217,6 +4218,7 @@ export const fi = {
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu',
     guardianMustBeHeard: 'Huoltajaa on kuultava',
+    openAttendance: 'Avoin kirjaus',
     ...components.datePicker.validationErrors
   },
   holidayPeriods: {
