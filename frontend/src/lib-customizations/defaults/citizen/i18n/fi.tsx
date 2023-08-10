@@ -71,6 +71,7 @@ export default {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
     },
     datetime: {
+      dayShort: 'pv',
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
       week: 'Viikko',
       weekShort: 'Vk',
@@ -377,6 +378,8 @@ export default {
     },
     previousDay: 'Edellinen päivä',
     nextDay: 'Seuraava päivä',
+    previousMonth: 'Edellinen kuukausi',
+    nextMonth: 'Seuraava kuukausi',
     dailyServiceTimeModifiedNotification: (dateFrom: string) =>
       `Varhaiskasvatussopimukseenne on päivitetty uusi läsnäoloaika ${dateFrom} alkaen.`,
     dailyServiceTimeModifiedDestructivelyModal: {
@@ -2373,6 +2376,13 @@ export default {
       unit: 'Yksikkö',
       status: 'Tila',
       empty: 'Palveluntarvetta ei määritelty'
+    },
+    attendanceSummary: {
+      title: 'Läsnäolot',
+      planned: 'Suunnitelma',
+      realized: 'Toteuma',
+      warning: 'Kuukauden sopimuspäivien määrä on ylittynyt.',
+      empty: 'Ei sopimuspäiviä valitulla ajanjaksolla'
     },
     dailyServiceTime: {
       title: 'Päivittäinen varhaiskasvatusaika',

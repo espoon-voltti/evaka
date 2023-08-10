@@ -442,3 +442,21 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
         .mapTo<AbsenceId>()
         .toList()
 }
+
+fun Database.Read.countChildAttendanceDays(childId: ChildId, range: FiniteDateRange): Int {
+    val sql =
+        """
+SELECT count(DISTINCT ca.date)
+FROM child_attendance ca
+WHERE ca.child_id = :childId
+AND ca.date BETWEEN :start AND :end
+    """
+            .trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("start", range.start)
+        .bind("end", range.end)
+        .mapTo<Int>()
+        .one()
+}

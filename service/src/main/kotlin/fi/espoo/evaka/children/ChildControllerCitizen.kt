@@ -5,9 +5,13 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.attendance.countChildAttendanceDays
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.countAbsenceDays
 import fi.espoo.evaka.placement.getPlacementSummary
+import fi.espoo.evaka.reservations.countReservationDays
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.ServiceNeedSummary
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
@@ -19,6 +23,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.YearMonth
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -78,19 +83,59 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         val defaultServiceNeedOptions =
             tx.getServiceNeedOptions()
                 .filter { it.defaultOption }
-                .associateBy({ it.validPlacementType }, { ServiceNeedOptionPublicInfo.of(it) })
+                .associateBy { it.validPlacementType }
         val serviceNeedDateRanges = serviceNeeds.map { FiniteDateRange(it.startDate, it.endDate) }
         return tx.getPlacementSummary(childId).flatMap { placement ->
             val placementRange = FiniteDateRange(placement.startDate, placement.endDate)
             placementRange.complement(serviceNeedDateRanges).map {
+                val defaultServiceNeedOption = defaultServiceNeedOptions[placement.type]
                 ServiceNeedSummary(
                     it.start,
                     it.end,
-                    defaultServiceNeedOptions[placement.type],
+                    defaultServiceNeedOption?.let { sno -> ServiceNeedOptionPublicInfo.of(sno) },
+                    defaultServiceNeedOption?.contractDaysPerMonth,
                     placement.unit.name
                 )
             }
         }
+    }
+
+    @GetMapping("/{childId}/attendance-summary/{yearMonth}")
+    fun getChildAttendanceSummary(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @PathVariable yearMonth: YearMonth
+    ): AttendanceSummary {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_ATTENDANCE_SUMMARY,
+                        childId
+                    )
+                    val range = FiniteDateRange(yearMonth.atDay(1), yearMonth.atEndOfMonth())
+                    val reservationDays = tx.countReservationDays(childId, range)
+                    val attendanceDays = tx.countChildAttendanceDays(childId, range)
+                    val absenceDays =
+                        tx.countAbsenceDays(
+                            childId,
+                            range,
+                            setOf(
+                                AbsenceType.OTHER_ABSENCE,
+                                AbsenceType.UNKNOWN_ABSENCE,
+                                AbsenceType.SICKLEAVE,
+                                AbsenceType.FORCE_MAJEURE,
+                                AbsenceType.UNAUTHORIZED_ABSENCE
+                            )
+                        )
+                    AttendanceSummary(reservationDays, attendanceDays + absenceDays)
+                }
+            }
+            .also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = childId) }
     }
 
     @GetMapping("/{childId}/daily-service-times")
@@ -115,3 +160,5 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
             .also { Audit.CitizenChildDailyServiceTimeRead.log(targetId = childId) }
     }
 }
+
+data class AttendanceSummary(val plannedDays: Int, val realizedDays: Int)

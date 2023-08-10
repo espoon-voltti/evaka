@@ -74,6 +74,7 @@ const en: Translations = {
       genericGetError: 'Error in fetching the requested information'
     },
     datetime: {
+      dayShort: 'd',
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
       week: 'Week',
       weekShort: 'Wk',
@@ -380,6 +381,8 @@ const en: Translations = {
     },
     previousDay: 'Previous day',
     nextDay: 'Next day',
+    previousMonth: 'Previous month',
+    nextMonth: 'Next month',
     dailyServiceTimeModifiedNotification: (dateFrom: string) =>
       `A new daily service time has been updated to your early childhood education contract starting from ${dateFrom}.`,
     dailyServiceTimeModifiedDestructivelyModal: {
@@ -2207,6 +2210,13 @@ const en: Translations = {
       unit: 'Unit',
       status: 'Status',
       empty: 'Service need is not defined'
+    },
+    attendanceSummary: {
+      title: 'Attendances',
+      planned: 'Planned',
+      realized: 'Realized',
+      warning: 'The number of contract days per month has been exceeded.',
+      empty: 'No contract days in the selected period'
     },
     dailyServiceTime: {
       title: 'Daily service time',

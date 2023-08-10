@@ -12,7 +12,9 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { H3 } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/citizen'
 
+import AttendanceSummaryTable from './AttendanceSummaryTable'
 import DailyServiceTimeTable from './DailyServiceTimeTable'
 import ServiceNeedTable from './ServiceNeedTable'
 import { getDailyServiceTimes, getServiceNeeds } from './api'
@@ -35,6 +37,14 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
     [childId]
   )
 
+  const hasContractDays = serviceNeedsResponse
+    .map((serviceNeeds) =>
+      serviceNeeds.some(
+        ({ contractDaysPerMonth }) => contractDaysPerMonth !== null
+      )
+    )
+    .getOrElse(false)
+
   return (
     <ResponsiveWholePageCollapsible
       title={t.children.serviceNeedAndDailyServiceTime.title}
@@ -51,6 +61,13 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           <ServiceNeedTable serviceNeeds={serviceNeeds} />
         )
       })}
+      {featureFlags.experimental?.citizenAttendanceSummary &&
+        hasContractDays && (
+          <AttendanceSummaryTable
+            childId={childId}
+            serviceNeedsResponse={serviceNeedsResponse}
+          />
+        )}
       <HorizontalLine slim hiddenOnTabletAndDesktop />
       <H3>{t.children.dailyServiceTime.title}</H3>
       {dailyServiceTimesResponse.mapAll({

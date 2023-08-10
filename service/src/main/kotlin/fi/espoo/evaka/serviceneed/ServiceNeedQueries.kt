@@ -78,6 +78,7 @@ SELECT
     sno.name_sv AS option_name_sv,
     sno.name_en AS option_name_en,
     sno.valid_placement_type AS option_valid_placement_type,
+    sno.contract_days_per_month,
     u.name AS unit_name
 FROM service_need sn
 JOIN service_need_option sno ON sno.id = sn.option_id
