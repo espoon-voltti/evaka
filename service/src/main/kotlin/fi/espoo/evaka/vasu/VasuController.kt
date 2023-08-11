@@ -73,7 +73,7 @@ class VasuController(
                         tx.getVasuTemplate(body.templateId)
                             ?: throw NotFound("template ${body.templateId} not found")
 
-                    if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
+                    if (!template.valid.includes(clock.today())) {
                         throw BadRequest("Template is not currently valid")
                     }
 

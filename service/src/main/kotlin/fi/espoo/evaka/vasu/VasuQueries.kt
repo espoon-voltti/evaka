@@ -472,3 +472,26 @@ fun Database.Transaction.deleteVasuDocument(id: VasuDocumentId) {
         .execute()
     createUpdate("DELETE FROM curriculum_document WHERE id = :id").bind("id", id).execute()
 }
+
+fun Database.Read.getOpenVasusWithExpiredTemplate(today: LocalDate): List<VasuDocumentId> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id FROM (
+    SELECT
+        d.id,
+        array((
+            SELECT e.event_type
+            FROM curriculum_document_event e
+            WHERE e.curriculum_document_id = d.id ORDER BY e.created
+        )) AS events
+    FROM curriculum_document d
+    JOIN curriculum_template t ON t.id = d.template_id
+    WHERE t.valid << daterange(${bind(today)}, NULL)
+) AS d
+WHERE cardinality(events) = 0 OR events[cardinality(events)] <> 'MOVED_TO_CLOSED';
+"""
+            )
+        }
+        .mapTo<VasuDocumentId>()
+        .toList()

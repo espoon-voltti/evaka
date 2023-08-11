@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -588,4 +589,16 @@ fun updateVasuDocumentState(
 
     // An email notification needs to be sent if the document was published
     return events.contains(VasuDocumentEventType.PUBLISHED)
+}
+
+fun closeVasusWithExpiredTemplate(tx: Database.Transaction, now: HelsinkiDateTime) {
+    tx.getOpenVasusWithExpiredTemplate(now.toLocalDate()).forEach { documentId ->
+        updateVasuDocumentState(
+            tx,
+            now,
+            AuthenticatedUser.SystemInternalUser.evakaUserId,
+            documentId,
+            VasuDocumentEventType.MOVED_TO_CLOSED
+        )
+    }
 }
