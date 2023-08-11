@@ -210,6 +210,20 @@ const pageTranslations = {
   SV: translations.sv.childInformation.assistanceNeedPreschoolDecision
 }
 
+const formatEmployeeName = (employee: Employee) =>
+  `${employee.lastName ?? ''} ${
+    employee.preferredFirstName ?? employee.firstName ?? ''
+  } (${employee.email ?? ''})`
+
+const filterEmployees = (inputValue: string, items: Employee[]) =>
+  items.filter(
+    (emp) =>
+      (emp.preferredFirstName ?? emp.firstName)
+        .toLowerCase()
+        .startsWith(inputValue.toLowerCase()) ||
+      emp.lastName.toLowerCase().startsWith(inputValue.toLowerCase())
+  )
+
 const DecisionEditor = React.memo(function DecisionEditor({
   decision,
   units,
@@ -767,13 +781,8 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <ComboboxWrapper>
                     <Combobox
                       items={employees}
-                      getItemLabel={(e) =>
-                        e
-                          ? `${e.preferredFirstName ?? e.firstName} ${
-                              e.lastName
-                            }`
-                          : ''
-                      }
+                      getItemLabel={formatEmployeeName}
+                      filterItems={filterEmployees}
                       selectedItem={
                         preparer1EmployeeId
                           ? employees.find(
@@ -815,13 +824,8 @@ const DecisionEditor = React.memo(function DecisionEditor({
                             ) ?? null
                           : null
                       }
-                      getItemLabel={(e) =>
-                        e
-                          ? `${e.preferredFirstName ?? e.firstName} ${
-                              e.lastName
-                            }`
-                          : ''
-                      }
+                      getItemLabel={formatEmployeeName}
+                      filterItems={filterEmployees}
                       onChange={(e) => preparer2EmployeeId.set(e?.id ?? null)}
                       clearable
                     />
@@ -857,13 +861,8 @@ const DecisionEditor = React.memo(function DecisionEditor({
                             ) ?? null
                           : null
                       }
-                      getItemLabel={(e) =>
-                        e
-                          ? `${e.preferredFirstName ?? e.firstName} ${
-                              e.lastName
-                            }`
-                          : ''
-                      }
+                      getItemLabel={formatEmployeeName}
+                      filterItems={filterEmployees}
                       onChange={(e) =>
                         decisionMakerEmployeeId.set(e?.id ?? null)
                       }

@@ -86,11 +86,6 @@ const GuardianHeardField = React.memo(function GuardianHeardField({
   )
 })
 
-const formatName = (someone: {
-  firstName: string | null
-  lastName: string | null
-}) => `${someone.lastName ?? ''} ${someone.firstName ?? ''}`
-
 interface EmployeeSelectProps {
   employeeLabel: string
   employees: Employee[]
@@ -132,13 +127,18 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
         <Label>{employeeLabel}</Label>
         <Combobox
           items={employees}
-          getItemLabel={formatName}
+          getItemLabel={(employee: Employee) =>
+            `${employee.lastName ?? ''} ${
+              employee.preferredFirstName ?? employee.firstName ?? ''
+            } (${employee.email ?? ''})`
+          }
           filterItems={(inputValue: string, items: Employee[]) =>
             items.filter(
               (emp) =>
-                formatName(emp)
+                (emp.preferredFirstName ?? emp.firstName)
                   .toLowerCase()
-                  .indexOf(inputValue.toLowerCase()) >= 0
+                  .startsWith(inputValue.toLowerCase()) ||
+                emp.lastName.toLowerCase().startsWith(inputValue.toLowerCase())
             )
           }
           selectedItem={selectedEmployee}
