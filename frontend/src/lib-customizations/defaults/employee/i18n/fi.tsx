@@ -1053,7 +1053,7 @@ export const fi = {
         enhancedAssistance: 'Tehostettu tuki',
         specialAssistance: 'Erityinen tuki'
       },
-      startDate: 'Tuki voimassa alkaen',
+      startDate: 'Voimassa alkaen',
       startDateIndefiniteInfo:
         'Tuki on voimassa toistaiseksi alkamispäivästä alkaen.',
       startDateInfo:
