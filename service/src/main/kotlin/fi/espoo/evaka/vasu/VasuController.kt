@@ -334,7 +334,7 @@ class VasuController(
                 )
 
                 val sendNotification =
-                    updateVasuDocumentState(tx, clock.now(), user.id, id, body.eventType)
+                    updateVasuDocumentState(tx, clock.now(), user.evakaUserId, id, body.eventType)
                 if (sendNotification) {
                     vasuNotificationService.scheduleEmailNotification(tx, id)
                 }

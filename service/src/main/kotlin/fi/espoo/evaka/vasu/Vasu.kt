@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -52,7 +53,7 @@ data class VasuDocumentEvent(
     val id: UUID,
     val created: HelsinkiDateTime,
     val eventType: VasuDocumentEventType,
-    val employeeId: EmployeeId
+    val createdBy: EvakaUserId
 )
 
 private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState {
@@ -504,7 +505,7 @@ data class FollowupEntryEditDetails(
 fun updateVasuDocumentState(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
-    employeeId: EmployeeId,
+    createdBy: EvakaUserId,
     id: VasuDocumentId,
     eventType: VasuDocumentEventType
 ): Boolean {
@@ -550,7 +551,7 @@ fun updateVasuDocumentState(
 
     val addedEvents =
         events.map {
-            tx.insertVasuDocumentEvent(documentId = id, eventType = it, employeeId = employeeId)
+            tx.insertVasuDocumentEvent(documentId = id, eventType = it, createdBy = createdBy)
         }
 
     if (events.contains(VasuDocumentEventType.MOVED_TO_CLOSED)) {
@@ -578,7 +579,7 @@ fun updateVasuDocumentState(
                     tx.insertVasuDocumentEvent(
                         documentId = duplicateDocumentId,
                         eventType = event.eventType,
-                        employeeId = event.employeeId
+                        createdBy = event.createdBy
                     )
                 }
             }

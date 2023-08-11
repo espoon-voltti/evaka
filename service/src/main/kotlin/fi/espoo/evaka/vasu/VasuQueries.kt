@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
@@ -111,7 +111,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
                    'id', event.id,
                    'created', event.created,
                    'eventType', event.event_type,
-                   'employeeId', event.employee_id
+                   'createdBy', event.created_by
                ) ORDER BY event.created) 
                FROM curriculum_document_event event
                WHERE event.curriculum_document_id = :id
@@ -155,7 +155,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
                    'id', event.id,
                    'created', event.created,
                    'eventType', event.event_type,
-                   'employeeId', event.employee_id
+                   'createdBy', event.created_by
                ) ORDER BY event.created) 
                FROM curriculum_document_event event
                WHERE event.curriculum_document_id = :id
@@ -237,7 +237,7 @@ data class SummaryResultRow(
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null,
-    val eventEmployeeId: EmployeeId? = null,
+    val eventCreatedBy: EvakaUserId? = null,
     val type: CurriculumType
 )
 
@@ -252,7 +252,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
             e.id AS event_id,
             e.created AS event_created,
             e.event_type,
-            e.employee_id AS event_employee_id,
+            e.created_by AS event_created_by,
             vc.published_at,
             cd.basics,
             ct.type
@@ -295,13 +295,13 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                                 it.eventId != null &&
                                     it.eventCreated != null &&
                                     it.eventType != null &&
-                                    it.eventEmployeeId != null
+                                    it.eventCreatedBy != null
                             ) {
                                 VasuDocumentEvent(
                                     id = it.eventId,
                                     created = it.eventCreated,
                                     eventType = it.eventType,
-                                    employeeId = it.eventEmployeeId
+                                    createdBy = it.eventCreatedBy,
                                 )
                             } else {
                                 null
@@ -316,19 +316,19 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
 fun Database.Transaction.insertVasuDocumentEvent(
     documentId: VasuDocumentId,
     eventType: VasuDocumentEventType,
-    employeeId: EmployeeId
+    createdBy: EvakaUserId
 ): VasuDocumentEvent {
     val sql =
         """
-        INSERT INTO curriculum_document_event (curriculum_document_id, employee_id, event_type)
-        VALUES (:documentId, :employeeId, :eventType)
-        RETURNING id, created, event_type, employee_id
+        INSERT INTO curriculum_document_event (curriculum_document_id, created_by, event_type)
+        VALUES (:documentId, :createdBy, :eventType)
+        RETURNING id, created, event_type, created_by
     """
             .trimIndent()
 
     return createQuery(sql)
         .bind("documentId", documentId)
-        .bind("employeeId", employeeId)
+        .bind("createdBy", createdBy)
         .bind("eventType", eventType)
         .mapTo<VasuDocumentEvent>()
         .one()
