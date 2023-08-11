@@ -1873,16 +1873,28 @@ export default {
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',
-      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
+      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaa-nappia painamalla.',
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
       bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
+      outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
+      outdatedIncomeInfo:
+        'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
+      outdatedIncomeWarning:
+        'Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
       calendarEvent:
         'Muistutukset kalenteriin merkityistä uusista tapahtumista',
-      document: 'Saapuneista dokumenteista',
+      decision: 'Saapuneista päätöksistä',
+      document: 'Uusista asiakirjoista',
+      documentInfo:
+        'Asiakirjoilla tarkoitetaan virallisia asiakirjoja, jotka eivät ole päätöksiä. Tällaisia ovat esimerkiksi varhaiskasvatussuunnitelmat ja pedagogiset arviot.',
+      informalDocument: 'Muista lapsen arkeen liittyvistä dokumenteista',
+      informalDocumentInfo:
+        'Muut lapsen arkeen liittyvät dokumentit voivat olla esimerkiksi kuvia lapsen tekemistä piirustuksista.',
       missingAttendanceReservation:
-        'Muistutukset puuttuvista läsnäoloilmoituksista'
+        'Muistutukset puuttuvista läsnäoloilmoituksista',
+      missingAttendanceReservationInfo:
+        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.'
     }
   },
   income: {

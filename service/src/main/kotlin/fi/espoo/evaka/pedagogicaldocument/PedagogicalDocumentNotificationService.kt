@@ -134,7 +134,7 @@ SELECT EXISTS(
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,
-                emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+                emailType = EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
                 traceId = msg.pedagogicalDocumentId.toString(),

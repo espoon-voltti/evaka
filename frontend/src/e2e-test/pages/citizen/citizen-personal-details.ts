@@ -107,7 +107,9 @@ export class CitizenNotificationSettingsSection extends Element {
     bulletin: new Checkbox(this.findByDataQa('bulletin')),
     outdatedIncome: new Checkbox(this.findByDataQa('outdated-income')),
     calendarEvent: new Checkbox(this.findByDataQa('calendar-event')),
+    decision: new Checkbox(this.findByDataQa('decision')),
     document: new Checkbox(this.findByDataQa('document')),
+    informalDocument: new Checkbox(this.findByDataQa('informal-document')),
     missingAttendanceReservation: new Checkbox(
       this.findByDataQa('missing-attendance-reservation')
     )

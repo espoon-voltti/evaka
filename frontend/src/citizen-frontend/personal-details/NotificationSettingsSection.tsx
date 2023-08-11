@@ -14,6 +14,8 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H2, P, Strong } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -27,7 +29,9 @@ const notificationSettingsForm = object({
   bulletin: boolean(),
   outdatedIncome: boolean(),
   calendarEvent: boolean(),
+  decision: boolean(),
   document: boolean(),
+  informalDocument: boolean(),
   missingAttendanceReservation: boolean()
 })
 
@@ -52,7 +56,9 @@ export default React.memo(
       bulletin,
       outdatedIncome,
       calendarEvent,
+      decision,
       document,
+      informalDocument,
       missingAttendanceReservation
     } = useFormFields(form)
 
@@ -86,12 +92,29 @@ export default React.memo(
           data-qa="bulletin"
         />
         <Gap size="s" />
-        <CheckboxF
-          bind={outdatedIncome}
-          label={t.personalDetails.notificationsSection.outdatedIncome}
-          disabled={!editing}
-          data-qa="outdated-income"
-        />
+        <ExpandingInfo
+          info={t.personalDetails.notificationsSection.outdatedIncomeInfo}
+          ariaLabel={t.common.openExpandingInfo}
+          closeLabel={t.common.close}
+        >
+          <CheckboxF
+            bind={outdatedIncome}
+            label={t.personalDetails.notificationsSection.outdatedIncome}
+            disabled={!editing}
+            data-qa="outdated-income"
+          />
+        </ExpandingInfo>
+        {outdatedIncome.state === false ? (
+          <>
+            <Gap size="s" />
+            <AlertBox
+              noMargin
+              message={
+                t.personalDetails.notificationsSection.outdatedIncomeWarning
+              }
+            />
+          </>
+        ) : null}
         <Gap size="s" />
         <CheckboxF
           bind={calendarEvent}
@@ -101,20 +124,56 @@ export default React.memo(
         />
         <Gap size="s" />
         <CheckboxF
-          bind={document}
-          label={t.personalDetails.notificationsSection.document}
+          bind={decision}
+          label={t.personalDetails.notificationsSection.decision}
           disabled={!editing}
-          data-qa="document"
+          data-qa="decision"
         />
         <Gap size="s" />
-        <CheckboxF
-          bind={missingAttendanceReservation}
-          label={
-            t.personalDetails.notificationsSection.missingAttendanceReservation
+        <ExpandingInfo
+          info={t.personalDetails.notificationsSection.documentInfo}
+          ariaLabel={t.common.openExpandingInfo}
+          closeLabel={t.common.close}
+        >
+          <CheckboxF
+            bind={document}
+            label={t.personalDetails.notificationsSection.document}
+            disabled={!editing}
+            data-qa="document"
+          />
+        </ExpandingInfo>
+        <Gap size="s" />
+        <ExpandingInfo
+          info={t.personalDetails.notificationsSection.informalDocumentInfo}
+          ariaLabel={t.common.openExpandingInfo}
+          closeLabel={t.common.close}
+        >
+          <CheckboxF
+            bind={informalDocument}
+            label={t.personalDetails.notificationsSection.informalDocument}
+            disabled={!editing}
+            data-qa="informal-document"
+          />
+        </ExpandingInfo>
+        <Gap size="s" />
+        <ExpandingInfo
+          info={
+            t.personalDetails.notificationsSection
+              .missingAttendanceReservationInfo
           }
-          disabled={!editing}
-          data-qa="missing-attendance-reservation"
-        />
+          ariaLabel={t.common.openExpandingInfo}
+          closeLabel={t.common.close}
+        >
+          <CheckboxF
+            bind={missingAttendanceReservation}
+            label={
+              t.personalDetails.notificationsSection
+                .missingAttendanceReservation
+            }
+            disabled={!editing}
+            data-qa="missing-attendance-reservation"
+          />
+        </ExpandingInfo>
         <Gap size="s" />
         {editing ? (
           <FixedSpaceRow justifyContent="flex-end">

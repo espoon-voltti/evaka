@@ -76,7 +76,9 @@ export interface DisableSsnRequest {
 export interface EmailNotificationSettings {
   bulletin: boolean
   calendarEvent: boolean
+  decision: boolean
   document: boolean
+  informalDocument: boolean
   message: boolean
   missingAttendanceReservation: boolean
   outdatedIncome: boolean

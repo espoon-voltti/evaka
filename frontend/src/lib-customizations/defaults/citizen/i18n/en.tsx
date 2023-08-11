@@ -1651,17 +1651,28 @@ const en: Translations = {
         'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
     },
     notificationsSection: {
-      title: 'Sähköposti-ilmoitukset',
-      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
-      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
-      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
-      bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
-      calendarEvent:
-        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
-      document: 'Saapuneista dokumenteista',
+      title: 'Email notifications',
+      info: 'You can receive email notifications regarding the following topics. You can edit the settings by clicking the edit button.',
+      subtitle: 'Notifications sent to email',
+      message: 'eVaka messages sent by the staff',
+      bulletin: 'eVaka bulletins',
+      outdatedIncome: 'Reminders to update income information',
+      outdatedIncomeInfo:
+        'If you do not pay the highest early childhood education fee, your income information must be updated regularly. If the income information is missing or out of date, the highest payment for early childhood education is charged.',
+      outdatedIncomeWarning:
+        'If income information is missing or out of date, the highest payment for early childhood education is charged.',
+      calendarEvent: 'Reminders about new events marked in the calendar',
+      decision: 'New decisions',
+      document: 'New documents',
+      documentInfo:
+        'Documents mean official documents that are not decisions. Such are, for example, early childhood education plans and pedagogical assessments.',
+      informalDocument: "Other documents related to the child's daily life",
+      informalDocumentInfo:
+        "Other documents related to the child's daily life can be, for example, pictures of the child's drawings.",
       missingAttendanceReservation:
-        'Muistutukset puuttuvista läsnäoloilmoituksista'
+        'Reminders about missing attendance reservations',
+      missingAttendanceReservationInfo:
+        'A reminder will be sent before the deadline for attendance reservations if one of your children is missing an attendance report or an absence entry for the next two weeks.'
     }
   },
   income: {
