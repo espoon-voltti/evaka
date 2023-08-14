@@ -405,7 +405,6 @@ describe('Sending and receiving messages', () => {
           '(Karhula Jari)'
         )
       })
-
       test('The citizen can select the child that the message is in regards to', async () => {
         const daycarePlacementFixture = await Fixture.placement()
           .with({
@@ -435,6 +434,7 @@ describe('Sending and receiving messages', () => {
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.clickNewMessage()
+
         await citizenMessagesPage.assertChildrenSelectable([
           fixtures.enduserChildFixtureJari.id,
           enduserChildFixtureKaarina.id
@@ -455,6 +455,45 @@ describe('Sending and receiving messages', () => {
           0,
           '(Karhula Kaarina)'
         )
+      })
+
+      test('Messages cannot be sent after placement(s) end', async () => {
+        const placementEndDate = mockedDate
+        const daycarePlacementFixture = await Fixture.placement()
+          .with({
+            childId: enduserChildFixtureKaarina.id,
+            unitId: fixtures.daycareFixture.id,
+            startDate: mockedDate,
+            endDate: placementEndDate
+          })
+          .save()
+        await Fixture.groupPlacement()
+          .with({
+            daycarePlacementId: daycarePlacementFixture.data.id,
+            daycareGroupId: daycareGroupFixture.id,
+            startDate: mockedDate,
+            endDate: placementEndDate
+          })
+          .save()
+        await insertGuardianFixtures([
+          {
+            childId: enduserChildFixtureKaarina.id,
+            guardianId: fixtures.enduserGuardianFixture.id
+          }
+        ])
+
+        const dayAfterPlacementEnds = placementEndDate
+          .addDays(1)
+          .toHelsinkiDateTime(LocalTime.of(12, 0))
+
+        await openCitizen(dayAfterPlacementEnds)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPageAfterPlacement = new CitizenMessagesPage(
+          citizenPage
+        )
+        await citizenMessagesPageAfterPlacement.clickNewMessage()
+
+        await citizenMessagesPageAfterPlacement.assertChildrenSelectable([])
       })
 
       test('The guardian can select another guardian as an recipient', async () => {

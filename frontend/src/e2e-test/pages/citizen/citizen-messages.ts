@@ -133,6 +133,10 @@ export default class CitizenMessagesPage {
     for (const childId of childIds) {
       await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
     }
+
+    await this.page
+      .findAllByDataQa('relevant-child')
+      .assertCount(childIds.length)
   }
 
   async sendNewMessage(
