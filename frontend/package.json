@@ -74,7 +74,7 @@
   "devDependencies": {
     "@babel/core": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
-    "@playwright/test": "^1.36.1",
+    "@playwright/test": "^1.37.0",
     "@sentry/webpack-plugin": "^2.6.2",
     "@types/jest": "^29.5.2",
     "@types/leaflet": "^1.9.3",
@@ -115,7 +115,7 @@
     "jest-environment-node": "^29.6.1",
     "jest-junit": "^16.0.0",
     "make-error-cause": "^2.3.0",
-    "playwright": "^1.35.1",
+    "playwright": "^1.37.0",
     "postcss": "^8.4.24",
     "postcss-loader": "^7.3.3",
     "postcss-preset-env": "^9.1.1",
