@@ -73,7 +73,7 @@ export default React.memo(function FinancePage() {
             }
           : null
       ].flatMap((tab) => (tab !== null ? tab : [])),
-    [i18n]
+    [i18n, user]
   )
 
   const requireOneOfPermittedActionsForPage = (

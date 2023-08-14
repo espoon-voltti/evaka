@@ -4,9 +4,9 @@
 
 import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
+import { Action } from '../generated/action'
 import { EmployeeFeatures } from '../generated/api-types/shared'
 import { UUID } from '../types'
-import { Action } from '../generated/action'
 
 export interface User {
   id: UUID
