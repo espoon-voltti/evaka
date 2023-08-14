@@ -96,7 +96,7 @@
     "concurrently": "^8.2.0",
     "css-loader": "^6.8.1",
     "csstype": "^3.1.2",
-    "esbuild": "^0.18.11",
+    "esbuild": "^0.19.2",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.27.5",
