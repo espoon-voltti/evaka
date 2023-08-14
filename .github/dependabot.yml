@@ -42,11 +42,11 @@ updates:
           - "ts-jest"
         exclude-patterns:
           - "jest-junit"
-      prettier:
+      lint:
         patterns:
+          - "@typescript-eslint/*"
+          - "eslint*"
           - "prettier"
-          - "eslint-config-prettier"
-          - "eslint-plugin-prettier"
       react:
         patterns:
           - "react"
@@ -60,9 +60,6 @@ updates:
         patterns:
           - "tslib"
           - "typescript"
-      typescript-eslint:
-        patterns:
-          - "@typescript-eslint/*"
   - package-ecosystem: npm
     directory: "/apigw"
     schedule:
@@ -78,14 +75,11 @@ updates:
           - "ts-jest"
         exclude-patterns:
           - "jest-junit"
+      lint:
+        patterns:
+          - "@typescript-eslint/*"
+          - "eslint*"
+          - "prettier"
       node-saml:
         patterns:
           - "@node-saml/*"
-      prettier:
-        patterns:
-          - "prettier"
-          - "eslint-config-prettier"
-          - "eslint-plugin-prettier"
-      typescript-eslint:
-        patterns:
-          - "@typescript-eslint/*"
