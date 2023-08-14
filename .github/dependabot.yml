@@ -47,6 +47,10 @@ updates:
           - "@typescript-eslint/*"
           - "eslint*"
           - "prettier"
+      playwright:
+        patterns:
+          - "@playwright/*"
+          - "playwright"
       react:
         patterns:
           - "react"
