@@ -5,16 +5,19 @@
 name: Build playwright
 on:
   push:
-    branches:
-      - master
+    tags:
+      - '*'
     paths:
       - "compose/e2e/**"
 env:
   AWS_REGION: eu-west-1
-  ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
 
 jobs:
-
   playwright:
     runs-on: ubuntu-latest
     steps:
@@ -27,16 +30,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
+          AWS: "false"
 
       - name: Build playwright image
         id: build
         uses: espoon-voltti/voltti-actions/docker-build-registry@master
         with:
+          public_registry_prefix: ""
+          registry: "ghcr.io/espoon-voltti"
           name: evaka/e2e-playwright
           path: ./compose/e2e
-          dockerfile: playwright.Dockerfile
-          registry: ${{ env.ECR_PUBLIC_REGISTRY }}
+          dockerfile: ./compose/e2e/playwright.Dockerfile
