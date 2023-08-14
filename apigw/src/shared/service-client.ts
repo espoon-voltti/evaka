@@ -38,6 +38,7 @@ export type UserRole =
   | 'DIRECTOR'
   | 'REPORT_VIEWER'
   | 'FINANCE_ADMIN'
+  | 'OUTSOURCED_FINANCE_ADMIN'
   | 'SERVICE_WORKER'
   | 'STAFF'
   | 'UNIT_SUPERVISOR'

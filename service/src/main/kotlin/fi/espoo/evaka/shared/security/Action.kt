@@ -61,6 +61,7 @@ import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.MESSAGING
+import fi.espoo.evaka.shared.auth.UserRole.OUTSOURCED_FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.REPORT_VIEWER
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
@@ -92,7 +93,7 @@ sealed interface Action {
         DOCUMENT_TEMPLATES_PAGE(HasGlobalRole(ADMIN)),
         EMPLOYEES_PAGE(HasGlobalRole(ADMIN)),
         FINANCE_BASICS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        FINANCE_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        FINANCE_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         HOLIDAY_PERIODS_PAGE(HasGlobalRole(ADMIN)),
         MESSAGES_PAGE(
             HasGlobalRole(ADMIN, MESSAGING, SERVICE_WORKER),
@@ -106,7 +107,7 @@ sealed interface Action {
                 .inAnyUnit()
         ),
         PERSON_SEARCH_PAGE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
@@ -115,7 +116,7 @@ sealed interface Action {
                 .inAnyUnit()
         ),
         REPORTS_PAGE(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
@@ -126,7 +127,7 @@ sealed interface Action {
         SETTINGS_PAGE(HasGlobalRole(ADMIN)),
         UNIT_FEATURES_PAGE(HasGlobalRole(ADMIN)),
         UNITS_PAGE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -168,7 +169,7 @@ sealed interface Action {
         CREATE_PERSON(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         CREATE_PERSON_FROM_VTJ(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         SEARCH_PEOPLE(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER),
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
@@ -176,27 +177,27 @@ sealed interface Action {
                 )
                 .inAnyUnit()
         ),
-        SEARCH_PEOPLE_UNRESTRICTED(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
-        READ_FEE_THRESHOLDS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        SEARCH_PEOPLE_UNRESTRICTED(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN, SERVICE_WORKER)),
+        READ_FEE_THRESHOLDS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         CREATE_FEE_THRESHOLDS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        SEARCH_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        SEARCH_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         GENERATE_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         SEARCH_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_FINANCE_DECISION_HANDLERS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
-        READ_SELECTABLE_FINANCE_DECISION_HANDLERS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_SELECTABLE_FINANCE_DECISION_HANDLERS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         READ_PERSONAL_MOBILE_DEVICES(IsEmployee.any()),
         CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()
         ),
-        SEARCH_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        SEARCH_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         CREATE_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_DRAFT_PAYMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_ASSISTANCE_ACTION_OPTIONS(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER),
+            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -207,7 +208,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_ASSISTANCE_BASIS_OPTIONS(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER),
+            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -218,7 +219,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_SERVICE_NEED_OPTIONS(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER),
+            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -229,7 +230,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_UNITS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -246,7 +247,7 @@ sealed interface Action {
         READ_DECISIONS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER)),
         READ_DUPLICATE_PEOPLE_REPORT(HasGlobalRole(ADMIN)),
         READ_ENDED_PLACEMENTS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
-        READ_INVOICE_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_INVOICE_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         READ_MANUAL_DUPLICATION_REPORT(HasGlobalRole(ADMIN)),
         READ_PLACEMENT_SKETCHING_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_PLACEMENT_COUNT_REPORT(HasGlobalRole(ADMIN, DIRECTOR)),
@@ -257,7 +258,7 @@ sealed interface Action {
         READ_VARDA_REPORT(HasGlobalRole(ADMIN)),
         UPDATE_SETTINGS(HasGlobalRole(ADMIN)),
         READ_INCOME_TYPES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        READ_INVOICE_CODES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_INVOICE_CODES(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         READ_UNIT_FEATURES(HasGlobalRole(ADMIN)),
         CREATE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
         READ_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
@@ -830,7 +831,7 @@ sealed interface Action {
     enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) :
         ScopedAction<ChildId> {
         READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -844,11 +845,11 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ABSENCES(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
         ),
         READ_FUTURE_ABSENCES(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
@@ -1007,7 +1008,7 @@ sealed interface Action {
                 .inPlacementUnitOfChild()
         ),
         READ_BACKUP_CARE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1055,7 +1056,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()
         ),
         READ_PLACEMENT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
@@ -1083,7 +1084,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_GUARDIANS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChild()
         ),
@@ -1352,7 +1353,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
         ),
         READ_ABSENCES(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
         ),
         DELETE_ABSENCES(
@@ -1473,7 +1474,7 @@ sealed interface Action {
     }
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) :
         ScopedAction<InvoiceId> {
-        READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
@@ -1632,7 +1633,7 @@ sealed interface Action {
         ADD_SSN(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_FOSTER_PARENT_RELATIONSHIP(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_INCOME(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        CREATE_INVOICE_CORRECTION(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        CREATE_INVOICE_CORRECTION(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         CREATE_PARENTSHIP(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()
@@ -1651,17 +1652,17 @@ sealed interface Action {
         READ_APPLICATIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER)
         ), // Applications summary on person page
-        READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         READ_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
         READ_FAMILY_OVERVIEW(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChildOfPerson()
         ),
-        READ_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         READ_FOSTER_CHILDREN(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()
@@ -1673,26 +1674,26 @@ sealed interface Action {
         READ_INCOME(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_INCOME_STATEMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_INCOME_NOTIFICATIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        READ_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        READ_INVOICE_ADDRESS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        READ_INVOICE_CORRECTIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
+        READ_INVOICE_ADDRESS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
+        READ_INVOICE_CORRECTIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         READ_OPH_OID(
             HasGlobalRole(ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChildOfPerson()
         ),
         READ_PARENTSHIPS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChildOfPerson()
         ),
         READ_PARTNERSHIPS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChildOfPerson()
         ),
         READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1773,7 +1774,7 @@ sealed interface Action {
     enum class Unit(override vararg val defaultRules: ScopedActionRule<in DaycareId>) :
         ScopedAction<DaycareId> {
         READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1783,7 +1784,7 @@ sealed interface Action {
                 .inUnit()
         ),
         READ_GROUP_DETAILS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1793,7 +1794,7 @@ sealed interface Action {
                 .inUnit()
         ),
         READ_ATTENDANCES(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1807,7 +1808,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inUnit()
         ),
         READ_GROUPS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1871,7 +1872,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inUnit()
         ),
         READ_OCCUPANCIES(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
             IsMobile(requirePinLogin = false).inUnit()
         ),
@@ -1886,7 +1887,7 @@ sealed interface Action {
                 .inUnit()
         ),
         READ_BACKUP_CARE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         CREATE_PLACEMENT(
@@ -1894,7 +1895,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inUnit()
         ),
         READ_PLACEMENT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
