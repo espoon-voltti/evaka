@@ -396,6 +396,10 @@ sealed interface Action {
             READ_DAILY_SERVICE_TIMES(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+            ),
+            READ_ATTENDANCE_SUMMARY(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
             );
 
             override fun toString(): String = "${javaClass.name}.$name"

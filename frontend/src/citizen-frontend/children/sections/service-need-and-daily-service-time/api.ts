@@ -5,6 +5,7 @@
 import { client } from 'citizen-frontend/api-client'
 import { Failure, Result, Success } from 'lib-common/api'
 import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
+import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { DailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import { JsonOf } from 'lib-common/json'
@@ -27,6 +28,20 @@ export function getServiceNeeds(
         }))
       )
     )
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getAttendanceSummary(
+  childId: UUID,
+  date: LocalDate
+): Promise<Result<AttendanceSummary>> {
+  return client
+    .get<JsonOf<AttendanceSummary>>(
+      `/citizen/children/${childId}/attendance-summary/${date.formatExotic(
+        'yyyy-MM'
+      )}`
+    )
+    .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
 

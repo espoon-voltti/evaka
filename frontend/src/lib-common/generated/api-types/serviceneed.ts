@@ -97,6 +97,7 @@ export interface ServiceNeedOptionSummary {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedSummary
 */
 export interface ServiceNeedSummary {
+  contractDaysPerMonth: number | null
   endDate: LocalDate
   option: ServiceNeedOptionPublicInfo | null
   startDate: LocalDate
