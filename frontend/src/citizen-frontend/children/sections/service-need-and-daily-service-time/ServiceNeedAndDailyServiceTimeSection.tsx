@@ -12,6 +12,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { H3 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import AttendanceSummaryTable from './AttendanceSummaryTable'
@@ -63,10 +64,13 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       })}
       {featureFlags.experimental?.citizenAttendanceSummary &&
         hasContractDays && (
-          <AttendanceSummaryTable
-            childId={childId}
-            serviceNeedsResponse={serviceNeedsResponse}
-          />
+          <>
+            <Gap size="s" />
+            <AttendanceSummaryTable
+              childId={childId}
+              serviceNeedsResponse={serviceNeedsResponse}
+            />
+          </>
         )}
       <HorizontalLine slim hiddenOnTabletAndDesktop />
       <H3>{t.children.dailyServiceTime.title}</H3>

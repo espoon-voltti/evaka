@@ -20,7 +20,6 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
@@ -54,7 +53,6 @@ export default React.memo(function AttendanceSummaryTable({
 
   return (
     <>
-      <Gap size="s" />
       <ListGrid>
         <H3>{t.children.attendanceSummary.title}</H3>
         <FixedSpaceRow alignItems="center">
