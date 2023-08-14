@@ -199,17 +199,13 @@ describe.each(e)(
       await dayView.assertNoReservation(child.id)
 
       const editor = await dayView.edit()
-      await editor.fillReservationTimes(
-        child.id,
-        reservation1.startTime,
-        reservation1.endTime
-      )
-      await editor.addSecondReservation(
-        child.id,
-        reservation2.startTime,
-        reservation2.endTime
-      )
-      await editor.save()
+      const childSection = editor.childSection(child.id)
+      await childSection.reservationStart.fill(reservation1.startTime)
+      await childSection.reservationEnd.fill(reservation1.endTime)
+      await childSection.addSecondReservationButton.click()
+      await childSection.reservation2Start.fill(reservation2.startTime)
+      await childSection.reservation2End.fill(reservation2.endTime)
+      await editor.saveButton.click()
 
       await dayView.assertReservations(
         child.id,

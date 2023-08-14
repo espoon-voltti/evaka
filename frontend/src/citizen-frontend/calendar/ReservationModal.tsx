@@ -95,7 +95,7 @@ export default React.memo(function ReservationModal({
         initialEnd,
         i18n
       ),
-    i18n.validationErrors,
+    { ...i18n.validationErrors, ...i18n.calendar.validationErrors },
     {
       onUpdate: (prevState, nextState, form) => {
         const prev = combine(

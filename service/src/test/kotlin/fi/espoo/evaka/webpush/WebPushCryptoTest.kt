@@ -105,6 +105,7 @@ JvLexhqUzORcx aOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4
         val request =
             WebPushRequest.createEncryptedPushMessage(
                 ttl = Duration.ofSeconds(10),
+                urgency = Urgency.Normal,
                 endpoint = endpoint,
                 messageKeyPair = asKeyPair,
                 salt = WebPushCrypto.base64Decode("DGv6ra1nlYgDCS1FRnbzlw"),

@@ -6,6 +6,7 @@ package fi.espoo.evaka.webpush
 
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Transaction.upsertPushSubscription(
     device: MobileDeviceId,
@@ -39,3 +40,40 @@ DELETE FROM mobile_device_push_subscription WHERE device = ${bind(device)}
 """)
         }
         .execute()
+
+fun Database.Transaction.getOrRefreshToken(
+    newToken: VapidJwt,
+    minValidThreshold: HelsinkiDateTime
+): VapidJwt {
+    // Try to save a new token if there's none or it doesn't match our min valid threshold
+    // requirement
+    val savedNewToken =
+        createQuery<Any> {
+                sql(
+                    """
+INSERT INTO vapid_jwt (origin, public_key, jwt, expires_at)
+VALUES (${bind(newToken.origin)}, ${bind(newToken.publicKey)}, ${bind(newToken.jwt)}, ${bind(newToken.expiresAt)})
+ON CONFLICT (origin, public_key) DO UPDATE SET
+    jwt = excluded.jwt,
+    expires_at = excluded.expires_at
+WHERE vapid_jwt.expires_at < ${bind(minValidThreshold)}
+RETURNING origin, public_key, jwt, expires_at
+"""
+                )
+            }
+            .mapTo<VapidJwt?>()
+            .singleOrNull()
+    return savedNewToken
+    // We didn't save anything -> there must be a valid token in the db
+    ?: createQuery<Any> {
+                sql(
+                    """
+SELECT origin, public_key, jwt, expires_at
+FROM vapid_jwt
+WHERE (origin, public_key) = (${bind(newToken.origin)}, ${bind(newToken.publicKey)})
+"""
+                )
+            }
+            .mapTo<VapidJwt>()
+            .single()
+}

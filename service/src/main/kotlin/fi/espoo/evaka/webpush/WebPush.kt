@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.voltti.logging.loggers.error
 import java.lang.RuntimeException
@@ -16,7 +17,6 @@ import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
-import java.time.Instant
 import mu.KotlinLogging
 
 data class WebPushNotification(
@@ -27,6 +27,13 @@ data class WebPushNotification(
 
 enum class WebPushPayloadType {
     NotificationV1,
+}
+
+enum class Urgency {
+    VeryLow,
+    Low,
+    Normal,
+    High,
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -42,10 +49,10 @@ class WebPushRequest(
     val headers: WebPushRequestHeaders,
     val body: ByteArray,
 ) {
-    fun withVapid(keyPair: WebPushKeyPair, expiresAt: Instant) =
+    fun withVapid(vapidJwt: VapidJwt) =
         WebPushRequest(
             uri,
-            headers.copy(authorization = vapidAuthorizationHeader(keyPair, expiresAt, uri)),
+            headers.copy(authorization = vapidJwt.toAuthorizationHeader()),
             body,
         )
     companion object {
@@ -53,6 +60,7 @@ class WebPushRequest(
         // Reference: https://datatracker.ietf.org/doc/html/rfc8291
         fun createEncryptedPushMessage(
             ttl: Duration,
+            urgency: Urgency,
             endpoint: WebPushEndpoint,
             messageKeyPair: WebPushKeyPair,
             salt: ByteArray,
@@ -69,7 +77,14 @@ class WebPushRequest(
                 headers =
                     WebPushRequestHeaders(
                         ttl = ttl.toSeconds().toString(),
-                        contentEncoding = "aes128gcm"
+                        contentEncoding = "aes128gcm",
+                        urgency =
+                            when (urgency) {
+                                Urgency.VeryLow -> "very-low"
+                                Urgency.Low -> "low"
+                                Urgency.Normal -> "normal"
+                                Urgency.High -> "high"
+                            }
                     ),
                 body =
                     httpEncryptedContentEncoding(
@@ -88,15 +103,29 @@ data class WebPushRequestHeaders(
     val ttl: String,
     val contentEncoding: String,
     val authorization: String? = null,
+    val urgency: String? = null,
 ) {
     fun toTypedArray(): Array<Pair<String, String>> =
         listOfNotNull(
                 "TTL" to ttl,
                 "Content-Encoding" to contentEncoding,
                 authorization?.let { "Authorization" to it },
+                urgency?.let { "Urgency" to it },
             )
             .toTypedArray()
 }
+
+// RFC8292 says JWT tokens must expire within 24 hours of the request we're going to make
+// https://datatracker.ietf.org/doc/html/rfc8292#section-2
+//
+// Apple docs suggest JWT tokens should not be refreshed more than once per hour
+// https://developer.apple.com/documentation/usernotifications/sending_web_push_notifications_in_web_apps_safari_and_other_browsers#3994592
+//
+// -> valid duration for tokens must be 1-24 hours
+// We also stop using an old token slightly before its expiry time to avoid using an expired token
+// if there's a difference in clocks, or we take too long to send the request
+private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
+private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
 class WebPush(env: WebPushEnv) {
     private val fuel = FuelManager()
@@ -111,16 +140,31 @@ class WebPush(env: WebPushEnv) {
 
     class SubscriptionExpired(cause: Throwable) : RuntimeException("Subscription expired", cause)
 
-    fun send(clock: EvakaClock, notification: WebPushNotification) {
+    fun getValidToken(tx: Database.Transaction, clock: EvakaClock, endpoint: URI): VapidJwt =
+        tx.getOrRefreshToken(
+            // Pessimistically create a fresh JWT token every time, but it only gets saved and used
+            // if we don't find a valid existing one from the database cache
+            newToken =
+                VapidJwt.create(
+                    vapidKeyPair,
+                    expiresAt = clock.now().plus(VAPID_JWT_NEW_VALID_DURATION),
+                    endpoint
+                ),
+            // Avoid using JWT tokens that expire very soon
+            minValidThreshold = clock.now().plus(VAPID_JWT_MIN_VALID_DURATION)
+        )
+
+    fun send(vapidJwt: VapidJwt, notification: WebPushNotification) {
         val webPushRequest =
             WebPushRequest.createEncryptedPushMessage(
                     ttl = notification.ttl,
                     endpoint = notification.endpoint,
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
-                    data = jsonMapper.writeValueAsBytes(notification.payloads)
+                    data = jsonMapper.writeValueAsBytes(notification.payloads),
+                    urgency = Urgency.Normal
                 )
-                .withVapid(keyPair = vapidKeyPair, expiresAt = clock.now().plusHours(6).toInstant())
+                .withVapid(vapidJwt)
         val (request, _, result) =
             fuel
                 .post(webPushRequest.uri.toString())

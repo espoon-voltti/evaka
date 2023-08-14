@@ -22,7 +22,6 @@ sealed interface DatabaseTable {
     sealed class AssistanceFactor : DatabaseTable
     sealed class AssistanceNeed : DatabaseTable
     sealed class AssistanceNeedDecision : DatabaseTable
-    sealed class AssistanceNeedDecisionEmployee : DatabaseTable
     sealed class AssistanceNeedDecisionGuardian : DatabaseTable
     sealed class AssistanceNeedPreschoolDecision : DatabaseTable
     sealed class AssistanceNeedPreschoolDecisionGuardian : DatabaseTable
@@ -89,11 +88,8 @@ sealed interface DatabaseTable {
     sealed class StaffAttendanceExternal : DatabaseTable
     sealed class StaffAttendancePlan : DatabaseTable
     sealed class StaffOccupancyCoefficient : DatabaseTable
-    sealed class VardaDecision : DatabaseTable
-    sealed class VardaPlacement : DatabaseTable
     sealed class VasuDocument : DatabaseTable
     sealed class VasuTemplate : DatabaseTable
-    sealed class VoucherValue : DatabaseTable
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -252,15 +248,9 @@ typealias StaffAttendancePlanId = Id<DatabaseTable.StaffAttendancePlan>
 
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
 
-typealias VardaDecisionId = Id<DatabaseTable.VardaDecision>
-
-typealias VardaPlacementId = Id<DatabaseTable.VardaPlacement>
-
 typealias VasuDocumentId = Id<DatabaseTable.VasuDocument>
 
 typealias VasuTemplateId = Id<DatabaseTable.VasuTemplate>
-
-typealias VoucherValueId = Id<DatabaseTable.VoucherValue>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 

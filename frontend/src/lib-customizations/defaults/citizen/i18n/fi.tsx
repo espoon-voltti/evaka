@@ -398,6 +398,9 @@ export default {
         </>
       ),
       ok: 'Selvä!'
+    },
+    validationErrors: {
+      range: 'Yksikön aukiolo ylittyy'
     }
   },
   messages: {
@@ -1642,7 +1645,7 @@ export default {
           enhancedAssistance: 'Tehostettu tuki',
           specialAssistance: 'Erityinen tuki'
         },
-        startDate: 'Tuki voimassa alkaen',
+        startDate: 'Voimassa alkaen',
         endDate: 'Päätös voimassa saakka',
         endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
         selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
@@ -1870,16 +1873,28 @@ export default {
     },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',
-      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaus-nappia painamalla.',
+      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaa-nappia painamalla.',
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
       bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
-      outdatedIncome: 'Muistutukset puuttuvista tulotiedoista',
+      outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
+      outdatedIncomeInfo:
+        'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
+      outdatedIncomeWarning:
+        'Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
       calendarEvent:
         'Muistutukset kalenteriin merkityistä uusista tapahtumista',
-      document: 'Saapuneista dokumenteista',
+      decision: 'Saapuneista päätöksistä',
+      document: 'Uusista asiakirjoista',
+      documentInfo:
+        'Asiakirjoilla tarkoitetaan virallisia asiakirjoja, jotka eivät ole päätöksiä. Tällaisia ovat esimerkiksi varhaiskasvatussuunnitelmat ja pedagogiset arviot.',
+      informalDocument: 'Muista lapsen arkeen liittyvistä dokumenteista',
+      informalDocumentInfo:
+        'Muut lapsen arkeen liittyvät dokumentit voivat olla esimerkiksi kuvia lapsen tekemistä piirustuksista.',
       missingAttendanceReservation:
-        'Muistutukset puuttuvista läsnäoloilmoituksista'
+        'Muistutukset puuttuvista läsnäoloilmoituksista',
+      missingAttendanceReservationInfo:
+        'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.'
     }
   },
   income: {
@@ -2329,6 +2344,7 @@ export default {
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu',
     outsideUnitOperationTime: 'Yksikön aukiolo ylittyy',
+    openAttendance: 'Avoin kirjaus',
     ...components.datePicker.validationErrors
   },
   placement: {

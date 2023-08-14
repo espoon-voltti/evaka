@@ -49,6 +49,7 @@ dependencies {
         api("org.flywaydb:flyway-core:${libs.versions.flyway.get()}")
         api("org.glassfish.jaxb:jaxb-runtime:4.0.1")
         api("org.jetbrains:annotations:24.0.1")
+        api("org.jsoup:jsoup:1.16.1")
         api("org.mockito:mockito-core:${Version.mockito}")
         api("org.mockito:mockito-junit-jupiter:${Version.mockito}")
         api("org.mockito.kotlin:mockito-kotlin:5.0.0")

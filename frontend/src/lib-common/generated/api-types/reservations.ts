@@ -10,7 +10,6 @@ import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { PlacementType } from './placement'
-import { ShiftCareType } from './serviceneed'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
@@ -85,6 +84,30 @@ export interface OpenTimeRange {
   startTime: LocalTime
 }
 
+export namespace ReservableTimeRange {
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.IntermittentShiftCare
+  */
+  export interface IntermittentShiftCare {
+    type: 'INTERMITTENT_SHIFT_CARE'
+    placementUnitOperationTime: TimeRange | null
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.Normal
+  */
+  export interface Normal {
+    type: 'NORMAL'
+    range: TimeRange
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ReservableTimeRange
+*/
+export type ReservableTimeRange = ReservableTimeRange.IntermittentShiftCare | ReservableTimeRange.Normal
+
+
 export namespace Reservation {
   /**
   * Generated from fi.espoo.evaka.reservations.Reservation.NoTimes
@@ -140,10 +163,9 @@ export interface ReservationResponseDayChild {
   childId: UUID
   contractDays: boolean
   requiresReservation: boolean
+  reservableTimeRange: ReservableTimeRange
   reservations: Reservation[]
   shiftCare: boolean
-  shiftCareType: ShiftCareType
-  unitOperationTime: TimeRange | null
 }
 
 /**

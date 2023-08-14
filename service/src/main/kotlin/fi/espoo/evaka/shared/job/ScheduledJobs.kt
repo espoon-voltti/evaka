@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.varda.VardaResetService
 import fi.espoo.evaka.varda.VardaUpdateService
+import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
 import fi.espoo.voltti.logging.loggers.info
 import io.opentracing.Tracer
 import mu.KotlinLogging
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Component
 
 enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock) -> Unit) {
     CancelOutdatedTransferApplications(ScheduledJobs::cancelOutdatedTransferApplications),
+    CloseVasusWithExpiredTemplate(ScheduledJobs::closeVasusWithExpiredTemplate),
     DvvUpdate(ScheduledJobs::dvvUpdate),
     EndOfDayAttendanceUpkeep(ScheduledJobs::endOfDayAttendanceUpkeep),
     EndOfDayStaffAttendanceUpkeep(ScheduledJobs::endOfDayStaffAttendanceUpkeep),
@@ -210,5 +212,9 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         val yesterday = clock.today().minusDays(1)
         logger.info("Sending patu report for $yesterday")
         patuReportingService!!.sendPatuReport(db, DateRange(yesterday, yesterday))
+    }
+
+    fun closeVasusWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx -> closeVasusWithExpiredTemplate(tx, clock.now()) }
     }
 }

@@ -5,32 +5,38 @@
 name: Build playwright
 on:
   push:
-    tags:
-    - '*'
-
+    branches:
+      - master
+    paths:
+      - "compose/e2e/**"
 env:
+  AWS_REGION: eu-west-1
   ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
 
 jobs:
+
   playwright:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build playwright image
-        id: build
-        uses: espoon-voltti/voltti-actions/docker-build-push@master
+
+      - name: Setup Docker building
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          AWS_PROFILE: ""
-          registry: ${{ env.ECR_PUBLIC_REGISTRY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ROLE: ${{ secrets.AWS_REGISTRY_ROLE }}
+
+      - name: Build playwright image
+        id: build
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        with:
           name: evaka/e2e-playwright
           path: ./compose/e2e
-          dockerfile: compose/e2e/playwright.Dockerfile
-          ecr_type: 'ecr-public'
-    outputs:
-      image: ${{ steps.build.outputs.image }}
+          dockerfile: playwright.Dockerfile
+          registry: ${{ env.ECR_PUBLIC_REGISTRY }}

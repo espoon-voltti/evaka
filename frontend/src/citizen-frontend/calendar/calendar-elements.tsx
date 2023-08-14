@@ -7,13 +7,12 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { isValidAgainstUnitTime } from 'lib-common/form/fields'
+import { timeRangeContains } from 'lib-common/form/fields'
 import {
+  ReservableTimeRange,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalTime from 'lib-common/local-time'
 import {
   reservationHasTimes,
@@ -172,12 +171,7 @@ const groupChildren = (
             type: 'reservation',
             text: withTimes
               .map((reservation) =>
-                formatReservation(
-                  child.shiftCareType,
-                  child.unitOperationTime,
-                  reservation,
-                  i18n
-                )
+                formatReservation(reservation, child.reservableTimeRange, i18n)
               )
               .join(', ')
           }
@@ -223,9 +217,8 @@ function groupText(group: GroupedDailyChildren, i18n: Translations) {
 }
 
 export const formatReservation = (
-  shiftCareType: ShiftCareType,
-  unitTimes: TimeRange | null,
   reservationTimes: { startTime: LocalTime; endTime: LocalTime },
+  reservableTimeRange: ReservableTimeRange,
   i18n: Translations,
   separator = '–'
 ) => {
@@ -235,15 +228,17 @@ export const formatReservation = (
   if (!featureFlags.experimental?.intermittentShiftCare) {
     return timeOutput
   } else {
-    const { start: unitStart, end: unitEnd } = unitTimes ?? {
-      start: null,
-      end: null
-    }
-
     const showIntermittentShiftCareNotice =
-      shiftCareType === 'INTERMITTENT' &&
-      (!isValidAgainstUnitTime(startTime, unitStart, unitEnd) ||
-        !isValidAgainstUnitTime(endTime, unitStart, unitEnd))
+      reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE' &&
+      (reservableTimeRange.placementUnitOperationTime === null ||
+        !timeRangeContains(
+          startTime,
+          reservableTimeRange.placementUnitOperationTime
+        ) ||
+        !timeRangeContains(
+          endTime,
+          reservableTimeRange.placementUnitOperationTime
+        ))
 
     return showIntermittentShiftCareNotice
       ? `${timeOutput} ${i18n.calendar.intermittentShiftCareNotification}`

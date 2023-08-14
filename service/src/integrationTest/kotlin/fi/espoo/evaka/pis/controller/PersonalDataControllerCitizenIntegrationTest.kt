@@ -35,7 +35,9 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 bulletin = true,
                 outdatedIncome = true,
                 calendarEvent = true,
+                decision = true,
                 document = true,
+                informalDocument = true,
                 missingAttendanceReservation = true,
             ),
             settings
@@ -55,7 +57,9 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 bulletin = false,
                 outdatedIncome = true,
                 calendarEvent = false,
-                document = true,
+                decision = true,
+                document = false,
+                informalDocument = true,
                 missingAttendanceReservation = false,
             )
         )
@@ -72,7 +76,9 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 bulletin = false,
                 outdatedIncome = true,
                 calendarEvent = false,
-                document = true,
+                decision = true,
+                document = false,
+                informalDocument = true,
                 missingAttendanceReservation = false,
             ),
             settings

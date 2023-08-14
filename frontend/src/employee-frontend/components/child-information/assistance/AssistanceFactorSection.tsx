@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 
 import { Result } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -19,6 +20,10 @@ import { scrollToRef } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  ExpandingInfoBox,
+  InlineInfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 
 import { ChildContext, ChildState } from '../../../state/child'
 import { useTranslation } from '../../../state/i18n'
@@ -55,6 +60,8 @@ export const AssistanceFactorSection = React.memo(
     const [mode, setMode] = useState<Mode | undefined>(undefined)
     const clearMode = useCallback(() => setMode(undefined), [setMode])
 
+    const [infoOpen, { off: closeInfo, toggle: toggleInfo }] = useBoolean(false)
+
     const childId = props.childId
     const rowsResult = useMemo(
       () =>
@@ -63,10 +70,19 @@ export const AssistanceFactorSection = React.memo(
         ),
       [props.rows]
     )
+    const info = t.assistanceFactor.info()
     return renderResult(rowsResult, (rows) => (
       <div ref={refSectionTop}>
         <TitleRow>
-          <Title size={4}>{t.assistanceFactor.title}</Title>
+          <Title size={4}>
+            {t.assistanceFactor.title}
+            {info ? (
+              <InlineInfoButton
+                onClick={toggleInfo}
+                aria-label={i18n.common.openExpandingInfo}
+              />
+            ) : undefined}
+          </Title>
           {permittedActions.has('CREATE_ASSISTANCE_FACTOR') && (
             <AddButton
               flipped
@@ -80,6 +96,13 @@ export const AssistanceFactorSection = React.memo(
             />
           )}
         </TitleRow>
+        {infoOpen && (
+          <ExpandingInfoBox
+            info={t.assistanceFactor.info()}
+            close={closeInfo}
+            closeLabel={i18n.common.close}
+          />
+        )}
         {(mode?.type || rows.length > 0) && (
           <Table>
             <Thead>

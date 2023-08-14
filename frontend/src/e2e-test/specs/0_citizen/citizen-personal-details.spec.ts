@@ -111,21 +111,19 @@ describe('Citizen notification settings', () => {
     await section.assertAllChecked(true)
     await section.startEditing.click()
     await section.checkboxes.message.uncheck()
-    await section.checkboxes.document.uncheck()
-    await section.checkboxes.missingAttendanceReservation.uncheck()
+    await section.checkboxes.outdatedIncome.uncheck()
+    await section.checkboxes.decision.uncheck()
+    await section.checkboxes.informalDocument.uncheck()
     await section.save.click()
     await section.assertEditable(false)
 
-    // Guard against new settings in the future
-    expect(Object.keys(section.checkboxes).length).toEqual(6)
-
     await section.checkboxes.message.waitUntilChecked(false)
     await section.checkboxes.bulletin.waitUntilChecked(true)
-    await section.checkboxes.outdatedIncome.waitUntilChecked(true)
+    await section.checkboxes.outdatedIncome.waitUntilChecked(false)
     await section.checkboxes.calendarEvent.waitUntilChecked(true)
-    await section.checkboxes.document.waitUntilChecked(false)
-    await section.checkboxes.missingAttendanceReservation.waitUntilChecked(
-      false
-    )
+    await section.checkboxes.decision.waitUntilChecked(false)
+    await section.checkboxes.document.waitUntilChecked(true)
+    await section.checkboxes.informalDocument.waitUntilChecked(false)
+    await section.checkboxes.missingAttendanceReservation.waitUntilChecked(true)
   })
 })

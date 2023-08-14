@@ -34,7 +34,7 @@ import java.time.LocalDate
 import mu.KotlinLogging
 import org.jdbi.v3.json.Json
 
-val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
 

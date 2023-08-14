@@ -697,7 +697,6 @@ export const staffAttendanceValidator =
   ): [undefined | StaffAttendanceUpsert[], ValidationError[]] => {
     const body: (StaffAttendanceUpsert | undefined)[] = []
     const errors: ValidationError[] = []
-
     for (let i = 0; i < state.length; i++) {
       const item = state[i]
       const existing = config.attendances.find((a) => a.id === item.id)
@@ -805,7 +804,6 @@ export const externalAttendanceValidator =
 
     return [undefined, errors]
   }
-
 const validateArrived = (
   config: ValidatorConfig,
   item: EditedAttendance,
@@ -819,6 +817,15 @@ const validateArrived = (
 
   const isOvernightAttendance =
     existing && existing.arrived.toLocalDate().isBefore(config.date)
+
+  // If there is an open attendance (arrival without departure), check that only departure can be set
+  if (
+    isFirstAttendance &&
+    isOvernightAttendance &&
+    existing.departed === null
+  ) {
+    if (!item.departed || item.arrived) return [undefined, 'openAttendance']
+  }
 
   if (!item.arrived && isFirstAttendance && isOvernightAttendance) {
     return [existing.arrived, undefined]
@@ -839,7 +846,6 @@ const validateArrived = (
 
   return [arrived, undefined]
 }
-
 const validateDeparted = (
   config: ValidatorConfig,
   item: EditedAttendance,

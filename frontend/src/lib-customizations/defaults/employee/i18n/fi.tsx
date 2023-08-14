@@ -703,7 +703,8 @@ export const fi = {
       assistanceFactor: {
         title: 'Tuen kerroin',
         create: 'Luo uusi tuen kertoimen ajanjakso',
-        removeConfirmation: 'Haluatko poistaa tuen kertoimen ajanjakson?'
+        removeConfirmation: 'Haluatko poistaa tuen kertoimen ajanjakson?',
+        info: (): React.ReactNode => undefined
       },
       daycareAssistance: {
         title: 'Tuen taso varhaiskasvatuksessa',
@@ -718,7 +719,12 @@ export const fi = {
       otherAssistanceMeasure: {
         title: 'Muut toimet',
         create: 'Lisää muu toimi',
-        removeConfirmation: 'Haluatko poistaa muun toimen?'
+        removeConfirmation: 'Haluatko poistaa muun toimen?',
+        infoList: 'Lisätietoja muista toimista:',
+        info: {
+          TRANSPORT_BENEFIT: (): React.ReactNode => undefined,
+          ACCULTURATION_SUPPORT: (): React.ReactNode => undefined
+        }
       }
     },
     assistanceNeed: {
@@ -1047,7 +1053,7 @@ export const fi = {
         enhancedAssistance: 'Tehostettu tuki',
         specialAssistance: 'Erityinen tuki'
       },
-      startDate: 'Tuki voimassa alkaen',
+      startDate: 'Voimassa alkaen',
       startDateIndefiniteInfo:
         'Tuki on voimassa toistaiseksi alkamispäivästä alkaen.',
       startDateInfo:
@@ -2359,6 +2365,7 @@ export const fi = {
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
+      openAttendanceWarning: (arrival: string) => `Avoin kirjaus ${arrival}`,
       personCount: 'Läsnäolleiden yhteismäärä',
       personCountAbbr: 'hlö',
       unlinkOvernight: 'Erota yön yli menevä läsnäolo',
@@ -4108,7 +4115,7 @@ export const fi = {
       id: 'Viitetunniste',
       dependsOn: 'Riippuvuudet',
       continuesNumbering: 'Jatkaa numerointia',
-      checkboxLabel: 'Erillinen rastin viereinen teksti',
+      checkboxLabel: 'Kysymyksen otsikko',
       multifieldSeparateRows: 'Tekstikentät erillisillä riveillä'
     },
     questionTypes: {
@@ -4170,7 +4177,8 @@ export const fi = {
       VASU_AND_PEDADOC: 'Vasu ja pedagoginen dokumentointi',
       MOBILE_MESSAGING: 'Mobiili-viestintä',
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
-      REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo'
+      REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
+      PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot'
     }
   },
   roles: {
@@ -4210,6 +4218,7 @@ export const fi = {
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu',
     guardianMustBeHeard: 'Huoltajaa on kuultava',
+    openAttendance: 'Avoin kirjaus',
     ...components.datePicker.validationErrors
   },
   holidayPeriods: {
