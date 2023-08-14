@@ -96,6 +96,20 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     }
 
     @Test
+    fun testDateRangeWithIsoMax() {
+        val input = DateRange(LocalDate.of(1, 1, 1), LocalDate.of(9999, 12, 31))
+
+        val match =
+            db.read {
+                it.checkMatch("SELECT :input = daterange('0001-01-01', '9999-12-31', '[]')", input)
+            }
+        assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+    }
+
+    @Test
     fun testDateRangeWithoutEnd() {
         val input = DateRange(LocalDate.of(2020, 6, 7), null)
 
