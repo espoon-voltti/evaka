@@ -120,7 +120,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     val range = FiniteDateRange(yearMonth.atDay(1), yearMonth.atEndOfMonth())
                     val reservationDays = tx.countReservationDays(childId, range)
                     val attendanceDays = tx.countChildAttendanceDays(childId, range)
-                    val absenceDays =
+                    val unplannedAbsenceDays =
                         tx.countAbsenceDays(
                             childId,
                             range,
@@ -132,7 +132,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                                 AbsenceType.UNAUTHORIZED_ABSENCE
                             )
                         )
-                    AttendanceSummary(reservationDays, attendanceDays + absenceDays)
+                    AttendanceSummary(reservationDays, attendanceDays + unplannedAbsenceDays)
                 }
             }
             .also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = childId) }
