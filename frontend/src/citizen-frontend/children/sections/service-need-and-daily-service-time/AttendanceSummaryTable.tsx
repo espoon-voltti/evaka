@@ -11,8 +11,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -23,7 +23,7 @@ import { H3, Label } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
-import { getAttendanceSummary } from './api'
+import { attendanceSummaryQuery } from './queries'
 
 interface AttendanceSummaryTableProps {
   childId: UUID
@@ -46,9 +46,8 @@ export default React.memo(function AttendanceSummaryTable({
       ),
     [attendanceSummaryDate]
   )
-  const [attendanceSummaryResponse] = useApiState(
-    () => getAttendanceSummary(childId, attendanceSummaryDate),
-    [childId, attendanceSummaryDate]
+  const { data: attendanceSummaryResponse } = useQuery(
+    attendanceSummaryQuery(childId, attendanceSummaryDate)
   )
 
   return (
@@ -73,21 +72,24 @@ export default React.memo(function AttendanceSummaryTable({
           />
         </FixedSpaceRow>
       </ListGrid>
-      {combine(serviceNeedsResponse, attendanceSummaryResponse).mapAll({
-        failure: () => <ErrorSegment title={t.common.errors.genericGetError} />,
-        loading: () => <Spinner />,
-        success: ([serviceNeeds, attendanceSummary]) => (
-          <AttendanceSummary
-            serviceNeeds={serviceNeeds.filter(
-              (sn) =>
-                attendanceSummaryRange.overlaps(
-                  new FiniteDateRange(sn.startDate, sn.endDate)
-                ) && sn.contractDaysPerMonth !== null
-            )}
-            attendanceSummary={attendanceSummary}
-          />
-        )
-      })}
+      {attendanceSummaryResponse !== undefined &&
+        combine(serviceNeedsResponse, attendanceSummaryResponse).mapAll({
+          failure: () => (
+            <ErrorSegment title={t.common.errors.genericGetError} />
+          ),
+          loading: () => <Spinner />,
+          success: ([serviceNeeds, attendanceSummary]) => (
+            <AttendanceSummary
+              serviceNeeds={serviceNeeds.filter(
+                (sn) =>
+                  attendanceSummaryRange.overlaps(
+                    new FiniteDateRange(sn.startDate, sn.endDate)
+                  ) && sn.contractDaysPerMonth !== null
+              )}
+              attendanceSummary={attendanceSummary}
+            />
+          )
+        })}
     </>
   )
 })

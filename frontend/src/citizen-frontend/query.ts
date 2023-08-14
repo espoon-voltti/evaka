@@ -19,6 +19,7 @@ export type QueryKeyPrefix =
   | 'messages'
   | 'pedagogicalDocuments'
   | 'personalDetails'
+  | 'serviceNeedAndDailyServiceTime'
   | 'vasuAndLeops'
 
 export const queryClient = new QueryClient({
