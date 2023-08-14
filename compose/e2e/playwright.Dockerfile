@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG PLAYWRIGHT_VERSION=v1.35.1
+ARG PLAYWRIGHT_VERSION=v1.37.0
 
 FROM mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-focal
 
