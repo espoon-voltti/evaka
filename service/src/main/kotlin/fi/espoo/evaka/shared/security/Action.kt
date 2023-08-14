@@ -116,7 +116,14 @@ sealed interface Action {
                 .inAnyUnit()
         ),
         REPORTS_PAGE(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
+            HasGlobalRole(
+                ADMIN,
+                DIRECTOR,
+                REPORT_VIEWER,
+                SERVICE_WORKER,
+                FINANCE_ADMIN,
+                OUTSOURCED_FINANCE_ADMIN
+            ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
@@ -177,7 +184,9 @@ sealed interface Action {
                 )
                 .inAnyUnit()
         ),
-        SEARCH_PEOPLE_UNRESTRICTED(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN, SERVICE_WORKER)),
+        SEARCH_PEOPLE_UNRESTRICTED(
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN, SERVICE_WORKER)
+        ),
         READ_FEE_THRESHOLDS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
         CREATE_FEE_THRESHOLDS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         SEARCH_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
@@ -187,7 +196,9 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
-        READ_SELECTABLE_FINANCE_DECISION_HANDLERS(HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)),
+        READ_SELECTABLE_FINANCE_DECISION_HANDLERS(
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, OUTSOURCED_FINANCE_ADMIN)
+        ),
         READ_PERSONAL_MOBILE_DEVICES(IsEmployee.any()),
         CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(
             HasGlobalRole(ADMIN),
@@ -197,7 +208,14 @@ sealed interface Action {
         CREATE_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_DRAFT_PAYMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_ASSISTANCE_ACTION_OPTIONS(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
+            HasGlobalRole(
+                ADMIN,
+                DIRECTOR,
+                REPORT_VIEWER,
+                FINANCE_ADMIN,
+                SERVICE_WORKER,
+                OUTSOURCED_FINANCE_ADMIN
+            ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -208,7 +226,14 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_ASSISTANCE_BASIS_OPTIONS(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
+            HasGlobalRole(
+                ADMIN,
+                DIRECTOR,
+                REPORT_VIEWER,
+                FINANCE_ADMIN,
+                SERVICE_WORKER,
+                OUTSOURCED_FINANCE_ADMIN
+            ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -219,7 +244,14 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_SERVICE_NEED_OPTIONS(
-            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN, SERVICE_WORKER, OUTSOURCED_FINANCE_ADMIN),
+            HasGlobalRole(
+                ADMIN,
+                DIRECTOR,
+                REPORT_VIEWER,
+                FINANCE_ADMIN,
+                SERVICE_WORKER,
+                OUTSOURCED_FINANCE_ADMIN
+            ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
