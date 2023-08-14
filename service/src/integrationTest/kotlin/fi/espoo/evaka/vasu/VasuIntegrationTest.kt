@@ -12,6 +12,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -20,12 +22,17 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
@@ -55,6 +62,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var vasuController: VasuController
     @Autowired private lateinit var vasuControllerCitizen: VasuControllerCitizen
     @Autowired private lateinit var vasuTemplateController: VasuTemplateController
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private lateinit var daycareTemplate: VasuTemplate
     private lateinit var preschoolTemplate: VasuTemplate
@@ -388,6 +396,92 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(testDaycare2.id, basics.placements?.last()?.unitId)
     }
 
+    @Test
+    fun `vasu documents with an expired template are closed by a scheduled job`() {
+        val draftDocumentId =
+            postVasuDocument(
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+            )
+        val readyDocumentId =
+            postVasuDocument(
+                testChild_2.id,
+                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
+            )
+        postVasuDocumentState(
+            readyDocumentId,
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_READY)
+        )
+        val closedDocumentId =
+            postVasuDocument(
+                testChild_3.id,
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+            )
+        postVasuDocumentState(
+            closedDocumentId,
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
+        )
+
+        // The new template is valid on this date
+        val futureClock =
+            MockEvakaClock(
+                HelsinkiDateTime.of(mockToday.plusYears(1).plusDays(1), LocalTime.of(12, 0))
+            )
+
+        val nonExpiredTemplateId =
+            postVasuTemplate(
+                VasuTemplateController.CreateTemplateRequest(
+                    name = "vasu",
+                    valid = FiniteDateRange(mockToday.plusYears(1), mockToday.plusYears(2)),
+                    type = CurriculumType.DAYCARE,
+                    language = VasuLanguage.FI
+                )
+            )
+        putVasuTemplateContent(nonExpiredTemplateId, getDefaultVasuContent(VasuLanguage.FI))
+
+        val nonExpiredDocumentId =
+            postVasuDocument(
+                testChild_4.id,
+                VasuController.CreateDocumentRequest(templateId = nonExpiredTemplateId),
+                futureClock,
+            )
+
+        db.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.RunScheduledJob(ScheduledJob.CloseVasusWithExpiredTemplate)),
+                runAt = futureClock.now(),
+            )
+        }
+        asyncJobRunner.runPendingJobsSync(futureClock)
+
+        getVasuDocument(draftDocumentId).let { doc ->
+            // MOVED_TO_CLOSED is added by the system internal user in the async job
+            assertEquals(
+                listOf(MOVED_TO_CLOSED to AuthenticatedUser.SystemInternalUser.evakaUserId),
+                doc.events.map { it.eventType to it.createdBy }
+            )
+        }
+        getVasuDocument(readyDocumentId).let { doc ->
+            // PUBLISHED is added implicitly when MOVED_TO_READY is added
+            assertEquals(
+                listOf(PUBLISHED, MOVED_TO_READY, MOVED_TO_CLOSED),
+                doc.events.map { it.eventType }
+            )
+        }
+        getVasuDocument(closedDocumentId).let { doc ->
+            assertEquals(
+                listOf(MOVED_TO_CLOSED to adminUser.evakaUserId),
+                doc.events.map { it.eventType to it.createdBy }
+            )
+        }
+        getVasuDocument(nonExpiredDocumentId).let { doc ->
+            // Template is valid –> not closed
+            assertEquals(VasuDocumentState.DRAFT, doc.documentState)
+            assertEquals(emptyList(), doc.events)
+        }
+    }
+
     private fun documentPublishingAndStateTransitions(type: CurriculumType) {
         val template = getTemplate(type)
         val childLanguage =
@@ -603,9 +697,10 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun postVasuDocument(
         childId: ChildId,
-        request: VasuController.CreateDocumentRequest
+        request: VasuController.CreateDocumentRequest,
+        evakaClock: EvakaClock = clock,
     ): VasuDocumentId {
-        return vasuController.createDocument(dbInstance(), adminUser, clock, childId, request)
+        return vasuController.createDocument(dbInstance(), adminUser, evakaClock, childId, request)
     }
 
     private fun getVasuSummaries(childId: ChildId): List<VasuDocumentSummary> {

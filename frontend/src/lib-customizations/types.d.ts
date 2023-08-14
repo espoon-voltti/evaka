@@ -242,6 +242,11 @@ interface BaseFeatureFlags {
      * Show email notification settings in citizen's personal details page
      */
     citizenEmailNotificationSettings?: boolean
+
+    /**
+     * Show attendance summary for contract days children
+     */
+    citizenAttendanceSummary?: boolean
   }
 }
 

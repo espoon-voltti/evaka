@@ -59,6 +59,7 @@ data class ServiceNeedSummary(
     val startDate: LocalDate,
     val endDate: LocalDate,
     @Nested("option") val option: ServiceNeedOptionPublicInfo?,
+    val contractDaysPerMonth: Int?,
     val unitName: String
 )
 

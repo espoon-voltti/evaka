@@ -72,6 +72,7 @@ const sv: Translations = {
       genericGetError: 'Hämtning av information misslyckades'
     },
     datetime: {
+      dayShort: 'pv',
       weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
       week: 'Vecka',
       weekShort: 'V',
@@ -376,6 +377,8 @@ const sv: Translations = {
     },
     previousDay: 'Föregående dag',
     nextDay: 'Nästa dag',
+    previousMonth: 'Edellinen kuukausi',
+    nextMonth: 'Seuraava kuukausi',
     dailyServiceTimeModifiedNotification: (dateFrom: string) =>
       `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt från och med ${dateFrom}.`,
     dailyServiceTimeModifiedDestructivelyModal: {
@@ -2450,6 +2453,13 @@ const sv: Translations = {
       unit: 'Enhet',
       status: 'Status',
       empty: 'Dagvårdsbehov inte definierat'
+    },
+    attendanceSummary: {
+      title: 'Läsnäolot',
+      planned: 'Suunnitelma',
+      realized: 'Toteuma',
+      warning: 'Kuukauden sopimuspäivien määrä on ylittynyt.',
+      empty: 'Ei sopimuspäiviä valitulla ajanjaksolla'
     },
     dailyServiceTime: {
       title: 'Daglig vårdtid',

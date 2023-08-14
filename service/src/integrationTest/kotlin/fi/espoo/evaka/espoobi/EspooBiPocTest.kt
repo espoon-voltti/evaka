@@ -74,7 +74,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultVasuContent
@@ -83,6 +83,7 @@ import fi.espoo.evaka.vasu.insertVasuDocument
 import fi.espoo.evaka.vasu.insertVasuTemplate
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 import java.util.UUID
 import kotlin.test.assertTrue
@@ -246,7 +247,10 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.insertTestCurriculumTemplate().let { templateId ->
                     val template = it.getVasuTemplate(templateId)!!
                     it.insertVasuDocument(
-                        MockEvakaClock(2022, 1, 1, 12, 0),
+                        HelsinkiDateTime.of(
+                            LocalDate.of(2022, 1, 1),
+                            LocalTime.of(12, 0),
+                        ),
                         childId = it.insertTestChild(),
                         template = template
                     )

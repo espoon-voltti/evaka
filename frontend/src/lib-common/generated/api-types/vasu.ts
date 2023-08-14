@@ -135,7 +135,7 @@ export interface VasuDocument {
 */
 export interface VasuDocumentEvent {
   created: HelsinkiDateTime
-  employeeId: UUID
+  createdBy: UUID
   eventType: VasuDocumentEventType
   id: UUID
 }

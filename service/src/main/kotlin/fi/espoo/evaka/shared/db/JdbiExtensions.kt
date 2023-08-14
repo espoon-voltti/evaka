@@ -156,6 +156,13 @@ private class Parser(private var text: CharSequence) {
         (this.text.firstOrNull() ?: error("Unexpected end of text")).also {
             this.text = this.text.drop(1)
         }
+    fun parseLiteral(literal: String): Boolean =
+        this.text.startsWith(literal).also { found ->
+            if (found) {
+                this.text = this.text.drop(literal.length)
+            }
+        }
+
     fun parseDate(): LocalDate {
         val position = ParsePosition(0)
         return DateTimeFormatter.ISO_DATE.parse(text, position).query(LocalDate::from).also {
@@ -163,14 +170,26 @@ private class Parser(private var text: CharSequence) {
         }
     }
 
-    private data class RawRange<Element : Any>(
-        val lower: Element?,
+    fun parseDateRangeEnd(): LocalDate =
+        // PostgreSQL uses exclusive end bound in date ranges, so a valid ISO "9999-12-31" end date
+        // is presented as 10000-01-01, which can't be parsed with the standard LocalDate ISO parser
+        if (this.parseLiteral("10000-01-01")) {
+            LocalDate.of(10000, 1, 1)
+        } else {
+            this.parseDate()
+        }
+
+    private data class RawRange<Lower : Any, Upper : Any>(
+        val lower: Lower?,
         val lowerInclusive: Boolean,
-        val upper: Element?,
+        val upper: Upper?,
         val upperInclusive: Boolean
     )
 
-    private fun <T : Any> parseRange(parseElement: (parser: Parser) -> T): RawRange<T> {
+    private fun <Lower : Any, Upper : Any> parseRange(
+        parseLower: (parser: Parser) -> Lower,
+        parseUpper: (parser: Parser) -> Upper
+    ): RawRange<Lower, Upper> {
         val lowerInclusive =
             when (val char = parseChar()) {
                 '[' -> true
@@ -180,7 +199,7 @@ private class Parser(private var text: CharSequence) {
         val lower =
             when (peekChar()) {
                 ',' -> null
-                else -> parseElement(this)
+                else -> parseLower(this)
             }
         when (val char = parseChar()) {
             ',' -> {}
@@ -190,7 +209,7 @@ private class Parser(private var text: CharSequence) {
             when (peekChar()) {
                 ']',
                 ')' -> null
-                else -> parseElement(this)
+                else -> parseUpper(this)
             }
         val upperInclusive =
             when (val char = parseChar()) {
@@ -202,25 +221,23 @@ private class Parser(private var text: CharSequence) {
     }
 
     fun parseFiniteDateRange(): FiniteDateRange =
-        parseRange { it.parseDate() }
-            .let { range ->
-                checkNotNull(range.lower) { "FiniteDateRange lower must not be null" }
-                checkNotNull(range.upper) { "FiniteDateRange upper must not be null" }
-                FiniteDateRange(
-                    start = range.lower.let { if (range.lowerInclusive) it else it.plusDays(1) },
-                    end = range.upper.let { if (range.upperInclusive) it else it.minusDays(1) },
-                )
-            }
+        parseRange({ it.parseDate() }, { it.parseDateRangeEnd() }).let { range ->
+            checkNotNull(range.lower) { "FiniteDateRange lower must not be null" }
+            checkNotNull(range.upper) { "FiniteDateRange upper must not be null" }
+            FiniteDateRange(
+                start = range.lower.let { if (range.lowerInclusive) it else it.plusDays(1) },
+                end = range.upper.let { if (range.upperInclusive) it else it.minusDays(1) },
+            )
+        }
 
     fun parseDateRange(): DateRange =
-        parseRange { it.parseDate() }
-            .let { range ->
-                checkNotNull(range.lower) { "DateRange lower must not be null" }
-                DateRange(
-                    start = range.lower.let { if (range.lowerInclusive) it else it.plusDays(1) },
-                    end = range.upper?.let { if (range.upperInclusive) it else it.minusDays(1) },
-                )
-            }
+        parseRange({ it.parseDate() }, { it.parseDateRangeEnd() }).let { range ->
+            checkNotNull(range.lower) { "DateRange lower must not be null" }
+            DateRange(
+                start = range.lower.let { if (range.lowerInclusive) it else it.plusDays(1) },
+                end = range.upper?.let { if (range.upperInclusive) it else it.minusDays(1) },
+            )
+        }
 
     fun <T : Any> parseMultiRange(parseRange: (parser: Parser) -> T): List<T> {
         when (val char = parseChar()) {
