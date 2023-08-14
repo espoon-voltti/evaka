@@ -334,3 +334,4 @@ V334__person_enabled_email_types.sql
 V335__push_notifications_pilot_feature.sql
 V336__vapid_jwt.sql
 V337__duplicate_fee_decision_tables.sql
+V338__curriculum_document_event_evaka_user_id.sql

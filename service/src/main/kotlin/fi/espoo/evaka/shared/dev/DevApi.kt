@@ -1253,7 +1253,7 @@ RETURNING id
                 val template =
                     tx.getVasuTemplate(body.templateId)
                         ?: throw NotFound("Template with id ${body.templateId} not found")
-                tx.insertVasuDocument(clock, body.childId, template)
+                tx.insertVasuDocument(clock.now(), body.childId, template)
             }
         }
     }
@@ -1265,7 +1265,7 @@ RETURNING id
         @PathVariable documentId: VasuDocumentId
     ) {
         return db.connect { dbc ->
-            dbc.transaction { tx -> tx.publishVasuDocument(clock, documentId) }
+            dbc.transaction { tx -> tx.publishVasuDocument(clock.now(), documentId) }
         }
     }
 

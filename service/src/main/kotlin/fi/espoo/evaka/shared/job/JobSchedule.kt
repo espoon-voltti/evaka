@@ -71,6 +71,11 @@ data class ScheduledJobSettings(
                         enabled = false,
                         schedule = JobSchedule.daily(LocalTime.of(0, 35))
                     )
+                ScheduledJob.CloseVasusWithExpiredTemplate ->
+                    ScheduledJobSettings(
+                        enabled = true,
+                        schedule = JobSchedule.daily(LocalTime.of(0, 40))
+                    )
                 ScheduledJob.RemoveOldAsyncJobs ->
                     ScheduledJobSettings(
                         enabled = true,
