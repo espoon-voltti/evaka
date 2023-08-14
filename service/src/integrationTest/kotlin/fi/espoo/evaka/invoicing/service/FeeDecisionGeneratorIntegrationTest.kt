@@ -3167,7 +3167,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `active fee decisions are not updated on changed past placement end date`() {
-        val originalPeriod = DateRange(LocalDate.now().minusYears(1), LocalDate.now().minusDays(1))
+        val originalPeriod =
+            DateRange(mockedNow.today().minusYears(1), mockedNow.today().minusDays(1))
         val sentDecision =
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
