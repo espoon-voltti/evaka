@@ -4,11 +4,14 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -158,6 +161,28 @@ SELECT p.child_id AS id
 FROM placement p
 JOIN daycare pd ON pd.id = p.unit_id
 WHERE pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun andUnitProviderAndCareTypeEquals(
+        providerTypes: Set<ProviderType>,
+        careTypes: Set<CareType>
+    ) =
+        rule<DaycareId> { _, _ ->
+            sql(
+                """
+SELECT id
+FROM daycare
+WHERE provider_type = ANY(${bind(providerTypes)})
+${
+    if (careTypes.isNotEmpty()) "AND (${careTypes.mapIndexedNotNull{ i, value -> 
+            if (i == 0) "${"'$value'"} = ANY(daycare.type)"
+            else " OR ${"'$value'"} = ANY(daycare.type)"
+        }.joinToString(" ")})"
+    else ""
+}
             """
                     .trimIndent()
             )

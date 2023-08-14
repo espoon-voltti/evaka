@@ -5,6 +5,8 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -1810,7 +1812,12 @@ sealed interface Action {
     enum class Unit(override vararg val defaultRules: ScopedActionRule<in DaycareId>) :
         ScopedAction<DaycareId> {
         READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, OUTSOURCED_FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
+            HasGlobalRole(OUTSOURCED_FINANCE_ADMIN)
+                .andUnitProviderAndCareTypeEquals(
+                    setOf(ProviderType.MUNICIPAL, ProviderType.PURCHASED),
+                    setOf(CareType.CENTRE, CareType.FAMILY, CareType.GROUP_FAMILY)
+                ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
