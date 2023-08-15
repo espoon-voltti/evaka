@@ -60,6 +60,7 @@ import {
 } from 'lib-components/molecules/modals/BaseModal'
 import { H1, H2, H3, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
@@ -669,6 +670,9 @@ const Absence = React.memo(function Absence({
       <span data-qa="absence">
         {absence.type === 'SICKLEAVE'
           ? i18n.calendar.absences.SICKLEAVE
+          : featureFlags.experimental?.citizenAttendanceSummary &&
+            absence.type === 'PLANNED_ABSENCE'
+          ? i18n.calendar.absences.PLANNED_ABSENCE
           : i18n.calendar.absent}
       </span>
     )
