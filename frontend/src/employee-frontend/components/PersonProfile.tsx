@@ -172,7 +172,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'dependants', open: false },
     { component: 'fosterChildren', open: false }
   ],
-  ['OUTSOURCED_FINANCE_ADMIN']: [
+  ['FINANCE_STAFF']: [
     { component: 'family-overview', open: true },
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false },

@@ -214,7 +214,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'applications', open: false },
     { component: 'child-consents', open: false }
   ],
-  ['OUTSOURCED_FINANCE_ADMIN']: [
+  ['FINANCE_STAFF']: [
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },

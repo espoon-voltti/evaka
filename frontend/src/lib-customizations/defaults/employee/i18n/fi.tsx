@@ -4188,7 +4188,7 @@ export const fi = {
       MESSAGING: 'Viestintä',
       REPORT_VIEWER: 'Raportointi',
       FINANCE_ADMIN: 'Talous',
-      OUTSOURCED_FINANCE_ADMIN: 'Ulkoistettu talous',
+      FINANCE_STAFF: 'Talous työntekijä',
       SERVICE_WORKER: 'Palveluohjaus',
       SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',
       EARLY_CHILDHOOD_EDUCATION_SECRETARY: 'Varhaiskasvatussihteeri',

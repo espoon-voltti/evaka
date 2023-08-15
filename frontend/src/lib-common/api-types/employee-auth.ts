@@ -25,7 +25,7 @@ export const globalRoles = [
   'ADMIN',
   'SERVICE_WORKER',
   'FINANCE_ADMIN',
-  'OUTSOURCED_FINANCE_ADMIN',
+  'FINANCE_STAFF',
   'REPORT_VIEWER',
   'DIRECTOR',
   'MESSAGING'
