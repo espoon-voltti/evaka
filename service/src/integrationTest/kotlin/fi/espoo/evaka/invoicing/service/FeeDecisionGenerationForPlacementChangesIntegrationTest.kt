@@ -220,6 +220,38 @@ class FeeDecisionGenerationForPlacementChangesIntegrationTest :
         )
     }
 
+    @Test
+    fun `break in placement on days 14-15`() {
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(placementId, day(10), day(13))
+            tx.insertTestPlacement(
+                id = PlacementId(UUID.randomUUID()),
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = day(16),
+                endDate = originalRange.end!!
+            )
+        }
+
+        generate()
+
+        assertDrafts(
+            listOf(
+                dateRange(14, 15) to 0,
+                dateRange(16, 20) to 1,
+            )
+        )
+
+        sendAllFeeDecisions()
+
+        assertFinal(
+            listOf(
+                Triple(FeeDecisionStatus.SENT, dateRange(10, 13), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(16, 20), 1),
+            )
+        )
+    }
+
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
     private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
 

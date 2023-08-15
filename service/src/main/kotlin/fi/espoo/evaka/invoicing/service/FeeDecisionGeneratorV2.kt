@@ -138,7 +138,7 @@ fun generateFeeDecisionsDrafts(
     val filteredAndMergedDrafts =
         newDrafts
             .filterNot { draft ->
-                existsActiveDuplicateThatWillNotBeAnnulled(
+                existsActiveDuplicateThatWillRemainEffective(
                     draft,
                     existingActiveDecisions,
                     newDrafts
@@ -151,7 +151,7 @@ fun generateFeeDecisionsDrafts(
             }
             .let(::mergeAdjacentIdenticalDrafts)
             .filterNot { draft ->
-                existsActiveDuplicateThatWillNotBeAnnulled(
+                existsActiveDuplicateThatWillRemainEffective(
                     draft,
                     existingActiveDecisions,
                     newDrafts
@@ -656,21 +656,34 @@ fun mergeAdjacentIdenticalDrafts(decisions: List<FeeDecision>): List<FeeDecision
         }
 }
 
-private fun existsActiveDuplicateThatWillNotBeAnnulled(
+private fun existsActiveDuplicateThatWillRemainEffective(
     draft: FeeDecision,
     activeDecisions: List<FeeDecision>,
     drafts: List<FeeDecision>,
 ): Boolean {
-    val active =
+    val activeDuplicate =
         activeDecisions.find {
             it.validDuring.contains(draft.validDuring) && it.contentEquals(draft)
         }
             ?: return false
 
-    val activeGettingAnnulled =
-        drafts.any { it.validDuring.includes(active.validFrom) && !it.contentEquals(active) }
+    val nonIdenticalDraftsOverlappingActive =
+        drafts.filter {
+            it.validDuring.overlaps(activeDuplicate.validDuring) &&
+                !it.contentEquals(activeDuplicate)
+        }
 
-    return !activeGettingAnnulled
+    val activeValidUntil =
+        nonIdenticalDraftsOverlappingActive.minOfOrNull { it.validFrom.minusDays(1) }
+            ?: activeDuplicate.validTo
+
+    if (activeValidUntil != null && activeValidUntil < activeDuplicate.validFrom) {
+        return false // active decision will be annulled
+    }
+
+    val newActiveRange = DateRange(activeDuplicate.validFrom, activeValidUntil)
+
+    return newActiveRange.contains(draft.validDuring)
 }
 
 private fun FeeDecision.getDifferences(
