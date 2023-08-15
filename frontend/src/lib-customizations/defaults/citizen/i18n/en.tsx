@@ -300,8 +300,10 @@ const en: Translations = {
     holiday: 'Holiday',
     absent: 'Absent',
     absentFree: 'Free absence',
+    absentPlanned: 'Shift work absence',
     absences: {
-      SICKLEAVE: 'Absence due to illness'
+      SICKLEAVE: 'Absence due to illness',
+      PLANNED_ABSENCE: 'Shift work absence'
     },
     absenceMarkedByEmployee: 'Absence marked by staff',
     contactStaffToEditAbsence:
