@@ -206,25 +206,29 @@ export default React.memo(function ReservationModal({
                 <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
                 <Gap size="xs" />
                 <FixedSpaceFlexWrap>
-                  {availableChildren.map((child) => (
-                    <SelectionChip
-                      key={child.id}
-                      text={`${formatFirstName(child)}${
-                        duplicateChildInfo[child.id] !== undefined
-                          ? ` ${duplicateChildInfo[child.id]}`
-                          : ''
-                      }`}
-                      selected={selectedChildren.state.includes(child.id)}
-                      onChange={(selected) => {
-                        selectedChildren.update((prev) =>
-                          selected
-                            ? [...prev, child.id]
-                            : prev.filter((id) => id !== child.id)
-                        )
-                      }}
-                      data-qa={`child-${child.id}`}
-                    />
-                  ))}
+                  {availableChildren
+                    .filter((child) => child.upcomingPlacementType !== null)
+                    .map((child) => (
+                      <div key={child.id} data-qa="relevant-child">
+                        <SelectionChip
+                          key={child.id}
+                          text={`${formatFirstName(child)}${
+                            duplicateChildInfo[child.id] !== undefined
+                              ? ` ${duplicateChildInfo[child.id]}`
+                              : ''
+                          }`}
+                          selected={selectedChildren.state.includes(child.id)}
+                          onChange={(selected) => {
+                            selectedChildren.update((prev) =>
+                              selected
+                                ? [...prev, child.id]
+                                : prev.filter((id) => id !== child.id)
+                            )
+                          }}
+                          data-qa={`child-${child.id}`}
+                        />
+                      </div>
+                    ))}
                 </FixedSpaceFlexWrap>
               </CalendarModalSection>
 
