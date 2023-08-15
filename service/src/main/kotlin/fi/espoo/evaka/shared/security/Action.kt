@@ -62,8 +62,8 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.MESSAGING
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_STAFF
+import fi.espoo.evaka.shared.auth.UserRole.MESSAGING
 import fi.espoo.evaka.shared.auth.UserRole.REPORT_VIEWER
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
