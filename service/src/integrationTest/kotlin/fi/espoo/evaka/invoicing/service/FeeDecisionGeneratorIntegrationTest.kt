@@ -1524,7 +1524,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `placement unit difference`() {
+    fun `placement unit difference is ignored`() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
@@ -1544,8 +1544,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 { it.children.map { child -> child.placement.unitId } }
             )
             .containsExactlyInAnyOrder(
-                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id))
+                // TODO: should unit even be stored since it can change during decision?
+                Tuple(period, emptySet<FeeDecisionDifference>(), listOf(testDaycare2.id))
             )
     }
 
@@ -1740,7 +1740,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
-        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare.id)
         insertIncome(testChild_1.id, 10000, subPeriod3)
 
         db.transaction { tx ->
@@ -1785,7 +1785,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
             tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
         }
-        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare.id)
 
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
@@ -1812,8 +1812,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
             tx.createUpdate("DELETE FROM placement").execute()
         }
-        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare2.id)
-        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE_PART_TIME, testDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
 
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
@@ -3648,7 +3648,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockEvakaClock(HelsinkiDateTime.Companion.of(subPeriod2.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
-        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare2.id)
 
         db.transaction {
             generator.generateNewDecisionsForAdult(it, clock, testAdult_1.id, period.start)
