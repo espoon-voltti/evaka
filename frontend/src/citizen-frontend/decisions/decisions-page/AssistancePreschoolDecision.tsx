@@ -65,13 +65,13 @@ export default React.memo(function AssistancePreschoolDecision({
         <Label>{t.decisions.assistanceDecisions.statusLabel}</Label>
         <AssistanceNeedDecisionStatusChip
           decisionStatus={status}
-          texts={t.decisions.assistanceDecisions.decision.statuses}
+          texts={t.decisions.assistancePreschoolDecisions.statuses}
           data-qa="decision-status"
         />
         {status === 'ANNULLED' ? (
           <>
             <Label>
-              {t.decisions.assistanceDecisions.decision.annulmentReason}
+              {t.decisions.assistancePreschoolDecisions.annulmentReason}
             </Label>
             <span data-qa="annulment-reason">{annulmentReason}</span>
           </>

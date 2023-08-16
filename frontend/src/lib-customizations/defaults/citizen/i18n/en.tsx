@@ -1500,8 +1500,6 @@ const en: Translations = {
     assistancePreschoolDecisions: {
       // the actual decision cannot be in English
       ...fi.decisions.assistancePreschoolDecisions,
-
-      // TODO
       title: 'Decision of special support in pre-primary education',
       statuses: {
         DRAFT: 'Draft',
@@ -1510,6 +1508,8 @@ const en: Translations = {
         REJECTED: 'Rejected',
         ANNULLED: 'Annulled'
       },
+      annulmentReason: 'Reason for the annulment',
+      pageTitle: 'Decision of support in pre-primary education',
       type: 'Special support status',
       types: {
         NEW: 'Special support begins',

@@ -1497,46 +1497,63 @@ export default {
       appealInstructionsTitle: 'Oikaisuvaatimusohje',
       appealInstructions: (
         <>
+          <P>
+            Tähän päätökseen tyytymätön voi tehdä kirjallisen
+            oikaisuvaatimuksen. Päätökseen ei saa hakea muutosta valittamalla
+            tuomioistuimeen.
+          </P>
+
           <H3>Oikaisuvaatimusoikeus</H3>
           <P>
             Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
             jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
             vaikuttaa (asianosainen).
           </P>
+
           <H3>Oikaisuvaatimusaika</H3>
           <P>
             Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
             tiedoksisaannista.
           </P>
-          <H3>Tiedoksisaanti</H3>
+          <P>
+            Oikaisuvaatimus on toimitettava Etelä-Suomen aluehallintovirastolle
+            viimeistään määräajan viimeisenä päivänä ennen Etelä-Suomen
+            aluehallintoviraston aukioloajan päättymistä.
+          </P>
           <P>
             Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
             näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
             saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä.
-            Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen
-            katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä
-            kolmantena päivänä viestin lähettämisestä. Tiedoksisaantipäivää ei
-            lueta määräaikaan. Jos määräajan viimeinen päivä on pyhäpäivä,
-            itsenäisyyspäivä, vapunpäivä, joulu- tai juhannusaatto tai
-            arkilauantai, saa tehtävän toimittaa ensimmäisenä arkipäivänä sen
-            jälkeen.
           </P>
-          <H3>Oikaisuviranomainen</H3>
-          <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
           <P>
-            Etelä-Suomen aluehallintovirasto
-            <br />
-            Käyntiosoite: Ratapihantie 9, 00521 Helsinki
-            <br />
-            Virastoaika: ma-pe 8.00–16.15
-            <br />
+            Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen
+            katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä,
+            kolmantena päivänä viestin lähettämisestä.
+          </P>
+          <P>
+            Tiedoksisaantipäivää ei lueta oikaisuvaatimusaikaan. Jos
+            oikaisuvaatimusajan viimeinen päivä on pyhäpäivä, itsenäisyyspäivä,
+            vapunpäivä, joulu- tai juhannusaatto tai arkilauantai, saa
+            oikaisuvaatimuksen tehdä ensimmäisenä arkipäivänä sen jälkeen.
+          </P>
+
+          <H3>Oikaisuviranomainen</H3>
+          <P>
+            Viranomainen, jolle oikaisuvaatimus tehdään, on Etelä-Suomen
+            aluehallintovirasto
+          </P>
+          <P>
             Postiosoite: PL 1, 13035 AVI
             <br />
-            Sähköposti: kirjaamo.etela@avi.fi
+            Helsingin toimipaikan käyntiosoite: Ratapihantie 9, 00521 Helsinki
             <br />
-            Fax: 0295 016 661
+            Sähköpostiosoite: kirjaamo.etela@avi.fi
             <br />
-            Puhelin: 0295 016 000
+            Puhelinvaihde: 0295 016 000
+            <br />
+            Faksinumero: 0295 016 661
+            <br />
+            Virastoaika: ma-pe 8.00–16.15
           </P>
           <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
           <P>
@@ -1545,17 +1562,15 @@ export default {
           </P>
           <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
           <ul>
-            <li>
-              Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
-              puhelinnumero ja muut asian hoitamiseksi tarvittavat yhteystiedot
-            </li>
-            <li>päätös, johon haetaan oikaisua</li>
-            <li>
-              miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
-              vaaditaan tehtäväksi
-            </li>
-            <li>vaatimuksen perusteet</li>
+            <li>päätös, johon vaaditaan oikaisua,</li>
+            <li>millaista oikaisua päätökseen vaaditaan,</li>
+            <li>millä perusteilla oikaisua vaaditaan</li>
           </ul>
+          <P>
+            Oikaisuvaatimuksessa on lisäksi ilmoitettava tekijän nimi,
+            kotikunta, postiosoite, puhelinnumero ja muut asian hoitamiseksi
+            tarvittavat yhteystiedot.
+          </P>
           <P>
             Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
             viestinä, yhteystietona pyydetään ilmoittamaan myös
@@ -1582,14 +1597,6 @@ export default {
               toimitettu viranomaiselle.
             </li>
           </ul>
-          <H3>Oikaisuvaatimuksen toimittaminen</H3>
-          <P>
-            Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan kuluessa
-            oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän tulee olla
-            perillä oikaisuvaatimusajan viimeisenä päivänä ennen viraston
-            aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen postitse tai
-            sähköisesti tapahtuu lähettäjän omalla vastuulla.
-          </P>
         </>
       )
     },
