@@ -6,7 +6,7 @@ import { faPen, faTrash } from 'Icons'
 import React, { useCallback, useContext, useState } from 'react'
 
 import { Result } from 'lib-common/api'
-import { localDate } from 'lib-common/form/fields'
+import { optionalLocalDate } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -120,6 +120,11 @@ const CreationModal = React.memo(function CreationModal({
     onClose()
   }
 
+  const isValidForm = () =>
+    !!offeredDateState.value() ||
+    !!heldDateState.value() ||
+    !!counselingDateState.value()
+
   return (
     <AsyncFormModal
       title={i18n.childInformation.childDiscussion.addNew}
@@ -128,7 +133,7 @@ const CreationModal = React.memo(function CreationModal({
       resolveLabel={i18n.common.confirm}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
-      resolveDisabled={!form.isValid()}
+      resolveDisabled={!isValidForm()}
     >
       <FixedSpaceRow alignItems="center" justifyContent="center">
         <Label>{i18n.childInformation.childDiscussion.offered}</Label>
@@ -195,9 +200,9 @@ const ChildDiscussionSummary = React.memo(function ChildDiscussionSummary({
 })
 
 const discussionForm = object({
-  offeredDate: localDate,
-  heldDate: localDate,
-  counselingDate: localDate
+  offeredDate: optionalLocalDate,
+  heldDate: optionalLocalDate,
+  counselingDate: optionalLocalDate
 })
 
 function initialFormState(
