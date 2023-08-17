@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -121,6 +121,11 @@ data class ScheduledJobSettings(
                     ScheduledJobSettings(
                         enabled = false,
                         schedule = JobSchedule.daily(LocalTime.of(6, 45))
+                    )
+                ScheduledJob.SendCalendarEventDigests ->
+                    ScheduledJobSettings(
+                        enabled = true,
+                        schedule = JobSchedule.daily(LocalTime.of(18, 0))
                     )
                 ScheduledJob.SendPatuReport ->
                     ScheduledJobSettings(

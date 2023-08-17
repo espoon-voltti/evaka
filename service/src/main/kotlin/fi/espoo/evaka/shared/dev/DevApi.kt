@@ -114,6 +114,7 @@ import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
@@ -2083,18 +2084,18 @@ data class DevPayment(
 )
 
 data class DevCalendarEvent(
-    val id: CalendarEventId,
+    val id: CalendarEventId = CalendarEventId(UUID.randomUUID()),
     val title: String,
     val description: String,
     val period: FiniteDateRange
 )
 
 data class DevCalendarEventAttendee(
-    val id: UUID,
+    val id: CalendarEventAttendeeId = CalendarEventAttendeeId(UUID.randomUUID()),
     val calendarEventId: CalendarEventId,
     val unitId: DaycareId,
-    val groupId: GroupId?,
-    val childId: ChildId?
+    val groupId: GroupId? = null,
+    val childId: ChildId? = null,
 )
 
 data class DevAbsence(

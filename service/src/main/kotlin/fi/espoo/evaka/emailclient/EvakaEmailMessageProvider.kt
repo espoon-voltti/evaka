@@ -791,7 +791,7 @@ There are missing attendance reservations for the week starting $start. Please m
         }
     }
 
-    fun outdatedIncomeNotificationInitial(language: Language): EmailContent {
+    private fun outdatedIncomeNotificationInitial(language: Language): EmailContent {
         val documentsUrl = "${baseUrl(language)}/income"
         return EmailContent(
             subject =
@@ -909,7 +909,7 @@ There are missing attendance reservations for the week starting $start. Please m
         )
     }
 
-    fun outdatedIncomeNotificationReminder(language: Language): EmailContent {
+    private fun outdatedIncomeNotificationReminder(language: Language): EmailContent {
         val documentsUrl = "${baseUrl(language)}/income"
         return EmailContent(
             subject =
@@ -1025,7 +1025,7 @@ There are missing attendance reservations for the week starting $start. Please m
         )
     }
 
-    fun outdatedIncomeNotificationExpired(): EmailContent {
+    private fun outdatedIncomeNotificationExpired(): EmailContent {
         return EmailContent(
             subject =
                 "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
@@ -1091,6 +1091,36 @@ There are missing attendance reservations for the week starting $start. Please m
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
                """
                     .trimIndent()
+        )
+    }
+
+    override fun calendarEventNotification(
+        language: Language,
+        events: List<CalendarEventNotificationData>
+    ): EmailContent {
+        val format =
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale("fi", "FI"))
+        return EmailContent.fromHtml(
+            subject =
+                "Uusia kalenteritapahtumia eVakassa / Nya kalenderhändelser i eVaka / New calendar events in eVaka",
+            html =
+                """
+                <p>eVakaan on lisätty uusia kalenteritapahtumia / Nya kalenderhändelser har lagts till i eVaka / New calendar events have been added to eVaka:</p>
+                
+                """
+                    .trimIndent() +
+                    events.joinToString("\n\n") { event ->
+                        var period = event.period.start.format(format)
+                        if (event.period.end != event.period.start) {
+                            period += "-${event.period.end.format(format)}"
+                        }
+                        "<p>${period}: ${event.title}</p>"
+                    } +
+                    """
+                    
+                    <p>Katso lisää kalenterissa / Se mer i kalendern / See more in the calendar: ${baseUrl(language)}/calendar</p>
+                    """
+                        .trimIndent()
         )
     }
 }

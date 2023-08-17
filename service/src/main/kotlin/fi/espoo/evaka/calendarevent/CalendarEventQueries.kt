@@ -4,13 +4,18 @@
 
 package fi.espoo.evaka.calendarevent
 
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
@@ -220,3 +225,105 @@ SELECT COUNT(*) FROM calendar_event_attendee WHERE unit_id = :unitId
         .bind("unitId", unitId)
         .mapTo<Int>()
         .first()
+
+data class ParentWithEvents(
+    val parentId: PersonId,
+    val language: Language,
+    val events: List<CalendarEventNotificationData>
+)
+
+fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> {
+    return createQuery<Any> {
+            sql(
+                """
+WITH matching_events AS (
+    SELECT id, period FROM calendar_event WHERE created >= ${bind(cutoff)}
+), matching_children AS (
+    SELECT ce.id AS event_id, ce.period * daterange(pl.start_date, pl.end_date, '[]') AS period, pl.child_id
+    FROM matching_events ce
+    JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+    JOIN placement pl ON pl.unit_id = cea.unit_id AND daterange(pl.start_date, pl.end_date, '[]') && ce.period
+    WHERE
+        -- Affects the whole unit
+        cea.group_id IS NULL AND
+        cea.child_id IS NULL AND
+        NOT EXISTS (
+            SELECT 1 FROM backup_care bc
+            WHERE
+                bc.child_id = pl.child_id AND
+                bc.unit_id <> pl.unit_id AND
+                daterange(bc.start_date, bc.end_date, '[]') @> ce.period
+        )
+
+    UNION ALL
+
+    SELECT ce.id AS event_id, ce.period * daterange(dgp.start_date, dgp.end_date, '[]') AS period, pl.child_id
+    FROM matching_events ce
+    JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+    JOIN daycare_group_placement dgp ON dgp.daycare_group_id = cea.group_id AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
+    JOIN placement pl ON pl.id = dgp.daycare_placement_id
+    WHERE
+        -- Affects a single group
+        cea.group_id IS NOT NULL AND
+        cea.child_id IS NULL AND
+        NOT EXISTS (
+            SELECT 1 FROM backup_care bc
+            WHERE
+                bc.child_id = pl.child_id AND
+                (bc.group_id IS NULL OR bc.group_id <> dgp.daycare_group_id) AND
+                daterange(bc.start_date, bc.end_date, '[]') @> ce.period
+        )
+
+    UNION ALL
+
+    SELECT ce.id AS event_id, ce.period, cea.child_id
+    FROM matching_events ce
+    JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+    WHERE
+        -- Affects a single child (in a single group)
+        cea.group_id IS NOT NULL AND
+        cea.child_id IS NOT NULL
+        -- We don't filter out backup care here because the child was "hand-picked"
+        -- to participate in this event
+), matching_parents AS (
+    -- List each event at most once per parent
+
+    SELECT DISTINCT g.guardian_id AS parent_id, mc.event_id
+    FROM matching_children mc
+    JOIN guardian g ON g.child_id = mc.child_id
+
+    UNION
+
+    SELECT DISTINCT fp.parent_id, mc.event_id
+    FROM matching_children mc
+    JOIN foster_parent fp ON fp.child_id = mc.child_id AND fp.valid_during && mc.period
+)
+SELECT
+    mp.parent_id,
+    p.language,
+    jsonb_agg(
+        json_build_object(
+            'title', ce.title,
+            'period', json_build_object(
+                'start', lower(ce.period),
+                'end', upper(ce.period) - 1
+            )
+        )
+        ORDER BY lower(ce.period)
+    ) AS events
+FROM matching_parents mp
+JOIN person p ON p.id = mp.parent_id
+JOIN calendar_event ce ON ce.id = mp.event_id
+GROUP BY mp.parent_id, p.language
+"""
+            )
+        }
+        .map { row ->
+            ParentWithEvents(
+                parentId = row.mapColumn("parent_id"),
+                language = Language.tryValueOf(row.mapColumn<String?>("language")) ?: Language.fi,
+                events = row.mapJsonColumn<List<CalendarEventNotificationData>>("events")
+            )
+        }
+        .list()
+}

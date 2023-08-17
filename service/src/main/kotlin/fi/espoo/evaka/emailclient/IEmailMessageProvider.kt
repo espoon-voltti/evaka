@@ -77,4 +77,14 @@ interface IEmailMessageProvider {
         notificationType: IncomeNotificationType,
         language: Language
     ): EmailContent
+
+    fun calendarEventNotification(
+        language: Language,
+        events: List<CalendarEventNotificationData>
+    ): EmailContent
 }
+
+data class CalendarEventNotificationData(
+    val title: String,
+    val period: FiniteDateRange,
+)

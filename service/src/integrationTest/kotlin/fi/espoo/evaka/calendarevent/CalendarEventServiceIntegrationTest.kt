@@ -9,8 +9,11 @@ import fi.espoo.evaka.backupcare.BackupCareController
 import fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 import fi.espoo.evaka.backupcare.NewBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.pis.updatePersonalDetails
 import fi.espoo.evaka.placement.GroupTransferRequestBody
 import fi.espoo.evaka.placement.PlacementController
 import fi.espoo.evaka.placement.PlacementControllerCitizen
@@ -54,12 +57,10 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var calendarEventController: CalendarEventController
-
     @Autowired lateinit var placementController: PlacementController
-
     @Autowired lateinit var backupCareController: BackupCareController
-
     @Autowired lateinit var placementControllerCitizen: PlacementControllerCitizen
+    @Autowired lateinit var calendarEventNotificationService: CalendarEventNotificationService
 
     private final val adminId = EmployeeId(UUID.randomUUID())
     private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
@@ -1238,6 +1239,43 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertThrows<BadRequest> {
             this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
+        }
+    }
+
+    @Test
+    fun `notifications are sent`() {
+        db.transaction { tx ->
+            // Email address is needed
+            tx.updatePersonalDetails(
+                testAdult_1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                )
+            )
+        }
+
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = null,
+                title = "Unit-wide event",
+                description = "uwe",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3))
+            )
+        calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
+
+        calendarEventNotificationService.sendCalendarEventDigests(db, now)
+
+        assertEquals(1, MockEmailClient.emails.size)
+        MockEmailClient.emails.first().let { email ->
+            assertEquals("example@example.com", email.toAddress)
+            assertEquals(
+                "Uusia kalenteritapahtumia eVakassa / Nya kalenderhändelser i eVaka / New calendar events in eVaka",
+                email.content.subject
+            )
         }
     }
 }
