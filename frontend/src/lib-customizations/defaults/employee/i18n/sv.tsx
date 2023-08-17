@@ -75,7 +75,7 @@ export const sv = {
 
           <H3>Tidsfrist för omprövningsbegäran</H3>
           <P>
-            En begäran om omprövning ska framställas inom 30 dagar från
+            En begäran om omprövning ska framställas inom 14 dagar från
             delfåendet av beslutet.
           </P>
           <P>

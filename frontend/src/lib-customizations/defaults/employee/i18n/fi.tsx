@@ -925,7 +925,7 @@ export const fi = {
 
           <H3>Oikaisuvaatimusaika</H3>
           <P>
-            Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
+            Oikaisuvaatimus on tehtävä 14 päivän kuluessa päätöksen
             tiedoksisaannista.
           </P>
           <P>
