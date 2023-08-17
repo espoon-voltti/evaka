@@ -409,6 +409,18 @@ export const fi = {
       return `Ei ${statusText} lapsia`
     }
   },
+  settings: {
+    notifications: {
+      title: 'Ilmoitusasetukset',
+      label: 'Viesti-ilmoitukset',
+      enable: 'Ota käyttöön',
+      state: {
+        granted: 'käytössä',
+        prompt: 'pois käytöstä',
+        denied: 'estetty'
+      }
+    }
+  },
   childButtons: {
     newMessage: 'Uusi viesti'
   },
