@@ -297,8 +297,10 @@ export default {
     holiday: 'Pyhäpäivä',
     absent: 'Poissa',
     absentFree: 'Maksuton poissaolo',
+    absentPlanned: 'Vuorotyöpoissaolo',
     absences: {
-      SICKLEAVE: 'Sairauspoissaolo'
+      SICKLEAVE: 'Sairauspoissaolo',
+      PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
     },
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
     contactStaffToEditAbsence:

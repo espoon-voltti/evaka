@@ -298,8 +298,10 @@ const sv: Translations = {
     holiday: 'Helgdag',
     absent: 'Frånvarande',
     absentFree: 'Gratis frånvaro',
+    absentPlanned: 'Skiftarbete frånvaro',
     absences: {
-      SICKLEAVE: 'Sjukfrånvaro'
+      SICKLEAVE: 'Sjukfrånvaro',
+      PLANNED_ABSENCE: 'Skiftarbete frånvaro'
     },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',

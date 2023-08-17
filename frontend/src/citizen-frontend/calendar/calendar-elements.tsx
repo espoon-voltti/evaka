@@ -5,7 +5,7 @@
 import groupBy from 'lodash/groupBy'
 import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { timeRangeContains } from 'lib-common/form/fields'
 import {
@@ -20,6 +20,7 @@ import {
 } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -58,27 +59,44 @@ export const Reservations = React.memo(function Reservations({
   ) : (
     <div>
       <FixedSpaceColumn spacing="xs">
-        {groupedChildren.map((group) => (
-          <FixedSpaceRow
-            key={group.key}
-            spacing="s"
-            alignItems="center"
-            data-qa="reservation-group"
-          >
-            <RoundChildImages
-              images={childImages.filter((image) =>
-                group.childIds.includes(image.childId)
-              )}
-            />
-            <GroupedElementText
-              $type={group.type}
-              $backgroundHighlight={backgroundHighlight}
-              data-qa="reservation-text"
+        {groupedChildren.map((group) => {
+          const text = groupText(group, i18n)
+          const wordCount = text?.split(' ').length ?? 0
+          return (
+            <FixedSpaceRow
+              key={group.key}
+              spacing="xs"
+              alignItems="center"
+              data-qa="reservation-group"
             >
-              {groupText(group, i18n)}
-            </GroupedElementText>
-          </FixedSpaceRow>
-        ))}
+              <RoundChildImages
+                images={childImages.filter((image) =>
+                  group.childIds.includes(image.childId)
+                )}
+              />
+              {group.childIds.length === 1 && wordCount > 2 ? (
+                <Tooltip tooltip={text}>
+                  <GroupedElementText
+                    $type={group.type}
+                    $backgroundHighlight={backgroundHighlight}
+                    $clamp={true}
+                    data-qa="reservation-text"
+                  >
+                    {text}
+                  </GroupedElementText>
+                </Tooltip>
+              ) : (
+                <GroupedElementText
+                  $type={group.type}
+                  $backgroundHighlight={backgroundHighlight}
+                  data-qa="reservation-text"
+                >
+                  {text}
+                </GroupedElementText>
+              )}
+            </FixedSpaceRow>
+          )
+        })}
       </FixedSpaceColumn>
       {showAttendanceWarning && <StatusIcon status="warning" />}
     </div>
@@ -93,8 +111,17 @@ export const Holiday = React.memo(function Holiday() {
 const GroupedElementText = styled.div<{
   $type: DailyChildGroupElementType
   $backgroundHighlight: 'nonEditableAbsence' | 'holidayPeriod' | undefined
+  $clamp?: boolean
 }>`
   word-break: break-word;
+  ${(p) =>
+    p.$clamp &&
+    css`
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    `}
 
   ${(p) =>
     p.$type === 'missing-reservation' &&
@@ -110,6 +137,7 @@ type DailyChildGroupElementType =
   | 'absent'
   | 'missing-reservation'
   | 'absent-free'
+  | 'absent-planned'
 
 interface DailyChildGroupElement {
   type: DailyChildGroupElementType
@@ -148,7 +176,12 @@ const groupChildren = (
           return {
             childId: child.childId,
             type:
-              child.absence.type === 'FREE_ABSENCE' ? 'absent-free' : 'absent'
+              child.absence.type === 'FREE_ABSENCE'
+                ? 'absent-free'
+                : featureFlags.experimental?.citizenAttendanceSummary &&
+                  child.absence.type === 'PLANNED_ABSENCE'
+                ? 'absent-planned'
+                : 'absent'
           }
         }
 
@@ -213,6 +246,8 @@ function groupText(group: GroupedDailyChildren, i18n: Translations) {
       return i18n.calendar.missingReservation
     case 'absent-free':
       return i18n.calendar.absentFree
+    case 'absent-planned':
+      return i18n.calendar.absentPlanned
   }
 }
 
