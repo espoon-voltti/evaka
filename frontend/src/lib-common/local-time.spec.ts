@@ -78,4 +78,11 @@ describe('LocalTime', () => {
     expect(duplicate == middle).toBeFalsy()
     expect(duplicate === middle).toBeFalsy()
   })
+  it('hours can be added', () => {
+    const midnight = LocalTime.of(0, 0, 0, 0)
+    expect(midnight.addHours(1)).toStrictEqual(LocalTime.of(1, 0, 0, 0))
+    expect(midnight.addHours(12)).toStrictEqual(LocalTime.of(12, 0, 0, 0))
+    expect(midnight.addHours(24)).toStrictEqual(LocalTime.of(0, 0, 0, 0))
+    expect(midnight.addHours(25)).toStrictEqual(LocalTime.of(1, 0, 0, 0))
+  })
 })

@@ -85,7 +85,14 @@ export default class LocalTime implements Ordered<LocalTime> {
   valueOf(): string {
     return this.formatIso()
   }
-
+  addHours(hours: number): LocalTime {
+    return new LocalTime(
+      (this.hour + hours) % 24,
+      this.minute,
+      this.second,
+      this.nanosecond
+    )
+  }
   /**
    * Current time in system (= browser local) timezone.
    */
