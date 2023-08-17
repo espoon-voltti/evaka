@@ -338,18 +338,12 @@ class ReservationsModal {
 
   private async deselectChildren(n: number) {
     for (let i = 0; i < n; i++) {
-      await this.page
-        .findByDataQa('modal')
-        .findAll('div[data-qa*="child"]')
-        .nth(i)
-        .click()
+      await this.page.findAllByDataQa('relevant-child').nth(i).click()
     }
   }
 
   async deselectAllChildren() {
-    const pills = this.page
-      .findByDataQa('modal')
-      .findAll('div[data-qa*="child"]')
+    const pills = this.page.findAllByDataQa('relevant-child')
     for (const el of await pills.elementHandles()) {
       await el.click()
     }
@@ -460,13 +454,23 @@ class ReservationsModal {
       )
       .waitUntilVisible()
   }
+
+  async assertChildrenSelectable(childIds: string[]) {
+    for (const childId of childIds) {
+      await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
+    }
+
+    await this.page
+      .findAllByDataQa('relevant-child')
+      .assertCount(childIds.length)
+  }
 }
 
 class AbsencesModal {
   constructor(private readonly page: Page) {}
 
   #childCheckbox = (childId: string) =>
-    new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
+    new Checkbox(this.page.findByDataQa(`child-${childId}`))
 
   startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
   endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
@@ -476,6 +480,16 @@ class AbsencesModal {
   absenceTypeRequiredError = this.page.find(
     '[data-qa="modal-absence-type-required-error"]'
   )
+
+  async assertChildrenSelectable(childIds: string[]) {
+    for (const childId of childIds) {
+      await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
+    }
+
+    await this.page
+      .findAllByDataQa('relevant-child')
+      .assertCount(childIds.length)
+  }
 
   async markAbsence(
     child: { id: string },
@@ -492,11 +506,7 @@ class AbsencesModal {
 
   async deselectChildren(n: number) {
     for (let i = 0; i < n; i++) {
-      await this.page
-        .findByDataQa('modal')
-        .findAll('div[data-qa*="child"]')
-        .nth(i)
-        .click()
+      await this.page.findAllByDataQa('relevant-child').nth(i).click()
     }
   }
 

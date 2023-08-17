@@ -154,37 +154,39 @@ export default React.memo(function MessageEditor({
                         {children
                           .filter((child) => childIds.includes(child.id))
                           .map((child) => (
-                            <SelectionChip
-                              key={child.id}
-                              text={`${formatFirstName(child)}${
-                                duplicateChildInfo[child.id] !== undefined
-                                  ? ` ${duplicateChildInfo[child.id]}`
-                                  : ''
-                              }`}
-                              selected={message.children.includes(child.id)}
-                              onChange={(selected) => {
-                                const children = selected
-                                  ? [...message.children, child.id]
-                                  : message.children.filter(
-                                      (id) => id !== child.id
-                                    )
-                                const recipients = message.recipients.filter(
-                                  (accountId) =>
-                                    children.every(
-                                      (childId) =>
-                                        receiverOptions.childrenToMessageAccounts[
-                                          childId
-                                        ]?.includes(accountId) ?? false
-                                    )
-                                )
-                                setMessage((message) => ({
-                                  ...message,
-                                  children,
-                                  recipients
-                                }))
-                              }}
-                              data-qa={`child-${child.id}`}
-                            />
+                            <div key={child.id} data-qa="relevant-child">
+                              <SelectionChip
+                                key={child.id}
+                                text={`${formatFirstName(child)}${
+                                  duplicateChildInfo[child.id] !== undefined
+                                    ? ` ${duplicateChildInfo[child.id]}`
+                                    : ''
+                                }`}
+                                selected={message.children.includes(child.id)}
+                                onChange={(selected) => {
+                                  const children = selected
+                                    ? [...message.children, child.id]
+                                    : message.children.filter(
+                                        (id) => id !== child.id
+                                      )
+                                  const recipients = message.recipients.filter(
+                                    (accountId) =>
+                                      children.every(
+                                        (childId) =>
+                                          receiverOptions.childrenToMessageAccounts[
+                                            childId
+                                          ]?.includes(accountId) ?? false
+                                      )
+                                  )
+                                  setMessage((message) => ({
+                                    ...message,
+                                    children,
+                                    recipients
+                                  }))
+                                }}
+                                data-qa={`child-${child.id}`}
+                              />
+                            </div>
                           ))}
                       </FixedSpaceFlexWrap>
                     )
