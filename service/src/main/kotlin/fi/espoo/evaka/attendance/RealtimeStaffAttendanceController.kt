@@ -321,17 +321,20 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         wholeDay,
                         body.entries.mapNotNull { it.id }
                     )
-                    body.entries.map {
-                        tx.upsertStaffAttendance(
-                            it.id,
-                            body.employeeId,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            occupancyCoefficients[it.groupId],
-                            it.type
-                        )
-                    }
+                    // First do the upserts (entries with ids), then the new entries (entries
+                    // without ids
+                    (body.entries.filter { it.id != null } + body.entries.filter { it.id == null })
+                        .map {
+                            tx.upsertStaffAttendance(
+                                it.id,
+                                body.employeeId,
+                                it.groupId,
+                                it.arrived,
+                                it.departed,
+                                occupancyCoefficients[it.groupId],
+                                it.type
+                            )
+                        }
                 }
             }
         Audit.StaffAttendanceUpdate.log(
