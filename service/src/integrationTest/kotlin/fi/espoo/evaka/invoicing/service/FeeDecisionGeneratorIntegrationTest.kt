@@ -1524,7 +1524,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `placement unit difference is ignored`() {
+    fun `placement unit difference`() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
@@ -1544,8 +1544,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 { it.children.map { child -> child.placement.unitId } }
             )
             .containsExactlyInAnyOrder(
-                // TODO: should unit even be stored since it can change during decision?
-                Tuple(period, emptySet<FeeDecisionDifference>(), listOf(testDaycare2.id))
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id))
             )
     }
 
