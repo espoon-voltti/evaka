@@ -1885,26 +1885,27 @@ const sv: Translations = {
     },
     notificationsSection: {
       title: 'E-postmeddelanden',
-      info: 'Du kan få e-postmeddelanden om följande ämnen. Du kan redigera inställningarna genom att klicka på redigera-knappen.',
-      subtitle: 'Meddelande skickade till e-post',
-      message: 'eVaka-meddelanden skickat av personalen',
-      bulletin: 'eVaka-bulletiner',
-      outdatedIncome: 'Påminnelser om att uppdatera inkomstuppgifter',
+      info: 'Du kan få e-postmeddelanden om följande ämnen. Du kan redigera inställningarna genom att klicka på knappen Redigera.',
+      subtitle: 'Meddelande som skickas till e-posten',
+      message: 'Meddelanden som personalen skickat i eVaka',
+      bulletin: 'Bulletiner i eVaka',
+      outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
-        'Om du inte betalar den högsta avgiften för småbarnspedagogik, måste dina inkomstuppgifter uppdateras regelbundet. Om inkomstuppgifter saknas eller är föråldrade tas högsta avgiften ut för småbarnspedagogik.',
+        'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
       outdatedIncomeWarning:
-        'Om inkomstuppgifter saknas eller är föråldrade tas högsta avgiften ut för småbarnspedagogik.',
-      calendarEvent: 'Påminnelser om nya händelser markerade i kalendern',
-      decision: 'Nya beslut',
-      document: 'Nya dokument',
+        'Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
+      calendarEvent: 'Påminnelser om nya händelser som antecknats i kalendern',
+      decision: 'Om inkomna beslut',
+      document: 'Om nya dokument',
       documentInfo:
-        'Dokument avser officiella dokument som inte är beslut. Exempel på sådana är plan för småbarnspedagogik och pedagogiska bedömningar.',
-      informalDocument: 'Andra dokument relaterade till barnets vardag',
+        'Med dokument avses officiella handlingar som inte är beslut. Dessa kan till exempel vara planer för småbarnspedagogik eller pedagogiska bedömningar.',
+      informalDocument: 'Om andra dokument som gäller barnets vardag',
       informalDocumentInfo:
-        'Andra dokument relaterade till barnets vardag kan vara till exempel bilder på barnets tecknignar.',
-      missingAttendanceReservation: 'Påminnelser om saknade närvaro',
+        'Dessa kan till exempel vara bilder på teckningar som barnet gjort.',
+      missingAttendanceReservation:
+        'Påminnelser om närvaroanmälningar som saknas',
       missingAttendanceReservationInfo:
-        'En påminnelse skickas innan tidsfristen för närvaroanmälan, om ett av dina barn saknar närvaroanmälan eller frånvaroanmälan för de kommande två veckorna.'
+        'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.'
     }
   },
   income: {
