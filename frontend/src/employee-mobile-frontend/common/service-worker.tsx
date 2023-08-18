@@ -99,7 +99,11 @@ export class PushNotifications {
     private options: PushSubscriptionOptionsInit
   ) {}
 
-  async enable() {
+  get permissionState(): Promise<PermissionState> {
+    return this.pushManager.permissionState(this.options)
+  }
+
+  async enable(): Promise<boolean> {
     const sub = await this.refreshSubscription()
     const authSecret = sub?.getKey('auth')
     const ecdhKey = sub?.getKey('p256dh')
@@ -112,7 +116,9 @@ export class PushNotifications {
         authSecret: Array.from(new Uint8Array(authSecret)),
         ecdhKey: Array.from(new Uint8Array(ecdhKey))
       })
+      return true
     }
+    return false
   }
 
   async requestPermission(): Promise<boolean> {
