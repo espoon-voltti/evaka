@@ -585,11 +585,14 @@ describe('Citizen calendar child visibility', () => {
   const placement2start = today.addMonths(8)
   const placement2end = today.addMonths(12)
   let fixtures: AreaAndPersonFixtures
+  let child: PersonDetail
+  let child2: PersonDetail
 
   beforeEach(async () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
-    const child = fixtures.enduserChildFixtureJari
+    child = fixtures.enduserChildFixtureJari
+    child2 = fixtures.enduserChildFixtureKaarina
 
     await insertDaycarePlacementFixtures([
       createDaycarePlacementFixture(
@@ -605,6 +608,13 @@ describe('Citizen calendar child visibility', () => {
         fixtures.daycareFixture.id,
         placement2start,
         placement2end
+      ),
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child2.id,
+        fixtures.daycareFixture.id,
+        placement1start.subYears(1),
+        placement1start.subDays(2)
       )
     ])
 
@@ -629,6 +639,9 @@ describe('Citizen calendar child visibility', () => {
     await calendarPage.assertChildCountOnDay(placement2start.addDays(1), 1)
     await calendarPage.assertChildCountOnDay(placement2end, 1)
     await calendarPage.assertChildCountOnDay(placement2end.addDays(1), 0)
+
+    const absencesModal = await calendarPage.openAbsencesModal()
+    await absencesModal.assertChildrenSelectable([child.id])
   })
 
   test('Day popup contains message if no children placements on that date', async () => {
@@ -659,6 +672,12 @@ describe('Citizen calendar child visibility', () => {
     await header.selectTab('calendar')
     // Saturday
     await calendarPage.assertChildCountOnDay(today.addDays(3), 1)
+  })
+
+  test('Citizen sees only children with ongoing placements', async () => {
+    const calendarPage = await openCalendarPage('desktop')
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.assertChildrenSelectable([child.id])
   })
 
   test('Citizen creates a reservation for a child in round the clock daycare for holidays', async () => {
@@ -768,6 +787,28 @@ describe('Citizen calendar visibility', () => {
     // Ensure page has loaded
     await page.find('[data-qa="nav-children-desktop"]').waitUntilVisible()
     await page.find('[data-qa="nav-calendar-desktop"]').waitUntilHidden()
+  })
+
+  test('Child is not visible when placement is in the past', async () => {
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child.id,
+        daycareId,
+        today.subYears(1),
+        today.subDays(1)
+      )
+    ])
+
+    page = await Page.open({
+      mockedTime: today.toSystemTzDate()
+    })
+
+    await enduserLogin(page)
+
+    // Ensure page has loaded
+    await page.find('[data-qa="applications-list"]').waitUntilVisible()
+    await page.find('[data-qa="nav-children-desktop"]').waitUntilHidden()
   })
 })
 
