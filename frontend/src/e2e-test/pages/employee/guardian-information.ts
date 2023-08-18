@@ -341,11 +341,11 @@ export class IncomeSection extends Section {
   }
 
   #incomeDateRange = this.page.find('[data-qa="income-date-range"]')
-  #incomeStartDateInput = new DatePickerDeprecated(
-    this.#incomeDateRange.find('[data-qa="date-range-input-start-date"]')
+  #incomeStartDateInput = new DatePicker(
+    this.#incomeDateRange.find('[data-qa="start-date"]')
   )
-  #incomeEndDateInput = new DatePickerDeprecated(
-    this.#incomeDateRange.find('[data-qa="date-range-input-end-date"]')
+  #incomeEndDateInput = new DatePicker(
+    this.#incomeDateRange.find('[data-qa="end-date"]')
   )
 
   async fillIncomeStartDate(value: string) {
