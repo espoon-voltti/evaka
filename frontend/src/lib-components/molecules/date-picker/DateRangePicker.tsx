@@ -158,14 +158,16 @@ export interface DateRangePickerFProps
     }
   >
   externalRangeValidation?: boolean
+  info?: InputInfo
 }
 
 export const DateRangePickerF = React.memo(function DateRangePickerF({
   bind,
   externalRangeValidation,
+  info: infoOverride,
   ...props
 }: DateRangePickerFProps) {
-  const info = bind.inputInfo()
+  const info = infoOverride ?? bind.inputInfo()
   const startDate = useFormField(bind, 'startDate')
   const endDate = useFormField(bind, 'endDate')
   return (

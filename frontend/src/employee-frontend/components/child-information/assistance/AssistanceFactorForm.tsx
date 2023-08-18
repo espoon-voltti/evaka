@@ -6,12 +6,22 @@ import React, { useCallback } from 'react'
 
 import { Result } from 'lib-common/api'
 import { localDateRange, string } from 'lib-common/form/fields'
-import { mapped, object, required, validated } from 'lib-common/form/form'
+import {
+  mapped,
+  object,
+  required,
+  transformed,
+  validated,
+  value
+} from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import {
   AssistanceFactor,
+  AssistanceFactorResponse,
   AssistanceFactorUpdate
 } from 'lib-common/generated/api-types/assistance'
+import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -22,21 +32,32 @@ import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 
-export const assistanceFactorForm = mapped(
+export const assistanceFactorForm = transformed(
   object({
     capacityFactor: validated(mapped(string(), Number.parseFloat), (number) =>
       Number.isFinite(number) && number >= 0.0 ? undefined : 'format'
     ),
-    validDuring: required(localDateRange)
+    validDuring: required(localDateRange),
+    allRows: value<AssistanceFactorResponse[]>(),
+    ignoredId: value<UUID | undefined>()
   }),
-  (fields): AssistanceFactorUpdate => ({
-    capacityFactor: fields.capacityFactor,
-    validDuring: fields.validDuring
-  })
+  ({ capacityFactor, validDuring, allRows, ignoredId }) => {
+    if (
+      allRows.some(
+        ({ data }) =>
+          data.id !== ignoredId && data.validDuring.overlaps(validDuring)
+      )
+    ) {
+      return ValidationError.of('overlap')
+    }
+    const success: AssistanceFactorUpdate = { capacityFactor, validDuring }
+    return ValidationSuccess.of(success)
+  }
 )
 
 interface Props {
   assistanceFactor?: AssistanceFactor
+  allRows: AssistanceFactorResponse[]
   onClose: () => void
   onSubmit: (factor: AssistanceFactorUpdate) => Promise<Result<void>>
 }
@@ -46,6 +67,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
 ) {
   const initialData = props.assistanceFactor
   const { i18n, lang } = useTranslation()
+
   const form = useForm(
     assistanceFactorForm,
     () => ({
@@ -53,9 +75,14 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
       validDuring: {
         startDate: initialData?.validDuring.start ?? null,
         endDate: initialData?.validDuring.end ?? null
-      }
+      },
+      allRows: props.allRows,
+      ignoredId: initialData?.id
     }),
-    i18n.validationErrors
+    {
+      ...i18n.validationErrors,
+      ...i18n.childInformation.assistance.validationErrors
+    }
   )
   const { capacityFactor, validDuring } = useFormFields(form)
 
@@ -82,6 +109,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
           bind={validDuring}
           locale={lang}
           data-qa="valid-during"
+          info={form.inputInfo()}
         />
       </Td>
       <Td>

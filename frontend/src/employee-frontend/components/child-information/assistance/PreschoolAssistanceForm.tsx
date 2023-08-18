@@ -7,18 +7,23 @@ import React, { useCallback } from 'react'
 import { Result } from 'lib-common/api'
 import { localDateRange } from 'lib-common/form/fields'
 import {
-  mapped,
   object,
   oneOf,
   OneOfOption,
-  required
+  required,
+  transformed,
+  value
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationSuccess } from 'lib-common/form/types'
+import { ValidationError } from 'lib-common/form/types'
 import {
   PreschoolAssistance,
   PreschoolAssistanceLevel,
+  PreschoolAssistanceResponse,
   PreschoolAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
+import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -30,19 +35,30 @@ import { Translations, useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 
-export const preschoolAssistanceForm = mapped(
+export const preschoolAssistanceForm = transformed(
   object({
     level: required(oneOf<PreschoolAssistanceLevel>()),
-    validDuring: required(localDateRange)
+    validDuring: required(localDateRange),
+    allRows: value<PreschoolAssistanceResponse[]>(),
+    ignoredId: value<UUID | undefined>()
   }),
-  (fields): PreschoolAssistanceUpdate => ({
-    level: fields.level,
-    validDuring: fields.validDuring
-  })
+  ({ level, validDuring, allRows, ignoredId }) => {
+    if (
+      allRows.some(
+        ({ data }) =>
+          data.id !== ignoredId && data.validDuring.overlaps(validDuring)
+      )
+    ) {
+      return ValidationError.of('overlap')
+    }
+    const success: PreschoolAssistanceUpdate = { level, validDuring }
+    return ValidationSuccess.of(success)
+  }
 )
 
 interface Props {
   preschoolAssistance?: PreschoolAssistance
+  allRows: PreschoolAssistanceResponse[]
   onClose: () => void
   onSubmit: (factor: PreschoolAssistanceUpdate) => Promise<Result<void>>
 }
@@ -61,6 +77,7 @@ export const PreschoolAssistanceForm = React.memo(
   function PreschoolAssistanceForm(props: Props) {
     const initialData = props.preschoolAssistance
     const { i18n, lang } = useTranslation()
+
     const form = useForm(
       preschoolAssistanceForm,
       () => ({
@@ -71,9 +88,14 @@ export const PreschoolAssistanceForm = React.memo(
         validDuring: {
           startDate: initialData?.validDuring.start ?? null,
           endDate: initialData?.validDuring.end ?? null
-        }
+        },
+        allRows: props.allRows,
+        ignoredId: initialData?.id
       }),
-      i18n.validationErrors
+      {
+        ...i18n.validationErrors,
+        ...i18n.childInformation.assistance.validationErrors
+      }
     )
     const { level, validDuring } = useFormFields(form)
 
@@ -95,6 +117,7 @@ export const PreschoolAssistanceForm = React.memo(
             bind={validDuring}
             locale={lang}
             data-qa="valid-during"
+            info={form.inputInfo()}
           />
         </Td>
         <Td>

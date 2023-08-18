@@ -94,6 +94,7 @@ export const DaycareAssistanceSection = React.memo(
             <Tbody>
               {mode?.type === 'new' ? (
                 <DaycareAssistanceForm
+                  allRows={rows}
                   onSubmit={(data) =>
                     createDaycareAssistance({ childId, data })
                   }
@@ -105,6 +106,7 @@ export const DaycareAssistanceSection = React.memo(
                   <DaycareAssistanceForm
                     key={row.data.id}
                     daycareAssistance={row.data}
+                    allRows={rows}
                     onSubmit={(data) =>
                       updateDaycareAssistance({
                         childId,

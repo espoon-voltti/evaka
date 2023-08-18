@@ -94,6 +94,7 @@ export const PreschoolAssistanceSection = React.memo(
             <Tbody>
               {mode?.type === 'new' ? (
                 <PreschoolAssistanceForm
+                  allRows={rows}
                   onSubmit={(data) =>
                     createPreschoolAssistance({ childId, data })
                   }
@@ -105,6 +106,7 @@ export const PreschoolAssistanceSection = React.memo(
                   <PreschoolAssistanceForm
                     key={row.data.id}
                     preschoolAssistance={row.data}
+                    allRows={rows}
                     onSubmit={(data) =>
                       updatePreschoolAssistance({
                         childId,
