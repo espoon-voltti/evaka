@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
+import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.koski.KoskiSearchParams
@@ -53,6 +54,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
     SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
     SendOutdatedIncomeNotifications(ScheduledJobs::sendOutdatedIncomeNotifications),
+    SendCalendarEventDigests(ScheduledJobs::sendCalendarEventDigests),
     SendPatuReport(ScheduledJobs::sendPatuReport)
 }
 
@@ -68,6 +70,7 @@ class ScheduledJobs(
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
+    private val calendarEventNotificationService: CalendarEventNotificationService,
     private val patuReportingService: PatuReportingService?,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     tracer: Tracer
@@ -216,5 +219,9 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun closeVasusWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx -> closeVasusWithExpiredTemplate(tx, clock.now()) }
+    }
+
+    fun sendCalendarEventDigests(db: Database.Connection, clock: EvakaClock) {
+        calendarEventNotificationService.sendCalendarEventDigests(db, clock.now())
     }
 }

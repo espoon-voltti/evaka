@@ -11,7 +11,7 @@ enum class Language {
     en;
 
     companion object {
-        fun tryValueOf(value: String): Language? =
+        fun tryValueOf(value: String?): Language? =
             when (value) {
                 "fi" -> fi
                 "sv" -> sv
