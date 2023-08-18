@@ -133,7 +133,7 @@ TABLE (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
             ) AS new_developmental_disability_2,
             array_agg(valid_during ORDER BY valid_during) FILTER (
-                WHERE level = 'SPECIAL_SUPPORT' OR level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1' OR level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
+                WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1' OR level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
             ) AS new_extended_compulsory_education,
             array_agg(valid_during ORDER BY valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1' OR level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'

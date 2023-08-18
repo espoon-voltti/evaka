@@ -444,7 +444,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     ),
                 pidennettyOppivelvollisuus =
                     Aikajakso.from(
-                        FiniteDateRange(testCases[1].period.start, testCases[3].period.end)
+                        FiniteDateRange(testCases[2].period.start, testCases[3].period.end)
                     ),
                 kuljetusetu = null,
                 erityisenTuenPäätökset =
