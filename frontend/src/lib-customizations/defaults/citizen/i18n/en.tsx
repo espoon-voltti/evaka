@@ -1657,27 +1657,27 @@ const en: Translations = {
     },
     notificationsSection: {
       title: 'Email notifications',
-      info: 'You can receive email notifications regarding the following topics. You can edit the settings by clicking the edit button.',
-      subtitle: 'Notifications sent to email',
-      message: 'eVaka messages sent by the staff',
-      bulletin: 'eVaka bulletins',
-      outdatedIncome: 'Reminders to update income information',
+      info: 'You can choose to receive email notifications on the following topics. You can edit the settings by clicking on the Edit button',
+      subtitle: 'Email notifications',
+      message: 'messages sent to eVaka by staff',
+      bulletin: 'bulletins sent to eVaka',
+      outdatedIncome: 'Reminders about updating your income information',
       outdatedIncomeInfo:
-        'If you do not pay the highest early childhood education fee, your income information must be updated regularly. If the income information is missing or out of date, the highest payment for early childhood education is charged.',
+        'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
       outdatedIncomeWarning:
-        'If income information is missing or out of date, the highest payment for early childhood education is charged.',
+        'If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
       calendarEvent: 'Reminders about new events marked in the calendar',
       decision: 'New decisions',
       document: 'New documents',
       documentInfo:
-        'Documents mean official documents that are not decisions. Such are, for example, early childhood education plans and pedagogical assessments.',
-      informalDocument: "Other documents related to the child's daily life",
+        'Documents refer to official documents that are not decisions. These include early childhood education plans and pedagogic assessments.',
+      informalDocument: "Other documents related to the child's everyday life",
       informalDocumentInfo:
-        "Other documents related to the child's daily life can be, for example, pictures of the child's drawings.",
+        'These documents may include, for example, images of drawings made by the child.',
       missingAttendanceReservation:
-        'Reminders about missing attendance reservations',
+        'Reminders of missing attendance reservations',
       missingAttendanceReservationInfo:
-        'A reminder will be sent before the deadline for attendance reservations if one of your children is missing an attendance report or an absence entry for the next two weeks.'
+        'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.'
     }
   },
   income: {
