@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.koski
 
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.KoskiStudyRightId
@@ -20,7 +19,6 @@ data class KoskiStudyRightKey(
 )
 
 fun Database.Read.getPendingStudyRights(
-    assistanceModel: AssistanceModel,
     today: LocalDate,
     params: KoskiSearchParams = KoskiSearchParams()
 ): List<KoskiStudyRightKey> {
@@ -35,7 +33,7 @@ fun Database.Read.getPendingStudyRights(
             sql(
                 """
 SELECT kasr.child_id, kasr.unit_id, kasr.type
-FROM koski_active_study_right(${bind(today)}, ${assistanceModel == AssistanceModel.NEW}) kasr
+FROM koski_active_study_right(${bind(today)}) kasr
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
@@ -63,7 +61,6 @@ fun Database.Transaction.beginKoskiUpload(
     sourceSystem: String,
     ophOrganizationOid: String,
     ophMunicipalityCode: String,
-    assistanceModel: AssistanceModel,
     key: KoskiStudyRightKey,
     today: LocalDate
 ) =
@@ -78,7 +75,7 @@ SELECT
 FROM (
     SELECT :childId AS child_id, :unitId AS unit_id, :type::koski_study_right_type AS type
 ) params
-LEFT JOIN koski_active_study_right(:today, ${assistanceModel == AssistanceModel.NEW}) kasr
+LEFT JOIN koski_active_study_right(:today) kasr
 USING (child_id, unit_id, type)
 LEFT JOIN koski_voided_study_right(:today) kvsr
 USING (child_id, unit_id, type)
@@ -145,7 +142,7 @@ RETURNING id, void_date IS NOT NULL AS voided
                 pr.last_name,
                 holidays
             FROM koski_study_right ksr
-            JOIN koski_active_study_right(:today, ${assistanceModel == AssistanceModel.NEW}) kasr
+            JOIN koski_active_study_right(:today) kasr
             ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
             JOIN daycare d ON ksr.unit_id = d.id
             JOIN person pr ON ksr.child_id = pr.id

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.koski
 
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -41,7 +40,7 @@ internal fun Database.Transaction.setUnitOids() {
 
 internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
     fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) {
-        db.read { it.getPendingStudyRights(AssistanceModel.NEW, today, params) }
+        db.read { it.getPendingStudyRights(today, params) }
             .forEach { request -> client.uploadToKoski(db, AsyncJob.UploadToKoski(request), today) }
     }
 }

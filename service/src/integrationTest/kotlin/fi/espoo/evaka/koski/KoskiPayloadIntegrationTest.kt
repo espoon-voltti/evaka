@@ -7,7 +7,6 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
@@ -39,7 +38,6 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             KoskiTester(
                 db,
                 KoskiClient(
-                    AssistanceModel.NEW,
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:${koskiServer.port}"),
                     OphEnv.fromEnvironment(env),

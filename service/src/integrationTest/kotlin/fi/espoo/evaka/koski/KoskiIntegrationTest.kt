@@ -7,7 +7,6 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -62,7 +61,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             KoskiTester(
                 db,
                 KoskiClient(
-                    AssistanceModel.NEW,
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:${koskiServer.port}"),
                     OphEnv.fromEnvironment(env),
@@ -128,8 +126,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val daycare = testDaycare
         val today = preschoolTerm2019.end.plusDays(1)
 
-        fun countPendingStudyRights() =
-            db.read { it.getPendingStudyRights(AssistanceModel.NEW, today) }.size
+        fun countPendingStudyRights() = db.read { it.getPendingStudyRights(today) }.size
 
         db.transaction { it.setUnitOid(daycare.id, MockKoskiServer.UNIT_OID_THAT_TRIGGERS_400) }
         insertPlacement(daycareId = daycare.id)
@@ -360,7 +357,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByExistingPerson =
             db.read {
                 it.getPendingStudyRights(
-                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(personIds = listOf(testChild_1.id))
                 )
@@ -370,7 +366,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByRandomPerson =
             db.read {
                 it.getPendingStudyRights(
-                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(personIds = listOf(ChildId(UUID.randomUUID())))
                 )
@@ -380,7 +375,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByExistingDaycare =
             db.read {
                 it.getPendingStudyRights(
-                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(daycareIds = listOf(testDaycare.id))
                 )
@@ -390,7 +384,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val searchByRandomDaycare =
             db.read {
                 it.getPendingStudyRights(
-                    AssistanceModel.NEW,
                     today,
                     KoskiSearchParams(daycareIds = listOf(DaycareId(UUID.randomUUID())))
                 )
@@ -928,7 +921,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             KoskiTester(
                 db,
                 KoskiClient(
-                    AssistanceModel.NEW,
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:${koskiServer.port}"),
                     OphEnv.fromEnvironment(env).copy(municipalityCode = "001"),

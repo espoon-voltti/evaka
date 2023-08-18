@@ -1,8 +1,4 @@
-DROP VIEW IF EXISTS koski_voided_view;
-DROP VIEW IF EXISTS koski_active_view;
-
 DROP FUNCTION IF EXISTS koski_active_study_right(today date);
-DROP FUNCTION IF EXISTS koski_active_study_right(today date, new_assistance_model bool);
 DROP FUNCTION IF EXISTS koski_voided_study_right(today date);
 DROP FUNCTION IF EXISTS koski_placement(today date);
 
@@ -37,7 +33,7 @@ TABLE (
     GROUP BY child_id, unit_id, type
 $$ LANGUAGE SQL STABLE;
 
-CREATE FUNCTION koski_active_study_right(today date, new_assistance_model bool) RETURNS
+CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
@@ -56,11 +52,11 @@ TABLE (
         all_placements_in_past,
         last_of_child,
         preparatory_absences,
-        CASE WHEN new_assistance_model THEN new_developmental_disability_1 ELSE old_developmental_disability_1 END,
-        CASE WHEN new_assistance_model THEN new_developmental_disability_2 ELSE old_developmental_disability_2 END,
-        CASE WHEN new_assistance_model THEN new_extended_compulsory_education ELSE old_extended_compulsory_education END,
-        CASE WHEN new_assistance_model THEN new_transport_benefit ELSE old_transport_benefit END,
-        CASE WHEN new_assistance_model THEN new_special_support_decision ELSE old_special_support_decision END
+        new_developmental_disability_1,
+        new_developmental_disability_2,
+        new_extended_compulsory_education,
+        new_transport_benefit,
+        new_special_support_decision
     FROM koski_placement(today) p
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
@@ -73,57 +69,12 @@ TABLE (
         AND a.date > '2020-08-01'
     ) pa ON p.type = 'PREPARATORY'
     LEFT JOIN LATERAL (
-        SELECT
-            array_agg(date_interval ORDER BY date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_1' = ANY(bases)) AS old_developmental_disability_1,
-            array_agg(date_interval ORDER BY date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_2' = ANY(bases)) AS old_developmental_disability_2
-        FROM (
-            SELECT
-                an.id,
-                daterange(an.start_date, an.end_date, '[]') AS date_interval,
-                array_remove(array_agg(abo.value), null) AS bases
-            FROM assistance_need an
-            LEFT JOIN assistance_basis_option_ref abor ON abor.need_id = an.id
-            LEFT JOIN assistance_basis_option abo ON abo.id = abor.option_id
-            WHERE an.child_id = p.child_id
-            AND daterange(an.start_date, an.end_date, '[]') && full_range
-            GROUP BY an.id, daterange(an.start_date, an.end_date, '[]')
-            ORDER BY an.id
-        ) matching_assistance_need
-    ) an ON new_assistance_model IS FALSE
-    LEFT JOIN LATERAL (
-        SELECT
-            array_agg(date_interval ORDER BY date_interval) FILTER (
-                WHERE 'EXTENDED_COMPULSORY_EDUCATION' = ANY(measures)
-            ) AS old_extended_compulsory_education,
-            array_agg(date_interval ORDER BY date_interval) FILTER (
-                WHERE 'TRANSPORT_BENEFIT' = ANY(measures)
-            ) AS old_transport_benefit,
-            array_agg(date_interval ORDER BY date_interval) FILTER (
-                WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures)
-            ) AS old_special_support_decision
-        FROM (
-            SELECT
-                aa.id,
-                daterange(aa.start_date, aa.end_date, '[]') AS date_interval,
-                aa.start_date,
-                aa.end_date,
-                aa.measures
-            FROM assistance_action aa
-            LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
-            LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
-            WHERE aa.child_id = p.child_id
-            AND daterange(aa.start_date, aa.end_date, '[]') && full_range
-            GROUP BY aa.id, daterange(aa.start_date, aa.end_date, '[]'), aa.start_date, aa.end_date, aa.measures
-            ORDER BY aa.id
-        ) matching_assistance_action
-    ) aa ON new_assistance_model IS FALSE
-    LEFT JOIN LATERAL (
         SELECT array_agg(valid_during ORDER BY valid_during) AS new_transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
         AND oam.valid_during && full_range
         AND type = 'TRANSPORT_BENEFIT'
-    ) oam ON new_assistance_model IS TRUE
+    ) oam ON TRUE
     LEFT JOIN LATERAL (
         SELECT
             array_agg(valid_during ORDER BY valid_during) FILTER (
@@ -141,7 +92,7 @@ TABLE (
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
         AND pa.valid_during && full_range
-    ) pras ON new_assistance_model IS TRUE
+    ) pras ON TRUE
     WHERE d.upload_to_koski IS TRUE
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
