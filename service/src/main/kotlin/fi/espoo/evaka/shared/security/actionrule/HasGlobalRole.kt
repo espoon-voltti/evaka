@@ -177,10 +177,7 @@ SELECT id
 FROM daycare
 WHERE provider_type = ANY(${bind(providerTypes)})
 ${
-    if (careTypes.isNotEmpty()) "AND (${careTypes.mapIndexedNotNull{ i, value -> 
-            if (i == 0) "${"'$value'"} = ANY(daycare.type)"
-            else " OR ${"'$value'"} = ANY(daycare.type)"
-        }.joinToString(" ")})"
+    if (careTypes.isNotEmpty()) "AND (${bind(careTypes)} && daycare.type)"
     else ""
 }
             """
