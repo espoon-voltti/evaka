@@ -97,8 +97,8 @@ class EspooConfig {
         }
 
     @Bean
-    fun patuReportingService(env: EvakaEnv, client: PatuIntegrationClient): PatuReportingService =
-        PatuReportingService(env, client)
+    fun patuReportingService(client: PatuIntegrationClient): PatuReportingService =
+        PatuReportingService(client)
 
     @Bean
     @Lazy

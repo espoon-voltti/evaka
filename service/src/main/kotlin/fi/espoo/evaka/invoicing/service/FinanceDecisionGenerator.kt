@@ -48,7 +48,6 @@ class FinanceDecisionGenerator(
     env: EvakaEnv,
     private val featureConfig: FeatureConfig
 ) {
-    private val assistanceModel = env.assistanceModel
     private val feeDecisionMinDate = env.feeDecisionMinDate
     final val v1 = env.feeDecisionGeneratorV1Enabled
     final val v2 = env.feeDecisionGeneratorV2Enabled
@@ -144,7 +143,6 @@ FROM ids;
             .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
-                    assistanceModel,
                     featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
@@ -237,7 +235,6 @@ FROM ids;
             .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
-                    assistanceModel,
                     featureConfig,
                     jsonMapper,
                     incomeTypesProvider,

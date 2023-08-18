@@ -14,11 +14,6 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
-enum class AssistanceModel {
-    OLD,
-    NEW
-}
-
 data class AssistanceFactor(
     val id: AssistanceFactorId,
     val childId: ChildId,

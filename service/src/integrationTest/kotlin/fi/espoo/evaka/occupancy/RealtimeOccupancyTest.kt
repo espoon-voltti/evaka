@@ -6,7 +6,6 @@ package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.attendance.ExternalStaffArrival
 import fi.espoo.evaka.attendance.ExternalStaffDeparture
 import fi.espoo.evaka.attendance.StaffAttendanceType
@@ -35,8 +34,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 
 class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val date = LocalDate.of(2022, 5, 23)
@@ -50,9 +47,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    @ParameterizedTest
-    @EnumSource(AssistanceModel::class)
-    fun `occupancy is calculated from attendances`(assistanceModel: AssistanceModel) {
+    @Test
+    fun `occupancy is calculated from attendances`() {
         db.transaction { tx ->
             FixtureBuilder(tx, date)
                 .addChild()
@@ -69,21 +65,13 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .withAge(2, 11)
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
-                    when (assistanceModel) {
-                        AssistanceModel.OLD ->
-                            addAssistanceNeed()
-                                .createdBy(EvakaUserId(testDecisionMaker_1.id.raw))
-                                .withFactor(2.0)
-                                .save()
-                        AssistanceModel.NEW ->
-                            tx.insertTestAssistanceFactor(
-                                DevAssistanceFactor(
-                                    childId = childId,
-                                    validDuring = date.toFiniteDateRange(),
-                                    capacityFactor = 2.0,
-                                )
-                            )
-                    }
+                    tx.insertTestAssistanceFactor(
+                        DevAssistanceFactor(
+                            childId = childId,
+                            validDuring = date.toFiniteDateRange(),
+                            capacityFactor = 2.0,
+                        )
+                    )
                     addAttendance()
                         .inUnit(testDaycare.id)
                         .arriving(LocalTime.of(8, 15))
@@ -165,7 +153,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         val child3Capacity = 1.0
         val child4Capacity = 1.25 // service need option's realizedOccupancyCoefficientUnder3y
 
-        val result = getRealtimeOccupancy(assistanceModel)
+        val result = getRealtimeOccupancy()
         val occupancies = result.occupancySeries
         assertEquals(10, occupancies.size)
 
@@ -310,14 +298,13 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         }
 
-        val result = getRealtimeOccupancy(AssistanceModel.NEW)
+        val result = getRealtimeOccupancy()
         val occupancies = result.occupancySeries
         assertEquals(2, occupancies.size)
         assertEquals(1.0, occupancies[0].childCapacity)
     }
 
     private fun getRealtimeOccupancy(
-        assistanceModel: AssistanceModel,
         timeRange: HelsinkiDateTimeRange =
             HelsinkiDateTimeRange(
                 HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
@@ -326,8 +313,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     ): RealtimeOccupancy {
         return db.read { tx ->
             RealtimeOccupancy(
-                childAttendances =
-                    tx.getChildOccupancyAttendances(assistanceModel, testDaycare.id, timeRange),
+                childAttendances = tx.getChildOccupancyAttendances(testDaycare.id, timeRange),
                 staffAttendances = tx.getStaffOccupancyAttendances(testDaycare.id, timeRange)
             )
         }
@@ -392,7 +378,6 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             getRealtimeOccupancy(
-                AssistanceModel.NEW,
                 HelsinkiDateTimeRange(
                     HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
                     HelsinkiDateTime.of(tomorrow, LocalTime.of(23, 59))

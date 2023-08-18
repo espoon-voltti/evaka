@@ -5,9 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -46,7 +44,6 @@ class SystemController(
     private val personService: PersonService,
     private val accessControl: AccessControl,
     private val webPush: WebPush?,
-    private val env: EvakaEnv
 ) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
@@ -203,7 +200,7 @@ class SystemController(
                                     permittedGlobalActions.contains(
                                         Action.Global.SUBMIT_PATU_REPORT
                                     ),
-                                useNewAssistanceModel = env.assistanceModel == AssistanceModel.NEW,
+                                useNewAssistanceModel = true,
                             )
 
                         EmployeeUserResponse(

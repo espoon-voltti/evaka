@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -98,7 +97,6 @@ data class OccupancyPeriodGroupLevel(
 )
 
 fun Database.Read.calculateDailyUnitOccupancyValues(
-    assistanceModel: AssistanceModel,
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
@@ -135,11 +133,10 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
             placements.filterNot { childrenToRemove.contains(it.childId) } + speculatedPlacements
         }
 
-    return calculateDailyOccupancies(assistanceModel, caretakerCounts, placements, period, type)
+    return calculateDailyOccupancies(caretakerCounts, placements, period, type)
 }
 
 fun Database.Read.calculateDailyGroupOccupancyValues(
-    assistanceModel: AssistanceModel,
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
@@ -174,7 +171,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
             else -> getPlacements(caretakerCounts.keys, period)
         }
 
-    return calculateDailyOccupancies(assistanceModel, caretakerCounts, placements, period, type)
+    return calculateDailyOccupancies(caretakerCounts, placements, period, type)
 }
 
 fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
@@ -447,7 +444,6 @@ WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_
 }
 
 private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
-    assistanceModel: AssistanceModel,
     caretakerCounts: Map<K, List<Caretakers<K>>>,
     placements: Iterable<Placement>,
     range: FiniteDateRange,
@@ -523,16 +519,9 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val assistanceFactors =
         createQuery<Any> {
-                when (assistanceModel) {
-                    AssistanceModel.OLD ->
-                        sql(
-                            "SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(${bind(childIds)})"
-                        )
-                    AssistanceModel.NEW ->
-                        sql(
-                            "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
-                        )
-                }
+                sql(
+                    "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
+                )
             }
             .mapTo<AssistanceFactor>()
             .groupBy { it.childId }

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.getAssistanceNeedVoucherCoefficientsForChild
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
@@ -55,7 +54,6 @@ import java.util.UUID
 data class AssistanceNeedCoefficient(val validityPeriod: DateRange, val coefficient: BigDecimal)
 
 internal fun Database.Transaction.handleValueDecisionChanges(
-    assistanceModel: AssistanceModel,
     featureConfig: FeatureConfig,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
@@ -71,7 +69,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
     val assistanceNeedCoefficients =
         if (featureConfig.valueDecisionCapacityFactorEnabled) {
-            getCapacityFactorsByChild(assistanceModel, child.id).map {
+            getCapacityFactorsByChild(child.id).map {
                 AssistanceNeedCoefficient(it.dateRange, it.capacityFactor)
             }
         } else {
