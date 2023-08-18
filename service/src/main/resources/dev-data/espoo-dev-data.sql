@@ -37,7 +37,7 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('PART_TIME_SPECIAL_EDUCATION', 'Osa-aikainen erityisopetus esiopetuksessa', 55),
     ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
     ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
-    ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2-6kk)/lisäresurssi hankerahoituksella', 80);
+    ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
 
 INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_order) VALUES
     ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
