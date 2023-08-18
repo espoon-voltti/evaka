@@ -453,7 +453,6 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     range: FiniteDateRange,
     type: OccupancyType
 ): List<DailyOccupancyValues<K>> {
-    print(assistanceModel)
     val placementPlans =
         if (type == OccupancyType.PLANNED) {
             this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId })
