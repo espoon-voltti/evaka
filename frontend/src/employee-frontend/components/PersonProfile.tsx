@@ -220,7 +220,7 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
         <ContentArea opaque>
           <HeaderRow>
             <Title size={1} noMargin>
-              {i18n.personProfile.title}
+              {i18n.titles.personProfile}
             </Title>
             <InfoLabelContainer>
               {person.isSuccess && person.value.dateOfDeath && (

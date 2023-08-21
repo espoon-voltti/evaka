@@ -5,11 +5,14 @@
 import React, { useContext, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 
+import { Translations } from 'lib-customizations/employee'
+
+import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { UserContext } from '../state/user'
 
 interface Props {
-  title?: string
+  title?: keyof Translations['titles']
   requireAuth?: boolean
   children?: React.ReactNode
 }
@@ -19,9 +22,13 @@ export default React.memo(function EmployeeRoute({
   requireAuth = true,
   children
 }: Props) {
+  const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
 
-  useEffect(() => setTitle(title ?? ''), [setTitle, title])
+  useEffect(
+    () => setTitle(title ? i18n.titles[title] : ''),
+    [i18n.titles, setTitle, title]
+  )
 
   return requireAuth ? <RequireAuth element={children} /> : <>{children}</>
 })

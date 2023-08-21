@@ -15,6 +15,9 @@ export const fi = {
     login: 'Kirjaudu sisään',
     ai: 'AI test',
     applications: 'Hakemukset',
+    childInformation: 'Lapsen tiedot',
+    employees: 'Käyttäjät',
+    financeBasics: 'Talouden maksuasetukset',
     units: 'Yksiköt',
     customers: 'Asiakastiedot',
     placementDraft: 'Sijoitushahmotelma',
@@ -26,10 +29,12 @@ export const fi = {
     holidayPeriod: 'Loma-aika',
     holidayPeriods: 'Loma-ajat',
     holidayQuestionnaire: 'Loma-aikakysely',
+    groupCaretakers: 'Henkilökunnan tarve ryhmässä',
     incomeStatements: 'Tuloselvitykset',
     valueDecisions: 'Arvopäätökset',
     valueDecision: 'Arvopäätös',
     valueDecisionDraft: 'Arvopäätösluonnos',
+    incomeStatement: 'Tuloselvityslomake',
     invoices: 'Laskut',
     payments: 'Maksatus',
     invoice: 'Lasku',
@@ -38,9 +43,12 @@ export const fi = {
     messages: 'Viestit',
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
+    personProfile: 'Aikuisen tiedot',
     personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
+    settings: 'Asetukset',
+    unitFeatures: 'Toimintojen avaukset',
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu',
     vasuTemplates: 'Vasu-pohjat',
@@ -557,7 +565,6 @@ export const fi = {
     }
   },
   childInformation: {
-    title: 'Lapsen tiedot',
     restrictedDetails: 'Turvakielto',
     personDetails: {
       title: 'Henkilö-, yhteys- ja terveystiedot',
@@ -1606,7 +1613,6 @@ export const fi = {
     }
   },
   personProfile: {
-    title: 'Aikuisen tiedot',
     restrictedDetails: 'Turvakielto',
     personDetails: 'Henkilö- ja yhteystiedot',
     addSsn: 'Aseta hetu',
@@ -1902,7 +1908,6 @@ export const fi = {
     }
   },
   incomeStatement: {
-    title: 'Tuloselvityslomake',
     startDate: 'Voimassa alkaen',
     feeBasis: 'Asiakasmaksun peruste',
 
@@ -2430,7 +2435,6 @@ export const fi = {
     }
   },
   groupCaretakers: {
-    title: 'Henkilökunnan tarve ryhmässä',
     info: 'Luo aina uusi henkilökunnan tarve, kun henkilökunnan lukumäärä muuttuu. Ilmoitettu lukumäärä on voimassa valitulla ajanjaksolla ja vaikuttaa yksikön ja ryhmän täyttöasteisiin.',
     create: 'Luo uusi henkilökunnan tarve',
     edit: 'Muokkaa tietoja',
@@ -3981,7 +3985,6 @@ export const fi = {
     unsavedDataWarning: 'Et ole tallentanut PIN-koodia'
   },
   employees: {
-    title: 'Käyttäjät',
     name: 'Nimi',
     rights: 'Oikeudet',
     findByName: 'Etsi nimellä',
@@ -3990,7 +3993,6 @@ export const fi = {
     }
   },
   financeBasics: {
-    title: 'Talouden maksuasetukset',
     fees: {
       title: 'Asiakasmaksut',
       add: 'Luo uudet asiakasmaksut',
@@ -4186,7 +4188,6 @@ export const fi = {
     moveDown: 'Siirrä alemmas'
   },
   settings: {
-    title: 'Asetukset',
     key: 'Asetus',
     value: 'Arvo',
     options: {
@@ -4202,7 +4203,6 @@ export const fi = {
     }
   },
   unitFeatures: {
-    title: 'Toimintojen avaukset',
     page: {
       title: 'Yksiköille avatut toiminnot',
       unit: 'Yksikkö',

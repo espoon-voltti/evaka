@@ -77,7 +77,7 @@ export default React.memo(function FinancePage() {
         <Route
           path="fee-decisions"
           element={
-            <EmployeeRoute title={i18n.titles.feeDecisions}>
+            <EmployeeRoute title="feeDecisions">
               <FeeDecisionsPage />
             </EmployeeRoute>
           }
@@ -85,7 +85,7 @@ export default React.memo(function FinancePage() {
         <Route
           path="value-decisions"
           element={
-            <EmployeeRoute title={i18n.titles.valueDecisions}>
+            <EmployeeRoute title="valueDecisions">
               <VoucherValueDecisionsPage />
             </EmployeeRoute>
           }
@@ -93,7 +93,7 @@ export default React.memo(function FinancePage() {
         <Route
           path="invoices"
           element={
-            <EmployeeRoute title={i18n.titles.invoices}>
+            <EmployeeRoute title="invoices">
               <InvoicesPage />
             </EmployeeRoute>
           }
@@ -102,7 +102,7 @@ export default React.memo(function FinancePage() {
           <Route
             path="payments"
             element={
-              <EmployeeRoute title={i18n.titles.payments}>
+              <EmployeeRoute title="payments">
                 <PaymentsPage />
               </EmployeeRoute>
             }
@@ -111,7 +111,7 @@ export default React.memo(function FinancePage() {
         <Route
           path="income-statements"
           element={
-            <EmployeeRoute title={i18n.titles.incomeStatements}>
+            <EmployeeRoute title="incomeStatements">
               <IncomeStatementsPage />
             </EmployeeRoute>
           }

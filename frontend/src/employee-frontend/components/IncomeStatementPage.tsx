@@ -85,7 +85,7 @@ export default React.memo(function IncomeStatementPage() {
         ([person, incomeStatement]) => (
           <>
             <ContentArea opaque>
-              <H1>{i18n.incomeStatement.title}</H1>
+              <H1>{i18n.titles.incomeStatement}</H1>
               <H2>
                 {person.firstName} {person.lastName}
               </H2>

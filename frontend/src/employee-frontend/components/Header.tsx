@@ -349,7 +349,7 @@ export default React.memo(function Header() {
                   onClick={closeUserPopup}
                   data-qa="user-popup-employees"
                 >
-                  {i18n.employees.title}
+                  {i18n.titles.employees}
                 </Link>
               )}
               {user?.accessibleFeatures.financeBasics && (
@@ -358,7 +358,7 @@ export default React.memo(function Header() {
                   onClick={closeUserPopup}
                   data-qa="user-popup-finance-basics"
                 >
-                  {i18n.financeBasics.title}
+                  {i18n.titles.financeBasics}
                 </Link>
               )}
               {featureFlags.experimental?.childDocuments &&
@@ -395,7 +395,7 @@ export default React.memo(function Header() {
                   onClick={closeUserPopup}
                   data-qa="user-popup-settings"
                 >
-                  {i18n.settings.title}
+                  {i18n.titles.settings}
                 </Link>
               )}
               {user?.accessibleFeatures.unitFeatures && (
@@ -404,7 +404,7 @@ export default React.memo(function Header() {
                   onClick={closeUserPopup}
                   data-qa="user-popup-unit-features"
                 >
-                  {i18n.unitFeatures.title}
+                  {i18n.titles.unitFeatures}
                 </Link>
               )}
               {user?.accessibleFeatures.personalMobileDevice && (

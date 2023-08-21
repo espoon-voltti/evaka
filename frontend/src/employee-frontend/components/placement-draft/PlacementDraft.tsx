@@ -282,7 +282,7 @@ export default React.memo(function PlacementDraft() {
                 <Gap size="s" />
                 <InternalLink
                   to={`/child-information/${placementDraft.child.id}`}
-                  text={i18n.childInformation.title}
+                  text={i18n.titles.childInformation}
                   newTab
                 />
               </section>

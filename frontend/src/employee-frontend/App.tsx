@@ -136,10 +136,7 @@ export default function App() {
                     <Route
                       path="/login"
                       element={
-                        <EmployeeRoute
-                          requireAuth={false}
-                          title={i18n.titles.login}
-                        >
+                        <EmployeeRoute requireAuth={false} title="login">
                           <LoginPage />
                         </EmployeeRoute>
                       }
@@ -147,7 +144,7 @@ export default function App() {
                     <Route
                       path="/settings"
                       element={
-                        <EmployeeRoute title={i18n.settings.title}>
+                        <EmployeeRoute title="settings">
                           <SettingsPage />
                         </EmployeeRoute>
                       }
@@ -155,7 +152,7 @@ export default function App() {
                     <Route
                       path="/unit-features"
                       element={
-                        <EmployeeRoute title={i18n.unitFeatures.title}>
+                        <EmployeeRoute title="unitFeatures">
                           <UnitFeaturesPage />
                         </EmployeeRoute>
                       }
@@ -163,7 +160,7 @@ export default function App() {
                     <Route
                       path="/units"
                       element={
-                        <EmployeeRoute title={i18n.titles.units}>
+                        <EmployeeRoute title="units">
                           <Units />
                         </EmployeeRoute>
                       }
@@ -171,7 +168,7 @@ export default function App() {
                     <Route
                       path="/units/new"
                       element={
-                        <EmployeeRoute title={i18n.titles.createUnit}>
+                        <EmployeeRoute title="createUnit">
                           <CreateUnitPage />
                         </EmployeeRoute>
                       }
@@ -195,7 +192,7 @@ export default function App() {
                     <Route
                       path="/units/:unitId/groups/:groupId/caretakers"
                       element={
-                        <EmployeeRoute title={i18n.groupCaretakers.title}>
+                        <EmployeeRoute title="groupCaretakers">
                           <GroupCaretakers />
                         </EmployeeRoute>
                       }
@@ -211,7 +208,7 @@ export default function App() {
                     <Route
                       path="/search"
                       element={
-                        <EmployeeRoute title={i18n.titles.customers}>
+                        <EmployeeRoute title="customers">
                           <Search />
                         </EmployeeRoute>
                       }
@@ -219,7 +216,7 @@ export default function App() {
                     <Route
                       path="/profile/:id"
                       element={
-                        <EmployeeRoute title={i18n.personProfile.title}>
+                        <EmployeeRoute title="personProfile">
                           <PersonProfile />
                         </EmployeeRoute>
                       }
@@ -227,7 +224,7 @@ export default function App() {
                     <Route
                       path="/profile/:personId/income-statement/:incomeStatementId"
                       element={
-                        <EmployeeRoute title={i18n.incomeStatement.title}>
+                        <EmployeeRoute title="incomeStatement">
                           <IncomeStatementPage />
                         </EmployeeRoute>
                       }
@@ -235,7 +232,7 @@ export default function App() {
                     <Route
                       path="/child-information/:id"
                       element={
-                        <EmployeeRoute title={i18n.childInformation.title}>
+                        <EmployeeRoute title="childInformation">
                           <ChildInformation />
                         </EmployeeRoute>
                       }
@@ -243,9 +240,7 @@ export default function App() {
                     <Route
                       path="/child-information/:childId/assistance-need-decision/:id"
                       element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
+                        <EmployeeRoute title="assistanceNeedDecision">
                           <AssistanceNeedDecisionPage />
                         </EmployeeRoute>
                       }
@@ -253,9 +248,7 @@ export default function App() {
                     <Route
                       path="/child-information/:childId/assistance-need-decision/:id/edit"
                       element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
+                        <EmployeeRoute title="assistanceNeedDecision">
                           <AssistanceNeedDecisionEditPage />
                         </EmployeeRoute>
                       }
@@ -263,9 +256,7 @@ export default function App() {
                     <Route
                       path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId"
                       element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
+                        <EmployeeRoute title="assistanceNeedDecision">
                           <AssistanceNeedPreschoolDecisionReadPage />
                         </EmployeeRoute>
                       }
@@ -273,9 +264,7 @@ export default function App() {
                     <Route
                       path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit"
                       element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
+                        <EmployeeRoute title="assistanceNeedDecision">
                           <AssistanceNeedPreschoolDecisionEditPage />
                         </EmployeeRoute>
                       }
@@ -283,7 +272,7 @@ export default function App() {
                     <Route
                       path="/applications"
                       element={
-                        <EmployeeRoute title={i18n.titles.applications}>
+                        <EmployeeRoute title="applications">
                           <ApplicationsPage />
                         </EmployeeRoute>
                       }
@@ -291,7 +280,7 @@ export default function App() {
                     <Route
                       path="/applications/:id"
                       element={
-                        <EmployeeRoute title={i18n.titles.applications}>
+                        <EmployeeRoute title="applications">
                           <ApplicationPage />
                         </EmployeeRoute>
                       }
@@ -299,7 +288,7 @@ export default function App() {
                     <Route
                       path="/applications/:id/placement"
                       element={
-                        <EmployeeRoute title={i18n.titles.placementDraft}>
+                        <EmployeeRoute title="placementDraft">
                           <PlacementDraftPage />
                         </EmployeeRoute>
                       }
@@ -307,7 +296,7 @@ export default function App() {
                     <Route
                       path="/applications/:id/decisions"
                       element={
-                        <EmployeeRoute title={i18n.titles.decision}>
+                        <EmployeeRoute title="decision">
                           <DecisionPage />
                         </EmployeeRoute>
                       }
@@ -315,7 +304,7 @@ export default function App() {
                     <Route
                       path="/finance/basics"
                       element={
-                        <EmployeeRoute title={i18n.financeBasics.title}>
+                        <EmployeeRoute title="financeBasics">
                           <FinanceBasicsPage />
                         </EmployeeRoute>
                       }
@@ -355,7 +344,7 @@ export default function App() {
                     <Route
                       path="/reports"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <Reports />
                         </EmployeeRoute>
                       }
@@ -363,7 +352,7 @@ export default function App() {
                     <Route
                       path="/reports/family-conflicts"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportFamilyConflicts />
                         </EmployeeRoute>
                       }
@@ -371,7 +360,7 @@ export default function App() {
                     <Route
                       path="/reports/missing-head-of-family"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportMissingHeadOfFamily />
                         </EmployeeRoute>
                       }
@@ -379,7 +368,7 @@ export default function App() {
                     <Route
                       path="/reports/missing-service-need"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportMissingServiceNeed />
                         </EmployeeRoute>
                       }
@@ -387,7 +376,7 @@ export default function App() {
                     <Route
                       path="/reports/applications"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportApplications />
                         </EmployeeRoute>
                       }
@@ -395,7 +384,7 @@ export default function App() {
                     <Route
                       path="/reports/decisions"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportDecisions />
                         </EmployeeRoute>
                       }
@@ -403,7 +392,7 @@ export default function App() {
                     <Route
                       path="/reports/partners-in-different-address"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportPartnersInDifferentAddress />
                         </EmployeeRoute>
                       }
@@ -411,7 +400,7 @@ export default function App() {
                     <Route
                       path="/reports/children-in-different-address"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportChildrenInDifferentAddress />
                         </EmployeeRoute>
                       }
@@ -419,7 +408,7 @@ export default function App() {
                     <Route
                       path="/reports/child-age-language"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportChildAgeLanguage />
                         </EmployeeRoute>
                       }
@@ -427,7 +416,7 @@ export default function App() {
                     <Route
                       path="/reports/assistance-needs-and-actions"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportAssistanceNeedsAndActions />
                         </EmployeeRoute>
                       }
@@ -435,7 +424,7 @@ export default function App() {
                     <Route
                       path="/reports/occupancies"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportOccupancies />
                         </EmployeeRoute>
                       }
@@ -443,7 +432,7 @@ export default function App() {
                     <Route
                       path="/reports/invoices"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportInvoices />
                         </EmployeeRoute>
                       }
@@ -451,7 +440,7 @@ export default function App() {
                     <Route
                       path="/reports/starting-placements"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportStartingPlacements />
                         </EmployeeRoute>
                       }
@@ -459,7 +448,7 @@ export default function App() {
                     <Route
                       path="/reports/ended-placements"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportEndedPlacements />
                         </EmployeeRoute>
                       }
@@ -467,7 +456,7 @@ export default function App() {
                     <Route
                       path="/reports/duplicate-people"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportDuplicatePeople />
                         </EmployeeRoute>
                       }
@@ -475,7 +464,7 @@ export default function App() {
                     <Route
                       path="/reports/presences"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportPresences />
                         </EmployeeRoute>
                       }
@@ -483,7 +472,7 @@ export default function App() {
                     <Route
                       path="/reports/service-needs"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportServiceNeeds />
                         </EmployeeRoute>
                       }
@@ -491,7 +480,7 @@ export default function App() {
                     <Route
                       path="/reports/sextet"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportSextet />
                         </EmployeeRoute>
                       }
@@ -499,7 +488,7 @@ export default function App() {
                     <Route
                       path="/reports/voucher-service-providers"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <VoucherServiceProviders />
                         </EmployeeRoute>
                       }
@@ -507,7 +496,7 @@ export default function App() {
                     <Route
                       path="/reports/voucher-service-providers/:unitId"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <VoucherServiceProviderUnit />
                         </EmployeeRoute>
                       }
@@ -515,7 +504,7 @@ export default function App() {
                     <Route
                       path="/reports/attendance-reservation"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <AttendanceReservation />
                         </EmployeeRoute>
                       }
@@ -523,7 +512,7 @@ export default function App() {
                     <Route
                       path="/reports/attendance-reservation-by-child"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <AttendanceReservationByChild />
                         </EmployeeRoute>
                       }
@@ -531,7 +520,7 @@ export default function App() {
                     <Route
                       path="/reports/varda-errors"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <VardaErrors />
                         </EmployeeRoute>
                       }
@@ -539,7 +528,7 @@ export default function App() {
                     <Route
                       path="/reports/placement-count"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <PlacementCount />
                         </EmployeeRoute>
                       }
@@ -547,7 +536,7 @@ export default function App() {
                     <Route
                       path="/reports/placement-sketching"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <PlacementSketching />
                         </EmployeeRoute>
                       }
@@ -555,7 +544,7 @@ export default function App() {
                     <Route
                       path="/reports/raw"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ReportRaw />
                         </EmployeeRoute>
                       }
@@ -563,7 +552,7 @@ export default function App() {
                     <Route
                       path="/reports/assistance-need-decisions/:id"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <AssistanceNeedDecisionsReportDecision />
                         </EmployeeRoute>
                       }
@@ -571,7 +560,7 @@ export default function App() {
                     <Route
                       path="/reports/assistance-need-preschool-decisions/:decisionId"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <AssistanceNeedDecisionsReportPreschoolDecision />
                         </EmployeeRoute>
                       }
@@ -579,7 +568,7 @@ export default function App() {
                     <Route
                       path="/reports/assistance-need-decisions"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <AssistanceNeedDecisionsReport />
                         </EmployeeRoute>
                       }
@@ -587,7 +576,7 @@ export default function App() {
                     <Route
                       path="/reports/manual-duplication"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <ManualDuplicationReport />
                         </EmployeeRoute>
                       }
@@ -595,7 +584,7 @@ export default function App() {
                     <Route
                       path="/reports/family-daycare-meal-count"
                       element={
-                        <EmployeeRoute title={i18n.titles.reports}>
+                        <EmployeeRoute title="reports">
                           <FamilyDaycareMealCount />
                         </EmployeeRoute>
                       }
@@ -603,7 +592,7 @@ export default function App() {
                     <Route
                       path="/messages"
                       element={
-                        <EmployeeRoute title={i18n.titles.messages}>
+                        <EmployeeRoute title="messages">
                           <MessagesPage />
                         </EmployeeRoute>
                       }
@@ -611,7 +600,7 @@ export default function App() {
                     <Route
                       path="/messages/send"
                       element={
-                        <EmployeeRoute title={i18n.titles.messages}>
+                        <EmployeeRoute title="messages">
                           <MessagesPage showEditor />
                         </EmployeeRoute>
                       }
@@ -619,9 +608,7 @@ export default function App() {
                     <Route
                       path="/personal-mobile-devices"
                       element={
-                        <EmployeeRoute
-                          title={i18n.titles.personalMobileDevices}
-                        >
+                        <EmployeeRoute title="personalMobileDevices">
                           <PersonalMobileDevicesPage />
                         </EmployeeRoute>
                       }
@@ -629,7 +616,7 @@ export default function App() {
                     <Route
                       path="/pin-code"
                       element={
-                        <EmployeeRoute title={i18n.titles.employeePinCode}>
+                        <EmployeeRoute title="employeePinCode">
                           <EmployeePinCodePage />
                         </EmployeeRoute>
                       }
@@ -637,7 +624,7 @@ export default function App() {
                     <Route
                       path="/preferred-first-name"
                       element={
-                        <EmployeeRoute title={i18n.titles.preferredFirstName}>
+                        <EmployeeRoute title="preferredFirstName">
                           <EmployeePreferredFirstNamePage
                             refreshAuthStatus={refreshAuthStatus}
                           />
@@ -647,7 +634,7 @@ export default function App() {
                     <Route
                       path="/employees"
                       element={
-                        <EmployeeRoute title={i18n.employees.title}>
+                        <EmployeeRoute title="employees">
                           <EmployeesPage />
                         </EmployeeRoute>
                       }
@@ -655,7 +642,7 @@ export default function App() {
                     <Route
                       path="/employees/:id"
                       element={
-                        <EmployeeRoute title={i18n.employees.title}>
+                        <EmployeeRoute title="employees">
                           <EmployeePage />
                         </EmployeeRoute>
                       }
@@ -663,7 +650,7 @@ export default function App() {
                     <Route
                       path="/welcome"
                       element={
-                        <EmployeeRoute title={i18n.titles.welcomePage}>
+                        <EmployeeRoute title="welcomePage">
                           <WelcomePage />
                         </EmployeeRoute>
                       }
@@ -671,7 +658,7 @@ export default function App() {
                     <Route
                       path="/vasu/:id"
                       element={
-                        <EmployeeRoute title={i18n.titles.vasuPage}>
+                        <EmployeeRoute title="vasuPage">
                           <VasuPage />
                         </EmployeeRoute>
                       }
@@ -679,7 +666,7 @@ export default function App() {
                     <Route
                       path="/vasu/:id/edit"
                       element={
-                        <EmployeeRoute title={i18n.titles.vasuPage}>
+                        <EmployeeRoute title="vasuPage">
                           <VasuEditPage />
                         </EmployeeRoute>
                       }
@@ -687,7 +674,7 @@ export default function App() {
                     <Route
                       path="/vasu-templates"
                       element={
-                        <EmployeeRoute title={i18n.titles.vasuTemplates}>
+                        <EmployeeRoute title="vasuTemplates">
                           <VasuTemplatesPage />
                         </EmployeeRoute>
                       }
@@ -695,7 +682,7 @@ export default function App() {
                     <Route
                       path="/vasu-templates/:id"
                       element={
-                        <EmployeeRoute title={i18n.titles.vasuTemplates}>
+                        <EmployeeRoute title="vasuTemplates">
                           <VasuTemplateEditor />
                         </EmployeeRoute>
                       }
@@ -703,7 +690,7 @@ export default function App() {
                     <Route
                       path="/document-templates"
                       element={
-                        <EmployeeRoute title={i18n.titles.documentTemplates}>
+                        <EmployeeRoute title="documentTemplates">
                           <DocumentTemplatesPage />
                         </EmployeeRoute>
                       }
@@ -711,7 +698,7 @@ export default function App() {
                     <Route
                       path="/document-templates/:templateId"
                       element={
-                        <EmployeeRoute title={i18n.titles.documentTemplates}>
+                        <EmployeeRoute title="documentTemplates">
                           <TemplateEditorPage />
                         </EmployeeRoute>
                       }
@@ -719,7 +706,7 @@ export default function App() {
                     <Route
                       path="/child-documents/:documentId"
                       element={
-                        <EmployeeRoute title={i18n.titles.childDocument}>
+                        <EmployeeRoute title="childDocument">
                           <ChildDocumentEditor />
                         </EmployeeRoute>
                       }
@@ -727,7 +714,7 @@ export default function App() {
                     <Route
                       path="/holiday-periods"
                       element={
-                        <EmployeeRoute title={i18n.titles.holidayPeriods}>
+                        <EmployeeRoute title="holidayPeriods">
                           <HolidayPeriodsPage />
                         </EmployeeRoute>
                       }
@@ -735,7 +722,7 @@ export default function App() {
                     <Route
                       path="/holiday-periods/:id"
                       element={
-                        <EmployeeRoute title={i18n.titles.holidayPeriods}>
+                        <EmployeeRoute title="holidayPeriods">
                           <HolidayPeriodEditor />
                         </EmployeeRoute>
                       }
@@ -743,7 +730,7 @@ export default function App() {
                     <Route
                       path="/holiday-periods/questionnaire/:id"
                       element={
-                        <EmployeeRoute title={i18n.titles.holidayQuestionnaire}>
+                        <EmployeeRoute title="holidayQuestionnaire">
                           <QuestionnaireEditor />
                         </EmployeeRoute>
                       }
