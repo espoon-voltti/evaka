@@ -338,3 +338,5 @@ V338__curriculum_document_event_evaka_user_id.sql
 V339__fridge_partner_null_end_dates.sql
 V340__calendar_event_created_updated.sql
 V341__absence_categories_preschool_club.sql
+V342__add_finance_staff_role.sql
+V343__update_finance_staff_role_check.sql

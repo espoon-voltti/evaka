@@ -115,6 +115,7 @@ export type UserRole =
   | 'REPORT_VIEWER'
   | 'DIRECTOR'
   | 'FINANCE_ADMIN'
+  | 'FINANCE_STAFF'
   | 'SERVICE_WORKER'
   | 'MESSAGING'
   | 'UNIT_SUPERVISOR'

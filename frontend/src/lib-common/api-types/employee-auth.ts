@@ -4,6 +4,7 @@
 
 import { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
+import { Action } from '../generated/action'
 import { EmployeeFeatures } from '../generated/api-types/shared'
 import { UUID } from '../types'
 
@@ -12,6 +13,7 @@ export interface User {
   name: string
   userType: 'EMPLOYEE'
   accessibleFeatures: EmployeeFeatures
+  permittedGlobalActions: Action.Global[]
 }
 
 export interface MobileUser extends MobileDeviceDetails {
@@ -23,6 +25,7 @@ export const globalRoles = [
   'ADMIN',
   'SERVICE_WORKER',
   'FINANCE_ADMIN',
+  'FINANCE_STAFF',
   'REPORT_VIEWER',
   'DIRECTOR',
   'MESSAGING'

@@ -172,6 +172,13 @@ const layouts: Layouts<typeof components> = {
     { component: 'dependants', open: false },
     { component: 'fosterChildren', open: false }
   ],
+  ['FINANCE_STAFF']: [
+    { component: 'family-overview', open: true },
+    { component: 'fee-decisions', open: false },
+    { component: 'invoices', open: false },
+    { component: 'invoiceCorrections', open: false },
+    { component: 'partners', open: false }
+  ],
   ['SERVICE_WORKER']: [
     { component: 'family-overview', open: true },
     { component: 'partners', open: false },
