@@ -306,7 +306,7 @@ WITH min_voucher_decision_date AS (
         p.operational_days_count
     FROM month_periods p
     JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
-    JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id
+    JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id AND daterange(decision.valid_from,decision.valid_to,'[]') && sn_decision.realized_period
     WHERE lower(p.period) < :reportDate
         AND decision.status = 'ANNULLED'::voucher_value_decision_status
         AND decision.annulled_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
