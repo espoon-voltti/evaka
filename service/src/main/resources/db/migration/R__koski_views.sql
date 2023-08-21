@@ -5,12 +5,12 @@ DROP FUNCTION IF EXISTS koski_placement(today date);
 CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool
+    full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool
 ) AS $$
     SELECT
         child_id, unit_id, type,
         daterange(min(start_date), max(end_date), '[]') AS full_range,
-        array_agg(daterange(start_date, end_date, '[]') ORDER BY start_date ASC) AS placement_ranges,
+        range_agg(daterange(start_date, end_date, '[]')) AS placements,
         (max(end_date) < today) AS all_placements_in_past,
         bool_or(last_of_child) AS last_of_child
     FROM (
@@ -37,9 +37,9 @@ CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
-    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
-    special_support_with_decision_level_1 daterange[], special_support_with_decision_level_2 daterange[],
-    transport_benefit daterange[]
+    full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
+    special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
+    transport_benefit datemultirange
 ) AS $$
     SELECT
         p.child_id,
@@ -48,7 +48,7 @@ TABLE (
         d.oph_unit_oid,
         d.oph_organizer_oid,
         full_range,
-        placement_ranges,
+        placements,
         all_placements_in_past,
         last_of_child,
         preparatory_absences,
@@ -67,7 +67,7 @@ TABLE (
         AND a.date > '2020-08-01'
     ) pa ON p.type = 'PREPARATORY'
     LEFT JOIN LATERAL (
-        SELECT array_agg(valid_during ORDER BY valid_during) AS transport_benefit
+        SELECT range_agg(valid_during) AS transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
         AND oam.valid_during && full_range
@@ -75,10 +75,10 @@ TABLE (
     ) oam ON TRUE
     LEFT JOIN LATERAL (
         SELECT
-            array_agg(valid_during ORDER BY valid_during) FILTER (
+            range_agg(valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1'
             ) AS special_support_with_decision_level_1,
-            array_agg(valid_during ORDER BY valid_during) FILTER (
+            range_agg(valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
             ) AS special_support_with_decision_level_2
         FROM preschool_assistance pa
