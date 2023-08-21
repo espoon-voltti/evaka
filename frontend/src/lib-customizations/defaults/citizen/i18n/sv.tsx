@@ -1445,159 +1445,161 @@ const sv: Translations = {
       returnToPreviousPage: 'Tillbaka'
     },
     assistancePreschoolDecisions: {
-      // TODO
-      title: 'Päätös erityisestä tuesta esiopetuksessa',
+      title: 'Beslut om stöd i förskoleundervisningen',
       statuses: {
-        DRAFT: 'Luonnos',
-        NEEDS_WORK: 'Korjattava',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty',
-        ANNULLED: 'Mitätöity'
+        DRAFT: 'Utkast',
+        NEEDS_WORK: 'Bör korrigeras',
+        ACCEPTED: 'Godkänt',
+        REJECTED: 'Avvisat',
+        ANNULLED: 'Annullerat'
       },
-      annulmentReason: 'Päätöksen mitätöinnin perustelu',
-      pageTitle: 'Päätös tuesta esiopetuksessa',
-      decisionNumber: 'Päätösnumero',
-      confidential: 'Salassa pidettävä',
-      lawReference: 'Perusopetuslaki 17 §',
+      annulmentReason: 'Anledning till annullering av beslutet',
+      pageTitle: 'Beslut om stöd i förskoleundervisningen',
+      decisionNumber: 'Beslutsnummer',
+      confidential: 'Konfidentiellt',
+      lawReference: 'Lagen om grundläggande utbildning 17 §',
       types: {
-        NEW: 'Erityinen tuki alkaa',
-        CONTINUING: 'Erityinen tuki jatkuu',
-        TERMINATED: 'Erityinen tuki päättyy'
+        NEW: 'Särskilt stöd börjar',
+        CONTINUING: 'Särskilt stöd fortsätter',
+        TERMINATED: 'Särskilt stöd upphör'
       },
-      decidedAssistance: 'Päätettävä tuki',
-      type: 'Erityisen tuen tila',
-      validFrom: 'Voimassa alkaen',
-      extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
-      extendedCompulsoryEducation:
-        'Kyllä, lapsella on pidennetty oppivelvollisuus',
-      no: 'Ei',
-      extendedCompulsoryEducationInfo:
-        'Lisätiedot pidennetystä oppivelvollisuudesta',
+      decidedAssistance: 'Stöd som avgörs',
+      type: 'Status för särskilt stöd',
+      validFrom: 'Gäller från och med',
+      extendedCompulsoryEducationSection: 'Förlängd läroplikt',
+      extendedCompulsoryEducation: 'Ja, barnet har förlängd läroplikt',
+      no: 'Nej',
+      extendedCompulsoryEducationInfo: 'Mer information om förlängd läroplikt',
       grantedAssistanceSection:
-        'Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet',
-      grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
-      grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
-      grantedAssistiveDevices: 'Lapselle myönnetään erityisiä apuvälineitä',
-      grantedNothing: 'Ei valintaa',
+        'Tolknings- och assistenttjänster eller särskilda hjälpmedel som beviljas',
+      grantedAssistanceService: 'Barnet beviljas assistenttjänster',
+      grantedInterpretationService: 'Barnet beviljas tolkningstjänster',
+      grantedAssistiveDevices: 'Barnet beviljas särskilda hjälpmedel',
+      grantedNothing: 'Inget val',
       grantedServicesBasis:
-        'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
-      selectedUnit: 'Esiopetuksen järjestämispaikka',
-      primaryGroup: 'Pääsääntöinen opetusryhmä',
-      decisionBasis: 'Perustelut päätökselle',
-      documentBasis: 'Asiakirjat, joihin päätös perustuu',
-      basisDocumentPedagogicalReport: 'Pedagoginen selvitys',
-      basisDocumentPsychologistStatement: 'Psykologin lausunto',
-      basisDocumentDoctorStatement: 'Lääkärin lausunto',
-      basisDocumentSocialReport: 'Sosiaalinen selvitys',
-      basisDocumentOtherOrMissing: 'Liite puuttuu, tai muu liite, mikä?',
-      basisDocumentsInfo: 'Lisätiedot liitteistä',
-      guardianCollaborationSection: 'Huoltajien kanssa tehty yhteistyö',
-      guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
-      heardGuardians: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+        'Motiveringar till de tolknings- och assistenstjänster och hjälpmedel som beviljas',
+      selectedUnit: 'Plats för förskoleundervisning',
+      primaryGroup: 'Huvudsaklig undervisningsgrupp',
+      decisionBasis: 'Motiveringar till beslutet',
+      documentBasis: 'Handlingar som beslutet grundar sig på',
+      basisDocumentPedagogicalReport: 'Pedagogisk utredning',
+      basisDocumentPsychologistStatement: 'Psykologiskt utlåtande',
+      basisDocumentDoctorStatement: 'Läkarutlåtande',
+      basisDocumentSocialReport: 'Social utredning',
+      basisDocumentOtherOrMissing: 'Bilaga saknas, eller annan bilaga, vilken?',
+      basisDocumentsInfo: 'Mer information om bilagorna',
+      guardianCollaborationSection: 'Samarbete med vårdnadshavarna',
+      guardiansHeardOn: 'Datum för hörande av vårdnadshavarna',
+      heardGuardians: 'Vårdnadshavare som har hörts och hörandesätt',
       otherRepresentative:
-        'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
-      viewOfGuardians: 'Huoltajien näkemys esitetystä tuesta',
-      responsiblePeople: 'Vastuuhenkilöt',
-      preparer: 'Päätöksen valmistelija',
-      decisionMaker: 'Päätöksen tekijä',
-      employeeTitle: 'Titteli',
-      phone: 'Puhelinnumero',
-      appealInstructionsTitle: 'Oikaisuvaatimusohje',
+        'Annan laglig företrädare (namn, telefonnummer och hörandesätt)',
+      viewOfGuardians: 'Vårdnadshavarnas syn på det föreslagna stödet',
+      responsiblePeople: 'Ansvariga personer',
+      preparer: 'Beslutets beredare',
+      decisionMaker: 'Beslutsfattare',
+      employeeTitle: 'Titel',
+      phone: 'Telefonnummer',
+      appealInstructionsTitle: 'Anvisning om begäran om omprövning',
       appealInstructions: (
         <>
-          <H3>Oikaisuvaatimusoikeus</H3>
           <P>
-            Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
-            jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
-            vaikuttaa (asianosainen).
+            Den som är missnöjd med detta beslut kan begära omprövning
+            skriftligt. Ändring i beslutet får inte sökas genom besvär hos
+            domstol.
           </P>
-          <H3>Oikaisuvaatimusaika</H3>
+
+          <H3>Rätt att begära omprövning</H3>
           <P>
-            Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
-            tiedoksisaannista.
+            Omprövning får begäras av den som beslutet avser eller vars rätt,
+            skyldighet eller fördel direkt påverkas av beslutet (part).
           </P>
-          <H3>Tiedoksisaanti</H3>
+
+          <H3>Tidsfrist för omprövningsbegäran</H3>
           <P>
-            Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
-            näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
-            saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä.
-            Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen
-            katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä
-            kolmantena päivänä viestin lähettämisestä. Tiedoksisaantipäivää ei
-            lueta määräaikaan. Jos määräajan viimeinen päivä on pyhäpäivä,
-            itsenäisyyspäivä, vapunpäivä, joulu- tai juhannusaatto tai
-            arkilauantai, saa tehtävän toimittaa ensimmäisenä arkipäivänä sen
-            jälkeen.
+            En begäran om omprövning ska framställas inom 14 dagar från
+            delfåendet av beslutet.
           </P>
-          <H3>Oikaisuviranomainen</H3>
-          <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
           <P>
-            Etelä-Suomen aluehallintovirasto
-            <br />
-            Käyntiosoite: Ratapihantie 9, 00521 Helsinki
-            <br />
-            Virastoaika: ma-pe 8.00–16.15
-            <br />
-            Postiosoite: PL 1, 13035 AVI
-            <br />
-            Sähköposti: kirjaamo.etela@avi.fi
-            <br />
-            Fax: 0295 016 661
-            <br />
-            Puhelin: 0295 016 000
+            Begäran om omprövning ska lämnas in till Regionförvaltningsverket i
+            Västra och Inre Finland senast under tidsfristens sista dag innan
+            regionförvaltningsverket stänger.
           </P>
-          <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
           <P>
-            Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
-            täyttää vaatimuksen kirjallisesta muodosta.
+            En part anses ha fått del av beslutet sju dagar efter att brevet
+            sändes eller på den mottagningsdag som anges i mottagningsbeviset
+            eller delgivningsbeviset, om inte något annat visas.
           </P>
-          <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+          <P>
+            Vid vanlig elektronisk delgivning anses parten ha fått del av
+            beslutet den tredje dagen efter att meddelandet sändes.
+          </P>
+          <P>
+            Dagen för delfåendet räknas inte med i tidsfristen för
+            omprövningsbegäran. Om den sista dagen för omprövningsbegäran
+            infaller på en helgdag, självständighetsdagen, första maj, julafton,
+            midsommarafton eller en helgfri lördag, får omprövning begäras den
+            första vardagen därefter.
+          </P>
+
+          <H3>Omprövningsmyndighet</H3>
+          <P>
+            Omprövning begärs hos Regionförvaltningsverket i Västra och Inre
+            Finland
+          </P>
+          <P>
+            Postadress: PB 5, 13035 AVI
+            <br />
+            Besöksadress: Verksamhetsstället i Helsingfors, Bangårdsvägen 9,
+            00520 Helsingfors
+            <br />
+            E-post: registratur.vastra@rfv.fi
+            <br />
+            Telefonväxel: 0295 016 000
+            <br />
+            Fax: 06 317 4817
+            <br />
+            Tjänstetid: 8.00–16.15
+          </P>
+
+          <H3>Omprövningsbegärans form och innehåll</H3>
+          <P>
+            Omprövning ska begäras skriftligt. Också elektroniska dokument
+            uppfyller kravet på skriftlig form.
+          </P>
+          <P noMargin>I omprövningsbegäran ska uppges:</P>
           <ul>
-            <li>
-              Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
-              puhelinnumero ja muut asian hoitamiseksi tarvittavat yhteystiedot
-            </li>
-            <li>päätös, johon haetaan oikaisua</li>
-            <li>
-              miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
-              vaaditaan tehtäväksi
-            </li>
-            <li>vaatimuksen perusteet</li>
+            <li>det beslut i vilket omprövning begärs</li>
+            <li>hurdan omprövning som yrkas</li>
+            <li>på vilka grunder omprövning begärs.</li>
           </ul>
           <P>
-            Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
-            viestinä, yhteystietona pyydetään ilmoittamaan myös
-            sähköpostiosoite.
+            I omprövningsbegäran ska dessutom uppges namn på den som begär
+            omprövning, personens hemkommun, postadress och telefonnummer samt
+            övrig kontaktinformation som behövs för att ärendet ska kunna
+            skötas.
           </P>
           <P>
-            Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen
-            edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana on
-            joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän
-            nimi ja kotikunta.
+            Om omprövningsbeslutet får delges som ett elektroniskt meddelande
+            ska också e-postadress uppges.
           </P>
-          <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+          <P>
+            Om talan för den som begär omprövning förs av personens lagliga
+            företrädare eller ombud eller om någon annan person har upprättat
+            omprövningsbegäran, ska även denna persons namn och hemkommun uppges
+            i omprövningsbegäran.
+          </P>
+          <P noMargin>Till omprövningsbegäran ska fogas:</P>
           <ul>
+            <li>det beslut som avses, i original eller kopia</li>
             <li>
-              päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
+              ett intyg över vilken dag beslutet har delgetts eller någon annan
+              utredning över när tidsfristen för omprövningsbegäran har börjat
             </li>
             <li>
-              todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu
-              selvitys oikaisuvaatimusajan alkamisen ajankohdasta
-            </li>
-            <li>
-              asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
-              oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
-              toimitettu viranomaiselle.
+              de handlingar som den som begär omprövning åberopar, om de inte
+              redan tidigare har lämnats till myndigheten.
             </li>
           </ul>
-          <H3>Oikaisuvaatimuksen toimittaminen</H3>
-          <P>
-            Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan kuluessa
-            oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän tulee olla
-            perillä oikaisuvaatimusajan viimeisenä päivänä ennen viraston
-            aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen postitse tai
-            sähköisesti tapahtuu lähettäjän omalla vastuulla.
-          </P>
         </>
       )
     },

@@ -13,8 +13,154 @@ export const sv = {
   childInformation: {
     ...fi.childInformation,
     assistanceNeedPreschoolDecision: {
-      ...fi.childInformation.assistanceNeedPreschoolDecision
-      // todo: swedish translations
+      ...fi.childInformation.assistanceNeedPreschoolDecision,
+      decisionNumber: 'Beslutsnummer',
+      confidential: 'Konfidentiellt',
+      lawReference: 'Lagen om grundläggande utbildning 17 §',
+      types: {
+        NEW: 'Särskilt stöd börjar',
+        CONTINUING: 'Särskilt stöd fortsätter',
+        TERMINATED: 'Särskilt stöd upphör'
+      },
+      decidedAssistance: 'Stöd som avgörs',
+      type: 'Status för särskilt stöd',
+      validFrom: 'Gäller från och med',
+      extendedCompulsoryEducationSection: 'Förlängd läroplikt',
+      extendedCompulsoryEducation: 'Ja, barnet har förlängd läroplikt',
+      no: 'Nej',
+      extendedCompulsoryEducationInfo: 'Mer information om förlängd läroplikt',
+      grantedAssistanceSection:
+        'Tolknings- och assistenttjänster eller särskilda hjälpmedel som beviljas',
+      grantedAssistanceService: 'Barnet beviljas assistenttjänster',
+      grantedInterpretationService: 'Barnet beviljas tolkningstjänster',
+      grantedAssistiveDevices: 'Barnet beviljas särskilda hjälpmedel',
+      grantedNothing: 'Inget val',
+      grantedServicesBasis:
+        'Motiveringar till de tolknings- och assistenstjänster och hjälpmedel som beviljas',
+      selectedUnit: 'Plats för förskoleundervisning',
+      primaryGroup: 'Huvudsaklig undervisningsgrupp',
+      decisionBasis: 'Motiveringar till beslutet',
+      documentBasis: 'Handlingar som beslutet grundar sig på',
+      basisDocumentPedagogicalReport: 'Pedagogisk utredning',
+      basisDocumentPsychologistStatement: 'Psykologiskt utlåtande',
+      basisDocumentDoctorStatement: 'Läkarutlåtande',
+      basisDocumentSocialReport: 'Social utredning',
+      basisDocumentOtherOrMissing: 'Bilaga saknas, eller annan bilaga, vilken?',
+      basisDocumentsInfo: 'Mer information om bilagorna',
+      guardianCollaborationSection: 'Samarbete med vårdnadshavarna',
+      guardiansHeardOn: 'Datum för hörande av vårdnadshavarna',
+      heardGuardians: 'Vårdnadshavare som har hörts och hörandesätt',
+      otherRepresentative:
+        'Annan laglig företrädare (namn, telefonnummer och hörandesätt)',
+      viewOfGuardians: 'Vårdnadshavarnas syn på det föreslagna stödet',
+      responsiblePeople: 'Ansvariga personer',
+      preparer: 'Beslutets beredare',
+      decisionMaker: 'Beslutsfattare',
+      employeeTitle: 'Titel',
+      phone: 'Telefonnummer',
+      appealInstructionsTitle: 'Anvisning om begäran om omprövning',
+      appealInstructions: (
+        <>
+          <P>
+            Den som är missnöjd med detta beslut kan begära omprövning
+            skriftligt. Ändring i beslutet får inte sökas genom besvär hos
+            domstol.
+          </P>
+
+          <H3>Rätt att begära omprövning</H3>
+          <P>
+            Omprövning får begäras av den som beslutet avser eller vars rätt,
+            skyldighet eller fördel direkt påverkas av beslutet (part).
+          </P>
+
+          <H3>Tidsfrist för omprövningsbegäran</H3>
+          <P>
+            En begäran om omprövning ska framställas inom 14 dagar från
+            delfåendet av beslutet.
+          </P>
+          <P>
+            Begäran om omprövning ska lämnas in till Regionförvaltningsverket i
+            Västra och Inre Finland senast under tidsfristens sista dag innan
+            regionförvaltningsverket stänger.
+          </P>
+          <P>
+            En part anses ha fått del av beslutet sju dagar efter att brevet
+            sändes eller på den mottagningsdag som anges i mottagningsbeviset
+            eller delgivningsbeviset, om inte något annat visas.
+          </P>
+          <P>
+            Vid vanlig elektronisk delgivning anses parten ha fått del av
+            beslutet den tredje dagen efter att meddelandet sändes.
+          </P>
+          <P>
+            Dagen för delfåendet räknas inte med i tidsfristen för
+            omprövningsbegäran. Om den sista dagen för omprövningsbegäran
+            infaller på en helgdag, självständighetsdagen, första maj, julafton,
+            midsommarafton eller en helgfri lördag, får omprövning begäras den
+            första vardagen därefter.
+          </P>
+
+          <H3>Omprövningsmyndighet</H3>
+          <P>
+            Omprövning begärs hos Regionförvaltningsverket i Västra och Inre
+            Finland
+          </P>
+          <P>
+            Postadress: PB 5, 13035 AVI
+            <br />
+            Besöksadress: Verksamhetsstället i Helsingfors, Bangårdsvägen 9,
+            00520 Helsingfors
+            <br />
+            E-post: registratur.vastra@rfv.fi
+            <br />
+            Telefonväxel: 0295 016 000
+            <br />
+            Fax: 06 317 4817
+            <br />
+            Tjänstetid: 8.00–16.15
+          </P>
+
+          <H3>Omprövningsbegärans form och innehåll</H3>
+          <P>
+            Omprövning ska begäras skriftligt. Också elektroniska dokument
+            uppfyller kravet på skriftlig form.
+          </P>
+          <P noMargin>I omprövningsbegäran ska uppges:</P>
+          <ul>
+            <li>det beslut i vilket omprövning begärs</li>
+            <li>hurdan omprövning som yrkas</li>
+            <li>på vilka grunder omprövning begärs.</li>
+          </ul>
+          <P>
+            I omprövningsbegäran ska dessutom uppges namn på den som begär
+            omprövning, personens hemkommun, postadress och telefonnummer samt
+            övrig kontaktinformation som behövs för att ärendet ska kunna
+            skötas.
+          </P>
+          <P>
+            Om omprövningsbeslutet får delges som ett elektroniskt meddelande
+            ska också e-postadress uppges.
+          </P>
+          <P>
+            Om talan för den som begär omprövning förs av personens lagliga
+            företrädare eller ombud eller om någon annan person har upprättat
+            omprövningsbegäran, ska även denna persons namn och hemkommun uppges
+            i omprövningsbegäran.
+          </P>
+          <P noMargin>Till omprövningsbegäran ska fogas:</P>
+          <ul>
+            <li>det beslut som avses, i original eller kopia</li>
+            <li>
+              ett intyg över vilken dag beslutet har delgetts eller någon annan
+              utredning över när tidsfristen för omprövningsbegäran har börjat
+            </li>
+            <li>
+              de handlingar som den som begär omprövning åberopar, om de inte
+              redan tidigare har lämnats till myndigheten.
+            </li>
+          </ul>
+        </>
+      )
     },
     assistanceNeedDecision: {
       ...fi.childInformation.assistanceNeedDecision,
