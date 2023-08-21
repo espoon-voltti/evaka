@@ -147,11 +147,9 @@ data class KoskiActiveDataRaw(
     val placementRanges: List<FiniteDateRange> = emptyList(),
     val holidays: Set<LocalDate> = emptySet(),
     @Json val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
-    val developmentalDisability1: List<FiniteDateRange> = emptyList(),
-    val developmentalDisability2: List<FiniteDateRange> = emptyList(),
-    val extendedCompulsoryEducation: List<FiniteDateRange> = emptyList(),
+    val specialSupportWithDecisionLevel1: List<FiniteDateRange> = emptyList(),
+    val specialSupportWithDecisionLevel2: List<FiniteDateRange> = emptyList(),
     val transportBenefit: List<FiniteDateRange> = emptyList(),
-    val specialSupportDecision: List<FiniteDateRange> = emptyList(),
     val studyRightId: KoskiStudyRightId,
     val studyRightOid: String?
 ) {
@@ -373,10 +371,12 @@ data class KoskiActiveDataRaw(
         // and when sending for unit B, the second "half".
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
+        val specialSupportWithDecision =
+            DateSet.of(specialSupportWithDecisionLevel1).addAll(specialSupportWithDecisionLevel2)
         // Koski only accepts one range
         val longestEce =
-            DateSet.of(extendedCompulsoryEducation)
-                .intersection(DateSet.of(placementSpan))
+            specialSupportWithDecision
+                .intersection(listOf(placementSpan))
                 .ranges()
                 .maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
@@ -388,21 +388,23 @@ data class KoskiActiveDataRaw(
 
         return Lisätiedot(
                 vammainen =
-                    developmentalDisability1
+                    specialSupportWithDecisionLevel1
                         .mapNotNull { it.intersection(placementSpan) }
                         .map { Aikajakso.from(it) }
                         .takeIf { it.isNotEmpty() && longestEce != null },
                 vaikeastiVammainen =
-                    developmentalDisability2
+                    specialSupportWithDecisionLevel2
                         .mapNotNull { it.intersection(placementSpan) }
                         .map { Aikajakso.from(it) }
                         .takeIf { it.isNotEmpty() && longestEce != null },
                 pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
                 erityisenTuenPäätökset =
-                    (specialSupportDecision
+                    (specialSupportWithDecision
+                        .ranges()
                         .mapNotNull { it.intersection(placementSpan) }
                         .map { ErityisenTuenPäätös.from(it) }
+                        .toList()
                         .takeIf { it.isNotEmpty() })
             )
             .takeIf {

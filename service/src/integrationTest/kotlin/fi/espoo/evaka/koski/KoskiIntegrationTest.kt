@@ -444,14 +444,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     listOf(
                         ErityisenTuenPäätös(
                             alku = testCases[2].period.start,
-                            loppu = testCases[2].period.end,
-                            opiskeleeToimintaAlueittain = false
-                        ),
-                        ErityisenTuenPäätös(
-                            alku = testCases[3].period.start,
                             loppu = testCases[3].period.end,
                             opiskeleeToimintaAlueittain = false
-                        )
+                        ),
                     )
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot

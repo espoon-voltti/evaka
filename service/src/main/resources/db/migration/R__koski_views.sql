@@ -38,8 +38,8 @@ TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
     full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
-    developmental_disability_1 daterange[], developmental_disability_2 daterange[],
-    extended_compulsory_education daterange[], transport_benefit daterange[], special_support_decision daterange[]
+    special_support_with_decision_level_1 daterange[], special_support_with_decision_level_2 daterange[],
+    transport_benefit daterange[]
 ) AS $$
     SELECT
         p.child_id,
@@ -52,11 +52,9 @@ TABLE (
         all_placements_in_past,
         last_of_child,
         preparatory_absences,
-        new_developmental_disability_1,
-        new_developmental_disability_2,
-        new_extended_compulsory_education,
-        new_transport_benefit,
-        new_special_support_decision
+        special_support_with_decision_level_1,
+        special_support_with_decision_level_2,
+        transport_benefit
     FROM koski_placement(today) p
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
@@ -69,7 +67,7 @@ TABLE (
         AND a.date > '2020-08-01'
     ) pa ON p.type = 'PREPARATORY'
     LEFT JOIN LATERAL (
-        SELECT array_agg(valid_during ORDER BY valid_during) AS new_transport_benefit
+        SELECT array_agg(valid_during ORDER BY valid_during) AS transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
         AND oam.valid_during && full_range
@@ -79,16 +77,10 @@ TABLE (
         SELECT
             array_agg(valid_during ORDER BY valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1'
-            ) AS new_developmental_disability_1,
+            ) AS special_support_with_decision_level_1,
             array_agg(valid_during ORDER BY valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
-            ) AS new_developmental_disability_2,
-            array_agg(valid_during ORDER BY valid_during) FILTER (
-                WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1' OR level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
-            ) AS new_extended_compulsory_education,
-            array_agg(valid_during ORDER BY valid_during) FILTER (
-                WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1' OR level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2'
-            ) AS new_special_support_decision
+            ) AS special_support_with_decision_level_2
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
         AND pa.valid_during && full_range
