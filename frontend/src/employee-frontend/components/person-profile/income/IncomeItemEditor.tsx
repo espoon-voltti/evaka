@@ -170,11 +170,29 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
     Partial<{ [K in keyof Income | 'dates']: boolean }>
   >({})
 
+  const onChange = useCallback(
+    (from: LocalDate | null, to: LocalDate | null) =>
+      from
+        ? setEditedIncome((prev) => ({
+            ...prev,
+            validFrom: from,
+            validTo: to ? to : undefined
+          }))
+        : undefined,
+    [setEditedIncome]
+  )
+
   const setIncomeData = useCallback((data: IncomeTableData) => {
     const [updatedData, isValid] = updateIncomeData(data)
     setEditedIncome((prev) => ({ ...prev, data: updatedData }))
     setValidationErrors((prev) => ({ ...prev, data: !isValid }))
   }, [])
+
+  const setValidationResult = useCallback(
+    (errors: boolean) =>
+      setValidationErrors((prev) => ({ ...prev, dates: errors })),
+    [setValidationErrors]
+  )
 
   return (
     <>
@@ -184,15 +202,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         <DateRangePicker
           start={editedIncome.validFrom}
           end={editedIncome.validTo || null}
-          onChange={(from: LocalDate | null, to: LocalDate | null) =>
-            from
-              ? setEditedIncome((prev) => ({
-                  ...prev,
-                  validFrom: from,
-                  validTo: to ? to : undefined
-                }))
-              : undefined
-          }
+          onChange={onChange}
+          onValidationResult={setValidationResult}
           locale={lang}
         />
       </div>
