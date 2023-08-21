@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { unstable_usePrompt as usePrompt, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
@@ -33,7 +33,6 @@ import {
 } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import usePrompt from 'lib-common/utils/usePrompt'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -100,7 +99,10 @@ export default React.memo(function VasuTemplateEditor() {
     void loadTemplate(id)
   }, [id, loadTemplate])
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
-  usePrompt(i18n.vasuTemplates.unsavedWarning, dirty)
+  usePrompt({
+    message: i18n.vasuTemplates.unsavedWarning,
+    when: dirty
+  })
 
   const onSave = useCallback(
     () =>
