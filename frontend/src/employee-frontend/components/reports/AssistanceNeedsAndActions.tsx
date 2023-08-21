@@ -14,11 +14,6 @@ import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
 import {
-  daycareAssistanceLevels,
-  otherAssistanceMeasureTypes,
-  preschoolAssistanceLevels
-} from 'lib-common/generated/api-types/assistance'
-import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportRow
 } from 'lib-common/generated/api-types/reports'
@@ -30,7 +25,13 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import {
+  assistanceMeasures,
+  daycareAssistanceLevels,
+  featureFlags,
+  otherAssistanceMeasureTypes,
+  preschoolAssistanceLevels
+} from 'lib-customizations/employee'
 
 import {
   AssistanceNeedsAndActionsReportFilters,
