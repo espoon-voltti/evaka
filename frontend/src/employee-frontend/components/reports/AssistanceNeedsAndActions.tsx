@@ -162,11 +162,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
                 ({
                   ...row,
-                  unitType: row.unitType
-                    ? i18n.reports.common.unitTypes[row.unitType]
-                    : '',
-                  unitProviderType:
-                    i18n.reports.common.unitProviderTypes[row.unitProviderType],
                   ...Object.fromEntries([
                     ...(useNewAssistanceModel
                       ? [
@@ -212,14 +207,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 {
                   label: i18n.reports.common.groupName,
                   key: 'groupName'
-                },
-                {
-                  label: i18n.reports.common.unitType,
-                  key: 'unitType'
-                },
-                {
-                  label: i18n.reports.common.unitProviderType,
-                  key: 'unitProviderType'
                 },
                 ...(useNewAssistanceModel
                   ? [
@@ -288,8 +275,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.common.unitName}</Th>
                   <Th>{i18n.reports.common.groupName}</Th>
-                  <Th>{i18n.reports.common.unitType}</Th>
-                  <Th>{i18n.reports.common.unitProviderType}</Th>
                   <OldModelOnly>
                     {report.value.bases.map((basis) => (
                       <Th key={basis.value}>{basis.nameFi}</Th>
@@ -358,18 +343,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </Td>
                     <Td>{row.groupName}</Td>
-                    <Td>
-                      {row.unitType
-                        ? i18n.reports.common.unitTypes[row.unitType]
-                        : ''}
-                    </Td>
-                    <Td>
-                      {
-                        i18n.reports.common.unitProviderTypes[
-                          row.unitProviderType
-                        ]
-                      }
-                    </Td>
                     <OldModelOnly>
                       {report.value.bases.map((basis) => (
                         <Td key={basis.value}>
@@ -415,8 +388,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
               <TableFooter>
                 <Tr>
                   <Td className="bold">{i18n.reports.common.total}</Td>
-                  <Td />
-                  <Td />
                   <Td />
                   <Td />
                   <OldModelOnly>
