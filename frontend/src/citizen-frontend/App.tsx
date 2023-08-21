@@ -4,7 +4,7 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom'
 import styled, { ThemeProvider } from 'styled-components'
 
 import {
@@ -49,35 +49,31 @@ import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PersonalDetails from './personal-details/PersonalDetails'
 import { queryClient, QueryClientProvider } from './query'
 
-export default function App() {
+function App() {
   const i18n = useTranslation()
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/">
-        <ThemeProvider theme={theme}>
-          <Localization>
-            <ErrorBoundary
-              fallback={() => (
-                <ErrorPage basePath="/" labels={i18n.errorPage} />
-              )}
-            >
-              <AuthContextProvider>
-                <OverlayContextProvider>
-                  <NotificationsContextProvider>
-                    <MessageContextProvider>
-                      <Content />
-                      <GlobalDialog />
-                      <LoginErrorModal />
-                      <div id="modal-container" />
-                    </MessageContextProvider>
-                  </NotificationsContextProvider>
-                </OverlayContextProvider>
-              </AuthContextProvider>
-            </ErrorBoundary>
-          </Localization>
-        </ThemeProvider>
-      </BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <Localization>
+          <ErrorBoundary
+            fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
+          >
+            <AuthContextProvider>
+              <OverlayContextProvider>
+                <NotificationsContextProvider>
+                  <MessageContextProvider>
+                    <Content />
+                    <GlobalDialog />
+                    <LoginErrorModal />
+                    <div id="modal-container" />
+                  </MessageContextProvider>
+                </NotificationsContextProvider>
+              </OverlayContextProvider>
+            </AuthContextProvider>
+          </ErrorBoundary>
+        </Localization>
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }
@@ -99,226 +95,241 @@ const Content = React.memo(function Content() {
       <Header ariaHidden={modalOpen} />
       <Notifications apiVersion={apiVersion} />
       <MainContainer ariaHidden={modalOpen}>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <ScrollToTop>
-                <LoginPage />
-              </ScrollToTop>
-            }
-          />
-          <Route
-            path="/map"
-            element={
-              <ScrollToTop>
-                <MapPage />
-              </ScrollToTop>
-            }
-          />
-          <Route
-            path="/accessibility"
-            element={
-              <ScrollToTop>
-                <AccessibilityStatement />
-              </ScrollToTop>
-            }
-          />
-          <Route
-            path="/applications"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <Applications />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/applications/new/:childId"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <ApplicationCreation />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/applications/:applicationId"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <ApplicationReadView />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/applications/:applicationId/edit"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <ApplicationEditor />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/personal-details"
-            element={
-              <RequireAuth strength="WEAK">
-                <ScrollToTop>
-                  <PersonalDetails />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/income"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <IncomeStatements />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/income/:incomeStatementId/edit"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <IncomeStatementEditor />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/income/:incomeStatementId"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <IncomeStatementView />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/child-income/:childId/:incomeStatementId/edit"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <ChildIncomeStatementEditor />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/child-income/:childId/:incomeStatementId"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <ChildIncomeStatementView />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/children/:childId"
-            element={
-              <RequireAuth strength="WEAK">
-                <ScrollToTop>
-                  <ChildPage />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/decisions"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <Decisions />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/decisions/by-application/:applicationId"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <DecisionResponseList />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/decisions/assistance/:id"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <AssistanceDecisionPage />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/decisions/assistance-preschool/:id"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <AssistancePreschoolDecisionPage />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/messages/:threadId"
-            element={
-              <RequireAuth strength="WEAK">
-                <MessagesPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/messages"
-            element={
-              <RequireAuth strength="WEAK">
-                <ScrollToTop>
-                  <MessagesPage />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <RequireAuth strength="WEAK">
-                <ScrollToTop>
-                  <CalendarPage />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/vasu/:id"
-            element={
-              <RequireAuth>
-                <ScrollToTop>
-                  <VasuPage />
-                </ScrollToTop>
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<HandleRedirection />} />
-        </Routes>
+        <Outlet />
       </MainContainer>
       <MobileNav />
     </FullPageContainer>
   )
 })
+
+export default createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+    children: [
+      {
+        path: '/login',
+        element: (
+          <ScrollToTop>
+            <LoginPage />
+          </ScrollToTop>
+        )
+      },
+      {
+        path: '/map',
+        element: (
+          <ScrollToTop>
+            <MapPage />
+          </ScrollToTop>
+        )
+      },
+      {
+        path: '/accessibility',
+        element: (
+          <ScrollToTop>
+            <AccessibilityStatement />
+          </ScrollToTop>
+        )
+      },
+      {
+        path: '/applications',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <Applications />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/applications/new/:childId',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <ApplicationCreation />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/applications/:applicationId',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <ApplicationReadView />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/applications/:applicationId/edit',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <ApplicationEditor />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/personal-details',
+        element: (
+          <RequireAuth strength="WEAK">
+            <ScrollToTop>
+              <PersonalDetails />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/income',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <IncomeStatements />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/income/:incomeStatementId/edit',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <IncomeStatementEditor />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/income/:incomeStatementId',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <IncomeStatementView />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/child-income/:childId/:incomeStatementId/edit',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <ChildIncomeStatementEditor />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/child-income/:childId/:incomeStatementId',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <ChildIncomeStatementView />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/children/:childId',
+        element: (
+          <RequireAuth strength="WEAK">
+            <ScrollToTop>
+              <ChildPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/decisions',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <Decisions />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/decisions/by-application/:applicationId',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <DecisionResponseList />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/decisions/assistance/:id',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <AssistanceDecisionPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/decisions/assistance-preschool/:id',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <AssistancePreschoolDecisionPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/messages/:threadId',
+        element: (
+          <RequireAuth strength="WEAK">
+            <MessagesPage />
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/messages',
+        element: (
+          <RequireAuth strength="WEAK">
+            <ScrollToTop>
+              <MessagesPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/calendar',
+        element: (
+          <RequireAuth strength="WEAK">
+            <ScrollToTop>
+              <CalendarPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/vasu/:id',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <VasuPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/*',
+        element: <HandleRedirection />
+      },
+      {
+        index: true,
+        element: <HandleRedirection />
+      }
+    ]
+  }
+])
 
 const MainContainer = React.memo(function MainContainer({
   ariaHidden,
