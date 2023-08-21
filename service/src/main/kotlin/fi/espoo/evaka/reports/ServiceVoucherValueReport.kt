@@ -330,7 +330,7 @@ WITH min_voucher_decision_date AS (
 
     UNION
 
-    -- Replaced with another decision
+    -- Replaced with another decision for which there is no already reported correction for the same period
     SELECT
         decision.id AS decision_id,
         p.period,
@@ -341,7 +341,8 @@ WITH min_voucher_decision_date AS (
     JOIN month_periods p ON ct.period && p.period
     JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && sn_decision.realized_period AND decision.child_id = ct.child_id
-    WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
+    LEFT JOIN voucher_value_report_decision sn_decision2 ON decision.id = sn_decision2.decision_id AND sn_decision2.realized_period = sn_decision.realized_period AND sn_decision2.type = 'CORRECTION'
+    WHERE decision.status = ANY(:effective::voucher_value_decision_status[]) and sn_decision2.decision_id IS NULL
 ), refunds AS (
     SELECT
         p.period,
