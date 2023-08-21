@@ -28,6 +28,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -39,7 +40,6 @@ import {
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeBody, IncomeFields } from '../../../types/income'
-import DateRangeInput from '../../common/DateRangeInput'
 
 import IncomeTable, {
   IncomeTableData,
@@ -161,7 +161,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   onSuccess,
   onFailure
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const [editedIncome, setEditedIncome] = useState<IncomeForm>(() =>
     baseIncome ? incomeFormFromIncome(baseIncome) : emptyIncome
@@ -170,31 +170,41 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
     Partial<{ [K in keyof Income | 'dates']: boolean }>
   >({})
 
+  const onChange = useCallback(
+    (from: LocalDate | null, to: LocalDate | null) =>
+      from
+        ? setEditedIncome((prev) => ({
+            ...prev,
+            validFrom: from,
+            validTo: to ? to : undefined
+          }))
+        : undefined,
+    [setEditedIncome]
+  )
+
   const setIncomeData = useCallback((data: IncomeTableData) => {
     const [updatedData, isValid] = updateIncomeData(data)
     setEditedIncome((prev) => ({ ...prev, data: updatedData }))
     setValidationErrors((prev) => ({ ...prev, data: !isValid }))
   }, [])
 
+  const setValidationResult = useCallback(
+    (errors: boolean) =>
+      setValidationErrors((prev) => ({ ...prev, dates: errors })),
+    [setValidationErrors]
+  )
+
   return (
     <>
       <div data-qa="income-date-range">
         <Label>{i18n.personProfile.income.details.dateRange}</Label>
         <Gap size="m" />
-        <DateRangeInput
+        <DateRangePicker
           start={editedIncome.validFrom}
-          end={editedIncome.validTo}
-          onChange={(from: LocalDate, to?: LocalDate) =>
-            setEditedIncome((prev) => ({
-              ...prev,
-              validFrom: from,
-              validTo: to
-            }))
-          }
-          onValidationResult={(hasErrors) =>
-            setValidationErrors((prev) => ({ ...prev, dates: hasErrors }))
-          }
-          nullableEndDate
+          end={editedIncome.validTo || null}
+          onChange={onChange}
+          onValidationResult={setValidationResult}
+          locale={lang}
         />
       </div>
       <Gap size="L" />
