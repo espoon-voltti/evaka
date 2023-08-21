@@ -71,11 +71,13 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     private val febFirst = LocalDate.of(2020, 2, 1)
     private val marFirst = LocalDate.of(2020, 3, 1)
     private val aprFirst = LocalDate.of(2020, 4, 1)
+    private val mayFirst = LocalDate.of(2020, 5, 1)
 
     private val janFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0))
     private val febFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 2, 21, 22, 0))
     private val marFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 3, 21, 22, 0))
     private val aprFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 4, 21, 22, 0))
+    private val mayFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 5, 21, 22, 0))
 
     @Test
     fun `unfrozen service voucher report includes value decisions that begin in the beginning of reports month`() {
@@ -935,6 +937,62 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         aprReport.assertContainsRow(ORIGINAL, aprFirst, aprFirst.toEndOfMonth(), 86000, 0, 86000)
         aprReport.assertContainsRow(REFUND, janFirst, janFirst.toEndOfMonth(), 87000, 0, -87000)
         aprReport.assertContainsRow(CORRECTION, janFirst, janFirst.toEndOfMonth(), 85000, 0, 85000)
+    }
+
+    @Test
+    fun `when a decision is reduced in validity multiple times the refunds and corrections are correct`() {
+        val decision =
+            createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
+        }
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, marFirst.year, marFirst.monthValue, marFreeze)
+        }
+
+        val firstValidityReduction = decision.copy(validTo = febFirst.toEndOfMonth())
+        db.transaction {
+            it.updateVoucherValueDecisionEndDates(
+                listOf(firstValidityReduction),
+                marFreeze.plusWeeks(2)
+            )
+        }
+        createVoucherDecision(marFirst, unitId = testDaycare.id, value = 86000, coPayment = 0)
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, aprFirst.year, aprFirst.monthValue, aprFreeze)
+        }
+
+        val secondValidityReduction = decision.copy(validTo = janFirst.toEndOfMonth())
+        db.transaction {
+            it.updateVoucherValueDecisionEndDates(
+                listOf(secondValidityReduction),
+                aprFreeze.plusWeeks(2)
+            )
+        }
+        createVoucherDecision(
+            febFirst,
+            unitId = testDaycare.id,
+            value = 85000,
+            coPayment = 0,
+            validTo = febFirst.toEndOfMonth()
+        )
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, mayFirst.year, mayFirst.monthValue, mayFreeze)
+        }
+
+        val mayReport = getUnitReport(testDaycare.id, mayFirst.year, mayFirst.monthValue)
+
+        assertEquals(3, mayReport.size)
+        mayReport.assertContainsRow(ORIGINAL, mayFirst, mayFirst.toEndOfMonth(), 86000, 0, 86000)
+        mayReport.assertContainsRow(REFUND, febFirst, febFirst.toEndOfMonth(), 87000, 0, -87000)
+        mayReport.assertContainsRow(CORRECTION, febFirst, febFirst.toEndOfMonth(), 85000, 0, 85000)
     }
 
     private fun List<ServiceVoucherValueRow>.assertContainsRow(
