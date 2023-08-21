@@ -88,13 +88,13 @@ class DocumentService(
             ResponseEntity.ok()
                 .header("X-Accel-Redirect", url)
                 .header("Content-Disposition", contentDispositionHeader)
-                .body("")
+                .body(null)
         } else {
             // nginx is not available in development => redirect to the presigned S3 url
             ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", presignedUrl.toString())
                 .header("Content-Disposition", contentDispositionHeader)
-                .body("")
+                .body(null)
         }
     }
 
