@@ -45,10 +45,12 @@ import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 
 interface DisplayFilters {
   careArea: string
+  unit: string
 }
 
 const emptyDisplayFilters: DisplayFilters = {
-  careArea: ''
+  careArea: '',
+  unit: ''
 }
 
 const Wrapper = styled.div`
@@ -85,7 +87,9 @@ export default React.memo(function AssistanceNeedsAndActions() {
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
+    !(
+      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+    ) && !(displayFilters.unit && row.unitName !== displayFilters.unit)
 
   useEffect(() => {
     setReport(Loading.of())
@@ -148,6 +152,45 @@ export default React.memo(function AssistanceNeedsAndActions() {
                     }
               }
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+              getItemLabel={(item) => item.label}
+            />
+          </Wrapper>
+        </FilterRow>
+
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={[
+                { value: '', label: i18n.common.all },
+                ...report
+                  .map((rs) =>
+                    distinct(rs.rows.map((row) => row.unitName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
+              ]}
+              onChange={(option) =>
+                option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      unit: option.value
+                    })
+                  : undefined
+              }
+              selectedItem={
+                displayFilters.unit !== ''
+                  ? {
+                      label: displayFilters.unit,
+                      value: displayFilters.unit
+                    }
+                  : {
+                      label: i18n.common.all,
+                      value: ''
+                    }
+              }
               getItemLabel={(item) => item.label}
             />
           </Wrapper>
