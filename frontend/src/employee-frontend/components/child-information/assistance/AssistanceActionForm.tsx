@@ -28,11 +28,10 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { UserContext } from '../../../state/user'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
 import {
   FormErrors,
@@ -165,9 +164,6 @@ export default React.memo(function AssistanceActionForm(props: Props) {
   const { mutateAsync: updateAssistanceAction } = useMutationResult(
     updateAssistanceActionMutation
   )
-  const { user } = useContext(UserContext)
-  const useNewAssistanceModel =
-    user?.accessibleFeatures.useNewAssistanceModel ?? false
 
   useEffect(() => {
     const isSoftConflict = checkSoftConflict(form, props)
@@ -338,65 +334,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
               </div>
             ),
             valueWidth: '100%'
-          },
-          assistanceMeasures.length > 0 &&
-            !useNewAssistanceModel && {
-              label: i18n.childInformation.assistanceAction.fields.measures,
-              value: (
-                <div>
-                  {assistanceMeasures.map((measure) =>
-                    i18n.childInformation.assistanceAction.fields.measureTypes[
-                      `${measure}_INFO`
-                    ] ? (
-                      <ExpandingInfo
-                        key={measure}
-                        info={String(
-                          i18n.childInformation.assistanceAction.fields
-                            .measureTypes[`${measure}_INFO`]
-                        )}
-                        ariaLabel=""
-                        width="full"
-                        closeLabel={i18n.common.close}
-                      >
-                        <CheckboxRow key={measure}>
-                          <Checkbox
-                            label={
-                              i18n.childInformation.assistanceAction.fields
-                                .measureTypes[measure]
-                            }
-                            checked={form.measures.includes(measure)}
-                            onChange={(value) => {
-                              const measures = new Set([...form.measures])
-                              if (value) measures.add(measure)
-                              else measures.delete(measure)
-                              updateFormState({
-                                measures: Array.from(measures)
-                              })
-                            }}
-                          />
-                        </CheckboxRow>
-                      </ExpandingInfo>
-                    ) : (
-                      <CheckboxRow key={measure}>
-                        <Checkbox
-                          label={
-                            i18n.childInformation.assistanceAction.fields
-                              .measureTypes[measure]
-                          }
-                          checked={form.measures.includes(measure)}
-                          onChange={(value) => {
-                            const measures = new Set([...form.measures])
-                            if (value) measures.add(measure)
-                            else measures.delete(measure)
-                            updateFormState({ measures: Array.from(measures) })
-                          }}
-                        />
-                      </CheckboxRow>
-                    )
-                  )}
-                </div>
-              )
-            }
+          }
         ]}
       />
 
