@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
@@ -11,13 +11,6 @@ import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
-
-import EmployeeRoute from './EmployeeRoute'
-import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'
-import IncomeStatementsPage from './income-statements/IncomeStatementsPage'
-import InvoicesPage from './invoices/InvoicesPage'
-import PaymentsPage from './payments/PaymentsPage'
-import VoucherValueDecisionsPage from './voucher-value-decisions/VoucherValueDecisionsPage'
 
 export default React.memo(function FinancePage() {
   const { i18n } = useTranslation()
@@ -73,51 +66,7 @@ export default React.memo(function FinancePage() {
     <>
       <Tabs tabs={tabs} />
       <Gap size="s" />
-      <Routes>
-        <Route
-          path="fee-decisions"
-          element={
-            <EmployeeRoute title="feeDecisions">
-              <FeeDecisionsPage />
-            </EmployeeRoute>
-          }
-        />
-        <Route
-          path="value-decisions"
-          element={
-            <EmployeeRoute title="valueDecisions">
-              <VoucherValueDecisionsPage />
-            </EmployeeRoute>
-          }
-        />
-        <Route
-          path="invoices"
-          element={
-            <EmployeeRoute title="invoices">
-              <InvoicesPage />
-            </EmployeeRoute>
-          }
-        />
-        {featureFlags.experimental?.voucherUnitPayments && (
-          <Route
-            path="payments"
-            element={
-              <EmployeeRoute title="payments">
-                <PaymentsPage />
-              </EmployeeRoute>
-            }
-          />
-        )}
-        <Route
-          path="income-statements"
-          element={
-            <EmployeeRoute title="incomeStatements">
-              <IncomeStatementsPage />
-            </EmployeeRoute>
-          }
-        />
-        <Route index element={<Navigate replace to="fee-decisions" />} />
-      </Routes>
+      <Outlet />
     </>
   )
 })

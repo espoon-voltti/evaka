@@ -13,6 +13,7 @@ import { Notifications } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { getAuthStatus } from './api/auth'
 import { client } from './api/client'
@@ -50,12 +51,16 @@ import EmployeePreferredFirstNamePage from './components/employee/EmployeePrefer
 import EmployeePage from './components/employees/EmployeePage'
 import EmployeesPage from './components/employees/EmployeesPage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
+import FeeDecisionsPage from './components/fee-decisions/FeeDecisionsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import HolidayPeriodEditor from './components/holiday-periods/HolidayPeriodEditor'
 import HolidayPeriodsPage from './components/holiday-periods/HolidayPeriodsPage'
 import QuestionnaireEditor from './components/holiday-periods/QuestionnaireEditor'
+import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
 import InvoicePage from './components/invoice/InvoicePage'
+import InvoicesPage from './components/invoices/InvoicesPage'
 import MessagesPage from './components/messages/MessagesPage'
+import PaymentsPage from './components/payments/PaymentsPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
 import ReportApplications from './components/reports/Applications'
 import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
@@ -95,6 +100,7 @@ import VasuPage from './components/vasu/VasuPage'
 import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
+import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 import { QueryClientProvider, queryClient } from './query'
 import StateProvider from './state/StateProvider'
 import { I18nContextProvider, useTranslation } from './state/i18n'
@@ -356,7 +362,55 @@ export default createBrowserRouter(
             <EmployeeRoute>
               <FinancePage />
             </EmployeeRoute>
-          )
+          ),
+          children: [
+            {
+              path: 'fee-decisions',
+              element: (
+                <EmployeeRoute title="feeDecisions">
+                  <FeeDecisionsPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              path: 'value-decisions',
+              element: (
+                <EmployeeRoute title="valueDecisions">
+                  <VoucherValueDecisionsPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              path: 'invoices',
+              element: (
+                <EmployeeRoute title="invoices">
+                  <InvoicesPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              path: 'payments',
+              element: featureFlags.experimental?.voucherUnitPayments ? (
+                <EmployeeRoute title="payments">
+                  <PaymentsPage />
+                </EmployeeRoute>
+              ) : (
+                <Navigate replace to="/finance/fee-decisions" />
+              )
+            },
+            {
+              path: 'income-statements',
+              element: (
+                <EmployeeRoute title="incomeStatements">
+                  <IncomeStatementsPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              index: true,
+              element: <Navigate replace to="/finance/fee-decisions" />
+            }
+          ]
         },
         {
           path: '/reports',
