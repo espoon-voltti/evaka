@@ -24,7 +24,19 @@ const mapToAssistanceNeedPreschoolDecision = (
   form: {
     ...json.form,
     validFrom: LocalDate.parseNullableIso(json.form.validFrom),
-    guardiansHeardOn: LocalDate.parseNullableIso(json.form.guardiansHeardOn)
+    guardiansHeardOn: LocalDate.parseNullableIso(json.form.guardiansHeardOn),
+    basisDocumentPedagogicalReportDate: LocalDate.parseNullableIso(
+      json.form.basisDocumentPedagogicalReportDate
+    ),
+    basisDocumentPsychologistStatementDate: LocalDate.parseNullableIso(
+      json.form.basisDocumentPsychologistStatementDate
+    ),
+    basisDocumentSocialReportDate: LocalDate.parseNullableIso(
+      json.form.basisDocumentSocialReportDate
+    ),
+    basisDocumentDoctorStatementDate: LocalDate.parseNullableIso(
+      json.form.basisDocumentDoctorStatementDate
+    )
   },
   sentForDecision: LocalDate.parseNullableIso(json.sentForDecision),
   decisionMade: LocalDate.parseNullableIso(json.decisionMade)

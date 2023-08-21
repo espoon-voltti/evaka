@@ -324,11 +324,15 @@ export interface AssistanceNeedPreschoolDecisionCitizenListItem {
 */
 export interface AssistanceNeedPreschoolDecisionForm {
   basisDocumentDoctorStatement: boolean
+  basisDocumentDoctorStatementDate: LocalDate | null
   basisDocumentOtherOrMissing: boolean
   basisDocumentOtherOrMissingInfo: string
   basisDocumentPedagogicalReport: boolean
+  basisDocumentPedagogicalReportDate: LocalDate | null
   basisDocumentPsychologistStatement: boolean
+  basisDocumentPsychologistStatementDate: LocalDate | null
   basisDocumentSocialReport: boolean
+  basisDocumentSocialReportDate: LocalDate | null
   basisDocumentsInfo: string
   decisionBasis: string
   decisionMakerEmployeeId: UUID | null

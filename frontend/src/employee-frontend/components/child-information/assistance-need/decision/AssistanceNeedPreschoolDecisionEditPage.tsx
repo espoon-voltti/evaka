@@ -117,6 +117,10 @@ const form = mapped(
     basisDocumentPsychologistStatement: boolean(),
     basisDocumentSocialReport: boolean(),
     basisDocumentDoctorStatement: boolean(),
+    basisDocumentPedagogicalReportDate: optionalLocalDate,
+    basisDocumentPsychologistStatementDate: optionalLocalDate,
+    basisDocumentSocialReportDate: optionalLocalDate,
+    basisDocumentDoctorStatementDate: optionalLocalDate,
     basisDocumentOtherOrMissing: boolean(),
     basisDocumentOtherOrMissingInfo: string(),
     basisDocumentsInfo: string(),
@@ -395,6 +399,10 @@ const DecisionEditor = React.memo(function DecisionEditor({
     basisDocumentPsychologistStatement,
     basisDocumentSocialReport,
     basisDocumentDoctorStatement,
+    basisDocumentPedagogicalReportDate,
+    basisDocumentPsychologistStatementDate,
+    basisDocumentSocialReportDate,
+    basisDocumentDoctorStatementDate,
     basisDocumentOtherOrMissing,
     basisDocumentOtherOrMissingInfo,
     basisDocumentsInfo,
@@ -663,23 +671,55 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     />
                   )}
                 </FixedSpaceRow>
-                <CheckboxF
-                  bind={basisDocumentPedagogicalReport}
-                  label={t.basisDocumentPedagogicalReport}
-                  data-qa="basis-pedagogical-report"
-                />
-                <CheckboxF
-                  bind={basisDocumentPsychologistStatement}
-                  label={t.basisDocumentPsychologistStatement}
-                />
-                <CheckboxF
-                  bind={basisDocumentSocialReport}
-                  label={t.basisDocumentSocialReport}
-                />
-                <CheckboxF
-                  bind={basisDocumentDoctorStatement}
-                  label={t.basisDocumentDoctorStatement}
-                />
+                <FixedSpaceRow>
+                  <CheckboxF
+                    bind={basisDocumentPedagogicalReport}
+                    label={t.basisDocumentPedagogicalReport}
+                    data-qa="basis-pedagogical-report"
+                  />
+                  {basisDocumentPedagogicalReport.value() && (
+                    <DatePickerF
+                      bind={basisDocumentPedagogicalReportDate}
+                      locale={uiLang}
+                    />
+                  )}
+                </FixedSpaceRow>
+                <FixedSpaceRow>
+                  <CheckboxF
+                    bind={basisDocumentPsychologistStatement}
+                    label={t.basisDocumentPsychologistStatement}
+                  />
+                  {basisDocumentPsychologistStatement.value() && (
+                    <DatePickerF
+                      bind={basisDocumentPsychologistStatementDate}
+                      locale={uiLang}
+                    />
+                  )}
+                </FixedSpaceRow>
+                <FixedSpaceRow>
+                  <CheckboxF
+                    bind={basisDocumentSocialReport}
+                    label={t.basisDocumentSocialReport}
+                  />
+                  {basisDocumentSocialReport.value() && (
+                    <DatePickerF
+                      bind={basisDocumentSocialReportDate}
+                      locale={uiLang}
+                    />
+                  )}
+                </FixedSpaceRow>
+                <FixedSpaceRow>
+                  <CheckboxF
+                    bind={basisDocumentDoctorStatement}
+                    label={t.basisDocumentDoctorStatement}
+                  />
+                  {basisDocumentDoctorStatement.value() && (
+                    <DatePickerF
+                      bind={basisDocumentDoctorStatementDate}
+                      locale={uiLang}
+                    />
+                  )}
+                </FixedSpaceRow>
                 <CheckboxF
                   bind={basisDocumentOtherOrMissing}
                   label={t.basisDocumentOtherOrMissing}
