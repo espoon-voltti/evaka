@@ -12,8 +12,6 @@ import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { ApplicationStatus } from './application'
 import { AssistanceActionOption } from './assistanceaction'
-import { AssistanceBasisOption } from './assistanceneed'
-import { AssistanceMeasure } from './assistanceaction'
 import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
 import { DecisionType } from './decision'
@@ -60,7 +58,6 @@ export interface AssistanceNeedDecisionsReportRow {
 */
 export interface AssistanceNeedsAndActionsReport {
   actions: AssistanceActionOption[]
-  bases: AssistanceBasisOption[]
   rows: AssistanceNeedsAndActionsReportRow[]
 }
 
@@ -69,14 +66,11 @@ export interface AssistanceNeedsAndActionsReport {
 */
 export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Record<string, number>
-  basisCounts: Record<string, number>
   careAreaName: string
   daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   groupId: UUID
   groupName: string
-  measureCounts: Record<AssistanceMeasure, number>
   noActionCount: number
-  noBasisCount: number
   otherActionCount: number
   otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
   preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>

@@ -5,8 +5,6 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
-import fi.espoo.evaka.assistanceneed.insertAssistanceNeed
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -32,9 +30,11 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
@@ -512,7 +512,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertAssistanceNeed(testChild_2.id, period.asFiniteDateRange()!!, 3.0)
+        db.transaction {
+            it.insertTestAssistanceFactor(
+                DevAssistanceFactor(childId = testChild_2.id, capacityFactor = 3.0)
+            )
+        }
 
         db.transaction {
             generator.generateNewDecisionsForAdult(
@@ -1479,20 +1483,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 placementId,
                 period,
                 optionId
-            )
-        }
-    }
-
-    private fun insertAssistanceNeed(
-        childId: ChildId,
-        period: FiniteDateRange,
-        capacityFactor: Double
-    ) {
-        db.transaction { tx ->
-            tx.insertAssistanceNeed(
-                AuthenticatedUser.Employee(testDecisionMaker_1.id, roles = setOf()),
-                childId,
-                AssistanceNeedRequest(period.start, period.end, capacityFactor)
             )
         }
     }

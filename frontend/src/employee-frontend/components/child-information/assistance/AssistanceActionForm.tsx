@@ -16,8 +16,7 @@ import {
   AssistanceAction,
   AssistanceActionOption,
   AssistanceActionRequest,
-  AssistanceActionResponse,
-  AssistanceMeasure
+  AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
@@ -58,7 +57,6 @@ interface FormState {
   actions: string[]
   otherSelected: boolean
   otherAction: string
-  measures: AssistanceMeasure[]
 }
 
 interface CommonProps {
@@ -137,8 +135,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
             endDate: LocalDate.todayInSystemTz(),
             actions: [],
             otherSelected: false,
-            otherAction: '',
-            measures: []
+            otherAction: ''
           }
         : {
             ...props.assistanceAction,
@@ -187,8 +184,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
 
     const data: AssistanceActionRequest = {
       ...form,
-      actions: [...form.actions],
-      measures: [...form.measures]
+      actions: [...form.actions]
     }
 
     const apiCall = isCreate(props)

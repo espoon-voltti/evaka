@@ -17,7 +17,6 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
-import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
@@ -116,7 +115,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
@@ -1339,13 +1337,6 @@ RETURNING id
         db.connect { dbc -> dbc.transaction { it.insertServiceNeedOptionVoucherValues() } }
     }
 
-    @PostMapping("/assistance-needs")
-    fun createAssistanceNeeds(db: Database, @RequestBody assistanceNeeds: List<DevAssistanceNeed>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> assistanceNeeds.forEach { tx.insertTestAssistanceNeed(it) } }
-        }
-    }
-
     @PostMapping("/assistance-factors")
     fun createAssistanceFactors(
         db: Database,
@@ -1930,16 +1921,6 @@ data class DevDaycareGroupPlacement(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
 )
 
-data class DevAssistanceNeed(
-    val id: AssistanceNeedId = AssistanceNeedId(UUID.randomUUID()),
-    val childId: ChildId,
-    val updatedBy: EvakaUserId,
-    val startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    val endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    val capacityFactor: Double = 1.0,
-    val bases: Set<String> = emptySet()
-)
-
 data class DevAssistanceNeedDecision(
     val id: AssistanceNeedDecisionId = AssistanceNeedDecisionId(UUID.randomUUID()),
     val decisionNumber: Long?,
@@ -1999,7 +1980,6 @@ data class DevAssistanceAction(
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val actions: Set<String> = emptySet(),
-    val measures: Set<AssistanceMeasure> = emptySet(),
     val otherAction: String = ""
 )
 

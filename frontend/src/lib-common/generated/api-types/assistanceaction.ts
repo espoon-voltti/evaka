@@ -17,7 +17,6 @@ export interface AssistanceAction {
   childId: UUID
   endDate: LocalDate
   id: UUID
-  measures: AssistanceMeasure[]
   otherAction: string
   startDate: LocalDate
 }
@@ -37,7 +36,6 @@ export interface AssistanceActionOption {
 export interface AssistanceActionRequest {
   actions: string[]
   endDate: LocalDate
-  measures: AssistanceMeasure[]
   otherAction: string
   startDate: LocalDate
 }
@@ -49,14 +47,3 @@ export interface AssistanceActionResponse {
   action: AssistanceAction
   permittedActions: Action.AssistanceAction[]
 }
-
-/**
-* Generated from fi.espoo.evaka.assistanceaction.AssistanceMeasure
-*/
-export type AssistanceMeasure =
-  | 'SPECIAL_ASSISTANCE_DECISION'
-  | 'INTENSIFIED_ASSISTANCE'
-  | 'EXTENDED_COMPULSORY_EDUCATION'
-  | 'CHILD_SERVICE'
-  | 'CHILD_ACCULTURATION_SUPPORT'
-  | 'TRANSPORT_BENEFIT'

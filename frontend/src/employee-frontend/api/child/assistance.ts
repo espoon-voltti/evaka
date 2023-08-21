@@ -49,14 +49,6 @@ export async function getAssistanceData(
         },
         permittedActions: row.permittedActions
       })),
-      assistanceNeeds: data.assistanceNeeds.map((row) => ({
-        need: {
-          ...row.need,
-          startDate: LocalDate.parseIso(row.need.startDate),
-          endDate: LocalDate.parseIso(row.need.endDate)
-        },
-        permittedActions: row.permittedActions
-      })),
       assistanceActions: data.assistanceActions.map((row) => ({
         action: {
           ...row.action,

@@ -11,17 +11,10 @@ import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
 import fi.espoo.evaka.assistanceaction.AssistanceActionResponse
 import fi.espoo.evaka.assistanceaction.AssistanceActionService
 import fi.espoo.evaka.assistanceaction.getAssistanceActionsByChild
-import fi.espoo.evaka.assistanceneed.AssistanceBasisOption
-import fi.espoo.evaka.assistanceneed.AssistanceNeed
-import fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
-import fi.espoo.evaka.assistanceneed.AssistanceNeedResponse
-import fi.espoo.evaka.assistanceneed.AssistanceNeedService
-import fi.espoo.evaka.assistanceneed.getAssistanceNeedsByChild
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
@@ -46,7 +39,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceController(
     private val accessControl: AccessControl,
-    private val assistanceNeedService: AssistanceNeedService,
     private val assistanceActionService: AssistanceActionService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
@@ -75,7 +67,6 @@ class AssistanceController(
         val daycareAssistances: List<DaycareAssistanceResponse>,
         val preschoolAssistances: List<PreschoolAssistanceResponse>,
         val otherAssistanceMeasures: List<OtherAssistanceMeasureResponse>,
-        val assistanceNeeds: List<AssistanceNeedResponse>,
         val assistanceActions: List<AssistanceActionResponse>,
     )
 
@@ -106,47 +97,6 @@ class AssistanceController(
                     relevantPreschoolPlacements.isNotEmpty() &&
                         relevantPreschoolPlacements.all { it.startDate.isAfter(date) }
                 }
-                val assistanceNeeds =
-                    if (
-                        accessControl.hasPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Child.READ_ASSISTANCE_NEED,
-                            child
-                        )
-                    ) {
-                        tx.getAssistanceNeedsByChild(child)
-                            .let { allAssistanceNeeds ->
-                                val prePreschool =
-                                    allAssistanceNeeds.filter {
-                                        needsPrePreschoolCheck(it.startDate)
-                                    }
-                                val decisions =
-                                    accessControl.checkPermissionFor(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED,
-                                        prePreschool.map { it.id }
-                                    )
-                                allAssistanceNeeds.filter {
-                                    decisions[it.id]?.isPermitted() ?: true
-                                }
-                            }
-                            .let { rows ->
-                                val actions: Map<AssistanceNeedId, Set<Action.AssistanceNeed>> =
-                                    accessControl.getPermittedActions(
-                                        tx,
-                                        user,
-                                        clock,
-                                        rows.map { it.id }
-                                    )
-                                rows.map {
-                                    AssistanceNeedResponse(it, actions[it.id] ?: emptySet())
-                                }
-                            }
-                    } else emptyList()
                 val assistanceActions =
                     if (
                         accessControl.hasPermissionFor(
@@ -339,115 +289,9 @@ class AssistanceController(
                     preschoolAssistances = preschoolAssistances,
                     assistanceActions = assistanceActions,
                     otherAssistanceMeasures = otherAssistanceMeasures,
-                    assistanceNeeds = assistanceNeeds,
                 )
             }
         }
-
-    @PostMapping("/children/{childId}/assistance-needs")
-    fun createAssistanceNeed(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId,
-        @RequestBody body: AssistanceNeedRequest
-    ): AssistanceNeed {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.CREATE_ASSISTANCE_NEED,
-                        childId
-                    )
-                }
-                assistanceNeedService.createAssistanceNeed(
-                    dbc,
-                    user,
-                    clock,
-                    childId = childId,
-                    data = body
-                )
-            }
-            .also { assistanceNeed ->
-                Audit.ChildAssistanceNeedCreate.log(
-                    targetId = childId,
-                    objectId = assistanceNeed.id
-                )
-            }
-    }
-
-    @PutMapping("/assistance-needs/{id}")
-    fun updateAssistanceNeed(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable("id") assistanceNeedId: AssistanceNeedId,
-        @RequestBody body: AssistanceNeedRequest
-    ): AssistanceNeed {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.AssistanceNeed.UPDATE,
-                        assistanceNeedId
-                    )
-                }
-                assistanceNeedService.updateAssistanceNeed(
-                    dbc,
-                    user,
-                    clock,
-                    id = assistanceNeedId,
-                    data = body
-                )
-            }
-            .also { Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId) }
-    }
-
-    @DeleteMapping("/assistance-needs/{id}")
-    fun deleteAssistanceNeed(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable("id") assistanceNeedId: AssistanceNeedId
-    ) {
-        db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.AssistanceNeed.DELETE,
-                    assistanceNeedId
-                )
-            }
-            assistanceNeedService.deleteAssistanceNeed(dbc, clock, assistanceNeedId)
-        }
-        Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
-    }
-
-    @GetMapping("/assistance-basis-options")
-    fun getAssistanceBasisOptions(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock
-    ): List<AssistanceBasisOption> {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_ASSISTANCE_BASIS_OPTIONS
-                    )
-                }
-                assistanceNeedService.getAssistanceBasisOptions(dbc)
-            }
-            .also { Audit.AssistanceBasisOptionsRead.log() }
-    }
 
     @PostMapping("/children/{childId}/assistance-actions")
     fun createAssistanceAction(

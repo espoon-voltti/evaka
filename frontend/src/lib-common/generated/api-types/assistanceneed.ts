@@ -27,15 +27,6 @@ export interface AnnulAssistanceNeedPreschoolDecisionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.AssistanceBasisOption
-*/
-export interface AssistanceBasisOption {
-  descriptionFi: string | null
-  nameFi: string
-  value: string
-}
-
-/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 */
 export type AssistanceLevel =
@@ -43,18 +34,6 @@ export type AssistanceLevel =
   | 'ASSISTANCE_SERVICES_FOR_TIME'
   | 'ENHANCED_ASSISTANCE'
   | 'SPECIAL_ASSISTANCE'
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.AssistanceNeed
-*/
-export interface AssistanceNeed {
-  bases: string[]
-  capacityFactor: number
-  childId: UUID
-  endDate: LocalDate
-  id: UUID
-  startDate: LocalDate
-}
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecision
@@ -387,24 +366,6 @@ export type AssistanceNeedPreschoolDecisionType =
   | 'NEW'
   | 'CONTINUING'
   | 'TERMINATED'
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
-*/
-export interface AssistanceNeedRequest {
-  bases: string[]
-  capacityFactor: number
-  endDate: LocalDate
-  startDate: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.AssistanceNeedResponse
-*/
-export interface AssistanceNeedResponse {
-  need: AssistanceNeed
-  permittedActions: Action.AssistanceNeed[]
-}
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient

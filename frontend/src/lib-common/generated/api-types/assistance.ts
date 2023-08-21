@@ -9,7 +9,6 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { Action } from '../action'
 import { AssistanceActionResponse } from './assistanceaction'
-import { AssistanceNeedResponse } from './assistanceneed'
 import { UUID } from '../../types'
 
 /**
@@ -46,7 +45,6 @@ export interface AssistanceFactorUpdate {
 export interface AssistanceResponse {
   assistanceActions: AssistanceActionResponse[]
   assistanceFactors: AssistanceFactorResponse[]
-  assistanceNeeds: AssistanceNeedResponse[]
   daycareAssistances: DaycareAssistanceResponse[]
   otherAssistanceMeasures: OtherAssistanceMeasureResponse[]
   preschoolAssistances: PreschoolAssistanceResponse[]

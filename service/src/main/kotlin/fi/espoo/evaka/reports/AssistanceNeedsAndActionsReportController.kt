@@ -9,10 +9,7 @@ import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
-import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
-import fi.espoo.evaka.assistanceneed.AssistanceBasisOption
-import fi.espoo.evaka.assistanceneed.getAssistanceBasisOptions
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -50,7 +47,6 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     AssistanceNeedsAndActionsReport(
-                        bases = it.getAssistanceBasisOptions(),
                         actions = it.getAssistanceActionOptions(),
                         rows = it.getReportRows(date, filter)
                     )
@@ -64,7 +60,6 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
     }
 
     data class AssistanceNeedsAndActionsReport(
-        val bases: List<AssistanceBasisOption>,
         val actions: List<AssistanceActionOption>,
         val rows: List<AssistanceNeedsAndActionsReportRow>
     )
@@ -75,19 +70,14 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         val unitName: String,
         val groupId: GroupId,
         val groupName: String,
-        @Json val basisCounts: Map<AssistanceBasisOptionValue, Int>,
-        val noBasisCount: Int,
         @Json val actionCounts: Map<AssistanceActionOptionValue, Int>,
         val otherActionCount: Int,
         val noActionCount: Int,
-        @Json val measureCounts: Map<AssistanceMeasure, Int>,
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
     )
 }
-
-private typealias AssistanceBasisOptionValue = String
 
 private typealias AssistanceActionOptionValue = String
 
@@ -98,47 +88,7 @@ private fun Database.Read.getReportRows(
     createQuery<DatabaseTable> {
             sql(
                 """
-WITH basis_counts AS (
-    SELECT
-        daycare_group_id,
-        jsonb_object_agg(value, count) FILTER (WHERE value IS NOT NULL) AS basis_counts,
-        sum(count) FILTER (WHERE value IS NULL) AS no_basis_count
-    FROM (
-        SELECT
-            gpl.daycare_group_id,
-            o.value,
-            count(an.child_id) AS count
-        FROM daycare_group_placement gpl
-        JOIN placement pl ON pl.id = gpl.daycare_placement_id
-        JOIN assistance_need an ON an.child_id = pl.child_id
-        LEFT JOIN assistance_basis_option_ref r ON r.need_id = an.id
-        LEFT JOIN assistance_basis_option o on r.option_id = o.id
-        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
-        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-        AND daterange(an.start_date, an.end_date, '[]') @> ${bind(date)}
-        GROUP BY 1, 2
-    ) basis_stats
-    GROUP BY daycare_group_id
-), measure_counts AS (
-    SELECT
-        daycare_group_id,
-        jsonb_object_agg(value, count) AS measure_counts
-    FROM (
-        SELECT
-            gpl.daycare_group_id,
-            value,
-            count(aa.child_id) AS count
-        FROM daycare_group_placement gpl
-        JOIN placement pl ON pl.id = gpl.daycare_placement_id
-        JOIN assistance_action aa ON aa.child_id = pl.child_id
-        JOIN LATERAL (SELECT unnest(aa.measures) AS value) measures ON true
-        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
-        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-        AND daterange(aa.start_date, aa.end_date, '[]') @> ${bind(date)}
-        GROUP BY 1, 2
-    ) measure_stats
-    GROUP BY daycare_group_id
-), action_counts AS (
+WITH action_counts AS (
     SELECT
         daycare_group_id,
         jsonb_object_agg(value, count) FILTER (WHERE value IS NOT NULL) AS action_counts,
@@ -223,20 +173,15 @@ SELECT
     u.name AS unit_name,
     g.id AS group_id,
     initcap(g.name) AS group_name,
-    coalesce(basis_counts, '{}') AS basis_counts,
-    coalesce(no_basis_count, 0) AS no_basis_count,
     coalesce(action_counts, '{}') AS action_counts,
     coalesce(other_action_count, 0) AS other_action_count,
     coalesce(no_action_count, 0) AS no_action_count,
-    coalesce(measure_counts, '{}') AS measure_counts,
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
     coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
-LEFT JOIN basis_counts ON g.id = basis_counts.daycare_group_id
-LEFT JOIN measure_counts ON g.id = measure_counts.daycare_group_id
 LEFT JOIN action_counts ON g.id = action_counts.daycare_group_id
 LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_group_id
 LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id

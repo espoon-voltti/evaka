@@ -611,7 +611,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertServiceNeedOptionFees()
     insertServiceNeedOptionVoucherValues()
     insertAssistanceActionOptions()
-    insertAssistanceBasisOptions()
 }
 
 val preschoolTerm2020 =
@@ -727,18 +726,6 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
     ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
     ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
-"""
-
-    createUpdate(sql).execute()
-}
-
-fun Database.Transaction.insertAssistanceBasisOptions() {
-    // language=sql
-    val sql =
-        """
-INSERT INTO assistance_basis_option (value, name_fi, description_fi, display_order) VALUES
-    ('DEVELOPMENTAL_DISABILITY_1', 'Kehitysvamma 1', NULL, 15),
-    ('DEVELOPMENTAL_DISABILITY_2', 'Kehitysvamma 2', 'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.', 20);
 """
 
     createUpdate(sql).execute()

@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
@@ -210,24 +209,6 @@ sealed interface Action {
         CREATE_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_DRAFT_PAYMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_ASSISTANCE_ACTION_OPTIONS(
-            HasGlobalRole(
-                ADMIN,
-                DIRECTOR,
-                REPORT_VIEWER,
-                FINANCE_ADMIN,
-                SERVICE_WORKER,
-                FINANCE_STAFF
-            ),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inAnyUnit(),
-            IsMobile(requirePinLogin = false).any()
-        ),
-        READ_ASSISTANCE_BASIS_OPTIONS(
             HasGlobalRole(
                 ADMIN,
                 DIRECTOR,
@@ -672,27 +653,6 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class AssistanceNeed(
-        override vararg val defaultRules: ScopedActionRule<in AssistanceNeedId>
-    ) : ScopedAction<AssistanceNeedId> {
-        UPDATE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeed()
-        ),
-        DELETE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeed()
-        ),
-        READ_PRE_PRESCHOOL_ASSISTANCE_NEED(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeed()
-        );
-
-        override fun toString(): String = "${javaClass.name}.$name"
-    }
-
     enum class AssistanceNeedDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>
     ) : ScopedAction<AssistanceNeedDecisionId> {
@@ -995,19 +955,6 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_ACTION(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inPlacementUnitOfChild()
-        ),
-        CREATE_ASSISTANCE_NEED(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
-        ),
-        READ_ASSISTANCE_NEED(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,

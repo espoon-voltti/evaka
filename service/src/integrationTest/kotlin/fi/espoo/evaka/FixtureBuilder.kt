@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevEmployeePin
@@ -31,7 +30,6 @@ import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.insertEmployeePin
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
@@ -111,45 +109,11 @@ class FixtureBuilder(
         private val today: LocalDate,
         val childId: ChildId
     ) {
-        fun addAssistanceNeed() = AssistanceNeedBuilder(tx, today, this)
         fun addPlacementPlan() = PlacementPlanBuilder(tx, today, this)
         fun addBackupCare() = BackupCareBuilder(tx, today, this)
         fun addPlacement() = PlacementBuilder(tx, today, this)
         fun addAbsence() = AbsenceBuilder(tx, today, this)
         fun addAttendance() = ChildAttendanceBuilder(tx, today, this)
-    }
-
-    class AssistanceNeedBuilder(
-        private val tx: Database.Transaction,
-        private val today: LocalDate,
-        private val childFixture: ChildFixture
-    ) {
-        private var from: LocalDate = today
-        private var to: LocalDate = today
-        private var employeeId: EvakaUserId? = null
-        private var factor: Double = 1.0
-
-        fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) =
-            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
-        fun toDay(relativeDays: Int) =
-            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
-        fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun withFactor(factor: Double) = this.apply { this.factor = factor }
-        fun createdBy(employeeId: EvakaUserId) = this.apply { this.employeeId = employeeId }
-
-        fun save(): ChildFixture {
-            tx.insertTestAssistanceNeed(
-                DevAssistanceNeed(
-                    childId = childFixture.childId,
-                    updatedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
-                    startDate = from,
-                    endDate = to,
-                    capacityFactor = factor
-                )
-            )
-            return childFixture
-        }
     }
 
     class AbsenceBuilder(

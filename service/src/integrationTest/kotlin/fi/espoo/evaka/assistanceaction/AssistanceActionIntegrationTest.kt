@@ -43,7 +43,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `post first assistance action, no action types or measures`() {
+    fun `post first assistance action, no action types`() {
         val assistanceAction =
             whenPostAssistanceActionThenExpectSuccess(
                 AssistanceActionRequest(startDate = testDate(10), endDate = testDate(20))
@@ -56,26 +56,16 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = testDate(10),
                 endDate = testDate(20),
                 actions = emptySet(),
-                otherAction = "",
-                measures = emptySet()
+                otherAction = ""
             ),
             assistanceAction
         )
     }
 
     @Test
-    fun `post first assistance action, with action types and measures`() {
+    fun `post first assistance action, with action types`() {
         val allActionTypes =
             db.transaction { it.getAssistanceActionOptions() }.map { it.value }.toSet()
-        val allMeasures =
-            setOf(
-                AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
-                AssistanceMeasure.INTENSIFIED_ASSISTANCE,
-                AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION,
-                AssistanceMeasure.CHILD_SERVICE,
-                AssistanceMeasure.CHILD_ACCULTURATION_SUPPORT,
-                AssistanceMeasure.TRANSPORT_BENEFIT
-            )
 
         val assistanceAction =
             whenPostAssistanceActionThenExpectSuccess(
@@ -84,7 +74,6 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = testDate(20),
                     actions = allActionTypes,
                     otherAction = "foo",
-                    measures = allMeasures
                 )
             )
 
@@ -95,8 +84,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = testDate(10),
                 endDate = testDate(20),
                 actions = allActionTypes,
-                otherAction = "foo",
-                measures = allMeasures
+                otherAction = "foo"
             ),
             assistanceAction
         )
