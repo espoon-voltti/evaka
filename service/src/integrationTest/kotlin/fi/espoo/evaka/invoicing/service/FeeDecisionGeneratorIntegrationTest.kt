@@ -3802,6 +3802,44 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
+    @Test
+    fun `a new fee decision is not generated if incomes change from NOT_AVAILABLE to INCOMPLETE`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        val incomePeriod = period.copy(end = null)
+        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testAdult_1.id, 310200, incomePeriod, IncomeEffect.NOT_AVAILABLE)
+        insertIncome(testChild_1.id, 310200, incomePeriod, IncomeEffect.NOT_AVAILABLE)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, clock, testAdult_1.id, period.start)
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+
+        feeDecisionController.confirmDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            clock,
+            listOf(decisions.get(0).id),
+            null
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        db.transaction { it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute() }
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, clock, testAdult_1.id, incomePeriod.start)
+        }
+
+        // No new DRAFT is generated because the only diff was head of family income type change
+        // NOT_AVAILABLE -> INCOMPLETE
+        assertEquals(1, getAllFeeDecisions().size)
+    }
+
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
@@ -3888,14 +3926,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
+    private fun insertIncome(
+        adultId: PersonId,
+        amount: Int,
+        period: DateRange,
+        effect: IncomeEffect = IncomeEffect.INCOME
+    ) {
         db.transaction { tx ->
             tx.insertTestIncome(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
                     validTo = period.end,
-                    effect = IncomeEffect.INCOME,
+                    effect = effect,
                     data =
                         mapOf(
                             "MAIN_INCOME" to
