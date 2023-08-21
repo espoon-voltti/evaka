@@ -30,7 +30,7 @@
     "@react-spring/web": "^9.7.3",
     "@sentry/browser": "^7.64.0",
     "@sentry/react": "^7.64.0",
-    "@tanstack/react-query": "^4.32.0",
+    "@tanstack/react-query": "^4.33.0",
     "axios": "^1.4.0",
     "babel-plugin-styled-components": "^2.1.4",
     "chart.js": "^4.3.0",
