@@ -70,6 +70,7 @@ export const AssistanceFactorSection = React.memo(
         ),
       [props.rows]
     )
+
     const info = t.assistanceFactor.info()
     return renderResult(rowsResult, (rows) => (
       <div ref={refSectionTop}>
@@ -116,6 +117,7 @@ export const AssistanceFactorSection = React.memo(
             <Tbody>
               {mode?.type === 'new' ? (
                 <AssistanceFactorForm
+                  allRows={rows}
                   onSubmit={(data) => createAssistanceFactor({ childId, data })}
                   onClose={clearMode}
                 />
@@ -125,6 +127,7 @@ export const AssistanceFactorSection = React.memo(
                   <AssistanceFactorForm
                     key={row.data.id}
                     assistanceFactor={row.data}
+                    allRows={rows}
                     onSubmit={(data) =>
                       updateAssistanceFactor({
                         childId,

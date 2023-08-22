@@ -686,6 +686,10 @@ export const fi = {
         level: 'Taso',
         otherAssistanceMeasureType: 'Toimi'
       },
+      validationErrors: {
+        overlap:
+          'Tälle ajanjaksolle on jo päällekkäinen merkintä. Muokkaa tarvittaessa edellistä ajanjaksoa'
+      },
       types: {
         daycareAssistanceLevel: {
           GENERAL_SUPPORT: 'Yleinen tuki, ei päätöstä',

@@ -146,6 +146,7 @@ export const OtherAssistanceMeasureSection = React.memo(
             <Tbody>
               {mode?.type === 'new' ? (
                 <OtherAssistanceMeasureForm
+                  allRows={rows}
                   onSubmit={(data) =>
                     createOtherAssistanceMeasure({ childId, data })
                   }
@@ -157,6 +158,7 @@ export const OtherAssistanceMeasureSection = React.memo(
                   <OtherAssistanceMeasureForm
                     key={row.data.id}
                     otherAssistanceMeasure={row.data}
+                    allRows={rows}
                     onSubmit={(data) =>
                       updateOtherAssistanceMeasure({
                         childId,

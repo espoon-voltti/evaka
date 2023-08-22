@@ -7,18 +7,22 @@ import React, { useCallback } from 'react'
 import { Result } from 'lib-common/api'
 import { localDateRange } from 'lib-common/form/fields'
 import {
-  mapped,
   object,
   oneOf,
   OneOfOption,
-  required
+  required,
+  transformed,
+  value
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import {
   DaycareAssistance,
   DaycareAssistanceLevel,
+  DaycareAssistanceResponse,
   DaycareAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
+import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -30,19 +34,30 @@ import { Translations, useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 
-export const daycareAssistanceForm = mapped(
+export const daycareAssistanceForm = transformed(
   object({
     level: required(oneOf<DaycareAssistanceLevel>()),
-    validDuring: required(localDateRange)
+    validDuring: required(localDateRange),
+    allRows: value<DaycareAssistanceResponse[]>(),
+    ignoredId: value<UUID | undefined>()
   }),
-  (fields): DaycareAssistanceUpdate => ({
-    level: fields.level,
-    validDuring: fields.validDuring
-  })
+  ({ level, validDuring, allRows, ignoredId }) => {
+    if (
+      allRows.some(
+        ({ data }) =>
+          data.id !== ignoredId && data.validDuring.overlaps(validDuring)
+      )
+    ) {
+      return ValidationError.of('overlap')
+    }
+    const success: DaycareAssistanceUpdate = { level, validDuring }
+    return ValidationSuccess.of(success)
+  }
 )
 
 interface Props {
   daycareAssistance?: DaycareAssistance
+  allRows: DaycareAssistanceResponse[]
   onClose: () => void
   onSubmit: (factor: DaycareAssistanceUpdate) => Promise<Result<void>>
 }
@@ -61,6 +76,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
 ) {
   const initialData = props.daycareAssistance
   const { i18n, lang } = useTranslation()
+
   const form = useForm(
     daycareAssistanceForm,
     () => ({
@@ -71,9 +87,14 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
       validDuring: {
         startDate: initialData?.validDuring.start ?? null,
         endDate: initialData?.validDuring.end ?? null
-      }
+      },
+      allRows: props.allRows,
+      ignoredId: initialData?.id
     }),
-    i18n.validationErrors
+    {
+      ...i18n.validationErrors,
+      ...i18n.childInformation.assistance.validationErrors
+    }
   )
   const { level, validDuring } = useFormFields(form)
 
@@ -95,6 +116,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
           bind={validDuring}
           locale={lang}
           data-qa="valid-during"
+          info={form.inputInfo()}
         />
       </Td>
       <Td>
