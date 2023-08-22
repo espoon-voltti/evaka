@@ -27,8 +27,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.withSpan
-import fi.espoo.evaka.varda.VardaResetService
-import fi.espoo.evaka.varda.VardaUpdateService
+import fi.espoo.evaka.varda.VardaService
 import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
 import fi.espoo.voltti.logging.loggers.info
 import io.opentracing.Tracer
@@ -49,7 +48,6 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     RemoveOldDraftApplications(ScheduledJobs::removeOldDraftApplications),
     SendPendingDecisionReminderEmails(ScheduledJobs::sendPendingDecisionReminderEmails),
     VardaUpdate(ScheduledJobs::vardaUpdate),
-    VardaReset(ScheduledJobs::vardaReset),
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
     SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
@@ -62,8 +60,7 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class ScheduledJobs(
-    private val vardaUpdateService: VardaUpdateService,
-    private val vardaResetService: VardaResetService,
+    private val vardaService: VardaService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
@@ -147,11 +144,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        vardaUpdateService.startVardaUpdate(db, clock)
-    }
-
-    fun vardaReset(db: Database.Connection, clock: EvakaClock) {
-        vardaResetService.planVardaReset(db, clock, addNewChildren = true)
+        vardaService.startVardaUpdate(db, clock)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {

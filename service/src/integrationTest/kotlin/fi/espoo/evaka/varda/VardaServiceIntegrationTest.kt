@@ -59,7 +59,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
+class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @BeforeEach
