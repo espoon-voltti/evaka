@@ -16,6 +16,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
+import { translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
@@ -67,7 +68,10 @@ export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
         {renderResult(decision, (decision) => (
           <AssistanceNeedPreschoolDecisionReadOnly
             decision={decision}
-            texts={i18n.decisions.assistancePreschoolDecisions}
+            texts={
+              translations[decision.form.language === 'SV' ? 'sv' : 'fi']
+                .decisions.assistancePreschoolDecisions
+            }
           />
         ))}
 
