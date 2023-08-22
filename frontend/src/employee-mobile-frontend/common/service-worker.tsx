@@ -13,7 +13,6 @@ import React, {
 } from 'react'
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
 import { mockNow } from 'lib-common/utils/helpers'
 
 import { upsertPushSubscription } from '../auth/api'
@@ -51,11 +50,11 @@ export const ServiceWorkerContextProvider = React.memo(
     const pushNotifications = useMemo(() => {
       if (!user?.pushApplicationServerKey) return undefined
       if (!pushManager) return undefined
-      return new PushNotifications(user.id, pushManager, {
+      return new PushNotifications(pushManager, {
         userVisibleOnly: true,
         applicationServerKey: user.pushApplicationServerKey
       })
-    }, [user?.pushApplicationServerKey, user?.id, pushManager])
+    }, [user?.pushApplicationServerKey, pushManager])
 
     useEffect(() => {
       registerServiceWorker()
@@ -94,7 +93,6 @@ const registerServiceWorker = async () => {
 
 export class PushNotifications {
   constructor(
-    private device: UUID,
     private pushManager: PushManager,
     private options: PushSubscriptionOptionsInit
   ) {}
@@ -108,7 +106,7 @@ export class PushNotifications {
     const authSecret = sub?.getKey('auth')
     const ecdhKey = sub?.getKey('p256dh')
     if (sub && authSecret && ecdhKey) {
-      await upsertPushSubscription(this.device, {
+      await upsertPushSubscription({
         endpoint: sub.endpoint,
         expires: sub.expirationTime
           ? HelsinkiDateTime.fromSystemTzDate(new Date(sub.expirationTime))
