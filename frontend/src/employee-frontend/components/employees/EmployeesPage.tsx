@@ -74,7 +74,7 @@ export default React.memo(function EmployeesPage() {
   return (
     <Container>
       <ContentArea opaque>
-        <Title>{i18n.employees.title}</Title>
+        <Title>{i18n.titles.employees}</Title>
         <TopBar>
           <SearchBar>
             <InputField

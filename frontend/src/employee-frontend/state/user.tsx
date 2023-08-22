@@ -10,30 +10,35 @@ export interface UserState {
   loggedIn: boolean
   user: User | undefined
   roles: AdRole[]
+  refreshAuthStatus: () => void
 }
 
 export const UserContext = createContext<UserState>({
   loggedIn: false,
   user: undefined,
-  roles: []
+  roles: [],
+  refreshAuthStatus: () => undefined
 })
 
 export const UserContextProvider = React.memo(function UserContextProvider({
   children,
   user,
-  roles
+  roles,
+  refreshAuthStatus
 }: {
   children: JSX.Element
   user: User | undefined
   roles: AdRole[] | undefined
+  refreshAuthStatus: () => void
 }) {
   const value = useMemo(
     () => ({
       loggedIn: !!user,
       user,
-      roles: (user && roles) ?? []
+      roles: (user && roles) ?? [],
+      refreshAuthStatus
     }),
-    [user, roles]
+    [user, roles, refreshAuthStatus]
   )
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 })

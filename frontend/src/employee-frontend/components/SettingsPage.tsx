@@ -81,7 +81,7 @@ export default React.memo(function SettingsPage() {
   return (
     <Container>
       <ContentArea opaque>
-        <H1>{i18n.settings.title}</H1>
+        <H1>{i18n.titles.settings}</H1>
         {renderResult(settings, (settings) => (
           <Table>
             <Thead>

@@ -7,6 +7,7 @@ import * as Sentry from '@sentry/browser'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import 'lib-common/assets/fonts/fonts.css'
+import { RouterProvider } from 'react-router-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
@@ -14,7 +15,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
 
-import App from './App'
+import router from './App'
 import './index.css'
 
 // Load Sentry before React to make Sentry's integrations work automatically
@@ -32,7 +33,7 @@ smoothScrollPolyfill()
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById('app')!)
-root.render(<App />)
+root.render(<RouterProvider router={router} />)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

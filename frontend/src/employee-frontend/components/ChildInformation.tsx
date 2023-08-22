@@ -340,7 +340,7 @@ const ChildInformation = React.memo(function ChildInformation({
         <ContentArea opaque>
           <HeaderRow>
             <Title size={1} noMargin>
-              {i18n.childInformation.title}
+              {i18n.titles.childInformation}
             </Title>
             <div>
               {person.isSuccess && person.value.dateOfDeath && (

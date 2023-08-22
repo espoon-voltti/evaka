@@ -96,7 +96,7 @@ export default React.memo(function GroupCaretakers() {
         {caretakers.isFailure && <span>{i18n.common.error.unknown}</span>}
         {caretakers.isSuccess && (
           <NarrowContainer>
-            <Title size={2}>{i18n.groupCaretakers.title}</Title>
+            <Title size={2}>{i18n.titles.groupCaretakers}</Title>
             <Title size={3}>
               {caretakers.value.unitName} |{' '}
               {capitalizeFirstLetter(caretakers.value.groupName)}

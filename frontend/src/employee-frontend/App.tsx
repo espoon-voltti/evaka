@@ -4,12 +4,7 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import {
-  BrowserRouter as Router,
-  Navigate,
-  Route,
-  Routes
-} from 'react-router-dom'
+import { Navigate, createBrowserRouter, Outlet } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
@@ -18,6 +13,7 @@ import { Notifications } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { getAuthStatus } from './api/auth'
 import { client } from './api/client'
@@ -55,12 +51,16 @@ import EmployeePreferredFirstNamePage from './components/employee/EmployeePrefer
 import EmployeePage from './components/employees/EmployeePage'
 import EmployeesPage from './components/employees/EmployeesPage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
+import FeeDecisionsPage from './components/fee-decisions/FeeDecisionsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import HolidayPeriodEditor from './components/holiday-periods/HolidayPeriodEditor'
 import HolidayPeriodsPage from './components/holiday-periods/HolidayPeriodsPage'
 import QuestionnaireEditor from './components/holiday-periods/QuestionnaireEditor'
+import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
 import InvoicePage from './components/invoice/InvoicePage'
+import InvoicesPage from './components/invoices/InvoicesPage'
 import MessagesPage from './components/messages/MessagesPage'
+import PaymentsPage from './components/payments/PaymentsPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
 import ReportApplications from './components/reports/Applications'
 import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
@@ -100,6 +100,7 @@ import VasuPage from './components/vasu/VasuPage'
 import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
+import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 import { QueryClientProvider, queryClient } from './query'
 import StateProvider from './state/StateProvider'
 import { I18nContextProvider, useTranslation } from './state/i18n'
@@ -107,7 +108,7 @@ import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
 
-export default function App() {
+function App() {
   const { i18n } = useTranslation()
   const { authStatus, refreshAuthStatus } = useAuthStatus()
 
@@ -124,652 +125,698 @@ export default function App() {
               <ErrorPage basePath="/employee" labels={i18n.errorPage} />
             )}
           >
-            <Router basename="/employee">
-              <UserContextProvider
-                user={authStatus.user}
-                roles={authStatus.roles}
-              >
-                <StateProvider>
-                  <Header />
-                  <Notifications apiVersion={authStatus.apiVersion} />
-                  <Routes>
-                    <Route
-                      path="/login"
-                      element={
-                        <EmployeeRoute
-                          requireAuth={false}
-                          title={i18n.titles.login}
-                        >
-                          <LoginPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/settings"
-                      element={
-                        <EmployeeRoute title={i18n.settings.title}>
-                          <SettingsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/unit-features"
-                      element={
-                        <EmployeeRoute title={i18n.unitFeatures.title}>
-                          <UnitFeaturesPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/units"
-                      element={
-                        <EmployeeRoute title={i18n.titles.units}>
-                          <Units />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/units/new"
-                      element={
-                        <EmployeeRoute title={i18n.titles.createUnit}>
-                          <CreateUnitPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/units/:id/details"
-                      element={
-                        <EmployeeRoute>
-                          <UnitDetailsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/units/:unitId/family-contacts"
-                      element={
-                        <EmployeeRoute>
-                          <ReportFamilyContacts />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/units/:unitId/groups/:groupId/caretakers"
-                      element={
-                        <EmployeeRoute title={i18n.groupCaretakers.title}>
-                          <GroupCaretakers />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/units/:id/*"
-                      element={
-                        <EmployeeRoute>
-                          <UnitPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/search"
-                      element={
-                        <EmployeeRoute title={i18n.titles.customers}>
-                          <Search />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile/:id"
-                      element={
-                        <EmployeeRoute title={i18n.personProfile.title}>
-                          <PersonProfile />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile/:personId/income-statement/:incomeStatementId"
-                      element={
-                        <EmployeeRoute title={i18n.incomeStatement.title}>
-                          <IncomeStatementPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/child-information/:id"
-                      element={
-                        <EmployeeRoute title={i18n.childInformation.title}>
-                          <ChildInformation />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/child-information/:childId/assistance-need-decision/:id"
-                      element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
-                          <AssistanceNeedDecisionPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/child-information/:childId/assistance-need-decision/:id/edit"
-                      element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
-                          <AssistanceNeedDecisionEditPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId"
-                      element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
-                          <AssistanceNeedPreschoolDecisionReadPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit"
-                      element={
-                        <EmployeeRoute
-                          title={i18n.titles.assistanceNeedDecision}
-                        >
-                          <AssistanceNeedPreschoolDecisionEditPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/applications"
-                      element={
-                        <EmployeeRoute title={i18n.titles.applications}>
-                          <ApplicationsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/applications/:id"
-                      element={
-                        <EmployeeRoute title={i18n.titles.applications}>
-                          <ApplicationPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/applications/:id/placement"
-                      element={
-                        <EmployeeRoute title={i18n.titles.placementDraft}>
-                          <PlacementDraftPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/applications/:id/decisions"
-                      element={
-                        <EmployeeRoute title={i18n.titles.decision}>
-                          <DecisionPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/finance/basics"
-                      element={
-                        <EmployeeRoute title={i18n.financeBasics.title}>
-                          <FinanceBasicsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/finance/fee-decisions/:id"
-                      element={
-                        <EmployeeRoute>
-                          <FeeDecisionDetailsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/finance/value-decisions/:id"
-                      element={
-                        <EmployeeRoute>
-                          <VoucherValueDecisionPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/finance/invoices/:id"
-                      element={
-                        <EmployeeRoute>
-                          <InvoicePage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/finance/*"
-                      element={
-                        <EmployeeRoute>
-                          <FinancePage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <Reports />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/family-conflicts"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportFamilyConflicts />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/missing-head-of-family"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportMissingHeadOfFamily />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/missing-service-need"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportMissingServiceNeed />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/applications"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportApplications />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/decisions"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportDecisions />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/partners-in-different-address"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportPartnersInDifferentAddress />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/children-in-different-address"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportChildrenInDifferentAddress />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/child-age-language"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportChildAgeLanguage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/assistance-needs-and-actions"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportAssistanceNeedsAndActions />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/occupancies"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportOccupancies />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/invoices"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportInvoices />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/starting-placements"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportStartingPlacements />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/ended-placements"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportEndedPlacements />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/duplicate-people"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportDuplicatePeople />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/presences"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportPresences />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/service-needs"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportServiceNeeds />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/sextet"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportSextet />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/voucher-service-providers"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <VoucherServiceProviders />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/voucher-service-providers/:unitId"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <VoucherServiceProviderUnit />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/attendance-reservation"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <AttendanceReservation />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/attendance-reservation-by-child"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <AttendanceReservationByChild />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/varda-errors"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <VardaErrors />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/placement-count"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <PlacementCount />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/placement-sketching"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <PlacementSketching />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/raw"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ReportRaw />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/assistance-need-decisions/:id"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <AssistanceNeedDecisionsReportDecision />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/assistance-need-preschool-decisions/:decisionId"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <AssistanceNeedDecisionsReportPreschoolDecision />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/assistance-need-decisions"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <AssistanceNeedDecisionsReport />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/manual-duplication"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <ManualDuplicationReport />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/reports/family-daycare-meal-count"
-                      element={
-                        <EmployeeRoute title={i18n.titles.reports}>
-                          <FamilyDaycareMealCount />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/messages"
-                      element={
-                        <EmployeeRoute title={i18n.titles.messages}>
-                          <MessagesPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/messages/send"
-                      element={
-                        <EmployeeRoute title={i18n.titles.messages}>
-                          <MessagesPage showEditor />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/personal-mobile-devices"
-                      element={
-                        <EmployeeRoute
-                          title={i18n.titles.personalMobileDevices}
-                        >
-                          <PersonalMobileDevicesPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/pin-code"
-                      element={
-                        <EmployeeRoute title={i18n.titles.employeePinCode}>
-                          <EmployeePinCodePage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/preferred-first-name"
-                      element={
-                        <EmployeeRoute title={i18n.titles.preferredFirstName}>
-                          <EmployeePreferredFirstNamePage
-                            refreshAuthStatus={refreshAuthStatus}
-                          />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/employees"
-                      element={
-                        <EmployeeRoute title={i18n.employees.title}>
-                          <EmployeesPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/employees/:id"
-                      element={
-                        <EmployeeRoute title={i18n.employees.title}>
-                          <EmployeePage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/welcome"
-                      element={
-                        <EmployeeRoute title={i18n.titles.welcomePage}>
-                          <WelcomePage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/vasu/:id"
-                      element={
-                        <EmployeeRoute title={i18n.titles.vasuPage}>
-                          <VasuPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/vasu/:id/edit"
-                      element={
-                        <EmployeeRoute title={i18n.titles.vasuPage}>
-                          <VasuEditPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/vasu-templates"
-                      element={
-                        <EmployeeRoute title={i18n.titles.vasuTemplates}>
-                          <VasuTemplatesPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/vasu-templates/:id"
-                      element={
-                        <EmployeeRoute title={i18n.titles.vasuTemplates}>
-                          <VasuTemplateEditor />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/document-templates"
-                      element={
-                        <EmployeeRoute title={i18n.titles.documentTemplates}>
-                          <DocumentTemplatesPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/document-templates/:templateId"
-                      element={
-                        <EmployeeRoute title={i18n.titles.documentTemplates}>
-                          <TemplateEditorPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/child-documents/:documentId"
-                      element={
-                        <EmployeeRoute title={i18n.titles.childDocument}>
-                          <ChildDocumentEditor />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/holiday-periods"
-                      element={
-                        <EmployeeRoute title={i18n.titles.holidayPeriods}>
-                          <HolidayPeriodsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/holiday-periods/:id"
-                      element={
-                        <EmployeeRoute title={i18n.titles.holidayPeriods}>
-                          <HolidayPeriodEditor />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      path="/holiday-periods/questionnaire/:id"
-                      element={
-                        <EmployeeRoute title={i18n.titles.holidayQuestionnaire}>
-                          <QuestionnaireEditor />
-                        </EmployeeRoute>
-                      }
-                    />
-                    <Route
-                      index
-                      element={
-                        <EmployeeRoute requireAuth={false}>
-                          <RedirectToMainPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                  </Routes>
-                  <Footer />
-                  <ErrorMessage />
-                  <LoginErrorModal />
-                  <PairingModal />
-                </StateProvider>
-              </UserContextProvider>
-            </Router>
+            <UserContextProvider
+              user={authStatus.user}
+              roles={authStatus.roles}
+              refreshAuthStatus={refreshAuthStatus}
+            >
+              <StateProvider>
+                <Header />
+                <Notifications apiVersion={authStatus.apiVersion} />
+
+                {/* the matched route element will be inserted at <Outlet /> */}
+                <Outlet />
+
+                <Footer />
+                <ErrorMessage />
+                <LoginErrorModal />
+                <PairingModal />
+              </StateProvider>
+            </UserContextProvider>
           </ErrorBoundary>
         </ThemeProvider>
       </I18nContextProvider>
     </QueryClientProvider>
   )
 }
+
+export default createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <App />,
+      children: [
+        {
+          path: '/login',
+          element: (
+            <EmployeeRoute requireAuth={false} title="login">
+              <LoginPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/settings',
+          element: (
+            <EmployeeRoute title="settings">
+              <SettingsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/unit-features',
+          element: (
+            <EmployeeRoute title="unitFeatures">
+              <UnitFeaturesPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/units',
+          element: (
+            <EmployeeRoute title="units">
+              <Units />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/units/new',
+          element: (
+            <EmployeeRoute title="createUnit">
+              <CreateUnitPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/units/:id/details',
+          element: (
+            <EmployeeRoute>
+              <UnitDetailsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/units/:unitId/family-contacts',
+          element: (
+            <EmployeeRoute>
+              <ReportFamilyContacts />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/units/:unitId/groups/:groupId/caretakers',
+          element: (
+            <EmployeeRoute title="groupCaretakers">
+              <GroupCaretakers />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/units/:id/*',
+          element: (
+            <EmployeeRoute>
+              <UnitPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/search',
+          element: (
+            <EmployeeRoute title="customers">
+              <Search />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/profile/:id',
+          element: (
+            <EmployeeRoute title="personProfile">
+              <PersonProfile />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/profile/:personId/income-statement/:incomeStatementId',
+          element: (
+            <EmployeeRoute title="incomeStatement">
+              <IncomeStatementPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-information/:id',
+          element: (
+            <EmployeeRoute title="childInformation">
+              <ChildInformation />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-information/:childId/assistance-need-decision/:id',
+          element: (
+            <EmployeeRoute title="assistanceNeedDecision">
+              <AssistanceNeedDecisionPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-information/:childId/assistance-need-decision/:id/edit',
+          element: (
+            <EmployeeRoute title="assistanceNeedDecision">
+              <AssistanceNeedDecisionEditPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId',
+          element: (
+            <EmployeeRoute title="assistanceNeedDecision">
+              <AssistanceNeedPreschoolDecisionReadPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit',
+          element: (
+            <EmployeeRoute title="assistanceNeedDecision">
+              <AssistanceNeedPreschoolDecisionEditPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/applications',
+          element: (
+            <EmployeeRoute title="applications">
+              <ApplicationsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/applications/:id',
+          element: (
+            <EmployeeRoute title="applications">
+              <ApplicationPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/applications/:id/placement',
+          element: (
+            <EmployeeRoute title="placementDraft">
+              <PlacementDraftPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/applications/:id/decisions',
+          element: (
+            <EmployeeRoute title="decision">
+              <DecisionPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/finance/basics',
+          element: (
+            <EmployeeRoute title="financeBasics">
+              <FinanceBasicsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/finance/fee-decisions/:id',
+          element: (
+            <EmployeeRoute>
+              <FeeDecisionDetailsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/finance/value-decisions/:id',
+          element: (
+            <EmployeeRoute>
+              <VoucherValueDecisionPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/finance/invoices/:id',
+          element: (
+            <EmployeeRoute>
+              <InvoicePage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/finance/*',
+          element: (
+            <EmployeeRoute>
+              <FinancePage />
+            </EmployeeRoute>
+          ),
+          children: [
+            {
+              path: 'fee-decisions',
+              element: (
+                <EmployeeRoute title="feeDecisions">
+                  <FeeDecisionsPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              path: 'value-decisions',
+              element: (
+                <EmployeeRoute title="valueDecisions">
+                  <VoucherValueDecisionsPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              path: 'invoices',
+              element: (
+                <EmployeeRoute title="invoices">
+                  <InvoicesPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              path: 'payments',
+              element: featureFlags.experimental?.voucherUnitPayments ? (
+                <EmployeeRoute title="payments">
+                  <PaymentsPage />
+                </EmployeeRoute>
+              ) : (
+                <Navigate replace to="/finance/fee-decisions" />
+              )
+            },
+            {
+              path: 'income-statements',
+              element: (
+                <EmployeeRoute title="incomeStatements">
+                  <IncomeStatementsPage />
+                </EmployeeRoute>
+              )
+            },
+            {
+              index: true,
+              element: <Navigate replace to="/finance/fee-decisions" />
+            }
+          ]
+        },
+        {
+          path: '/reports',
+          element: (
+            <EmployeeRoute title="reports">
+              <Reports />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/family-conflicts',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportFamilyConflicts />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/missing-head-of-family',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportMissingHeadOfFamily />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/missing-service-need',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportMissingServiceNeed />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/applications',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportApplications />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/decisions',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportDecisions />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/partners-in-different-address',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportPartnersInDifferentAddress />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/children-in-different-address',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportChildrenInDifferentAddress />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/child-age-language',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportChildAgeLanguage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/assistance-needs-and-actions',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportAssistanceNeedsAndActions />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/occupancies',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportOccupancies />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/invoices',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportInvoices />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/starting-placements',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportStartingPlacements />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/ended-placements',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportEndedPlacements />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/duplicate-people',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportDuplicatePeople />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/presences',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportPresences />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/service-needs',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportServiceNeeds />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/sextet',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportSextet />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/voucher-service-providers',
+          element: (
+            <EmployeeRoute title="reports">
+              <VoucherServiceProviders />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/voucher-service-providers/:unitId',
+          element: (
+            <EmployeeRoute title="reports">
+              <VoucherServiceProviderUnit />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/attendance-reservation',
+          element: (
+            <EmployeeRoute title="reports">
+              <AttendanceReservation />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/attendance-reservation-by-child',
+          element: (
+            <EmployeeRoute title="reports">
+              <AttendanceReservationByChild />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/varda-errors',
+          element: (
+            <EmployeeRoute title="reports">
+              <VardaErrors />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/placement-count',
+          element: (
+            <EmployeeRoute title="reports">
+              <PlacementCount />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/placement-sketching',
+          element: (
+            <EmployeeRoute title="reports">
+              <PlacementSketching />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/raw',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportRaw />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/assistance-need-decisions/:id',
+          element: (
+            <EmployeeRoute title="reports">
+              <AssistanceNeedDecisionsReportDecision />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/assistance-need-preschool-decisions/:decisionId',
+          element: (
+            <EmployeeRoute title="reports">
+              <AssistanceNeedDecisionsReportPreschoolDecision />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/assistance-need-decisions',
+          element: (
+            <EmployeeRoute title="reports">
+              <AssistanceNeedDecisionsReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/manual-duplication',
+          element: (
+            <EmployeeRoute title="reports">
+              <ManualDuplicationReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/family-daycare-meal-count',
+          element: (
+            <EmployeeRoute title="reports">
+              <FamilyDaycareMealCount />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/messages',
+          element: (
+            <EmployeeRoute title="messages">
+              <MessagesPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/messages/send',
+          element: (
+            <EmployeeRoute title="messages">
+              <MessagesPage showEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/personal-mobile-devices',
+          element: (
+            <EmployeeRoute title="personalMobileDevices">
+              <PersonalMobileDevicesPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/pin-code',
+          element: (
+            <EmployeeRoute title="employeePinCode">
+              <EmployeePinCodePage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/preferred-first-name',
+          element: (
+            <EmployeeRoute title="preferredFirstName">
+              <EmployeePreferredFirstNamePage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/employees',
+          element: (
+            <EmployeeRoute title="employees">
+              <EmployeesPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/employees/:id',
+          element: (
+            <EmployeeRoute title="employees">
+              <EmployeePage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/welcome',
+          element: (
+            <EmployeeRoute title="welcomePage">
+              <WelcomePage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/vasu/:id',
+          element: (
+            <EmployeeRoute title="vasuPage">
+              <VasuPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/vasu/:id/edit',
+          element: (
+            <EmployeeRoute title="vasuPage">
+              <VasuEditPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/vasu-templates',
+          element: (
+            <EmployeeRoute title="vasuTemplates">
+              <VasuTemplatesPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/vasu-templates/:id',
+          element: (
+            <EmployeeRoute title="vasuTemplates">
+              <VasuTemplateEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/document-templates',
+          element: (
+            <EmployeeRoute title="documentTemplates">
+              <DocumentTemplatesPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/document-templates/:templateId',
+          element: (
+            <EmployeeRoute title="documentTemplates">
+              <TemplateEditorPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-documents/:documentId',
+          element: (
+            <EmployeeRoute title="childDocument">
+              <ChildDocumentEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/holiday-periods',
+          element: (
+            <EmployeeRoute title="holidayPeriods">
+              <HolidayPeriodsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/holiday-periods/:id',
+          element: (
+            <EmployeeRoute title="holidayPeriods">
+              <HolidayPeriodEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/holiday-periods/questionnaire/:id',
+          element: (
+            <EmployeeRoute title="holidayQuestionnaire">
+              <QuestionnaireEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          index: true,
+          element: (
+            <EmployeeRoute requireAuth={false}>
+              <RedirectToMainPage />
+            </EmployeeRoute>
+          )
+        }
+      ]
+    }
+  ],
+  { basename: '/employee' }
+)
 
 function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)

@@ -16,6 +16,7 @@ import {
 } from 'chart.js'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { RouterProvider } from 'react-router-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
@@ -23,7 +24,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import colors from 'lib-customizations/common'
 import { appConfig } from 'lib-customizations/employee'
 
-import App from './App'
+import router from './App'
 import 'chartjs-adapter-date-fns'
 import './index.css'
 
@@ -50,7 +51,7 @@ Chart.defaults.color = colors.grayscale.g100
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById('app')!)
-root.render(<App />)
+root.render(<RouterProvider router={router} />)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
@@ -17,15 +17,11 @@ import {
   setEmployeePreferredFirstName
 } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
-interface Props {
-  refreshAuthStatus: () => void
-}
-
-export default React.memo(function EmployeePreferredFirstNamePage({
-  refreshAuthStatus
-}: Props) {
+export default React.memo(function EmployeePreferredFirstNamePage() {
   const { i18n } = useTranslation()
+  const { refreshAuthStatus } = useContext(UserContext)
   const [preferredFirstName, loadPreferredFirstName] = useApiState(
     getEmployeePreferredFirstName,
     []
