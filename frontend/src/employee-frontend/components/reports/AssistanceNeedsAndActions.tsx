@@ -14,11 +14,6 @@ import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
 import {
-  daycareAssistanceLevels,
-  otherAssistanceMeasureTypes,
-  preschoolAssistanceLevels
-} from 'lib-common/generated/api-types/assistance'
-import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportRow
 } from 'lib-common/generated/api-types/reports'
@@ -30,7 +25,13 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import {
+  assistanceMeasures,
+  daycareAssistanceLevels,
+  featureFlags,
+  otherAssistanceMeasureTypes,
+  preschoolAssistanceLevels
+} from 'lib-customizations/employee'
 
 import {
   AssistanceNeedsAndActionsReportFilters,
@@ -45,10 +46,12 @@ import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 
 interface DisplayFilters {
   careArea: string
+  unit: string
 }
 
 const emptyDisplayFilters: DisplayFilters = {
-  careArea: ''
+  careArea: '',
+  unit: ''
 }
 
 const Wrapper = styled.div`
@@ -85,7 +88,9 @@ export default React.memo(function AssistanceNeedsAndActions() {
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
+    !(
+      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+    ) && !(displayFilters.unit && row.unitName !== displayFilters.unit)
 
   useEffect(() => {
     setReport(Loading.of())
@@ -153,6 +158,45 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </Wrapper>
         </FilterRow>
 
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={[
+                { value: '', label: i18n.common.all },
+                ...report
+                  .map((rs) =>
+                    distinct(rs.rows.map((row) => row.unitName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
+              ]}
+              onChange={(option) =>
+                option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      unit: option.value
+                    })
+                  : undefined
+              }
+              selectedItem={
+                displayFilters.unit !== ''
+                  ? {
+                      label: displayFilters.unit,
+                      value: displayFilters.unit
+                    }
+                  : {
+                      label: i18n.common.all,
+                      value: ''
+                    }
+              }
+              getItemLabel={(item) => item.label}
+            />
+          </Wrapper>
+        </FilterRow>
+
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {report.isSuccess && (
@@ -162,11 +206,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
                 ({
                   ...row,
-                  unitType: row.unitType
-                    ? i18n.reports.common.unitTypes[row.unitType]
-                    : '',
-                  unitProviderType:
-                    i18n.reports.common.unitProviderTypes[row.unitProviderType],
                   ...Object.fromEntries([
                     ...(useNewAssistanceModel
                       ? [
@@ -212,14 +251,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 {
                   label: i18n.reports.common.groupName,
                   key: 'groupName'
-                },
-                {
-                  label: i18n.reports.common.unitType,
-                  key: 'unitType'
-                },
-                {
-                  label: i18n.reports.common.unitProviderType,
-                  key: 'unitProviderType'
                 },
                 ...(useNewAssistanceModel
                   ? [
@@ -288,8 +319,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.common.unitName}</Th>
                   <Th>{i18n.reports.common.groupName}</Th>
-                  <Th>{i18n.reports.common.unitType}</Th>
-                  <Th>{i18n.reports.common.unitProviderType}</Th>
                   <OldModelOnly>
                     {report.value.bases.map((basis) => (
                       <Th key={basis.value}>{basis.nameFi}</Th>
@@ -358,18 +387,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </Td>
                     <Td>{row.groupName}</Td>
-                    <Td>
-                      {row.unitType
-                        ? i18n.reports.common.unitTypes[row.unitType]
-                        : ''}
-                    </Td>
-                    <Td>
-                      {
-                        i18n.reports.common.unitProviderTypes[
-                          row.unitProviderType
-                        ]
-                      }
-                    </Td>
                     <OldModelOnly>
                       {report.value.bases.map((basis) => (
                         <Td key={basis.value}>
@@ -415,8 +432,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
               <TableFooter>
                 <Tr>
                   <Td className="bold">{i18n.reports.common.total}</Td>
-                  <Td />
-                  <Td />
                   <Td />
                   <Td />
                   <OldModelOnly>

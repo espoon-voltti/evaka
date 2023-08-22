@@ -13,7 +13,6 @@ import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.assistanceneed.AssistanceBasisOption
 import fi.espoo.evaka.assistanceneed.getAssistanceBasisOptions
-import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -76,8 +75,6 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         val unitName: String,
         val groupId: GroupId,
         val groupName: String,
-        val unitType: UnitType,
-        val unitProviderType: ProviderType,
         @Json val basisCounts: Map<AssistanceBasisOptionValue, Int>,
         val noBasisCount: Int,
         @Json val actionCounts: Map<AssistanceActionOptionValue, Int>,
@@ -226,8 +223,6 @@ SELECT
     u.name AS unit_name,
     g.id AS group_id,
     initcap(g.name) AS group_name,
-    u.type AS unit_type,
-    u.provider_type AS unit_provider_type,
     coalesce(basis_counts, '{}') AS basis_counts,
     coalesce(no_basis_count, 0) AS no_basis_count,
     coalesce(action_counts, '{}') AS action_counts,
@@ -252,6 +247,5 @@ ORDER BY ca.name, u.name, g.name
                     .trimIndent()
             )
         }
-        .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
         .list()

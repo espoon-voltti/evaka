@@ -82,8 +82,6 @@ export interface AssistanceNeedsAndActionsReportRow {
   preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
   unitId: UUID
   unitName: string
-  unitProviderType: ProviderType
-  unitType: UnitType
 }
 
 /**
