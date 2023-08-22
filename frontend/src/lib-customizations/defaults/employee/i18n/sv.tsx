@@ -46,7 +46,7 @@ export const sv = {
       basisDocumentDoctorStatement: 'Läkarutlåtande',
       basisDocumentSocialReport: 'Social utredning',
       basisDocumentOtherOrMissing: 'Bilaga saknas, eller annan bilaga, vilken?',
-      basisDocumentsInfo: 'Mer information om bilagorna',
+      basisDocumentsInfo: <>'Mer information om bilagorna'</>,
       guardianCollaborationSection: 'Samarbete med vårdnadshavarna',
       guardiansHeardOn: 'Datum för hörande av vårdnadshavarna',
       heardGuardians: 'Vårdnadshavare som har hörts och hörandesätt',

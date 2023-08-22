@@ -864,11 +864,19 @@ export const fi = {
       no: 'Ei',
       extendedCompulsoryEducationInfo:
         'Lisätiedot pidennetystä oppivelvollisuudesta',
-      extendedCompulsoryEducationInfoInfo: 'infoa',
+      extendedCompulsoryEducationInfoInfo: <>infoa</>,
       grantedAssistanceSection:
         'Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet',
-      grantedAssistanceSectionInfo:
-        'Merkitään jos lapselle myönnetään avustamis-/tulkitsemispalveluita tai apuvälineitä. Kirjataan perusteluihin ”Lapselle myönnetään perusopetuslain 31§ mukaisena tukipalveluna avustamispalvelua/tarvittavat erityiset apuvälineet/tulkitsemispalvelua/opetuksen poikkeava järjestäminen” sekä lyhyt perustelu.',
+      grantedAssistanceSectionInfo: (
+        <>
+          Merkitään jos lapselle myönnetään avustamis-/tulkitsemispalveluita tai
+          apuvälineitä. Kirjataan perusteluihin ”Lapselle myönnetään
+          perusopetuslain 31§ mukaisena tukipalveluna
+          avustamispalvelua/tarvittavat erityiset
+          apuvälineet/tulkitsemispalvelua/opetuksen poikkeava järjestäminen”
+          sekä lyhyt perustelu.
+        </>
+      ),
       grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
       grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
       grantedAssistiveDevices: 'Lapselle myönnetään erityisiä apuvälineitä',
@@ -877,25 +885,45 @@ export const fi = {
         'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
       selectedUnit: 'Esiopetuksen järjestämispaikka',
       primaryGroup: 'Pääsääntöinen opetusryhmä',
-      primaryGroupInfo:
-        'Kirjaa tähän ryhmän muoto erityisryhmä/pedagogisesti vahvistettu ryhmä/esiopetusryhmä/3-5-vuotiaiden ryhmä.',
+      primaryGroupInfo: (
+        <>
+          Kirjaa tähän ryhmän muoto erityisryhmä/pedagogisesti vahvistettu
+          ryhmä/esiopetusryhmä/3-5-vuotiaiden ryhmä.
+        </>
+      ),
       decisionBasis: 'Perustelut päätökselle',
-      decisionBasisInfo:
-        'Kirjaa mihin selvityksiin päätös perustuu (pedagoginen selvitys ja/tai psykologinen tai lääketieteellinen lausunto sekä päivämäärät). Jos lapselle on myönnetty pidennetty oppivelvollisuus, kirjataan ”lapselle on tehty pidennetyn oppivelvollisuuden päätös pvm."',
+      decisionBasisInfo: (
+        <>
+          Kirjaa mihin selvityksiin päätös perustuu (pedagoginen selvitys ja/tai
+          psykologinen tai lääketieteellinen lausunto sekä päivämäärät). Jos
+          lapselle on myönnetty pidennetty oppivelvollisuus, kirjataan ”lapselle
+          on tehty pidennetyn oppivelvollisuuden päätös pvm”.
+        </>
+      ),
       documentBasis: 'Asiakirjat, joihin päätös perustuu',
-      documentBasisInfo:
-        'Liitteenä voi olla myös huoltajan yksilöity valtakirja, huoltajan nimi ja päivämäärä.',
+      documentBasisInfo: (
+        <>
+          Liitteenä voi olla myös huoltajan yksilöity valtakirja, huoltajan nimi
+          ja päivämäärä.
+        </>
+      ),
       basisDocumentPedagogicalReport: 'Pedagoginen selvitys',
       basisDocumentPsychologistStatement: 'Psykologin lausunto',
       basisDocumentDoctorStatement: 'Lääkärin lausunto',
       basisDocumentSocialReport: 'Sosiaalinen selvitys',
       basisDocumentOtherOrMissing: 'Liite puuttuu, tai muu liite, mikä?',
-      basisDocumentsInfo: 'Lisätiedot liitteistä',
+      basisDocumentsInfo: <>Lisätiedot liitteistä</>,
       guardianCollaborationSection: 'Huoltajien kanssa tehty yhteistyö',
       guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
       heardGuardians: 'Huoltajat, joita on kuultu, ja kuulemistapa',
-      heardGuardiansInfo:
-        'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajien kirjallinen vastine, valtakirja). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi.',
+      heardGuardiansInfo: (
+        <>
+          Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri,
+          etäyhteys, huoltajien kirjallinen vastine, valtakirja). Jos huoltajaa
+          ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on
+          kutsuttu kuultavaksi.
+        </>
+      ),
       otherRepresentative:
         'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
       viewOfGuardians: 'Huoltajien näkemys esitetystä tuesta',
