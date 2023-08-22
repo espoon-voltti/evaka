@@ -85,9 +85,10 @@ export const queryKeys = createQueryKeys('childInformation', {
     decisionId
   ],
   preschoolUnits: () => ['preschoolUnits'],
-  decisionMakerOptions: (decisionId: UUID) => [
+  decisionMakerOptions: (decisionId: UUID, unitId: UUID | null) => [
     'decisionMakerOptions',
-    decisionId
+    decisionId,
+    unitId
   ]
 })
 
@@ -258,8 +259,9 @@ export const assistanceNeedPreschoolDecisionQuery = query({
 })
 
 export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
-  api: getAssistanceNeedPreschoolDecisionMakerOptions,
-  queryKey: queryKeys.decisionMakerOptions
+  api: (arg: { decisionId: UUID; unitId: UUID | null }) =>
+    getAssistanceNeedPreschoolDecisionMakerOptions(arg.decisionId),
+  queryKey: (arg) => queryKeys.decisionMakerOptions(arg.decisionId, arg.unitId)
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({

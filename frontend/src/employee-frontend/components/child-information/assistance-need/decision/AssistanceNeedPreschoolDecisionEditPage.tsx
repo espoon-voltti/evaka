@@ -231,12 +231,10 @@ const filterEmployees = (inputValue: string, items: Employee[]) =>
 const DecisionEditor = React.memo(function DecisionEditor({
   decision,
   units,
-  decisionMakers,
   employees
 }: {
   decision: AssistanceNeedPreschoolDecision
   units: Unit[]
-  decisionMakers: Employee[]
   employees: Employee[]
 }) {
   const { i18n, lang: uiLang } = useTranslation()
@@ -472,6 +470,23 @@ const DecisionEditor = React.memo(function DecisionEditor({
     },
     [displayValidation, validationErrors, i18n]
   )
+
+  const decisionMakersResult = useQueryResult(
+    assistanceNeedPreschoolDecisionMakerOptionsQuery({
+      decisionId: decision.id,
+      unitId: savedValue.selectedUnit
+    })
+  )
+
+  if (
+    decisionMakersResult.isSuccess &&
+    decisionMakerEmployeeId.value() !== null &&
+    !decisionMakersResult.value.some(
+      (e) => e.id === decisionMakerEmployeeId.value()
+    )
+  ) {
+    decisionMakerEmployeeId.set(null)
+  }
 
   return (
     <div>
@@ -891,26 +906,28 @@ const DecisionEditor = React.memo(function DecisionEditor({
               <FixedSpaceRow>
                 <LabeledValue>
                   <Label>{t.decisionMaker} *</Label>
-                  <ComboboxWrapper>
-                    <Combobox
-                      items={decisionMakers}
-                      selectedItem={
-                        decisionMakerEmployeeId
-                          ? decisionMakers.find(
-                              (e) => e.id === decisionMakerEmployeeId.value()
-                            ) ?? null
-                          : null
-                      }
-                      getItemLabel={formatEmployeeName}
-                      filterItems={filterEmployees}
-                      onChange={(e) =>
-                        decisionMakerEmployeeId.set(e?.id ?? null)
-                      }
-                      clearable
-                      info={info('decisionMakerEmployeeId')}
-                      data-qa="decision-maker-select"
-                    />
-                  </ComboboxWrapper>
+                  {renderResult(decisionMakersResult, (decisionMakers) => (
+                    <ComboboxWrapper>
+                      <Combobox
+                        items={decisionMakers}
+                        selectedItem={
+                          decisionMakerEmployeeId
+                            ? decisionMakers.find(
+                                (e) => e.id === decisionMakerEmployeeId.value()
+                              ) ?? null
+                            : null
+                        }
+                        getItemLabel={formatEmployeeName}
+                        filterItems={filterEmployees}
+                        onChange={(e) =>
+                          decisionMakerEmployeeId.set(e?.id ?? null)
+                        }
+                        clearable
+                        info={info('decisionMakerEmployeeId')}
+                        data-qa="decision-maker-select"
+                      />
+                    </ComboboxWrapper>
+                  ))}
                 </LabeledValue>
                 <LabeledValue>
                   <Label>{t.employeeTitle} *</Label>
@@ -990,9 +1007,6 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
     assistanceNeedPreschoolDecisionQuery(decisionId)
   )
   const unitsResult = useQueryResult(preschoolUnitsQuery)
-  const decisionMakersResult = useQueryResult(
-    assistanceNeedPreschoolDecisionMakerOptionsQuery(decisionId)
-  )
   const [employeesResult] = useApiState(() => getEmployees(), [])
 
   // invalidate cached decision on onmount
@@ -1016,12 +1030,11 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   )
 
   return renderResult(
-    combine(decisionResult, unitsResult, decisionMakersResult, employeesResult),
-    ([decisionResponse, units, decisionMakers, employees]) => (
+    combine(decisionResult, unitsResult, employeesResult),
+    ([decisionResponse, units, employees]) => (
       <DecisionEditor
         decision={decisionResponse.decision}
         units={units}
-        decisionMakers={decisionMakers}
         employees={employees}
       />
     )
