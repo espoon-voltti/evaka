@@ -882,26 +882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/node-saml@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "@node-saml/node-saml@npm:4.0.4"
-  dependencies:
-    "@types/debug": ^4.1.7
-    "@types/passport": ^1.0.11
-    "@types/xml-crypto": ^1.4.2
-    "@types/xml-encryption": ^1.2.1
-    "@types/xml2js": ^0.4.11
-    "@xmldom/xmldom": ^0.8.6
-    debug: ^4.3.4
-    xml-crypto: ^3.0.1
-    xml-encryption: ^3.0.2
-    xml2js: ^0.5.0
-    xmlbuilder: ^15.1.1
-  checksum: f56f56dad68b6b6b03642186879e3a2f63108d63dea6a5912dd2e997dff668372e72fbbdbaa3d676c30e054c9646cd0f1937e23a02af499863ccfef353a673e0
-  languageName: node
-  linkType: hard
-
-"@node-saml/node-saml@npm:^4.0.5":
+"@node-saml/node-saml@npm:^4.0.4, @node-saml/node-saml@npm:^4.0.5":
   version: 4.0.5
   resolution: "@node-saml/node-saml@npm:4.0.5"
   dependencies:
