@@ -70,7 +70,7 @@ data class AssistanceNeedPreschoolDecision(
             if (form.guardianInfo.any { !it.isHeard || it.details.trim().isBlank() }) return false
             if (
                 form.guardianInfo.isEmpty() &&
-                    (form.otherRepresentativeHeard ||
+                    (!form.otherRepresentativeHeard ||
                         form.otherRepresentativeDetails.trim().isBlank())
             )
                 return false
