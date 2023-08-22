@@ -22,17 +22,18 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
         clock: EvakaClock
     ): List<FuturePreschoolersReportRow> {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Global.READ_FUTURE_PRESCHOOLERS
-                )
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getFuturePreschoolerRows()
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_FUTURE_PRESCHOOLERS
+                    )
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getFuturePreschoolerRows()
+                }
             }
-        }.also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
+            .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/reports/future-preschoolers/units")
@@ -43,17 +44,18 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
         @RequestParam municipal: Boolean
     ): List<PreschoolUnitReportRow> {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Global.READ_FUTURE_PRESCHOOLERS
-                )
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getPreschoolUnitRows(municipal)
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_FUTURE_PRESCHOOLERS
+                    )
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getPreschoolUnitRows(municipal)
+                }
             }
-        }.also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
+            .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
     }
 }
 
@@ -61,8 +63,8 @@ const val preschoolSelectionAge = 5
 
 private fun Database.Read.getFuturePreschoolerRows(): List<FuturePreschoolersReportRow> =
     createQuery<DatabaseTable> {
-        sql(
-            """
+            sql(
+                """
 SELECT p.id, 
     p.social_security_number AS childSsn,
     p.last_name AS childLastName,
@@ -74,7 +76,7 @@ SELECT p.id,
     d.street_address AS unitAddress,
     d.postal_code AS unitPostalCode,
     upper(d.post_office) AS unitPostOffice,
-    ca.name as unitArea, -- needs validation
+    NULL as unitArea, -- cannot be obtained from current evaka dataset, care area is not precise enough
     g1.last_name AS guardian1LastName,
     g1.first_name AS guardian1FirstName,
     g1.street_address AS guardian1Address,
@@ -90,12 +92,11 @@ SELECT p.id,
     g2.phone AS guardian2Phone,
     g2.email AS guardian2Email,
     CASE WHEN sn.shift_care = 'FULL'::shift_care_type OR sn.shift_care = 'INTERMITTENT'::shift_care_type THEN true ELSE false END AS shiftCare,
-    NULL AS languageEmphasisGroup, -- cannot be obtained from current dataset
+    NULL AS languageEmphasisGroup, -- cannot be obtained from current evaka dataset
     CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN true ELSE false END AS twoYearPreschool
 FROM person p
 JOIN placement pl ON pl.child_id = p.id
 JOIN daycare d ON d.id = pl.unit_id
-JOIN care_area ca ON ca.id = d.care_area_id
 LEFT JOIN (
     SELECT id, last_name, first_name, street_address, postal_code, post_office, phone, email
     FROM person
@@ -112,14 +113,17 @@ WHERE CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN
 ELSE
     extract(year from current_date) -  extract(year from p.date_of_birth) = $preschoolSelectionAge
 END
-            """.trimIndent()
-        )
-    }.mapTo<FuturePreschoolersReportRow>().toList()
+            """
+                    .trimIndent()
+            )
+        }
+        .mapTo<FuturePreschoolersReportRow>()
+        .toList()
 
 private fun Database.Read.getPreschoolUnitRows(municipal: Boolean): List<PreschoolUnitReportRow> =
     createQuery<DatabaseTable> {
-        sql(
-            """
+            sql(
+                """
 SELECT dg.id, 
     d.name AS unitName, 
     dg.name AS groupName, 
@@ -134,9 +138,11 @@ FROM daycare d
 JOIN daycare_group dg on d.id = dg.daycare_id
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND 
 CASE WHEN :municipal THEN d.provider_type = 'MUNICIPAL' ELSE d.provider_type != 'MUNICIPAL' END 
-            """.trimIndent()
-        )
-    }.bind("municipal", municipal)
+            """
+                    .trimIndent()
+            )
+        }
+        .bind("municipal", municipal)
         .mapTo<PreschoolUnitReportRow>()
         .toList()
 

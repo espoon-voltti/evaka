@@ -3759,7 +3759,7 @@ export const fi = {
     futurePreschoolers: {
       title: 'Tulevat esikoululaiset',
       description:
-        'Raportti tulevan vuoden esiopetuksen lapsista ja yksiköistä automaattisijoitustyökalua varten',
+        'Raportti tulevan vuoden esiopetuksen lapsista ja ryhmiostä automaattisijoitustyökalua varten',
       childSsn: 'Lapsen hetu',
       childLastName: 'Lapsen sukunimi',
       childFirstName: 'Lapsen etunimi',
@@ -3790,8 +3790,8 @@ export const fi = {
       twoYearPreschool: 'Kaksivuotisessa esiopetuksessa'
     },
     preschoolUnits: {
-      titleMunicipal: 'Kunnalliset ryhmät',
-      titleVoucher: 'Palveluseteliryhmät',
+      titleMunicipal: 'Ryhmät esiopetusta antavissa kunnallisissa yksiköissä',
+      titleVoucher: 'Ryhmät esiopetusta antavissa palveluseteliyksiköissä',
       unit: 'Yksikön nimi',
       group: 'Ryhmän nimi',
       address: 'Lähiosoite',
