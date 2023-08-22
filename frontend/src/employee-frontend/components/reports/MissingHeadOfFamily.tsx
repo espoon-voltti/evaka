@@ -31,7 +31,6 @@ import { missingHeadOfFamilyReportQuery } from './queries'
 const filterForm = object({
   startDate: localDate,
   endDate: optionalLocalDate,
-  showFosterChildren: boolean(),
   showIntentionalDuplicates: boolean()
 })
 
@@ -43,12 +42,11 @@ export default React.memo(function MissingHeadOfFamily() {
     () => ({
       startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
       endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth(),
-      showFosterChildren: false,
       showIntentionalDuplicates: false
     }),
     i18n.validationErrors
   )
-  const { startDate, endDate, showFosterChildren, showIntentionalDuplicates } =
+  const { startDate, endDate, showIntentionalDuplicates } =
     useFormFields(filters)
 
   const rows = useQueryResult(missingHeadOfFamilyReportQuery(filters.value()))
@@ -72,15 +70,6 @@ export default React.memo(function MissingHeadOfFamily() {
             date={endDate.state ?? undefined}
             onChange={endDate.set}
             onCleared={() => endDate.set(null)}
-          />
-        </FilterRow>
-
-        <FilterRow>
-          <FilterLabel />
-          <CheckboxF
-            bind={showFosterChildren}
-            label={i18n.reports.missingHeadOfFamily.showFosterChildren}
-            data-qa="show-foster-children-checkbox"
           />
         </FilterRow>
 
