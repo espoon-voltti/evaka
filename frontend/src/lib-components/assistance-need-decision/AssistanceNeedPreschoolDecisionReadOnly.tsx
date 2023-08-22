@@ -225,16 +225,36 @@ export default React.memo(function DecisionFormReadView({
               <Label>{t.documentBasis}</Label>
               <StyledUl data-qa="document-basis">
                 {decision.form.basisDocumentPedagogicalReport && (
-                  <li>{t.basisDocumentPedagogicalReport}</li>
+                  <li>
+                    {t.basisDocumentPedagogicalReport}{' '}
+                    {decision.form.basisDocumentPedagogicalReportDate
+                      ? `(${decision.form.basisDocumentPedagogicalReportDate.format()})`
+                      : ''}
+                  </li>
                 )}
                 {decision.form.basisDocumentPsychologistStatement && (
-                  <li>{t.basisDocumentPsychologistStatement}</li>
+                  <li>
+                    {t.basisDocumentPsychologistStatement}{' '}
+                    {decision.form.basisDocumentPsychologistStatementDate
+                      ? `(${decision.form.basisDocumentPsychologistStatementDate.format()})`
+                      : ''}
+                  </li>
                 )}
                 {decision.form.basisDocumentSocialReport && (
-                  <li>{t.basisDocumentSocialReport}</li>
+                  <li>
+                    {t.basisDocumentSocialReport}{' '}
+                    {decision.form.basisDocumentSocialReportDate
+                      ? `(${decision.form.basisDocumentSocialReportDate.format()})`
+                      : ''}
+                  </li>
                 )}
                 {decision.form.basisDocumentDoctorStatement && (
-                  <li>{t.basisDocumentDoctorStatement}</li>
+                  <li>
+                    {t.basisDocumentDoctorStatement}{' '}
+                    {decision.form.basisDocumentDoctorStatementDate
+                      ? `(${decision.form.basisDocumentDoctorStatementDate.format()})`
+                      : ''}
+                  </li>
                 )}
                 {decision.form.basisDocumentOtherOrMissing && (
                   <li>{t.basisDocumentOtherOrMissing}</li>
