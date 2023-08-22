@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,8 +32,6 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
-        @RequestParam("showFosterChildren", required = false, defaultValue = "false")
-        showFosterChildren: Boolean,
         @RequestParam("showIntentionalDuplicates", required = false, defaultValue = "false")
         showIntentionalDuplicates: Boolean
     ): List<MissingHeadOfFamilyReportRow> {
@@ -50,7 +47,6 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
                     it.getMissingHeadOfFamilyRows(
                         from = from,
                         to = to,
-                        includeFosterChildren = showFosterChildren,
                         includeIntentionalDuplicates = showIntentionalDuplicates,
                     )
                 }
@@ -66,7 +62,6 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
-    includeFosterChildren: Boolean,
     includeIntentionalDuplicates: Boolean,
 ): List<MissingHeadOfFamilyReportRow> =
     createQuery<DatabaseTable> {
@@ -74,8 +69,6 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
             val duplicateFilter: Predicate<DatabaseTable.Person> =
                 if (includeIntentionalDuplicates) Predicate.alwaysTrue()
                 else Predicate { where("$it.duplicate_of IS NULL") }
-            val fosterPredicate: Predicate<DatabaseTable.FosterParent> =
-                if (includeFosterChildren) Predicate.alwaysFalse() else Predicate.alwaysTrue()
             sql(
                 """
 SELECT child_id, first_name, last_name, without_head
@@ -85,28 +78,39 @@ FROM (
         p.first_name,
         p.last_name,
         -- all placement days
-        range_agg(daterange(pl.start_date, pl.end_date, '[]') * ${bind(dateRange)})
+        (
+            SELECT range_agg(daterange(start_date, end_date, '[]') * ${bind(dateRange)})
+            FROM placement
+            WHERE
+                child_id = p.id AND
+                daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND
+                type <> 'CLUB'
+        )
         -- remove days with head of family
-        - coalesce(range_agg(fc.valid_during), '{}')
+        - coalesce((
+            SELECT range_agg(daterange(start_date, end_date, '[]'))
+            FROM fridge_child
+            WHERE child_id = p.id AND conflict = false
+        ), '{}')
         -- remove days with foster parent
-        - coalesce(range_agg(fp.valid_during), '{}')
+        - coalesce((
+            SELECT range_agg(valid_during)
+            FROM foster_parent
+            WHERE child_id = p.id
+        ), '{}')
         AS without_head
     FROM person p
     JOIN child c ON c.id = p.id
-    JOIN placement pl ON pl.child_id = p.id
-    LEFT JOIN (
-        -- convert start/end to daterange before join to avoid infinite date ranges in the outer query
-        SELECT child_id, conflict, daterange(start_date, end_date, '[]') AS valid_during
-        FROM fridge_child
-        WHERE conflict = false
-    ) fc ON fc.child_id = p.id AND fc.valid_during && ${bind(dateRange)}
-    LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during && ${bind(dateRange)} AND ${predicate(fosterPredicate.forTable("fp"))}
     WHERE
+        EXISTS (
+            SELECT 1 FROM placement
+            WHERE
+                child_id = p.id AND
+                daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND
+                type <> 'CLUB'
+        ) AND
         ${predicate(duplicateFilter.forTable("p"))} AND
-        p.date_of_death IS NULL AND
-        daterange(pl.start_date, pl.end_date, '[]') && ${bind(dateRange)} AND
-        pl.type <> 'CLUB'
-    GROUP BY p.id, p.first_name, p.last_name
+        p.date_of_death IS NULL
 ) s
 WHERE NOT isempty(without_head)
 ORDER BY last_name, first_name
