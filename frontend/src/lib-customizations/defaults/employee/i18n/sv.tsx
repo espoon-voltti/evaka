@@ -14,6 +14,7 @@ export const sv = {
     ...fi.childInformation,
     assistanceNeedPreschoolDecision: {
       ...fi.childInformation.assistanceNeedPreschoolDecision,
+      pageTitle: 'Beslut om stöd i förskoleundervisningen',
       decisionNumber: 'Beslutsnummer',
       confidential: 'Konfidentiellt',
       lawReference: 'Lagen om grundläggande utbildning 17 §',
