@@ -292,7 +292,7 @@ sealed interface Action {
         READ_SEXTET_REPORT(HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER)),
         READ_VARDA_REPORT(HasGlobalRole(ADMIN)),
         UPDATE_SETTINGS(HasGlobalRole(ADMIN)),
-        READ_INCOME_TYPES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ_INCOME_TYPES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_INVOICE_CODES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_UNIT_FEATURES(HasGlobalRole(ADMIN)),
         CREATE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
@@ -1364,7 +1364,7 @@ sealed interface Action {
     }
     enum class FeeDecision(override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>) :
         ScopedAction<FeeDecisionId> {
-        READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
