@@ -209,6 +209,6 @@ val testFeatureConfig =
         postOffice = "ESPOO",
         municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
         serviceWorkerMessageAccountName =
-            "Espoon kaupungin palveluohjaus - Esbo stads serviceledning - City of Espoo service guidance",
+            "Varhaiskasvatuksen palveluohjaus - Småbarnspedagogikens servicehandledning - Early childhood education service guidance",
         applyPlacementUnitFromDecision = false
     )
