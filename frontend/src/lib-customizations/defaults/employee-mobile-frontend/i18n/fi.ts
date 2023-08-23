@@ -111,7 +111,7 @@ export const fi = {
       UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
       TEMPORARY_RELOCATION: 'Lapsi varasijoitettuna muualla',
-      PARENTLEAVE: 'Isyysvapaa',
+      PARENTLEAVE: 'Isyys-/vanhempainvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
       FREE_ABSENCE: 'Maksuton poissaolo',
       UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
