@@ -37,6 +37,7 @@ class AccessControlList(private val jdbi: Jdbi, private val tracer: Tracer) {
                 setOf(
                         UserRole.ADMIN,
                         UserRole.FINANCE_ADMIN,
+                        UserRole.FINANCE_STAFF,
                         UserRole.SERVICE_WORKER,
                         UserRole.DIRECTOR,
                         UserRole.REPORT_VIEWER
