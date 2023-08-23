@@ -598,7 +598,7 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
         SELECT fdc.child_id 
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
-        WHERE fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)} AND fd.status <> 'DRAFT'
+        WHERE (fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)}) AND fd.status <> 'DRAFT'
         """
             )
         }
