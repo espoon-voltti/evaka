@@ -781,7 +781,11 @@ jobs:
 
       - run: |
           cd ./frontend-build/
-          aws s3 sync --exclude="index.html" --exact-timestamps . s3://evaka-static-common/
+          for filename in index.html service-worker.js service-worker.js.map; do
+            find . -name "$filename" -type f -delete
+          done
+
+          aws s3 sync --exact-timestamps . s3://evaka-static-common/
 
   tag:
     if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
