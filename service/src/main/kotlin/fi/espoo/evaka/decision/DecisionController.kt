@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/decisions2")
 class DecisionController(
     private val decisionService: DecisionService,
-    private val decisionDraftService: DecisionDraftService,
     private val accessControl: AccessControl
 ) {
     @GetMapping("/by-guardian")
@@ -140,7 +139,7 @@ class DecisionController(
                         clock,
                         Action.Global.READ_DECISION_UNITS
                     )
-                    decisionDraftService.getDecisionUnits(it)
+                    getDecisionUnits(it)
                 }
             }
             .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }

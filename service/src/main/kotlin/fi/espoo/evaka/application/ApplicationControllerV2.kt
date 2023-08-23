@@ -7,10 +7,12 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
-import fi.espoo.evaka.decision.DecisionDraftService
+import fi.espoo.evaka.decision.DecisionDraftUpdate
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.fetchDecisionDrafts
+import fi.espoo.evaka.decision.getDecisionUnit
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.decision.updateDecisionDrafts
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
@@ -122,7 +124,6 @@ class ApplicationControllerV2(
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
-    private val decisionDraftService: DecisionDraftService
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -516,7 +517,7 @@ class ApplicationControllerV2(
                     val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
 
                     val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
-                    val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
+                    val unit = getDecisionUnit(tx, decisionDrafts[0].unitId)
 
                     val applicationGuardian =
                         tx.getPersonById(application.guardianId)
@@ -576,7 +577,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
-        @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
+        @RequestBody body: List<DecisionDraftUpdate>
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -587,7 +588,7 @@ class ApplicationControllerV2(
                     Action.Application.UPDATE_DECISION_DRAFT,
                     applicationId
                 )
-                decisionDraftService.updateDecisionDrafts(it, applicationId, body)
+                updateDecisionDrafts(it, applicationId, body)
             }
         }
         Audit.DecisionDraftUpdate.log(targetId = applicationId, objectId = body.map { it.id })
