@@ -840,7 +840,7 @@ export const fi = {
       decidedAssistance: 'Päätettävä tuki',
       type: 'Erityisen tuen tila',
       validFrom: 'Voimassa alkaen',
-      validFromInfo: (
+      validFromInfo: (): React.ReactNode => (
         <ul>
           <li>
             Erityinen tuki alkaa merkitään huoltajien kuulemispäivämäärästä tai
@@ -864,10 +864,10 @@ export const fi = {
       no: 'Ei',
       extendedCompulsoryEducationInfo:
         'Lisätiedot pidennetystä oppivelvollisuudesta',
-      extendedCompulsoryEducationInfoInfo: 'infoa',
+      extendedCompulsoryEducationInfoInfo: (): React.ReactNode => 'infoa',
       grantedAssistanceSection:
         'Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet',
-      grantedAssistanceSectionInfo:
+      grantedAssistanceSectionInfo: (): React.ReactNode =>
         'Merkitään jos lapselle myönnetään avustamis-/tulkitsemispalveluita tai apuvälineitä. Kirjataan perusteluihin ”Lapselle myönnetään perusopetuslain 31§ mukaisena tukipalveluna avustamispalvelua/tarvittavat erityiset apuvälineet/tulkitsemispalvelua/opetuksen poikkeava järjestäminen” sekä lyhyt perustelu.',
       grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
       grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
@@ -877,13 +877,13 @@ export const fi = {
         'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
       selectedUnit: 'Esiopetuksen järjestämispaikka',
       primaryGroup: 'Pääsääntöinen opetusryhmä',
-      primaryGroupInfo:
+      primaryGroupInfo: (): React.ReactNode =>
         'Kirjaa tähän ryhmän muoto erityisryhmä/pedagogisesti vahvistettu ryhmä/esiopetusryhmä/3-5-vuotiaiden ryhmä.',
       decisionBasis: 'Perustelut päätökselle',
-      decisionBasisInfo:
+      decisionBasisInfo: (): React.ReactNode =>
         'Kirjaa mihin selvityksiin päätös perustuu (pedagoginen selvitys ja/tai psykologinen tai lääketieteellinen lausunto sekä päivämäärät). Jos lapselle on myönnetty pidennetty oppivelvollisuus, kirjataan ”lapselle on tehty pidennetyn oppivelvollisuuden päätös pvm."',
       documentBasis: 'Asiakirjat, joihin päätös perustuu',
-      documentBasisInfo:
+      documentBasisInfo: (): React.ReactNode =>
         'Liitteenä voi olla myös huoltajan yksilöity valtakirja, huoltajan nimi ja päivämäärä.',
       basisDocumentPedagogicalReport: 'Pedagoginen selvitys',
       basisDocumentPsychologistStatement: 'Psykologin lausunto',
@@ -894,12 +894,12 @@ export const fi = {
       guardianCollaborationSection: 'Huoltajien kanssa tehty yhteistyö',
       guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
       heardGuardians: 'Huoltajat, joita on kuultu, ja kuulemistapa',
-      heardGuardiansInfo:
+      heardGuardiansInfo: (): React.ReactNode =>
         'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajien kirjallinen vastine, valtakirja). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi.',
       otherRepresentative:
         'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
       viewOfGuardians: 'Huoltajien näkemys esitetystä tuesta',
-      viewOfGuardiansInfo: (
+      viewOfGuardiansInfo: (): React.ReactNode => (
         <div>
           <p>
             Kirjaa selkeästi huoltajien mielipide. Mikäli huoltajat ovat
