@@ -5,12 +5,10 @@
 package fi.espoo.evaka.webpush
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.net.URI
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -31,16 +29,15 @@ data class WebPushSubscription(
 
 @RestController
 class WebPushController {
-    @PostMapping("/mobile-devices/{id}/push-subscription")
+    @PostMapping("/mobile-devices/push-subscription")
     fun upsertPushSubscription(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
-        @PathVariable id: MobileDeviceId,
         @RequestBody subscription: WebPushSubscription
     ) {
-        db.connect { dbc -> dbc.transaction { it.upsertPushSubscription(id, subscription) } }
+        db.connect { dbc -> dbc.transaction { it.upsertPushSubscription(user.id, subscription) } }
         Audit.PushSubscriptionUpsert.log(
-            targetId = id,
+            targetId = user.id,
             meta = mapOf("endpoint" to subscription.endpoint, "expires" to subscription.expires)
         )
     }

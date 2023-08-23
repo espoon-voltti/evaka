@@ -13,7 +13,6 @@ import {
 import { PinLoginResponse } from 'lib-common/generated/api-types/pairing'
 import { WebPushSubscription } from 'lib-common/generated/api-types/webpush'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
@@ -71,11 +70,10 @@ export const mapPinLoginRequiredError = (
 }
 
 export async function upsertPushSubscription(
-  id: UUID,
   subscription: WebPushSubscription
 ): Promise<Result<void>> {
   return await client
-    .post<void>(`/mobile-devices/${encodeURIComponent(id)}/push-subscription`, {
+    .post<void>(`/mobile-devices/push-subscription`, {
       ...subscription,
       expires: subscription.expires?.toJSON()
     })
