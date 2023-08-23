@@ -158,15 +158,19 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
 
         companion object {
-            fun forAdult(personId: PersonId, dateRange: DateRange) =
-                GenerateFinanceDecisions(Person.Adult(personId), dateRange)
+            fun forAdult(
+                personId: PersonId,
+                dateRange: DateRange,
+                skipPropagation: Boolean? = false
+            ) = GenerateFinanceDecisions(Person.Adult(personId, skipPropagation), dateRange)
             fun forChild(personId: ChildId, dateRange: DateRange) =
                 GenerateFinanceDecisions(Person.Child(personId), dateRange)
         }
 
         @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
         sealed class Person {
-            data class Adult(val adultId: PersonId) : Person()
+            data class Adult(val adultId: PersonId, val skipPropagation: Boolean? = false) :
+                Person()
             data class Child(val childId: ChildId) : Person()
         }
     }
