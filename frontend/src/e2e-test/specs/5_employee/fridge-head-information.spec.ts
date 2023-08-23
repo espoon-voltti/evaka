@@ -5,20 +5,25 @@
 import DateRange from 'lib-common/date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import {
+  insertChildFixture,
   insertDefaultServiceNeedOptions,
   insertFeeThresholds,
   insertVoucherValues,
   resetDatabase,
   runPendingAsyncJobs
-  // runPendingAsyncJobs
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  Fixture,
+  personFixtureChildZeroYearOld,
+  uuidv4
+} from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -34,6 +39,14 @@ let regularPerson: PersonDetail
 let fridgePartner: PersonDetail
 let child: PersonDetail
 
+const mockToday = LocalDate.of(2020, 1, 1)
+const childZeroYo: PersonDetail = {
+  ...personFixtureChildZeroYearOld,
+  dateOfBirth: mockToday.subWeeks(9),
+  firstName: 'Vauva',
+  id: '023c3d55-3bd5-494b-8996-60a3643fe94b'
+}
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -42,6 +55,7 @@ beforeEach(async () => {
   regularPerson = fixtures.familyWithTwoGuardians.guardian
   fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
   child = fixtures.familyWithTwoGuardians.children[0]
+  await insertChildFixture(childZeroYo)
   await insertFeeThresholds({
     validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
     minIncomeThreshold2: 210200,
@@ -74,7 +88,9 @@ beforeEach(async () => {
 
   const admin = await Fixture.employeeAdmin().save()
 
-  page = await Page.open()
+  page = await Page.open({
+    mockedTime: mockToday.toSystemTzDate()
+  })
   await employeeLogin(page, admin.data)
 
   guardianInformation = new GuardianInformationPage(page)
@@ -98,10 +114,7 @@ describe('Employee - Head of family details', () => {
     await guardianInformation.navigateToGuardian(regularPerson.id)
     const children = await guardianInformation.openCollapsible('children')
 
-    await children.addChild(
-      fixtures.personFixtureChildZeroYearOld.firstName,
-      '01.01.2020'
-    )
+    await children.addChild(childZeroYo.firstName, '01.01.2020')
 
     await children.verifyChildAge(0)
 
@@ -109,7 +122,7 @@ describe('Employee - Head of family details', () => {
       'familyOverview'
     )
     await familyOverview.assertPerson({
-      personId: fixtures.personFixtureChildZeroYearOld.id,
+      personId: childZeroYo.id,
       age: 0
     })
   })
@@ -126,8 +139,9 @@ describe('Employee - Head of family details', () => {
       startDate: '01.01.2020',
       endDate: '31.07.2020'
     })
+
     await runPendingAsyncJobs(
-      HelsinkiDateTime.now() // TODO: use mock clock
+      HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(15, 0))
     )
 
     await guardianInformation.navigateToGuardian(regularPerson.id)
@@ -167,8 +181,8 @@ describe('Employee - Head of family details', () => {
         id: uuidv4(),
         childId: child.id,
         headOfChild: regularPerson.id,
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz()
+        startDate: mockToday,
+        endDate: mockToday
       })
       .save()
 
@@ -178,6 +192,8 @@ describe('Employee - Head of family details', () => {
       .with({
         personId: regularPerson.id,
         effect: 'INCOME',
+        validFrom: mockToday,
+        validTo: mockToday.addYears(1),
         data: {
           MAIN_INCOME: {
             amount: totalIncome,
@@ -195,6 +211,8 @@ describe('Employee - Head of family details', () => {
       .with({
         personId: child.id,
         effect: 'INCOME',
+        validFrom: mockToday,
+        validTo: mockToday.addYears(1),
         data: {
           MAIN_INCOME: {
             amount: totalChildIncome,

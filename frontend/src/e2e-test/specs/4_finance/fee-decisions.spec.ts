@@ -11,7 +11,8 @@ import config from '../../config'
 import {
   insertFeeDecisionFixtures,
   insertGuardianFixtures,
-  resetDatabase
+  resetDatabase,
+  runPendingAsyncJobs
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
@@ -110,6 +111,7 @@ describe('Fee decisions', () => {
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     await feeDecisionsPage.sendFeeDecisions(HelsinkiDateTime.of(2023, 1, 1))
+    await runPendingAsyncJobs(HelsinkiDateTime.now())
     await feeDecisionsPage.assertSentDecisionsCount(1)
   })
 
@@ -210,6 +212,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
     await modal.resolveDecisionHandlerModal(HelsinkiDateTime.of(2023, 5, 3))
+    await runPendingAsyncJobs(HelsinkiDateTime.now())
     await feeDecisionsPage.assertSentDecisionsCount(1)
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
     await feeDecisionDetailsPage.assertDecisionHandler('Lasse Laskuttaja')
@@ -232,6 +235,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
     await modal.selectDecisionHandler(otherFinanceAdmin.id)
     await modal.resolveDecisionHandlerModal(HelsinkiDateTime.of(2023, 5, 3))
+    await runPendingAsyncJobs(HelsinkiDateTime.now())
     await feeDecisionsPage.assertSentDecisionsCount(1)
     const feeDecisionDetailsPage = await feeDecisionsPage.openFirstFeeDecision()
     await feeDecisionDetailsPage.assertDecisionHandler('Laura Laskuttaja')
@@ -247,6 +251,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       await feeDecisionsPage.openFirstFeeDecision()
     const modal = await feeDecisionDetailsPageDraft.openDecisionHandlerModal()
     await modal.resolveDecisionHandlerModal(HelsinkiDateTime.of(2023, 5, 3))
+    await runPendingAsyncJobs(HelsinkiDateTime.now())
     await feeDecisionDetailsPageDraft.assertDecisionHandler('Lasse Laskuttaja')
     await feeDecisionsPage.assertSentDecisionsCount(1)
     const feeDecisionDetailsPageSent =
@@ -272,6 +277,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
     const modal = await feeDecisionDetailsPageDraft.openDecisionHandlerModal()
     await modal.selectDecisionHandler(otherFinanceAdmin.id)
     await modal.resolveDecisionHandlerModal(HelsinkiDateTime.of(2023, 5, 3))
+    await runPendingAsyncJobs(HelsinkiDateTime.now())
     await feeDecisionDetailsPageDraft.assertDecisionHandler('Laura Laskuttaja')
     await feeDecisionsPage.assertSentDecisionsCount(1)
     const feeDecisionDetailsPageSent =

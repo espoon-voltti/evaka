@@ -139,9 +139,14 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
         d1.children.map { it.child.id }.toSet() == d2.children.map { it.child.id }.toSet()
     }),
     INCOME({ d1, d2 ->
-        setOf(d1.headOfFamilyIncome, d1.partnerIncome) ==
-            setOf(d2.headOfFamilyIncome, d2.partnerIncome) &&
-            decisionChildrenEquals(d1, d2) { it.childIncome }
+        setOf(
+            d1.headOfFamilyIncome?.effectiveComparable(),
+            d1.partnerIncome?.effectiveComparable()
+        ) ==
+            setOf(
+                d2.headOfFamilyIncome?.effectiveComparable(),
+                d2.partnerIncome?.effectiveComparable()
+            ) && decisionChildrenEquals(d1, d2) { it.childIncome?.effectiveComparable() }
     }),
     PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
     SERVICE_NEED({ d1, d2 ->

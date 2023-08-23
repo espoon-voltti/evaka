@@ -68,7 +68,17 @@ data class DecisionIncome(
     val totalExpenses: Int,
     val total: Int,
     val worksAtECHA: Boolean
-)
+) {
+    fun effectiveComparable(): DecisionIncome {
+        return this.copy(
+            effect =
+                when (this.effect) {
+                    IncomeEffect.NOT_AVAILABLE -> IncomeEffect.INCOMPLETE
+                    else -> this.effect
+                }
+        )
+    }
+}
 
 fun incomeTotal(data: Map<String, IncomeValue>) =
     data.entries.sumOf { (_, value) -> value.multiplier * value.monthlyAmount() }

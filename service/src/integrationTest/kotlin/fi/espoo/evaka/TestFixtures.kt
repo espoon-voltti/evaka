@@ -437,8 +437,8 @@ val testChild_7 =
 val testChild_8 =
     DevPerson(
         id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2016, 3, 10),
-        ssn = "010316A1237",
+        dateOfBirth = LocalDate.of(2013, 3, 10),
+        ssn = "100313A291L",
         firstName = "Captain",
         lastName = "America",
         streetAddress = "Kamreerintie 2",

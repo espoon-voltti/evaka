@@ -47,6 +47,9 @@ class FinanceDecisionGenerator(
 ) {
     private val assistanceModel = env.assistanceModel
     private val feeDecisionMinDate = env.feeDecisionMinDate
+    final val v1 = env.feeDecisionGeneratorV1Enabled
+    final val v2 = env.feeDecisionGeneratorV2Enabled
+    final val useV2Tables = v1 && v2
 
     fun createRetroactiveFeeDecisions(
         tx: Database.Transaction,
@@ -54,18 +57,33 @@ class FinanceDecisionGenerator(
         headOfFamily: PersonId,
         from: LocalDate
     ) {
-        val families =
-            tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
-                it.headOfFamily == headOfFamily
-            }
-        tx.handleFeeDecisionChanges(
-            clock,
-            jsonMapper,
-            incomeTypesProvider,
-            from, // intentionally does not care about feeDecisionMinDate
-            headOfFamily,
-            families
-        )
+        if (v1) {
+            val families =
+                tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
+                    it.headOfFamily == headOfFamily
+                }
+            tx.handleFeeDecisionChanges(
+                clock,
+                jsonMapper,
+                incomeTypesProvider,
+                from, // intentionally does not care about feeDecisionMinDate
+                headOfFamily,
+                families
+            )
+        }
+
+        if (v2) {
+            generateAndInsertFeeDecisionsV2(
+                tx = tx,
+                clock = clock,
+                jsonMapper = jsonMapper,
+                incomeTypesProvider = incomeTypesProvider,
+                financeMinDate = feeDecisionMinDate,
+                headOfFamilyId = headOfFamily,
+                retroactiveFrom = from,
+                useV2Tables = useV2Tables
+            )
+        }
     }
 
     fun createRetroactiveValueDecisions(
@@ -100,22 +118,54 @@ class FinanceDecisionGenerator(
         tx: Database.Transaction,
         clock: EvakaClock,
         personId: PersonId,
-        from: LocalDate
+        from: LocalDate,
+        skipPropagation: Boolean = false
     ) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
+
+        if (v2) {
+            val adults =
+                if (skipPropagation) setOf(personId)
+                else getAllPossiblyAffectedAdultsByAdult(tx, personId)
+            adults.forEach { adult ->
+                generateAndInsertFeeDecisionsV2(
+                    tx = tx,
+                    clock = clock,
+                    jsonMapper = jsonMapper,
+                    incomeTypesProvider = incomeTypesProvider,
+                    financeMinDate = feeDecisionMinDate,
+                    headOfFamilyId = adult,
+                    useV2Tables = useV2Tables
+                )
+            }
+        }
     }
 
     fun generateNewDecisionsForChild(
         tx: Database.Transaction,
         clock: EvakaClock,
-        personId: ChildId,
+        childId: ChildId,
         from: LocalDate
     ) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
-        val families = tx.findFamiliesByChild(personId, fromOrMinDate)
+        val families = tx.findFamiliesByChild(childId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
+
+        if (v2) {
+            getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
+                generateAndInsertFeeDecisionsV2(
+                    tx = tx,
+                    clock = clock,
+                    jsonMapper = jsonMapper,
+                    incomeTypesProvider = incomeTypesProvider,
+                    financeMinDate = feeDecisionMinDate,
+                    headOfFamilyId = adultId,
+                    useV2Tables = useV2Tables
+                )
+            }
+        }
     }
 
     private fun handleDecisionChangesForFamilies(
@@ -124,18 +174,20 @@ class FinanceDecisionGenerator(
         from: LocalDate,
         families: List<FridgeFamily>
     ) {
-        families
-            .groupBy { it.headOfFamily }
-            .forEach { (headOfFamily, families) ->
-                tx.handleFeeDecisionChanges(
-                    clock,
-                    jsonMapper,
-                    incomeTypesProvider,
-                    from,
-                    headOfFamily,
-                    families
-                )
-            }
+        if (v1) {
+            families
+                .groupBy { it.headOfFamily }
+                .forEach { (headOfFamily, families) ->
+                    tx.handleFeeDecisionChanges(
+                        clock,
+                        jsonMapper,
+                        incomeTypesProvider,
+                        from,
+                        headOfFamily,
+                        families
+                    )
+                }
+        }
 
         families
             .flatMap { family -> family.children.map { it to family } }
@@ -496,3 +548,76 @@ internal fun addECHAFeeAlterations(
             }
         }
 }
+
+internal fun getAllPossiblyAffectedAdultsByAdult(
+    tx: Database.Read,
+    adultId: PersonId
+): Set<PersonId> {
+    val children =
+        tx.getParentships(headOfChildId = adultId, childId = null).map { it.childId }.toSet() +
+            tx.getChildrenFromFeeDecisions(adultId)
+
+    val partners =
+        tx.getPartnersForPerson(adultId, false).map { it.person.id } +
+            tx.getPartnersFromFeeDecisions(adultId) +
+            children.flatMap { child ->
+                tx.getParentships(headOfChildId = null, childId = child).map { it.headOfChildId }
+            }
+
+    return (partners + adultId).toSet()
+}
+
+internal fun getAllPossiblyAffectedAdultsByChild(
+    tx: Database.Read,
+    childId: PersonId
+): Set<PersonId> {
+    val heads = tx.getParentships(headOfChildId = null, childId = childId).map { it.headOfChildId }
+    val partners =
+        heads.flatMap { head -> tx.getPartnersForPerson(head, false) }.map { it.person.id }
+    val feeDecisionParents = tx.getParentsFromFeeDecisions(childId)
+    return (heads + partners + feeDecisionParents).toSet()
+}
+
+private fun Database.Read.getPartnersFromFeeDecisions(personId: PersonId) =
+    createQuery<Any> {
+            sql(
+                """
+        SELECT partner_id FROM fee_decision WHERE head_of_family_id = ${bind(personId)} AND status <> 'DRAFT' AND partner_id IS NOT NULL 
+        UNION ALL 
+        SELECT head_of_family_id FROM fee_decision WHERE partner_id = ${bind(personId)} AND status <> 'DRAFT'
+        """
+            )
+        }
+        .mapTo<PersonId>()
+        .set()
+
+private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
+    createQuery<Any> {
+            sql(
+                """
+        SELECT fdc.child_id 
+        FROM fee_decision fd
+        JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
+        WHERE (fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)}) AND fd.status <> 'DRAFT'
+        """
+            )
+        }
+        .mapTo<PersonId>()
+        .set()
+
+private data class FeeDecisionParents(val headOfFamilyId: PersonId, val partnerId: PersonId?)
+
+private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
+    createQuery<Any> {
+            sql(
+                """
+        SELECT fd.head_of_family_id, fd.partner_id
+        FROM fee_decision fd
+        JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
+        WHERE fdc.child_id = ${bind(personId)} AND fd.status <> 'DRAFT'
+        """
+            )
+        }
+        .mapTo<FeeDecisionParents>()
+        .flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }
+        .toSet()

@@ -12,6 +12,7 @@ import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -468,7 +469,16 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(firstDayAfterExpiration, incomes[0].validFrom)
 
         val feeFecisions = db.read { it.findFeeDecisionsForHeadOfFamily(guardianId, null, null) }
-        assertEquals(1, feeFecisions.size)
+        assertEquals(
+            1,
+            feeFecisions
+                .filter {
+                    it.status == FeeDecisionStatus.DRAFT &&
+                        it.validFrom == firstDayAfterExpiration &&
+                        it.headOfFamilyIncome!!.effect == IncomeEffect.INCOMPLETE
+                }
+                .size
+        )
     }
 
     @Test

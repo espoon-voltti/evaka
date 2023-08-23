@@ -46,7 +46,8 @@ class FeeDecisionGenerationJobProcessor(
                         tx,
                         clock,
                         msg.person.adultId,
-                        msg.dateRange.start
+                        msg.dateRange.start,
+                        skipPropagation = msg.person.skipPropagation == true
                     )
                 is AsyncJob.GenerateFinanceDecisions.Person.Child ->
                     generator.generateNewDecisionsForChild(

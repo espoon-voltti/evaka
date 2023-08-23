@@ -12,6 +12,7 @@ import {
   insertDaycareGroupFixtures,
   insertGuardianFixtures,
   resetDatabase,
+  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -162,6 +163,7 @@ describe('Sending and receiving messages', () => {
         await staffPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(staffPage)
         await messagesPage.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await initCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
@@ -169,6 +171,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+        await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
@@ -183,6 +186,7 @@ describe('Sending and receiving messages', () => {
         await staffPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(staffPage)
         await messagesPage.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await initCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
@@ -190,6 +194,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+        await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
@@ -213,6 +218,7 @@ describe('Staff copies', () => {
       receiver: fixtures.daycareFixture.id
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
@@ -231,6 +237,7 @@ describe('Staff copies', () => {
       receiver: fixtures.enduserChildFixtureKaarina.id
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
@@ -247,6 +254,7 @@ describe('Staff copies', () => {
       receiver: daycareGroupFixture.id
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)

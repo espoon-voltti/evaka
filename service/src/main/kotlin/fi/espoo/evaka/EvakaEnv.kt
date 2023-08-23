@@ -40,6 +40,8 @@ data class EvakaEnv(
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     val assistanceModel: AssistanceModel,
+    val feeDecisionGeneratorV1Enabled: Boolean,
+    val feeDecisionGeneratorV2Enabled: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -91,7 +93,11 @@ data class EvakaEnv(
                     when (env.lookup("evaka.use_new_assistance_model") ?: false) {
                         true -> AssistanceModel.NEW
                         false -> AssistanceModel.OLD
-                    }
+                    },
+                feeDecisionGeneratorV1Enabled =
+                    env.lookup("evaka.fee_decision.generator.v1_enabled") ?: true,
+                feeDecisionGeneratorV2Enabled =
+                    env.lookup("evaka.fee_decision.generator.v2_enabled") ?: false
             )
         }
     }

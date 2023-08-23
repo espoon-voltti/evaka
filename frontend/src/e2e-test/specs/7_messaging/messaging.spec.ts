@@ -13,6 +13,7 @@ import {
   insertDaycareGroupFixtures,
   insertGuardianFixtures,
   resetDatabase,
+  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -30,7 +31,7 @@ import { CareArea, EmployeeDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
@@ -158,12 +159,14 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
         await openSupervisorPage(mockedDateAt12)
@@ -211,6 +214,7 @@ describe('Sending and receiving messages', () => {
           ...defaultMessage,
           receiver: enduserChildFixtureKaarina.id
         })
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await messagesPage.assertMessageIsSentForParticipants(
           0,
@@ -222,6 +226,7 @@ describe('Sending and receiving messages', () => {
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
         await openSupervisorPage(mockedDateAt12)
@@ -270,12 +275,14 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(message)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(message)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
         await openSupervisorPage(mockedDateAt12)
@@ -294,6 +301,7 @@ describe('Sending and receiving messages', () => {
           ...defaultMessage,
           attachmentCount: 2
         })
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
@@ -310,12 +318,14 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt12)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -355,6 +365,7 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage({ title, content })
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
@@ -373,6 +384,7 @@ describe('Sending and receiving messages', () => {
           [],
           receivers
         )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -394,6 +406,7 @@ describe('Sending and receiving messages', () => {
           [],
           receivers
         )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -445,6 +458,10 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.selectNewMessageRecipients(recipients)
         await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
         await citizenMessagesPage.clickSendMessage()
+        await waitUntilTrue(() =>
+          citizenMessagesPage.getThreadCount().then((count) => count > 0)
+        )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -518,6 +535,10 @@ describe('Sending and receiving messages', () => {
           .click()
         await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
         await citizenMessagesPage.clickSendMessage()
+        await waitUntilTrue(() =>
+          citizenMessagesPage.getThreadCount().then((count) => count > 0)
+        )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -541,6 +562,7 @@ describe('Sending and receiving messages', () => {
           [],
           receivers
         )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -556,6 +578,7 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
@@ -575,6 +598,7 @@ describe('Sending and receiving messages', () => {
           await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
           const messagesPage = new MessagesPage(unitSupervisorPage)
           await messagesPage.sendNewMessage(defaultMessage)
+          await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
           await openCitizen(mockedDateAt11)
           await citizenPage.goto(config.enduserMessagesUrl)
@@ -623,6 +647,7 @@ describe('Sending and receiving messages', () => {
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
       await openCitizenPage(mockedDateAt11)
       await citizenPage.goto(config.enduserMessagesUrl)
@@ -631,6 +656,7 @@ describe('Sending and receiving messages', () => {
       await citizenMessagesPage.assertThreadContent(defaultMessage)
 
       await messagesPage.undoMessage()
+      await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
       await citizenPage.goto(config.enduserMessagesUrl)
       await citizenMessagesPage.assertInboxIsEmpty()
     })
@@ -643,6 +669,7 @@ describe('Sending and receiving messages', () => {
         ...defaultMessage,
         attachmentCount: 1
       })
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
       await openCitizenPage(mockedDateAt11)
       await citizenPage.goto(config.enduserMessagesUrl)
@@ -651,6 +678,7 @@ describe('Sending and receiving messages', () => {
       await citizenMessagesPage.assertThreadContent(defaultMessage)
 
       await messagesPage.undoMessage()
+      await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
       await citizenPage.goto(config.enduserMessagesUrl)
       await citizenMessagesPage.assertInboxIsEmpty()
     })
@@ -660,6 +688,7 @@ describe('Sending and receiving messages', () => {
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       let messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
       await openCitizenPage(mockedDateAt11)
       await citizenPage.goto(config.enduserMessagesUrl)
@@ -667,6 +696,7 @@ describe('Sending and receiving messages', () => {
       await citizenMessagesPage.assertThreadContent(defaultMessage)
       await citizenMessagesPage.replyToFirstThread(defaultReply)
       await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+      await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
       await openSupervisorPage(mockedDateAt12)
       messagesPage = new MessagesPage(unitSupervisorPage)
@@ -676,6 +706,8 @@ describe('Sending and receiving messages', () => {
       await messagesPage.sendReplyButton.waitUntilVisible()
       await messagesPage.fillReplyContent(defaultContent)
       await messagesPage.sendReplyButton.click()
+      await waitUntilTrue(() => messagesPage.sendReplyButton.disabled)
+      await runPendingAsyncJobs(mockedDateAt12.addMinutes(1))
 
       await openCitizenPage(mockedDateAt12.addMinutes(1))
       await citizenPage.goto(config.enduserMessagesUrl)
