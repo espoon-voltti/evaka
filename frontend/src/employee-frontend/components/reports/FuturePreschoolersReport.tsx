@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import {
   FuturePreschoolersReportRow,
-  PreschoolUnitReportRow
+  PreschoolGroupsReportRow
 } from 'lib-common/generated/api-types/reports'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -17,7 +17,7 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import {
   getFuturePreschoolersReport,
-  getPreschoolUnitsReport
+  getPreschoolGroupsReport
 } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 
@@ -30,10 +30,10 @@ export default React.memo(function FuturePreschoolersReport() {
     Loading.of()
   )
   const [municipalRows, setMunicipalRows] = useState<
-    Result<PreschoolUnitReportRow[]>
+    Result<PreschoolGroupsReportRow[]>
   >(Loading.of())
   const [voucherRows, setVoucherRows] = useState<
-    Result<PreschoolUnitReportRow[]>
+    Result<PreschoolGroupsReportRow[]>
   >(Loading.of())
 
   useEffect(() => {
@@ -43,12 +43,12 @@ export default React.memo(function FuturePreschoolersReport() {
 
   useEffect(() => {
     setMunicipalRows(Loading.of())
-    void getPreschoolUnitsReport(true).then(setMunicipalRows)
+    void getPreschoolGroupsReport(true).then(setMunicipalRows)
   }, [])
 
   useEffect(() => {
     setVoucherRows(Loading.of())
-    void getPreschoolUnitsReport(false).then(setVoucherRows)
+    void getPreschoolGroupsReport(false).then(setVoucherRows)
   }, [])
 
   const reportRows: FuturePreschoolersReportRow[] = useMemo(
@@ -56,12 +56,12 @@ export default React.memo(function FuturePreschoolersReport() {
     [rows]
   )
 
-  const municipalUnitRows: PreschoolUnitReportRow[] = useMemo(
+  const municipalUnitRows: PreschoolGroupsReportRow[] = useMemo(
     () => municipalRows.getOrElse([]),
     [municipalRows]
   )
 
-  const voucherUnitRows: PreschoolUnitReportRow[] = useMemo(
+  const voucherUnitRows: PreschoolGroupsReportRow[] = useMemo(
     () => voucherRows.getOrElse([]),
     [voucherRows]
   )
@@ -191,7 +191,9 @@ export default React.memo(function FuturePreschoolersReport() {
             </TableScrollable>
           </>
         )}
+      </ContentArea>
 
+      <ContentArea opaque>
         <Title size={2}>{i18n.reports.preschoolUnits.titleMunicipal}</Title>
         {municipalRows.isLoading && <Loader />}
         {municipalRows.isFailure && <span>{i18n.common.loadingFailed}</span>}
@@ -244,7 +246,9 @@ export default React.memo(function FuturePreschoolersReport() {
             </TableScrollable>
           </>
         )}
+      </ContentArea>
 
+      <ContentArea opaque>
         <Title size={2}>{i18n.reports.preschoolUnits.titleVoucher}</Title>
         {voucherRows.isLoading && <Loader />}
         {voucherRows.isFailure && <span>{i18n.common.loadingFailed}</span>}

@@ -32,7 +32,7 @@ import {
   PartnersInDifferentAddressReportRow,
   PlacementCountReportResult,
   PlacementSketchingReportRow,
-  PreschoolUnitReportRow,
+  PreschoolGroupsReportRow,
   PresenceReportRow,
   RawReportRow,
   Report,
@@ -723,12 +723,12 @@ export async function getFuturePreschoolersReport(): Promise<
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getPreschoolUnitsReport(
+export async function getPreschoolGroupsReport(
   municipal: boolean
-): Promise<Result<PreschoolUnitReportRow[]>> {
+): Promise<Result<PreschoolGroupsReportRow[]>> {
   return client
-    .get<JsonOf<PreschoolUnitReportRow[]>>(
-      '/reports/future-preschoolers/units',
+    .get<JsonOf<PreschoolGroupsReportRow[]>>(
+      '/reports/future-preschoolers/groups',
       { params: { municipal: municipal } }
     )
     .then(({ data }) => Success.of(data))

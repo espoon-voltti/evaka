@@ -3759,7 +3759,7 @@ export const fi = {
     futurePreschoolers: {
       title: 'Tulevat esikoululaiset',
       description:
-        'Raportti tulevan vuoden esiopetuksen lapsista ja ryhmiostä automaattisijoitustyökalua varten',
+        'Raportti tulevan vuoden esiopetuksen lapsista ja ryhmistä automaattisijoitustyökalua varten',
       childSsn: 'Lapsen hetu',
       childLastName: 'Lapsen sukunimi',
       childFirstName: 'Lapsen etunimi',

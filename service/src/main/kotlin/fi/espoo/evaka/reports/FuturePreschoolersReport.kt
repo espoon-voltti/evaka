@@ -36,13 +36,13 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
             .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping("/reports/future-preschoolers/units")
-    fun getPreschoolUnits(
+    @GetMapping("/reports/future-preschoolers/groups")
+    fun getPreschoolGroups(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam municipal: Boolean
-    ): List<PreschoolUnitReportRow> {
+    ): List<PreschoolGroupsReportRow> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -52,7 +52,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                         Action.Global.READ_FUTURE_PRESCHOOLERS
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getPreschoolUnitRows(municipal)
+                    it.getPreschoolGroupsRows(municipal)
                 }
             }
             .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
@@ -61,7 +61,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
 
 const val preschoolSelectionAge = 5
 
-private fun Database.Read.getFuturePreschoolerRows(): List<FuturePreschoolersReportRow> =
+fun Database.Read.getFuturePreschoolerRows(): List<FuturePreschoolersReportRow> =
     createQuery<DatabaseTable> {
             sql(
                 """
@@ -120,7 +120,7 @@ END
         .mapTo<FuturePreschoolersReportRow>()
         .toList()
 
-private fun Database.Read.getPreschoolUnitRows(municipal: Boolean): List<PreschoolUnitReportRow> =
+fun Database.Read.getPreschoolGroupsRows(municipal: Boolean): List<PreschoolGroupsReportRow> =
     createQuery<DatabaseTable> {
             sql(
                 """
@@ -143,12 +143,12 @@ CASE WHEN :municipal THEN d.provider_type = 'MUNICIPAL' ELSE d.provider_type != 
             )
         }
         .bind("municipal", municipal)
-        .mapTo<PreschoolUnitReportRow>()
+        .mapTo<PreschoolGroupsReportRow>()
         .toList()
 
 data class FuturePreschoolersReportRow(
     val id: ChildId,
-    val childSsn: String,
+    val childSsn: String?,
     val childLastName: String,
     val childFirstName: String,
     val childAddress: String,
@@ -158,7 +158,7 @@ data class FuturePreschoolersReportRow(
     val unitAddress: String,
     val unitPostalCode: String,
     val unitPostOffice: String,
-    val unitArea: String,
+    val unitArea: String?,
     val guardian1LastName: String,
     val guardian1FirstName: String,
     val guardian1Address: String,
@@ -178,7 +178,7 @@ data class FuturePreschoolersReportRow(
     val twoYearPreschool: Boolean
 )
 
-data class PreschoolUnitReportRow(
+data class PreschoolGroupsReportRow(
     val id: DaycareGroupId,
     val unitName: String,
     val groupName: String,

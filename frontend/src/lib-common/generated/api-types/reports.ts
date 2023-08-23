@@ -532,7 +532,7 @@ export interface PlacementSketchingReportRow {
 /**
 * Generated from fi.espoo.evaka.reports.PreschoolUnitReportRow
 */
-export interface PreschoolUnitReportRow {
+export interface PreschoolGroupsReportRow {
   address: string
   amongSchool: boolean | null
   groupName: string
