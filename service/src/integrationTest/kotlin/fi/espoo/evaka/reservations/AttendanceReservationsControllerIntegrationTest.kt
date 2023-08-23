@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.EmployeeId
@@ -184,6 +185,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 it.insertTestPlacement(
                     childId = testChild_5.id,
                     unitId = testDaycare2.id,
+                    type = PlacementType.CLUB, // <- reservations not needed
                     startDate = mon,
                     endDate = fri
                 )
@@ -337,7 +339,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true
                                 ),
                             tue to
                                 UnitAttendanceReservations.ChildRecordOfDay(
@@ -349,7 +352,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                         ),
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true
                                 ),
                             wed to
                                 UnitAttendanceReservations.ChildRecordOfDay(
@@ -358,7 +362,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true
                                 ),
                             thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
@@ -367,7 +372,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true
                                 )
                         )
                     )
@@ -389,7 +395,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true
                                 ),
                             // Backup in group 2
                             thu to
@@ -403,7 +410,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = true
+                                    isInBackupGroup = true,
+                                    requiresReservation = true,
                                 ),
                             // Backup in another unit
                             fri to
@@ -413,7 +421,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = true,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true,
                                 )
                         )
                     )
@@ -457,7 +466,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = true,
                                 )
                         )
                     )
@@ -484,7 +494,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                             TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
                                         ),
                                     inOtherUnit = false,
-                                    isInBackupGroup = false
+                                    isInBackupGroup = false,
+                                    requiresReservation = false,
                                 )
                         )
                     )
@@ -611,7 +622,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                         absence = null,
                                         dailyServiceTimes = null,
                                         inOtherUnit = false,
-                                        isInBackupGroup = false
+                                        isInBackupGroup = false,
+                                        requiresReservation = true,
                                     ),
                                 tue to
                                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -628,7 +640,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                         absence = null,
                                         dailyServiceTimes = null,
                                         inOtherUnit = false,
-                                        isInBackupGroup = false
+                                        isInBackupGroup = false,
+                                        requiresReservation = true,
                                     ),
                                 wed to
                                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -641,7 +654,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                         absence = null,
                                         dailyServiceTimes = null,
                                         inOtherUnit = false,
-                                        isInBackupGroup = false
+                                        isInBackupGroup = false,
+                                        requiresReservation = true,
                                     )
                             ),
 
@@ -663,7 +677,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                         absence = null,
                                         dailyServiceTimes = null,
                                         inOtherUnit = false,
-                                        isInBackupGroup = false
+                                        isInBackupGroup = false,
+                                        requiresReservation = true,
                                     )
                             )
                     )
@@ -733,7 +748,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         absence = null,
                         dailyServiceTimes = null,
                         inOtherUnit = false,
-                        isInBackupGroup = false
+                        isInBackupGroup = false,
+                        requiresReservation = true,
                     )
             }
             .toMap()

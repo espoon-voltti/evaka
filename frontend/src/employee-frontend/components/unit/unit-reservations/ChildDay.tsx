@@ -117,8 +117,13 @@ export default React.memo(function ChildDay({
   )
     return null
 
-  const { reservation, dailyServiceTimes, inOtherUnit, isInBackupGroup } =
-    dailyData
+  const {
+    reservation,
+    dailyServiceTimes,
+    inOtherUnit,
+    isInBackupGroup,
+    requiresReservation
+  } = dailyData
 
   const serviceTimeOfDay =
     dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
@@ -214,7 +219,9 @@ export default React.memo(function ChildDay({
               )}
             </ReservationTime>
           </>
-        ) : day.isInHolidayPeriod && reservation == null ? (
+        ) : day.isInHolidayPeriod &&
+          requiresReservation &&
+          reservation == null ? (
           // holiday period, no reservation yet
           <Tooltip
             tooltip={i18n.unit.attendanceReservations.missingHolidayReservation}

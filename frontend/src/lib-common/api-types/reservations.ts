@@ -46,6 +46,7 @@ export interface ChildRecordOfDay {
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
+  requiresReservation: boolean
 }
 
 interface Group {
