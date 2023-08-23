@@ -104,13 +104,9 @@ export class UnitCalendarPage {
   }
 
   async waitForWeekLoaded() {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findByDataQa('staff-attendances-status')
-          .getAttribute('data-qa-value'),
-      'success'
-    )
+    await this.page
+      .find('[data-qa="staff-attendances-status"][data-isloading="false"]')
+      .waitUntilVisible()
   }
 
   async assertDateRange(expectedRange: FiniteDateRange) {
