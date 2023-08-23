@@ -551,7 +551,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <LabeledValue>
                 <ExpandingInfo
-                  info={t.validFromInfo}
+                  info={t.validFromInfo()}
                   ariaLabel={i18n.common.openExpandingInfo}
                   closeLabel={i18n.common.openExpandingInfo}
                 >
@@ -574,7 +574,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                 {extendedCompulsoryEducation.value() && (
                   <LabeledValue>
                     <ExpandingInfo
-                      info={t.extendedCompulsoryEducationInfoInfo}
+                      info={t.extendedCompulsoryEducationInfoInfo()}
                       ariaLabel={i18n.common.openExpandingInfo}
                       closeLabel={i18n.common.openExpandingInfo}
                     >
@@ -592,7 +592,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <FixedSpaceColumn>
                 <ExpandingInfo
-                  info={t.grantedAssistanceSectionInfo}
+                  info={t.grantedAssistanceSectionInfo()}
                   ariaLabel={i18n.common.openExpandingInfo}
                   closeLabel={i18n.common.openExpandingInfo}
                 >
@@ -637,7 +637,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <LabeledValue>
                 <ExpandingInfo
-                  info={t.primaryGroupInfo}
+                  info={t.primaryGroupInfo()}
                   ariaLabel={i18n.common.openExpandingInfo}
                   closeLabel={i18n.common.openExpandingInfo}
                 >
@@ -653,7 +653,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <LabeledValue>
                 <ExpandingInfo
-                  info={t.decisionBasisInfo}
+                  info={t.decisionBasisInfo()}
                   ariaLabel={i18n.common.openExpandingInfo}
                   closeLabel={i18n.common.openExpandingInfo}
                 >
@@ -671,7 +671,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               <FixedSpaceColumn>
                 <FixedSpaceRow alignItems="center">
                   <ExpandingInfo
-                    info={t.documentBasisInfo}
+                    info={t.documentBasisInfo()}
                     ariaLabel={i18n.common.openExpandingInfo}
                     closeLabel={i18n.common.openExpandingInfo}
                   >
@@ -771,7 +771,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <FixedSpaceColumn>
                 <ExpandingInfo
-                  info={t.heardGuardiansInfo}
+                  info={t.heardGuardiansInfo()}
                   ariaLabel={i18n.common.openExpandingInfo}
                   closeLabel={i18n.common.openExpandingInfo}
                 >
@@ -812,7 +812,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <LabeledValue>
                 <ExpandingInfo
-                  info={t.viewOfGuardiansInfo}
+                  info={t.viewOfGuardiansInfo()}
                   ariaLabel={i18n.common.openExpandingInfo}
                   closeLabel={i18n.common.openExpandingInfo}
                 >
