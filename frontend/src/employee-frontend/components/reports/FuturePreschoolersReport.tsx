@@ -60,12 +60,12 @@ export default React.memo(function FuturePreschoolersReport() {
     [rows]
   )
 
-  const municipalUnitRows: PreschoolGroupsReportRow[] = useMemo(
+  const municipalGroupRows: PreschoolGroupsReportRow[] = useMemo(
     () => municipalRows.getOrElse([]),
     [municipalRows]
   )
 
-  const voucherUnitRows: PreschoolGroupsReportRow[] = useMemo(
+  const privateVoucherGroupRows: PreschoolGroupsReportRow[] = useMemo(
     () => voucherRows.getOrElse([]),
     [voucherRows]
   )
@@ -145,7 +145,7 @@ export default React.memo(function FuturePreschoolersReport() {
 
         <Title size={4}>
           {i18n.reports.futurePreschoolers.municipalGroupCount(
-            municipalUnitRows.length
+            municipalGroupRows.length
           )}
         </Title>
         {municipalRows.isLoading && <Loader />}
@@ -153,7 +153,7 @@ export default React.memo(function FuturePreschoolersReport() {
         {municipalRows.isSuccess && (
           <DownloadWrapper>
             <ReportDownload
-              data={municipalUnitRows}
+              data={municipalGroupRows}
               headers={[
                 { label: 'Yksikön nimi', key: 'unitName' },
                 { label: 'Ryhmän nimi', key: 'groupName' },
@@ -172,7 +172,7 @@ export default React.memo(function FuturePreschoolersReport() {
 
         <Title size={4}>
           {i18n.reports.futurePreschoolers.privateVoucherGroupCount(
-            voucherUnitRows.length
+            privateVoucherGroupRows.length
           )}
         </Title>
         {voucherRows.isLoading && <Loader />}
@@ -180,7 +180,7 @@ export default React.memo(function FuturePreschoolersReport() {
         {voucherRows.isSuccess && (
           <DownloadWrapper>
             <ReportDownload
-              data={voucherUnitRows}
+              data={privateVoucherGroupRows}
               headers={[
                 { label: 'Yksikön nimi', key: 'unitName' },
                 { label: 'Ryhmän nimi', key: 'groupName' },
