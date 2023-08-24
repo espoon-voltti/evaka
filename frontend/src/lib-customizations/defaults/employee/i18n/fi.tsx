@@ -3760,47 +3760,18 @@ export const fi = {
       title: 'Tulevat esikoululaiset',
       description:
         'Raportti tulevan vuoden esiopetuksen lapsista ja ryhmistä automaattisijoitustyökalua varten',
-      childSsn: 'Lapsen hetu',
-      childLastName: 'Lapsen sukunimi',
-      childFirstName: 'Lapsen etunimi',
-      childAddress: 'Lapsen osoite',
-      childPostalCode: 'Postinumero',
-      childPostOffice: 'Postitoimipaikka',
-      unitName: 'Yksikkö',
-      unitAddress: 'Yksikön osoite',
-      unitPostalCode: 'Postinumero',
-      unitPostOffice: 'Postitoimipaikka',
-      unitArea: 'Oppilaaksiottoalue',
-      guardian1LastName: 'Huoltajan sukunimi',
-      guardian1FirstName: 'Huoltajan etunimi',
-      guardian1Address: 'Huoltajan osoite',
-      guardian1PostalCode: 'Huoltajan postinumero',
-      guardian1PostOffice: 'Huoltajan postitoimipaikka',
-      guardian1Phone: 'Huoltajan puhelinnumero',
-      guardian1Email: 'Huoltajan sähköposti',
-      guardian2LastName: 'Toisen Huoltajan sukunimi',
-      guardian2FirstName: 'Toisen Huoltajan etunimi',
-      guardian2Address: 'Toisen Huoltajan osoite',
-      guardian2PostalCode: 'Toisen Huoltajan postinumero',
-      guardian2PostOffice: 'Toisen Huoltajan postitoimipaikka',
-      guardian2Phone: 'Toisen Huoltajan puhelinnumero',
-      guardian2Email: 'Toisen Huoltajan sähköposti',
-      shiftCare: 'Vuorohoidon tarve',
-      languageEmphasisGroup: 'Kielikylvyn ryhmä',
-      twoYearPreschool: 'Kaksivuotisessa esiopetuksessa'
-    },
-    preschoolUnits: {
-      titleMunicipal: 'Ryhmät esiopetusta antavissa kunnallisissa yksiköissä',
-      titleVoucher: 'Ryhmät esiopetusta antavissa palveluseteliyksiköissä',
-      unit: 'Yksikön nimi',
-      group: 'Ryhmän nimi',
-      address: 'Lähiosoite',
-      postalCode: 'Postinumero',
-      postOffice: 'Postitoimipaikka',
-      groupSize: 'Paikkojen määrä',
-      amongSchool: 'Koulun yhteydessä',
-      shiftCare: 'vuorohoito',
-      languageEmphasis: 'kielikylpy'
+      futurePreschoolersCount: (count: number) =>
+        count === 1
+          ? `${count} tuleva esikoululainen`
+          : `${count} tulevaa esikoululaista`,
+      municipalGroupCount: (count: number) =>
+        count === 1
+          ? `${count} ryhmä esiopetusta antavissa kunnallisissa yksiköissä`
+          : `${count} ryhmää esiopetusta antavissa kunnallisissa yksiköissä`,
+      privateVoucherGroupCount: (count: number) =>
+        count === 1
+          ? `${count} ryhmä esiopetusta antavissa palveluseteliyksiköissä`
+          : `${count} ryhmää esiopetusta antavissa palveluseteliyksiköissä`
     }
   },
   unitEditor: {
