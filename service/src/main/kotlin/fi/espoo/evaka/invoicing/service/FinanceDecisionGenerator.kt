@@ -582,9 +582,9 @@ private fun Database.Read.getPartnersFromFeeDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
-        SELECT partner_id FROM fee_decision WHERE head_of_family_id = ${bind(personId)} AND status <> 'DRAFT' AND partner_id IS NOT NULL 
+        SELECT partner_id FROM fee_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
         UNION ALL 
-        SELECT head_of_family_id FROM fee_decision WHERE partner_id = ${bind(personId)} AND status <> 'DRAFT'
+        SELECT head_of_family_id FROM fee_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
@@ -598,7 +598,7 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
         SELECT fdc.child_id 
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
-        WHERE (fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)}) AND fd.status <> 'DRAFT'
+        WHERE (fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)}) AND fd.status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
@@ -614,7 +614,7 @@ private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
         SELECT fd.head_of_family_id, fd.partner_id
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
-        WHERE fdc.child_id = ${bind(personId)} AND fd.status <> 'DRAFT'
+        WHERE fdc.child_id = ${bind(personId)} AND fd.status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }

@@ -165,7 +165,7 @@ SELECT
   id, created, updated, decision_number, status, decision_type AS type, family_size,
   lower(valid_during) AS valid_from, upper(valid_during) - 1 AS valid_to
 FROM fee_decision
-WHERE status != 'DRAFT'
+WHERE status NOT IN ('DRAFT', 'IGNORED')
 """
             )
         }

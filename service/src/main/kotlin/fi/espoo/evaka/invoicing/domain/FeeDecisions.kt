@@ -106,6 +106,7 @@ data class FeeAlterationWithEffect(
 
 enum class FeeDecisionStatus : DatabaseEnum {
     DRAFT,
+    IGNORED,
     WAITING_FOR_SENDING,
     WAITING_FOR_MANUAL_SENDING,
     SENT,
