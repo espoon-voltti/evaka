@@ -995,6 +995,72 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         mayReport.assertContainsRow(CORRECTION, febFirst, febFirst.toEndOfMonth(), 85000, 0, 85000)
     }
 
+    @Test
+    fun `when two decisions for the same month are replaced with one the refunds are correct`() {
+        val firstDecision =
+            createVoucherDecision(
+                janFirst,
+                unitId = testDaycare.id,
+                value = 87000,
+                coPayment = 0,
+                validTo = janFirst.toEndOfMonth().minusDays(1)
+            )
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+
+        val secondDecision =
+            createVoucherDecision(
+                janFirst.toEndOfMonth(),
+                unitId = testDaycare.id,
+                value = 87000,
+                coPayment = 0,
+                validTo = janFirst.toEndOfMonth()
+            )
+        db.transaction {
+            freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
+        }
+
+        db.transaction {
+            it.annulVoucherValueDecisions(
+                listOf(firstDecision.id, secondDecision.id),
+                febFreeze.plusDays(7)
+            )
+        }
+        createVoucherDecision(
+            janFirst,
+            unitId = testDaycare.id,
+            value = 86000,
+            coPayment = 0,
+            validTo = janFirst.toEndOfMonth()
+        )
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, marFirst.year, marFirst.monthValue, marFreeze)
+        }
+
+        val marReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
+
+        assertEquals(3, marReport.size)
+        marReport.assertContainsRow(
+            REFUND,
+            janFirst,
+            janFirst.toEndOfMonth().minusDays(1),
+            87000,
+            0,
+            -82857
+        )
+        marReport.assertContainsRow(
+            REFUND,
+            janFirst.toEndOfMonth(),
+            janFirst.toEndOfMonth(),
+            87000,
+            0,
+            -4143
+        )
+        marReport.assertContainsRow(CORRECTION, janFirst, janFirst.toEndOfMonth(), 86000, 0, 86000)
+    }
+
     private fun List<ServiceVoucherValueRow>.assertContainsRow(
         type: VoucherReportRowType,
         periodStart: LocalDate,

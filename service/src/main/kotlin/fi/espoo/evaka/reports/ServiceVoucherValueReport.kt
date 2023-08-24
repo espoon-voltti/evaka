@@ -352,7 +352,7 @@ WITH min_voucher_decision_date AS (
         sn_decision.realized_amount,
         sn_decision.realized_period,
         sn_decision.type,
-        rank() OVER (PARTITION BY ct.child_id, p.period ORDER BY sn.year DESC, sn.month DESC) AS rank
+        rank() OVER (PARTITION BY ct.child_id, p.period, ct.decision_id ORDER BY sn.year DESC, sn.month DESC) AS rank
     FROM correction_targets ct
     JOIN month_periods p ON ct.period && p.period
     JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
