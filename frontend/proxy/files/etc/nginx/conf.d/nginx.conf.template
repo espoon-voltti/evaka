@@ -143,8 +143,10 @@ server {
 
   set $enduserUrl "<%= ENV["ENDUSER_GW_URL"] %>";
   set $internalUrl "<%= ENV["INTERNAL_GW_URL"] %>";
-  set $staticEndpoint "<%= ENV["STATIC_FILES_ENDPOINT_URL"] %>";
   set $httpScheme "<%= ENV["HTTP_SCHEME"] || "https" %>";
+  <% if ENV.key?("STATIC_FILES_ENDPOINT_URL") && ENV["STATIC_FILES_ENDPOINT_URL"] != "" %>
+  set $staticEndpoint "<%= ENV["STATIC_FILES_ENDPOINT_URL"] %>";
+  <% end %>
 
 
   # Logging
@@ -241,7 +243,11 @@ server {
       auth_basic off;
     }
 
+    <% if ENV.key?("STATIC_FILES_ENDPOINT_URL") && ENV["STATIC_FILES_ENDPOINT_URL"] != "" %>
     try_files $uri $uri/ @static;
+    <% else %>
+    try_files $uri $uri/ @indexPage;
+    <% end %>
   }
 
   location /admin/ {
@@ -252,6 +258,7 @@ server {
     return 301 $httpScheme://$host/employee;
   }
 
+  <% if ENV.key?("STATIC_FILES_ENDPOINT_URL") && ENV["STATIC_FILES_ENDPOINT_URL"] != "" %>
   location @static {
     proxy_set_header        Authorization '';
     proxy_hide_header       x-amz-id-2;
@@ -261,10 +268,11 @@ server {
     proxy_pass              $staticEndpoint$uri;
 
     proxy_intercept_errors  on;
-    error_page 404 = @staticErrorHandler;
+    error_page 404 = @indexPage;
   }
+  <% end %>
 
-  location @staticErrorHandler {
+  location @indexPage {
     if ($content_type_not_ok) {
       return 404;
     }

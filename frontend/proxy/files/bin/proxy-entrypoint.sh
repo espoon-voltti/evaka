@@ -21,10 +21,6 @@ fi
 
 export HOST_IP="UNAVAILABLE"
 
-if [ "${STATIC_FILES_ENDPOINT_URL:-X}" = 'X' ]; then
-  echo 'ERROR: STATIC_FILES_ENDPOINT_URL must be a non-empty string!'
-  exit 1
-fi
 if [ "${ENDUSER_GW_URL:-X}" = 'X' ]; then
   echo 'ERROR: ENDUSER_GW_URL must be a non-empty string!'
   exit 1
