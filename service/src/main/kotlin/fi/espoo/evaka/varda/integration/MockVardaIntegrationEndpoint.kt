@@ -278,6 +278,39 @@ class MockVardaIntegrationEndpoint {
         }
     }
 
+    private fun vardaIdFromVardaUrl(childUrl: String) = childUrl.split("/").reversed()[1].toLong()
+
+    @DeleteMapping("/v1/lapset/{vardaChildId}/delete-all/")
+    fun deleteAllChild(
+        @PathVariable vardaChildId: Long,
+        @RequestHeader(name = "Authorization") auth: String
+    ) {
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint DELETE ALL /lapset received id: $vardaChildId"
+            }
+            val feeDataKeysToRemove =
+                this.feeData.filter { vardaIdFromVardaUrl(it.value.lapsi) == vardaChildId }.keys
+            val decisionKeysToRemove =
+                this.decisions.filter { vardaIdFromVardaUrl(it.value.lapsi) == vardaChildId }.keys
+            val placementKeysToRemove =
+                this.placements
+                    .filter {
+                        decisionKeysToRemove.contains(
+                            vardaIdFromVardaUrl(it.value.varhaiskasvatuspaatos)
+                        )
+                    }
+                    .keys
+            logger.info(
+                "Mock varda integration endpoint DELETE ALL deleting ${feeDataKeysToRemove.size} fee data, ${decisionKeysToRemove.size} decisions, ${placementKeysToRemove.size}"
+            )
+            feeDataKeysToRemove.forEach { this.feeData.remove(it) }
+            decisionKeysToRemove.forEach { this.decisions.remove(it) }
+            placementKeysToRemove.forEach { this.placements.remove(it) }
+            this.children.remove(vardaChildId)
+        }
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class DecisionPeriod(
         val id: Long,
