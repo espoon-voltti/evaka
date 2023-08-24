@@ -2647,7 +2647,32 @@ export const fi = {
     },
     ignoreDraftModal: {
       title: 'Haluatko varmasti ohittaa luonnoksen?',
-      content: <div>lorem ipsum</div>,
+      content: (
+        <div>
+          <H3>Luonnoksen saa ohittaa vain jos seuraavat asiat pätevät:</H3>
+          <ul>
+            <li>Luonnos koskee menneisyyttä, ja</li>
+            <li>
+              Luonnos on väärin koska menneisyydessä olevat asiakastiedot ovat
+              väärin, ja
+            </li>
+            <li>
+              Samalle ajalle oleva alkuperäinen lähetetty maksupäätös on oikein
+            </li>
+          </ul>
+          <p>
+            Mikäli luonnos on väärin koska tiedot ovat väärin (esim.
+            perhesuhteita on takautuvasti poistettu virheellisesti), on tärkeää
+            ensisijaisesti pyrkiä korjaamaan tiedot ennalleen, koska ne
+            vaikuttavat myös muihin järjestelmiin.
+          </p>
+          <p>
+            Mikäli luonnos on väärin tai tarpeeton vaikka tiedot ovat oikein,
+            älä ohita luonnosta, vaan ole yhteydessä kehittäjätiimiin, jotta
+            vika voidaan tutkia ja korjata.
+          </p>
+        </div>
+      ),
       confirm: 'Ymmärrän ja vahvistan tämän'
     }
   },
