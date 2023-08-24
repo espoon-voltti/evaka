@@ -229,34 +229,19 @@ server {
 
   # STATIC FILE ROUTING
 
-  location / {
-    location /employee/mobile/service-worker.js.map {
-      expires        off;
-      add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
-      proxy_no_cache 1
-      auth_basic off;
-    }
+  location ~ ^/employee/mobile/service-worker.js(\.map)? {
+    expires        off;
+    add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
+    proxy_no_cache 1
+    auth_basic off;
+  }
 
+  location / {
     location ~ /employee/mobile/manifest\.([a-z0-9]+)\.json$ {
       auth_basic off;
     }
 
-    location /employee/mobile/service-worker.js {
-      expires        off;
-      add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
-      proxy_no_cache 1
-      auth_basic off;
-    }
-
-    location /employee/mobile/ {
-      try_files $uri @static;
-    }
-
-    location /employee {
-      try_files $uri @static;
-    }
-
-    try_files $uri @static;
+    try_files $uri $uri/ @static;
   }
 
   location /admin/ {
