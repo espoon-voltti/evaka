@@ -247,6 +247,11 @@ interface BaseFeatureFlags {
      * Show attendance summary for contract days children
      */
     citizenAttendanceSummary?: boolean
+
+    /**
+     * Allows marking fee decision drafts as ignored
+     */
+    feeDecisionIgnoredStatus?: boolean
   }
 }
 

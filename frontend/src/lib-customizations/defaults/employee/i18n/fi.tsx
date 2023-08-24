@@ -2636,6 +2636,7 @@ export const fi = {
         count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
       createDecision: (count: number) =>
         count === 1 ? 'Luo päätös' : 'Luo päätökset',
+      ignoreDraft: 'Ohita luonnos',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset',
@@ -2643,6 +2644,11 @@ export const fi = {
         WAITING_FOR_MANUAL_SENDING:
           'Osalla päämiehistä on päätöksiä, jotka odottavat manuaalista lähetystä'
       }
+    },
+    ignoreDraftModal: {
+      title: 'Haluatko varmasti ohittaa luonnoksen?',
+      content: <div>lorem ipsum</div>,
+      confirm: 'Ymmärrän ja vahvistan tämän'
     }
   },
   valueDecisions: {
@@ -2766,6 +2772,7 @@ export const fi = {
   feeDecision: {
     title: {
       DRAFT: 'Maksupäätösluonnos',
+      IGNORED: 'Ohitettu maksupäätösluonnos',
       WAITING_FOR_SENDING: 'Maksupäätös (lähdössä)',
       WAITING_FOR_MANUAL_SENDING: 'Maksupäätös (lähetetään manuaalisesti)',
       SENT: 'Maksupäätös',
@@ -2781,6 +2788,7 @@ export const fi = {
     },
     status: {
       DRAFT: 'Luonnos',
+      IGNORED: 'Ohitettu luonnos',
       WAITING_FOR_SENDING: 'Lähdössä',
       WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
       SENT: 'Lähetetty',
