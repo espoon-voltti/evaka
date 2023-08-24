@@ -61,7 +61,7 @@ fun generateAndInsertFeeDecisionsV2(
 ) {
     tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId, v2 = useV2Tables)
 
-    val minDate = retroactiveFrom ?: maxOf(financeMinDate, clock.today().minusYears(1))
+    val minDate = retroactiveFrom ?: maxOf(financeMinDate, clock.today().minusMonths(15))
     val activePeriod = DateRange(minDate, null)
     val newDrafts =
         generateFeeDecisionsDrafts(
