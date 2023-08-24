@@ -17,7 +17,8 @@ import { featureFlags } from 'lib-customizations/employee'
 
 import {
   confirmFeeDecisions,
-  ignoreFeeDecisionDrafts
+  ignoreFeeDecisionDrafts,
+  unignoreFeeDecisionDrafts
 } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
@@ -47,68 +48,96 @@ const Actions = React.memo(function Actions({
   const [error, setError] = useState<string>()
   const [showIgnoreModal, setShowIgnoreModal] = useState(false)
 
-  return statuses.length === 1 && statuses[0] === 'DRAFT' ? (
-    <>
+  if (statuses.length === 1 && statuses[0] === 'IGNORED') {
+    return (
       <StickyActionBar align="right">
-        <FixedSpaceRow alignItems="center">
-          {error ? <ErrorMessage>{error}</ErrorMessage> : null}
-          {checkedIds.length > 0 ? (
-            <CheckedRowsInfo>
-              {i18n.feeDecisions.buttons.checked(checkedIds.length)}
-            </CheckedRowsInfo>
-          ) : null}
-          {featureFlags.experimental?.feeDecisionIgnoredStatus && (
-            <Button
-              text={i18n.feeDecisions.buttons.ignoreDraft}
-              disabled={checkedIds.length !== 1}
-              onClick={() => setShowIgnoreModal(true)}
-              data-qa="open-ignore-draft-modal"
-            />
-          )}
-          {featureFlags.financeDecisionHandlerSelect ? (
-            <Button
-              primary
-              text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
-              disabled={checkedIds.length === 0}
-              onClick={() => onHandlerSelectModal()}
-              data-qa="open-decision-handler-select-modal"
-            />
-          ) : (
-            <AsyncButton
-              primary
-              text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
-              disabled={checkedIds.length === 0}
-              onClick={() => confirmFeeDecisions(checkedIds)}
-              onSuccess={() => {
-                setError(undefined)
-                clearChecked()
-                loadDecisions()
-              }}
-              onFailure={(result) => {
-                setError(
-                  result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
-                    ? i18n.feeDecisions.buttons.errors
-                        .WAITING_FOR_MANUAL_SENDING
-                    : i18n.common.error.unknown
-                )
-              }}
-              data-qa="confirm-decisions"
-            />
-          )}
-        </FixedSpaceRow>
-      </StickyActionBar>
-      {showIgnoreModal && (
-        <IgnoreDraftModal
-          id={checkedIds[0]}
-          onCancel={() => setShowIgnoreModal(false)}
+        <AsyncButton
+          text={i18n.feeDecisions.buttons.unignoreDrafts(checkedIds.length)}
+          disabled={checkedIds.length === 0}
+          onClick={() => unignoreFeeDecisionDrafts(checkedIds)}
           onSuccess={() => {
-            setShowIgnoreModal(false)
+            setError(undefined)
+            clearChecked()
             loadDecisions()
           }}
+          data-qa="unignore-decisions"
         />
-      )}
-    </>
-  ) : null
+      </StickyActionBar>
+    )
+  }
+
+  if (statuses.length === 1 && statuses[0] === 'DRAFT') {
+    return (
+      <>
+        <StickyActionBar align="right">
+          <FixedSpaceRow alignItems="center">
+            {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+            {checkedIds.length > 0 ? (
+              <CheckedRowsInfo>
+                {i18n.feeDecisions.buttons.checked(checkedIds.length)}
+              </CheckedRowsInfo>
+            ) : null}
+            {featureFlags.experimental?.feeDecisionIgnoredStatus && (
+              <Button
+                text={i18n.feeDecisions.buttons.ignoreDraft}
+                disabled={checkedIds.length !== 1}
+                onClick={() => setShowIgnoreModal(true)}
+                data-qa="open-ignore-draft-modal"
+              />
+            )}
+            {featureFlags.financeDecisionHandlerSelect ? (
+              <Button
+                primary
+                text={i18n.feeDecisions.buttons.createDecision(
+                  checkedIds.length
+                )}
+                disabled={checkedIds.length === 0}
+                onClick={() => onHandlerSelectModal()}
+                data-qa="open-decision-handler-select-modal"
+              />
+            ) : (
+              <AsyncButton
+                primary
+                text={i18n.feeDecisions.buttons.createDecision(
+                  checkedIds.length
+                )}
+                disabled={checkedIds.length === 0}
+                onClick={() => confirmFeeDecisions(checkedIds)}
+                onSuccess={() => {
+                  setError(undefined)
+                  clearChecked()
+                  loadDecisions()
+                }}
+                onFailure={(result) => {
+                  setError(
+                    result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
+                      ? i18n.feeDecisions.buttons.errors
+                          .WAITING_FOR_MANUAL_SENDING
+                      : i18n.common.error.unknown
+                  )
+                }}
+                data-qa="confirm-decisions"
+              />
+            )}
+          </FixedSpaceRow>
+        </StickyActionBar>
+        {showIgnoreModal && (
+          <IgnoreDraftModal
+            id={checkedIds[0]}
+            onCancel={() => setShowIgnoreModal(false)}
+            onSuccess={() => {
+              setShowIgnoreModal(false)
+              setError(undefined)
+              clearChecked()
+              loadDecisions()
+            }}
+          />
+        )}
+      </>
+    )
+  }
+
+  return null
 })
 
 const IgnoreDraftModal = React.memo(function IgnoreDraftModal({
@@ -139,6 +168,7 @@ const IgnoreDraftModal = React.memo(function IgnoreDraftModal({
         label={i18n.feeDecisions.ignoreDraftModal.confirm}
         checked={confirm}
         onChange={setConfirm}
+        data-qa="confirm-checkbox"
       />
     </AsyncFormModal>
   )

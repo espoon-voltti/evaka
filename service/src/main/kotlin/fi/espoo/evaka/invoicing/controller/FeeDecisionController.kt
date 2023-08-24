@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -178,6 +179,38 @@ class FeeDecisionController(
             }
         }
         Audit.FeeDecisionIgnore.log(targetId = feeDecisionIds)
+    }
+
+    @PostMapping("/unignore")
+    fun unignoreDrafts(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody feeDecisionIds: List<FeeDecisionId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.FeeDecision.UNIGNORE,
+                    feeDecisionIds
+                )
+                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds, clock.today())
+                asyncJobRunner.plan(
+                    tx,
+                    headsOfFamilies.map { personId ->
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            personId,
+                            DateRange(clock.today().minusMonths(15), null)
+                        )
+                    },
+                    runAt = clock.now()
+                )
+            }
+        }
+        Audit.FeeDecisionUnignore.log(targetId = feeDecisionIds)
     }
 
     @PostMapping("/mark-sent")

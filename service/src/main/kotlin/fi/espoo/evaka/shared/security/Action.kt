@@ -1366,7 +1366,8 @@ sealed interface Action {
         ScopedAction<FeeDecisionId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        IGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
+        IGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        UNIGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

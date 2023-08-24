@@ -2637,6 +2637,8 @@ export const fi = {
       createDecision: (count: number) =>
         count === 1 ? 'Luo päätös' : 'Luo päätökset',
       ignoreDraft: 'Ohita luonnos',
+      unignoreDrafts: (count: number) =>
+        count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset',

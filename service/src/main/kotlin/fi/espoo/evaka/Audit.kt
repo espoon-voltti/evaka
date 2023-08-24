@@ -214,6 +214,7 @@ enum class Audit(
     FeeDecisionRead,
     FeeDecisionSearch,
     FeeDecisionSetType,
+    FeeDecisionUnignore,
     FinanceBasicsFeeThresholdsRead,
     FinanceBasicsFeeThresholdsCreate,
     FinanceBasicsFeeThresholdsUpdate,
