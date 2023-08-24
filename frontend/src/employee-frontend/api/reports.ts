@@ -522,13 +522,12 @@ export async function getPlacementSketchingReport(
     )
 }
 
-export async function getVardaErrorsReport(): Promise<
-  Result<VardaErrorReportRow[]>
-> {
+export async function getVardaErrorsReport():
+  Promise<VardaErrorReportRow[]>
+{
   return client
     .get<JsonOf<VardaErrorReportRow[]>>(`/reports/varda-errors`)
     .then((res) =>
-      Success.of(
         res.data.map((row) => ({
           ...row,
           updated: HelsinkiDateTime.parseIso(row.updated),
@@ -537,7 +536,6 @@ export async function getVardaErrorsReport(): Promise<
             ? HelsinkiDateTime.parseIso(row.resetTimeStamp)
             : null
         }))
-      )
     )
 }
 

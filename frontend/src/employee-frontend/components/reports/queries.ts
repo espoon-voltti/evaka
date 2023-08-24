@@ -8,7 +8,7 @@ import { UUID } from 'lib-common/types'
 import {
   getFamilyContactsReport,
   getMissingHeadOfFamilyReport,
-  getOccupanciesReport,
+  getOccupanciesReport, getVardaErrorsReport,
   getVoucherServiceProvidersReport,
   MissingHeadOfFamilyReportFilters,
   OccupancyReportFilters,
@@ -26,7 +26,8 @@ const queryKeys = createQueryKeys('reports', {
   voucherServiceProviders: (filters: VoucherServiceProvidersFilters) => [
     'voucherServiceProviders',
     filters
-  ]
+  ],
+  vardaErrors: () => ['vardaErrors']
 })
 
 export const familyContactsReportQuery = query({
@@ -50,4 +51,9 @@ export const occupanciesReportQuery = query({
 export const voucherServiceProvidersReportQuery = query({
   api: getVoucherServiceProvidersReport,
   queryKey: queryKeys.voucherServiceProviders
+})
+
+export const vardaErrorsQuery = query({
+  api: () => getVardaErrorsReport(),
+  queryKey: queryKeys.vardaErrors
 })

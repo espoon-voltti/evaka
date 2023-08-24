@@ -1,17 +1,15 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -20,13 +18,15 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import {
-  getVardaErrorsReport,
   markChildForVardaReset,
   runResetVardaChildren
 } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 
 import { TableScrollable } from './common'
+import {useQueryResult} from "../../../lib-common/query";
+import {vardaErrorsQuery} from "./queries";
+import {renderResult} from "../async-rendering";
 
 const FlatList = styled.ul`
   list-style: none;
@@ -36,21 +36,12 @@ const FlatList = styled.ul`
 
 export default React.memo(function VardaErrors() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<VardaErrorReportRow[]>>(Loading.of())
-  const [dirty, setDirty] = useState<boolean>(false)
-
-  useEffect(() => {
-    setRows(Loading.of())
-    void getVardaErrorsReport()
-      .then(setRows)
-      .then(() => setDirty(false))
-  }, [dirty])
+  const vardaErrorsResult = useQueryResult(vardaErrorsQuery)
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
 
   const markChildForResetAndReload = async (childId: string) => {
-    setDirty(true)
     return markChildForVardaReset(childId)
   }
 
@@ -64,9 +55,7 @@ export default React.memo(function VardaErrors() {
           onClick={runResetVardaChildren}
           onSuccess={() => null}
         />
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(vardaErrorsResult, (rows) => (
           <>
             <TableScrollable data-qa="varda-errors-table">
               <Thead>
@@ -80,7 +69,7 @@ export default React.memo(function VardaErrors() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.value.map((row: VardaErrorReportRow) => (
+                {rows.map((row: VardaErrorReportRow) => (
                   <Tr data-qa="varda-error-row" key={row.serviceNeedId}>
                     <Td data-qa={`age-${row.childId}`}>
                       {ageInDays(row.created)}
@@ -132,7 +121,7 @@ export default React.memo(function VardaErrors() {
               </Tbody>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
