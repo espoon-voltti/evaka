@@ -26,4 +26,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2023-38286</cve>
     </suppress>
+    <suppress>
+        <notes>Misidentification</notes>
+        <cve>CVE-2020-21469</cve>
+    </suppress>
 </suppressions>
