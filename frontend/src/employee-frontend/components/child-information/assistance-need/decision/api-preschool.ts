@@ -56,7 +56,7 @@ const deserializeAssistanceNeedPreschoolDecisionBasicsResponse = (
     ...json.decision,
     created: HelsinkiDateTime.parseIso(json.decision.created),
     validFrom: LocalDate.parseNullableIso(json.decision.validFrom),
-    validTo: LocalDate.parseNullableIso(json.decision.validFrom),
+    validTo: LocalDate.parseNullableIso(json.decision.validTo),
     sentForDecision: LocalDate.parseNullableIso(json.decision.sentForDecision),
     decisionMade: LocalDate.parseNullableIso(json.decision.decisionMade)
   }
