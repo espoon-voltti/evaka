@@ -52,7 +52,9 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
@@ -72,7 +74,10 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.service.IncomeNotification
+import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
+import fi.espoo.evaka.messaging.MessageThreadStub
+import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
@@ -134,6 +139,7 @@ import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PairingId
@@ -190,6 +196,8 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -220,7 +228,8 @@ class DevApi(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
-    bucketEnv: BucketEnv
+    private val bucketEnv: BucketEnv,
+    private val emailMessageProvider: IEmailMessageProvider
 ) {
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
@@ -1545,6 +1554,118 @@ RETURNING id
         @PathVariable childId: ChildId
     ): List<ChildDiscussionData> {
         return db.connect { dbc -> dbc.read { tx -> tx.getChildDiscussions(childId) } }
+    }
+
+    enum class EmailMessageType {
+        pendingDecisionNotification,
+        clubApplicationReceived,
+        daycareApplicationReceived,
+        preschoolApplicationReceived,
+        assistanceNeedDecisionNotification,
+        assistanceNeedPreschoolDecisionNotification,
+        missingReservationsNotification,
+        messageNotification,
+        vasuNotification,
+        pedagogicalDocumentNotification,
+        outdatedIncomeNotification,
+        calendarEventNotification,
+    }
+
+    @GetMapping("/email-content")
+    fun getEmails(
+        @RequestParam("message", required = false, defaultValue = "pendingDecisionNotification")
+        message: EmailMessageType,
+        @RequestParam("format", required = false, defaultValue = "html") format: String
+    ): ResponseEntity<Any> {
+        val emailContent =
+            when (message) {
+                EmailMessageType.pendingDecisionNotification ->
+                    emailMessageProvider.pendingDecisionNotification(Language.fi)
+                EmailMessageType.clubApplicationReceived ->
+                    emailMessageProvider.clubApplicationReceived(Language.fi)
+                EmailMessageType.daycareApplicationReceived ->
+                    emailMessageProvider.daycareApplicationReceived(Language.fi)
+                EmailMessageType.preschoolApplicationReceived ->
+                    emailMessageProvider.preschoolApplicationReceived(Language.fi, true)
+                EmailMessageType.assistanceNeedDecisionNotification ->
+                    emailMessageProvider.assistanceNeedDecisionNotification(Language.fi)
+                EmailMessageType.assistanceNeedPreschoolDecisionNotification ->
+                    emailMessageProvider.assistanceNeedPreschoolDecisionNotification(Language.fi)
+                EmailMessageType.missingReservationsNotification ->
+                    emailMessageProvider.missingReservationsNotification(
+                        Language.fi,
+                        FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now())
+                    )
+                EmailMessageType.messageNotification ->
+                    emailMessageProvider.messageNotification(
+                        Language.fi,
+                        MessageThreadStub(
+                            id = MessageThreadId(UUID.randomUUID()),
+                            type = MessageType.MESSAGE,
+                            title = "Testiviesti",
+                            urgent = false,
+                            isCopy = false
+                        )
+                    )
+                EmailMessageType.vasuNotification ->
+                    emailMessageProvider.vasuNotification(Language.fi, ChildId(UUID.randomUUID()))
+                EmailMessageType.pedagogicalDocumentNotification ->
+                    emailMessageProvider.pedagogicalDocumentNotification(Language.fi)
+                EmailMessageType.outdatedIncomeNotification ->
+                    emailMessageProvider.outdatedIncomeNotification(
+                        IncomeNotificationType.INITIAL_EMAIL,
+                        Language.fi
+                    )
+                EmailMessageType.calendarEventNotification ->
+                    emailMessageProvider.calendarEventNotification(
+                        Language.fi,
+                        listOf(
+                            CalendarEventNotificationData(
+                                "Esimerkki 1",
+                                FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1))
+                            ),
+                            CalendarEventNotificationData(
+                                "Esimerkki 2",
+                                FiniteDateRange(
+                                    LocalDate.now().plusDays(7),
+                                    LocalDate.now().plusDays(7)
+                                )
+                            ),
+                        )
+                    )
+            }
+        val content =
+            if (format == "html") emailContent.html
+            else
+                "<div style=\"font-family: monospace; white-space: pre-wrap\">${emailContent.text}</div>"
+
+        val options =
+            EmailMessageType.values().joinToString("") {
+                "<option value=\"$it\" ${if (it == message) "selected" else ""}>$it</option>"
+            }
+        val form =
+            """
+<form>
+<select name="message">$options</select>
+<select name="format">
+  <option value="html" ${if (format == "html") "selected" else ""}>html</option>
+  <option value="text" ${if (format == "text") "selected" else ""}>text</option>
+</select>
+<button>Go</button>
+</form>
+"""
+
+        val body =
+            """
+<!DOCTYPE html>
+<html>
+<body>
+$form
+<hr>
+<div style="max-width: 900px">$content</div>
+</body>
+"""
+        return ResponseEntity.status(HttpStatus.OK).header("Content-Type", "text/html").body(body)
     }
 }
 

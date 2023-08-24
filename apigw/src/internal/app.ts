@@ -145,7 +145,7 @@ export default function internalGwApp(
     if (enableDevApi) {
       router.use(
         '/dev-api',
-        createProxy({ path: ({ path }) => `/dev-api${path}` })
+        createProxy({ path: ({ url }) => `/dev-api${url}` })
       )
 
       router.get('/auth/mobile-e2e-signup', devApiE2ESignup)

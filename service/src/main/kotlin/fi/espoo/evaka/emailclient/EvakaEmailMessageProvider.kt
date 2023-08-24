@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
+/** Use http://localhost:9099/api/internal/dev-api/email-content to preview email messages */
 class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvider {
     private fun baseUrl(language: Language) =
         when (language) {
