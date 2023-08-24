@@ -208,6 +208,7 @@ enum class Audit(
     FeeDecisionGenerate,
     FeeDecisionHeadOfFamilyRead,
     FeeDecisionHeadOfFamilyCreateRetroactive,
+    FeeDecisionIgnore,
     FeeDecisionMarkSent,
     FeeDecisionPdfRead,
     FeeDecisionRead,

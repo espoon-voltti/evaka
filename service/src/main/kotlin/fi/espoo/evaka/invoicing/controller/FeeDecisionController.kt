@@ -158,6 +158,28 @@ class FeeDecisionController(
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
     }
 
+    @PostMapping("/ignore")
+    fun ignoreDrafts(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody feeDecisionIds: List<FeeDecisionId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.FeeDecision.IGNORE,
+                    feeDecisionIds
+                )
+                service.ignoreDrafts(tx, feeDecisionIds, clock.today())
+            }
+        }
+        Audit.FeeDecisionIgnore.log(targetId = feeDecisionIds)
+    }
+
     @PostMapping("/mark-sent")
     fun setSent(
         db: Database,
