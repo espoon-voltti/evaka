@@ -423,22 +423,32 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
     ): EmailContent {
         val format =
             DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale("fi", "FI"))
+        val eventsHtml =
+            "<ul>" +
+                events.joinToString("\n") { event ->
+                    var period = event.period.start.format(format)
+                    if (event.period.end != event.period.start) {
+                        period += "-${event.period.end.format(format)}"
+                    }
+                    "<li>${period}: ${event.title}</li>"
+                } +
+                "</ul>"
         return EmailContent.fromHtml(
             subject =
                 "Uusia kalenteritapahtumia eVakassa / Nya kalenderhändelser i eVaka / New calendar events in eVaka",
             html =
                 """
-<p>eVakaan on lisätty uusia kalenteritapahtumia / Nya kalenderhändelser har lagts till i eVaka / New calendar events have been added to eVaka:</p>
-""" +
-                    events.joinToString("\n") { event ->
-                        var period = event.period.start.format(format)
-                        if (event.period.end != event.period.start) {
-                            period += "-${event.period.end.format(format)}"
-                        }
-                        "<p>${period}: ${event.title}</p>"
-                    } +
-                    """
-<p>Katso lisää kalenterissa / Se mer i kalendern / See more in the calendar: ${baseUrl(language)}/calendar</p>
+<p>eVakaan on lisätty uusia kalenteritapahtumia:</p>
+$eventsHtml
+<p>Katso lisää kalenterissa: <a href="${baseUrl(language)}/calendar">${baseUrl(language)}/calendar</a></p>
+<hr>
+<p>Nya kalenderhändelser i eVaka:</p>
+$eventsHtml
+<p>Se mer i kalendern: <a href="${baseUrl(language)}/calendar">${baseUrl(language)}/calendar</a></p>
+<hr>
+<p>New calendar events in eVaka:</p>
+$eventsHtml
+<p>See more in the calendar: <a href="${baseUrl(language)}/calendar">${baseUrl(language)}/calendar</a></p>
 """
         )
     }
