@@ -10,6 +10,8 @@ import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.pis.deleteParentship
+import fi.espoo.evaka.placement.cancelPlacement
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -22,6 +24,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_2
 import java.time.LocalDate
@@ -252,12 +255,63 @@ class FeeDecisionGenerationForPlacementChangesIntegrationTest :
         )
     }
 
+    @Test
+    fun `placement is removed`() {
+        db.transaction { tx -> tx.cancelPlacement(placementId) }
+        generate()
+        assertDrafts(listOf(dateRange(10, 20) to 0))
+        sendAllFeeDecisions()
+        assertFinal(listOf(Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1)))
+    }
+
+    @Test
+    fun `end date moves later then draft is ignored`() {
+        if (evakaEnv.feeDecisionGeneratorV1Enabled || !evakaEnv.feeDecisionGeneratorV2Enabled) {
+            return // only implemented for v2
+        }
+
+        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(10), day(25)) }
+        generate()
+        assertDrafts(listOf(dateRange(21, 25) to 1))
+
+        ignoreDrafts()
+        assertDrafts(emptyList())
+
+        // regenerating does not bring back ignored drafts
+        generate()
+        assertDrafts(emptyList())
+
+        // non identical drafts are not ignored
+        val secondParentshipId =
+            db.transaction { tx ->
+                tx.insertTestParentship(
+                    testAdult_1.id,
+                    testChild_2.id,
+                    startDate = originalRange.start.minusYears(1),
+                    endDate = originalRange.end!!.plusYears(1)
+                )
+            }
+        generate()
+        assertDrafts(listOf(dateRange(10, 25) to 1))
+
+        // going back to ignored state keeps the draft ignored
+        db.transaction { tx -> tx.deleteParentship(secondParentshipId) }
+        generate()
+        assertDrafts(emptyList())
+
+        unignoreIgnoredDrafts()
+        assertDrafts(listOf(dateRange(21, 25) to 1))
+    }
+
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
     private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
 
     private fun assertDrafts(expectedDrafts: List<Pair<DateRange, Int>>) {
         val decisions = getAllFeeDecisions()
-        assertEquals(1 + expectedDrafts.size, decisions.size)
+        assertEquals(
+            expectedDrafts.size,
+            decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size
+        )
         assertEquals(sentDecision, decisions.find { it.status == FeeDecisionStatus.SENT })
         expectedDrafts.forEach { (range, children) ->
             assertTrue {
@@ -303,6 +357,22 @@ class FeeDecisionGenerationForPlacementChangesIntegrationTest :
             .filter { it.status == FeeDecisionStatus.DRAFT }
             .map { it.id }
             .let { ids -> feeDecisionController.confirmDrafts(dbInstance(), admin, now, ids, null) }
+        asyncJobRunner.runPendingJobsSync(now)
+    }
+
+    private fun ignoreDrafts() {
+        getAllFeeDecisions()
+            .filter { it.status == FeeDecisionStatus.DRAFT }
+            .map { it.id }
+            .let { ids -> feeDecisionController.ignoreDrafts(dbInstance(), admin, now, ids) }
+        asyncJobRunner.runPendingJobsSync(now)
+    }
+
+    private fun unignoreIgnoredDrafts() {
+        getAllFeeDecisions()
+            .filter { it.status == FeeDecisionStatus.IGNORED }
+            .map { it.id }
+            .let { ids -> feeDecisionController.unignoreDrafts(dbInstance(), admin, now, ids) }
         asyncJobRunner.runPendingJobsSync(now)
     }
 }
