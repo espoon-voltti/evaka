@@ -5,14 +5,13 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import {
@@ -112,17 +111,11 @@ export default React.memo(function UnitAttendanceReservationsView({
   const noFilter = useCallback(() => true, [])
 
   const combinedData = combine(childReservations, staffAttendances)
-  const staffAttendancesStatus = useDataStatus(combinedData)
 
   const [legendVisible, setLegendVisible] = useState(false)
 
   return renderResult(combinedData, ([childData, staffData]) => (
     <>
-      <div
-        data-qa="staff-attendances-status"
-        data-qa-value={staffAttendancesStatus}
-      />
-
       {creatingReservationChild && (
         <ReservationModalSingleChild
           child={creatingReservationChild}
@@ -132,7 +125,11 @@ export default React.memo(function UnitAttendanceReservationsView({
         />
       )}
 
-      <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn
+        spacing="L"
+        data-qa="staff-attendances-status"
+        data-isloading={isLoading(combinedData)}
+      >
         {selectedGroup.type === 'staff' ? (
           <StaffAttendanceTable
             unitId={unitId}

@@ -14,6 +14,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -103,10 +104,19 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                         val group =
                                             if (backup != null && !backup.inOtherUnit) backup.group
                                             else originalGroup
+                                        val originalPlacement =
+                                            rows.find { !it.isBackup && it.group == null }
+                                        val placementType =
+                                            backup?.placementType
+                                                ?: originalPlacement?.placementType
+                                                    ?: throw Error(
+                                                    "Should not happen: each child either has a placement or backup care"
+                                                )
                                         listOfNotNull(
                                             ChildPlacementStatus(
                                                 date = date,
                                                 childId = childId,
+                                                placementType = placementType,
                                                 group = group,
                                                 inOtherUnit = backup?.inOtherUnit ?: false,
                                                 otherGroup = originalGroup,
@@ -116,6 +126,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                                 ChildPlacementStatus(
                                                     date = date,
                                                     childId = childId,
+                                                    placementType = placementType,
                                                     group = originalGroup,
                                                     inOtherUnit = false,
                                                     otherGroup = backup.group,
@@ -255,7 +266,8 @@ data class UnitAttendanceReservations(
         val absence: Absence?,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val inOtherUnit: Boolean,
-        val isInBackupGroup: Boolean
+        val isInBackupGroup: Boolean,
+        val requiresReservation: Boolean
     )
 
     data class AttendanceTimes(val startTime: String, val endTime: String?)
@@ -314,6 +326,7 @@ private fun getUnitOperationalDayData(
 private data class ChildPlacementStatus(
     val date: LocalDate,
     val childId: ChildId,
+    val placementType: PlacementType,
     val group: UnitAttendanceReservations.ReservationGroup?,
     val inOtherUnit: Boolean,
     val otherGroup: UnitAttendanceReservations.ReservationGroup?,
@@ -323,6 +336,7 @@ private data class ChildPlacementStatus(
 private data class EffectiveGroupPlacementPeriod(
     val period: FiniteDateRange,
     val childId: ChildId,
+    val placementType: PlacementType,
     @Nested("group") val group: UnitAttendanceReservations.ReservationGroup?,
     val isBackup: Boolean,
     val inOtherUnit: Boolean
@@ -338,6 +352,7 @@ private fun Database.Read.getEffectiveGroupPlacementsInRange(
 SELECT
     daterange(p.start_date, p.end_date, '[]') * :dateRange AS period,
     p.child_id,
+    p.type AS placement_type,
     NULL AS group_id,
     NULL AS group_name,
     FALSE AS is_backup,
@@ -351,6 +366,7 @@ UNION ALL
 SELECT
     daterange(dgp.start_date, dgp.end_date, '[]') * :dateRange AS period,
     p.child_id,
+    p.type AS placement_type,
     dgp.daycare_group_id AS group_id,
     dg.name AS group_name,
     FALSE AS is_backup,
@@ -370,6 +386,7 @@ Backup placement
 SELECT
     daterange(bc.start_date, bc.end_date, '[]') * :dateRange AS period,
     bc.child_id,
+    p.type AS placement_type,
     CASE WHEN bc.unit_id <> :unitId THEN NULL ELSE bc.group_id END AS group_id,
     CASE WHEN bc.unit_id <> :unitId THEN NULL ELSE dg.name END AS group_name,
     TRUE AS is_backup,
@@ -561,6 +578,7 @@ private fun dailyRecord(
         dailyServiceTimes = serviceTimes?.find { dst -> dst.validityPeriod.includes(date) },
         inOtherUnit = inOtherUnit,
         isInBackupGroup =
-            placementStatus.isOriginalGroup && placementStatus.group != placementStatus.otherGroup
+            placementStatus.isOriginalGroup && placementStatus.group != placementStatus.otherGroup,
+        requiresReservation = placementStatus.placementType.requiresAttendanceReservations()
     )
 }
