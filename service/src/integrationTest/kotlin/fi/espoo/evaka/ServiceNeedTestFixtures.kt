@@ -7,9 +7,9 @@ package fi.espoo.evaka
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
-import fi.espoo.evaka.invoicing.service.ServiceNeedOptionFee
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.domain.DateRange

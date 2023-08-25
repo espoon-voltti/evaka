@@ -29,13 +29,14 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedValue
-import fi.espoo.evaka.invoicing.domain.SiblingDiscount
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
+import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -507,52 +508,4 @@ WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedType
         .bind("excludedTypes", excludedPlacementTypes)
         .mapTo<Placement>()
         .toList()
-}
-
-private fun Database.Read.getServiceNeedOptionFees(from: LocalDate): List<ServiceNeedOptionFee> {
-    return createQuery(
-            """
-SELECT
-    service_need_option_id,
-    validity,
-    base_fee,
-    sibling_discount_2,
-    sibling_fee_2,
-    sibling_discount_2_plus,
-    sibling_fee_2_plus
-FROM service_need_option_fee
-WHERE validity && daterange(:from, null, '[]')
-        """
-                .trimIndent()
-        )
-        .bind("from", from)
-        .mapTo<ServiceNeedOptionFee>()
-        .toList()
-}
-
-data class ServiceNeedOptionFee(
-    val serviceNeedOptionId: ServiceNeedOptionId,
-    val validity: DateRange,
-    val baseFee: Int,
-    val siblingDiscount2: BigDecimal,
-    val siblingFee2: Int,
-    val siblingDiscount2Plus: BigDecimal,
-    val siblingFee2Plus: Int
-) {
-    fun siblingDiscount(siblingOrdinal: Int): SiblingDiscount {
-        val multiplier =
-            when (siblingOrdinal) {
-                1 -> BigDecimal(1)
-                2 -> BigDecimal(1) - siblingDiscount2
-                else -> BigDecimal(1) - siblingDiscount2Plus
-            }
-        val percent = ((BigDecimal(1) - multiplier) * BigDecimal(100)).toInt()
-        val fee =
-            when (siblingOrdinal) {
-                1 -> null
-                2 -> siblingFee2
-                else -> siblingFee2Plus
-            }
-        return SiblingDiscount(multiplier, percent, fee)
-    }
 }

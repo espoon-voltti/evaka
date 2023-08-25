@@ -221,6 +221,7 @@ private fun createChildFeeBasis(
                 hasServiceNeed = true,
                 serviceNeedOption = snDaycareFullDay35
             ),
+        serviceNeedOptionFee = null,
         feeAlterations = emptyList(),
         income = null
     )

@@ -436,3 +436,43 @@ ORDER BY child_id, valid_during
         .mapTo<ChildServiceNeedInfo>()
         .toList()
 }
+
+fun Database.Read.getServiceNeedOptionFees(from: LocalDate): List<ServiceNeedOptionFee> {
+    return createQuery(
+            """
+SELECT
+    service_need_option_id,
+    validity,
+    base_fee,
+    sibling_discount_2,
+    sibling_fee_2,
+    sibling_discount_2_plus,
+    sibling_fee_2_plus
+FROM service_need_option_fee
+WHERE validity && daterange(:from, null, '[]')
+        """
+                .trimIndent()
+        )
+        .bind("from", from)
+        .mapTo<ServiceNeedOptionFee>()
+        .toList()
+}
+
+fun Database.Read.getServiceNeedOptionFees(): List<ServiceNeedOptionFee> {
+    return createQuery(
+            """
+SELECT
+    service_need_option_id,
+    validity,
+    base_fee,
+    sibling_discount_2,
+    sibling_fee_2,
+    sibling_discount_2_plus,
+    sibling_fee_2_plus
+FROM service_need_option_fee
+        """
+                .trimIndent()
+        )
+        .mapTo<ServiceNeedOptionFee>()
+        .toList()
+}
