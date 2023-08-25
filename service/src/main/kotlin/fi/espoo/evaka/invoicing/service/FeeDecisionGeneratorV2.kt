@@ -353,25 +353,16 @@ data class ChildFeeBasis(
     ): FeeDecisionChild? {
         if (!placement.displayOnFeeDecision()) return null
 
-        val siblingDiscountMultiplier =
-            feeThresholds.siblingDiscountMultiplier(
-                siblingOrdinal = siblingIndex + 1,
-                placementType = placement.placementType
-            )
+        val siblingDiscount = feeThresholds.siblingDiscount(siblingOrdinal = siblingIndex + 1)
 
         val baseFee =
-            calculateBaseFee(
-                placement.placementType,
-                feeThresholds,
-                familySize,
-                parentIncomes + listOfNotNull(income)
-            )
+            calculateBaseFee(feeThresholds, familySize, parentIncomes + listOfNotNull(income))
 
         val feeBeforeAlterations =
             calculateFeeBeforeFeeAlterations(
                 baseFee,
                 placement.serviceNeedOption.feeCoefficient,
-                siblingDiscountMultiplier,
+                siblingDiscount,
                 feeThresholds.minFee
             )
 
@@ -392,7 +383,7 @@ data class ChildFeeBasis(
                 missing = !placement.hasServiceNeed
             ),
             baseFee,
-            feeThresholds.siblingDiscountPercent(siblingIndex + 1, placement.placementType),
+            siblingDiscount.percent,
             feeBeforeAlterations,
             feeAlterationsWithEffects,
             finalFee,

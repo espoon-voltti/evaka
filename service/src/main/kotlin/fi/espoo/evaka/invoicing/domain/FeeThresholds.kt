@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 
@@ -33,9 +32,7 @@ data class FeeThresholds(
     val temporaryFee: Int,
     val temporaryFeePartDay: Int,
     val temporaryFeeSibling: Int,
-    val temporaryFeeSiblingPartDay: Int,
-    val preschoolClubFee: Int?,
-    val preschoolClubSiblingDiscount: BigDecimal?
+    val temporaryFeeSiblingPartDay: Int
 ) {
     fun incomeMultiplier(familySize: Int): BigDecimal =
         if (familySize <= 1) {
@@ -79,24 +76,17 @@ data class FeeThresholds(
             }
         }
 
-    fun siblingDiscountMultiplier(siblingOrdinal: Int, placementType: PlacementType): BigDecimal {
+    fun siblingDiscount(siblingOrdinal: Int): SiblingDiscount {
         check(siblingOrdinal > 0) { "Sibling ordinal must be > 0 (was $siblingOrdinal)" }
-        if (siblingOrdinal == 1) {
-            return BigDecimal(1)
-        }
-        siblingDiscountMultiplierByPlacementType(placementType)?.let {
-            return BigDecimal(1) - it
-        }
-        return when (siblingOrdinal) {
-            2 -> BigDecimal(1) - siblingDiscount2
-            else -> BigDecimal(1) - siblingDiscount2Plus
-        }
+        val multiplier =
+            when (siblingOrdinal) {
+                1 -> BigDecimal(1)
+                2 -> BigDecimal(1) - siblingDiscount2
+                else -> BigDecimal(1) - siblingDiscount2Plus
+            }
+        val percent = ((BigDecimal(1) - multiplier) * BigDecimal(100)).toInt()
+        return SiblingDiscount(multiplier, percent, null)
     }
-
-    fun siblingDiscountPercent(siblingOrdinal: Int, placementType: PlacementType): Int =
-        ((BigDecimal(1) - siblingDiscountMultiplier(siblingOrdinal, placementType)) *
-                BigDecimal(100))
-            .toInt()
 
     fun getFeeDecisionThresholds(familySize: Int): FeeDecisionThresholds =
         if (familySize > 1) {
@@ -123,21 +113,6 @@ data class FeeThresholds(
             else -> if (partDay) temporaryFeeSiblingPartDay else temporaryFeeSibling
         }
     }
-
-    fun getBaseFeeByPlacementType(placementType: PlacementType): Int? =
-        when (placementType) {
-            PlacementType.PRESCHOOL_CLUB -> preschoolClubFee ?: error("Missing preschool club fee")
-            else -> null
-        }
-
-    private fun siblingDiscountMultiplierByPlacementType(
-        placementType: PlacementType
-    ): BigDecimal? =
-        when (placementType) {
-            PlacementType.PRESCHOOL_CLUB -> preschoolClubSiblingDiscount
-                    ?: error("Missing preschool club sibling discount")
-            else -> null
-        }
 }
 
 data class FeeDecisionThresholds(
@@ -147,3 +122,5 @@ data class FeeDecisionThresholds(
     val maxFee: Int,
     val minFee: Int
 )
+
+data class SiblingDiscount(val multiplier: BigDecimal, val percent: Int, val fee: Int?)

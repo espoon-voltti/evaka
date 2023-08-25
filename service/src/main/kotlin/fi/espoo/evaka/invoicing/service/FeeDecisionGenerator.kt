@@ -29,6 +29,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedValue
+import fi.espoo.evaka.invoicing.domain.SiblingDiscount
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
@@ -39,6 +40,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
@@ -61,6 +63,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 ) {
     val children = families.flatMap { it.children }.toSet()
     val prices = getFeeThresholds(from)
+    val fees = getServiceNeedOptionFees(from).groupBy { it.serviceNeedOptionId }
     val partnerIds = families.mapNotNull { it.partner }
     val childIds = children.map { it.id }
 
@@ -104,6 +107,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
             families,
             placements,
             prices,
+            fees,
             adultIncomes,
             childIncomes,
             feeAlterations,
@@ -220,6 +224,7 @@ private fun generateFeeDecisions(
     families: List<FridgeFamily>,
     allPlacements: Map<PersonBasic, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
+    fees: Map<ServiceNeedOptionId, List<ServiceNeedOptionFee>>,
     incomes: List<Income>,
     childIncomes: Map<ChildId, List<Income>>,
     feeAlterations: List<FeeAlteration>,
@@ -230,6 +235,7 @@ private fun generateFeeDecisions(
             incomes.map { DateRange(it.validFrom, it.validTo) } +
             childIncomes.values.flatten().map { DateRange(it.validFrom, it.validTo) } +
             prices.map { it.validDuring } +
+            fees.flatMap { it.value.map { fee -> fee.validity } } +
             allPlacements.flatMap { (_, placements) -> placements.map { it.first } } +
             feeAlterations.map { DateRange(it.validFrom, it.validTo) }
 
@@ -310,20 +316,26 @@ private fun generateFeeDecisions(
                                 return@mapIndexed null
                             }
 
-                            val siblingDiscountMultiplier =
-                                price.siblingDiscountMultiplier(index + 1, placement.type)
+                            val serviceNeedOptionFee =
+                                fees[placement.serviceNeed.optionId]?.find {
+                                    it.validity.contains(period)
+                                }
+                            val siblingDiscount =
+                                serviceNeedOptionFee?.siblingDiscount(index + 1)
+                                    ?: price.siblingDiscount(index + 1)
                             val baseFee =
-                                calculateBaseFee(
-                                    placement.type,
-                                    price,
-                                    family.getSize(),
-                                    familyIncomes + listOfNotNull(childPeriodIncome.get(child.id))
-                                )
+                                serviceNeedOptionFee?.baseFee
+                                    ?: calculateBaseFee(
+                                        price,
+                                        family.getSize(),
+                                        familyIncomes +
+                                            listOfNotNull(childPeriodIncome.get(child.id))
+                                    )
                             val feeBeforeAlterations =
                                 calculateFeeBeforeFeeAlterations(
                                     baseFee,
                                     placement.serviceNeed.feeCoefficient,
-                                    siblingDiscountMultiplier,
+                                    siblingDiscount,
                                     price.minFee
                                 )
                             val relevantFeeAlterations =
@@ -351,7 +363,7 @@ private fun generateFeeDecisions(
                                     placement.missingServiceNeed
                                 ),
                                 baseFee,
-                                price.siblingDiscountPercent(index + 1, placement.type),
+                                siblingDiscount.percent,
                                 feeBeforeAlterations,
                                 feeAlterationsWithEffects,
                                 finalFee,
@@ -495,4 +507,52 @@ WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedType
         .bind("excludedTypes", excludedPlacementTypes)
         .mapTo<Placement>()
         .toList()
+}
+
+private fun Database.Read.getServiceNeedOptionFees(from: LocalDate): List<ServiceNeedOptionFee> {
+    return createQuery(
+            """
+SELECT
+    service_need_option_id,
+    validity,
+    base_fee,
+    sibling_discount_2,
+    sibling_fee_2,
+    sibling_discount_2_plus,
+    sibling_fee_2_plus
+FROM service_need_option_fee
+WHERE validity && daterange(:from, null, '[]')
+        """
+                .trimIndent()
+        )
+        .bind("from", from)
+        .mapTo<ServiceNeedOptionFee>()
+        .toList()
+}
+
+data class ServiceNeedOptionFee(
+    val serviceNeedOptionId: ServiceNeedOptionId,
+    val validity: DateRange,
+    val baseFee: Int,
+    val siblingDiscount2: BigDecimal,
+    val siblingFee2: Int,
+    val siblingDiscount2Plus: BigDecimal,
+    val siblingFee2Plus: Int
+) {
+    fun siblingDiscount(siblingOrdinal: Int): SiblingDiscount {
+        val multiplier =
+            when (siblingOrdinal) {
+                1 -> BigDecimal(1)
+                2 -> BigDecimal(1) - siblingDiscount2
+                else -> BigDecimal(1) - siblingDiscount2Plus
+            }
+        val percent = ((BigDecimal(1) - multiplier) * BigDecimal(100)).toInt()
+        val fee =
+            when (siblingOrdinal) {
+                1 -> null
+                2 -> siblingFee2
+                else -> siblingFee2Plus
+            }
+        return SiblingDiscount(multiplier, percent, fee)
+    }
 }

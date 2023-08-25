@@ -307,8 +307,6 @@ export interface FeeThresholds {
   minIncomeThreshold4: number
   minIncomeThreshold5: number
   minIncomeThreshold6: number
-  preschoolClubFee: number | null
-  preschoolClubSiblingDiscount: number | null
   siblingDiscount2: number
   siblingDiscount2Plus: number
   temporaryFee: number

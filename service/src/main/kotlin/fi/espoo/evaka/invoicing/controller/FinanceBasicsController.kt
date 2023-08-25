@@ -207,9 +207,7 @@ SELECT
     temporary_fee,
     temporary_fee_part_day,
     temporary_fee_sibling,
-    temporary_fee_sibling_part_day,
-    preschool_club_fee,
-    preschool_club_sibling_discount
+    temporary_fee_sibling_part_day
 FROM fee_thresholds
         """
                 .trimIndent()
@@ -246,9 +244,7 @@ INSERT INTO fee_thresholds (
     temporary_fee,
     temporary_fee_part_day,
     temporary_fee_sibling,
-    temporary_fee_sibling_part_day,
-    preschool_club_fee,
-    preschool_club_sibling_discount
+    temporary_fee_sibling_part_day
 ) VALUES (
     :id,
     :validDuring,
@@ -275,9 +271,7 @@ INSERT INTO fee_thresholds (
     :temporaryFee,
     :temporaryFeePartDay,
     :temporaryFeeSibling,
-    :temporaryFeeSiblingPartDay,
-    :preschoolClubFee,
-    :preschoolClubSiblingDiscount
+    :temporaryFeeSiblingPartDay
 )
 RETURNING id
 """
@@ -323,9 +317,7 @@ SET
     temporary_fee = :temporaryFee,
     temporary_fee_part_day = :temporaryFeePartDay,
     temporary_fee_sibling = :temporaryFeeSibling,
-    temporary_fee_sibling_part_day = :temporaryFeeSiblingPartDay,
-    preschool_club_fee = :preschoolClubFee,
-    preschool_club_sibling_discount = :preschoolClubSiblingDiscount
+    temporary_fee_sibling_part_day = :temporaryFeeSiblingPartDay
 WHERE id = :id
 """
         )

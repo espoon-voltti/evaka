@@ -7,6 +7,7 @@ package fi.espoo.evaka
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
+import fi.espoo.evaka.invoicing.service.ServiceNeedOptionFee
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -692,6 +693,19 @@ val serviceNeedTestFixtures =
         snDaycareContractDays15,
         snDaycareContractDays10,
         snDefaultSchoolShiftcare
+    )
+
+val serviceNeedOptionFeeTestFixtures =
+    listOf(
+        ServiceNeedOptionFee(
+            serviceNeedOptionId = snPreschoolClub45.id,
+            validity = DateRange(LocalDate.of(2000, 1, 1), null),
+            baseFee = 14000,
+            siblingDiscount2 = BigDecimal("0.4"),
+            siblingFee2 = 8400,
+            siblingDiscount2Plus = BigDecimal("0.4"),
+            siblingFee2Plus = 8400
+        )
     )
 
 val serviceNeedOptionVoucherValueCoefficients =

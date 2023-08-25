@@ -596,9 +596,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             temporaryFee = 2900,
             temporaryFeePartDay = 1500,
             temporaryFeeSibling = 1500,
-            temporaryFeeSiblingPartDay = 800,
-            preschoolClubFee = 14000,
-            preschoolClubSiblingDiscount = BigDecimal("0.4")
+            temporaryFeeSiblingPartDay = 800
         )
     )
 
@@ -606,6 +604,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertClubTerms()
 
     insertServiceNeedOptions()
+    insertServiceNeedOptionFees()
     insertServiceNeedOptionVoucherValues()
     insertAssistanceActionOptions()
     insertAssistanceBasisOptions()
@@ -680,6 +679,18 @@ VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :fe
 """
         )
     serviceNeedTestFixtures.forEach { fixture -> batch.bindKotlin(fixture).add() }
+    batch.execute()
+}
+
+fun Database.Transaction.insertServiceNeedOptionFees() {
+    val batch =
+        prepareBatch(
+            """
+INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
+VALUES (:serviceNeedOptionId, :validity, :baseFee, :siblingDiscount2, :siblingFee2, :siblingDiscount2Plus, :siblingFee2Plus)
+"""
+        )
+    serviceNeedOptionFeeTestFixtures.forEach { fixture -> batch.bindKotlin(fixture).add() }
     batch.execute()
 }
 

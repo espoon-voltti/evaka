@@ -290,16 +290,11 @@ fun useMaxFee(incomes: List<DecisionIncome?>): Boolean =
     }
 
 fun calculateBaseFee(
-    placementType: PlacementType,
     feeThresholds: FeeThresholds,
     familySize: Int,
     incomes: List<DecisionIncome?>
 ): Int {
     check(familySize > 1) { "Family size should not be less than 2" }
-
-    feeThresholds.getBaseFeeByPlacementType(placementType)?.let {
-        return it
-    }
 
     val multiplier = feeThresholds.incomeMultiplier(familySize)
 
@@ -355,10 +350,12 @@ fun getTotalIncome(
 fun calculateFeeBeforeFeeAlterations(
     baseFee: Int,
     serviceNeedCoefficient: BigDecimal,
-    siblingDiscountMultiplier: BigDecimal,
+    siblingDiscount: SiblingDiscount,
     minFee: Int
 ): Int {
-    val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
+    val feeAfterSiblingDiscount =
+        siblingDiscount.fee?.let { BigDecimal(it) }
+            ?: roundToEuros(BigDecimal(baseFee) * siblingDiscount.multiplier)
     val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedCoefficient).toInt()
     return feeBeforeRounding.let { fee ->
         if (fee < minFee) {
