@@ -48,6 +48,7 @@ data class EmailContent(
     }
 }
 
+/** Use http://localhost:9099/api/internal/dev-api/email-content to preview email messages */
 interface IEmailMessageProvider {
     fun pendingDecisionNotification(language: Language): EmailContent
 
