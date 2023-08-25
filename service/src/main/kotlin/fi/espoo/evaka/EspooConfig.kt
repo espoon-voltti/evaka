@@ -37,8 +37,6 @@ import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Unauthorized
-import fi.espoo.evaka.shared.job.ScheduledJob
-import fi.espoo.evaka.shared.job.ScheduledJobSettingsMap
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -135,11 +133,6 @@ class EspooConfig {
     ): DocumentService = DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
-
-    @Bean
-    fun scheduledJobSettingsMap(
-        env: ScheduledJobsEnv<ScheduledJob>
-    ): ScheduledJobSettingsMap<ScheduledJob> = ScheduledJobSettingsMap(env.jobs)
 
     @Bean
     fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =

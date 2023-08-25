@@ -20,8 +20,6 @@ interface JobSchedule {
     }
 }
 
-data class ScheduledJobSettingsMap<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>)
-
 data class ScheduledJobDefinition(
     val job: Enum<*>,
     val settings: ScheduledJobSettings,

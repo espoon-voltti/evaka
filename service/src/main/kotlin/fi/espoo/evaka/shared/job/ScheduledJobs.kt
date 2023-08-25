@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.job
 
+import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
@@ -136,10 +137,10 @@ class ScheduledJobs(
     private val missingReservationsReminders: MissingReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val calendarEventNotificationService: CalendarEventNotificationService,
-    settings: ScheduledJobSettingsMap<ScheduledJob>
+    env: ScheduledJobsEnv<ScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
-        settings.jobs.map {
+        env.jobs.map {
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
