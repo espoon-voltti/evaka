@@ -138,7 +138,7 @@ class ScheduledJobs(
     private val calendarEventNotificationService: CalendarEventNotificationService,
     settings: ScheduledJobSettingsMap<ScheduledJob>
 ) : JobSchedule {
-    override val jobs: List<ScheduledJobDefinition<*>> =
+    override val jobs: List<ScheduledJobDefinition> =
         settings.jobs.map {
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }

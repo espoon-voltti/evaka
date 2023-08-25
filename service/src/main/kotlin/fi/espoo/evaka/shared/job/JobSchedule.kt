@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.LocalTime
 
 interface JobSchedule {
-    val jobs: List<ScheduledJobDefinition<*>>
+    val jobs: List<ScheduledJobDefinition>
     companion object {
         fun daily(at: LocalTime): Schedule = Daily(europeHelsinki, at)
         fun cron(expression: String): Schedule = CronSchedule(expression, europeHelsinki)
@@ -22,8 +22,8 @@ interface JobSchedule {
 
 data class ScheduledJobSettingsMap<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>)
 
-data class ScheduledJobDefinition<T : Enum<T>>(
-    val job: T,
+data class ScheduledJobDefinition(
+    val job: Enum<*>,
     val settings: ScheduledJobSettings,
     val jobFn: (db: Database.Connection, clock: EvakaClock) -> Unit
 )

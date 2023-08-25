@@ -27,7 +27,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val testTime = LocalTime.of(1, 0)
     private val testSchedule =
         object : JobSchedule {
-            override val jobs: List<ScheduledJobDefinition<TestScheduledJob>> =
+            override val jobs: List<ScheduledJobDefinition> =
                 listOf(
                     ScheduledJobDefinition(
                         TestScheduledJob.TestJob,

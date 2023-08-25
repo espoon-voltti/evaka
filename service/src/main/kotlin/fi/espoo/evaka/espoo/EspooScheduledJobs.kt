@@ -29,7 +29,7 @@ class EspooScheduledJobs(
     private val patuReportingService: PatuReportingService,
     env: ScheduledJobsEnv<EspooScheduledJob>
 ) : JobSchedule {
-    override val jobs: List<ScheduledJobDefinition<*>> =
+    override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }

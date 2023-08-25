@@ -61,7 +61,7 @@ class ScheduledJobRunner(
             .deleteUnresolvedAfter(Duration.ofHours(1))
             .build()
 
-    private fun planAsyncJob(db: Database.Connection, definition: ScheduledJobDefinition<*>) {
+    private fun planAsyncJob(db: Database.Connection, definition: ScheduledJobDefinition) {
         val (job, settings) = definition
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
