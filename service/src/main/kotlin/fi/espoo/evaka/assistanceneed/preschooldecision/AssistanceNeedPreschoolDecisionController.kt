@@ -298,14 +298,14 @@ class AssistanceNeedPreschoolDecisionController(
     ): List<AssistanceNeedPreschoolDecisionBasicsResponse> {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Child.READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS,
-                        childId
-                    )
-                    val decisions = tx.getAssistanceNeedPreschoolDecisionsByChildId(childId)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedPreschoolDecision.READ
+                        )
+                    val decisions = tx.getAssistanceNeedPreschoolDecisionsByChildId(childId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<
                             AssistanceNeedPreschoolDecisionId,

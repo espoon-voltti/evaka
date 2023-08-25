@@ -33,11 +33,14 @@ import {
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
+import AssistanceNeedPreschoolDecisionPreviewPage from 'e2e-test/pages/employee/assistance-need-decision/assistance-need-preschool-decision-preview-page'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
 let serviceWorker: EmployeeDetail
+let staff: EmployeeDetail
 let decisionPage: AssistanceNeedPreschoolDecisionPage
+let previewPage: AssistanceNeedPreschoolDecisionPreviewPage
 let childId: UUID
 let assistanceNeedDecision: DevAssistanceNeedPreschoolDecision
 
@@ -52,6 +55,7 @@ beforeEach(async () => {
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
+  staff = (await Fixture.employeeStaff(unitId).save()).data
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     childId,
@@ -74,10 +78,8 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
     page = await Page.open()
     await employeeLogin(page, serviceWorker)
     await page.goto(
-      `${
-        config.employeeUrl
-      }/child-information/${childId}/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl
+      }/child-information/${childId}/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }/edit`
     )
     decisionPage = new AssistanceNeedPreschoolDecisionPage(page)
@@ -132,10 +134,8 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
     await decisionPage.previewButton.click()
 
     await page.page.waitForURL(
-      `${
-        config.employeeUrl
-      }/child-information/${childId}/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl
+      }/child-information/${childId}/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }`
     )
   })
@@ -159,10 +159,8 @@ describe('Assistance Need Decisions - Decision process', () => {
     page = await Page.open()
     await employeeLogin(page, serviceWorker)
     await page.goto(
-      `${
-        config.employeeUrl
-      }/child-information/${childId}/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl
+      }/child-information/${childId}/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }`
     )
     decisionPage = new AssistanceNeedPreschoolDecisionPage(page)
@@ -179,8 +177,7 @@ describe('Assistance Need Decisions - Decision process', () => {
     await reportListPage.rows.assertCount(1)
     await reportListPage.rows.nth(0).click()
     await page.page.waitForURL(
-      `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }`
     )
 
@@ -189,10 +186,8 @@ describe('Assistance Need Decisions - Decision process', () => {
     await reportDecisionPage.returnForEditBtn.click()
 
     await page.goto(
-      `${
-        config.employeeUrl
-      }/child-information/${childId}/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl
+      }/child-information/${childId}/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }`
     )
     await decisionPage.editButton.click()
@@ -201,8 +196,7 @@ describe('Assistance Need Decisions - Decision process', () => {
     await decisionPage.sendDecisionButton.click()
 
     await page.goto(
-      `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }`
     )
     await reportDecisionPage.approveBtn.click()
@@ -220,8 +214,7 @@ describe('Assistance Need Decisions - Decision process', () => {
   test('Sending for decision and rejecting', async () => {
     await decisionPage.sendDecisionButton.click()
     await page.goto(
-      `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${
-        assistanceNeedDecision?.id ?? ''
+      `${config.employeeUrl}/reports/assistance-need-preschool-decisions/${assistanceNeedDecision?.id ?? ''
       }`
     )
 
@@ -231,4 +224,61 @@ describe('Assistance Need Decisions - Decision process', () => {
     await reportDecisionPage.modalOkBtn.click()
     await reportDecisionPage.status.assertTextEquals('Hylätty')
   })
+})
+
+let acceptedAssistanceNeedPreschoolDecision: DevAssistanceNeedPreschoolDecision
+describe('Preview visibility for role', () => {
+  describe('Staff', () => {
+    beforeEach(async () => {
+      acceptedAssistanceNeedPreschoolDecision = (
+        await Fixture.assistanceNeedPreschoolDecision()
+          .withChild(childId)
+          .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
+          .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+          .withRequiredFieldsFilled(
+            daycareFixture.id,
+            serviceWorker.id,
+            serviceWorker.id,
+          )
+          .with({
+            status: 'ACCEPTED'
+          })
+          .save()
+      ).data
+
+      page = await Page.open()
+      await employeeLogin(page, staff)
+      await page.goto(
+        `${config.employeeUrl
+        }/child-information/${childId}/assistance-need-preschool-decisions/${acceptedAssistanceNeedPreschoolDecision?.id ?? ''
+        }`
+      )
+      previewPage = new AssistanceNeedPreschoolDecisionPreviewPage(page)
+    })
+
+    test('Preview shows filled information', async () => {
+    
+      await waitUntilEqual(
+          () => previewPage.guardiansHeardOn,
+          acceptedAssistanceNeedPreschoolDecision.form.guardiansHeardOn?.format()
+        )
+      await waitUntilEqual(
+          () => previewPage.viewOfGuardians,
+          acceptedAssistanceNeedPreschoolDecision.form.viewOfGuardians
+        )
+      await waitUntilEqual(
+          () => previewPage.preparedBy1,
+          `${serviceWorker.firstName} ${serviceWorker.lastName}, ${acceptedAssistanceNeedPreschoolDecision.form.preparer1Title}`
+        )
+      await waitUntilEqual(
+          () => previewPage.decisionMaker,
+          `${serviceWorker.firstName} ${serviceWorker.lastName}, ${acceptedAssistanceNeedPreschoolDecision.form.decisionMakerTitle}`
+        )
+    })
+
+    test('Decision cannot be sent to the decision maker', async () => {
+      await previewPage.sendDecisionButton.waitUntilHidden()
+    })
+  })
+
 })

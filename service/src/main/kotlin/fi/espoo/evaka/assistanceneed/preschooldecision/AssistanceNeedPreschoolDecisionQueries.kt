@@ -14,6 +14,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
@@ -240,23 +242,25 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToNotSent(
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
-    childId: ChildId
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceNeedPreschoolDecisionId>
 ): List<AssistanceNeedPreschoolDecisionBasics> {
     // language=sql
-    val sql =
-        """
+    val decisions =
+        createQuery<Any> {
+                sql(
+                    """
         SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
             ad.selected_unit selected_unit_id, unit.name selected_unit_name,
             ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
         FROM assistance_need_preschool_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE child_id = :childId
+        WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
         ORDER BY ad.valid_from DESC NULLS FIRST, ad.created DESC;
         """
-
-    val decisions =
-        createQuery(sql)
-            .bind("childId", childId)
+                        .trimIndent()
+                )
+            }
             .mapTo<AssistanceNeedPreschoolDecisionBasics>()
             .list()
 
