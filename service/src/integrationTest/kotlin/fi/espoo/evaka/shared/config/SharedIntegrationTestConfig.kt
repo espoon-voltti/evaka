@@ -27,6 +27,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
+import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.shared.job.ScheduledJobSettingsMap
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -185,6 +187,10 @@ class SharedIntegrationTestConfig {
     @Bean fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+
+    @Bean
+    fun scheduledJobsConfig(): ScheduledJobSettingsMap<ScheduledJob> =
+        ScheduledJobSettingsMap(emptyMap())
 }
 
 val testFeatureConfig =

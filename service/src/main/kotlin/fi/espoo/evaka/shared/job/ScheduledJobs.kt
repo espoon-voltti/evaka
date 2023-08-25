@@ -20,40 +20,114 @@ import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.reservations.MissingReservationsReminders
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.varda.VardaService
 import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
-import fi.espoo.voltti.logging.loggers.info
-import io.opentracing.Tracer
+import java.time.LocalTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
-enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock) -> Unit) {
-    CancelOutdatedTransferApplications(ScheduledJobs::cancelOutdatedTransferApplications),
-    CloseVasusWithExpiredTemplate(ScheduledJobs::closeVasusWithExpiredTemplate),
-    DvvUpdate(ScheduledJobs::dvvUpdate),
-    EndOfDayAttendanceUpkeep(ScheduledJobs::endOfDayAttendanceUpkeep),
-    EndOfDayStaffAttendanceUpkeep(ScheduledJobs::endOfDayStaffAttendanceUpkeep),
-    EndOfDayReservationUpkeep(ScheduledJobs::endOfDayReservationUpkeep),
-    FreezeVoucherValueReports(ScheduledJobs::freezeVoucherValueReports),
-    KoskiUpdate(ScheduledJobs::koskiUpdate),
-    RemoveOldAsyncJobs(ScheduledJobs::removeOldAsyncJobs),
-    RemoveOldDaycareDailyNotes(ScheduledJobs::removeExpiredNotes),
-    RemoveOldDraftApplications(ScheduledJobs::removeOldDraftApplications),
-    SendPendingDecisionReminderEmails(ScheduledJobs::sendPendingDecisionReminderEmails),
-    VardaUpdate(ScheduledJobs::vardaUpdate),
-    InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
-    InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
-    SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders),
-    SendOutdatedIncomeNotifications(ScheduledJobs::sendOutdatedIncomeNotifications),
-    SendCalendarEventDigests(ScheduledJobs::sendCalendarEventDigests),
-    SendPatuReport(ScheduledJobs::sendPatuReport)
+enum class ScheduledJob(
+    val fn: (ScheduledJobs, Database.Connection, EvakaClock) -> Unit,
+    val defaultSettings: ScheduledJobSettings
+) {
+    CancelOutdatedTransferApplications(
+        ScheduledJobs::cancelOutdatedTransferApplications,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 35)))
+    ),
+    CloseVasusWithExpiredTemplate(
+        ScheduledJobs::closeVasusWithExpiredTemplate,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 40)))
+    ),
+    DvvUpdate(
+        ScheduledJobs::dvvUpdate,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 0)))
+    ),
+    EndOfDayAttendanceUpkeep(
+        ScheduledJobs::endOfDayAttendanceUpkeep,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+    ),
+    EndOfDayStaffAttendanceUpkeep(
+        ScheduledJobs::endOfDayStaffAttendanceUpkeep,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+    ),
+    EndOfDayReservationUpkeep(
+        ScheduledJobs::endOfDayReservationUpkeep,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+    ),
+    FreezeVoucherValueReports(
+        ScheduledJobs::freezeVoucherValueReports,
+        ScheduledJobSettings(
+            enabled = true,
+            schedule = JobSchedule.cron("0 0 0 25 * ?") // Monthly on 25th
+        )
+    ),
+    KoskiUpdate(
+        ScheduledJobs::koskiUpdate,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.daily(LocalTime.of(0, 0)),
+            retryCount = 1
+        )
+    ),
+    RemoveOldAsyncJobs(
+        ScheduledJobs::removeOldAsyncJobs,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 0)))
+    ),
+    RemoveOldDaycareDailyNotes(
+        ScheduledJobs::removeExpiredNotes,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(6, 30)))
+    ),
+    RemoveOldDraftApplications(
+        ScheduledJobs::removeOldDraftApplications,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 30)))
+    ),
+    SendPendingDecisionReminderEmails(
+        ScheduledJobs::sendPendingDecisionReminderEmails,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0)))
+    ),
+    VardaUpdate(
+        ScheduledJobs::vardaUpdate,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 0 23 * * 1,2,3,4,5"), // mon - fri @ 23 pm
+            retryCount = 1
+        )
+    ),
+    InactivePeopleCleanup(
+        ScheduledJobs::inactivePeopleCleanup,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.daily(LocalTime.of(3, 30)),
+            retryCount = 1
+        )
+    ),
+    InactiveEmployeesRoleReset(
+        ScheduledJobs::inactiveEmployeesRoleReset,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 15)))
+    ),
+    SendMissingReservationReminders(
+        ScheduledJobs::sendMissingReservationReminders,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 0 18 * * 0") // Sunday 18:00
+        )
+    ),
+    SendOutdatedIncomeNotifications(
+        ScheduledJobs::sendOutdatedIncomeNotifications,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45)))
+    ),
+    SendCalendarEventDigests(
+        ScheduledJobs::sendCalendarEventDigests,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
+    ),
+    SendPatuReport(
+        ScheduledJobs::sendPatuReport,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 0)))
+    )
 }
 
 private val logger = KotlinLogging.logger {}
@@ -69,18 +143,12 @@ class ScheduledJobs(
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val calendarEventNotificationService: CalendarEventNotificationService,
     private val patuReportingService: PatuReportingService?,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    tracer: Tracer
-) {
-
-    init {
-        asyncJobRunner.registerHandler { db, clock: EvakaClock, msg: AsyncJob.RunScheduledJob ->
-            val logMeta = mapOf("jobName" to msg.job.name)
-            logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
-            tracer.withSpan("scheduledjob ${msg.job.name}") { msg.job.fn(this, db, clock) }
+    settings: ScheduledJobSettingsMap<ScheduledJob>
+) : JobSchedule {
+    override val jobs: List<ScheduledJobDefinition<*>> =
+        settings.jobs.map {
+            ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }
-    }
-
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
             it.createUpdate(

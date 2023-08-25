@@ -35,8 +35,8 @@ import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Unauthorized
-import fi.espoo.evaka.shared.job.DefaultJobSchedule
-import fi.espoo.evaka.shared.job.JobSchedule
+import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.shared.job.ScheduledJobSettingsMap
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -134,7 +134,10 @@ class EspooConfig {
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean fun jobSchedule(env: ScheduledJobsEnv): JobSchedule = DefaultJobSchedule(env)
+    @Bean
+    fun scheduledJobSettingsMap(
+        env: ScheduledJobsEnv<ScheduledJob>
+    ): ScheduledJobSettingsMap<ScheduledJob> = ScheduledJobSettingsMap(env.jobs)
 
     @Bean
     @Profile("local")

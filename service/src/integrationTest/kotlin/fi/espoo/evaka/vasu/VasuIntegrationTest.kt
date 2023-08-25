@@ -449,7 +449,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
-                listOf(AsyncJob.RunScheduledJob(ScheduledJob.CloseVasusWithExpiredTemplate)),
+                listOf(AsyncJob.RunScheduledJob(ScheduledJob.CloseVasusWithExpiredTemplate.name)),
                 runAt = futureClock.now(),
             )
         }

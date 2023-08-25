@@ -7,7 +7,6 @@ package fi.espoo.evaka
 import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.job.JobSchedule
-import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import java.net.URI
 import java.security.KeyStore
@@ -779,22 +778,22 @@ data class KeystoreEnv(
         }
 }
 
-data class ScheduledJobsEnv(val jobs: Map<ScheduledJob, ScheduledJobSettings>) {
+data class ScheduledJobsEnv<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>) {
     companion object {
-        fun fromEnvironment(env: Environment) =
+        fun <T : Enum<T>> fromEnvironment(
+            defaults: Map<T, ScheduledJobSettings>,
+            prefix: String,
+            env: Environment
+        ) =
             ScheduledJobsEnv(
-                ScheduledJob.values().associate { job ->
-                    val envPrefix = "evaka.job.${snakeCaseName(job)}"
-                    val default = ScheduledJobSettings.default(job)
-                    val settings =
-                        ScheduledJobSettings(
-                            enabled = env.lookup("$envPrefix.enabled") ?: default.enabled,
-                            schedule =
-                                env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)
-                                    ?: default.schedule,
-                            retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount
-                        )
-                    (job to settings)
+                defaults.mapValues { (job, default) ->
+                    val envPrefix = "${prefix}.${snakeCaseName(job)}"
+                    ScheduledJobSettings(
+                        enabled = env.lookup("$envPrefix.enabled") ?: default.enabled,
+                        schedule = env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)
+                                ?: default.schedule,
+                        retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount
+                    )
                 }
             )
     }
@@ -868,7 +867,7 @@ class EnvLookupException(key: String, cause: Throwable) :
 // Reference: Spring SystemEnvironmentPropertySource
 fun String.toSystemEnvKey() = uppercase(Locale.ENGLISH).replace('.', '_').replace('-', '_')
 
-private fun snakeCaseName(job: ScheduledJob): String =
+private fun snakeCaseName(job: Enum<*>): String =
     job.name
         .flatMapIndexed { idx, ch ->
             when {
