@@ -1514,7 +1514,7 @@ sealed interface Action {
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) :
         ScopedAction<InvoiceId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
-        UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
@@ -1523,8 +1523,8 @@ sealed interface Action {
     enum class InvoiceCorrection(
         override vararg val defaultRules: ScopedActionRule<in InvoiceCorrectionId>
     ) : ScopedAction<InvoiceCorrectionId> {
-        DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        UPDATE_NOTE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
+        DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
+        UPDATE_NOTE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
