@@ -18,11 +18,9 @@ import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
-import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.VardaService
 import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
@@ -124,10 +122,6 @@ enum class ScheduledJob(
         ScheduledJobs::sendCalendarEventDigests,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
     ),
-    SendPatuReport(
-        ScheduledJobs::sendPatuReport,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 0)))
-    )
 }
 
 private val logger = KotlinLogging.logger {}
@@ -142,7 +136,6 @@ class ScheduledJobs(
     private val missingReservationsReminders: MissingReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val calendarEventNotificationService: CalendarEventNotificationService,
-    private val patuReportingService: PatuReportingService?,
     settings: ScheduledJobSettingsMap<ScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition<*>> =
@@ -270,12 +263,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             val count = outdatedIncomeNotifications.scheduleNotifications(tx, clock)
             logger.info("Scheduled $count notifications about outdated income")
         }
-    }
-
-    fun sendPatuReport(db: Database.Connection, clock: EvakaClock) {
-        val yesterday = clock.today().minusDays(1)
-        logger.info("Sending patu report for $yesterday")
-        patuReportingService!!.sendPatuReport(db, DateRange(yesterday, yesterday))
     }
 
     fun closeVasusWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {

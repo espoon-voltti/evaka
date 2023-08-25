@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.espoo.EspooScheduledJob
+import fi.espoo.evaka.espoo.EspooScheduledJobs
 import fi.espoo.evaka.espoobi.EspooBiPoc
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
@@ -140,6 +142,14 @@ class EspooConfig {
     ): ScheduledJobSettingsMap<ScheduledJob> = ScheduledJobSettingsMap(env.jobs)
 
     @Bean
+    fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            EspooScheduledJob.values().associateWith { it.defaultSettings },
+            "espoo.job",
+            env
+        )
+
+    @Bean
     @Profile("local")
     fun devDataInitializer(jdbi: Jdbi, tracer: Tracer) = DevDataInitializer(jdbi, tracer)
 
@@ -242,6 +252,12 @@ class EspooConfig {
         }
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+
+    @Bean
+    fun espooScheduledJobs(
+        patuReportingService: PatuReportingService,
+        env: ScheduledJobsEnv<EspooScheduledJob>
+    ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, env)
 }
 
 data class EspooEnv(
