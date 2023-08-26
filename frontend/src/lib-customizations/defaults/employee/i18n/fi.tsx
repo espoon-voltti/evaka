@@ -44,6 +44,7 @@ export const fi = {
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
     personProfile: 'Aikuisen tiedot',
+    personTimeline: 'Asiakkaan aikajana',
     personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',

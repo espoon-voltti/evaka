@@ -402,6 +402,7 @@ enum class Audit(
     TemporaryEmployeeUpdate,
     TemporaryEmployeeDeleteAcl,
     TemporaryEmployeeDelete,
+    TimelineRead,
     UnitAclCreate,
     UnitAclDelete,
     UnitAclRead,

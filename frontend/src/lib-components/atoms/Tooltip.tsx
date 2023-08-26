@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -187,6 +188,7 @@ export type TooltipProps = BaseProps & {
   tooltip: React.ReactNode
   position?: Position
   width?: Width
+  className?: string
 }
 
 export default React.memo(function Tooltip({
@@ -204,6 +206,7 @@ export default React.memo(function Tooltip({
 export const TooltipWithoutAnchor = React.memo(function Tooltip({
   tooltip,
   'data-qa': dataQa,
+  className,
   ...props
 }: Omit<TooltipProps, 'children'>) {
   if (!tooltip) return null
@@ -224,7 +227,7 @@ export const TooltipWithoutAnchor = React.memo(function Tooltip({
 
   return (
     <TooltipPositioner
-      className="tooltip"
+      className={classNames('tooltip', className)}
       position={position}
       width={props.width ?? 'small'}
     >
