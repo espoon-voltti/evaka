@@ -6,8 +6,8 @@ import { memoizeLast } from './memoize'
 import {
   AnyForm,
   ErrorOf,
+  FieldErrors,
   Form,
-  ObjectFieldError,
   OutputOf,
   StateOf,
   ValidationError,
@@ -26,9 +26,7 @@ type AnyObjectFields = { [K in string]: AnyForm }
 type ObjectOutput<Fields extends AnyObjectFields> = {
   [K in keyof Fields]: OutputOf<Fields[K]>
 }
-type ObjectError<Fields extends AnyObjectFields> =
-  | ErrorOf<Fields[keyof Fields]>
-  | ObjectFieldError
+type ObjectError<Fields extends AnyObjectFields> = ErrorOf<Fields[keyof Fields]>
 type ObjectState<Fields extends AnyObjectFields> = {
   [K in keyof Fields]: StateOf<Fields[K]>
 }
@@ -42,50 +40,63 @@ export function object<Fields extends AnyObjectFields>(
   Fields
 > {
   return {
-    validate: memoizeLast((state: ObjectState<Fields>) => {
-      const allFields = Object.entries(fields)
-      const validValues = allFields.flatMap(([k, field]) => {
-        const validationResult = field.validate(state[k])
-        return validationResult.isValid
-          ? [[k, validationResult.value] as const]
-          : []
-      })
-      if (validValues.length === allFields.length) {
-        return ValidationSuccess.of(
-          Object.fromEntries(validValues) as {
-            [K in keyof Fields]: OutputOf<Fields[K]>
+    validate: memoizeLast(
+      (
+        state: ObjectState<Fields>
+      ): ValidationResult<ObjectOutput<Fields>, ObjectError<Fields>> => {
+        const valid = {} as ObjectOutput<Fields>
+        let fieldErrors: FieldErrors<ObjectError<Fields>> | undefined =
+          undefined
+        Object.entries(fields).forEach(([k, field]) => {
+          const validationResult = field.validate(state[k]) as ValidationResult<
+            OutputOf<Fields[keyof Fields]>,
+            ObjectError<Fields>
+          >
+          if (validationResult.isValid) {
+            if (!fieldErrors) {
+              valid[k as keyof Fields] = validationResult.value
+            }
+          } else {
+            if (!fieldErrors) fieldErrors = {}
+            fieldErrors[k] = validationResult.error
           }
-        )
-      } else {
-        return ValidationError.objectFieldError
+        })
+        if (fieldErrors) return ValidationError.fromFieldErrors(fieldErrors)
+        return ValidationSuccess.of(valid)
       }
-    }),
+    ),
     shape: fields
   }
 }
 
 export function array<Elem extends AnyForm>(
   elem: Elem
-): Form<
-  OutputOf<Elem>[],
-  ErrorOf<Elem> | ObjectFieldError,
-  StateOf<Elem>[],
-  Elem
-> {
+): Form<OutputOf<Elem>[], ErrorOf<Elem>, StateOf<Elem>[], Elem> {
   return {
-    validate: memoizeLast((state: StateOf<Elem>[]) => {
-      const valid = state.flatMap((elemState) => {
-        const validationResult = elem.validate(elemState)
-        return validationResult.isValid
-          ? ([validationResult.value] as const)
-          : []
-      })
-      if (valid.length === state.length) {
-        return ValidationSuccess.of(valid as OutputOf<Elem>)
-      } else {
-        return ValidationError.objectFieldError
+    validate: memoizeLast(
+      (
+        state: StateOf<Elem>[]
+      ): ValidationResult<OutputOf<Elem>[], ErrorOf<Elem>> => {
+        const valid: OutputOf<Elem>[] = []
+        let fieldErrors: FieldErrors<ErrorOf<Elem>> | undefined = undefined
+        state.forEach((elemState, index) => {
+          const validationResult = elem.validate(elemState) as ValidationResult<
+            OutputOf<Elem>,
+            ErrorOf<Elem>
+          >
+          if (validationResult.isValid) {
+            if (!fieldErrors) {
+              valid.push(validationResult.value)
+            }
+          } else {
+            if (!fieldErrors) fieldErrors = {}
+            fieldErrors[index.toString()] = validationResult.error
+          }
+        })
+        if (fieldErrors) return ValidationError.fromFieldErrors(fieldErrors)
+        return ValidationSuccess.of(valid)
       }
-    }),
+    ),
     shape: elem
   }
 }
@@ -100,9 +111,7 @@ type UnionOutput<
     }
   : never
 
-type UnionError<Fields extends AnyObjectFields> =
-  | ErrorOf<Fields[keyof Fields]>
-  | ObjectFieldError
+type UnionError<Fields extends AnyObjectFields> = ErrorOf<Fields[keyof Fields]>
 
 type UnionState<
   Fields extends AnyObjectFields,
@@ -125,15 +134,21 @@ export function union<Fields extends AnyObjectFields>(
   return {
     validate: memoizeLast((state: UnionState<Fields, keyof Fields>) => {
       const activeBranch = fields[state.branch as keyof Fields]
-      const validationResult = activeBranch.validate(state.state)
+      const validationResult = activeBranch.validate(
+        state.state
+      ) as ValidationResult<
+        UnionOutput<Fields, keyof Fields>,
+        UnionError<Fields>
+      >
       if (validationResult.isValid) {
         return ValidationSuccess.of({
           branch: state.branch,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           value: validationResult.value
         } as UnionOutput<Fields, keyof Fields>)
       } else {
-        return ValidationError.objectFieldError
+        return ValidationError.fromFieldErrors({
+          [state.branch]: validationResult.error
+        })
       }
     }),
     shape: fields
@@ -194,16 +209,19 @@ export function validated<
   VError extends string
 >(
   form: Form<Output, Error, State, Shape>,
-  validator: (output: Output) => VError | undefined
+  validator: (output: Output) => VError | FieldErrors<VError> | undefined
 ): Form<Output, Error | VError, State, Shape> {
   return {
     validate: memoizeLast((state: State) =>
       form.validate(state).chain((value) => {
         const validationError = validator(value)
-        if (validationError !== undefined) {
+        if (validationError === undefined) {
+          return ValidationSuccess.of(value)
+        } else if (typeof validationError === 'string') {
           return ValidationError.of(validationError)
+        } else {
+          return ValidationError.fromFieldErrors(validationError)
         }
-        return ValidationSuccess.of(value)
       })
     ),
     shape: form.shape
@@ -227,16 +245,21 @@ export interface OneOfOption<Output> {
   value: Output
 }
 
+export interface OneOfState<Output> {
+  domValue: string
+  options: OneOfOption<Output>[]
+}
+
 export type OneOf<Output, Error extends string = string> = Form<
   Output | undefined,
   Error,
-  { domValue: string; options: OneOfOption<Output>[] },
+  OneOfState<Output>,
   unknown
 >
 
 export function oneOf<Output>(): OneOf<Output, never> {
   return {
-    validate: memoizeLast((state) =>
+    validate: memoizeLast((state: OneOfState<Output>) =>
       ValidationSuccess.of(
         state.options.find((o) => o.domValue === state.domValue)?.value
       )

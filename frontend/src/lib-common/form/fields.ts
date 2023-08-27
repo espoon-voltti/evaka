@@ -111,10 +111,7 @@ export const limitedLocalTimeRange = transformed(
   ({
     startTime,
     endTime
-  }): ValidationResult<
-    TimeRange | undefined,
-    ObjectFieldError | 'timeFormat' | 'range'
-  > => {
+  }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
     if (startTime === undefined && endTime === undefined) {
       return ValidationSuccess.of(undefined)
     }
@@ -139,10 +136,7 @@ export const localTimeRange = transformed(
   ({
     startTime,
     endTime
-  }): ValidationResult<
-    TimeRange | undefined,
-    ObjectFieldError | 'timeFormat'
-  > => {
+  }): ValidationResult<TimeRange | undefined, 'timeFormat'> => {
     if (startTime === undefined && endTime === undefined) {
       return ValidationSuccess.of(undefined)
     }

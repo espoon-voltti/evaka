@@ -76,15 +76,33 @@ export class ValidationSuccess<Output, Error> {
   }
 }
 
+export interface FieldErrors<Error> {
+  [key: string]: Error | FieldErrors<Error> | undefined
+}
+
 export class ValidationError<Output, Error> {
   readonly isValid = false
+
   static objectFieldError: ValidationResult<never, ObjectFieldError> =
     ValidationError.of(ObjectFieldError)
 
-  private constructor(public validationError: Error) {}
+  private constructor(public error: FieldErrors<Error> | Error) {}
 
   static of<Error>(validationError: Error): ValidationResult<never, Error> {
     return new ValidationError(validationError)
+  }
+
+  static fromFieldErrors<Error>(
+    fieldErrors: FieldErrors<Error>
+  ): ValidationResult<never, Error> {
+    return new ValidationError(fieldErrors)
+  }
+
+  static field<Error>(
+    fieldName: string,
+    validationError: Error
+  ): ValidationResult<never, Error> {
+    return ValidationError.fromFieldErrors({ [fieldName]: validationError })
   }
 
   map<T>(_fn: (value: Output) => T): ValidationError<T, Error> {
