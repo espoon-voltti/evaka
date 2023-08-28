@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'Icons'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
 import LocalDate from 'lib-common/local-date'
-import { maxOf, minOf } from 'lib-common/ordered'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -44,7 +43,18 @@ const TlContainer = styled.div`
 export default React.memo(function TimelinePage() {
   const { personId } = useNonNullableParams()
   const { i18n } = useTranslation()
-  const [timelineResult] = useApiState(() => getTimeline(personId), [personId])
+  const timelineMaxRange = useMemo(
+    () =>
+      new FiniteDateRange(
+        LocalDate.todayInHelsinkiTz().subMonths(15).withDate(1),
+        LocalDate.todayInHelsinkiTz().addMonths(7).withDate(1)
+      ),
+    []
+  )
+  const [timelineResult] = useApiState(
+    () => getTimeline(personId, timelineMaxRange),
+    [personId, timelineMaxRange]
+  )
   const [zoom, setZoom] = useState(20) // pixels / day
 
   return (
@@ -71,7 +81,11 @@ export default React.memo(function TimelinePage() {
         </FixedSpaceRow>
         <Gap size="s" />
         {renderResult(timelineResult, (timeline) => (
-          <TimelineView timeline={timeline} zoom={zoom} />
+          <TimelineView
+            timeline={timeline}
+            zoom={zoom}
+            timelineMaxRange={timelineMaxRange}
+          />
         ))}
       </ContentArea>
     </Container>
@@ -80,12 +94,22 @@ export default React.memo(function TimelinePage() {
 
 const TimelineView = React.memo(function TimelineView({
   timeline,
-  zoom
+  zoom,
+  timelineMaxRange
 }: {
   timeline: Timeline
   zoom: number
+  timelineMaxRange: FiniteDateRange
 }) {
-  const timelineRange = getTimelineRange(timeline)
+  const contentRange = getTimelineContentRange(timeline)
+  const timelineRange = contentRange
+    ? timelineMaxRange.intersection(contentRange)
+    : timelineMaxRange
+
+  if (!timelineRange) {
+    console.warn('Content does not match requested range')
+    return null
+  }
 
   return (
     <TlContainer>
@@ -178,44 +202,15 @@ const getMonthRanges = (timelineRange: FiniteDateRange): WithRange[] => {
   return months
 }
 
-const getTimelineRange = (t: Timeline): FiniteDateRange => {
-  const allRanges: WithRange[] = [
+const getTimelineContentRange = (t: Timeline): DateRange | null => {
+  const allRanges: DateRange[] = [
     ...t.feeDecisions,
     ...t.incomes,
     ...t.partners,
     ...t.children
-  ]
-  const minDate =
-    allRanges.length > 0
-      ? LocalDate.fromSystemTzDate(
-          new Date(
-            Math.min(
-              ...allRanges.map((it) =>
-                it.range.start.toSystemTzDate().getTime()
-              )
-            )
-          )
-        )
-      : LocalDate.todayInHelsinkiTz().subMonths(1)
+  ].map((event) => event.range)
 
-  const maxDate =
-    allRanges.length > 0
-      ? LocalDate.fromSystemTzDate(
-          new Date(
-            Math.max(
-              ...allRanges
-                .map((it) => it.range.end ?? LocalDate.of(3000, 1, 1))
-                .map((it) => it.toSystemTzDate().getTime())
-            )
-          )
-        )
-      : minDate.addMonths(2)
+  if (allRanges.length === 0) return null
 
-  return new FiniteDateRange(
-    maxOf(minDate, LocalDate.todayInHelsinkiTz().subMonths(15)).withDate(1),
-    minOf(maxDate, LocalDate.todayInHelsinkiTz().addMonths(6))
-      .withDate(1)
-      .addMonths(1)
-      .subDays(1)
-  )
+  return allRanges.reduce((union, range) => range.spanningRange(union))
 }

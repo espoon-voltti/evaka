@@ -4,6 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Timeline,
   TimelineChildDetailed,
@@ -19,9 +20,18 @@ import { UUID } from 'lib-common/types'
 
 import { client } from './client'
 
-export function getTimeline(personId: UUID): Promise<Result<Timeline>> {
+export function getTimeline(
+  personId: UUID,
+  searchRange: FiniteDateRange
+): Promise<Result<Timeline>> {
   return client
-    .get<JsonOf<Timeline>>('/timeline', { params: { personId } })
+    .get<JsonOf<Timeline>>('/timeline', {
+      params: {
+        personId,
+        from: searchRange.start.formatIso(),
+        to: searchRange.end.formatIso()
+      }
+    })
     .then((res) => Success.of(deserializeTimeline(res.data)))
     .catch((e) => Failure.fromError(e))
 }

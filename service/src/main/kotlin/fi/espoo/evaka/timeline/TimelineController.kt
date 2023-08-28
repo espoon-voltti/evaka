@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -39,8 +40,11 @@ class TimelineController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam personId: PersonId
+        @RequestParam personId: PersonId,
+        @RequestParam from: LocalDate,
+        @RequestParam to: LocalDate
     ): Timeline {
+        val range = FiniteDateRange(from, to)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -56,10 +60,11 @@ class TimelineController(private val accessControl: AccessControl) {
                         personId = personId,
                         firstName = personBasics.firstName,
                         lastName = personBasics.lastName,
-                        feeDecisions = tx.getFeeDecisions(personId),
-                        incomes = tx.getIncomes(personId),
+                        feeDecisions = tx.getFeeDecisions(personId, range),
+                        incomes = tx.getIncomes(personId, range),
                         partners =
-                            tx.getPartners(personId).map { partner ->
+                            tx.getPartners(personId, range).map { partner ->
+                                val partnerRange = range.intersection(partner.range)!!
                                 TimelinePartnerDetailed(
                                     id = partner.id,
                                     range = partner.range,
@@ -67,39 +72,32 @@ class TimelineController(private val accessControl: AccessControl) {
                                     firstName = partner.firstName,
                                     lastName = partner.lastName,
                                     feeDecisions =
-                                        tx.getFeeDecisions(partner.partnerId).filter {
-                                            it.range.overlaps(partner.range)
-                                        },
-                                    incomes = tx.getIncomes(partner.partnerId),
+                                        tx.getFeeDecisions(partner.partnerId, partnerRange),
+                                    incomes = tx.getIncomes(partner.partnerId, partnerRange),
                                     children =
-                                        tx.getChildren(partner.partnerId)
-                                            .filter { it.range.overlaps(partner.range) }
-                                            .map { child ->
-                                                TimelineChildDetailed(
-                                                    id = child.id,
-                                                    range = child.range,
-                                                    childId = child.childId,
-                                                    firstName = child.firstName,
-                                                    lastName = child.lastName,
-                                                    dateOfBirth = child.dateOfBirth,
-                                                    incomes =
-                                                        tx.getIncomes(child.childId).filter {
-                                                            it.range.overlaps(child.range)
-                                                        },
-                                                    placements =
-                                                        tx.getPlacements(child.childId).filter {
-                                                            it.range.overlaps(child.range)
-                                                        },
-                                                    serviceNeeds =
-                                                        tx.getServiceNeeds(child.childId).filter {
-                                                            it.range.overlaps(child.range)
-                                                        }
-                                                )
-                                            }
+                                        tx.getChildren(partner.partnerId, partnerRange).map { child
+                                            ->
+                                            val childRange =
+                                                partnerRange.intersection(child.range)!!
+                                            TimelineChildDetailed(
+                                                id = child.id,
+                                                range = child.range,
+                                                childId = child.childId,
+                                                firstName = child.firstName,
+                                                lastName = child.lastName,
+                                                dateOfBirth = child.dateOfBirth,
+                                                incomes = tx.getIncomes(child.childId, childRange),
+                                                placements =
+                                                    tx.getPlacements(child.childId, childRange),
+                                                serviceNeeds =
+                                                    tx.getServiceNeeds(child.childId, childRange)
+                                            )
+                                        }
                                 )
                             },
                         children =
-                            tx.getChildren(personId).map { child ->
+                            tx.getChildren(personId, range).map { child ->
+                                val childRange = range.intersection(child.range)!!
                                 TimelineChildDetailed(
                                     id = child.id,
                                     range = child.range,
@@ -107,18 +105,9 @@ class TimelineController(private val accessControl: AccessControl) {
                                     firstName = child.firstName,
                                     lastName = child.lastName,
                                     dateOfBirth = child.dateOfBirth,
-                                    incomes =
-                                        tx.getIncomes(child.childId).filter {
-                                            it.range.overlaps(child.range)
-                                        },
-                                    placements =
-                                        tx.getPlacements(child.childId).filter {
-                                            it.range.overlaps(child.range)
-                                        },
-                                    serviceNeeds =
-                                        tx.getServiceNeeds(child.childId).filter {
-                                            it.range.overlaps(child.range)
-                                        }
+                                    incomes = tx.getIncomes(child.childId, childRange),
+                                    placements = tx.getPlacements(child.childId, childRange),
+                                    serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
                                 )
                             }
                     )
@@ -159,13 +148,13 @@ data class TimelineFeeDecision(
     val totalFee: Int
 ) : WithRange
 
-private fun Database.Read.getFeeDecisions(personId: PersonId) =
+private fun Database.Read.getFeeDecisions(personId: PersonId, range: FiniteDateRange) =
     createQuery<Any> {
             sql(
                 """
 SELECT id, valid_during as range, status, total_fee
 FROM fee_decision
-WHERE head_of_family_id = ${bind(personId)}
+WHERE head_of_family_id = ${bind(personId)} AND valid_during && ${bind(range)}
 ORDER BY lower(valid_during)
 """
             )
@@ -179,13 +168,13 @@ data class TimelineIncome(
     val effect: IncomeEffect
 ) : WithRange
 
-private fun Database.Read.getIncomes(personId: PersonId) =
+private fun Database.Read.getIncomes(personId: PersonId, range: FiniteDateRange) =
     createQuery<Any> {
             sql(
                 """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, effect
 FROM income
-WHERE person_id = ${bind(personId)}
+WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
             )
@@ -212,7 +201,7 @@ data class TimelinePartnerDetailed(
     val children: List<TimelineChildDetailed>
 ) : WithRange
 
-private fun Database.Read.getPartners(personId: PersonId) =
+private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange) =
     createQuery<Any> {
             sql(
                 """
@@ -225,7 +214,9 @@ SELECT
 FROM fridge_partner fp1
 JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx <> fp1.indx
 JOIN person p on fp2.person_id = p.id
-WHERE fp1.person_id = ${bind(personId)} AND fp1.conflict = FALSE AND fp2.conflict = FALSE
+WHERE fp1.person_id = ${bind(personId)} 
+    AND daterange(fp1.start_date, fp1.end_date, '[]') && ${bind(range)} 
+    AND fp1.conflict = FALSE AND fp2.conflict = FALSE
 ORDER BY fp2.start_date
 """
             )
@@ -254,7 +245,7 @@ data class TimelineChildDetailed(
     val serviceNeeds: List<TimelineServiceNeed>
 ) : WithRange
 
-private fun Database.Read.getChildren(personId: PersonId) =
+private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange) =
     createQuery<Any> {
             sql(
                 """
@@ -267,7 +258,7 @@ SELECT
     date_of_birth
 FROM fridge_child fc
 JOIN person p on fc.child_id = p.id
-WHERE fc.head_of_child = ${bind(personId)} AND fc.conflict = FALSE
+WHERE fc.head_of_child = ${bind(personId)} AND fc.conflict = FALSE AND daterange(start_date, end_date, '[]') && ${bind(range)}
 ORDER BY fc.start_date
 """
             )
@@ -284,7 +275,7 @@ data class TimelinePlacement(
 
 data class TimelinePlacementUnit(val id: DaycareId, val name: String)
 
-private fun Database.Read.getPlacements(personId: PersonId) =
+private fun Database.Read.getPlacements(personId: PersonId, range: FiniteDateRange) =
     createQuery<Any> {
             sql(
                 """
@@ -296,7 +287,7 @@ SELECT
     d.name AS unit_name
 FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
-WHERE pl.child_id = ${bind(personId)}
+WHERE pl.child_id = ${bind(personId)} AND daterange(start_date, end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
 """
             )
@@ -310,7 +301,7 @@ data class TimelineServiceNeed(
     val name: String
 ) : WithRange
 
-private fun Database.Read.getServiceNeeds(personId: PersonId) =
+private fun Database.Read.getServiceNeeds(personId: PersonId, range: FiniteDateRange) =
     createQuery<Any> {
             sql(
                 """
@@ -321,7 +312,7 @@ SELECT
 FROM service_need sn
 JOIN placement pl on sn.placement_id = pl.id
 JOIN service_need_option sno on sn.option_id = sno.id
-WHERE pl.child_id = ${bind(personId)}
+WHERE pl.child_id = ${bind(personId)} AND daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
 """
             )

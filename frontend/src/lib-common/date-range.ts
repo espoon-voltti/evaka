@@ -6,6 +6,7 @@ import { DateFormat } from './date'
 import FiniteDateRange from './finite-date-range'
 import { JsonOf } from './json'
 import LocalDate from './local-date'
+import { maxOf, minOf } from './ordered'
 
 export type Tense = 'past' | 'present' | 'future'
 
@@ -63,6 +64,19 @@ export default class DateRange {
     }
 
     return !this.start.isAfter(date)
+  }
+
+  intersection(other: DateRange): DateRange | undefined {
+    const start = maxOf(this.start, other.start)
+    const end = !this.end || !other.end ? null : minOf(this.end, other.end)
+    if (end && start.isAfter(end)) return undefined
+    return new DateRange(start, end)
+  }
+
+  spanningRange(other: FiniteDateRange | DateRange): DateRange {
+    const start = minOf(this.start, other.start)
+    const end = this.end && other.end ? maxOf(this.end, other.end) : null
+    return new DateRange(start, end)
   }
 
   tenseAt(date: LocalDate): Tense {
