@@ -31,7 +31,7 @@
     "@sentry/browser": "^7.64.0",
     "@sentry/react": "^7.64.0",
     "@tanstack/react-query": "^4.33.0",
-    "axios": "^1.4.0",
+    "axios": "^1.5.0",
     "babel-plugin-styled-components": "^2.1.4",
     "chart.js": "^4.3.0",
     "chartjs-adapter-date-fns": "^3.0.0",
