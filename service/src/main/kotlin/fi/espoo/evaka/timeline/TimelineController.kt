@@ -5,11 +5,14 @@
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.service.WithRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.ParentshipId
@@ -17,6 +20,7 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -61,6 +65,7 @@ class TimelineController(private val accessControl: AccessControl) {
                         firstName = personBasics.firstName,
                         lastName = personBasics.lastName,
                         feeDecisions = tx.getFeeDecisions(personId, range),
+                        valueDecisions = tx.getValueDecisions(personId, range),
                         incomes = tx.getIncomes(personId, range),
                         partners =
                             tx.getPartners(personId, range).map { partner ->
@@ -73,6 +78,8 @@ class TimelineController(private val accessControl: AccessControl) {
                                     lastName = partner.lastName,
                                     feeDecisions =
                                         tx.getFeeDecisions(partner.partnerId, partnerRange),
+                                    valueDecisions =
+                                        tx.getValueDecisions(partner.partnerId, partnerRange),
                                     incomes = tx.getIncomes(partner.partnerId, partnerRange),
                                     children =
                                         tx.getChildren(partner.partnerId, partnerRange).map { child
@@ -90,7 +97,9 @@ class TimelineController(private val accessControl: AccessControl) {
                                                 placements =
                                                     tx.getPlacements(child.childId, childRange),
                                                 serviceNeeds =
-                                                    tx.getServiceNeeds(child.childId, childRange)
+                                                    tx.getServiceNeeds(child.childId, childRange),
+                                                feeAlterations =
+                                                    tx.getFeeAlterations(child.childId, childRange)
                                             )
                                         }
                                 )
@@ -108,6 +117,7 @@ class TimelineController(private val accessControl: AccessControl) {
                                     incomes = tx.getIncomes(child.childId, childRange),
                                     placements = tx.getPlacements(child.childId, childRange),
                                     serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
+                                    feeAlterations = tx.getFeeAlterations(child.childId, childRange)
                                 )
                             }
                     )
@@ -122,6 +132,7 @@ data class Timeline(
     val firstName: String,
     val lastName: String,
     val feeDecisions: List<TimelineFeeDecision>,
+    val valueDecisions: List<TimelineValueDecision>,
     val incomes: List<TimelineIncome>,
     val partners: List<TimelinePartnerDetailed>,
     val children: List<TimelineChildDetailed>
@@ -162,6 +173,26 @@ ORDER BY lower(valid_during)
         .mapTo<TimelineFeeDecision>()
         .list()
 
+data class TimelineValueDecision(
+    val id: VoucherValueDecisionId,
+    override val range: DateRange,
+    val status: VoucherValueDecisionStatus
+) : WithRange
+
+private fun Database.Read.getValueDecisions(personId: PersonId, range: FiniteDateRange) =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id, daterange(valid_from, valid_to, '[]') as range, status
+FROM voucher_value_decision
+WHERE head_of_family_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
+ORDER BY valid_from
+"""
+            )
+        }
+        .mapTo<TimelineValueDecision>()
+        .list()
+
 data class TimelineIncome(
     val id: IncomeId,
     override val range: DateRange,
@@ -197,6 +228,7 @@ data class TimelinePartnerDetailed(
     val firstName: String,
     val lastName: String,
     val feeDecisions: List<TimelineFeeDecision>,
+    val valueDecisions: List<TimelineValueDecision>,
     val incomes: List<TimelineIncome>,
     val children: List<TimelineChildDetailed>
 ) : WithRange
@@ -242,7 +274,8 @@ data class TimelineChildDetailed(
     val dateOfBirth: LocalDate,
     val incomes: List<TimelineIncome>,
     val placements: List<TimelinePlacement>,
-    val serviceNeeds: List<TimelineServiceNeed>
+    val serviceNeeds: List<TimelineServiceNeed>,
+    val feeAlterations: List<TimelineFeeAlteration>
 ) : WithRange
 
 private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange) =
@@ -318,4 +351,27 @@ ORDER BY pl.start_date
             )
         }
         .mapTo<TimelineServiceNeed>()
+        .list()
+
+data class TimelineFeeAlteration(
+    val id: FeeAlterationId,
+    override val range: DateRange,
+    val type: FeeAlteration.Type,
+    val amount: Int,
+    val absolute: Boolean,
+    val notes: String
+) : WithRange
+
+private fun Database.Read.getFeeAlterations(personId: PersonId, range: FiniteDateRange) =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id, daterange(valid_from, valid_to, '[]') as range, type, amount, is_absolute as absolute, notes
+FROM fee_alteration
+WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
+ORDER BY valid_from
+"""
+            )
+        }
+        .mapTo<TimelineFeeAlteration>()
         .list()

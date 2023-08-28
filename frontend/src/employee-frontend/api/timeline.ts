@@ -8,11 +8,13 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Timeline,
   TimelineChildDetailed,
+  TimelineFeeAlteration,
   TimelineFeeDecision,
   TimelineIncome,
   TimelinePartnerDetailed,
   TimelinePlacement,
-  TimelineServiceNeed
+  TimelineServiceNeed,
+  TimelineValueDecision
 } from 'lib-common/generated/api-types/timeline'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -39,6 +41,7 @@ export function getTimeline(
 const deserializeTimeline = (json: JsonOf<Timeline>): Timeline => ({
   ...json,
   feeDecisions: json.feeDecisions.map(deserializeFeeDecision),
+  valueDecisions: json.valueDecisions.map(deserializeValueDecision),
   incomes: json.incomes.map(deserializeIncome),
   partners: json.partners.map(deserializePartner),
   children: json.children.map(deserializeChild)
@@ -47,6 +50,13 @@ const deserializeTimeline = (json: JsonOf<Timeline>): Timeline => ({
 const deserializeFeeDecision = (
   json: JsonOf<TimelineFeeDecision>
 ): TimelineFeeDecision => ({
+  ...json,
+  range: DateRange.parseJson(json.range)
+})
+
+const deserializeValueDecision = (
+  json: JsonOf<TimelineValueDecision>
+): TimelineValueDecision => ({
   ...json,
   range: DateRange.parseJson(json.range)
 })
@@ -62,6 +72,7 @@ const deserializePartner = (
   ...json,
   range: DateRange.parseJson(json.range),
   feeDecisions: json.feeDecisions.map(deserializeFeeDecision),
+  valueDecisions: json.valueDecisions.map(deserializeValueDecision),
   incomes: json.incomes.map(deserializeIncome),
   children: json.children.map(deserializeChild)
 })
@@ -74,7 +85,8 @@ const deserializeChild = (
   dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
   incomes: json.incomes.map(deserializeIncome),
   placements: json.placements.map(deserializePlacement),
-  serviceNeeds: json.serviceNeeds.map(deserializeServiceNeed)
+  serviceNeeds: json.serviceNeeds.map(deserializeServiceNeed),
+  feeAlterations: json.feeAlterations.map(deserializeFeeAlteration)
 })
 
 const deserializePlacement = (
@@ -87,6 +99,13 @@ const deserializePlacement = (
 const deserializeServiceNeed = (
   json: JsonOf<TimelineServiceNeed>
 ): TimelineServiceNeed => ({
+  ...json,
+  range: DateRange.parseJson(json.range)
+})
+
+const deserializeFeeAlteration = (
+  json: JsonOf<TimelineFeeAlteration>
+): TimelineFeeAlteration => ({
   ...json,
   range: DateRange.parseJson(json.range)
 })

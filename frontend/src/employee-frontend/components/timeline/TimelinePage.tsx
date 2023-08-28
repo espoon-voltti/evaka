@@ -29,7 +29,8 @@ import {
   feeDecisionRenderer,
   incomeRenderer,
   monthRenderer,
-  partnerRenderer
+  partnerRenderer,
+  valueDecisionRenderer
 } from './renderers'
 
 const TlContainer = styled.div`
@@ -149,6 +150,38 @@ const TimelineView = React.memo(function TimelineView({
       <TimelineGroup
         data={timeline.feeDecisions.filter((d) => d.status === 'ANNULLED')}
         renderer={feeDecisionRenderer}
+        timelineRange={timelineRange}
+        zoom={zoom}
+      />
+
+      <Gap size="xs" />
+
+      {/*Value decisions grouped by statuses*/}
+      <TimelineGroup
+        data={timeline.valueDecisions.filter((d) => d.status === 'SENT')}
+        renderer={valueDecisionRenderer}
+        timelineRange={timelineRange}
+        zoom={zoom}
+      />
+      <TimelineGroup
+        data={timeline.valueDecisions.filter((d) =>
+          ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
+            d.status
+          )
+        )}
+        renderer={valueDecisionRenderer}
+        timelineRange={timelineRange}
+        zoom={zoom}
+      />
+      <TimelineGroup
+        data={timeline.valueDecisions.filter((d) => d.status === 'DRAFT')}
+        renderer={valueDecisionRenderer}
+        timelineRange={timelineRange}
+        zoom={zoom}
+      />
+      <TimelineGroup
+        data={timeline.valueDecisions.filter((d) => d.status === 'ANNULLED')}
+        renderer={valueDecisionRenderer}
         timelineRange={timelineRange}
         zoom={zoom}
       />

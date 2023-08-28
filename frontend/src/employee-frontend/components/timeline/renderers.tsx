@@ -9,11 +9,13 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   TimelineChildDetailed,
+  TimelineFeeAlteration,
   TimelineFeeDecision,
   TimelineIncome,
   TimelinePartnerDetailed,
   TimelinePlacement,
-  TimelineServiceNeed
+  TimelineServiceNeed,
+  TimelineValueDecision
 } from 'lib-common/generated/api-types/timeline'
 import { formatCents } from 'lib-common/money'
 import { maxOf, minOf } from 'lib-common/ordered'
@@ -83,6 +85,37 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
         <span>{elem.range.format()}</span>
         <span>{i18n.feeDecision.status[elem.status]}</span>
         <span>{formatCents(elem.totalFee)} €</span>
+      </FixedSpaceColumn>
+    )
+  }
+}
+
+export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
+  color: ({ status }) => {
+    switch (status) {
+      case 'SENT':
+      case 'WAITING_FOR_SENDING':
+      case 'WAITING_FOR_MANUAL_SENDING':
+        return '#80f6ff'
+      case 'DRAFT':
+        return '#c3e1e0'
+      case 'ANNULLED':
+        return '#aeb6b7'
+    }
+  },
+  linkProvider: (elem) => `/finance/value-decisions/${elem.id}`,
+  Summary: ({ elem }) => {
+    const { i18n } = useTranslation()
+    return `${i18n.timeline.valueDecision} ${
+      i18n.valueDecision.status[elem.status]
+    }`
+  },
+  Tooltip: ({ elem }) => {
+    const { i18n } = useTranslation()
+    return (
+      <FixedSpaceColumn spacing="xxs">
+        <span>{elem.range.format()}</span>
+        <span>{i18n.valueDecision.status[elem.status]}</span>
       </FixedSpaceColumn>
     )
   }
@@ -160,6 +193,38 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
         <Gap size="xs" />
 
+        {/*Value decisions grouped by statuses*/}
+        <TimelineGroup
+          data={elem.valueDecisions.filter((d) => d.status === 'SENT')}
+          renderer={valueDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={elem.valueDecisions.filter((d) =>
+            ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
+              d.status
+            )
+          )}
+          renderer={valueDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={elem.valueDecisions.filter((d) => d.status === 'DRAFT')}
+          renderer={valueDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={elem.valueDecisions.filter((d) => d.status === 'ANNULLED')}
+          renderer={valueDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+
+        <Gap size="xs" />
+
         <TimelineGroup
           data={elem.incomes}
           renderer={incomeRenderer}
@@ -203,15 +268,6 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
     return (
       <TlNestedContainer>
         <TimelineGroup
-          data={elem.incomes}
-          renderer={incomeRenderer}
-          timelineRange={nestedRange}
-          zoom={zoom}
-        />
-
-        <Gap size="xs" />
-
-        <TimelineGroup
           data={elem.placements}
           renderer={placementRenderer}
           timelineRange={nestedRange}
@@ -228,6 +284,22 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
         />
 
         <Gap size="xs" />
+
+        <TimelineGroup
+          data={elem.incomes}
+          renderer={incomeRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+
+        <Gap size="xs" />
+
+        <TimelineGroup
+          data={elem.feeAlterations}
+          renderer={feeAlterationRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
       </TlNestedContainer>
     )
   }
@@ -272,4 +344,25 @@ const getNestedRange = (range: DateRange, parentRange: FiniteDateRange) => {
     return null
   }
   return new FiniteDateRange(minDate, maxDate)
+}
+
+export const feeAlterationRenderer: EventRenderer<TimelineFeeAlteration> = {
+  color: () => '#bbde80',
+  Summary: ({ elem }) => {
+    const { i18n } = useTranslation()
+    return i18n.feeAlteration[elem.type]
+  },
+  Tooltip: ({ elem }) => {
+    const { i18n } = useTranslation()
+    return (
+      <FixedSpaceColumn spacing="xxs">
+        <span>{elem.range.format()}</span>
+        <span>
+          {i18n.feeAlteration[elem.type]} {elem.amount}{' '}
+          {elem.absolute ? '€' : '%'}
+        </span>
+        <span>{elem.notes}</span>
+      </FixedSpaceColumn>
+    )
+  }
 }

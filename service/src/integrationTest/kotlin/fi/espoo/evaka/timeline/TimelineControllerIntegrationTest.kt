@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.FullApplicationTest
@@ -47,6 +51,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
                 feeDecisions = emptyList(),
+                valueDecisions = emptyList(),
                 incomes = emptyList(),
                 partners = emptyList(),
                 children = emptyList()
@@ -97,6 +102,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
                 feeDecisions = emptyList(),
+                valueDecisions = emptyList(),
                 incomes = emptyList(),
                 partners = emptyList(),
                 children =
@@ -116,8 +122,9 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                         IncomeEffect.INCOME
                                     )
                                 ),
-                            placements = listOf(),
-                            serviceNeeds = listOf()
+                            placements = emptyList(),
+                            serviceNeeds = emptyList(),
+                            feeAlterations = emptyList()
                         )
                     )
             ),
