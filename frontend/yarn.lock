@@ -4986,12 +4986,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chart.js@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "chart.js@npm:4.3.0"
+"chart.js@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "chart.js@npm:4.4.0"
   dependencies:
     "@kurkle/color": ^0.3.0
-  checksum: 157ceaa3815665163cb30ccc221a5af40834dca940faa6ec02cb95406bf3e83c15c5f36ad950a1716c9d199e87f7b9be953227c4d9d445d593536175b47bbab8
+  checksum: 5ee2d99b78608025525b5790af17178fdaa5adc3294e082deba2718029b0496109ba124f1b08dd1e4c8a04d6e842be7f384f2cfe9a11df8d1c6fe884acece52b
   languageName: node
   linkType: hard
 
@@ -6505,7 +6505,7 @@ __metadata:
     axios: ^1.4.0
     babel-loader: ^9.1.2
     babel-plugin-styled-components: ^2.1.4
-    chart.js: ^4.3.0
+    chart.js: ^4.4.0
     chartjs-adapter-date-fns: ^3.0.0
     classnames: ^2.3.2
     compute-scroll-into-view: ^3.0.3
