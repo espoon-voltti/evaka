@@ -40,7 +40,7 @@ export default function TlEvent<T extends WithRange>({
         <Header>
           <StickyHeaderPositioner>
             <HeaderInner>
-              {renderer.nestedContent && (
+              {renderer.NestedContent && (
                 <ExpanderButton>
                   <IconButton
                     icon={open ? faChevronUp : faChevronDown}
@@ -53,17 +53,17 @@ export default function TlEvent<T extends WithRange>({
               <SummaryLabel>
                 {renderer.linkProvider ? (
                   <Link to={renderer.linkProvider(event)} target="_blank">
-                    {renderer.summary(event)}
+                    <renderer.Summary elem={event} />
                   </Link>
                 ) : (
-                  renderer.summary(event)
+                  <renderer.Summary elem={event} />
                 )}
               </SummaryLabel>
             </HeaderInner>
-            {renderer.tooltip && (
+            {renderer.Tooltip && (
               <TtPositioner>
                 <FixedTooltip
-                  tooltip={renderer.tooltip(event)}
+                  tooltip={<renderer.Tooltip elem={event} />}
                   width="large"
                   position="bottom"
                 />
@@ -71,9 +71,13 @@ export default function TlEvent<T extends WithRange>({
             )}
           </StickyHeaderPositioner>
         </Header>
-        {open && renderer.nestedContent && (
+        {open && renderer.NestedContent && (
           <ExpandedContent>
-            {renderer.nestedContent(event, timelineRange, zoom)}
+            <renderer.NestedContent
+              elem={event}
+              timelineRange={timelineRange}
+              zoom={zoom}
+            />
           </ExpandedContent>
         )}
       </FixedSpaceColumn>

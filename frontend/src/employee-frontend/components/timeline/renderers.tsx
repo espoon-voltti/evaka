@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// TODO: Refactor to components?
-/* eslint react-hooks/rules-of-hooks: 0 */
-
 import React from 'react'
 import styled from 'styled-components'
 
@@ -28,19 +25,23 @@ import { useTranslation } from '../../state/i18n'
 import TimelineGroup from './TimelineGroup'
 import { WithRange } from './common'
 
-type SummaryRenderer<T extends WithRange> = (elem: T) => string
-type TooltipRenderer<T extends WithRange> = (elem: T) => React.ReactNode
-type NestedContentRenderer<T extends WithRange> = (
-  elem: T,
-  timelineRange: FiniteDateRange,
+type SummaryRenderer<T extends WithRange> = (props: {
+  elem: T
+}) => React.ReactNode
+type TooltipRenderer<T extends WithRange> = (props: {
+  elem: T
+}) => React.ReactNode
+type NestedContentRenderer<T extends WithRange> = (props: {
+  elem: T
+  timelineRange: FiniteDateRange
   zoom: number
-) => React.ReactNode
+}) => React.ReactNode
 export interface EventRenderer<T extends WithRange> {
   color: (elem: T) => string
-  summary: SummaryRenderer<T>
   linkProvider?: (elem: T) => string
-  tooltip?: TooltipRenderer<T>
-  nestedContent?: NestedContentRenderer<T>
+  Summary: SummaryRenderer<T>
+  Tooltip?: TooltipRenderer<T>
+  NestedContent?: NestedContentRenderer<T>
 }
 
 const TlNestedContainer = styled.div`
@@ -52,7 +53,7 @@ const TlNestedContainer = styled.div`
 
 export const monthRenderer: EventRenderer<WithRange> = {
   color: () => '#ffffff',
-  summary: (m: WithRange) => m.range.start.format('MM/yyyy')
+  Summary: ({ elem }) => elem.range.start.format('MM/yyyy')
 }
 
 export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
@@ -68,18 +69,20 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
         return '#aeb6b7'
     }
   },
-  summary: (d: TimelineFeeDecision) => {
-    const { i18n } = useTranslation()
-    return `${i18n.timeline.feeDecision} ${i18n.feeDecision.status[d.status]}`
-  },
   linkProvider: (elem) => `/finance/fee-decisions/${elem.id}`,
-  tooltip: (d: TimelineFeeDecision) => {
+  Summary: ({ elem }) => {
+    const { i18n } = useTranslation()
+    return `${i18n.timeline.feeDecision} ${
+      i18n.feeDecision.status[elem.status]
+    }`
+  },
+  Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
       <FixedSpaceColumn spacing="xxs">
-        <span>{d.range.format()}</span>
-        <span>{i18n.feeDecision.status[d.status]}</span>
-        <span>{formatCents(d.totalFee)} €</span>
+        <span>{elem.range.format()}</span>
+        <span>{i18n.feeDecision.status[elem.status]}</span>
+        <span>{formatCents(elem.totalFee)} €</span>
       </FixedSpaceColumn>
     )
   }
@@ -87,16 +90,18 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
 
 export const incomeRenderer: EventRenderer<TimelineIncome> = {
   color: () => '#99ff99',
-  summary: (i: TimelineIncome) => {
+  Summary: ({ elem }) => {
     const { i18n } = useTranslation()
-    return i18n.personProfile.income.details.effectOptions[i.effect]
+    return i18n.personProfile.income.details.effectOptions[elem.effect]
   },
-  tooltip: (i: TimelineIncome) => {
+  Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
       <FixedSpaceColumn spacing="xxs">
-        <span>{i.range.format()}</span>
-        <span>{i18n.personProfile.income.details.effectOptions[i.effect]}</span>
+        <span>{elem.range.format()}</span>
+        <span>
+          {i18n.personProfile.income.details.effectOptions[elem.effect]}
+        </span>
       </FixedSpaceColumn>
     )
   }
@@ -104,38 +109,34 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
 
 export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
   color: () => '#f4bcff',
-  summary: (elem) => {
+  linkProvider: (elem) => `/profile/${elem.partnerId}`,
+  Summary: ({ elem }) => {
     const { i18n } = useTranslation()
     return `${i18n.timeline.partner} ${elem.firstName} ${elem.lastName}`
   },
-  linkProvider: (elem) => `/profile/${elem.partnerId}`,
-  tooltip: (p: TimelinePartnerDetailed) => (
+  Tooltip: ({ elem }) => (
     <FixedSpaceColumn spacing="xxs">
-      <span>{p.range.format()}</span>
+      <span>{elem.range.format()}</span>
       <span>
-        {p.firstName} {p.lastName}
+        {elem.firstName} {elem.lastName}
       </span>
     </FixedSpaceColumn>
   ),
-  nestedContent: (
-    p: TimelinePartnerDetailed,
-    timelineRange: FiniteDateRange,
-    zoom: number
-  ) => {
-    const nestedRange = getNestedRange(p.range, timelineRange)
+  NestedContent: ({ elem, timelineRange, zoom }) => {
+    const nestedRange = getNestedRange(elem.range, timelineRange)
     if (nestedRange === null) return null
 
     return (
       <TlNestedContainer>
         {/*Fee decisions grouped by statuses*/}
         <TimelineGroup
-          data={p.feeDecisions.filter((d) => d.status === 'SENT')}
+          data={elem.feeDecisions.filter((d) => d.status === 'SENT')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={p.feeDecisions.filter((d) =>
+          data={elem.feeDecisions.filter((d) =>
             ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
               d.status
             )
@@ -145,13 +146,13 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
         <TimelineGroup
-          data={p.feeDecisions.filter((d) => d.status === 'DRAFT')}
+          data={elem.feeDecisions.filter((d) => d.status === 'DRAFT')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={p.feeDecisions.filter((d) => d.status === 'ANNULLED')}
+          data={elem.feeDecisions.filter((d) => d.status === 'ANNULLED')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -160,7 +161,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={p.incomes}
+          data={elem.incomes}
           renderer={incomeRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -169,7 +170,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={p.children}
+          data={elem.children}
           renderer={childRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -181,32 +182,28 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
 export const childRenderer: EventRenderer<TimelineChildDetailed> = {
   color: () => '#ffffc1',
-  summary: (elem) => {
+  linkProvider: (elem) => `/child-information/${elem.childId}`,
+  Summary: ({ elem }) => {
     const { i18n } = useTranslation()
     return `${i18n.timeline.child} ${elem.firstName} ${elem.lastName}`
   },
-  linkProvider: (elem) => `/child-information/${elem.childId}`,
-  tooltip: (p: TimelineChildDetailed) => (
+  Tooltip: ({ elem }) => (
     <FixedSpaceColumn spacing="xxs">
-      <span>{p.range.format()}</span>
+      <span>{elem.range.format()}</span>
       <span>
-        {p.firstName} {p.lastName}
+        {elem.firstName} {elem.lastName}
       </span>
-      <span>s. {p.dateOfBirth.format()}</span>
+      <span>s. {elem.dateOfBirth.format()}</span>
     </FixedSpaceColumn>
   ),
-  nestedContent: (
-    p: TimelineChildDetailed,
-    timelineRange: FiniteDateRange,
-    zoom: number
-  ) => {
-    const nestedRange = getNestedRange(p.range, timelineRange)
+  NestedContent: ({ elem, timelineRange, zoom }) => {
+    const nestedRange = getNestedRange(elem.range, timelineRange)
     if (nestedRange === null) return null
 
     return (
       <TlNestedContainer>
         <TimelineGroup
-          data={p.incomes}
+          data={elem.incomes}
           renderer={incomeRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -215,7 +212,7 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={p.placements}
+          data={elem.placements}
           renderer={placementRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -224,7 +221,7 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={p.serviceNeeds}
+          data={elem.serviceNeeds}
           renderer={serviceNeedRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -238,17 +235,17 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
 
 export const placementRenderer: EventRenderer<TimelinePlacement> = {
   color: () => '#ffb4b4',
-  summary: (p: TimelinePlacement) => {
+  Summary: ({ elem }) => {
     const { i18n } = useTranslation()
-    return `${i18n.placement.type[p.type]} - ${p.unit.name}`
+    return `${i18n.placement.type[elem.type]} - ${elem.unit.name}`
   },
-  tooltip: (p: TimelinePlacement) => {
+  Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
       <FixedSpaceColumn spacing="xxs">
-        <span>{p.range.format()}</span>
-        <span>{i18n.placement.type[p.type]}</span>
-        <span>{p.unit.name}</span>
+        <span>{elem.range.format()}</span>
+        <span>{i18n.placement.type[elem.type]}</span>
+        <span>{elem.unit.name}</span>
       </FixedSpaceColumn>
     )
   }
@@ -256,11 +253,11 @@ export const placementRenderer: EventRenderer<TimelinePlacement> = {
 
 export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
   color: () => '#5fdaa3',
-  summary: (sn: TimelineServiceNeed) => sn.name,
-  tooltip: (sn: TimelineServiceNeed) => (
+  Summary: ({ elem }) => elem.name,
+  Tooltip: ({ elem }) => (
     <FixedSpaceColumn spacing="xxs">
-      <span>{sn.range.format()}</span>
-      <span>{sn.name}</span>
+      <span>{elem.range.format()}</span>
+      <span>{elem.name}</span>
     </FixedSpaceColumn>
   )
 }
