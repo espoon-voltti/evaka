@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -50,8 +51,11 @@ class TimelineController(private val accessControl: AccessControl) {
                         personId
                     )
 
+                    val personBasics = tx.getPersonBasics(personId)
                     Timeline(
                         personId = personId,
+                        firstName = personBasics.firstName,
+                        lastName = personBasics.lastName,
                         feeDecisions = tx.getFeeDecisions(personId),
                         incomes = tx.getIncomes(personId),
                         partners =
@@ -126,11 +130,27 @@ class TimelineController(private val accessControl: AccessControl) {
 
 data class Timeline(
     val personId: PersonId,
+    val firstName: String,
+    val lastName: String,
     val feeDecisions: List<TimelineFeeDecision>,
     val incomes: List<TimelineIncome>,
     val partners: List<TimelinePartnerDetailed>,
     val children: List<TimelineChildDetailed>
 )
+
+private data class PersonBasics(val firstName: String, val lastName: String)
+
+private fun Database.Read.getPersonBasics(personId: PersonId) =
+    createQuery<Any> {
+            sql("""
+SELECT first_name, last_name
+FROM person
+WHERE id = ${bind(personId)}
+""")
+        }
+        .mapTo<PersonBasics>()
+        .firstOrNull()
+        ?: throw NotFound()
 
 data class TimelineFeeDecision(
     val id: FeeDecisionId,

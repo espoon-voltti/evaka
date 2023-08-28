@@ -12,10 +12,9 @@ import LocalDate from 'lib-common/local-date'
 import { maxOf, minOf } from 'lib-common/ordered'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import Button from 'lib-components/atoms/buttons/Button'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H1 } from 'lib-components/typography'
+import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { getTimeline } from '../../api/timeline'
@@ -30,6 +29,8 @@ import {
   monthRenderer,
   partnerRenderer
 } from './renderers'
+import IconButton from '../../../lib-components/atoms/buttons/IconButton'
+import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'Icons'
 
 const TlContainer = styled.div`
   width: 100%;
@@ -48,20 +49,26 @@ export default React.memo(function TimelinePage() {
     <Container>
       <ContentArea opaque>
         <H1>Aikajana</H1>
-        {renderResult(timelineResult, (timeline) => (
-          <TimelineView timeline={timeline} zoom={zoom} />
-        ))}
-        <Gap />
+        {timelineResult.isSuccess && (
+          <H2>{timelineResult.value.firstName} {timelineResult.value.lastName}</H2>
+        )}
+        <Gap size='s'/>
         <FixedSpaceRow>
-          <Button
-            text="Zoom in"
+          <IconButton
+            icon={faMagnifyingGlassPlus}
+            aria-label="Zoom in"
             onClick={() => setZoom((prev) => Math.min(100, prev + 2))}
           />
-          <Button
-            text="Zoom out"
+          <IconButton
+            icon={faMagnifyingGlassMinus}
+            aria-label="Zoom out"
             onClick={() => setZoom((prev) => Math.max(1, prev - 2))}
           />
         </FixedSpaceRow>
+        <Gap size='s'/>
+        {renderResult(timelineResult, (timeline) => (
+          <TimelineView timeline={timeline} zoom={zoom} />
+        ))}
       </ContentArea>
     </Container>
   )

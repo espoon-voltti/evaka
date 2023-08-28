@@ -10,7 +10,6 @@ import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
-import Button from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -40,6 +39,8 @@ import FosterChildren from './person-profile/FosterChildren'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
+import InlineButton from '../../lib-components/atoms/buttons/InlineButton'
+import { faListTimeline } from 'Icons'
 
 export const NameTd = styled(Td)`
   width: 30%;
@@ -249,9 +250,11 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
                   </InfoLabelContainer>
                 )}
               {permittedActions.has('READ_TIMELINE') && (
-                <Button onClick={() => navigate(`/profile/${id}/timeline`)}>
-                  {i18n.personProfile.timeline}
-                </Button>
+                <InlineButton
+                  text={i18n.personProfile.timeline}
+                  onClick={() => navigate(`/profile/${id}/timeline`)}
+                  icon={faListTimeline}
+                />
               )}
             </FixedSpaceColumn>
           </HeaderRow>

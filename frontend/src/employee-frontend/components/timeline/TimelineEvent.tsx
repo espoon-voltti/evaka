@@ -32,7 +32,7 @@ export default function TlEvent<T extends WithRange>({
   timelineRange: FiniteDateRange
   zoom: number
 }) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   return (
     <TlEventContainer left={left} width={width} color={renderer.color(event)}>
       <FixedSpaceColumn spacing="xs">

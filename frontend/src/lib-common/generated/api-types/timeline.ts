@@ -18,7 +18,9 @@ import { UUID } from '../../types'
 export interface Timeline {
   children: TimelineChildDetailed[]
   feeDecisions: TimelineFeeDecision[]
+  firstName: string
   incomes: TimelineIncome[]
+  lastName: string
   partners: TimelinePartnerDetailed[]
   personId: UUID
 }
