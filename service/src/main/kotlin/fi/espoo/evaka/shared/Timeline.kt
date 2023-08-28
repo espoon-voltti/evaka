@@ -19,7 +19,6 @@ import java.time.LocalDate
  * Note: this implementation is *very* inefficient
  */
 data class Timeline private constructor(private val ranges: List<FiniteDateRange>) {
-    constructor() : this(emptyList())
 
     fun add(range: FiniteDateRange) =
         this.ranges
@@ -94,8 +93,10 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
     fun isEmpty() = this.ranges.isEmpty()
 
     companion object {
-        fun of(): Timeline = Timeline()
-        fun of(vararg ranges: FiniteDateRange): Timeline = Timeline().addAll(ranges.asIterable())
-        fun of(ranges: Collection<FiniteDateRange>): Timeline = Timeline().addAll(ranges)
+        private val EMPTY = Timeline(emptyList())
+        fun empty(): Timeline = EMPTY
+        fun of(vararg ranges: FiniteDateRange): Timeline = empty().addAll(ranges.asSequence())
+        fun of(ranges: Iterable<FiniteDateRange>): Timeline = empty().addAll(ranges)
+        fun of(ranges: Sequence<FiniteDateRange>): Timeline = empty().addAll(ranges)
     }
 }

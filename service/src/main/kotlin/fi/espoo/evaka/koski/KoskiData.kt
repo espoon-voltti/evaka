@@ -440,52 +440,46 @@ internal fun calculateStudyRightTimelines(
     holidays: Set<LocalDate>,
     absences: Sequence<KoskiPreparatoryAbsence>
 ): StudyRightTimelines {
-    val placement = Timeline().addAll(placementRanges)
+    val placement = Timeline.of(placementRanges)
     val plannedAbsence =
-        Timeline()
-            .addAll(
-                Timeline()
-                    .addAll(
-                        absences
-                            .filter {
-                                it.type == AbsenceType.PLANNED_ABSENCE ||
-                                    it.type == AbsenceType.OTHER_ABSENCE
-                            }
-                            .map { it.date.toFiniteDateRange() }
-                    )
-                    .fillWeekendAndHolidayGaps(holidays)
-                    .intersection(placement)
-                    .ranges()
-                    .filter { it.durationInDays() > 7 }
-            )
+        Timeline.of(
+            Timeline.of(
+                    absences
+                        .filter {
+                            it.type == AbsenceType.PLANNED_ABSENCE ||
+                                it.type == AbsenceType.OTHER_ABSENCE
+                        }
+                        .map { it.date.toFiniteDateRange() }
+                )
+                .fillWeekendAndHolidayGaps(holidays)
+                .intersection(placement)
+                .ranges()
+                .filter { it.durationInDays() > 7 }
+        )
     val sickLeaveAbsence =
-        Timeline()
-            .addAll(
-                Timeline()
-                    .addAll(
-                        absences
-                            .filter { it.type == AbsenceType.SICKLEAVE }
-                            .map { it.date.toFiniteDateRange() }
-                    )
-                    .fillWeekendAndHolidayGaps(holidays)
-                    .intersection(placement)
-                    .ranges()
-                    .filter { it.durationInDays() > 7 }
-            )
+        Timeline.of(
+            Timeline.of(
+                    absences
+                        .filter { it.type == AbsenceType.SICKLEAVE }
+                        .map { it.date.toFiniteDateRange() }
+                )
+                .fillWeekendAndHolidayGaps(holidays)
+                .intersection(placement)
+                .ranges()
+                .filter { it.durationInDays() > 7 }
+        )
     val unknownAbsence =
-        Timeline()
-            .addAll(
-                Timeline()
-                    .addAll(
-                        absences
-                            .filter { it.type == AbsenceType.UNKNOWN_ABSENCE }
-                            .map { it.date.toFiniteDateRange() }
-                    )
-                    .fillWeekendAndHolidayGaps(holidays)
-                    .intersection(placement)
-                    .ranges()
-                    .filter { it.durationInDays() > 7 }
-            )
+        Timeline.of(
+            Timeline.of(
+                    absences
+                        .filter { it.type == AbsenceType.UNKNOWN_ABSENCE }
+                        .map { it.date.toFiniteDateRange() }
+                )
+                .fillWeekendAndHolidayGaps(holidays)
+                .intersection(placement)
+                .ranges()
+                .filter { it.durationInDays() > 7 }
+        )
 
     return StudyRightTimelines(
         placement = placement,
