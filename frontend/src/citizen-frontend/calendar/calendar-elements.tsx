@@ -7,7 +7,6 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
-import { timeRangeContains } from 'lib-common/form/fields'
 import {
   ReservableTimeRange,
   ReservationResponseDay,
@@ -31,6 +30,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { Translations, useTranslation } from '../localization'
 
 import RoundChildImages, { ChildImageData } from './RoundChildImages'
+import { timeRangeContains } from './reservation-modal/form'
 
 export const Reservations = React.memo(function Reservations({
   data,

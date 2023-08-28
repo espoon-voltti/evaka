@@ -10,7 +10,6 @@ import LocalTime from '../local-time'
 
 import { mapped, object, transformed, value } from './form'
 import {
-  FieldErrors,
   ObjectFieldError,
   ValidationError,
   ValidationResult,
@@ -112,36 +111,4 @@ export const localTimeRange = transformed(
   }
 )
 
-export const limitedLocalTimeRange = transformed(
-  object({
-    value: localTimeRange,
-    validRange: value<TimeRange>()
-  }),
-  ({ value, validRange }): ValidationResult<TimeRange | undefined, 'range'> => {
-    if (value === undefined) return ValidationSuccess.of(undefined)
-
-    let errors: FieldErrors<'range'> | undefined = undefined
-    if (!timeRangeContains(value.start, validRange)) {
-      errors = errors ?? {}
-      errors.startTime = 'range'
-    }
-    if (!timeRangeContains(value.end, validRange)) {
-      errors = errors ?? {}
-      errors.endTime = 'range'
-    }
-    if (errors !== undefined) {
-      return ValidationError.fromFieldErrors({ value: errors })
-    } else {
-      return ValidationSuccess.of(value)
-    }
-  }
-)
-
 const midnight = LocalTime.of(0, 0)
-
-export function timeRangeContains(
-  inputTime: LocalTime,
-  { start, end }: TimeRange
-) {
-  return inputTime.isEqualOrAfter(start) && inputTime.isEqualOrBefore(end)
-}

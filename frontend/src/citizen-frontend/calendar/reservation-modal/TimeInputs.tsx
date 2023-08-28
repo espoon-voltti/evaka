@@ -6,7 +6,6 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { limitedLocalTimeRange } from 'lib-common/form/fields'
 import {
   BoundForm,
   useFormElem,
@@ -24,7 +23,14 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import TimeRangeInput from '../TimeRangeInput'
 
-import { day, emptyTimeRange, noTimes, timeRanges, reservation } from './form'
+import {
+  day,
+  emptyTimeRange,
+  noTimes,
+  timeRanges,
+  reservation,
+  limitedLocalTimeRange
+} from './form'
 
 interface DayProps {
   bind: BoundForm<typeof day>

@@ -6,11 +6,7 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  localDateRange,
-  limitedLocalTimeRange,
-  string
-} from 'lib-common/form/fields'
+import { localDateRange, string, localTimeRange } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -23,8 +19,10 @@ import {
   value
 } from 'lib-common/form/form'
 import {
+  FieldErrors,
   StateOf,
   ValidationError,
+  ValidationResult,
   ValidationSuccess
 } from 'lib-common/form/types'
 import {
@@ -42,6 +40,38 @@ import { Translations } from 'lib-customizations/citizen'
 export const MAX_TIME_RANGE = {
   start: LocalTime.MIN,
   end: LocalTime.MAX
+}
+
+export const limitedLocalTimeRange = transformed(
+  object({
+    value: localTimeRange,
+    validRange: value<TimeRange>()
+  }),
+  ({ value, validRange }): ValidationResult<TimeRange | undefined, 'range'> => {
+    if (value === undefined) return ValidationSuccess.of(undefined)
+
+    let errors: FieldErrors<'range'> | undefined = undefined
+    if (!timeRangeContains(value.start, validRange)) {
+      errors = errors ?? {}
+      errors.startTime = 'range'
+    }
+    if (!timeRangeContains(value.end, validRange)) {
+      errors = errors ?? {}
+      errors.endTime = 'range'
+    }
+    if (errors !== undefined) {
+      return ValidationError.fromFieldErrors({ value: errors })
+    } else {
+      return ValidationSuccess.of(value)
+    }
+  }
+)
+
+export function timeRangeContains(
+  inputTime: LocalTime,
+  { start, end }: TimeRange
+) {
+  return inputTime.isEqualOrAfter(start) && inputTime.isEqualOrBefore(end)
 }
 
 export function emptyTimeRange(
