@@ -101,8 +101,7 @@ export const localTimeRange = transformed(
     if (
       startTime === undefined ||
       endTime === undefined ||
-      // Allow midnight as the end time, even though it's "before" all other times
-      (endTime.isBefore(startTime) && !endTime.isEqual(midnight))
+      endTime.isBefore(startTime)
     ) {
       return ValidationError.of('timeFormat')
     } else {
@@ -110,5 +109,3 @@ export const localTimeRange = transformed(
     }
   }
 )
-
-const midnight = LocalTime.of(0, 0)

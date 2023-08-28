@@ -83,22 +83,12 @@ export function emptyTimeRange(
   }
 }
 
-export const timeRanges = mapped(
-  array(
-    validated(limitedLocalTimeRange, (output) =>
-      // 00:00 is not a valid end time
-      output !== undefined && output.end.hour === 0 && output.end.minute === 0
-        ? 'timeFormat'
-        : undefined
-    )
-  ),
-  (output) => {
-    const nonEmpty = output.flatMap((x) => x ?? [])
-    return nonEmpty.length === 0
-      ? undefined // All inputs empty => no value
-      : nonEmpty
-  }
-)
+export const timeRanges = mapped(array(limitedLocalTimeRange), (output) => {
+  const nonEmpty = output.flatMap((x) => x ?? [])
+  return nonEmpty.length === 0
+    ? undefined // All inputs empty => no value
+    : nonEmpty
+})
 
 export const reservation = object({
   reservation: union({

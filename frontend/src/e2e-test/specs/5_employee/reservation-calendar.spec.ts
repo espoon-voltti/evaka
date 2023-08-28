@@ -521,7 +521,7 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.addNewTimeRow(0)
 
     await reservationModal.setStartTime('20:00', 1)
-    await reservationModal.setEndTime('00:00', 1)
+    await reservationModal.setEndTime('23:59', 1)
     await reservationModal.save()
 
     await waitUntilEqual(
@@ -578,7 +578,7 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.addNewTimeRow(0)
 
     await reservationModal.setStartTime('20:00', 1)
-    await reservationModal.setEndTime('00:00', 1)
+    await reservationModal.setEndTime('23:59', 1)
 
     await reservationModal.save()
 
