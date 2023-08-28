@@ -47,8 +47,16 @@ export const limitedLocalTimeRange = transformed(
     value: localTimeRange,
     validRange: value<TimeRange>()
   }),
-  ({ value, validRange }): ValidationResult<TimeRange | undefined, 'range'> => {
+  ({
+    value,
+    validRange
+  }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
     if (value === undefined) return ValidationSuccess.of(undefined)
+
+    // Don't allow reservations with same start and end times
+    if (value.start.isEqual(value.end)) {
+      return ValidationError.field('value', 'timeFormat')
+    }
 
     let errors: FieldErrors<'range'> | undefined = undefined
     if (!timeRangeContains(value.start, validRange)) {
