@@ -57,7 +57,7 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
-import { H1, H2, Label } from 'lib-components/typography'
+import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { translations } from 'lib-customizations/employee'
@@ -826,6 +826,13 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   />
                 </WidthLimiter>
               </LabeledValue>
+            </SectionSpacer>
+
+            <SectionSpacer>
+              <H3 noMargin>{t.legalInstructions}</H3>
+              <P noMargin>{t.legalInstructionsText}</P>
+              <H3 noMargin>{t.jurisdiction}</H3>
+              <P noMargin>{t.jurisdictionText}</P>
             </SectionSpacer>
 
             <SectionSpacer>
