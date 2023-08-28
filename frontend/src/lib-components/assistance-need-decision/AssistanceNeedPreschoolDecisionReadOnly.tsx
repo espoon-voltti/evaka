@@ -12,7 +12,7 @@ import Container, {
   ContentArea
 } from '../layout/Container'
 import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
-import { H1, H2, Label } from '../typography'
+import { H1, H2, H3, Label, P } from '../typography'
 import { Gap } from '../white-space'
 
 import { AssistanceNeedDecisionStatusChip } from './AssistanceNeedDecisionStatusChip'
@@ -99,6 +99,10 @@ interface ViewTranslations {
   decisionMaker: string
   employeeTitle: string
   phone: string
+  legalInstructions: string
+  legalInstructionsText: string
+  jurisdiction: string
+  jurisdictionText: string
   appealInstructionsTitle: string
   appealInstructions: JSX.Element
 }
@@ -317,6 +321,13 @@ export default React.memo(function DecisionFormReadView({
                 data-qa="view-of-guardians"
               />
             </LabeledValue>
+          </SectionSpacer>
+
+          <SectionSpacer>
+            <H3 noMargin>{t.legalInstructions}</H3>
+            <P noMargin>{t.legalInstructionsText}</P>
+            <H3 noMargin>{t.jurisdiction}</H3>
+            <P noMargin>{t.jurisdictionText}</P>
           </SectionSpacer>
 
           <SectionSpacer>

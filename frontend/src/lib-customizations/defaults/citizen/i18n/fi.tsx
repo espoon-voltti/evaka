@@ -1496,6 +1496,11 @@ export default {
       decisionMaker: 'Päätöksen tekijä',
       employeeTitle: 'Titteli',
       phone: 'Puhelinnumero',
+      legalInstructions: 'Sovelletut oikeusohjeet',
+      legalInstructionsText: 'Perusopetuslaki 17 §',
+      jurisdiction: 'Toimivalta',
+      jurisdictionText:
+        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta',
       appealInstructionsTitle: 'Oikaisuvaatimusohje',
       appealInstructions: (
         <>

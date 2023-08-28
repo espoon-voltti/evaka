@@ -59,6 +59,11 @@ export const sv = {
       decisionMaker: 'Beslutsfattare',
       employeeTitle: 'Titel',
       phone: 'Telefonnummer',
+      legalInstructions: 'Tillämpade bestämmelser',
+      legalInstructionsText: 'Lag om grundläggande utbildning 17 §',
+      jurisdiction: 'Befogenhet',
+      jurisdictionText:
+        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta',
       appealInstructionsTitle: 'Anvisning om begäran om omprövning',
       appealInstructions: (
         <>
