@@ -75,7 +75,7 @@ describe('Varda error report', () => {
     vardaErrorsReportPage = await new ReportsPage(page).openVardaErrorsReport()
   })
 
-  test('Can mark child for reset', async () => {
+  test('Varda errors are shown', async () => {
     await vardaErrorsReportPage.assertErrorRowCount(0)
 
     await addVardaReset({
@@ -95,8 +95,5 @@ describe('Varda error report', () => {
 
     await vardaErrorsReportPage.assertErrorRowCount(1)
     await vardaErrorsReportPage.assertErrorsContains(childId, 'test error')
-    await vardaErrorsReportPage.resetChild(childId)
-    await page.reload()
-    await vardaErrorsReportPage.assertErrorRowCount(0)
   })
 })

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/varda")
 class VardaController(private val vardaService: VardaService) {
-    @PostMapping("/run-update-all")
+    @PostMapping("/start-update")
     fun runFullVardaUpdate(db: Database, clock: EvakaClock) {
         db.connect { dbc -> vardaService.startVardaUpdate(dbc, clock) }
     }
