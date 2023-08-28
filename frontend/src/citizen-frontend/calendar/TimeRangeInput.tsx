@@ -21,14 +21,14 @@ export interface Props {
   >
   hideErrorsBeforeTouched?: boolean
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
-  'data-qa'?: string
+  dataQaPrefix?: string
 }
 
 export default React.memo(function TimeRangeInputF({
   bind,
   hideErrorsBeforeTouched,
   onFocus,
-  'data-qa': dataQa
+  dataQaPrefix
 }: Props) {
   const i18n = useTranslation()
   const [touched, setTouched] = useState([false, false])
@@ -48,7 +48,7 @@ export default React.memo(function TimeRangeInputF({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
           onFocus={onFocus}
           onBlur={() => setTouched(([_, t]) => [true, t])}
-          data-qa={dataQa ? `${dataQa}-start` : undefined}
+          data-qa={dataQaPrefix ? `${dataQaPrefix}-start` : undefined}
         />
         <span>–</span>
         <TimeInputF
@@ -58,12 +58,12 @@ export default React.memo(function TimeRangeInputF({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
           onFocus={onFocus}
           onBlur={() => setTouched(([t, _]) => [t, true])}
-          data-qa={dataQa ? `${dataQa}-end` : undefined}
+          data-qa={dataQaPrefix ? `${dataQaPrefix}-end` : undefined}
         />
       </TimeRangeWrapper>
       {inputInfo !== undefined && (!hideErrorsBeforeTouched || bothTouched) ? (
         <ErrorRow $status={inputInfo.status}>
-          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+          <span data-qa={dataQaPrefix ? `${dataQaPrefix}-info` : undefined}>
             {inputInfo.text}
           </span>
           <UnderRowStatusIcon status={inputInfo?.status} />

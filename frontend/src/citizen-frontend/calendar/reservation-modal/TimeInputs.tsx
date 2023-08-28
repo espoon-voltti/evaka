@@ -243,14 +243,14 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
 interface LimitedLocalTimeRangeProps {
   bind: BoundForm<typeof limitedLocalTimeRange>
   hideErrorsBeforeTouched?: boolean
-  dataQa?: string
+  dataQaPrefix?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
 const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
   bind,
   hideErrorsBeforeTouched,
-  dataQa,
+  dataQaPrefix,
   onFocus
 }: LimitedLocalTimeRangeProps) {
   const value = useFormField(bind, 'value')
@@ -258,7 +258,7 @@ const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
     <TimeRangeInput
       bind={value}
       hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-      data-qa={dataQa}
+      dataQaPrefix={dataQaPrefix}
       onFocus={onFocus}
     />
   )
@@ -299,7 +299,7 @@ const TimeRanges = React.memo(function TimeRanges({
           <LimitedLocalTimeRange
             bind={firstTimeRange}
             hideErrorsBeforeTouched={!showAllErrors}
-            data-qa={dataQaPrefix ? `${dataQaPrefix}-time-0` : undefined}
+            dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-0` : undefined}
             onFocus={onFocus}
           />
         </MiddleCell>
@@ -340,7 +340,7 @@ const TimeRanges = React.memo(function TimeRanges({
             <LimitedLocalTimeRange
               bind={secondTimeRange}
               hideErrorsBeforeTouched={!showAllErrors}
-              data-qa={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}
+              dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}
               onFocus={onFocus}
             />
           </MiddleCell>
