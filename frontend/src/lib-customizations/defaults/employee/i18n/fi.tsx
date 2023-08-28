@@ -1918,6 +1918,13 @@ export const fi = {
       status: 'Status'
     }
   },
+  timeline: {
+    title: 'Perheen aikajana',
+    feeDecision: 'Maksupäätös',
+    valueDecision: 'Arvopäätös',
+    partner: 'Puoliso',
+    child: 'Lapsi'
+  },
   incomeStatement: {
     startDate: 'Voimassa alkaen',
     feeBasis: 'Asiakasmaksun peruste',

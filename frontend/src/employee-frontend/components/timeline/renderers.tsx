@@ -61,16 +61,16 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
       case 'SENT':
       case 'WAITING_FOR_SENDING':
       case 'WAITING_FOR_MANUAL_SENDING':
-        return '#9999ff'
+        return '#80f6ff'
       case 'DRAFT':
-        return '#88aadd'
+        return '#c3e1e0'
       case 'ANNULLED':
-        return '#9999bb'
+        return '#aeb6b7'
     }
   },
   summary: (d: TimelineFeeDecision) => {
     const { i18n } = useTranslation()
-    return `Maksupäätös ${i18n.feeDecision.status[d.status]}`
+    return `${i18n.timeline.feeDecision} ${i18n.feeDecision.status[d.status]}`
   },
   linkProvider: (elem) => `/finance/fee-decisions/${elem.id}`,
   tooltip: (d: TimelineFeeDecision) => {
@@ -103,8 +103,11 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
 }
 
 export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
-  color: () => '#eb69ff',
-  summary: (elem) => `Puoliso ${elem.firstName} ${elem.lastName}`,
+  color: () => '#f4bcff',
+  summary: (elem) => {
+    const { i18n } = useTranslation()
+    return `${i18n.timeline.partner} ${elem.firstName} ${elem.lastName}`
+  },
   linkProvider: (elem) => `/profile/${elem.partnerId}`,
   tooltip: (p: TimelinePartnerDetailed) => (
     <FixedSpaceColumn spacing="xxs">
@@ -177,8 +180,11 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 }
 
 export const childRenderer: EventRenderer<TimelineChildDetailed> = {
-  color: () => '#ffff99',
-  summary: (elem) => `Lapsi ${elem.firstName} ${elem.lastName}`,
+  color: () => '#ffffc1',
+  summary: (elem) => {
+    const { i18n } = useTranslation()
+    return `${i18n.timeline.child} ${elem.firstName} ${elem.lastName}`
+  },
   linkProvider: (elem) => `/child-information/${elem.childId}`,
   tooltip: (p: TimelineChildDetailed) => (
     <FixedSpaceColumn spacing="xxs">
@@ -230,20 +236,8 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
   }
 }
 
-const getNestedRange = (range: DateRange, parentRange: FiniteDateRange) => {
-  const minDate = maxOf(range.start, parentRange.start)
-  const maxDate = range.end
-    ? minOf(range.end, parentRange.end)
-    : parentRange.end
-  if (maxDate.isBefore(minDate)) {
-    console.warn('Issue calculating nested range', range, parentRange)
-    return null
-  }
-  return new FiniteDateRange(minDate, maxDate)
-}
-
 export const placementRenderer: EventRenderer<TimelinePlacement> = {
-  color: () => '#e78b8b',
+  color: () => '#ffb4b4',
   summary: (p: TimelinePlacement) => {
     const { i18n } = useTranslation()
     return `${i18n.placement.type[p.type]} - ${p.unit.name}`
@@ -261,7 +255,7 @@ export const placementRenderer: EventRenderer<TimelinePlacement> = {
 }
 
 export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
-  color: () => '#31a88f',
+  color: () => '#5fdaa3',
   summary: (sn: TimelineServiceNeed) => sn.name,
   tooltip: (sn: TimelineServiceNeed) => (
     <FixedSpaceColumn spacing="xxs">
@@ -269,4 +263,16 @@ export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
       <span>{sn.name}</span>
     </FixedSpaceColumn>
   )
+}
+
+const getNestedRange = (range: DateRange, parentRange: FiniteDateRange) => {
+  const minDate = maxOf(range.start, parentRange.start)
+  const maxDate = range.end
+    ? minOf(range.end, parentRange.end)
+    : parentRange.end
+  if (maxDate.isBefore(minDate)) {
+    console.warn('Issue calculating nested range', range, parentRange)
+    return null
+  }
+  return new FiniteDateRange(minDate, maxDate)
 }

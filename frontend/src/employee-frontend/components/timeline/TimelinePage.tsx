@@ -20,6 +20,7 @@ import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { getTimeline } from '../../api/timeline'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import TimelineGroup from './TimelineGroup'
@@ -42,13 +43,14 @@ const TlContainer = styled.div`
 
 export default React.memo(function TimelinePage() {
   const { personId } = useNonNullableParams()
+  const { i18n } = useTranslation()
   const [timelineResult] = useApiState(() => getTimeline(personId), [personId])
   const [zoom, setZoom] = useState(20) // pixels / day
 
   return (
     <Container>
       <ContentArea opaque>
-        <H1>Aikajana</H1>
+        <H1>{i18n.timeline.title}</H1>
         {timelineResult.isSuccess && (
           <H2>
             {timelineResult.value.firstName} {timelineResult.value.lastName}

@@ -111,11 +111,16 @@ const StickyHeaderPositioner = styled.div`
   left: 0;
   display: inline-block;
   max-width: 100%;
+  height: 100%;
 `
 
 const HeaderInner = styled(FixedSpaceRow)`
   overflow: hidden;
   max-width: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
+  height: 100%;
 `
 
 const ExpanderButton = styled.div``
