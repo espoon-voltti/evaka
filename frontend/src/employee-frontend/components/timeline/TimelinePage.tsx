@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -12,6 +13,7 @@ import LocalDate from 'lib-common/local-date'
 import { maxOf, minOf } from 'lib-common/ordered'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
@@ -29,8 +31,6 @@ import {
   monthRenderer,
   partnerRenderer
 } from './renderers'
-import IconButton from '../../../lib-components/atoms/buttons/IconButton'
-import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'Icons'
 
 const TlContainer = styled.div`
   width: 100%;
@@ -50,9 +50,11 @@ export default React.memo(function TimelinePage() {
       <ContentArea opaque>
         <H1>Aikajana</H1>
         {timelineResult.isSuccess && (
-          <H2>{timelineResult.value.firstName} {timelineResult.value.lastName}</H2>
+          <H2>
+            {timelineResult.value.firstName} {timelineResult.value.lastName}
+          </H2>
         )}
-        <Gap size='s'/>
+        <Gap size="s" />
         <FixedSpaceRow>
           <IconButton
             icon={faMagnifyingGlassPlus}
@@ -65,7 +67,7 @@ export default React.memo(function TimelinePage() {
             onClick={() => setZoom((prev) => Math.max(1, prev - 2))}
           />
         </FixedSpaceRow>
-        <Gap size='s'/>
+        <Gap size="s" />
         {renderResult(timelineResult, (timeline) => (
           <TimelineView timeline={timeline} zoom={zoom} />
         ))}
@@ -95,7 +97,7 @@ const TimelineView = React.memo(function TimelineView({
 
       <Gap size="s" />
 
-      {/*Fee decisipns grouped by statuses*/}
+      {/*Fee decisions grouped by statuses*/}
       <TimelineGroup
         data={timeline.feeDecisions.filter((d) => d.status === 'SENT')}
         renderer={feeDecisionRenderer}

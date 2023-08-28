@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faListTimeline } from 'Icons'
 import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -10,6 +11,7 @@ import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -39,8 +41,6 @@ import FosterChildren from './person-profile/FosterChildren'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
-import InlineButton from '../../lib-components/atoms/buttons/InlineButton'
-import { faListTimeline } from 'Icons'
 
 export const NameTd = styled(Td)`
   width: 30%;

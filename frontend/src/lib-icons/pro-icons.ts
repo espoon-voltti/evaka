@@ -135,7 +135,6 @@ export { faMagnifyingGlassPlus } from '@fortawesome/pro-light-svg-icons/faMagnif
 export { faMagnifyingGlassMinus } from '@fortawesome/pro-light-svg-icons/faMagnifyingGlassMinus'
 export { faListTimeline } from '@fortawesome/pro-light-svg-icons/faListTimeline'
 
-
 import type * as ProIconsSet from './pro-icons'
 import { typeAssert } from './utils'
 

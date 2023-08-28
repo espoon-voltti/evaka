@@ -38,6 +38,7 @@ type NestedContentRenderer<T extends WithRange> = (
 export interface EventRenderer<T extends WithRange> {
   color: (elem: T) => string
   summary: SummaryRenderer<T>
+  linkProvider?: (elem: T) => string
   tooltip?: TooltipRenderer<T>
   nestedContent?: NestedContentRenderer<T>
 }
@@ -71,6 +72,7 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
     const { i18n } = useTranslation()
     return `Maksupäätös ${i18n.feeDecision.status[d.status]}`
   },
+  linkProvider: (elem) => `/finance/fee-decisions/${elem.id}`,
   tooltip: (d: TimelineFeeDecision) => {
     const { i18n } = useTranslation()
     return (
@@ -103,6 +105,7 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
 export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
   color: () => '#eb69ff',
   summary: (elem) => `Puoliso ${elem.firstName} ${elem.lastName}`,
+  linkProvider: (elem) => `/profile/${elem.partnerId}`,
   tooltip: (p: TimelinePartnerDetailed) => (
     <FixedSpaceColumn spacing="xxs">
       <span>{p.range.format()}</span>
@@ -121,6 +124,38 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
     return (
       <TlNestedContainer>
+        {/*Fee decisions grouped by statuses*/}
+        <TimelineGroup
+          data={p.feeDecisions.filter((d) => d.status === 'SENT')}
+          renderer={feeDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={p.feeDecisions.filter((d) =>
+            ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
+              d.status
+            )
+          )}
+          renderer={feeDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={p.feeDecisions.filter((d) => d.status === 'DRAFT')}
+          renderer={feeDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={p.feeDecisions.filter((d) => d.status === 'ANNULLED')}
+          renderer={feeDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+
+        <Gap size="xs" />
+
         <TimelineGroup
           data={p.incomes}
           renderer={incomeRenderer}
@@ -144,6 +179,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 export const childRenderer: EventRenderer<TimelineChildDetailed> = {
   color: () => '#ffff99',
   summary: (elem) => `Lapsi ${elem.firstName} ${elem.lastName}`,
+  linkProvider: (elem) => `/child-information/${elem.childId}`,
   tooltip: (p: TimelineChildDetailed) => (
     <FixedSpaceColumn spacing="xxs">
       <span>{p.range.format()}</span>

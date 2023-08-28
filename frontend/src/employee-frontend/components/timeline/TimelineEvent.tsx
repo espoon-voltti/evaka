@@ -4,6 +4,7 @@
 
 import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -49,7 +50,15 @@ export default function TlEvent<T extends WithRange>({
                   />
                 </ExpanderButton>
               )}
-              <SummaryLabel>{renderer.summary(event)}</SummaryLabel>
+              <SummaryLabel>
+                {renderer.linkProvider ? (
+                  <Link to={renderer.linkProvider(event)} target="_blank">
+                    {renderer.summary(event)}
+                  </Link>
+                ) : (
+                  renderer.summary(event)
+                )}
+              </SummaryLabel>
             </HeaderInner>
             {renderer.tooltip && (
               <TtPositioner>
