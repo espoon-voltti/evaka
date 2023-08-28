@@ -27,11 +27,11 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
@@ -46,16 +46,20 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
             tx.insertTestDaycare(testDaycare)
             tx.insertTestDaycare(testVoucherDaycare)
-            tx.insertTestDaycareGroup(DevDaycareGroup(
-                id = GroupId(UUID.randomUUID()),
-                daycareId = testDaycare.id,
-                name = "Test group 1"
-            ))
-            tx.insertTestDaycareGroup(DevDaycareGroup(
-                id = GroupId(UUID.randomUUID()),
-                daycareId = testVoucherDaycare.id,
-                name = "Test voucher group 1"
-            ))
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(UUID.randomUUID()),
+                    daycareId = testDaycare.id,
+                    name = "Test group 1"
+                )
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(UUID.randomUUID()),
+                    daycareId = testVoucherDaycare.id,
+                    name = "Test voucher group 1"
+                )
+            )
         }
     }
 
