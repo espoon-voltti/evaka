@@ -34,10 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: espoon-voltti/voltti-actions/shellcheck@v1
-      - if: failure()
-        uses: espoon-voltti/voltti-actions/notify@v1
-        with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   check-licenses:
     runs-on: ubuntu-latest
@@ -489,6 +485,8 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -530,6 +528,8 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Pull compose images
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -604,6 +604,8 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Login to Amazon ECR Public
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -612,6 +614,7 @@ jobs:
         env:
           AWS_REGION: "us-east-1"
         with:
+          mask-password: 'true'
           registry-type: public
 
       - name: Prepare e2e tests
@@ -684,6 +687,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Extract frontend files
         run: |
