@@ -3038,7 +3038,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
             assertEquals(FeeDecisionStatus.DRAFT, decision.status)
-            assertEquals(clock.today().minusYears(1), decision.validFrom)
+            assertEquals(clock.today().minusMonths(15), decision.validFrom)
             assertEquals(period.end, decision.validTo)
         }
     }
