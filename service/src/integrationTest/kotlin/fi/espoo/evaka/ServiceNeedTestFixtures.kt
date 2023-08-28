@@ -702,9 +702,9 @@ val serviceNeedOptionFeeTestFixtures =
             validity = DateRange(LocalDate.of(2000, 1, 1), null),
             baseFee = 14000,
             siblingDiscount2 = BigDecimal("0.4"),
-            siblingFee2 = 8400,
+            siblingFee2 = 8000,
             siblingDiscount2Plus = BigDecimal("0.4"),
-            siblingFee2Plus = 8400
+            siblingFee2Plus = 8000
         )
     )
 
