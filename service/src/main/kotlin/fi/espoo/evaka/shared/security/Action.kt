@@ -1748,7 +1748,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChildOfPerson()
         ),
-        READ_TIMELINE(HasGlobalRole(ADMIN)),
+        READ_TIMELINE(HasGlobalRole(ADMIN), HasGlobalRole(FINANCE_ADMIN)),
         READ_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UPDATE(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER),

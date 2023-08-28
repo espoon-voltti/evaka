@@ -1624,6 +1624,7 @@ export const fi = {
   },
   personProfile: {
     restrictedDetails: 'Turvakielto',
+    timeline: 'Aikajana',
     personDetails: 'Henkilö- ja yhteystiedot',
     addSsn: 'Aseta hetu',
     noSsn: 'Hetuton',
