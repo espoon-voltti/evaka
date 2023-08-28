@@ -4025,9 +4025,6 @@ export const fi = {
       temporaryFeePartDay: 'Osapäiväinen',
       temporaryFeeSibling: 'Perushinta, toinen lapsi',
       temporaryFeeSiblingPartDay: 'Osapäiväinen, toinen lapsi',
-      preschoolClubFees: 'Esiopetuksen kerhon maksut',
-      preschoolClubFee: 'Perushinta',
-      preschoolClubSiblingDiscount: 'Sisaralennus',
       errors: {
         'date-overlap':
           'Maksuasetukset menevät päällekkäin jonkin muun voimassaolevan asetuksen kanssa. Päivitä muiden maksuasetusten voimassaoloaika ensin.'

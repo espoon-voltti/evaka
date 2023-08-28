@@ -432,7 +432,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         decisions.first().let { decision ->
-            assertEquals(11200 + 6700, decision.totalFee)
+            assertEquals(11200 + 6400, decision.totalFee)
             assertEquals(2, decision.children.size)
             decision.children.first().let { child ->
                 assertEquals(14000, child.baseFee)
@@ -447,8 +447,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PRESCHOOL_CLUB, child.placement.type)
                 assertEquals(serviceNeed.toFeeDecisionServiceNeed(), child.serviceNeed)
                 assertEquals(40, child.siblingDiscount)
-                assertEquals(6700, child.fee)
-                assertEquals(6700, child.finalFee)
+                assertEquals(6400, child.fee)
+                assertEquals(6400, child.finalFee)
             }
         }
     }
@@ -1712,9 +1712,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     temporaryFee = 2900,
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
-                    temporaryFeeSiblingPartDay = 800,
-                    preschoolClubFee = null,
-                    preschoolClubSiblingDiscount = null
+                    temporaryFeeSiblingPartDay = 800
                 )
             )
         }

@@ -221,6 +221,7 @@ private fun createChildFeeBasis(
                 hasServiceNeed = true,
                 serviceNeedOption = snDaycareFullDay35
             ),
+        serviceNeedOptionFee = null,
         feeAlterations = emptyList(),
         income = null
     )
@@ -276,7 +277,5 @@ val feeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800,
-        preschoolClubFee = 14000,
-        preschoolClubSiblingDiscount = BigDecimal("0.4")
+        temporaryFeeSiblingPartDay = 800
     )

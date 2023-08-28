@@ -32,6 +32,8 @@ import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
+import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -214,6 +216,8 @@ private fun getFeeBases(
 
     val allFeeThresholds =
         tx.getFeeThresholds().map { FeeThresholdsRange(it.thresholds.validDuring, it.thresholds) }
+    val allServiceNeedOptionFees =
+        tx.getServiceNeedOptionFees().map { ServiceNeedOptionFeeRange(it.validity, it) }
 
     val datesOfChange =
         getDatesOfChange(
@@ -221,7 +225,8 @@ private fun getFeeBases(
             *incomesByPerson.flatMap { it.value }.toTypedArray(),
             *placementDetailsByChild.flatMap { it.value }.toTypedArray(),
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
-            *allFeeThresholds.toTypedArray()
+            *allFeeThresholds.toTypedArray(),
+            *allServiceNeedOptionFees.toTypedArray()
         ) + existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
@@ -269,6 +274,14 @@ private fun getFeeBases(
                     .mapIndexedNotNull childMapping@{ siblingIndex, (child, placement) ->
                         if (!placement.displayOnFeeDecision()) return@childMapping null
 
+                        val serviceNeedOptionFee =
+                            allServiceNeedOptionFees
+                                .find {
+                                    it.serviceNeedOptionFee.serviceNeedOptionId ==
+                                        placement.serviceNeedOption.id && it.range.contains(range)
+                                }
+                                ?.serviceNeedOptionFee
+
                         val income =
                             incomesByPerson[child.id]
                                 ?.find {
@@ -292,6 +305,7 @@ private fun getFeeBases(
                             child = child,
                             siblingIndex = siblingIndex,
                             placement = placement,
+                            serviceNeedOptionFee = serviceNeedOptionFee,
                             income = income,
                             feeAlterations = feeAlterations + listOfNotNull(echaAlteration)
                         )
@@ -310,7 +324,7 @@ data class FeeBasis(
     val partnerIncome: DecisionIncome?,
     val children: List<ChildFeeBasis>,
     val familySize: Int,
-    val feeThresholds: FeeThresholds,
+    val feeThresholds: FeeThresholds
 ) : WithRange {
     fun toFeeDecision(): FeeDecision {
         return FeeDecision(
@@ -343,6 +357,7 @@ data class ChildFeeBasis(
     val child: Child,
     val siblingIndex: Int,
     val placement: PlacementDetails,
+    val serviceNeedOptionFee: ServiceNeedOptionFee?,
     val income: DecisionIncome?,
     val feeAlterations: List<FeeAlteration>
 ) {
@@ -353,25 +368,23 @@ data class ChildFeeBasis(
     ): FeeDecisionChild? {
         if (!placement.displayOnFeeDecision()) return null
 
-        val siblingDiscountMultiplier =
-            feeThresholds.siblingDiscountMultiplier(
-                siblingOrdinal = siblingIndex + 1,
-                placementType = placement.placementType
-            )
+        val siblingDiscount =
+            serviceNeedOptionFee?.siblingDiscount(siblingOrdinal = siblingIndex + 1)
+                ?: feeThresholds.siblingDiscount(siblingOrdinal = siblingIndex + 1)
 
         val baseFee =
-            calculateBaseFee(
-                placement.placementType,
-                feeThresholds,
-                familySize,
-                parentIncomes + listOfNotNull(income)
-            )
+            serviceNeedOptionFee?.baseFee
+                ?: calculateBaseFee(
+                    feeThresholds,
+                    familySize,
+                    parentIncomes + listOfNotNull(income)
+                )
 
         val feeBeforeAlterations =
             calculateFeeBeforeFeeAlterations(
                 baseFee,
                 placement.serviceNeedOption.feeCoefficient,
-                siblingDiscountMultiplier,
+                siblingDiscount,
                 feeThresholds.minFee
             )
 
@@ -392,7 +405,7 @@ data class ChildFeeBasis(
                 missing = !placement.hasServiceNeed
             ),
             baseFee,
-            feeThresholds.siblingDiscountPercent(siblingIndex + 1, placement.placementType),
+            siblingDiscount.percent,
             feeBeforeAlterations,
             feeAlterationsWithEffects,
             finalFee,
@@ -634,6 +647,11 @@ private data class IncomeRange(override val range: DateRange, val income: Decisi
 private data class FeeThresholdsRange(
     override val range: DateRange,
     val thresholds: FeeThresholds
+) : WithRange
+
+private data class ServiceNeedOptionFeeRange(
+    override val range: DateRange,
+    val serviceNeedOptionFee: ServiceNeedOptionFee
 ) : WithRange
 
 data class FeeAlterationRange(override val range: DateRange, val feeAlteration: FeeAlteration) :

@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneed
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.invoicing.domain.SiblingDiscount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -121,6 +123,33 @@ data class ServiceNeedOption(
     val active: Boolean,
     val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 )
+
+data class ServiceNeedOptionFee(
+    val serviceNeedOptionId: ServiceNeedOptionId,
+    val validity: DateRange,
+    val baseFee: Int,
+    val siblingDiscount2: BigDecimal,
+    val siblingFee2: Int,
+    val siblingDiscount2Plus: BigDecimal,
+    val siblingFee2Plus: Int
+) {
+    fun siblingDiscount(siblingOrdinal: Int): SiblingDiscount {
+        val multiplier =
+            when (siblingOrdinal) {
+                1 -> BigDecimal(1)
+                2 -> BigDecimal(1) - siblingDiscount2
+                else -> BigDecimal(1) - siblingDiscount2Plus
+            }
+        val percent = ((BigDecimal(1) - multiplier) * BigDecimal(100)).toInt()
+        val fee =
+            when (siblingOrdinal) {
+                1 -> null
+                2 -> siblingFee2
+                else -> siblingFee2Plus
+            }
+        return SiblingDiscount(multiplier, percent, fee)
+    }
+}
 
 fun validateServiceNeed(
     db: Database.Read,

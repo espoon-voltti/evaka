@@ -341,3 +341,4 @@ V341__absence_categories_preschool_club.sql
 V342__add_finance_staff_role.sql
 V343__update_finance_staff_role_check.sql
 V344__assistance_preschool_decision_attachment_dates.sql
+V345__service_need_option_fee.sql

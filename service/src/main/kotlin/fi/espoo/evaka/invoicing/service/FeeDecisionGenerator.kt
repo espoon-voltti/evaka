@@ -35,10 +35,13 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
+import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
@@ -61,6 +64,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 ) {
     val children = families.flatMap { it.children }.toSet()
     val prices = getFeeThresholds(from)
+    val fees = getServiceNeedOptionFees(from).groupBy { it.serviceNeedOptionId }
     val partnerIds = families.mapNotNull { it.partner }
     val childIds = children.map { it.id }
 
@@ -104,6 +108,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
             families,
             placements,
             prices,
+            fees,
             adultIncomes,
             childIncomes,
             feeAlterations,
@@ -220,6 +225,7 @@ private fun generateFeeDecisions(
     families: List<FridgeFamily>,
     allPlacements: Map<PersonBasic, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
+    fees: Map<ServiceNeedOptionId, List<ServiceNeedOptionFee>>,
     incomes: List<Income>,
     childIncomes: Map<ChildId, List<Income>>,
     feeAlterations: List<FeeAlteration>,
@@ -230,6 +236,7 @@ private fun generateFeeDecisions(
             incomes.map { DateRange(it.validFrom, it.validTo) } +
             childIncomes.values.flatten().map { DateRange(it.validFrom, it.validTo) } +
             prices.map { it.validDuring } +
+            fees.flatMap { it.value.map { fee -> fee.validity } } +
             allPlacements.flatMap { (_, placements) -> placements.map { it.first } } +
             feeAlterations.map { DateRange(it.validFrom, it.validTo) }
 
@@ -310,20 +317,26 @@ private fun generateFeeDecisions(
                                 return@mapIndexed null
                             }
 
-                            val siblingDiscountMultiplier =
-                                price.siblingDiscountMultiplier(index + 1, placement.type)
+                            val serviceNeedOptionFee =
+                                fees[placement.serviceNeed.optionId]?.find {
+                                    it.validity.contains(period)
+                                }
+                            val siblingDiscount =
+                                serviceNeedOptionFee?.siblingDiscount(index + 1)
+                                    ?: price.siblingDiscount(index + 1)
                             val baseFee =
-                                calculateBaseFee(
-                                    placement.type,
-                                    price,
-                                    family.getSize(),
-                                    familyIncomes + listOfNotNull(childPeriodIncome.get(child.id))
-                                )
+                                serviceNeedOptionFee?.baseFee
+                                    ?: calculateBaseFee(
+                                        price,
+                                        family.getSize(),
+                                        familyIncomes +
+                                            listOfNotNull(childPeriodIncome.get(child.id))
+                                    )
                             val feeBeforeAlterations =
                                 calculateFeeBeforeFeeAlterations(
                                     baseFee,
                                     placement.serviceNeed.feeCoefficient,
-                                    siblingDiscountMultiplier,
+                                    siblingDiscount,
                                     price.minFee
                                 )
                             val relevantFeeAlterations =
@@ -351,7 +364,7 @@ private fun generateFeeDecisions(
                                     placement.missingServiceNeed
                                 ),
                                 baseFee,
-                                price.siblingDiscountPercent(index + 1, placement.type),
+                                siblingDiscount.percent,
                                 feeBeforeAlterations,
                                 feeAlterationsWithEffects,
                                 finalFee,
