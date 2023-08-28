@@ -10,6 +10,7 @@ import LocalTime from '../local-time'
 
 import { mapped, object, transformed, value } from './form'
 import {
+  FieldErrors,
   ObjectFieldError,
   ValidationError,
   ValidationResult,
@@ -74,23 +75,6 @@ export const localOpenEndedDateRange = transformed(
   }
 )
 
-export const limitedLocalTime = transformed(
-  object({
-    value: string(),
-    validRange: value<TimeRange>()
-  }),
-  (v): ValidationResult<LocalTime | undefined, 'timeFormat' | 'range'> => {
-    if (v.value === '') return ValidationSuccess.of(undefined)
-    const parsed = LocalTime.tryParse(v.value)
-    if (parsed === undefined) {
-      return ValidationError.of('timeFormat')
-    } else if (!timeRangeContains(parsed, v.validRange)) {
-      return ValidationError.of('range')
-    }
-    return ValidationSuccess.of(parsed)
-  }
-)
-
 export const localTime = transformed(
   string(),
   (s): ValidationResult<LocalTime | undefined, 'timeFormat'> => {
@@ -100,31 +84,6 @@ export const localTime = transformed(
       return ValidationError.of('timeFormat')
     }
     return ValidationSuccess.of(parsed)
-  }
-)
-
-export const limitedLocalTimeRange = transformed(
-  object({
-    startTime: limitedLocalTime,
-    endTime: limitedLocalTime
-  }),
-  ({
-    startTime,
-    endTime
-  }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
-    if (startTime === undefined && endTime === undefined) {
-      return ValidationSuccess.of(undefined)
-    }
-    if (
-      startTime === undefined ||
-      endTime === undefined ||
-      // Allow midnight as the end time, even though it's "before" all other times
-      (endTime.isBefore(startTime) && !endTime.isEqual(midnight))
-    ) {
-      return ValidationError.of('timeFormat')
-    } else {
-      return ValidationSuccess.of({ start: startTime, end: endTime })
-    }
   }
 )
 
@@ -149,6 +108,31 @@ export const localTimeRange = transformed(
       return ValidationError.of('timeFormat')
     } else {
       return ValidationSuccess.of({ start: startTime, end: endTime })
+    }
+  }
+)
+
+export const limitedLocalTimeRange = transformed(
+  object({
+    value: localTimeRange,
+    validRange: value<TimeRange>()
+  }),
+  ({ value, validRange }): ValidationResult<TimeRange | undefined, 'range'> => {
+    if (value === undefined) return ValidationSuccess.of(undefined)
+
+    let errors: FieldErrors<'range'> | undefined = undefined
+    if (!timeRangeContains(value.start, validRange)) {
+      errors = errors ?? {}
+      errors.startTime = 'range'
+    }
+    if (!timeRangeContains(value.end, validRange)) {
+      errors = errors ?? {}
+      errors.endTime = 'range'
+    }
+    if (errors !== undefined) {
+      return ValidationError.fromFieldErrors({ value: errors })
+    } else {
+      return ValidationSuccess.of(value)
     }
   }
 )

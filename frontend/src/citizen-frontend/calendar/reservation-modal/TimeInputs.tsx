@@ -6,6 +6,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
+import { limitedLocalTimeRange } from 'lib-common/form/fields'
 import {
   BoundForm,
   useFormElem,
@@ -233,6 +234,30 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
   }
 })
 
+interface LimitedLocalTimeRangeProps {
+  bind: BoundForm<typeof limitedLocalTimeRange>
+  hideErrorsBeforeTouched?: boolean
+  dataQa?: string
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
+}
+
+const LimitedLocalTimeRange = React.memo(function LimitedLocalTimeRange({
+  bind,
+  hideErrorsBeforeTouched,
+  dataQa,
+  onFocus
+}: LimitedLocalTimeRangeProps) {
+  const value = useFormField(bind, 'value')
+  return (
+    <TimeRangeInput
+      bind={value}
+      hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+      data-qa={dataQa}
+      onFocus={onFocus}
+    />
+  )
+})
+
 interface TimeRangesProps {
   bind: BoundForm<typeof timeRanges>
   label: React.ReactNode
@@ -243,7 +268,7 @@ interface TimeRangesProps {
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
-const TimeRanges = React.memo(function Times({
+const TimeRanges = React.memo(function TimeRanges({
   bind,
   label,
   showAllErrors,
@@ -265,7 +290,7 @@ const TimeRanges = React.memo(function Times({
       <FixedSpaceRow fullWidth alignItems="center">
         {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
         <MiddleCell>
-          <TimeRangeInput
+          <LimitedLocalTimeRange
             bind={firstTimeRange}
             hideErrorsBeforeTouched={!showAllErrors}
             data-qa={dataQaPrefix ? `${dataQaPrefix}-time-0` : undefined}
@@ -292,20 +317,8 @@ const TimeRanges = React.memo(function Times({
                 }
                 onClick={() =>
                   bind.update((prev) =>
-                    // use same unit times as first reservation
-                    [
-                      prev[0],
-                      {
-                        startTime: {
-                          value: '',
-                          validRange: prev[0].startTime.validRange
-                        },
-                        endTime: {
-                          value: '',
-                          validRange: prev[0].endTime.validRange
-                        }
-                      }
-                    ]
+                    // use same valid range times as first reservation
+                    [prev[0], emptyTimeRange(prev[0].validRange)]
                   )
                 }
                 aria-label={i18n.common.add}
@@ -318,7 +331,7 @@ const TimeRanges = React.memo(function Times({
         <FixedSpaceRow fullWidth alignItems="center">
           {label !== undefined ? <LeftCell /> : null}
           <MiddleCell>
-            <TimeRangeInput
+            <LimitedLocalTimeRange
               bind={secondTimeRange}
               hideErrorsBeforeTouched={!showAllErrors}
               data-qa={dataQaPrefix ? `${dataQaPrefix}-time-1` : undefined}

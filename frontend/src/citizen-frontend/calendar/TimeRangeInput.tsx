@@ -5,19 +5,19 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { limitedLocalTimeRange } from 'lib-common/form/fields'
+import { localTimeRange } from 'lib-common/form/fields'
 import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
 import { ShapeOf, StateOf } from 'lib-common/form/types'
 import UnderRowStatusIcon, { InfoStatus } from 'lib-components/atoms/StatusIcon'
-import { TimeInputFWithUnitTimes } from 'lib-components/atoms/form/TimeInput'
+import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../localization'
 
 export interface Props {
   bind: BoundFormShape<
-    StateOf<typeof limitedLocalTimeRange>,
-    ShapeOf<typeof limitedLocalTimeRange>
+    StateOf<typeof localTimeRange>,
+    ShapeOf<typeof localTimeRange>
   >
   hideErrorsBeforeTouched?: boolean
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
@@ -41,7 +41,8 @@ export default React.memo(function TimeRangeInputF({
   return (
     <div>
       <TimeRangeWrapper>
-        <TimeInputFWithUnitTimes
+        <TimeInputF
+          wide
           bind={startTime}
           placeholder={i18n.calendar.reservationModal.start}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
@@ -50,7 +51,8 @@ export default React.memo(function TimeRangeInputF({
           data-qa={dataQa ? `${dataQa}-start` : undefined}
         />
         <span>–</span>
-        <TimeInputFWithUnitTimes
+        <TimeInputF
+          wide
           bind={endTime}
           placeholder={i18n.calendar.reservationModal.end}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}

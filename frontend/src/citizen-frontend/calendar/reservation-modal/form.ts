@@ -48,8 +48,8 @@ export function emptyTimeRange(
   validRange: TimeRange
 ): StateOf<typeof limitedLocalTimeRange> {
   return {
-    startTime: { value: '', validRange },
-    endTime: { value: '', validRange }
+    value: { startTime: '', endTime: '' },
+    validRange
   }
 }
 
@@ -515,12 +515,7 @@ export function resetDay(
           validTimeRange,
           reservation: {
             branch: 'timeRanges',
-            state: [
-              {
-                startTime: { value: '', validRange: validTimeRange },
-                endTime: { value: '', validRange: validTimeRange }
-              }
-            ]
+            state: [emptyTimeRange(validTimeRange)]
           }
         }
       }
@@ -613,8 +608,8 @@ const bindUnboundedTimeRanges = (
   validRange: TimeRange
 ): StateOf<typeof limitedLocalTimeRange>[] => {
   const formatted = ranges.map(({ start, end }) => ({
-    startTime: { value: start.format(), validRange },
-    endTime: { value: end.format(), validRange }
+    value: { startTime: start.format(), endTime: end.format() },
+    validRange
   }))
 
   if (ranges.length === 1 || ranges.length === 2) {
