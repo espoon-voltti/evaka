@@ -7,11 +7,10 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestCareArea
@@ -19,10 +18,11 @@ import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_2
@@ -103,7 +103,8 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             tx.insertTestPerson(testAdult_1)
-            children.forEach {
+            tx.insertTestPerson(testAdult_2)
+            children.forEachIndexed { i, it ->
                 tx.insertTestPerson(it)
                 tx.insertTestChild(DevChild(id = it.id))
                 tx.insertTestPlacement(
@@ -113,15 +114,9 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = LocalDate.now()
                     )
                 )
-                tx.insertTestParentship(
-                    DevParentship(
-                        id = ParentshipId(UUID.randomUUID()),
-                        headOfChildId = testAdult_1.id,
-                        childId = it.id,
-                        startDate = it.dateOfBirth,
-                        endDate = LocalDate.now()
-                    )
-                )
+                tx.insertTestGuardian(DevGuardian(guardianId = testAdult_1.id, childId = it.id))
+                if (i % 2 == 1)
+                    tx.insertTestGuardian(DevGuardian(guardianId = testAdult_2.id, childId = it.id))
             }
         }
 
@@ -142,10 +137,10 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun getChildrenReport(): List<FuturePreschoolersReportRow> {
-        return db.read { it.getFuturePreschoolerRows() }
+        return db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 1, 1)) }
     }
 
     private fun getGroupReport(municipal: Boolean): List<PreschoolGroupsReportRow> {
-        return db.read { it.getPreschoolGroupsRows(municipal) }
+        return db.read { it.getPreschoolGroupsRows(LocalDate.of(2023, 1, 1), municipal) }
     }
 }

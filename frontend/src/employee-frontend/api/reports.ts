@@ -715,22 +715,20 @@ export interface FamilyDaycareMealCountReportFilters {
 }
 
 export async function getFuturePreschoolersReport(): Promise<
-  Result<FuturePreschoolersReportRow[]>
+  FuturePreschoolersReportRow[]
 > {
   return client
     .get<JsonOf<FuturePreschoolersReportRow[]>>('/reports/future-preschoolers')
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function getPreschoolGroupsReport(
   municipal: boolean
-): Promise<Result<PreschoolGroupsReportRow[]>> {
+): Promise<PreschoolGroupsReportRow[]> {
   return client
     .get<JsonOf<PreschoolGroupsReportRow[]>>(
       '/reports/future-preschoolers/groups',
       { params: { municipal: municipal } }
     )
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }

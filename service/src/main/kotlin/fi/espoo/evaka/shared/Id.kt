@@ -45,7 +45,6 @@ sealed interface DatabaseTable {
     sealed class DailyServicesTimeNotification : DatabaseTable
     sealed class DaycareAssistance : DatabaseTable
     sealed class DaycareCaretaker : DatabaseTable
-    sealed class DaycareGroup : DatabaseTable
     sealed class Decision : DatabaseTable
     sealed class DocumentTemplate : DatabaseTable
     sealed class Employee : DatabaseTable
@@ -163,8 +162,6 @@ typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServicesTimeNot
 typealias DaycareAssistanceId = Id<DatabaseTable.DaycareAssistance>
 
 typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
-
-typealias DaycareGroupId = Id<DatabaseTable.DaycareGroup>
 
 typealias DecisionId = Id<DatabaseTable.Decision>
 

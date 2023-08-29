@@ -7,8 +7,10 @@ import { UUID } from 'lib-common/types'
 
 import {
   getFamilyContactsReport,
+  getFuturePreschoolersReport,
   getMissingHeadOfFamilyReport,
   getOccupanciesReport,
+  getPreschoolGroupsReport,
   getVardaErrorsReport,
   getVoucherServiceProvidersReport,
   MissingHeadOfFamilyReportFilters,
@@ -29,7 +31,9 @@ const queryKeys = createQueryKeys('reports', {
     'voucherServiceProviders',
     filters
   ],
-  vardaErrors: () => ['vardaErrors']
+  vardaErrors: () => ['vardaErrors'],
+  futurePreschoolers: () => ['futurePreschoolers'],
+  preschoolGroups: () => ['preschoolGroups']
 })
 
 export const familyContactsReportQuery = query({
@@ -63,4 +67,14 @@ export const vardaErrorsQuery = query({
 export const startVardaUpdateMutation = mutation({
   api: () => startVardaUpdate(),
   invalidateQueryKeys: () => []
+})
+
+export const futurePreschoolersQuery = query({
+  api: getFuturePreschoolersReport,
+  queryKey: queryKeys.futurePreschoolers
+})
+
+export const preschoolGroupsQuery = query({
+  api: (municipal: boolean) => getPreschoolGroupsReport(municipal),
+  queryKey: queryKeys.preschoolGroups
 })
