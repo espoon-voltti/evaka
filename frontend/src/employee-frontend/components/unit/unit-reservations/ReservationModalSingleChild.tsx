@@ -60,7 +60,6 @@ import { postReservationsMutation } from '../queries'
 interface Props {
   onClose: () => void
   child: Child
-  isShiftCareUnit: boolean
   operationalDays: number[]
 }
 
@@ -234,7 +233,6 @@ function resetTimes(
 export default React.memo(function ReservationModalSingleChild({
   onClose,
   child,
-  isShiftCareUnit,
   operationalDays
 }: Props) {
   const { i18n, lang } = useTranslation()
@@ -374,7 +372,6 @@ export default React.memo(function ReservationModalSingleChild({
             }
             bind={dailyTimes}
             showAllErrors={showAllErrors}
-            allowExtraTimeRange={isShiftCareUnit}
           />
         ) : repetition.value() === 'WEEKLY' ? (
           weeklyTimes.length > 0 ? (
@@ -385,7 +382,6 @@ export default React.memo(function ReservationModalSingleChild({
                   bind={times}
                   index={index}
                   showAllErrors={showAllErrors}
-                  allowExtraTimeRange={isShiftCareUnit}
                 />
               ) : null
             )
@@ -406,7 +402,6 @@ export default React.memo(function ReservationModalSingleChild({
                 index={index}
                 includedDays={includedDays}
                 showAllErrors={showAllErrors}
-                allowExtraTimeRange={isShiftCareUnit}
               />
             ))
           ) : (
@@ -426,13 +421,11 @@ export default React.memo(function ReservationModalSingleChild({
 const WeeklyTimeInputs = React.memo(function WeeklyTimeInputs({
   bind,
   index,
-  showAllErrors,
-  allowExtraTimeRange
+  showAllErrors
 }: {
   bind: BoundForm<typeof weekDay>
   index: number
   showAllErrors: boolean
-  allowExtraTimeRange: boolean
 }) {
   const { i18n } = useTranslation()
 
@@ -451,7 +444,6 @@ const WeeklyTimeInputs = React.memo(function WeeklyTimeInputs({
       label={enabledCheckbox}
       bind={times}
       showAllErrors={showAllErrors}
-      allowExtraTimeRange={allowExtraTimeRange}
     />
   ) : (
     <>
@@ -466,13 +458,11 @@ const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
   bind,
   index,
   showAllErrors,
-  allowExtraTimeRange,
   includedDays
 }: {
   bind: BoundForm<typeof irregularDay>
   index: number
   showAllErrors: boolean
-  allowExtraTimeRange: boolean
   includedDays: number[]
 }) {
   const { i18n, lang } = useTranslation()
@@ -493,7 +483,6 @@ const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
           label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
           bind={times}
           showAllErrors={showAllErrors}
-          allowExtraTimeRange={allowExtraTimeRange}
         />
       )}
     </>
@@ -503,13 +492,11 @@ const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
 const TimeInputs = React.memo(function TimeInputs({
   label,
   bind,
-  showAllErrors,
-  allowExtraTimeRange
+  showAllErrors
 }: {
   label: JSX.Element
   bind: BoundForm<typeof times>
   showAllErrors: boolean
-  allowExtraTimeRange: boolean
 }) {
   const { i18n } = useTranslation()
 
@@ -524,7 +511,7 @@ const TimeInputs = React.memo(function TimeInputs({
     <>
       {label}
       <TimeRangeInput bind={timeRange} showAllErrors={showAllErrors} />
-      {!extraTimeRange && allowExtraTimeRange ? (
+      {!extraTimeRange ? (
         <IconButton
           icon={faPlus}
           data-qa="add-new-reservation-timerange"

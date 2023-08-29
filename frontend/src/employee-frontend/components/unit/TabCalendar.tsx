@@ -295,7 +295,6 @@ const CalendarContent = React.memo(function CalendarContent({
             selectedGroup={selectedGroup}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
-            isShiftCareUnit={unitInformation.daycare.roundTheClock}
             operationalDays={operationalDays}
             realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
             groups={groups}

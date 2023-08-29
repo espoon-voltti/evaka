@@ -29,7 +29,6 @@ interface DayProps {
   bind: BoundForm<typeof day>
   label: React.ReactNode | undefined
   showAllErrors: boolean
-  allowExtraTimeRange: boolean
   dataQaPrefix?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
@@ -38,7 +37,6 @@ export const Day = React.memo(function Day({
   bind,
   label,
   showAllErrors,
-  allowExtraTimeRange,
   dataQaPrefix,
   onFocus
 }: DayProps) {
@@ -59,7 +57,6 @@ export const Day = React.memo(function Day({
           bind={form}
           label={label}
           showAllErrors={showAllErrors}
-          allowExtraTimeRange={allowExtraTimeRange}
           dataQaPrefix={dataQaPrefix}
           onFocus={onFocus}
         />
@@ -73,7 +70,6 @@ interface ReservationTimesProps {
   bind: BoundForm<typeof reservation>
   label: React.ReactNode
   showAllErrors: boolean
-  allowExtraTimeRange: boolean
   dataQaPrefix?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
@@ -82,7 +78,6 @@ const ReservationTimes = React.memo(function ReservationTimes({
   bind,
   label,
   showAllErrors,
-  allowExtraTimeRange,
   dataQaPrefix,
   onFocus
 }: ReservationTimesProps) {
@@ -124,7 +119,6 @@ const ReservationTimes = React.memo(function ReservationTimes({
           label={label}
           showAllErrors={showAllErrors}
           onAbsent={() => set({ branch: 'absent', state: true })}
-          allowExtraTimeRange={allowExtraTimeRange}
           dataQaPrefix={dataQaPrefix}
           onFocus={onFocus}
         />
@@ -237,7 +231,6 @@ interface TimeRangesProps {
   bind: BoundForm<typeof timeRanges>
   label: React.ReactNode
   showAllErrors: boolean
-  allowExtraTimeRange: boolean
   dataQaPrefix?: string
   onAbsent?: () => void
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
@@ -247,7 +240,6 @@ const TimeRanges = React.memo(function Times({
   bind,
   label,
   showAllErrors,
-  allowExtraTimeRange,
   dataQaPrefix,
   onAbsent,
   onFocus
@@ -284,7 +276,7 @@ const TimeRanges = React.memo(function Times({
                 aria-label={i18n.calendar.absentEnable}
               />
             ) : null}
-            {secondTimeRange === undefined && allowExtraTimeRange ? (
+            {secondTimeRange === undefined ? (
               <IconButton
                 icon={faPlus}
                 data-qa={
