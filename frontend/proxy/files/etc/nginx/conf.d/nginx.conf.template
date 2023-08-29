@@ -388,6 +388,8 @@ server {
 
     access_log /var/log/nginx/access.log json_access;
 
+    set $httpScheme "<%= ENV["HTTP_SCHEME"] || "https" %>";
+
     add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
     add_header X-Content-Type-Options nosniff;
     add_header X-XSS-Protection '1; mode=block';
