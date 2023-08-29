@@ -416,7 +416,10 @@ export function FeeDecisionStatusFilter({
     'WAITING_FOR_SENDING',
     'WAITING_FOR_MANUAL_SENDING',
     'SENT',
-    'ANNULLED'
+    'ANNULLED',
+    ...(featureFlags.experimental?.feeDecisionIgnoredStatus
+      ? ['IGNORED' as const]
+      : [])
   ]
 
   return (

@@ -2636,6 +2636,9 @@ export const fi = {
         count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
       createDecision: (count: number) =>
         count === 1 ? 'Luo päätös' : 'Luo päätökset',
+      ignoreDraft: 'Ohita luonnos',
+      unignoreDrafts: (count: number) =>
+        count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset',
@@ -2643,6 +2646,36 @@ export const fi = {
         WAITING_FOR_MANUAL_SENDING:
           'Osalla päämiehistä on päätöksiä, jotka odottavat manuaalista lähetystä'
       }
+    },
+    ignoreDraftModal: {
+      title: 'Haluatko varmasti ohittaa luonnoksen?',
+      content: (
+        <div>
+          <H3>Luonnoksen saa ohittaa vain jos seuraavat asiat pätevät:</H3>
+          <ul>
+            <li>Luonnos koskee menneisyyttä, ja</li>
+            <li>
+              Luonnos on väärin koska menneisyydessä olevat asiakastiedot ovat
+              väärin, ja
+            </li>
+            <li>
+              Samalle ajalle oleva alkuperäinen lähetetty maksupäätös on oikein
+            </li>
+          </ul>
+          <p>
+            Mikäli luonnos on väärin koska tiedot ovat väärin (esim.
+            perhesuhteita on takautuvasti poistettu virheellisesti), on tärkeää
+            ensisijaisesti pyrkiä korjaamaan tiedot ennalleen, koska ne
+            vaikuttavat myös muihin järjestelmiin.
+          </p>
+          <p>
+            Mikäli luonnos on väärin tai tarpeeton vaikka tiedot ovat oikein,
+            älä ohita luonnosta, vaan ole yhteydessä kehittäjätiimiin, jotta
+            vika voidaan tutkia ja korjata.
+          </p>
+        </div>
+      ),
+      confirm: 'Ymmärrän ja vahvistan tämän'
     }
   },
   valueDecisions: {
@@ -2766,6 +2799,7 @@ export const fi = {
   feeDecision: {
     title: {
       DRAFT: 'Maksupäätösluonnos',
+      IGNORED: 'Ohitettu maksupäätösluonnos',
       WAITING_FOR_SENDING: 'Maksupäätös (lähdössä)',
       WAITING_FOR_MANUAL_SENDING: 'Maksupäätös (lähetetään manuaalisesti)',
       SENT: 'Maksupäätös',
@@ -2781,6 +2815,7 @@ export const fi = {
     },
     status: {
       DRAFT: 'Luonnos',
+      IGNORED: 'Ohitettu luonnos',
       WAITING_FOR_SENDING: 'Lähdössä',
       WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
       SENT: 'Lähetetty',

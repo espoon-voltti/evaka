@@ -235,6 +235,7 @@ export type FeeDecisionSortParam =
 */
 export type FeeDecisionStatus =
   | 'DRAFT'
+  | 'IGNORED'
   | 'WAITING_FOR_SENDING'
   | 'WAITING_FOR_MANUAL_SENDING'
   | 'SENT'

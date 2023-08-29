@@ -17,13 +17,16 @@ import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.lockFeeDecisions
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
+import fi.espoo.evaka.invoicing.data.removeFeeDecisionIgnore
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
+import fi.espoo.evaka.invoicing.data.setFeeDecisionToIgnored
 import fi.espoo.evaka.invoicing.data.setFeeDecisionType
 import fi.espoo.evaka.invoicing.data.setFeeDecisionWaitingForManualSending
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.DRAFT
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.IGNORED
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.SENT
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
@@ -38,6 +41,7 @@ import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -49,6 +53,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
+import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -167,6 +172,43 @@ class FeeDecisionService(
         )
 
         return validDecisions.map { it.id }
+    }
+
+    fun ignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>, today: LocalDate) {
+        tx.getFeeDecisionsByIds(ids)
+            .map { decision ->
+                if (decision.status != DRAFT) {
+                    throw BadRequest(
+                        "Error with decision ${decision.id}: Only drafts can be ignored"
+                    )
+                }
+                if (decision.validFrom > today) {
+                    throw BadRequest(
+                        "Error with decision ${decision.id}: Must not ignore future drafts, data should be fixed instead"
+                    )
+                }
+                decision
+            }
+            .forEach { tx.setFeeDecisionToIgnored(it.id) }
+    }
+
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>,
+        today: LocalDate
+    ): Set<PersonId> {
+        return tx.getFeeDecisionsByIds(ids)
+            .map { decision ->
+                if (decision.status != IGNORED) {
+                    throw BadRequest("Error with decision ${decision.id}: not ignored")
+                }
+                decision
+            }
+            .map {
+                tx.removeFeeDecisionIgnore(it.id)
+                it.headOfFamilyId
+            }
+            .toSet()
     }
 
     private fun getDecisionLanguage(decision: FeeDecisionDetailed): DocumentLang {

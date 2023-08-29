@@ -86,10 +86,23 @@ fun generateAndInsertFeeDecisionsV2(
             v2 = useV2Tables
         )
 
+    val ignoredDrafts =
+        tx.findFeeDecisionsForHeadOfFamily(
+            headOfFamilyId,
+            period = null,
+            status = listOf(FeeDecisionStatus.IGNORED),
+            v2 = useV2Tables
+        )
+
     tx.deleteFeeDecisions(existingDraftDecisions.map { it.id }, v2 = useV2Tables)
 
     // insert while preserving created dates
     newDrafts
+        .filter { newDraft ->
+            !ignoredDrafts.any {
+                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
+            }
+        }
         .map { newDraft ->
             val duplicateOldDraft =
                 existingDraftDecisions.find { oldDraft ->

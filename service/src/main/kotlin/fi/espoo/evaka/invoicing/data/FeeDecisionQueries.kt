@@ -809,6 +809,18 @@ fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecision
         .execute()
 }
 
+fun Database.Transaction.setFeeDecisionToIgnored(id: FeeDecisionId) {
+    createUpdate("UPDATE fee_decision SET status = 'IGNORED' WHERE id = :id AND status = 'DRAFT'")
+        .bind("id", id)
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.removeFeeDecisionIgnore(id: FeeDecisionId) {
+    createUpdate("DELETE FROM fee_decision WHERE id = :id AND status = 'IGNORED'")
+        .bind("id", id)
+        .updateExactlyOne()
+}
+
 fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(
     headOfFamily: PersonId,
     v2: Boolean = false
