@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
+import java.util.Objects
 
 /**
  * A timeline is basically an immutable set of dates, but provides simple read/write operations that
@@ -18,7 +19,11 @@ import java.time.LocalDate
  *
  * Note: this implementation is *very* inefficient
  */
-data class Timeline private constructor(private val ranges: List<FiniteDateRange>) {
+class Timeline private constructor(private val ranges: List<FiniteDateRange>) {
+    override fun equals(other: Any?): Boolean = other is Timeline && this.ranges == other.ranges
+    override fun hashCode(): Int = Objects.hash(ranges)
+    override fun toString(): String =
+        ranges.joinToString(separator = ",", prefix = "{", postfix = "}")
 
     fun add(range: FiniteDateRange) =
         this.ranges
