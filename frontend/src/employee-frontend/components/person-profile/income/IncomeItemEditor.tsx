@@ -71,7 +71,7 @@ const emptyIncome: IncomeForm = {
   isEntrepreneur: false,
   worksAtECHA: false,
   notes: '',
-  validFrom: LocalDate.todayInSystemTz(),
+  validFrom: '',
   validTo: undefined,
   attachments: []
 }
@@ -176,7 +176,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         ? setEditedIncome((prev) => ({
             ...prev,
             validFrom: from,
-            validTo: to ? to : undefined
+            validTo: to ? to : from.addYears(1).subDays(1)
           }))
         : undefined,
     [setEditedIncome]
@@ -200,7 +200,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         <Label>{i18n.personProfile.income.details.dateRange}</Label>
         <Gap size="m" />
         <DateRangePicker
-          start={editedIncome.validFrom}
+          start={editedIncome.validFrom || null}
           end={editedIncome.validTo || null}
           onChange={onChange}
           onValidationResult={setValidationResult}
