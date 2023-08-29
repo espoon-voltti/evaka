@@ -33,8 +33,6 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         link(language, "/messages/${threadId}")
     private fun childLink(language: Language, childId: ChildId) =
         link(language, "/children/$childId")
-    private fun pedagogicalDocumentsLink(langage: Language) =
-        link(langage, "/pedagogical-documents")
     private fun incomeLink(language: Language) = link(language, "/income")
 
     override fun pendingDecisionNotification(language: Language): EmailContent {
@@ -300,19 +298,22 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         )
     }
 
-    override fun pedagogicalDocumentNotification(language: Language): EmailContent {
+    override fun pedagogicalDocumentNotification(
+        language: Language,
+        childId: ChildId
+    ): EmailContent {
         return EmailContent.fromHtml(
             subject =
                 "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
             html =
                 """
-<p>Sinulle on saapunut uusi pedagoginen dokumentti eVakaan. Lue dokumentti täältä: ${pedagogicalDocumentsLink(Language.fi)}</p>
+<p>Sinulle on saapunut uusi pedagoginen dokumentti eVakaan. Lue dokumentti täältä: ${childLink(Language.fi, childId)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 <hr>
-<p>Du har fått ett nytt pedagogiskt dokument i eVaka. Läs dokumentet här: ${pedagogicalDocumentsLink(Language.sv)}</p>
+<p>Du har fått ett nytt pedagogiskt dokument i eVaka. Läs dokumentet här: ${childLink(Language.sv, childId)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 <hr>
-<p>You have received a new eVaka pedagogical document. Read the document here: ${pedagogicalDocumentsLink(Language.en)}</p>
+<p>You have received a new eVaka pedagogical document. Read the document here: ${childLink(Language.en, childId)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 """
         )

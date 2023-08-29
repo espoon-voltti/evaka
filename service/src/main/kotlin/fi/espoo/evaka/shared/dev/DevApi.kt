@@ -1610,7 +1610,10 @@ RETURNING id
                 EmailMessageType.vasuNotification ->
                     emailMessageProvider.vasuNotification(Language.fi, ChildId(UUID.randomUUID()))
                 EmailMessageType.pedagogicalDocumentNotification ->
-                    emailMessageProvider.pedagogicalDocumentNotification(Language.fi)
+                    emailMessageProvider.pedagogicalDocumentNotification(
+                        Language.fi,
+                        ChildId(UUID.randomUUID())
+                    )
                 EmailMessageType.outdatedIncomeNotification ->
                     emailMessageProvider.outdatedIncomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,

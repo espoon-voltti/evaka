@@ -75,3 +75,14 @@ fun Database.Read.getChildPedagogicalDocuments(
         .mapTo<PedagogicalDocumentCitizen>()
         .list()
 }
+
+fun Database.Read.getPedagogicalDocumentChild(
+    pedagogicalDocumentId: PedagogicalDocumentId
+): ChildId {
+    return createQuery(
+            "SELECT child_id FROM pedagogical_document WHERE id = :pedagogicalDocumentId"
+        )
+        .bind("pedagogicalDocumentId", pedagogicalDocumentId)
+        .mapTo<ChildId>()
+        .one()
+}
