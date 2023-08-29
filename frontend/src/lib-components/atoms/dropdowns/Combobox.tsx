@@ -307,6 +307,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
             <>
               <Button
                 data-qa="clear"
+                type="button"
                 onClick={disabled ? undefined : onClickClear}
               >
                 <FontAwesomeIcon icon={faTimes} />
