@@ -6,11 +6,7 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  localDateRange,
-  limitedLocalTimeRange,
-  string
-} from 'lib-common/form/fields'
+import { localDateRange, string, localTimeRange } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -23,8 +19,10 @@ import {
   value
 } from 'lib-common/form/form'
 import {
+  FieldErrors,
   StateOf,
   ValidationError,
+  ValidationResult,
   ValidationSuccess
 } from 'lib-common/form/types'
 import {
@@ -44,31 +42,61 @@ export const MAX_TIME_RANGE = {
   end: LocalTime.MAX
 }
 
+export const limitedLocalTimeRange = transformed(
+  object({
+    value: localTimeRange,
+    validRange: value<TimeRange>()
+  }),
+  ({
+    value,
+    validRange
+  }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
+    if (value === undefined) return ValidationSuccess.of(undefined)
+
+    // Don't allow reservations with same start and end times
+    if (value.start.isEqual(value.end)) {
+      return ValidationError.field('value', 'timeFormat')
+    }
+
+    let errors: FieldErrors<'range'> | undefined = undefined
+    if (!timeRangeContains(value.start, validRange)) {
+      errors = errors ?? {}
+      errors.startTime = 'range'
+    }
+    if (!timeRangeContains(value.end, validRange)) {
+      errors = errors ?? {}
+      errors.endTime = 'range'
+    }
+    if (errors !== undefined) {
+      return ValidationError.fromFieldErrors({ value: errors })
+    } else {
+      return ValidationSuccess.of(value)
+    }
+  }
+)
+
+export function timeRangeContains(
+  inputTime: LocalTime,
+  { start, end }: TimeRange
+) {
+  return inputTime.isEqualOrAfter(start) && inputTime.isEqualOrBefore(end)
+}
+
 export function emptyTimeRange(
   validRange: TimeRange
 ): StateOf<typeof limitedLocalTimeRange> {
   return {
-    startTime: { value: '', validRange },
-    endTime: { value: '', validRange }
+    value: { startTime: '', endTime: '' },
+    validRange
   }
 }
 
-export const timeRanges = mapped(
-  array(
-    validated(limitedLocalTimeRange, (output) =>
-      // 00:00 is not a valid end time
-      output !== undefined && output.end.hour === 0 && output.end.minute === 0
-        ? 'timeFormat'
-        : undefined
-    )
-  ),
-  (output) => {
-    const nonEmpty = output.flatMap((x) => x ?? [])
-    return nonEmpty.length === 0
-      ? undefined // All inputs empty => no value
-      : nonEmpty
-  }
-)
+export const timeRanges = mapped(array(limitedLocalTimeRange), (output) => {
+  const nonEmpty = output.flatMap((x) => x ?? [])
+  return nonEmpty.length === 0
+    ? undefined // All inputs empty => no value
+    : nonEmpty
+})
 
 export const reservation = object({
   reservation: union({
@@ -515,12 +543,7 @@ export function resetDay(
           validTimeRange,
           reservation: {
             branch: 'timeRanges',
-            state: [
-              {
-                startTime: { value: '', validRange: validTimeRange },
-                endTime: { value: '', validRange: validTimeRange }
-              }
-            ]
+            state: [emptyTimeRange(validTimeRange)]
           }
         }
       }
@@ -613,8 +636,8 @@ const bindUnboundedTimeRanges = (
   validRange: TimeRange
 ): StateOf<typeof limitedLocalTimeRange>[] => {
   const formatted = ranges.map(({ start, end }) => ({
-    startTime: { value: start.format(), validRange },
-    endTime: { value: end.format(), validRange }
+    value: { startTime: start.format(), endTime: end.format() },
+    validRange
   }))
 
   if (ranges.length === 1 || ranges.length === 2) {

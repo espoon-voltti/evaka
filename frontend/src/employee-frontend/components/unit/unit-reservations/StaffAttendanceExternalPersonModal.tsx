@@ -185,7 +185,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           />
           {groupError && (
             <InputFieldUnderRow className={classNames('warning')}>
-              <span>{group.translateError(groupError)}</span>
+              <span>{group.inputInfo()?.text}</span>
               <StatusIcon status="warning" />
             </InputFieldUnderRow>
           )}

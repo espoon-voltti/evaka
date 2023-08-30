@@ -5,9 +5,7 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { limitedLocalTime } from 'lib-common/form/fields'
 import { BoundFormState } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
 import { autocomplete } from 'lib-common/time'
 
 import InputField, { TextInputProps } from './InputField'
@@ -26,6 +24,7 @@ export interface TimeInputProps
     | 'aria-describedby'
     | 'data-qa'
   > {
+  wide?: boolean
   value: string
   onChange: (v: string) => void
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
@@ -35,6 +34,7 @@ const TimeInput = React.memo(function TimeInput({
   value,
   onChange,
   onFocus,
+  wide,
   ...props
 }: TimeInputProps) {
   const onChangeWithAutocomplete = useCallback(
@@ -42,34 +42,10 @@ const TimeInput = React.memo(function TimeInput({
     [value, onChange]
   )
 
-  return (
-    <ShorterInput
-      {...props}
-      value={value}
-      onChange={onChangeWithAutocomplete}
-      type="text"
-      inputMode="numeric"
-      onFocus={(event) => {
-        event.target.select()
-        onFocus?.(event)
-      }}
-    />
-  )
-})
-
-const TimeInputWide = React.memo(function TimeInput({
-  value,
-  onChange,
-  onFocus,
-  ...props
-}: TimeInputProps) {
-  const onChangeWithAutocomplete = useCallback(
-    (v: string) => onChange(autocomplete(value, v)),
-    [value, onChange]
-  )
+  const InputComponent = wide ? ScalingInput : ShorterInput
 
   return (
-    <ScalingInput
+    <InputComponent
       {...props}
       value={value}
       onChange={onChangeWithAutocomplete}
@@ -111,9 +87,10 @@ export interface TimeInputFProps
 }
 
 export const TimeInputF = React.memo(function TimeInputF({
-  bind: { state, set, inputInfo },
+  bind,
   ...props
 }: TimeInputFProps) {
+  const { state, set, inputInfo } = bind
   return (
     <TimeInput
       {...props}
@@ -123,24 +100,3 @@ export const TimeInputF = React.memo(function TimeInputF({
     />
   )
 })
-
-export interface TimeInputFWithUnitTimesProps
-  extends Omit<TimeInputProps, 'value' | 'onChange'> {
-  bind: BoundFormState<StateOf<typeof limitedLocalTime>>
-}
-
-export const TimeInputFWithUnitTimes = React.memo(
-  function TimeInputFWithUnitTimes({
-    bind: { state, set, inputInfo },
-    ...props
-  }: TimeInputFWithUnitTimesProps) {
-    return (
-      <TimeInputWide
-        {...props}
-        value={state.value}
-        onChange={(newValue) => set({ ...state, value: newValue })}
-        info={'info' in props ? props.info : inputInfo()}
-      />
-    )
-  }
-)

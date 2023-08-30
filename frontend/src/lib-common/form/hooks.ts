@@ -3,15 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 /* eslint-disable  */
-/* eslint-enable react-hooks/exhaustive-deps */
+/* eslint-enable react-hooks/exhaustive-deps, prettier/prettier, import/order */
 
 import range from 'lodash/range'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { boolean } from './fields'
+import { memoizeLast } from './memoize'
 import {
   AnyForm,
   ErrorOf,
+  FieldErrors,
   Form,
   ObjectFieldError,
   OutputOf,
@@ -37,7 +39,7 @@ export interface BoundForm<F extends AnyForm> {
   translateError: (error: Exclude<ErrorOf<F>, ObjectFieldError>) => string
 
   isValid: () => boolean
-  validationError: () => ErrorOf<F> | undefined
+  validationError: () => ErrorOf<F> | FieldErrors<ErrorOf<F>> | undefined
   value: () => OutputOf<F> // throws if form is invalid
 }
 
@@ -90,7 +92,10 @@ export function useForm<F extends AnyForm>(
       state,
       update,
       set,
-      ...validationHelpers(() => state, form.validate as any, translateError)
+      ...validationHelpers(
+        () => form.validate(state) as ValidationResult<OutputOf<F>, ErrorOf<F>>,
+        translateError
+      )
     }),
     [form, set, state, translateError, update]
   )
@@ -100,14 +105,15 @@ export function useFormFields<F extends AnyForm>({
   form,
   state,
   update,
+  validationError,
   translateError
 }: BoundForm<F>): { [K in keyof ShapeOf<F>]: BoundForm<ShapeOf<F>[K]> } {
-  const fieldShapes = useMemo(() => Object.entries(form.shape), [form.shape])
+  const fieldNames = useMemo(() => Object.keys(form.shape), [form.shape])
 
   const fieldCallbacks = useMemo(
     () =>
       Object.fromEntries(
-        fieldShapes.map(([key]) => {
+        fieldNames.map((key) => {
           const fieldUpdate = (
             fn: (prev: StateOf<F>) => StateOf<F>[number]
           ) => {
@@ -121,33 +127,42 @@ export function useFormFields<F extends AnyForm>({
           return [key, { fieldUpdate, fieldSet }]
         })
       ),
-    [fieldShapes, update]
+    [fieldNames, update]
   )
 
   return useMemo(
     () =>
       Object.fromEntries(
-        fieldShapes.map(([key, field]) => [
-          key,
-          {
-            form: field,
-            state: state[key],
-            update: fieldCallbacks[key].fieldUpdate,
-            set: fieldCallbacks[key].fieldSet,
-            ...validationHelpers(
-              () => state[key],
-              form.shape[key].validate,
-              translateError
-            )
-          }
-        ])
+        fieldNames.map((key) => {
+          return [
+            key,
+            {
+              form: form.shape[key],
+              state: state[key],
+              update: fieldCallbacks[key].fieldUpdate,
+              set: fieldCallbacks[key].fieldSet,
+              ...validationHelpers(
+                () => form.shape[key].validate(state[key]),
+                translateError,
+                { get: validationError, map: (error) => error[key] }
+              )
+            }
+          ]
+        })
       ) as any,
-    [fieldCallbacks, fieldShapes, form.shape, state, translateError]
+    [
+      fieldCallbacks,
+      fieldNames,
+      form.shape,
+      state,
+      translateError,
+      validationError
+    ]
   )
 }
 
 export function useFormField<F extends AnyForm, K extends keyof ShapeOf<F>>(
-  { form, state, update, translateError }: BoundForm<F>,
+  { form, state, update, validationError, translateError }: BoundForm<F>,
   key: K
 ): ShapeOf<F>[K] extends AnyForm ? BoundForm<ShapeOf<F>[K]> : never {
   const field = form.shape[key]
@@ -177,14 +192,25 @@ export function useFormField<F extends AnyForm, K extends keyof ShapeOf<F>>(
         state: fieldState,
         update: fieldUpdate,
         set: fieldSet,
-        ...validationHelpers(() => fieldState, field.validate, translateError)
-      } as any),
-    [field, fieldSet, fieldState, fieldUpdate, translateError]
+        ...validationHelpers(() => field.validate(fieldState), translateError, {
+          get: validationError,
+          map: (error) => error[key as string]
+        })
+      }) as any,
+    [
+      field,
+      fieldSet,
+      fieldState,
+      fieldUpdate,
+      key,
+      translateError,
+      validationError
+    ]
   )
 }
 
 export function useFormElem<F extends AnyForm>(
-  { form, state, update, translateError }: BoundForm<F>,
+  { form, state, update, validationError, translateError }: BoundForm<F>,
   index: number
 ): ShapeOf<F> extends AnyForm
   ? StateOf<F> extends StateOf<ShapeOf<F>>[]
@@ -218,13 +244,16 @@ export function useFormElem<F extends AnyForm>(
             update: elemUpdate,
             set: elemSet,
             ...validationHelpers(
-              () => state[index],
-              elem.validate,
-              translateError
+              () => elem.validate(state[index]),
+              translateError,
+              {
+                get: validationError,
+                map: (errors) => errors[index.toString()]
+              }
             )
           } as any)
         : undefined,
-    [elem, elemSet, elemUpdate, index, state, translateError]
+    [elem, elemSet, elemUpdate, index, state, translateError, validationError]
   )
 }
 
@@ -232,6 +261,7 @@ export function useFormElems<F extends AnyForm>({
   form,
   state,
   update,
+  validationError,
   translateError
 }: BoundForm<F>): ShapeOf<F> extends AnyForm
   ? StateOf<F> extends StateOf<ShapeOf<F>>[]
@@ -248,8 +278,9 @@ export function useFormElems<F extends AnyForm>({
           fn: (prev: StateOf<F>[number]) => StateOf<F>[number]
         ) => {
           update((prevElemStates) =>
-            prevElemStates.map((prevElemState: StateOf<F>[number], i: number) =>
-              i === index ? fn(prevElemState) : prevElemState
+            prevElemStates.map(
+              (prevElemState: StateOf<F>[number], i: number) =>
+                i === index ? fn(prevElemState) : prevElemState
             )
           )
         }
@@ -266,9 +297,13 @@ export function useFormElems<F extends AnyForm>({
         state: state[index],
         update: callbacks[index].elemUpdate,
         set: callbacks[index].elemSet,
-        ...validationHelpers(() => state[index], elem.validate, translateError)
+        ...validationHelpers(
+          () => elem.validate(state[index]),
+          translateError,
+          { get: validationError, map: (error) => error[index.toString()] }
+        )
       })) as any,
-    [callbacks, elem, len, state, translateError]
+    [callbacks, elem, len, state, translateError, validationError]
   )
 }
 
@@ -276,12 +311,18 @@ export function useFormUnion<F extends AnyForm>({
   form,
   state,
   update,
+  validationError,
   translateError
-}: BoundForm<F>): StateOf<F> extends { branch: any }
+}: BoundForm<F>): StateOf<F> extends {
+  branch: any
+}
   ? StateOf<F>['branch'] extends infer K
     ? K extends string // trigger distributive conditional type
       ? ShapeOf<F> extends { [KK in K]: AnyForm }
-        ? { branch: K; form: BoundForm<ShapeOf<F>[K]> }
+        ? {
+            branch: K
+            form: BoundForm<ShapeOf<F>[K]>
+          }
         : never
       : never
     : never
@@ -316,13 +357,23 @@ export function useFormUnion<F extends AnyForm>({
           update: branchCallbacks[state.branch].elemUpdate,
           set: branchCallbacks[state.branch].elemSet,
           ...validationHelpers(
-            () => state.state,
-            form.shape[state.branch].validate,
-            translateError
+            () => form.shape[state.branch].validate(state.state),
+            translateError,
+            {
+              get: validationError,
+              map: (error) => error[state.branch]
+            }
           )
         }
-      } as any),
-    [branchCallbacks, form.shape, state.branch, state.state, translateError]
+      }) as any,
+    [
+      branchCallbacks,
+      form.shape,
+      state.branch,
+      state.state,
+      translateError,
+      validationError
+    ]
   )
 }
 
@@ -330,9 +381,11 @@ export function useFormUnionBranch<
   F extends AnyForm,
   K extends keyof ShapeOf<F>
 >(
-  { form, state, update, translateError }: BoundForm<F>,
+  { form, state, update, validationError, translateError }: BoundForm<F>,
   branch: K
-): StateOf<F> extends { branch: any }
+): StateOf<F> extends {
+  branch: any
+}
   ? K extends StateOf<F>['branch']
     ? BoundForm<ShapeOf<F>[K]> | undefined
     : never
@@ -369,48 +422,77 @@ export function useFormUnionBranch<
             update: fieldUpdate,
             set: fieldSet,
             ...validationHelpers(
-              () => fieldState,
-              field.validate,
-              translateError
+              () => field.validate(fieldState),
+              translateError,
+              { get: validationError, map: (error) => error[branch as string] }
             )
           } as any)
         : undefined,
-    [field, fieldSet, fieldState, fieldUpdate, matches, translateError]
+    [
+      branch,
+      field,
+      fieldSet,
+      fieldState,
+      fieldUpdate,
+      matches,
+      translateError,
+      validationError
+    ]
   )
 }
 
-function validationHelpers<Output, Error, State>(
-  getState: () => State,
-  getValidationResult: (state: State) => ValidationResult<Output, Error>,
-  translateError: (error: Exclude<Error, ObjectFieldError>) => string
+function validationHelpers<Output, Error extends string>(
+  validate: () => ValidationResult<Output, Error>,
+  translateError: (error: Exclude<Error, ObjectFieldError>) => string,
+  parentError?: {
+    get: () => Error | FieldErrors<Error> | undefined
+    map: (
+      fieldErrors: FieldErrors<Error>
+    ) => Error | FieldErrors<Error> | undefined
+  }
 ) {
+  const getValidationError = memoizeLast(
+    (): Error | FieldErrors<Error> | undefined => {
+      if (parentError === undefined) {
+        const validationResult = validate()
+        if (!validationResult.isValid) return validationResult.error
+        return undefined
+      } else {
+        const errorFromParent = parentError.get()
+        if (
+          errorFromParent === undefined ||
+          typeof errorFromParent === 'string'
+        ) {
+          return undefined
+        }
+        return parentError.map(errorFromParent)
+      }
+    }
+  )
+
   return {
     inputInfo: (): InputInfo | undefined => {
-      const result = getValidationResult(getState())
-      if (result.isValid || result.validationError === ObjectFieldError) {
+      const error = getValidationError()
+      if (error === undefined || error === ObjectFieldError) return undefined
+      if (typeof error !== 'string') {
+        // Subfield error
         return undefined
       }
       return {
         status: 'warning',
-        text: translateError(
-          result.validationError as Exclude<Error, ObjectFieldError>
-        )
+        text: translateError(error as Exclude<Error, ObjectFieldError>)
       }
     },
     translateError,
-    isValid: () => getValidationResult(getState()).isValid,
-    validationError: () => {
-      const result = getValidationResult(getState())
-      return result.isValid ? undefined : result.validationError
-    },
+    isValid: () => getValidationError() === undefined,
     value: () => {
-      const result = getValidationResult(getState())
-      if (result.isValid) {
-        return result.value
-      } else {
-        throw new Error('Form is invalid')
+      const result = validate()
+      if (!result.isValid || getValidationError() !== undefined) {
+        throw new Error('Form is not valid')
       }
-    }
+      return result.value
+    },
+    validationError: getValidationError
   }
 }
 

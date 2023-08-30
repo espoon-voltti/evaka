@@ -74,23 +74,6 @@ export const localOpenEndedDateRange = transformed(
   }
 )
 
-export const limitedLocalTime = transformed(
-  object({
-    value: string(),
-    validRange: value<TimeRange>()
-  }),
-  (v): ValidationResult<LocalTime | undefined, 'timeFormat' | 'range'> => {
-    if (v.value === '') return ValidationSuccess.of(undefined)
-    const parsed = LocalTime.tryParse(v.value)
-    if (parsed === undefined) {
-      return ValidationError.of('timeFormat')
-    } else if (!timeRangeContains(parsed, v.validRange)) {
-      return ValidationError.of('range')
-    }
-    return ValidationSuccess.of(parsed)
-  }
-)
-
 export const localTime = transformed(
   string(),
   (s): ValidationResult<LocalTime | undefined, 'timeFormat'> => {
@@ -103,34 +86,6 @@ export const localTime = transformed(
   }
 )
 
-export const limitedLocalTimeRange = transformed(
-  object({
-    startTime: limitedLocalTime,
-    endTime: limitedLocalTime
-  }),
-  ({
-    startTime,
-    endTime
-  }): ValidationResult<
-    TimeRange | undefined,
-    ObjectFieldError | 'timeFormat' | 'range'
-  > => {
-    if (startTime === undefined && endTime === undefined) {
-      return ValidationSuccess.of(undefined)
-    }
-    if (
-      startTime === undefined ||
-      endTime === undefined ||
-      // Allow midnight as the end time, even though it's "before" all other times
-      (endTime.isBefore(startTime) && !endTime.isEqual(midnight))
-    ) {
-      return ValidationError.of('timeFormat')
-    } else {
-      return ValidationSuccess.of({ start: startTime, end: endTime })
-    }
-  }
-)
-
 export const localTimeRange = transformed(
   object({
     startTime: localTime,
@@ -139,18 +94,14 @@ export const localTimeRange = transformed(
   ({
     startTime,
     endTime
-  }): ValidationResult<
-    TimeRange | undefined,
-    ObjectFieldError | 'timeFormat'
-  > => {
+  }): ValidationResult<TimeRange | undefined, 'timeFormat'> => {
     if (startTime === undefined && endTime === undefined) {
       return ValidationSuccess.of(undefined)
     }
     if (
       startTime === undefined ||
       endTime === undefined ||
-      // Allow midnight as the end time, even though it's "before" all other times
-      (endTime.isBefore(startTime) && !endTime.isEqual(midnight))
+      endTime.isBefore(startTime)
     ) {
       return ValidationError.of('timeFormat')
     } else {
@@ -158,12 +109,3 @@ export const localTimeRange = transformed(
     }
   }
 )
-
-const midnight = LocalTime.of(0, 0)
-
-export function timeRangeContains(
-  inputTime: LocalTime,
-  { start, end }: TimeRange
-) {
-  return inputTime.isEqualOrAfter(start) && inputTime.isEqualOrBefore(end)
-}

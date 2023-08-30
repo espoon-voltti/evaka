@@ -4,6 +4,8 @@
 
 const none: unique symbol = Symbol('none')
 
+export function memoizeLast<T>(fn: () => T): () => T
+export function memoizeLast<S, T>(fn: (input: S) => T): (input: S) => T
 export function memoizeLast<S, T>(fn: (input: S) => T): (input: S) => T {
   let lastInput: S | typeof none = none
   let lastOutput: T | typeof none = none
