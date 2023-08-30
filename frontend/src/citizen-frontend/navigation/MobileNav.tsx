@@ -398,7 +398,6 @@ const Menu = React.memo(function Menu({
           onClick={closeMenu}
         >
           {t.header.nav.personalDetails}
-          {lock}
           {showUserAttentionIndicator(user) && (
             <CircledChar
               aria-label={t.header.attention}

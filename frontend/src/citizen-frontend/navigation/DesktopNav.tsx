@@ -362,7 +362,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             onClick={() => setOpen(false)}
           >
             {t.header.nav.personalDetails}
-            {maybeLockElem}
             {showUserAttentionIndicator && (
               <CircledChar
                 aria-label={t.header.attention}
