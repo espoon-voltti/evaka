@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -29,7 +30,8 @@ fun maxEndDate(first: LocalDate?, second: LocalDate?): LocalDate? {
 }
 
 /** A closed (inclusive) date range with finite start and end */
-data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
+data class FiniteDateRange(override val start: LocalDate, override val end: LocalDate) :
+    BoundedRange<LocalDate, FiniteDateRange> {
     init {
         require(start <= end) {
             "Attempting to initialize invalid finite date range with start: $start, end: $end"
@@ -46,26 +48,23 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         )
 
     /** Returns true if this date range fully contains the given date range. */
-    fun contains(other: FiniteDateRange) = this.start <= other.start && other.end <= this.end
-
-    /** Returns true if this date range fully contains the given date range. */
     fun contains(other: DateRange) = this.asDateRange().contains(other)
 
     /** Returns true if this date range includes the given date. */
-    fun includes(date: LocalDate) = this.start <= date && date <= this.end
+    override fun includes(point: LocalDate) = this.start <= point && point <= this.end
 
-    /** Returns true if this date range overlaps at least partially with the given date range. */
-    fun overlaps(other: FiniteDateRange) = this.start <= other.end && other.start <= this.end
+    override fun overlaps(other: FiniteDateRange): Boolean =
+        this.start <= other.end && other.start <= this.end
 
     /** Returns true if this date range overlaps at least partially with the given date range. */
     fun overlaps(other: DateRange) = this.asDateRange().overlaps(other)
 
-    fun leftAdjacentTo(other: FiniteDateRange): Boolean = this.end.plusDays(1) == other.start
-    fun rightAdjacentTo(other: FiniteDateRange): Boolean = other.end.plusDays(1) == this.start
-    fun adjacentTo(other: FiniteDateRange): Boolean =
-        leftAdjacentTo(other) || rightAdjacentTo(other)
+    override fun leftAdjacentTo(other: FiniteDateRange): Boolean =
+        this.end.plusDays(1) == other.start
+    override fun rightAdjacentTo(other: FiniteDateRange): Boolean =
+        other.end.plusDays(1) == this.start
 
-    fun intersection(other: FiniteDateRange): FiniteDateRange? {
+    override fun intersection(other: FiniteDateRange): FiniteDateRange? {
         val start = maxOf(this.start, other.start)
         val end = minOf(this.end, other.end)
         return if (start <= end) FiniteDateRange(start, end) else null
@@ -75,6 +74,7 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         return other.intersection(this)
     }
 
+    override fun subtract(other: FiniteDateRange): List<FiniteDateRange> = complement(other)
     fun complement(other: FiniteDateRange): List<FiniteDateRange> {
         return when {
             !other.overlaps(this) -> listOf(this)
@@ -98,6 +98,9 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
             operation = { acc, other -> acc.flatMap { it.complement(other) } }
         )
     }
+
+    override fun merge(other: FiniteDateRange): FiniteDateRange =
+        FiniteDateRange(minOf(this.start, other.start), maxOf(this.end, other.end))
 
     /** Returns a lazy sequence of all dates included in this date range. */
     fun dates(): Sequence<LocalDate> =
