@@ -59,7 +59,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
+class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @BeforeEach
@@ -586,7 +586,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
         assertVardaFeeData(
@@ -779,7 +779,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
     }
 
     @Test
-    fun `updateChildData removes all related varda data when service need is removed from evaka`() {
+    fun `updateChildData removes all related varda data when last service need is removed from evaka`() {
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
@@ -853,7 +853,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
         assertVardaFeeData(
@@ -913,7 +913,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
         assertVardaFeeData(
@@ -982,7 +982,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
     }
@@ -1075,7 +1075,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
     }
@@ -1129,7 +1129,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
     }
@@ -1172,7 +1172,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
     }
@@ -1206,7 +1206,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            1,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
     }
@@ -1405,7 +1405,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
-            123,
+            2,
             snDefaultDaycare.daycareHoursPerWeek.toDouble()
         )
         assertVardaFeeData(
@@ -1560,7 +1560,14 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         feeDecisionMinDate: LocalDate
     ) {
         getChildrenToUpdate(db, RealEvakaClock(), feeDecisionMinDate).entries.forEach {
-            updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate, ophEnv.organizerOid)
+            resetVardaChild(
+                db,
+                RealEvakaClock(),
+                vardaClient,
+                it.key,
+                feeDecisionMinDate,
+                ophEnv.organizerOid
+            )
         }
     }
 

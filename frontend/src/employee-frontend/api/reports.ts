@@ -522,22 +522,18 @@ export async function getPlacementSketchingReport(
     )
 }
 
-export async function getVardaErrorsReport(): Promise<
-  Result<VardaErrorReportRow[]>
-> {
+export async function getVardaErrorsReport(): Promise<VardaErrorReportRow[]> {
   return client
     .get<JsonOf<VardaErrorReportRow[]>>(`/reports/varda-errors`)
     .then((res) =>
-      Success.of(
-        res.data.map((row) => ({
-          ...row,
-          updated: HelsinkiDateTime.parseIso(row.updated),
-          created: HelsinkiDateTime.parseIso(row.created),
-          resetTimeStamp: row.resetTimeStamp
-            ? HelsinkiDateTime.parseIso(row.resetTimeStamp)
-            : null
-        }))
-      )
+      res.data.map((row) => ({
+        ...row,
+        updated: HelsinkiDateTime.parseIso(row.updated),
+        created: HelsinkiDateTime.parseIso(row.created),
+        resetTimeStamp: row.resetTimeStamp
+          ? HelsinkiDateTime.parseIso(row.resetTimeStamp)
+          : null
+      }))
     )
 }
 
@@ -550,11 +546,8 @@ export async function markChildForVardaReset(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function runResetVardaChildren(): Promise<Result<void>> {
-  return client
-    .post<void>(`/varda/reset-children`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+export async function startVardaUpdate(): Promise<void> {
+  await client.post(`/varda/start-update`)
 }
 
 export async function sendPatuReport(

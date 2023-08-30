@@ -2,16 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
+import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import {
   getFamilyContactsReport,
   getMissingHeadOfFamilyReport,
   getOccupanciesReport,
+  getVardaErrorsReport,
   getVoucherServiceProvidersReport,
   MissingHeadOfFamilyReportFilters,
   OccupancyReportFilters,
+  startVardaUpdate,
   VoucherServiceProvidersFilters
 } from '../../api/reports'
 import { createQueryKeys } from '../../query'
@@ -26,7 +28,8 @@ const queryKeys = createQueryKeys('reports', {
   voucherServiceProviders: (filters: VoucherServiceProvidersFilters) => [
     'voucherServiceProviders',
     filters
-  ]
+  ],
+  vardaErrors: () => ['vardaErrors']
 })
 
 export const familyContactsReportQuery = query({
@@ -50,4 +53,14 @@ export const occupanciesReportQuery = query({
 export const voucherServiceProvidersReportQuery = query({
   api: getVoucherServiceProvidersReport,
   queryKey: queryKeys.voucherServiceProviders
+})
+
+export const vardaErrorsQuery = query({
+  api: () => getVardaErrorsReport(),
+  queryKey: queryKeys.vardaErrors
+})
+
+export const startVardaUpdateMutation = mutation({
+  api: () => startVardaUpdate(),
+  invalidateQueryKeys: () => []
 })

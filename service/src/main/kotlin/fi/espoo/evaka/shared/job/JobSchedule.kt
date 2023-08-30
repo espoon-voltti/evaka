@@ -31,12 +31,6 @@ data class ScheduledJobSettings(
                 ScheduledJob.VardaUpdate ->
                     ScheduledJobSettings(
                         enabled = false,
-                        schedule = JobSchedule.cron("0 0 23 * * 1,2,3,4,5"), // mon - fri @ 23 pm
-                        retryCount = 1
-                    )
-                ScheduledJob.VardaReset ->
-                    ScheduledJobSettings(
-                        enabled = true,
                         schedule = JobSchedule.cron("0 0 20 * * 1,2,3,4,5"), // mon - fri @ 20 pm
                         retryCount = 1
                     )
