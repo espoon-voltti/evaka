@@ -29,7 +29,7 @@ import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.data.Timeline
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
@@ -605,7 +605,7 @@ class AssistanceController(
                     val original = tx.getAssistanceFactor(id)
                     tx.updateAssistanceFactor(user, clock.now(), id, body)
                     if (original != null) {
-                        val affectedRanges = Timeline.of(original.validDuring, body.validDuring)
+                        val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
                         affectedRanges.spanningRange()?.let {
                             asyncJobRunner.plan(
                                 tx,

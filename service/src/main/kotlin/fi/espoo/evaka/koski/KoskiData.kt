@@ -7,7 +7,7 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.KoskiStudyRightId
-import fi.espoo.evaka.shared.data.Timeline
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
@@ -375,13 +375,13 @@ data class KoskiActiveDataRaw(
 
         // Koski only accepts one range
         val longestEce =
-            Timeline.of(extendedCompulsoryEducation)
-                .intersection(Timeline.of(placementSpan))
+            DateSet.of(extendedCompulsoryEducation)
+                .intersection(DateSet.of(placementSpan))
                 .ranges()
                 .maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
         val longestTransportBenefit =
-            Timeline.of(transportBenefit)
+            DateSet.of(transportBenefit)
                 .ranges()
                 .mapNotNull { it.intersection(placementSpan) }
                 .maxByOrNull { it.durationInDays() }
@@ -422,17 +422,17 @@ sealed class StudyRightTermination {
 }
 
 /** Fill gaps between periods if those gaps contain only holidays or weekend days */
-internal fun Timeline.fillWeekendAndHolidayGaps(holidays: Set<LocalDate>) =
+internal fun DateSet.fillWeekendAndHolidayGaps(holidays: Set<LocalDate>) =
     this.addAll(
         this.gaps().filter { gap -> gap.dates().all { it.isWeekend() || holidays.contains(it) } }
     )
 
 internal data class StudyRightTimelines(
-    val placement: Timeline,
-    val present: Timeline,
-    val plannedAbsence: Timeline,
-    val sickLeaveAbsence: Timeline,
-    val unknownAbsence: Timeline
+    val placement: DateSet,
+    val present: DateSet,
+    val plannedAbsence: DateSet,
+    val sickLeaveAbsence: DateSet,
+    val unknownAbsence: DateSet
 )
 
 internal fun calculateStudyRightTimelines(
@@ -440,10 +440,10 @@ internal fun calculateStudyRightTimelines(
     holidays: Set<LocalDate>,
     absences: Sequence<KoskiPreparatoryAbsence>
 ): StudyRightTimelines {
-    val placement = Timeline.of(placementRanges)
+    val placement = DateSet.of(placementRanges)
     val plannedAbsence =
-        Timeline.of(
-            Timeline.of(
+        DateSet.of(
+            DateSet.of(
                     absences
                         .filter {
                             it.type == AbsenceType.PLANNED_ABSENCE ||
@@ -457,8 +457,8 @@ internal fun calculateStudyRightTimelines(
                 .filter { it.durationInDays() > 7 }
         )
     val sickLeaveAbsence =
-        Timeline.of(
-            Timeline.of(
+        DateSet.of(
+            DateSet.of(
                     absences
                         .filter { it.type == AbsenceType.SICKLEAVE }
                         .map { it.date.toFiniteDateRange() }
@@ -469,8 +469,8 @@ internal fun calculateStudyRightTimelines(
                 .filter { it.durationInDays() > 7 }
         )
     val unknownAbsence =
-        Timeline.of(
-            Timeline.of(
+        DateSet.of(
+            DateSet.of(
                     absences
                         .filter { it.type == AbsenceType.UNKNOWN_ABSENCE }
                         .map { it.date.toFiniteDateRange() }

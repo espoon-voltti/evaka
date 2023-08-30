@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.data.Timeline
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -496,13 +496,13 @@ WHERE
 
 private data class ChildContractDays(
     val childId: ChildId,
-    val contractDays: Timeline,
+    val contractDays: DateSet,
 )
 
 fun Database.Read.getReservationContractDayRanges(
     childIds: Set<PersonId>,
     range: FiniteDateRange
-): Map<ChildId, Timeline> {
+): Map<ChildId, DateSet> {
     return createQuery(
             """
             SELECT

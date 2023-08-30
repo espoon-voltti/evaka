@@ -85,7 +85,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(helsinkiDateTimeRangeArgumentFactory)
     jdbi.registerArgument(productKeyArgumentFactory)
     jdbi.registerArgument(databaseEnumArgumentFactory)
-    jdbi.registerArgument(timelineArgumentFactory)
+    jdbi.registerArgument(dateSetArgumentFactory)
     jdbi.register(finiteDateRangeColumnMapper)
     jdbi.register(dateRangeColumnMapper)
     jdbi.register(timeRangeColumnMapper)
@@ -103,7 +103,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     }
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.register(productKeyColumnMapper)
-    jdbi.register(timelineColumnMapper)
+    jdbi.register(dateSetColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     jdbi.registerArrayType(FiniteDateRange::class.java, "daterange") {
         PGobject().apply {
