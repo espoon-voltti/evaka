@@ -19,15 +19,15 @@ class DateSetTest {
         assertFalse(
             set.contains(FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1)))
         )
-        assertEquals(emptyList<FiniteDateRange>(), set.ranges().toList())
+        assertEquals(emptyList(), set.ranges().toList())
     }
 
     @Test
-    fun `a period can be added to a date set`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))
-        val set = DateSet.of(period)
-        assertTrue(set.contains(period))
-        assertEquals(listOf(period), set.ranges().toList())
+    fun `a range can be added to a date set`() {
+        val range = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))
+        val set = DateSet.of(range)
+        assertTrue(set.contains(range))
+        assertEquals(listOf(range), set.ranges().toList())
     }
 
     @Test
@@ -81,7 +81,7 @@ class DateSetTest {
                 FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 3, 1))
             )
         val set = DateSet.of(ranges).removeAll(ranges)
-        assertEquals(emptyList<FiniteDateRange>(), set.ranges().toList())
+        assertEquals(emptyList(), set.ranges().toList())
     }
 
     @Test
