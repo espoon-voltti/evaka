@@ -9,7 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.Timeline
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange

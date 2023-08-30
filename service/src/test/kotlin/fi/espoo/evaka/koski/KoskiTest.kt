@@ -5,7 +5,7 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import kotlin.test.assertEquals

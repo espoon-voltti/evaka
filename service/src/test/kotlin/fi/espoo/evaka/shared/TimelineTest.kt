@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.shared.data.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import kotlin.test.assertEquals

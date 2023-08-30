@@ -7,7 +7,7 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.KoskiStudyRightId
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.Timeline
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.domain.toFiniteDateRange

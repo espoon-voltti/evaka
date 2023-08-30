@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.shared
+package fi.espoo.evaka.shared.data
 
-import fi.espoo.evaka.shared.data.RangeBasedSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.Objects

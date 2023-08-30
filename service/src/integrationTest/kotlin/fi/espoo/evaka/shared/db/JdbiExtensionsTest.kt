@@ -7,7 +7,7 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.Timeline
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
