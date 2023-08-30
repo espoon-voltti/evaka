@@ -37,7 +37,6 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
       bind={day}
       label={label}
       showAllErrors={showAllErrors}
-      allowExtraTimeRange={true}
       dataQaPrefix="daily"
       onFocus={(ev) => {
         scrollIntoViewSoftKeyboard(ev.target)

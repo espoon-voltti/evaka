@@ -281,11 +281,7 @@ function Edit({
         const bind = formElems[childIndex]
         return (
           <div>
-            <EditReservation
-              canAddSecondReservation={true}
-              showAllErrors={showAllErrors}
-              bind={bind}
-            />
+            <EditReservation showAllErrors={showAllErrors} bind={bind} />
           </div>
         )
       }}
@@ -637,11 +633,9 @@ function initialFormState(
 
 const EditReservation = React.memo(function EditReservation({
   bind,
-  canAddSecondReservation,
   showAllErrors
 }: {
   bind: BoundForm<typeof childForm>
-  canAddSecondReservation: boolean
   showAllErrors: boolean
 }) {
   const day = useFormField(bind, 'day')
@@ -650,7 +644,6 @@ const EditReservation = React.memo(function EditReservation({
       bind={day}
       label={undefined}
       showAllErrors={showAllErrors}
-      allowExtraTimeRange={canAddSecondReservation}
       dataQaPrefix="edit-reservation"
     />
   )

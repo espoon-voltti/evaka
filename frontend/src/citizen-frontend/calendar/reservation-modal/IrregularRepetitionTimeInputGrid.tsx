@@ -68,7 +68,6 @@ const IrregularDay = React.memo(function IrregularDay({
         bind={day}
         label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
         showAllErrors={showAllErrors}
-        allowExtraTimeRange={true}
         dataQaPrefix={`irregular-${date.formatIso()}`}
         onFocus={(ev) => {
           scrollIntoViewSoftKeyboard(ev.target)

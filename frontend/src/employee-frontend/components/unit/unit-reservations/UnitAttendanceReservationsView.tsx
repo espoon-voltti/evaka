@@ -54,7 +54,6 @@ interface Props {
   selectedGroup: AttendanceGroupFilter
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
-  isShiftCareUnit: boolean
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
   groups: DaycareGroup[]
@@ -65,7 +64,6 @@ export default React.memo(function UnitAttendanceReservationsView({
   unitId,
   selectedGroup,
   selectedDate,
-  isShiftCareUnit,
   realtimeStaffAttendanceEnabled,
   operationalDays,
   groups,
@@ -120,7 +118,6 @@ export default React.memo(function UnitAttendanceReservationsView({
         <ReservationModalSingleChild
           child={creatingReservationChild}
           onClose={() => setCreatingReservationChild(undefined)}
-          isShiftCareUnit={isShiftCareUnit}
           operationalDays={operationalDays}
         />
       )}

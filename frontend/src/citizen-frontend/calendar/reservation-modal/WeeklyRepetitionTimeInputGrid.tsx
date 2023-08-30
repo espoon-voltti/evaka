@@ -54,7 +54,6 @@ const WeekDay = React.memo(function WeekDay({
         <LabelLike>{i18n.common.datetime.weekdaysShort[weekDay - 1]}</LabelLike>
       }
       showAllErrors={showAllErrors}
-      allowExtraTimeRange={true}
       dataQaPrefix={`weekly-${weekDay - 1}`}
       onFocus={(ev) => {
         scrollIntoViewSoftKeyboard(ev.target)
