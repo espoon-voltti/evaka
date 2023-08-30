@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.domain
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
+import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Duration
@@ -163,27 +164,45 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
 // microsecond precision
 private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1000L)
 
-data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiDateTime) {
+data class HelsinkiDateTimeRange(
+    override val start: HelsinkiDateTime,
+    override val end: HelsinkiDateTime
+) : BoundedRange<HelsinkiDateTime, HelsinkiDateTimeRange> {
     init {
         check(start <= end) {
             "Attempting to initialize invalid time range with start: $start, end: $end"
         }
     }
 
-    fun contains(other: HelsinkiDateTimeRange) = this.start <= other.start && other.end <= this.end
+    override fun overlaps(other: HelsinkiDateTimeRange) =
+        this.start < other.end && other.start < this.end
 
-    fun overlaps(other: HelsinkiDateTimeRange) = this.start < other.end && other.start < this.end
+    override fun leftAdjacentTo(other: HelsinkiDateTimeRange): Boolean = this.end == other.start
 
-    fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+    override fun rightAdjacentTo(other: HelsinkiDateTimeRange): Boolean = other.end == this.start
+
+    override fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
+
+    override fun gap(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+        tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
+
+    override fun subtract(other: HelsinkiDateTimeRange): List<HelsinkiDateTimeRange> =
         if (this.overlaps(other)) {
-            val start = maxOf(this.start, other.start)
-            val end = minOf(this.end, other.end)
-            HelsinkiDateTimeRange(start, end)
-        } else {
-            null
-        }
+            val left = tryCreate(this.start, other.start)
+            val right = tryCreate(other.end, this.end)
+            listOfNotNull(left, right)
+        } else listOf(this)
+
+    override fun merge(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange =
+        HelsinkiDateTimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
+
+    override fun includes(point: HelsinkiDateTime): Boolean =
+        this.start <= point && point < this.end
 
     companion object {
+        fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =
+            if (start < end) HelsinkiDateTimeRange(start, end) else null
         fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
             HelsinkiDateTimeRange(
                 HelsinkiDateTime.of(date, startTime),
