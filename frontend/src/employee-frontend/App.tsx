@@ -407,6 +407,10 @@ export default createBrowserRouter(
               )
             },
             {
+              path: '*',
+              element: <Navigate replace to="/finance/fee-decisions" />
+            },
+            {
               index: true,
               element: <Navigate replace to="/finance/fee-decisions" />
             }
@@ -801,6 +805,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="holidayQuestionnaire">
               <QuestionnaireEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/*',
+          element: (
+            <EmployeeRoute requireAuth={false}>
+              <RedirectToMainPage />
             </EmployeeRoute>
           )
         },
