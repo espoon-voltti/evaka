@@ -305,7 +305,8 @@ class AssistanceNeedPreschoolDecisionController(
                             clock,
                             Action.AssistanceNeedPreschoolDecision.READ
                         )
-                    val decisions = tx.getAssistanceNeedPreschoolDecisionsByChildId(childId, filter)
+                    val decisions =
+                        tx.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(childId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<
                             AssistanceNeedPreschoolDecisionId,
