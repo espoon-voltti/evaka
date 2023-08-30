@@ -72,7 +72,7 @@ interface IEmailMessageProvider {
 
     fun vasuNotification(language: Language, childId: ChildId): EmailContent
 
-    fun pedagogicalDocumentNotification(language: Language): EmailContent
+    fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
 
     fun outdatedIncomeNotification(
         notificationType: IncomeNotificationType,

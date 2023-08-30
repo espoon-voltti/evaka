@@ -131,12 +131,14 @@ SELECT EXISTS(
         clock: EvakaClock,
         msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
     ) {
+        val childId = db.read { tx -> tx.getPedagogicalDocumentChild(msg.pedagogicalDocumentId) }
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,
                 emailType = EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
-                content = emailMessageProvider.pedagogicalDocumentNotification(msg.language),
+                content =
+                    emailMessageProvider.pedagogicalDocumentNotification(msg.language, childId),
                 traceId = msg.pedagogicalDocumentId.toString(),
             )
             ?.also {
