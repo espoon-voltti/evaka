@@ -5,11 +5,15 @@
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.service.WithRange
+import fi.espoo.evaka.pis.getParentships
+import fi.espoo.evaka.pis.getPartnersForPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeAlterationId
@@ -59,7 +63,8 @@ class TimelineController(private val accessControl: AccessControl) {
                         personId
                     )
 
-                    val personBasics = tx.getPersonBasics(personId)
+                    val personBasics = tx.getPersonById(personId) ?: throw NotFound()
+
                     Timeline(
                         personId = personId,
                         firstName = personBasics.firstName,
@@ -138,20 +143,6 @@ data class Timeline(
     val children: List<TimelineChildDetailed>
 )
 
-private data class PersonBasics(val firstName: String, val lastName: String)
-
-private fun Database.Read.getPersonBasics(personId: PersonId) =
-    createQuery<Any> {
-            sql("""
-SELECT first_name, last_name
-FROM person
-WHERE id = ${bind(personId)}
-""")
-        }
-        .mapTo<PersonBasics>()
-        .firstOrNull()
-        ?: throw NotFound()
-
 data class TimelineFeeDecision(
     val id: FeeDecisionId,
     override val range: DateRange,
@@ -160,18 +151,19 @@ data class TimelineFeeDecision(
 ) : WithRange
 
 private fun Database.Read.getFeeDecisions(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
-            sql(
-                """
-SELECT id, valid_during as range, status, total_fee
-FROM fee_decision
-WHERE head_of_family_id = ${bind(personId)} AND valid_during && ${bind(range)}
-ORDER BY lower(valid_during)
-"""
+    findFeeDecisionsForHeadOfFamily(
+            headOfFamilyId = personId,
+            period = range.asDateRange(),
+            status = null
+        )
+        .map {
+            TimelineFeeDecision(
+                id = it.id,
+                range = it.validDuring,
+                status = it.status,
+                totalFee = it.totalFee
             )
         }
-        .mapTo<TimelineFeeDecision>()
-        .list()
 
 data class TimelineValueDecision(
     val id: VoucherValueDecisionId,
@@ -234,27 +226,20 @@ data class TimelinePartnerDetailed(
 ) : WithRange
 
 private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
-            sql(
-                """
-SELECT 
-    fp2.partnership_id AS id, 
-    daterange(fp2.start_date, fp2.end_date, '[]') as range, 
-    fp2.person_id AS partnerId, 
-    first_name, 
-    last_name
-FROM fridge_partner fp1
-JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx <> fp1.indx
-JOIN person p on fp2.person_id = p.id
-WHERE fp1.person_id = ${bind(personId)} 
-    AND daterange(fp1.start_date, fp1.end_date, '[]') && ${bind(range)} 
-    AND fp1.conflict = FALSE AND fp2.conflict = FALSE
-ORDER BY fp2.start_date
-"""
+    this.getPartnersForPerson(
+            personId = personId,
+            includeConflicts = false,
+            period = range.asDateRange()
+        )
+        .map {
+            TimelinePartner(
+                id = it.partnershipId,
+                range = DateRange(it.startDate, it.endDate),
+                partnerId = it.person.id,
+                firstName = it.person.firstName,
+                lastName = it.person.lastName
             )
         }
-        .mapTo<TimelinePartner>()
-        .list()
 
 data class TimelineChild(
     val id: ParentshipId,
@@ -279,25 +264,22 @@ data class TimelineChildDetailed(
 ) : WithRange
 
 private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
-            sql(
-                """
-SELECT
-    fc.id,
-    daterange(fc.start_date, fc.end_date, '[]') as range, 
-    child_id, 
-    first_name, 
-    last_name,
-    date_of_birth
-FROM fridge_child fc
-JOIN person p on fc.child_id = p.id
-WHERE fc.head_of_child = ${bind(personId)} AND fc.conflict = FALSE AND daterange(start_date, end_date, '[]') && ${bind(range)}
-ORDER BY fc.start_date
-"""
+    getParentships(
+            headOfChildId = personId,
+            childId = null,
+            includeConflicts = false,
+            period = range.asDateRange()
+        )
+        .map {
+            TimelineChild(
+                id = it.id,
+                range = DateRange(it.startDate, it.endDate),
+                childId = it.child.id,
+                firstName = it.child.firstName,
+                lastName = it.child.lastName,
+                dateOfBirth = it.child.dateOfBirth
             )
         }
-        .mapTo<TimelineChild>()
-        .list()
 
 data class TimelinePlacement(
     val id: PlacementId,

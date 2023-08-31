@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as Sentry from '@sentry/browser'
 import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -13,7 +14,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import PageWrapper from 'lib-components/layout/PageWrapper'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -22,7 +23,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import TimelineGroup from './TimelineGroup'
-import { WithRange } from './common'
+import { hasRange, WithRange } from './common'
 import { timelineQuery } from './queries'
 import {
   childRenderer,
@@ -55,168 +56,171 @@ export default React.memo(function TimelinePage() {
   const timelineResult = useQueryResult(
     timelineQuery({ personId, range: timelineMaxRange })
   )
-  const [zoom, setZoom] = useState(20) // pixels / day
 
   return (
-    <Container>
-      <ContentArea opaque>
-        <H1>{i18n.timeline.title}</H1>
-        {timelineResult.isSuccess && (
-          <H2>
-            {timelineResult.value.firstName} {timelineResult.value.lastName}
-          </H2>
-        )}
-        <Gap size="s" />
-        <FixedSpaceRow>
-          <IconButton
-            icon={faMagnifyingGlassPlus}
-            aria-label="Zoom in"
-            onClick={() => setZoom((prev) => Math.min(100, prev + 2))}
-          />
-          <IconButton
-            icon={faMagnifyingGlassMinus}
-            aria-label="Zoom out"
-            onClick={() => setZoom((prev) => Math.max(1, prev - 2))}
-          />
-        </FixedSpaceRow>
-        <Gap size="s" />
-        {renderResult(timelineResult, (timeline) => (
-          <TimelineView
-            timeline={timeline}
-            zoom={zoom}
-            timelineMaxRange={timelineMaxRange}
-          />
-        ))}
-      </ContentArea>
-    </Container>
+    <PageWrapper withReturn goBackLabel={i18n.common.goBack}>
+      {renderResult(timelineResult, (timeline) => (
+        <TimelineView timeline={timeline} timelineMaxRange={timelineMaxRange} />
+      ))}
+    </PageWrapper>
   )
 })
 
 const TimelineView = React.memo(function TimelineView({
   timeline,
-  zoom,
   timelineMaxRange
 }: {
   timeline: Timeline
-  zoom: number
   timelineMaxRange: FiniteDateRange
 }) {
+  const { i18n } = useTranslation()
+  const [zoom, setZoom] = useState(20) // pixels / day
   const contentRange = getTimelineContentRange(timeline)
   const timelineRange = contentRange
     ? timelineMaxRange.intersection(contentRange)
     : timelineMaxRange
 
   if (!timelineRange) {
-    console.warn('Content does not match requested range')
+    Sentry.captureMessage(
+      `Timeline content does not match requested range`,
+      'error'
+    )
     return null
   }
 
   return (
-    <TlContainer>
-      {/*Months row*/}
-      <TimelineGroup
-        data={getMonthRanges(timelineRange)}
-        renderer={monthRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-
+    <div>
+      <H1>{i18n.timeline.title}</H1>
+      <H2>
+        {timeline.firstName} {timeline.lastName}
+      </H2>
+      <Gap size="s" />
+      <FixedSpaceRow>
+        <IconButton
+          icon={faMagnifyingGlassPlus}
+          aria-label="Zoom in"
+          onClick={() => setZoom((prev) => Math.min(100, prev + 2))}
+        />
+        <IconButton
+          icon={faMagnifyingGlassMinus}
+          aria-label="Zoom out"
+          onClick={() => setZoom((prev) => Math.max(1, prev - 2))}
+        />
+      </FixedSpaceRow>
       <Gap size="s" />
 
-      {/*Fee decisions grouped by statuses*/}
-      <TimelineGroup
-        data={timeline.feeDecisions.filter((d) => d.status === 'SENT')}
-        renderer={feeDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-      <TimelineGroup
-        data={timeline.feeDecisions.filter((d) =>
-          ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
-            d.status
-          )
-        )}
-        renderer={feeDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-      <TimelineGroup
-        data={timeline.feeDecisions.filter((d) => d.status === 'DRAFT')}
-        renderer={feeDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-      <TimelineGroup
-        data={timeline.feeDecisions.filter((d) => d.status === 'ANNULLED')}
-        renderer={feeDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
+      <TlContainer>
+        {/*Months row*/}
+        <TimelineGroup
+          data={getMonthRanges(timelineRange)}
+          renderer={monthRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
 
-      <Gap size="xs" />
+        <Gap size="s" />
 
-      {/*Value decisions grouped by statuses*/}
-      <TimelineGroup
-        data={timeline.valueDecisions.filter((d) => d.status === 'SENT')}
-        renderer={valueDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-      <TimelineGroup
-        data={timeline.valueDecisions.filter((d) =>
-          ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
-            d.status
-          )
-        )}
-        renderer={valueDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-      <TimelineGroup
-        data={timeline.valueDecisions.filter((d) => d.status === 'DRAFT')}
-        renderer={valueDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
-      <TimelineGroup
-        data={timeline.valueDecisions.filter((d) => d.status === 'ANNULLED')}
-        renderer={valueDecisionRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
+        {/*Fee decisions grouped by statuses*/}
+        <TimelineGroup
+          data={timeline.feeDecisions.filter((d) => d.status === 'SENT')}
+          renderer={feeDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.feeDecisions.filter((d) =>
+            ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
+              d.status
+            )
+          )}
+          renderer={feeDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.feeDecisions.filter((d) => d.status === 'DRAFT')}
+          renderer={feeDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.feeDecisions.filter((d) => d.status === 'ANNULLED')}
+          renderer={feeDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.feeDecisions.filter((d) => d.status === 'IGNORED')}
+          renderer={feeDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
 
-      <Gap size="xs" />
+        <Gap size="xs" />
 
-      {/*Incomes*/}
-      <TimelineGroup
-        data={timeline.incomes}
-        renderer={incomeRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
+        {/*Value decisions grouped by statuses*/}
+        <TimelineGroup
+          data={timeline.valueDecisions.filter((d) => d.status === 'SENT')}
+          renderer={valueDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.valueDecisions.filter((d) =>
+            ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
+              d.status
+            )
+          )}
+          renderer={valueDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.valueDecisions.filter((d) => d.status === 'DRAFT')}
+          renderer={valueDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={timeline.valueDecisions.filter((d) => d.status === 'ANNULLED')}
+          renderer={valueDecisionRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
 
-      <Gap size="xs" />
+        <Gap size="xs" />
 
-      {/*PARTNERS*/}
-      <TimelineGroup
-        data={timeline.partners}
-        renderer={partnerRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
+        {/*Incomes*/}
+        <TimelineGroup
+          data={timeline.incomes}
+          renderer={incomeRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
 
-      <Gap size="xs" />
+        <Gap size="xs" />
 
-      {/*PARTNERS*/}
-      <TimelineGroup
-        data={timeline.children}
-        renderer={childRenderer}
-        timelineRange={timelineRange}
-        zoom={zoom}
-      />
+        {/*PARTNERS*/}
+        <TimelineGroup
+          data={timeline.partners}
+          renderer={partnerRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
 
-      <Gap size="X5L" />
-    </TlContainer>
+        <Gap size="xs" />
+
+        {/*PARTNERS*/}
+        <TimelineGroup
+          data={timeline.children}
+          renderer={childRenderer}
+          timelineRange={timelineRange}
+          zoom={zoom}
+        />
+
+        <Gap size="X5L" />
+      </TlContainer>
+    </div>
   )
 })
 
@@ -235,12 +239,16 @@ const getMonthRanges = (timelineRange: FiniteDateRange): WithRange[] => {
 }
 
 const getTimelineContentRange = (t: Timeline): DateRange | null => {
-  const allRanges: DateRange[] = [
-    ...t.feeDecisions,
-    ...t.incomes,
-    ...t.partners,
-    ...t.children
-  ].map((event) => event.range)
+  const allRanges: DateRange[] = []
+  Object.values(t).forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach((element) => {
+        if (hasRange(element)) {
+          allRanges.push(element.range)
+        }
+      })
+    }
+  })
 
   if (allRanges.length === 0) return null
 

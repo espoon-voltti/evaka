@@ -69,6 +69,8 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
         return '#c3e1e0'
       case 'ANNULLED':
         return '#aeb6b7'
+      case 'IGNORED':
+        return '#e8e8e8'
     }
   },
   linkProvider: (elem) => `/finance/fee-decisions/${elem.id}`,
@@ -186,6 +188,12 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         />
         <TimelineGroup
           data={elem.feeDecisions.filter((d) => d.status === 'ANNULLED')}
+          renderer={feeDecisionRenderer}
+          timelineRange={nestedRange}
+          zoom={zoom}
+        />
+        <TimelineGroup
+          data={elem.feeDecisions.filter((d) => d.status === 'IGNORED')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}

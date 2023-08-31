@@ -7,3 +7,12 @@ import DateRange from 'lib-common/date-range'
 export interface WithRange {
   range: DateRange
 }
+
+export function hasRange(x: unknown): x is WithRange {
+  return (
+    typeof x === 'object' &&
+    x !== null &&
+    'range' in x &&
+    x.range instanceof DateRange
+  )
+}
