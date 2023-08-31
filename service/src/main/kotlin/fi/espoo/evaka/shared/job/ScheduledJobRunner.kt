@@ -24,8 +24,6 @@ private const val SCHEDULER_THREADS = 1
 private const val ASYNC_JOB_RETRY_COUNT = 12
 private val POLLING_INTERVAL = Duration.ofMinutes(1)
 
-private val logger = KotlinLogging.logger {}
-
 class ScheduledJobRunner(
     private val jdbi: Jdbi,
     private val tracer: Tracer,
@@ -33,6 +31,8 @@ class ScheduledJobRunner(
     private val schedules: List<JobSchedule>,
     dataSource: DataSource,
 ) : AutoCloseable {
+    private val logger = KotlinLogging.logger {}
+
     init {
         val jobsByName =
             schedules.asSequence().flatMap { it.jobs }.map { it.job }.groupBy { it.name }.values
@@ -53,19 +53,26 @@ class ScheduledJobRunner(
         Scheduler.create(dataSource)
             .startTasks(
                 schedules
+                    .asSequence()
                     .flatMap { it.jobs }
-                    .filter { definition -> definition.settings.enabled }
-                    .map { definition ->
-                        val logMeta = mapOf("jobName" to definition.job.name)
-                        logger.info(logMeta) {
-                            "Scheduling job ${definition.job.name}: ${definition.settings.schedule}"
+                    .partition { it.settings.enabled }
+                    .let { (enabled, disabled) ->
+                        logger.info {
+                            "Ignoring disabled jobs: ${disabled.joinToString { it.job.name }}"
                         }
-                        Tasks.recurring(definition.job.name, definition.settings.schedule)
-                            .execute { _, _ ->
-                                Database(jdbi, tracer).connect { this.planAsyncJob(it, definition) }
+                        enabled.map { definition ->
+                            val logMeta = mapOf("jobName" to definition.job.name)
+                            logger.info(logMeta) {
+                                "Scheduling job ${definition.job.name}: ${definition.settings.schedule}"
                             }
+                            Tasks.recurring(definition.job.name, definition.settings.schedule)
+                                .execute { _, _ ->
+                                    Database(jdbi, tracer).connect {
+                                        this.planAsyncJob(it, definition)
+                                    }
+                                }
+                        }
                     }
-                    .toList()
             )
             .threads(SCHEDULER_THREADS)
             .pollingInterval(POLLING_INTERVAL)
