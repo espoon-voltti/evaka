@@ -1,13 +1,18 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 export const isChangeRetroactive = (
-  newRange: DateRange | null,
-  prevRange: DateRange | null,
+  newRange: DateRange | FiniteDateRange | null,
+  prevRange: DateRange | FiniteDateRange | null,
   contentChanged: boolean
 ): boolean => {
   if (!newRange) {
