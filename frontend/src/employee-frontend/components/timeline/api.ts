@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -20,12 +19,12 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { client } from './client'
+import { client } from '../../api/client'
 
 export function getTimeline(
   personId: UUID,
   searchRange: FiniteDateRange
-): Promise<Result<Timeline>> {
+): Promise<Timeline> {
   return client
     .get<JsonOf<Timeline>>('/timeline', {
       params: {
@@ -34,8 +33,7 @@ export function getTimeline(
         to: searchRange.end.formatIso()
       }
     })
-    .then((res) => Success.of(deserializeTimeline(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => deserializeTimeline(res.data))
 }
 
 const deserializeTimeline = (json: JsonOf<Timeline>): Timeline => ({

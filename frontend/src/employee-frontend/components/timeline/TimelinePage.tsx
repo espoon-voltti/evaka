@@ -10,20 +10,20 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getTimeline } from '../../api/timeline'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import TimelineGroup from './TimelineGroup'
 import { WithRange } from './common'
+import { timelineQuery } from './queries'
 import {
   childRenderer,
   feeDecisionRenderer,
@@ -52,9 +52,8 @@ export default React.memo(function TimelinePage() {
       ),
     []
   )
-  const [timelineResult] = useApiState(
-    () => getTimeline(personId, timelineMaxRange),
-    [personId, timelineMaxRange]
+  const timelineResult = useQueryResult(
+    timelineQuery({ personId, range: timelineMaxRange })
   )
   const [zoom, setZoom] = useState(20) // pixels / day
 

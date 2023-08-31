@@ -12,6 +12,7 @@ export type QueryKeyPrefix =
   | 'documentTemplates'
   | 'holidayPeriods'
   | 'reports'
+  | 'timeline'
   | 'unit'
   | 'vasu'
 
