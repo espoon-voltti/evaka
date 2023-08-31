@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
+import DateRange from 'lib-common/date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
   ServiceNeedOption,
@@ -22,6 +24,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { featureFlags } from 'lib-customizations/employee'
 import { faExclamation } from 'lib-icons'
@@ -57,12 +60,28 @@ function ServiceNeedEditorRow({
   const [form, setForm] = useState<FormData>(initialForm)
   const [overlapWarning, setOverlapWarning] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const retroactive = useMemo(
+    () =>
+      isChangeRetroactive(
+        form.startDate
+          ? new DateRange(form.startDate, form.endDate ?? null)
+          : null,
+        initialForm.startDate
+          ? new DateRange(initialForm.startDate, initialForm.endDate ?? null)
+          : null,
+        form.optionId !== initialForm.optionId ||
+          form.shiftCare !== initialForm.shiftCare
+      ),
+    [form, initialForm]
+  )
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const formIsValid =
     form.startDate &&
     form.endDate &&
     form.optionId &&
-    !form.endDate.isBefore(form.startDate)
+    !form.endDate.isBefore(form.startDate) &&
+    (!retroactive || confirmedRetroactive)
 
   const optionIds = useMemo(() => options.map(({ id }) => id), [options])
 
@@ -123,7 +142,7 @@ function ServiceNeedEditorRow({
 
   return (
     <>
-      <Tr>
+      <StyledTr hideBottomBorder={retroactive}>
         <Td>
           <FixedSpaceRow spacing="xs" alignItems="center">
             <DatePickerDeprecated
@@ -199,7 +218,21 @@ function ServiceNeedEditorRow({
             />
           </FixedSpaceRow>
         </Td>
-      </Tr>
+      </StyledTr>
+
+      {retroactive && (
+        <StyledTr hideTopBorder>
+          <Td colSpan={2}>
+            <RetroactiveConfirmation
+              confirmed={confirmedRetroactive}
+              setConfirmed={setConfirmedRetroactive}
+            />
+          </Td>
+          <Td />
+          <Td />
+          <Td />
+        </StyledTr>
+      )}
 
       {overlapWarning && (
         <InfoModal
@@ -226,6 +259,97 @@ interface FormData {
   endDate: LocalDate | undefined
   optionId: UUID | undefined
   shiftCare: ShiftCareType
+}
+
+const RetroactiveConfirmation = React.memo(function RetroactiveConfirmation({
+  confirmed,
+  setConfirmed
+}: {
+  confirmed: boolean
+  setConfirmed: (confirmed: boolean) => void
+}) {
+  return (
+    <AlertBox
+      noMargin
+      wide
+      title="Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin."
+      message={
+        <Checkbox
+          label="Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*"
+          checked={confirmed}
+          onChange={setConfirmed}
+          data-qa="confirm-retroactive"
+        />
+      }
+    />
+  )
+})
+
+const StyledTr = styled(Tr)<{
+  hideTopBorder?: boolean
+  hideBottomBorder?: boolean
+}>`
+  td {
+    ${(p) => (p.hideTopBorder ? 'border-top: none;' : '')}
+    ${(p) => (p.hideBottomBorder ? 'border-bottom: none;' : '')}
+  }
+`
+
+const isChangeRetroactive = (
+  newRange: DateRange | null,
+  prevRange: DateRange | null,
+  contentChanged: boolean
+): boolean => {
+  if (!newRange) {
+    // form is not yet valid anyway
+    return false
+  }
+  const processedEnd = LocalDate.todayInHelsinkiTz().withDate(1).subDays(1)
+
+  const newRangeAffectsHistory = newRange.start.isEqualOrBefore(processedEnd)
+  if (prevRange === null) {
+    // creating new, not editing
+    return newRangeAffectsHistory
+  }
+
+  const prevRangeAffectsHistory = prevRange.start.isEqualOrBefore(processedEnd)
+  const eitherRangeAffectHistory =
+    newRangeAffectsHistory || prevRangeAffectsHistory
+
+  if (contentChanged && eitherRangeAffectHistory) {
+    return true
+  }
+
+  if (!newRange.start.isEqual(prevRange.start) && eitherRangeAffectHistory) {
+    return true
+  }
+
+  if (newRange.end === null) {
+    if (prevRange.end === null) {
+      // neither is finite
+      return newRange.start !== prevRange.start && eitherRangeAffectHistory
+    } else {
+      // end date has now been removed
+      return prevRange.end.isEqualOrBefore(processedEnd)
+    }
+  } else {
+    if (prevRange.end === null) {
+      // end date has now been set
+      return newRange.end.isEqualOrBefore(processedEnd)
+    } else {
+      // both are finite
+      if (newRange.start !== prevRange.start) {
+        return eitherRangeAffectHistory
+      } else if (newRange.end !== prevRange.end) {
+        return (
+          newRange.end.isEqualOrBefore(processedEnd) ||
+          prevRange.end.isEqualOrBefore(processedEnd)
+        )
+      } else {
+        return false
+      }
+    }
+  }
 }
 
 export default ServiceNeedEditorRow
