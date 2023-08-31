@@ -34,6 +34,18 @@ class ScheduledJobRunner(
     dataSource: DataSource,
 ) : AutoCloseable {
     init {
+        val jobsByName =
+            schedules.asSequence().flatMap { it.jobs }.map { it.job }.groupBy { it.name }.values
+        val notUnique = jobsByName.filterNot { it.count() == 1 }
+        require(notUnique.isEmpty()) {
+            val jobNames =
+                notUnique.joinToString { jobs ->
+                    jobs.joinToString(prefix = "[", postfix = "]") {
+                        "${it.javaClass.name}.${it.name}"
+                    }
+                }
+            "Scheduled job name conflict: $jobNames"
+        }
         asyncJobRunner.registerHandler(::runJob)
     }
 
