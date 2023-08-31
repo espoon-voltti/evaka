@@ -61,13 +61,11 @@ export default function TlEvent<T extends WithRange>({
               </SummaryLabel>
             </HeaderInner>
             {renderer.Tooltip && (
-              <TtPositioner>
-                <FixedTooltip
-                  tooltip={<renderer.Tooltip elem={event} />}
-                  width="large"
-                  position="bottom"
-                />
-              </TtPositioner>
+              <FixedTooltip
+                tooltip={<renderer.Tooltip elem={event} />}
+                width="large"
+                position="bottom"
+              />
             )}
           </StickyHeaderPositioner>
         </Header>
@@ -99,23 +97,28 @@ const TlEventContainer = styled.div<{
   border: 1px solid black;
 `
 
-const Header = styled.div`
-  width: 100%;
-  height: 30px;
-
-  &:not(:hover) {
-    .tooltip {
-      display: none;
-    }
-  }
-`
-
 const StickyHeaderPositioner = styled.div`
   position: sticky;
   left: 0;
   display: inline-block;
   max-width: 100%;
   height: 100%;
+`
+
+const Header = styled.div`
+  width: 100%;
+  height: 30px;
+
+  &:hover {
+    ${StickyHeaderPositioner} {
+      z-index: 1;
+    }
+  }
+  &:not(:hover) {
+    .tooltip {
+      display: none;
+    }
+  }
 `
 
 const HeaderInner = styled(FixedSpaceRow)`
@@ -136,13 +139,6 @@ const SummaryLabel = styled.div`
 
 const ExpandedContent = styled.div`
   width: 100%;
-`
-
-export const TtPositioner = styled.div`
-  position: fixed;
-  right: 15%;
-  top: 104px;
-  width: 350px;
 `
 
 const FixedTooltip = styled(TooltipWithoutAnchor)`
