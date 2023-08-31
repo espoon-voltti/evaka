@@ -2,13 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faListTimeline } from 'Icons'
 import React, { useContext, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -208,9 +211,10 @@ const layouts: Layouts<typeof components> = {
 
 const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
 
   const { roles } = useContext(UserContext)
-  const { person } = useContext(PersonContext)
+  const { person, permittedActions } = useContext(PersonContext)
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
@@ -222,24 +226,37 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
             <Title size={1} noMargin>
               {i18n.titles.personProfile}
             </Title>
-            <InfoLabelContainer>
-              {person.isSuccess && person.value.dateOfDeath && (
-                <CircularLabel
-                  text={`${i18n.common.form.dateOfDeath}: ${
-                    person.value.dateOfDeath?.format() ?? ''
-                  }`}
-                  background="black"
-                  color="white"
-                  data-qa="deceased-label"
+            <FixedSpaceColumn>
+              {person.isSuccess &&
+                (person.value.dateOfDeath ||
+                  person.value.restrictedDetailsEnabled) && (
+                  <InfoLabelContainer>
+                    {person.value.dateOfDeath && (
+                      <CircularLabel
+                        text={`${i18n.common.form.dateOfDeath}: ${
+                          person.value.dateOfDeath?.format() ?? ''
+                        }`}
+                        background="black"
+                        color="white"
+                        data-qa="deceased-label"
+                      />
+                    )}
+                    {person.value.restrictedDetailsEnabled && (
+                      <WarningLabel
+                        text={i18n.personProfile.restrictedDetails}
+                        data-qa="restriction-details-enabled-label"
+                      />
+                    )}
+                  </InfoLabelContainer>
+                )}
+              {permittedActions.has('READ_TIMELINE') && (
+                <InlineButton
+                  text={i18n.personProfile.timeline}
+                  onClick={() => navigate(`/profile/${id}/timeline`)}
+                  icon={faListTimeline}
                 />
               )}
-              {person.isSuccess && person.value.restrictedDetailsEnabled && (
-                <WarningLabel
-                  text={i18n.personProfile.restrictedDetails}
-                  data-qa="restriction-details-enabled-label"
-                />
-              )}
-            </InfoLabelContainer>
+            </FixedSpaceColumn>
           </HeaderRow>
         </ContentArea>
         <Gap size="s" />

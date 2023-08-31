@@ -93,6 +93,7 @@ import ReportStartingPlacements from './components/reports/StartingPlacements'
 import VardaErrors from './components/reports/VardaErrors'
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
 import VoucherServiceProviders from './components/reports/VoucherServiceProviders'
+import TimelinePage from './components/timeline/TimelinePage'
 import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
 import VasuEditPage from './components/vasu/VasuEditPage'
@@ -241,6 +242,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="personProfile">
               <PersonProfile />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/profile/:personId/timeline',
+          element: (
+            <EmployeeRoute title="personTimeline">
+              <TimelinePage />
             </EmployeeRoute>
           )
         },

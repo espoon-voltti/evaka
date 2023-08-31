@@ -109,9 +109,11 @@ export default class FiniteDateRange {
     return this.leftAdjacentTo(other) || this.rightAdjacentTo(other)
   }
 
-  intersection(other: FiniteDateRange): FiniteDateRange | undefined {
+  intersection(
+    other: FiniteDateRange | DateRange
+  ): FiniteDateRange | undefined {
     const start = maxOf(this.start, other.start)
-    const end = minOf(this.end, other.end)
+    const end = other.end ? minOf(this.end, other.end) : this.end
     if (start.isAfter(end)) return undefined
     return new FiniteDateRange(start, end)
   }

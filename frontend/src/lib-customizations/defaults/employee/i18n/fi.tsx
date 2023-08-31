@@ -44,6 +44,7 @@ export const fi = {
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
     personProfile: 'Aikuisen tiedot',
+    personTimeline: 'Asiakkaan aikajana',
     personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
@@ -1623,6 +1624,7 @@ export const fi = {
   },
   personProfile: {
     restrictedDetails: 'Turvakielto',
+    timeline: 'Aikajana',
     personDetails: 'Henkilö- ja yhteystiedot',
     addSsn: 'Aseta hetu',
     noSsn: 'Hetuton',
@@ -1915,6 +1917,13 @@ export const fi = {
       price: 'Summa',
       status: 'Status'
     }
+  },
+  timeline: {
+    title: 'Perheen aikajana',
+    feeDecision: 'Maksupäätös',
+    valueDecision: 'Arvopäätös',
+    partner: 'Puoliso',
+    child: 'Lapsi'
   },
   incomeStatement: {
     startDate: 'Voimassa alkaen',

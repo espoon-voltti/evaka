@@ -23,8 +23,13 @@ type FullDate = DateWithLeadingZeros | DateWithoutLeadingZeros
 
 type DateWithoutYear = 'dd.MM.'
 type DateWithoutYearShort = 'd.M.'
+type MonthAndYear = 'MM/yyyy'
 
-export type DateFormat = FullDate | DateWithoutYear | DateWithoutYearShort
+export type DateFormat =
+  | FullDate
+  | DateWithoutYear
+  | DateWithoutYearShort
+  | MonthAndYear
 
 type Weekday = 'EEEEEE' // ma, ti.. må, ti.. Mo, Tu
 export type DateFormatWithWeekday = Weekday | `${Weekday} ${DateFormat}`

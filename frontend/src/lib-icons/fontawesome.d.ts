@@ -138,4 +138,7 @@ declare module 'Icons' {
   const faCalendarTimes: IconDefinition
   const faUpRightAndDownLeftFromCenter: IconDefinition
   const faDownLeftAndUpRightToCenter: IconDefinition
+  const faMagnifyingGlassPlus: IconDefinition
+  const faMagnifyingGlassMinus: IconDefinition
+  const faListTimeline: IconDefinition
 }

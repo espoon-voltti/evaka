@@ -131,6 +131,9 @@ export { faStickyNote as farStickyNote } from '@fortawesome/pro-regular-svg-icon
 export { faUsers as farUsers } from '@fortawesome/pro-regular-svg-icons/faUsers'
 export { faXmark as farXmark } from '@fortawesome/pro-regular-svg-icons/faXmark'
 export { faCommentAltLines as fasCommentAltLines } from '@fortawesome/pro-solid-svg-icons/faCommentAltLines'
+export { faMagnifyingGlassPlus } from '@fortawesome/pro-light-svg-icons/faMagnifyingGlassPlus'
+export { faMagnifyingGlassMinus } from '@fortawesome/pro-light-svg-icons/faMagnifyingGlassMinus'
+export { faListTimeline } from '@fortawesome/pro-light-svg-icons/faListTimeline'
 
 import type * as ProIconsSet from './pro-icons'
 import { typeAssert } from './utils'
