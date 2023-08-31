@@ -62,6 +62,11 @@ object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
     ): InvoiceGenerationLogic = InvoiceGenerationLogic.Default
 }
 
+private val PRESCHOOL_CLUB_HALF_FEE_MONTHS = setOf(Month.AUGUST)
+private val calculateHalfFee: (Int) -> Int = { fee ->
+    BigDecimal(fee).divide(BigDecimal(2), 0, RoundingMode.HALF_UP).toInt()
+}
+
 @Component
 class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
@@ -146,6 +151,10 @@ class DraftInvoiceGenerator(
         val childrenPartialMonth = getPartialMonthChildren(placements, decisions, operationalDays)
         val childrenFullMonthAbsences =
             getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
+        val isHalfFeeMonth: (FeeDecisionChild) -> Boolean = { part ->
+            part.placement.type == PlacementType.PRESCHOOL_CLUB &&
+                PRESCHOOL_CLUB_HALF_FEE_MONTHS.contains(invoicePeriod.start.month)
+        }
 
         val getInvoiceMaxFee: (ChildId, Boolean) -> Int = { childId, capMaxFeeAtDefault ->
             val allServiceNeedOptions = tx.getServiceNeedOptions()
@@ -161,7 +170,12 @@ class DraftInvoiceGenerator(
                 }
 
             val getDecisionPartMaxFee: (FeeDecisionChild) -> Int = { part ->
-                val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
+                val baseFee =
+                    when {
+                        isHalfFeeMonth(part) -> calculateHalfFee(part.baseFee)
+                        else -> part.baseFee
+                    }
+                val maxFeeBeforeFeeAlterations = calculateMaxFee(baseFee, part.siblingDiscount)
                 part.feeAlterations.fold(maxFeeBeforeFeeAlterations) { currentFee, feeAlteration ->
                     currentFee +
                         feeAlterationEffect(
@@ -278,11 +292,31 @@ class DraftInvoiceGenerator(
                                                     part.placement.unitId,
                                                     part.placement.type
                                                 ),
-                                                part.fee,
+                                                when {
+                                                    isHalfFeeMonth(part) ->
+                                                        calculateHalfFee(part.fee)
+                                                    else -> part.fee
+                                                },
                                                 part.feeAlterations.map { feeAlteration ->
                                                     Pair(feeAlteration.type, feeAlteration.effect)
                                                 },
-                                                part.finalFee,
+                                                when {
+                                                    isHalfFeeMonth(part) -> {
+                                                        val fee = calculateHalfFee(part.fee)
+                                                        part.feeAlterations.fold(fee) {
+                                                            currentFee,
+                                                            feeAlteration ->
+                                                            currentFee +
+                                                                feeAlterationEffect(
+                                                                    currentFee,
+                                                                    feeAlteration.type,
+                                                                    feeAlteration.amount,
+                                                                    feeAlteration.isAbsolute
+                                                                )
+                                                        }
+                                                    }
+                                                    else -> part.finalFee
+                                                },
                                                 part.serviceNeed.contractDaysPerMonth
                                             )
                                     }
@@ -661,7 +695,10 @@ class DraftInvoiceGenerator(
             attendanceDates.take(dailyFeeDivisor).filter { period.includes(it) }
         if (periodAttendanceDates.isEmpty()) return listOf()
 
-        val isFullMonth = periodAttendanceDates.size == numRelevantOperationalDays
+        val isFullMonth =
+            periodAttendanceDates.size == numRelevantOperationalDays ||
+                placement.type ==
+                    PlacementType.PRESCHOOL_CLUB // always full month regardless attendance
 
         val product = productProvider.mapToProduct(placement.type)
         val (amount, unitPrice) =
