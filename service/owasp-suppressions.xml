@@ -30,4 +30,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <notes>Misidentification</notes>
         <cve>CVE-2020-21469</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Hostname verification is not enabled by default in Netty 4.x. AWS SDK v2 uses Netty 4.x, but explicitly enables hostname verification.
+       ]]></notes>
+       <cve>CVE-2023-4586</cve>
+    </suppress>
 </suppressions>
