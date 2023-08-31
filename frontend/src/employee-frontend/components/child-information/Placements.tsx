@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { Fragment, useContext, useState } from 'react'
 
 import { combine } from 'lib-common/api'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -20,7 +20,6 @@ import PlacementRow from '../../components/child-information/placements/Placemen
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { DateRange, rangesOverlap } from '../../utils/date'
 import { RequireRole } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
@@ -42,19 +41,6 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
-
-  const checkOverlaps = (
-    range: DateRange,
-    placement: DaycarePlacementWithDetails
-  ): boolean =>
-    placements
-      .map(
-        (ps) =>
-          ps.placements
-            .filter((p) => p.id !== placement.id)
-            .filter((p) => rangesOverlap(range, p)).length > 0
-      )
-      .getOrElse(false)
 
   return (
     <div>
@@ -105,7 +91,11 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
                         void loadBackupCares()
                         reloadPermittedActions()
                       }}
-                      checkOverlaps={checkOverlaps}
+                      otherPlacementRanges={placements.placements
+                        .filter((p2) => p2.id !== p.id)
+                        .map(
+                          (p2) => new FiniteDateRange(p2.startDate, p2.endDate)
+                        )}
                       serviceNeedOptions={serviceNeedOptions}
                     />
                     {i < placements.placements.length - 1 && (

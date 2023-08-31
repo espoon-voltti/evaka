@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { ChildContext } from 'employee-frontend/state'
 import { Failure } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -19,7 +20,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
 import {
@@ -34,11 +35,13 @@ import ToolbarAccordion, {
 import { useTranslation } from '../../../state/i18n'
 import { UIContext, UiState } from '../../../state/ui'
 import {
-  DateRange,
   getStatusLabelByDateRange,
   isActiveDateRange
 } from '../../../utils/date'
 import { InputWarning } from '../../common/InputWarning'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../common/RetroactiveConfirmation'
 
 import ServiceNeeds from './ServiceNeeds'
 
@@ -47,16 +50,21 @@ interface Props {
   permittedActions: Action.Placement[]
   permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
   onRefreshNeeded: () => void
-  checkOverlaps: (
-    range: DateRange,
-    placement: DaycarePlacementWithDetails
-  ) => boolean | undefined
+  otherPlacementRanges: FiniteDateRange[]
   serviceNeedOptions: ServiceNeedOption[]
 }
 
 const DataRow = styled.div`
   display: flex;
   min-height: 2rem;
+`
+
+const WarningRow = styled.div`
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  margin-top: ${defaultMargins.s};
+  margin-bottom: ${defaultMargins.m};
 `
 
 const DataLabel = styled.div`
@@ -95,7 +103,7 @@ export default React.memo(function PlacementRow({
   permittedActions,
   permittedServiceNeedActions,
   onRefreshNeeded,
-  checkOverlaps,
+  otherPlacementRanges,
   serviceNeedOptions
 }: Props) {
   const { i18n } = useTranslation()
@@ -117,6 +125,16 @@ export default React.memo(function PlacementRow({
   const [confirmingDelete, setConfirmingDelete] = useState<boolean>(false)
   const [startDateWarning, setStartDateWarning] = useState(false)
   const [endDateWarning, setEndDateWarning] = useState(false)
+  const retroactive = useMemo(
+    () =>
+      isChangeRetroactive(
+        new DateRange(form.startDate, form.endDate),
+        new DateRange(placement.startDate, placement.endDate),
+        false // only range can be edited
+      ),
+    [form, placement]
+  )
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   function startEdit() {
     setToggled(true)
@@ -124,6 +142,7 @@ export default React.memo(function PlacementRow({
     setEditing(true)
     setStartDateWarning(false)
     setEndDateWarning(false)
+    setConfirmedRetroactive(false)
   }
 
   const onSuccess = useCallback(() => {
@@ -191,7 +210,11 @@ export default React.memo(function PlacementRow({
   )
 
   function calculateOverlapWarnings(startDate: LocalDate, endDate: LocalDate) {
-    if (checkOverlaps({ startDate, endDate }, placement)) {
+    if (
+      otherPlacementRanges.some((range) =>
+        range.overlaps(new FiniteDateRange(startDate, endDate))
+      )
+    ) {
       if (startDate === placement.startDate) {
         setEndDateWarning(true)
       } else {
@@ -350,6 +373,14 @@ export default React.memo(function PlacementRow({
             )}
           </DataValue>
         </DataRow>
+        {editing && retroactive && (
+          <WarningRow>
+            <RetroactiveConfirmation
+              confirmed={confirmedRetroactive}
+              setConfirmed={setConfirmedRetroactive}
+            />
+          </WarningRow>
+        )}
         {placement.terminationRequestedDate && (
           <DataRow>
             <DataLabel>
@@ -429,6 +460,7 @@ export default React.memo(function PlacementRow({
                 onSuccess={onSuccess}
                 onFailure={onFailure}
                 text={i18n.common.save}
+                disabled={retroactive && !confirmedRetroactive}
               />
             </FixedSpaceRow>
           </ActionRow>

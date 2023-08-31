@@ -24,7 +24,6 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { featureFlags } from 'lib-customizations/employee'
 import { faExclamation } from 'lib-icons'
@@ -35,6 +34,9 @@ import {
 } from '../../../../api/child/service-needs'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../../common/RetroactiveConfirmation'
 
 interface ServiceNeedCreateRowProps {
   placement: DaycarePlacementWithDetails
@@ -261,30 +263,6 @@ interface FormData {
   shiftCare: ShiftCareType
 }
 
-const RetroactiveConfirmation = React.memo(function RetroactiveConfirmation({
-  confirmed,
-  setConfirmed
-}: {
-  confirmed: boolean
-  setConfirmed: (confirmed: boolean) => void
-}) {
-  return (
-    <AlertBox
-      noMargin
-      wide
-      title="Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin."
-      message={
-        <Checkbox
-          label="Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*"
-          checked={confirmed}
-          onChange={setConfirmed}
-          data-qa="confirm-retroactive"
-        />
-      }
-    />
-  )
-})
-
 const StyledTr = styled(Tr)<{
   hideTopBorder?: boolean
   hideBottomBorder?: boolean
@@ -294,62 +272,5 @@ const StyledTr = styled(Tr)<{
     ${(p) => (p.hideBottomBorder ? 'border-bottom: none;' : '')}
   }
 `
-
-const isChangeRetroactive = (
-  newRange: DateRange | null,
-  prevRange: DateRange | null,
-  contentChanged: boolean
-): boolean => {
-  if (!newRange) {
-    // form is not yet valid anyway
-    return false
-  }
-  const processedEnd = LocalDate.todayInHelsinkiTz().withDate(1).subDays(1)
-
-  const newRangeAffectsHistory = newRange.start.isEqualOrBefore(processedEnd)
-  if (prevRange === null) {
-    // creating new, not editing
-    return newRangeAffectsHistory
-  }
-
-  const prevRangeAffectsHistory = prevRange.start.isEqualOrBefore(processedEnd)
-  const eitherRangeAffectHistory =
-    newRangeAffectsHistory || prevRangeAffectsHistory
-
-  if (contentChanged && eitherRangeAffectHistory) {
-    return true
-  }
-
-  if (!newRange.start.isEqual(prevRange.start) && eitherRangeAffectHistory) {
-    return true
-  }
-
-  if (newRange.end === null) {
-    if (prevRange.end === null) {
-      // neither is finite
-      return newRange.start !== prevRange.start && eitherRangeAffectHistory
-    } else {
-      // end date has now been removed
-      return prevRange.end.isEqualOrBefore(processedEnd)
-    }
-  } else {
-    if (prevRange.end === null) {
-      // end date has now been set
-      return newRange.end.isEqualOrBefore(processedEnd)
-    } else {
-      // both are finite
-      if (newRange.start !== prevRange.start) {
-        return eitherRangeAffectHistory
-      } else if (newRange.end !== prevRange.end) {
-        return (
-          newRange.end.isEqualOrBefore(processedEnd) ||
-          prevRange.end.isEqualOrBefore(processedEnd)
-        )
-      } else {
-        return false
-      }
-    }
-  }
-}
 
 export default ServiceNeedEditorRow
