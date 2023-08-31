@@ -16,12 +16,15 @@ import org.junit.jupiter.api.assertThrows
 class FiniteDateRangeTest {
     @Test
     fun `start and end are inclusive, so a range containing just one date can be created`() {
-        assertEquals(1, testRange(1, 1).dates().count())
+        val date = testDate(1)
+        assertEquals(listOf(date), testRange(1, 1).dates().toList())
+        assertEquals(listOf(date), FiniteDateRange.tryCreate(date, date)?.dates()?.toList())
     }
 
     @Test
     fun `start cannot be after end`() {
         assertThrows<IllegalArgumentException> { testRange(2, 1) }
+        assertNull(FiniteDateRange.tryCreate(testDate(2), testDate(1)))
     }
 
     @Test

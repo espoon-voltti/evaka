@@ -64,21 +64,18 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
     override fun rightAdjacentTo(other: FiniteDateRange): Boolean =
         other.end.plusDays(1) == this.start
 
-    override fun intersection(other: FiniteDateRange): FiniteDateRange? {
-        val start = maxOf(this.start, other.start)
-        val end = minOf(this.end, other.end)
-        return if (start <= end) FiniteDateRange(start, end) else null
-    }
+    override fun intersection(other: FiniteDateRange): FiniteDateRange? =
+        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
 
     fun intersection(other: DateRange): FiniteDateRange? {
         return other.intersection(this)
     }
 
-    override fun gap(other: FiniteDateRange): FiniteDateRange? {
-        val start = minOf(this.end, other.end).plusDays(1)
-        val end = maxOf(this.start, other.start).minusDays(1)
-        return if (start <= end) FiniteDateRange(start, end) else null
-    }
+    override fun gap(other: FiniteDateRange): FiniteDateRange? =
+        tryCreate(
+            minOf(this.end, other.end).plusDays(1),
+            maxOf(this.start, other.start).minusDays(1)
+        )
 
     override fun subtract(other: FiniteDateRange): List<FiniteDateRange> = complement(other)
     fun complement(other: FiniteDateRange): List<FiniteDateRange> {
@@ -117,6 +114,8 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
 
     companion object {
+        fun tryCreate(start: LocalDate, end: LocalDate): FiniteDateRange? =
+            if (start <= end) FiniteDateRange(start, end) else null
         fun ofMonth(year: Int, month: Month): FiniteDateRange =
             ofMonth(LocalDate.of(year, month, 1))
         fun ofMonth(date: LocalDate): FiniteDateRange {
