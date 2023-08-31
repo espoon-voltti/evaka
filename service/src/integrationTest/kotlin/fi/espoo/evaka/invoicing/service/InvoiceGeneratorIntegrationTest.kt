@@ -5749,6 +5749,31 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `preschool club placement in august full month with fee alterations surplus days are half price and fee alterations are as is`() {
+        initByPeriodAndPlacementType(
+            DateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 3)),
+            PlacementType.PRESCHOOL_CLUB,
+            snDaycareContractDays10,
+            listOf(FeeAlterationWithEffect(FeeAlteration.Type.DISCOUNT, 50, true, -5000))
+        )
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2023, Month.AUGUST))
+        }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
+            .containsExactlyInAnyOrder(
+                Tuple(1, 7250, 7250, ProductKey("PRESCHOOL_CLUB")),
+                Tuple(1, -5000, -5000, ProductKey("PRESCHOOL_CLUB_DISCOUNT")),
+                Tuple(13, 225, 2925, ProductKey("SURPLUS_DAY"))
+            )
+    }
+
+    @Test
     fun `preschool club placement in september full month is full price`() {
         initByPeriodAndPlacementType(
             DateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
@@ -5906,6 +5931,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         period: DateRange,
         placementType: PlacementType,
         serviceNeedOption: ServiceNeedOption? = null,
+        feeAlterations: List<FeeAlterationWithEffect> = listOf(),
         children: List<DevPerson> = listOf(testChild_1),
         partner: PersonId? = null
     ) {
@@ -5927,7 +5953,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = placementType,
                         serviceNeed = serviceNeed,
                         baseFee = 28900,
-                        fee = roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900)).toInt()
+                        fee = roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900)).toInt(),
+                        feeAlterations = feeAlterations
                     )
                 },
                 partnerId = partner
