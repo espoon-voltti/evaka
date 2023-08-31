@@ -18,7 +18,8 @@ package fi.espoo.evaka.shared.data
 abstract class RangeBasedSet<
     Point : Comparable<Point>,
     Range : BoundedRange<Point, Range>,
-    This : RangeBasedSet<Point, Range, This>>(protected val ranges: List<Range>) {
+    This : RangeBasedSet<Point, Range, This>>(protected val ranges: List<Range>) :
+    Iterable<Range> by ranges {
     fun ranges(): Sequence<Range> = this.ranges.asSequence()
     fun spanningRange(): Range? =
         this.ranges.firstOrNull()?.let { first ->

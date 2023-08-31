@@ -18,10 +18,6 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
     override fun toString(): String =
         ranges.joinToString(separator = ",", prefix = "{", postfix = "}")
 
-    fun addAll(other: DateSet) = addAll(other.ranges())
-    fun removeAll(other: DateSet) = removeAll(other.ranges())
-    fun intersection(other: DateSet) = intersection(other.ranges())
-
     companion object {
         private val EMPTY = DateSet(emptyList())
         fun empty(): DateSet = EMPTY
