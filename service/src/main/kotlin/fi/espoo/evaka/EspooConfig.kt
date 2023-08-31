@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.espoo.EspooScheduledJob
+import fi.espoo.evaka.espoo.EspooScheduledJobs
 import fi.espoo.evaka.espoobi.EspooBiPoc
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
@@ -35,8 +37,6 @@ import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Unauthorized
-import fi.espoo.evaka.shared.job.DefaultJobSchedule
-import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -134,7 +134,13 @@ class EspooConfig {
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean fun jobSchedule(env: ScheduledJobsEnv): JobSchedule = DefaultJobSchedule(env)
+    @Bean
+    fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            EspooScheduledJob.values().associateWith { it.defaultSettings },
+            "espoo.job",
+            env
+        )
 
     @Bean
     @Profile("local")
@@ -239,6 +245,12 @@ class EspooConfig {
         }
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+
+    @Bean
+    fun espooScheduledJobs(
+        patuReportingService: PatuReportingService,
+        env: ScheduledJobsEnv<EspooScheduledJob>
+    ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, env)
 }
 
 data class EspooEnv(

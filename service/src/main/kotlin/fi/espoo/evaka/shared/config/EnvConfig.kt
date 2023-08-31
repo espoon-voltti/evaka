@@ -19,6 +19,7 @@ import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.VtjXroadEnv
 import fi.espoo.evaka.WebPushEnv
+import fi.espoo.evaka.shared.job.ScheduledJob
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -51,7 +52,12 @@ class EnvConfig {
     @Bean fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
 
     @Bean
-    fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv = ScheduledJobsEnv.fromEnvironment(env)
+    fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv<ScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            ScheduledJob.values().associateWith { it.defaultSettings },
+            "evaka.job",
+            env
+        )
 
     @Bean fun vtjEnv(evakaEnv: EvakaEnv, env: Environment): VtjEnv = VtjEnv.fromEnvironment(env)
 

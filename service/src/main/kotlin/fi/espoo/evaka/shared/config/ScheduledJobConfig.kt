@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
 
 @Configuration
-@Profile("production")
 class ScheduledJobConfig {
     @Bean
     fun scheduledJobRunner(
@@ -26,10 +25,11 @@ class ScheduledJobConfig {
         tracer: Tracer,
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
         dataSource: DataSource,
-        schedule: JobSchedule
-    ) = ScheduledJobRunner(jdbi, tracer, asyncJobRunner, dataSource, schedule)
+        schedules: List<JobSchedule>
+    ) = ScheduledJobRunner(jdbi, tracer, asyncJobRunner, schedules, dataSource)
 
     @Bean
+    @Profile("production")
     fun scheduledJobRunnerStart(runner: ScheduledJobRunner) =
         object {
             @EventListener

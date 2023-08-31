@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.util.UUID
@@ -145,7 +144,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class RunScheduledJob(val job: ScheduledJob) : AsyncJob {
+    data class RunScheduledJob(val job: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

@@ -10,7 +10,9 @@ import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.withSpan
 import fi.espoo.voltti.logging.loggers.info
 import io.opentracing.Tracer
 import java.time.Duration
@@ -22,38 +24,53 @@ private const val SCHEDULER_THREADS = 1
 private const val ASYNC_JOB_RETRY_COUNT = 12
 private val POLLING_INTERVAL = Duration.ofMinutes(1)
 
-private val logger = KotlinLogging.logger {}
-
 class ScheduledJobRunner(
     private val jdbi: Jdbi,
     private val tracer: Tracer,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val schedules: List<JobSchedule>,
     dataSource: DataSource,
-    schedule: JobSchedule
 ) : AutoCloseable {
+    private val logger = KotlinLogging.logger {}
+
+    init {
+        val jobsByName =
+            schedules.asSequence().flatMap { it.jobs }.map { it.job }.groupBy { it.name }.values
+        val notUnique = jobsByName.filterNot { it.count() == 1 }
+        require(notUnique.isEmpty()) {
+            val jobNames =
+                notUnique.joinToString { jobs ->
+                    jobs.joinToString(prefix = "[", postfix = "]") {
+                        "${it.javaClass.name}.${it.name}"
+                    }
+                }
+            "Scheduled job name conflict: $jobNames"
+        }
+        asyncJobRunner.registerHandler(::runJob)
+    }
+
     val scheduler: Scheduler =
         Scheduler.create(dataSource)
             .startTasks(
-                ScheduledJob.values()
-                    .mapNotNull { job ->
-                        val settings = schedule.getSettingsForJob(job)
-                        if (settings?.enabled == true) {
-                            job to settings
-                        } else {
-                            null
+                schedules
+                    .asSequence()
+                    .flatMap { it.jobs }
+                    .partition { it.settings.enabled }
+                    .let { (enabled, disabled) ->
+                        logger.info {
+                            "Ignoring disabled jobs: ${disabled.joinToString { it.job.name }}"
                         }
-                    }
-                    .map { (job, settings) ->
-                        val logMeta = mapOf("jobName" to job.name)
-                        logger.info(logMeta) { "Scheduling job ${job.name}: $schedule" }
-                        Tasks.recurring(job.name, settings.schedule).execute { _, _ ->
-                            Database(jdbi, tracer).connect {
-                                this.planAsyncJob(
-                                    it,
-                                    job,
-                                    settings.retryCount ?: ASYNC_JOB_RETRY_COUNT
-                                )
+                        enabled.map { definition ->
+                            val logMeta = mapOf("jobName" to definition.job.name)
+                            logger.info(logMeta) {
+                                "Scheduling job ${definition.job.name}: ${definition.settings.schedule}"
                             }
+                            Tasks.recurring(definition.job.name, definition.settings.schedule)
+                                .execute { _, _ ->
+                                    Database(jdbi, tracer).connect {
+                                        this.planAsyncJob(it, definition)
+                                    }
+                                }
                         }
                     }
             )
@@ -63,20 +80,32 @@ class ScheduledJobRunner(
             .deleteUnresolvedAfter(Duration.ofHours(1))
             .build()
 
-    private fun planAsyncJob(db: Database.Connection, job: ScheduledJob, retryCount: Int) {
+    private fun planAsyncJob(db: Database.Connection, definition: ScheduledJobDefinition) {
+        val (job, settings) = definition
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
-                listOf(AsyncJob.RunScheduledJob(job)),
-                retryCount = retryCount,
+                listOf(AsyncJob.RunScheduledJob(job.name)),
+                retryCount = settings.retryCount ?: ASYNC_JOB_RETRY_COUNT,
                 runAt = HelsinkiDateTime.now()
             )
         }
     }
 
-    fun getScheduledExecutionsForTask(job: ScheduledJob): List<ScheduledExecution<Unit>> =
+    private fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.RunScheduledJob) {
+        val definition =
+            schedules.firstNotNullOfOrNull { schedule ->
+                schedule.jobs.find { it.job.name == msg.job }
+            }
+                ?: error("Can't run unknown job ${msg.job}")
+        val logMeta = mapOf("jobName" to msg.job)
+        logger.info(logMeta) { "Running scheduled job ${msg.job}" }
+        tracer.withSpan("scheduledjob ${msg.job}") { definition.jobFn(db, clock) }
+    }
+
+    fun getScheduledExecutionsForTask(job: Enum<*>): List<ScheduledExecution<Unit>> =
         scheduler.getScheduledExecutionsForTask(job.name, Unit::class.java)
 
     override fun close() = scheduler.stop()

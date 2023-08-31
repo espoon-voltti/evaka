@@ -12,57 +12,60 @@ import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
+    enum class TestScheduledJob {
+        TestJob,
+    }
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val testTime = LocalTime.of(1, 0)
     private val testSchedule =
         object : JobSchedule {
-            override fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings? =
-                if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
-                    ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(testTime))
-                } else {
-                    null
-                }
+            override val jobs: List<ScheduledJobDefinition> =
+                listOf(
+                    ScheduledJobDefinition(
+                        TestScheduledJob.TestJob,
+                        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(testTime))
+                    ) { _, _ ->
+                        val previous = jobExecuted.getAndSet(true)
+                        assertFalse(previous)
+                    }
+                )
         }
+    private val jobExecuted = AtomicBoolean(false)
 
     @BeforeEach
     fun beforeEach() {
         asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
+        jobExecuted.set(false)
     }
 
     @Test
     fun `a job specified by DailySchedule is scheduled and executed correctly`() {
-        val executedJob = AtomicReference<ScheduledJob?>(null)
-        asyncJobRunner.registerHandler { _, _, msg: AsyncJob.RunScheduledJob ->
-            val previous = executedJob.getAndSet(msg.job)
-            assertNull(previous)
-        }
-        ScheduledJobRunner(jdbi, noopTracer, asyncJobRunner, dataSource, testSchedule).use { runner
-            ->
-            runner.scheduler.start()
-            val exec =
-                runner
-                    .getScheduledExecutionsForTask(ScheduledJob.EndOfDayAttendanceUpkeep)
-                    .singleOrNull()!!
-            assertEquals(exec.executionTime.atZone(europeHelsinki).toLocalTime(), testTime)
+        ScheduledJobRunner(jdbi, noopTracer, asyncJobRunner, listOf(testSchedule), dataSource)
+            .use { runner ->
+                runner.scheduler.start()
+                val exec =
+                    runner.getScheduledExecutionsForTask(TestScheduledJob.TestJob).singleOrNull()!!
+                assertEquals(exec.executionTime.atZone(europeHelsinki).toLocalTime(), testTime)
 
-            runner.scheduler.reschedule(exec.taskInstance, Instant.EPOCH)
-            runner.scheduler.triggerCheckForDueExecutions()
+                runner.scheduler.reschedule(exec.taskInstance, Instant.EPOCH)
+                runner.scheduler.triggerCheckForDueExecutions()
 
-            val start = Instant.now()
-            while (asyncJobRunner.runPendingJobsSync(RealEvakaClock()) == 0) {
-                Thread.sleep(100)
+                val start = Instant.now()
+                while (asyncJobRunner.runPendingJobsSync(RealEvakaClock()) == 0) {
+                    Thread.sleep(100)
 
-                assert(Duration.between(start, Instant.now()) < Duration.ofSeconds(10))
+                    assert(Duration.between(start, Instant.now()) < Duration.ofSeconds(10))
+                }
             }
-        }
 
-        assertEquals(executedJob.get(), ScheduledJob.EndOfDayAttendanceUpkeep)
+        assertTrue(jobExecuted.get())
     }
 }
