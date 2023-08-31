@@ -31,10 +31,12 @@ abstract class RangeBasedSet<
     fun isEmpty(): Boolean = this.ranges.isEmpty()
 
     fun add(range: Range): This = add(this.ranges, range).toThis()
+    fun addAll(vararg ranges: Range): This = ranges.fold(this.ranges, ::add).toThis()
     fun addAll(ranges: Iterable<Range>): This = ranges.fold(this.ranges, ::add).toThis()
     fun addAll(ranges: Sequence<Range>): This = ranges.fold(this.ranges, ::add).toThis()
 
     fun remove(range: Range): This = remove(this.ranges, range).toThis()
+    fun removeAll(vararg ranges: Range): This = ranges.fold(this.ranges, ::remove).toThis()
     fun removeAll(ranges: Iterable<Range>): This = ranges.fold(this.ranges, ::remove).toThis()
     fun removeAll(ranges: Sequence<Range>): This = ranges.fold(this.ranges, ::remove).toThis()
 
