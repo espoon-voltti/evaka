@@ -74,6 +74,12 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         return other.intersection(this)
     }
 
+    override fun gap(other: FiniteDateRange): FiniteDateRange? {
+        val start = minOf(this.end, other.end).plusDays(1)
+        val end = maxOf(this.start, other.start).minusDays(1)
+        return if (start <= end) FiniteDateRange(start, end) else null
+    }
+
     override fun subtract(other: FiniteDateRange): List<FiniteDateRange> = complement(other)
     fun complement(other: FiniteDateRange): List<FiniteDateRange> {
         return when {

@@ -61,6 +61,16 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
     fun intersection(other: This): This?
 
     /**
+     * Returns a range representing the gap between this range and the given range, if there is one.
+     *
+     * Returns null if the ranges are adjacent or overlap, so there is no gap. Examples:
+     * - [2,3].gap([6,7]) returns [4,5]
+     * - [2,5].gap([6,7]) returns null
+     * - [2,5].gap([4,7]) returns null
+     */
+    fun gap(other: This): This?
+
+    /**
      * Subtracts the given range from this range, returning 0 to 2 ranges representing the
      * remainders.
      *

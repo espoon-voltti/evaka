@@ -24,6 +24,8 @@ abstract class RangeBasedSet<
         this.ranges.firstOrNull()?.let { first ->
             this.ranges.lastOrNull()?.let { last -> range(first.start, last.end) }
         }
+    fun gaps(): Sequence<Range> =
+        this.ranges().windowed(2).mapNotNull { pair -> pair[0].gap(pair[1]) }
 
     fun isEmpty(): Boolean = this.ranges.isEmpty()
 

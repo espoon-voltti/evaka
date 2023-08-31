@@ -22,11 +22,6 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
     fun removeAll(other: DateSet) = removeAll(other.ranges())
     fun intersection(other: DateSet) = intersection(other.ranges())
 
-    fun gaps(): Sequence<FiniteDateRange> =
-        this.ranges().windowed(2).map { pair ->
-            FiniteDateRange(pair[0].end.plusDays(1), pair[1].start.minusDays(1))
-        }
-
     companion object {
         private val EMPTY = DateSet(emptyList())
         fun empty(): DateSet = EMPTY
