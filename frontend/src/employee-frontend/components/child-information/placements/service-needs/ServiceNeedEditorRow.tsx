@@ -65,7 +65,9 @@ function ServiceNeedEditorRow({
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        form.startDate
+        form.startDate &&
+          (form.endDate === undefined ||
+            form.endDate.isEqualOrAfter(form.startDate))
           ? new DateRange(form.startDate, form.endDate ?? null)
           : null,
         initialForm.startDate

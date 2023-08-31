@@ -5,6 +5,7 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
@@ -14,6 +15,7 @@ import {
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Gap } from 'lib-components/white-space'
 import { faPen, faUser } from 'lib-icons'
 
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
@@ -22,6 +24,9 @@ import { DbPersonSearch as PersonSearch } from '../../../components/common/Perso
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../common/RetroactiveConfirmation'
 
 interface Props {
   headPersonId: UUID
@@ -41,16 +46,31 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   const [personData, setPersonData] = useState<Result<PersonSummary>>(
     Loading.of()
   )
-  const initialForm: FridgePartnerForm = {
-    partner:
-      partnership &&
-      partnership.partners.find((partner) => partner.id !== headPersonId),
-    startDate: partnership
-      ? partnership.startDate
-      : LocalDate.todayInSystemTz(),
-    endDate: partnership ? partnership.endDate : null
-  }
+  const initialForm: FridgePartnerForm = useMemo(
+    () => ({
+      partner:
+        partnership &&
+        partnership.partners.find((partner) => partner.id !== headPersonId),
+      startDate: partnership
+        ? partnership.startDate
+        : LocalDate.todayInSystemTz(),
+      endDate: partnership ? partnership.endDate : null
+    }),
+    [partnership, headPersonId]
+  )
   const [form, setForm] = useState(initialForm)
+  const retroactive = useMemo(
+    () =>
+      isChangeRetroactive(
+        form.endDate === null || form.endDate.isEqualOrAfter(form.startDate)
+          ? new DateRange(form.startDate, form.endDate)
+          : null,
+        new DateRange(initialForm.startDate, initialForm.endDate),
+        false // only range can be edited
+      ),
+    [form, initialForm]
+  )
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const validationErrors = useMemo(() => {
     const errors = []
@@ -146,7 +166,11 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
       type="info"
       resolveAction={onSubmit}
       resolveLabel={i18n.common.confirm}
-      resolveDisabled={!form.partner || validationErrors.length > 0}
+      resolveDisabled={
+        !form.partner ||
+        validationErrors.length > 0 ||
+        (retroactive && !confirmedRetroactive)
+      }
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
       data-qa="fridge-partner-modal"
@@ -200,6 +224,15 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           onCleared={() => assignFridgePartnerForm({ endDate: null })}
           type="full-width"
         />
+        {retroactive && (
+          <>
+            <Gap size="xs" />
+            <RetroactiveConfirmation
+              confirmed={confirmedRetroactive}
+              setConfirmed={setConfirmedRetroactive}
+            />
+          </>
+        )}
         {validationErrors.map((error) => (
           <div className="error" key={error}>
             {error}

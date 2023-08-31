@@ -56,7 +56,9 @@ function CreatePlacementModal({ childId, reload }: Props) {
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        new FiniteDateRange(form.startDate, form.endDate),
+        form.endDate.isEqualOrAfter(form.startDate)
+          ? new FiniteDateRange(form.startDate, form.endDate)
+          : null,
         null,
         false
       ),
