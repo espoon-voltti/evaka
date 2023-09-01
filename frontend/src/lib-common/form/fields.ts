@@ -156,38 +156,44 @@ export const openEndedLocalDateRange = () =>
     }
   )
 
-export const localTime = transformed(
-  string(),
-  (s): ValidationResult<LocalTime | undefined, 'timeFormat'> => {
-    if (s === '') return ValidationSuccess.of(undefined)
-    const parsed = LocalTime.tryParse(s)
-    if (parsed === undefined) {
-      return ValidationError.of('timeFormat')
+export const localTime = () =>
+  transformed(
+    string(),
+    (s): ValidationResult<LocalTime | undefined, 'timeFormat'> => {
+      if (s === '') return ValidationSuccess.of(undefined)
+      const parsed = LocalTime.tryParse(s)
+      if (parsed === undefined) {
+        return ValidationError.of('timeFormat')
+      }
+      return ValidationSuccess.of(parsed)
     }
-    return ValidationSuccess.of(parsed)
-  }
-)
+  )
 
-export const localTimeRange = transformed(
-  object({
-    startTime: localTime,
-    endTime: localTime
-  }),
-  ({
-    startTime,
-    endTime
-  }): ValidationResult<TimeRange | undefined, 'timeFormat'> => {
-    if (startTime === undefined && endTime === undefined) {
-      return ValidationSuccess.of(undefined)
+export type LocalTimeField = FieldType<typeof localTime>
+
+export const localTimeRange = () =>
+  transformed(
+    object({
+      startTime: localTime(),
+      endTime: localTime()
+    }),
+    ({
+      startTime,
+      endTime
+    }): ValidationResult<TimeRange | undefined, 'timeFormat'> => {
+      if (startTime === undefined && endTime === undefined) {
+        return ValidationSuccess.of(undefined)
+      }
+      if (
+        startTime === undefined ||
+        endTime === undefined ||
+        endTime.isBefore(startTime)
+      ) {
+        return ValidationError.of('timeFormat')
+      } else {
+        return ValidationSuccess.of({ start: startTime, end: endTime })
+      }
     }
-    if (
-      startTime === undefined ||
-      endTime === undefined ||
-      endTime.isBefore(startTime)
-    ) {
-      return ValidationError.of('timeFormat')
-    } else {
-      return ValidationSuccess.of({ start: startTime, end: endTime })
-    }
-  }
-)
+  )
+
+export type LocalTimeRangeField = FieldType<typeof localTimeRange>

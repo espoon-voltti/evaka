@@ -29,7 +29,7 @@ import {
   noTimes,
   timeRanges,
   reservation,
-  limitedLocalTimeRange
+  LimitedLocalTimeRangeField
 } from './form'
 
 interface DayProps {
@@ -235,7 +235,7 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
 })
 
 interface LimitedLocalTimeRangeProps {
-  bind: BoundForm<typeof limitedLocalTimeRange>
+  bind: BoundForm<LimitedLocalTimeRangeField>
   hideErrorsBeforeTouched?: boolean
   dataQaPrefix?: string
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void

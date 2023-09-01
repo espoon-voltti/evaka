@@ -5,9 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { localTimeRange } from 'lib-common/form/fields'
-import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
-import { ShapeOf, StateOf } from 'lib-common/form/types'
+import { LocalTimeRangeField } from 'lib-common/form/fields'
+import { BoundForm, useFormField } from 'lib-common/form/hooks'
 import UnderRowStatusIcon, { InfoStatus } from 'lib-components/atoms/StatusIcon'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { defaultMargins } from 'lib-components/white-space'
@@ -15,10 +14,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../localization'
 
 export interface Props {
-  bind: BoundFormShape<
-    StateOf<typeof localTimeRange>,
-    ShapeOf<typeof localTimeRange>
-  >
+  bind: BoundForm<LocalTimeRangeField>
   hideErrorsBeforeTouched?: boolean
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
   dataQaPrefix?: string

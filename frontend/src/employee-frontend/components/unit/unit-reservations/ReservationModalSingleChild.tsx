@@ -65,7 +65,7 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz().addYears(1)
 )
 
-export const times = array(required(localTimeRange))
+export const times = array(required(localTimeRange()))
 
 const weekDay = chained(
   object({

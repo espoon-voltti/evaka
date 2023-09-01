@@ -6,7 +6,12 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { string, localTimeRange, localDateRange } from 'lib-common/form/fields'
+import {
+  string,
+  localTimeRange,
+  localDateRange,
+  FieldType
+} from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -42,38 +47,41 @@ export const MAX_TIME_RANGE = {
   end: LocalTime.MAX
 }
 
-export const limitedLocalTimeRange = transformed(
-  object({
-    value: localTimeRange,
-    validRange: value<TimeRange>()
-  }),
-  ({
-    value,
-    validRange
-  }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
-    if (value === undefined) return ValidationSuccess.of(undefined)
+export const limitedLocalTimeRange = () =>
+  transformed(
+    object({
+      value: localTimeRange(),
+      validRange: value<TimeRange>()
+    }),
+    ({
+      value,
+      validRange
+    }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
+      if (value === undefined) return ValidationSuccess.of(undefined)
 
-    // Don't allow reservations with same start and end times
-    if (value.start.isEqual(value.end)) {
-      return ValidationError.field('value', 'timeFormat')
-    }
+      // Don't allow reservations with same start and end times
+      if (value.start.isEqual(value.end)) {
+        return ValidationError.field('value', 'timeFormat')
+      }
 
-    let errors: FieldErrors<'range'> | undefined = undefined
-    if (!timeRangeContains(value.start, validRange)) {
-      errors = errors ?? {}
-      errors.startTime = 'range'
+      let errors: FieldErrors<'range'> | undefined = undefined
+      if (!timeRangeContains(value.start, validRange)) {
+        errors = errors ?? {}
+        errors.startTime = 'range'
+      }
+      if (!timeRangeContains(value.end, validRange)) {
+        errors = errors ?? {}
+        errors.endTime = 'range'
+      }
+      if (errors !== undefined) {
+        return ValidationError.fromFieldErrors({ value: errors })
+      } else {
+        return ValidationSuccess.of(value)
+      }
     }
-    if (!timeRangeContains(value.end, validRange)) {
-      errors = errors ?? {}
-      errors.endTime = 'range'
-    }
-    if (errors !== undefined) {
-      return ValidationError.fromFieldErrors({ value: errors })
-    } else {
-      return ValidationSuccess.of(value)
-    }
-  }
-)
+  )
+
+export type LimitedLocalTimeRangeField = FieldType<typeof limitedLocalTimeRange>
 
 export function timeRangeContains(
   inputTime: LocalTime,
@@ -84,14 +92,14 @@ export function timeRangeContains(
 
 export function emptyTimeRange(
   validRange: TimeRange
-): StateOf<typeof limitedLocalTimeRange> {
+): StateOf<LimitedLocalTimeRangeField> {
   return {
     value: { startTime: '', endTime: '' },
     validRange
   }
 }
 
-export const timeRanges = mapped(array(limitedLocalTimeRange), (output) => {
+export const timeRanges = mapped(array(limitedLocalTimeRange()), (output) => {
   const nonEmpty = output.flatMap((x) => x ?? [])
   return nonEmpty.length === 0
     ? undefined // All inputs empty => no value
@@ -635,7 +643,7 @@ const reservationNotRequiredForAnyChild = (
 const bindUnboundedTimeRanges = (
   ranges: TimeRange[],
   validRange: TimeRange
-): StateOf<typeof limitedLocalTimeRange>[] => {
+): StateOf<LimitedLocalTimeRangeField>[] => {
   const formatted = ranges.map(({ start, end }) => ({
     value: { startTime: start.format(), endTime: end.format() },
     validRange
