@@ -18,7 +18,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1 } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
@@ -57,7 +57,7 @@ const ValidityEditor = React.memo(function ValidityEditor({
 
   return (
     <FixedSpaceRow alignItems="center">
-      <DateRangePickerF2 bind={form} locale={lang} />
+      <DateRangePickerF bind={form} locale={lang} />
       <IconButton
         icon={faCheck}
         aria-label={i18n.common.save}

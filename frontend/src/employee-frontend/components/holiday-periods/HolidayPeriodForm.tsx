@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react'
 
-import { boolean, localDate2, localDateRange2 } from 'lib-common/form/fields'
+import { boolean, localDate, localDateRange } from 'lib-common/form/fields'
 import { object, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -19,8 +19,8 @@ import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DatePickerF2 } from 'lib-components/molecules/date-picker/DatePicker'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -36,7 +36,7 @@ const maxPeriod = 15 * 7 * 24 * 60 * 60 * 1000 // 15 weeks
 
 function makeHolidayPeriodForm(mode: 'create' | 'update') {
   return object({
-    period: validated(required(localDateRange2()), (output) =>
+    period: validated(required(localDateRange()), (output) =>
       // Extra validations when creating a new holiday period
       mode === 'create'
         ? output.start.isBefore(minStartDate)
@@ -48,7 +48,7 @@ function makeHolidayPeriodForm(mode: 'create' | 'update') {
           : undefined
         : undefined
     ),
-    reservationDeadline: required(localDate2()),
+    reservationDeadline: required(localDate()),
     confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
   })
 }
@@ -149,11 +149,11 @@ export default React.memo(function HolidayPeriodForm({
       <ListGrid>
         <Label>{i18n.holidayPeriods.period} *</Label>
         <FixedSpaceRow alignItems="center">
-          <DateRangePickerF2 bind={period} locale={lang} data-qa="period" />
+          <DateRangePickerF bind={period} locale={lang} data-qa="period" />
         </FixedSpaceRow>
 
         <Label>{i18n.holidayPeriods.reservationDeadline} *</Label>
-        <DatePickerF2
+        <DatePickerF
           bind={reservationDeadline}
           locale={lang}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}

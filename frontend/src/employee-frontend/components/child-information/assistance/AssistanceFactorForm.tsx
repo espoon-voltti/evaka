@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { Result } from 'lib-common/api'
-import { localDateRange2, string } from 'lib-common/form/fields'
+import { localDateRange, string } from 'lib-common/form/fields'
 import {
   mapped,
   object,
@@ -26,7 +26,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 
 import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
@@ -37,7 +37,7 @@ export const assistanceFactorForm = transformed(
     capacityFactor: validated(mapped(string(), Number.parseFloat), (number) =>
       Number.isFinite(number) && number >= 0.0 ? undefined : 'format'
     ),
-    validDuring: required(localDateRange2()),
+    validDuring: required(localDateRange()),
     allRows: value<AssistanceFactorResponse[]>(),
     ignoredId: value<UUID | undefined>()
   }),
@@ -106,7 +106,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
         />
       </Td>
       <Td>
-        <DateRangePickerF2
+        <DateRangePickerF
           bind={validDuring}
           locale={lang}
           data-qa="valid-during"

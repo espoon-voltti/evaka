@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { boolean, localDate2 } from 'lib-common/form/fields'
+import { boolean, localDate } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
@@ -15,7 +15,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { DatePickerF2 } from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -26,8 +26,8 @@ import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingHeadOfFamilyReportQuery } from './queries'
 
 const filterForm = object({
-  startDate: required(localDate2()),
-  endDate: localDate2(),
+  startDate: required(localDate()),
+  endDate: localDate(),
   showIntentionalDuplicates: boolean()
 })
 
@@ -65,11 +65,11 @@ export default React.memo(function MissingHeadOfFamily() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
-          <DatePickerF2 bind={startDate} locale="fi" />
+          <DatePickerF bind={startDate} locale="fi" />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
-          <DatePickerF2 bind={endDate} locale="fi" />
+          <DatePickerF bind={endDate} locale="fi" />
         </FilterRow>
 
         {featureFlags.experimental?.personDuplicate && (

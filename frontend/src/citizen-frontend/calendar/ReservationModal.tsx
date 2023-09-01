@@ -24,7 +24,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
   PlainModal
@@ -248,7 +248,7 @@ export default React.memo(function ReservationModal({
                 >
                   <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
                 </ExpandingInfo>
-                <DateRangePickerF2
+                <DateRangePickerF
                   bind={dateRange}
                   locale={lang}
                   hideErrorsBeforeTouched={!showAllErrors}

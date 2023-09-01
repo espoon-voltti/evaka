@@ -6,7 +6,7 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { string, localTimeRange, localDateRange2 } from 'lib-common/form/fields'
+import { string, localTimeRange, localDateRange } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -223,7 +223,7 @@ export const reservationForm = mapped(
     selectedChildren: validated(array(string()), (value) =>
       value.length > 0 ? undefined : 'required'
     ),
-    dateRange: required(localDateRange2()),
+    dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion
   }),

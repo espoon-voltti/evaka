@@ -6,7 +6,7 @@ import { faPen, faTrash } from 'Icons'
 import React, { useCallback, useContext, useState } from 'react'
 
 import { Result } from 'lib-common/api'
-import { localDate2 } from 'lib-common/form/fields'
+import { localDate } from 'lib-common/form/fields'
 import { nullBlank, object } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -26,7 +26,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerF2 } from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -137,7 +137,7 @@ const CreationModal = React.memo(function CreationModal({
     >
       <FixedSpaceRow alignItems="center" justifyContent="center">
         <Label>{i18n.childInformation.childDiscussion.offered}</Label>
-        <DatePickerF2
+        <DatePickerF
           bind={offeredDateState}
           locale={lang}
           data-qa="add-discussion-offered-date-input"
@@ -146,7 +146,7 @@ const CreationModal = React.memo(function CreationModal({
       <Gap />
       <FixedSpaceRow alignItems="center" justifyContent="center">
         <Label>{i18n.childInformation.childDiscussion.held}</Label>2
-        <DatePickerF2
+        <DatePickerF
           bind={heldDateState}
           locale={lang}
           data-qa="add-discussion-held-date-input"
@@ -155,7 +155,7 @@ const CreationModal = React.memo(function CreationModal({
       <Gap />
       <FixedSpaceRow alignItems="center" justifyContent="center">
         <Label>{i18n.childInformation.childDiscussion.counseling}</Label>
-        <DatePickerF2
+        <DatePickerF
           bind={counselingDateState}
           locale={lang}
           data-qa="add-discussion-counseling-date-input"
@@ -200,9 +200,9 @@ const ChildDiscussionSummary = React.memo(function ChildDiscussionSummary({
 })
 
 const discussionForm = object({
-  offeredDate: nullBlank(localDate2()),
-  heldDate: nullBlank(localDate2()),
-  counselingDate: nullBlank(localDate2())
+  offeredDate: nullBlank(localDate()),
+  heldDate: nullBlank(localDate()),
+  counselingDate: nullBlank(localDate())
 })
 
 function initialFormState(
@@ -276,7 +276,7 @@ const ChildDiscussionRow = React.memo(function ChildDiscussionRow({
     <Tr key={discussion.data.id}>
       <Td>
         {editing ? (
-          <DatePickerF2
+          <DatePickerF
             bind={offeredDateState}
             locale={lang}
             data-qa={`discussion-offered-date-input-${discussionData.id}`}
@@ -289,7 +289,7 @@ const ChildDiscussionRow = React.memo(function ChildDiscussionRow({
       </Td>
       <Td>
         {editing ? (
-          <DatePickerF2
+          <DatePickerF
             bind={heldDateState}
             locale={lang}
             data-qa={`discussion-held-date-input-${discussionData.id}`}
@@ -302,7 +302,7 @@ const ChildDiscussionRow = React.memo(function ChildDiscussionRow({
       </Td>
       <Td>
         {editing ? (
-          <DatePickerF2
+          <DatePickerF
             bind={counselingDateState}
             locale={lang}
             data-qa={`discussion-counseling-date-input-${discussionData.id}`}

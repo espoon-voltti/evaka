@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { localDateRange2 } from 'lib-common/form/fields'
+import { localDateRange } from 'lib-common/form/fields'
 import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -30,7 +30,7 @@ import MutateButton, {
 } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
   PlainModal
@@ -55,7 +55,7 @@ import { postAbsencesMutation } from './queries'
 const absenceForm = mapped(
   object({
     selectedChildren: array(value<UUID>()),
-    range: required(localDateRange2()),
+    range: required(localDateRange()),
     absenceType: required(value<AbsenceType | undefined>()),
     contractDayAbsenceTypeSettings: value<{
       visible: boolean
@@ -222,7 +222,7 @@ export default React.memo(function AbsenceModal({
               </LineContainer>
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.dateRange}</H2>
-                <DateRangePickerF2
+                <DateRangePickerF
                   bind={range}
                   locale={lang}
                   hideErrorsBeforeTouched={!showAllErrors}

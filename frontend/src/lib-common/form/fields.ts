@@ -54,7 +54,7 @@ const validateLocalDate = (
   return ValidationSuccess.of(date)
 }
 
-export const localDate2 = () =>
+export const localDate = () =>
   transformed(
     object({
       value: string(),
@@ -66,9 +66,9 @@ export const localDate2 = () =>
     }
   )
 
-export type LocalDate2Field = FieldType<typeof localDate2>
+export type LocalDateField = FieldType<typeof localDate>
 
-export const localDateRange2 = () =>
+export const localDateRange = () =>
   transformed(
     object({
       start: string(),
@@ -115,7 +115,7 @@ export const localDateRange2 = () =>
     }
   )
 
-export type LocalDateRange2Field = FieldType<typeof localDateRange2>
+export type LocalDateRangeField = FieldType<typeof localDateRange>
 
 export const openEndedLocalDateRange = () =>
   transformed(

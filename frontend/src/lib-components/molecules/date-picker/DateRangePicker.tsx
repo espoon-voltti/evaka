@@ -6,14 +6,8 @@ import classNames from 'classnames'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { LocalDateRange2Field } from 'lib-common/form/fields'
-import {
-  BoundForm,
-  BoundFormShape,
-  useFormField,
-  useFormFields
-} from 'lib-common/form/hooks'
-import { Form } from 'lib-common/form/types'
+import { LocalDateRangeField } from 'lib-common/form/fields'
+import { BoundForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 import {
   InputFieldUnderRow,
@@ -165,7 +159,7 @@ const DateInputSpacer = styled.div`
   padding: 6px;
 `
 
-export interface DateRangePickerF2Props
+export interface DateRangePickerFProps
   extends Omit<
     DateRangePickerLowLevelProps,
     | 'start'
@@ -177,15 +171,15 @@ export interface DateRangePickerF2Props
     | 'minDate'
     | 'maxDate'
   > {
-  bind: BoundForm<LocalDateRange2Field>
+  bind: BoundForm<LocalDateRangeField>
   info?: InputInfo | undefined
 }
 
-export const DateRangePickerF2 = React.memo(function DateRangePickerF2({
+export const DateRangePickerF = React.memo(function DateRangePickerF({
   bind,
   info: infoOverride,
   ...props
-}: DateRangePickerF2Props) {
+}: DateRangePickerFProps) {
   const { start, end, config } = useFormFields(bind)
   const info = infoOverride ?? bind.inputInfo()
   return (

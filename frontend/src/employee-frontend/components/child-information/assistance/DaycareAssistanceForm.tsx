@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { Result } from 'lib-common/api'
-import { localDateRange2 } from 'lib-common/form/fields'
+import { localDateRange } from 'lib-common/form/fields'
 import {
   object,
   oneOf,
@@ -27,7 +27,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { daycareAssistanceLevels } from 'lib-customizations/employee'
 
 import { Translations, useTranslation } from '../../../state/i18n'
@@ -37,7 +37,7 @@ import StatusLabel from '../../common/StatusLabel'
 export const daycareAssistanceForm = transformed(
   object({
     level: required(oneOf<DaycareAssistanceLevel>()),
-    validDuring: required(localDateRange2()),
+    validDuring: required(localDateRange()),
     allRows: value<DaycareAssistanceResponse[]>(),
     ignoredId: value<UUID | undefined>()
   }),
@@ -113,7 +113,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
         <SelectF data-qa="level" bind={level} />
       </Td>
       <Td>
-        <DateRangePickerF2
+        <DateRangePickerF
           bind={validDuring}
           locale={lang}
           data-qa="valid-during"

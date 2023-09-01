@@ -8,11 +8,7 @@ import styled from 'styled-components'
 
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  boolean,
-  localDateRange2,
-  localTimeRange
-} from 'lib-common/form/fields'
+import { boolean, localDateRange, localTimeRange } from 'lib-common/form/fields'
 import {
   array,
   chained,
@@ -48,7 +44,7 @@ import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -93,7 +89,7 @@ const irregularDay = object({
 
 const reservationForm = mapped(
   object({
-    dateRange: required(localDateRange2()),
+    dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     dailyTimes: times,
     weeklyTimes: mapped(array(weekDay), (output) =>
@@ -329,7 +325,7 @@ export default React.memo(function ReservationModalSingleChild({
       <Label>
         {i18n.unit.attendanceReservations.reservationModal.dateRangeLabel}
       </Label>
-      <DateRangePickerF2
+      <DateRangePickerF
         bind={dateRange}
         locale={lang}
         hideErrorsBeforeTouched={!showAllErrors}
