@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { boolean, optionalLocalDate, string } from 'lib-common/form/fields'
+import { boolean, localDate2, string } from 'lib-common/form/fields'
 import {
   array,
   mapped,
+  nullBlank,
   object,
   oneOf,
   required,
@@ -56,7 +57,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerF2 } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
@@ -99,7 +100,7 @@ const form = mapped(
     language: required(oneOf<AssistanceNeedDecisionLanguage>()),
 
     type: oneOf<AssistanceNeedPreschoolDecisionType>(),
-    validFrom: optionalLocalDate,
+    validFrom: nullBlank(localDate2()),
 
     extendedCompulsoryEducation: boolean(),
     extendedCompulsoryEducationInfo: string(),
@@ -117,15 +118,15 @@ const form = mapped(
     basisDocumentPsychologistStatement: boolean(),
     basisDocumentSocialReport: boolean(),
     basisDocumentDoctorStatement: boolean(),
-    basisDocumentPedagogicalReportDate: optionalLocalDate,
-    basisDocumentPsychologistStatementDate: optionalLocalDate,
-    basisDocumentSocialReportDate: optionalLocalDate,
-    basisDocumentDoctorStatementDate: optionalLocalDate,
+    basisDocumentPedagogicalReportDate: nullBlank(localDate2()),
+    basisDocumentPsychologistStatementDate: nullBlank(localDate2()),
+    basisDocumentSocialReportDate: nullBlank(localDate2()),
+    basisDocumentDoctorStatementDate: nullBlank(localDate2()),
     basisDocumentOtherOrMissing: boolean(),
     basisDocumentOtherOrMissingInfo: string(),
     basisDocumentsInfo: string(),
 
-    guardiansHeardOn: optionalLocalDate,
+    guardiansHeardOn: nullBlank(localDate2()),
     guardianInfo: array(guardianForm),
     otherRepresentativeHeard: boolean(),
     otherRepresentativeDetails: string(),
@@ -285,6 +286,31 @@ const DecisionEditor = React.memo(function DecisionEditor({
       type: {
         domValue: decision.form.type || '',
         options: getTypeOptions(decision.form.language)
+      },
+      validFrom: {
+        value: decision.form.validFrom?.format() ?? '',
+        config: undefined
+      },
+      basisDocumentPedagogicalReportDate: {
+        value: decision.form.basisDocumentPedagogicalReportDate?.format() ?? '',
+        config: undefined
+      },
+      basisDocumentPsychologistStatementDate: {
+        value:
+          decision.form.basisDocumentPsychologistStatementDate?.format() ?? '',
+        config: undefined
+      },
+      basisDocumentSocialReportDate: {
+        value: decision.form.basisDocumentSocialReportDate?.format() ?? '',
+        config: undefined
+      },
+      basisDocumentDoctorStatementDate: {
+        value: decision.form.basisDocumentDoctorStatementDate?.format() ?? '',
+        config: undefined
+      },
+      guardiansHeardOn: {
+        value: decision.form.guardiansHeardOn?.format() ?? '',
+        config: undefined
       }
     }),
     i18n.validationErrors
@@ -557,7 +583,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                 >
                   <Label>{t.validFrom} *</Label>
                 </ExpandingInfo>
-                <DatePickerF
+                <DatePickerF2
                   bind={validFrom}
                   locale={uiLang}
                   info={info('validFrom')}
@@ -693,7 +719,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     data-qa="basis-pedagogical-report"
                   />
                   {basisDocumentPedagogicalReport.value() && (
-                    <DatePickerF
+                    <DatePickerF2
                       bind={basisDocumentPedagogicalReportDate}
                       locale={uiLang}
                     />
@@ -705,7 +731,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     label={t.basisDocumentPsychologistStatement}
                   />
                   {basisDocumentPsychologistStatement.value() && (
-                    <DatePickerF
+                    <DatePickerF2
                       bind={basisDocumentPsychologistStatementDate}
                       locale={uiLang}
                     />
@@ -717,7 +743,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     label={t.basisDocumentSocialReport}
                   />
                   {basisDocumentSocialReport.value() && (
-                    <DatePickerF
+                    <DatePickerF2
                       bind={basisDocumentSocialReportDate}
                       locale={uiLang}
                     />
@@ -729,7 +755,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
                     label={t.basisDocumentDoctorStatement}
                   />
                   {basisDocumentDoctorStatement.value() && (
-                    <DatePickerF
+                    <DatePickerF2
                       bind={basisDocumentDoctorStatementDate}
                       locale={uiLang}
                     />
@@ -761,7 +787,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <LabeledValue>
                 <Label>{t.guardiansHeardOn} *</Label>
-                <DatePickerF
+                <DatePickerF2
                   bind={guardiansHeardOn}
                   locale={uiLang}
                   info={info('guardiansHeardOn')}
