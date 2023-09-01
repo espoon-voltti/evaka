@@ -5,8 +5,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { boolean, localDate, optionalLocalDate } from 'lib-common/form/fields'
-import { object } from 'lib-common/form/form'
+import { boolean, localDate2 } from 'lib-common/form/fields'
+import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -15,10 +15,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import {
-  DatePickerClearableDeprecated,
-  DatePickerDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
+import { DatePickerF2 } from 'lib-components/molecules/date-picker/DatePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -29,8 +26,8 @@ import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingHeadOfFamilyReportQuery } from './queries'
 
 const filterForm = object({
-  startDate: localDate,
-  endDate: optionalLocalDate,
+  startDate: required(localDate2()),
+  endDate: localDate2(),
   showIntentionalDuplicates: boolean()
 })
 
@@ -40,8 +37,17 @@ export default React.memo(function MissingHeadOfFamily() {
   const filters = useForm(
     filterForm,
     () => ({
-      startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
-      endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth(),
+      startDate: {
+        value: LocalDate.todayInSystemTz().subMonths(1).withDate(1).format(),
+        config: undefined
+      },
+      endDate: {
+        value: LocalDate.todayInSystemTz()
+          .addMonths(2)
+          .lastDayOfMonth()
+          .format(),
+        config: undefined
+      },
       showIntentionalDuplicates: false
     }),
     i18n.validationErrors
@@ -59,18 +65,11 @@ export default React.memo(function MissingHeadOfFamily() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
-          <DatePickerDeprecated
-            date={startDate.state ?? undefined}
-            onChange={startDate.set}
-          />
+          <DatePickerF2 bind={startDate} locale="fi" />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
-          <DatePickerClearableDeprecated
-            date={endDate.state ?? undefined}
-            onChange={endDate.set}
-            onCleared={() => endDate.set(null)}
-          />
+          <DatePickerF2 bind={endDate} locale="fi" />
         </FilterRow>
 
         {featureFlags.experimental?.personDuplicate && (
