@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -33,6 +34,8 @@ let pedagogicalDocumentsPage: CitizenPedagogicalDocumentsPage
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets`
 
+const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -54,7 +57,7 @@ beforeEach(async () => {
     fixtures.enduserGuardianFixture.id
   )
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)

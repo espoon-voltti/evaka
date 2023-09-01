@@ -202,7 +202,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         Action.Person.READ_INCOME_STATEMENTS,
                         guardianId
                     )
-                    it.getIncomeStatementChildrenByGuardian(guardianId)
+                    it.getIncomeStatementChildrenByGuardian(guardianId, clock.today())
                 }
             }
             .also {

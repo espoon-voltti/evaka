@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -40,6 +41,8 @@ let templateId: UUID
 let vasuDocId: UUID
 let header: CitizenHeader
 
+const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -71,7 +74,7 @@ beforeEach(async () => {
     fixtures.enduserGuardianFixture.id
   )
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
   header = new CitizenHeader(page, 'desktop')
   await enduserLogin(page)
 })

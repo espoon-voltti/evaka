@@ -621,7 +621,10 @@ fun Database.Read.incomeStatementExistsForStartDate(
 
 data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
 
-fun Database.Read.getIncomeStatementChildrenByGuardian(guardianId: PersonId): List<ChildBasicInfo> =
+fun Database.Read.getIncomeStatementChildrenByGuardian(
+    guardianId: PersonId,
+    today: LocalDate
+): List<ChildBasicInfo> =
     this.createQuery(
             """
 SELECT
@@ -635,7 +638,7 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         """
                 .trimIndent()
         )
-        .bind("today", HelsinkiDateTime.now().toLocalDate())
+        .bind("today", today)
         .bind("guardianId", guardianId)
         .bind("invoicedPlacementTypes", PlacementType.invoiced)
         .mapTo<ChildBasicInfo>()
