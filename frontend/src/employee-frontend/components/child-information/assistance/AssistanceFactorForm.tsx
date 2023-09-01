@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { Result } from 'lib-common/api'
-import { localDateRange, string } from 'lib-common/form/fields'
+import { localDateRange2, string } from 'lib-common/form/fields'
 import {
   mapped,
   object,
@@ -26,7 +26,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
 
 import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
@@ -37,7 +37,7 @@ export const assistanceFactorForm = transformed(
     capacityFactor: validated(mapped(string(), Number.parseFloat), (number) =>
       Number.isFinite(number) && number >= 0.0 ? undefined : 'format'
     ),
-    validDuring: required(localDateRange),
+    validDuring: required(localDateRange2()),
     allRows: value<AssistanceFactorResponse[]>(),
     ignoredId: value<UUID | undefined>()
   }),
@@ -73,8 +73,9 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
     () => ({
       capacityFactor: initialData?.capacityFactor.toString() ?? '',
       validDuring: {
-        startDate: initialData?.validDuring.start ?? null,
-        endDate: initialData?.validDuring.end ?? null
+        start: initialData?.validDuring.start?.format() ?? '',
+        end: initialData?.validDuring.end?.format() ?? '',
+        config: undefined
       },
       allRows: props.allRows,
       ignoredId: initialData?.id
@@ -105,7 +106,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
         />
       </Td>
       <Td>
-        <DateRangePickerF
+        <DateRangePickerF2
           bind={validDuring}
           locale={lang}
           data-qa="valid-during"
