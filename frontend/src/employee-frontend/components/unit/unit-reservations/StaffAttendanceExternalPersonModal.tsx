@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import { localDate, localTime, string } from 'lib-common/form/fields'
+import { localDate2, localTime, string } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -31,7 +31,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerF2 } from 'lib-components/molecules/date-picker/DatePicker'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -49,7 +49,7 @@ type ExternalPersonModalProps = {
 }
 
 const externalPersonForm = object({
-  date: validated(required(localDate), (value) =>
+  date: validated(required(localDate2()), (value) =>
     value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
   ),
   arrivalTime: required(localTime),
@@ -71,7 +71,10 @@ function initialFormState(
   }))
 
   return {
-    date: LocalDate.todayInHelsinkiTz(),
+    date: {
+      value: LocalDate.todayInHelsinkiTz().format(),
+      config: undefined
+    },
     arrivalTime: LocalTime.nowInHelsinkiTz().format(),
     departureTime: '',
     name: '',
@@ -145,7 +148,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
             {i18n.unit.staffAttendance.addPersonModal.arrival}
           </FieldLabel>
           <FixedSpaceRow>
-            <DatePickerF
+            <DatePickerF2
               bind={date}
               locale={lang}
               data-qa="add-person-arrival-date-picker"

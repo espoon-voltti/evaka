@@ -469,19 +469,15 @@ export class UnitChildReservationsTable extends Element {
 
 export class ReservationModal extends Modal {
   #repetitionSelect = new Select(this.find('[data-qa="repetition"]'))
-  #startDate = new TextInput(this.find('[data-qa="reservation-start-date"]'))
-  #endDate = new TextInput(this.find('[data-qa="reservation-end-date"]'))
+  startDate = new TextInput(
+    this.findByDataQa('reservation-date-range').findByDataQa('start-date')
+  )
+  endDate = new TextInput(
+    this.findByDataQa('reservation-date-range').findByDataQa('end-date')
+  )
 
   async selectRepetitionType(value: 'DAILY' | 'WEEKLY' | 'IRREGULAR') {
     await this.#repetitionSelect.selectOption(value)
-  }
-
-  async setStartDate(date: string) {
-    await this.#startDate.fill(date)
-  }
-
-  async setEndDate(date: string) {
-    await this.#endDate.fill(date)
   }
 
   async setStartTime(time: string, index: number) {
@@ -508,7 +504,7 @@ export class ReservationModal extends Modal {
 
   async addReservation(endDate: LocalDate) {
     await this.selectRepetitionType('IRREGULAR')
-    await this.setEndDate(endDate.format())
+    await this.endDate.fill(endDate.format())
     await this.setStartTime('10:00', 0)
     await this.setEndTime('16:00', 0)
     await this.save()

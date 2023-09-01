@@ -8,7 +8,11 @@ import styled from 'styled-components'
 
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { boolean, localDateRange, localTimeRange } from 'lib-common/form/fields'
+import {
+  boolean,
+  localDateRange2,
+  localTimeRange
+} from 'lib-common/form/fields'
 import {
   array,
   chained,
@@ -44,8 +48,7 @@ import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
-import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -90,7 +93,7 @@ const irregularDay = object({
 
 const reservationForm = mapped(
   object({
-    dateRange: required(localDateRange),
+    dateRange: required(localDateRange2()),
     repetition: required(oneOf<Repetition>()),
     dailyTimes: times,
     weeklyTimes: mapped(array(weekDay), (output) =>
@@ -172,8 +175,12 @@ export function initialState(
 ): StateOf<typeof reservationForm> {
   return {
     dateRange: {
-      startDate: initialStart,
-      endDate: initialEnd
+      start: initialStart?.format() ?? '',
+      end: initialEnd?.format() ?? '',
+      config: {
+        minDate: reservableDates.start,
+        maxDate: reservableDates.end
+      }
     },
     repetition: {
       domValue: 'DAILY' as const,
@@ -283,8 +290,6 @@ export default React.memo(function ReservationModalSingleChild({
 
   const repetition = useFormField(form, 'repetition')
   const dateRange = useFormField(form, 'dateRange')
-  const startDate = useFormField(dateRange, 'startDate')
-  const endDate = useFormField(dateRange, 'endDate')
   const dailyTimes = useFormField(form, 'dailyTimes')
   const weeklyTimes = useFormElems(useFormField(form, 'weeklyTimes'))
   const irregularTimes = useFormElems(useFormField(form, 'irregularTimes'))
@@ -324,36 +329,12 @@ export default React.memo(function ReservationModalSingleChild({
       <Label>
         {i18n.unit.attendanceReservations.reservationModal.dateRangeLabel}
       </Label>
-      <FixedSpaceRow>
-        <DatePickerF
-          bind={startDate}
-          data-qa="reservation-start-date"
-          locale={lang}
-          isInvalidDate={(date) =>
-            reservableDates.includes(date)
-              ? null
-              : i18n.validationErrors.unselectableDate
-          }
-          minDate={reservableDates.start}
-          maxDate={reservableDates.end}
-          hideErrorsBeforeTouched={!showAllErrors}
-        />
-        <DatePickerSpacer />
-        <DatePickerF
-          bind={endDate}
-          data-qa="reservation-end-date"
-          locale={lang}
-          isInvalidDate={(date) =>
-            reservableDates.includes(date)
-              ? null
-              : i18n.validationErrors.unselectableDate
-          }
-          minDate={reservableDates.start}
-          maxDate={reservableDates.end}
-          hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={LocalDate.todayInSystemTz()}
-        />
-      </FixedSpaceRow>
+      <DateRangePickerF2
+        bind={dateRange}
+        locale={lang}
+        hideErrorsBeforeTouched={!showAllErrors}
+        data-qa="reservation-date-range"
+      />
       <Gap size="m" />
 
       <TimeInputGrid>
@@ -541,7 +522,10 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
   showAllErrors
 }: {
   bind: BoundFormShape<
-    { startTime: string; endTime: string },
+    {
+      startTime: string
+      endTime: string
+    },
     {
       startTime: Form<unknown, string, string, unknown>
       endTime: Form<unknown, string, string, unknown>
