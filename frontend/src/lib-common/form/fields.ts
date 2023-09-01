@@ -13,7 +13,6 @@ import {
   AnyForm,
   FieldErrors,
   Form,
-  ObjectFieldError,
   ShapeOf,
   StateOf,
   ValidationError,
@@ -31,38 +30,6 @@ export type FieldType<F extends () => AnyForm> = Form<
 export const string = () => mapped(value<string>(), (s) => s.trim())
 export const boolean = () => value<boolean>()
 export const number = () => value<number>()
-
-// TODO: This is always required for now, because <DatePicker /> manages validation errors internally
-export const localDate = transformed(
-  value<LocalDate | null>(),
-  (s): ValidationResult<LocalDate, ObjectFieldError> =>
-    s !== null ? ValidationSuccess.of(s) : ValidationError.objectFieldError
-)
-
-export const optionalLocalDate = transformed(value<LocalDate | null>(), (s) =>
-  ValidationSuccess.of(s)
-)
-
-export const localDateRange = transformed(
-  object({
-    startDate: localDate,
-    endDate: localDate
-  }),
-  ({ startDate, endDate }) => {
-    if (startDate === undefined && endDate === undefined) {
-      return ValidationSuccess.of(undefined)
-    }
-    if (
-      startDate === undefined ||
-      endDate === undefined ||
-      endDate.isBefore(startDate)
-    ) {
-      return ValidationError.of('timeFormat')
-    } else {
-      return ValidationSuccess.of(new FiniteDateRange(startDate, endDate))
-    }
-  }
-)
 
 export interface LocalDateConfig {
   minDate?: LocalDate | undefined

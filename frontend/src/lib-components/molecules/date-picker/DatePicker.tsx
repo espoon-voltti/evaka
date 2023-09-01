@@ -81,25 +81,6 @@ const DatePicker = React.memo(function DatePicker({
 
 export default DatePicker
 
-export interface DatePickerFProps
-  extends Omit<DatePickerProps, 'date' | 'onChange'> {
-  bind: BoundFormState<LocalDate | null>
-}
-
-export const DatePickerF = React.memo(function DatePickerF({
-  bind: { state, set, inputInfo },
-  ...props
-}: DatePickerFProps) {
-  return (
-    <DatePicker
-      {...props}
-      date={state}
-      onChange={set}
-      info={'info' in props ? props.info : inputInfo()}
-    />
-  )
-})
-
 export interface DatePickerF2Props
   extends Omit<
     DatePickerLowLevelProps,

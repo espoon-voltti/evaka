@@ -165,56 +165,6 @@ const DateInputSpacer = styled.div`
   padding: 6px;
 `
 
-export interface DateRangePickerFProps
-  extends Omit<DateRangePickerProps, 'start' | 'end' | 'onChange'> {
-  bind: BoundFormShape<
-    {
-      startDate: LocalDate | null
-      endDate: LocalDate | null
-    },
-    {
-      startDate: Form<unknown, string, LocalDate | null, unknown>
-      endDate: Form<unknown, string, LocalDate | null, unknown>
-    }
-  >
-  externalRangeValidation?: boolean
-  info?: InputInfo
-}
-
-export const DateRangePickerF = React.memo(function DateRangePickerF({
-  bind,
-  externalRangeValidation,
-  info: infoOverride,
-  ...props
-}: DateRangePickerFProps) {
-  const info = infoOverride ?? bind.inputInfo()
-  const startDate = useFormField(bind, 'startDate')
-  const endDate = useFormField(bind, 'endDate')
-  return (
-    <div>
-      <DateRangePicker
-        {...props}
-        start={startDate.state}
-        end={endDate.state}
-        onChange={(start, end) => {
-          startDate.set(start)
-          endDate.set(end)
-        }}
-        externalRangeValidation={externalRangeValidation}
-        startInfo={
-          'startInfo' in props ? props.startInfo : startDate.inputInfo()
-        }
-        endInfo={'endInfo' in props ? props.endInfo : endDate.inputInfo()}
-      />
-      {info !== undefined ? (
-        <InputFieldUnderRow className={classNames(info.status)}>
-          <span>{info.text}</span> <UnderRowStatusIcon status={info.status} />
-        </InputFieldUnderRow>
-      ) : null}
-    </div>
-  )
-})
-
 export interface DateRangePickerF2Props
   extends Omit<
     DateRangePickerLowLevelProps,
