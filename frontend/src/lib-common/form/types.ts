@@ -44,9 +44,6 @@ export type ShapeOf<F extends AnyForm> = F extends Form<
   ? Shape
   : never
 
-export const ObjectFieldError = 'objectFieldError'
-export type ObjectFieldError = typeof ObjectFieldError
-
 export class ValidationSuccess<Output, Error> {
   readonly isValid = true
 
@@ -82,9 +79,6 @@ export interface FieldErrors<Error> {
 
 export class ValidationError<Output, Error> {
   readonly isValid = false
-
-  static objectFieldError: ValidationResult<never, ObjectFieldError> =
-    ValidationError.of(ObjectFieldError)
 
   private constructor(public error: FieldErrors<Error> | Error) {}
 

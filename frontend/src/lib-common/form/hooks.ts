@@ -15,7 +15,6 @@ import {
   ErrorOf,
   FieldErrors,
   Form,
-  ObjectFieldError,
   OutputOf,
   ShapeOf,
   StateOf,
@@ -36,7 +35,7 @@ export interface BoundForm<F extends AnyForm> {
   set: (value: StateOf<F>) => void
 
   inputInfo: () => InputInfo | undefined
-  translateError: (error: Exclude<ErrorOf<F>, ObjectFieldError>) => string
+  translateError: (error: ErrorOf<F>) => string
 
   isValid: () => boolean
   validationError: () => ErrorOf<F> | FieldErrors<ErrorOf<F>> | undefined
@@ -56,7 +55,7 @@ export type BoundFormShape<State, Shape> = BoundForm<
 export function useForm<F extends AnyForm>(
   form: F,
   initialState: () => StateOf<F>,
-  errorDict: Record<Exclude<ErrorOf<F>, ObjectFieldError>, string>,
+  errorDict: Record<ErrorOf<F>, string>,
   options: {
     onUpdate?: (
       prevState: StateOf<F>,
@@ -83,7 +82,7 @@ export function useForm<F extends AnyForm>(
     setState(value)
   }, [])
   const translateError = useCallback(
-    (error: Exclude<ErrorOf<F>, ObjectFieldError>): string => errorDict[error],
+    (error: ErrorOf<F>): string => errorDict[error],
     [errorDict]
   )
   return useMemo(
@@ -443,7 +442,7 @@ export function useFormUnionBranch<
 
 function validationHelpers<Output, Error extends string>(
   validate: () => ValidationResult<Output, Error>,
-  translateError: (error: Exclude<Error, ObjectFieldError>) => string,
+  translateError: (error: Error) => string,
   parentError?: {
     get: () => Error | FieldErrors<Error> | undefined
     map: (
@@ -473,14 +472,14 @@ function validationHelpers<Output, Error extends string>(
   return {
     inputInfo: (): InputInfo | undefined => {
       const error = getValidationError()
-      if (error === undefined || error === ObjectFieldError) return undefined
+      if (error === undefined) return undefined
       if (typeof error !== 'string') {
         // Subfield error
         return undefined
       }
       return {
         status: 'warning',
-        text: translateError(error as Exclude<Error, ObjectFieldError>)
+        text: translateError(error)
       }
     },
     translateError,
