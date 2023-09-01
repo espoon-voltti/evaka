@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { localDateRange } from 'lib-common/form/fields'
+import { localDateRange2 } from 'lib-common/form/fields'
 import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -30,7 +30,7 @@ import MutateButton, {
 } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
   PlainModal
@@ -55,7 +55,7 @@ import { postAbsencesMutation } from './queries'
 const absenceForm = mapped(
   object({
     selectedChildren: array(value<UUID>()),
-    range: required(localDateRange),
+    range: required(localDateRange2()),
     absenceType: required(value<AbsenceType | undefined>()),
     contractDayAbsenceTypeSettings: value<{
       visible: boolean
@@ -82,7 +82,11 @@ function initialFormState(
       ? { startDate: initialDate, endDate: initialDate }
       : { startDate: LocalDate.todayInSystemTz(), endDate: null }
   return {
-    range,
+    range: {
+      start: range.startDate.format(),
+      end: range.endDate?.format() ?? '',
+      config: { minDate: LocalDate.todayInSystemTz() }
+    },
     selectedChildren,
     absenceType: undefined,
     contractDayAbsenceTypeSettings: getContractDayAbsenceTypeSettings(
@@ -130,12 +134,14 @@ export default React.memo(function AbsenceModal({
     i18n.validationErrors,
     {
       onUpdate: (prevState, nextState) => {
+        const range = absenceForm.shape.range.validate(nextState.range)
         const contractDayAbsenceTypeSettings =
-          prevState.selectedChildren !== nextState.selectedChildren ||
-          prevState.range !== nextState.range
+          range.isValid &&
+          (prevState.selectedChildren !== nextState.selectedChildren ||
+            prevState.range !== nextState.range)
             ? getContractDayAbsenceTypeSettings(
                 nextState.selectedChildren,
-                nextState.range,
+                { startDate: range.value.start, endDate: range.value.end },
                 reservationsResponse.reservableRange,
                 reservationsResponse.days
               )
@@ -216,14 +222,13 @@ export default React.memo(function AbsenceModal({
               </LineContainer>
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.dateRange}</H2>
-                <DateRangePickerF
+                <DateRangePickerF2
                   bind={range}
                   locale={lang}
                   hideErrorsBeforeTouched={!showAllErrors}
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
-                  minDate={LocalDate.todayInSystemTz()}
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>

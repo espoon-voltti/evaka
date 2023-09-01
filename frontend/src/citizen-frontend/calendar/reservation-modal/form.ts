@@ -6,7 +6,7 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { localDateRange, string, localTimeRange } from 'lib-common/form/fields'
+import { string, localTimeRange, localDateRange2 } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -223,7 +223,7 @@ export const reservationForm = mapped(
     selectedChildren: validated(array(string()), (value) =>
       value.length > 0 ? undefined : 'required'
     ),
-    dateRange: required(localDateRange),
+    dateRange: required(localDateRange2()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion
   }),
@@ -307,8 +307,9 @@ export function initialState(
   return {
     selectedChildren,
     dateRange: {
-      startDate: initialStart,
-      endDate: initialEnd
+      start: initialStart?.format() ?? '',
+      end: initialEnd?.format() ?? '',
+      config: { minDate: dayProperties.minDate, maxDate: dayProperties.maxDate }
     },
     repetition: {
       domValue:
@@ -688,15 +689,31 @@ export class DayProperties {
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly combinedOperationDays: Set<number>
 
+  minDate: LocalDate | undefined
+  maxDate: LocalDate | undefined
+
   constructor(
     public readonly calendarDays: ReservationResponseDay[],
+    reservableRange: FiniteDateRange,
     private readonly holidayPeriods: HolidayPeriodInfo[]
   ) {
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const combinedOperationDays = new Set<number>()
     const holidays = new Set<string>()
 
+    let minDate: LocalDate | undefined = undefined
+    let maxDate: LocalDate | undefined = undefined
+
     calendarDays.forEach((day) => {
+      if (reservableRange.includes(day.date) && day.children.length > 0) {
+        if (!minDate || day.date.isBefore(minDate)) {
+          minDate = day.date
+        }
+        if (!maxDate || day.date.isAfter(maxDate)) {
+          maxDate = day.date
+        }
+      }
+
       const dayOfWeek = day.date.getIsoDayOfWeek()
       if (day.holiday) {
         holidays.add(day.date.formatIso())
@@ -713,6 +730,8 @@ export class DayProperties {
       })
     })
 
+    this.minDate = minDate
+    this.maxDate = maxDate
     this.calendarDays = calendarDays
     this.reservableDaysByChild = reservableDaysByChild
     this.combinedOperationDays = combinedOperationDays
