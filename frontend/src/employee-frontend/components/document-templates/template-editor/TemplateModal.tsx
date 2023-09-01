@@ -6,7 +6,7 @@ import React, { useMemo } from 'react'
 
 import {
   boolean,
-  localOpenEndedDateRange,
+  openEndedLocalDateRange,
   string
 } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
@@ -20,7 +20,7 @@ import { useMutationResult } from 'lib-common/query'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
-import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -37,7 +37,7 @@ const documentTemplateForm = object({
   language: required(oneOf<DocumentLanguage>()),
   confidential: boolean(),
   legalBasis: string(),
-  validity: required(localOpenEndedDateRange)
+  validity: required(openEndedLocalDateRange())
 })
 
 interface Props {
@@ -96,8 +96,9 @@ export default React.memo(function TemplateModal({
       confidential: true,
       legalBasis: '',
       validity: {
-        startDate: null,
-        endDate: null
+        start: '',
+        end: '',
+        config: undefined
       }
     }),
     {
@@ -126,7 +127,7 @@ export default React.memo(function TemplateModal({
       <InputFieldF bind={name} hideErrorsBeforeTouched data-qa="name-input" />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.validity}</Label>
-      <DateRangePickerF bind={validity} locale={lang} />
+      <DateRangePickerF2 bind={validity} locale={lang} />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.type}</Label>
       <SelectF bind={type} />

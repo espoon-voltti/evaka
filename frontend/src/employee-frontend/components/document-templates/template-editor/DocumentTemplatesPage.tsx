@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import DateRange from 'lib-common/date-range'
-import { localOpenEndedDateRange } from 'lib-common/form/fields'
+import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
@@ -18,7 +18,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF2 } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1 } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
@@ -30,6 +30,8 @@ import {
 } from '../queries'
 
 import TemplateModal from './TemplateModal'
+
+const validityForm = required(openEndedLocalDateRange())
 
 const ValidityEditor = React.memo(function ValidityEditor({
   id,
@@ -43,35 +45,32 @@ const ValidityEditor = React.memo(function ValidityEditor({
   const { i18n, lang } = useTranslation()
   const { mutateAsync: updateDocumentTemplateValidity, isIdle } =
     useMutationResult(updateDocumentTemplateValidityMutation)
-  const boundForm = useForm(
-    required(localOpenEndedDateRange),
+  const form = useForm(
+    validityForm,
     () => ({
-      startDate: validity.start,
-      endDate: validity.end
+      start: validity.start.format(),
+      end: validity.end?.format() ?? '',
+      config: undefined
     }),
     i18n.validationErrors
   )
 
   return (
     <FixedSpaceRow alignItems="center">
-      <DateRangePickerF
-        bind={boundForm}
-        locale={lang}
-        externalRangeValidation
-      />
+      <DateRangePickerF2 bind={form} locale={lang} />
       <IconButton
         icon={faCheck}
         aria-label={i18n.common.save}
         onClick={async () => {
           const result = await updateDocumentTemplateValidity({
             id: id,
-            validity: boundForm.value()
+            validity: form.value()
           })
           if (result.isSuccess) {
             onClose()
           }
         }}
-        disabled={!boundForm.isValid() || !isIdle}
+        disabled={!form.isValid() || !isIdle}
       />
       <IconButton
         icon={faTimes}
