@@ -403,7 +403,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         Action.Citizen.Person.READ_CHILDREN,
                         personId
                     )
-                    it.getIncomeStatementChildrenByGuardian(personId)
+                    it.getIncomeStatementChildrenByGuardian(personId, clock.today())
                 }
             }
             .also {

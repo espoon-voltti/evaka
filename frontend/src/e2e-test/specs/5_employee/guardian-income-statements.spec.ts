@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -29,6 +29,8 @@ let page: Page
 let personId: UUID
 let child: PersonDetail
 
+const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -38,7 +40,7 @@ beforeEach(async () => {
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
   await employeeLogin(page, financeAdmin.data)
 })
 
@@ -62,8 +64,8 @@ describe('Guardian income statements', () => {
       {
         type: 'CHILD_INCOME',
         otherInfo: 'Test other info',
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz(),
+        startDate: mockedNow.toLocalDate(),
+        endDate: mockedNow.toLocalDate(),
         attachmentIds: []
       }
     ])
