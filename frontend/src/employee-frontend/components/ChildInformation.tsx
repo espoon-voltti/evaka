@@ -119,7 +119,8 @@ const components = {
   assistance: requireOneOfPermittedActions(
     Assistance,
     'READ_ASSISTANCE',
-    'READ_ASSISTANCE_NEED_DECISIONS'
+    'READ_ASSISTANCE_NEED_DECISIONS',
+    'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
   ),
   'backup-care': requireOneOfPermittedActions(BackupCare, 'READ_BACKUP_CARE'),
   'family-contacts': requireOneOfPermittedActions(

@@ -14,6 +14,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
@@ -260,7 +262,39 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
             .mapTo<AssistanceNeedPreschoolDecisionBasics>()
             .list()
 
-    return decisions.map { decision ->
+    return fillInValidToForDecisionResults(decisions)
+}
+
+fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceNeedPreschoolDecisionId>
+): List<AssistanceNeedPreschoolDecisionBasics> {
+    // language=sql
+    val decisions =
+        createQuery<Any> {
+                sql(
+                    """
+        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
+            ad.selected_unit selected_unit_id, unit.name selected_unit_name,
+            ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
+        FROM assistance_need_preschool_decision ad
+        LEFT JOIN daycare unit ON unit.id = selected_unit
+        WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
+        ORDER BY ad.valid_from DESC NULLS FIRST, ad.created DESC;
+        """
+                        .trimIndent()
+                )
+            }
+            .mapTo<AssistanceNeedPreschoolDecisionBasics>()
+            .list()
+
+    return fillInValidToForDecisionResults(decisions)
+}
+
+private fun fillInValidToForDecisionResults(
+    decisions: List<AssistanceNeedPreschoolDecisionBasics>
+) =
+    decisions.map { decision ->
         if (decision.validFrom == null) return@map decision
 
         val followingStart =
@@ -280,7 +314,6 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
 
         decision.copy(validTo = maxOf(decision.validFrom, followingStart.minusDays(1)))
     }
-}
 
 fun Database.Transaction.deleteAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId

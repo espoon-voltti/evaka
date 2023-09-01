@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -26,6 +27,8 @@ import {
   EmployeeDetail
 } from '../../dev-api/types'
 import AssistanceNeedPreschoolDecisionPage from '../../pages/employee/assistance-need-decision/assistance-need-preschool-decision-page'
+import AssistanceNeedPreschoolDecisionPreviewPage from '../../pages/employee/assistance-need-decision/assistance-need-preschool-decision-preview-page'
+import ChildInformationPage from '../../pages/employee/child-information'
 import {
   AssistanceNeedDecisionsReport,
   AssistanceNeedPreschoolDecisionsReportDecision
@@ -37,7 +40,9 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let fixtures: AreaAndPersonFixtures
 let serviceWorker: EmployeeDetail
+let staff: EmployeeDetail
 let decisionPage: AssistanceNeedPreschoolDecisionPage
+let previewPage: AssistanceNeedPreschoolDecisionPreviewPage
 let childId: UUID
 let assistanceNeedDecision: DevAssistanceNeedPreschoolDecision
 
@@ -52,6 +57,7 @@ beforeEach(async () => {
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
+  staff = (await Fixture.employeeStaff(unitId).save()).data
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     childId,
@@ -230,5 +236,99 @@ describe('Assistance Need Decisions - Decision process', () => {
     await reportDecisionPage.rejectBtn.click()
     await reportDecisionPage.modalOkBtn.click()
     await reportDecisionPage.status.assertTextEquals('Hylätty')
+  })
+})
+
+let acceptedAssistanceNeedPreschoolDecision: DevAssistanceNeedPreschoolDecision
+describe('Decision visibility for role', () => {
+  describe('Staff', () => {
+    beforeEach(async () => {
+      acceptedAssistanceNeedPreschoolDecision = (
+        await Fixture.assistanceNeedPreschoolDecision()
+          .withChild(childId)
+          .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
+          .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+          .withForm({
+            validFrom: LocalDate.of(2022, 7, 1),
+            guardiansHeardOn: LocalDate.of(2022, 7, 1)
+          })
+          .withRequiredFieldsFilled(
+            daycareFixture.id,
+            serviceWorker.id,
+            serviceWorker.id
+          )
+          .with({
+            decisionMade: LocalDate.of(2022, 7, 1),
+            status: 'ACCEPTED',
+            unreadGuardianIds: [fixtures.familyWithTwoGuardians.guardian.id]
+          })
+          .save()
+      ).data
+
+      await Fixture.assistanceNeedPreschoolDecision()
+        .withChild(childId)
+        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
+        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+        .withRequiredFieldsFilled(
+          daycareFixture.id,
+          serviceWorker.id,
+          serviceWorker.id
+        )
+        .with({
+          status: 'DRAFT'
+        })
+        .withForm({ validFrom: LocalDate.of(2022, 8, 1) })
+        .save()
+
+      page = await Page.open()
+      await employeeLogin(page, staff)
+    })
+
+    test('Preview shows filled information', async () => {
+      await page.goto(
+        `${
+          config.employeeUrl
+        }/child-information/${childId}/assistance-need-preschool-decisions/${
+          acceptedAssistanceNeedPreschoolDecision?.id ?? ''
+        }`
+      )
+      previewPage = new AssistanceNeedPreschoolDecisionPreviewPage(page)
+
+      await previewPage.guardiansHeardOn.assertTextEquals(
+        acceptedAssistanceNeedPreschoolDecision.form.guardiansHeardOn?.format() ??
+          ''
+      )
+      await previewPage.selectedUnit.assertTextEquals(daycareFixture.name)
+      await previewPage.preparedBy1.assertTextEquals(
+        `${serviceWorker.firstName} ${serviceWorker.lastName}, ${acceptedAssistanceNeedPreschoolDecision.form.preparer1Title}`
+      )
+      await previewPage.decisionMaker.assertTextEquals(
+        `${serviceWorker.firstName} ${serviceWorker.lastName}, ${acceptedAssistanceNeedPreschoolDecision.form.decisionMakerTitle}`
+      )
+    })
+
+    test('Decision cannot be sent to the decision maker', async () => {
+      await page.goto(
+        `${
+          config.employeeUrl
+        }/child-information/${childId}/assistance-need-preschool-decisions/${
+          acceptedAssistanceNeedPreschoolDecision?.id ?? ''
+        }`
+      )
+      previewPage = new AssistanceNeedPreschoolDecisionPreviewPage(page)
+      await previewPage.sendDecisionButton.waitUntilHidden()
+    })
+
+    test('Only accepted decisions can be seen by staff', async () => {
+      await page.goto(config.employeeUrl + '/child-information/' + childId)
+      const childInformationPage = new ChildInformationPage(page)
+      const assistance = await childInformationPage.openCollapsible(
+        'assistance'
+      )
+
+      await assistance.assertAssistanceNeedDecisionCount(1)
+      const decision = await assistance.assistanceNeedDecisions(0)
+      expect(decision.status).toEqual('ACCEPTED')
+    })
   })
 })
