@@ -6,7 +6,13 @@ import classNames from 'classnames'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
+import { LocalDateRange2Field } from 'lib-common/form/fields'
+import {
+  BoundForm,
+  BoundFormShape,
+  useFormField,
+  useFormFields
+} from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
 import {
@@ -19,6 +25,9 @@ import UnderRowStatusIcon from '../../atoms/StatusIcon'
 import { useTranslations } from '../../i18n'
 
 import DatePicker, { DatePickerProps } from './DatePicker'
+import DateRangePickerLowLevel, {
+  DateRangePickerLowLevelProps
+} from './DateRangePickerLowLevel'
 import { nativeDatePickerEnabled } from './helpers'
 
 interface DateRangePickerProps
@@ -196,6 +205,51 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
           'startInfo' in props ? props.startInfo : startDate.inputInfo()
         }
         endInfo={'endInfo' in props ? props.endInfo : endDate.inputInfo()}
+      />
+      {info !== undefined ? (
+        <InputFieldUnderRow className={classNames(info.status)}>
+          <span>{info.text}</span> <UnderRowStatusIcon status={info.status} />
+        </InputFieldUnderRow>
+      ) : null}
+    </div>
+  )
+})
+
+export interface DateRangePickerF2Props
+  extends Omit<
+    DateRangePickerLowLevelProps,
+    | 'start'
+    | 'end'
+    | 'onChangeStart'
+    | 'onChangeEnd'
+    | 'startInfo'
+    | 'endInfo'
+    | 'minDate'
+    | 'maxDate'
+  > {
+  bind: BoundForm<LocalDateRange2Field>
+  info?: InputInfo | undefined
+}
+
+export const DateRangePickerF2 = React.memo(function DateRangePickerF2({
+  bind,
+  info: infoOverride,
+  ...props
+}: DateRangePickerF2Props) {
+  const { start, end, config } = useFormFields(bind)
+  const info = infoOverride ?? bind.inputInfo()
+  return (
+    <div>
+      <DateRangePickerLowLevel
+        start={start.state}
+        end={end.state}
+        onChangeStart={start.set}
+        onChangeEnd={end.set}
+        startInfo={start.inputInfo()}
+        endInfo={end.inputInfo()}
+        minDate={config.state?.minDate}
+        maxDate={config.state?.maxDate}
+        {...props}
       />
       {info !== undefined ? (
         <InputFieldUnderRow className={classNames(info.status)}>

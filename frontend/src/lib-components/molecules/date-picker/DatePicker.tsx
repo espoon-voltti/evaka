@@ -4,7 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import { LocalDate2Field } from 'lib-common/form/fields'
+import { BoundForm, BoundFormState, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 
 import { InputInfo } from '../../atoms/form/InputField'
@@ -95,6 +96,31 @@ export const DatePickerF = React.memo(function DatePickerF({
       date={state}
       onChange={set}
       info={'info' in props ? props.info : inputInfo()}
+    />
+  )
+})
+
+export interface DatePickerF2Props
+  extends Omit<
+    DatePickerLowLevelProps,
+    'value' | 'onChange' | 'minDate' | 'maxDate'
+  > {
+  bind: BoundForm<LocalDate2Field>
+}
+
+export const DatePickerF2 = React.memo(function DatePickerF({
+  bind,
+  ...props
+}: DatePickerF2Props) {
+  const { value, config } = useFormFields(bind)
+  return (
+    <DatePickerLowLevel
+      {...props}
+      value={value.state}
+      onChange={value.set}
+      minDate={config.state?.minDate}
+      maxDate={config.state?.maxDate}
+      info={'info' in props ? props.info : value.inputInfo()}
     />
   )
 })
