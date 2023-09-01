@@ -267,3 +267,9 @@ export function oneOf<Output>(): OneOf<Output, never> {
     shape: undefined
   }
 }
+
+export function nullBlank<Output, Error extends string, State, Shape>(
+  form: Form<Output | undefined, Error, State, Shape>
+): Form<Output | null, Error, State, Shape> {
+  return mapped(form, (value) => value ?? null)
+}
