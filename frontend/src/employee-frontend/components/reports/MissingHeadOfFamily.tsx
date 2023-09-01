@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { boolean, localDate } from 'lib-common/form/fields'
+import { boolean, openEndedLocalDateRange } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
@@ -15,7 +15,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -26,34 +26,25 @@ import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingHeadOfFamilyReportQuery } from './queries'
 
 const filterForm = object({
-  startDate: required(localDate()),
-  endDate: localDate(),
+  range: required(openEndedLocalDateRange()),
   showIntentionalDuplicates: boolean()
 })
 
 export default React.memo(function MissingHeadOfFamily() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const filters = useForm(
     filterForm,
     () => ({
-      startDate: {
-        value: LocalDate.todayInSystemTz().subMonths(1).withDate(1).format(),
-        config: undefined
-      },
-      endDate: {
-        value: LocalDate.todayInSystemTz()
-          .addMonths(2)
-          .lastDayOfMonth()
-          .format(),
-        config: undefined
-      },
+      range: openEndedLocalDateRange.fromDates(
+        LocalDate.todayInSystemTz().subMonths(1).withDate(1),
+        LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
+      ),
       showIntentionalDuplicates: false
     }),
     i18n.validationErrors
   )
-  const { startDate, endDate, showIntentionalDuplicates } =
-    useFormFields(filters)
+  const { range, showIntentionalDuplicates } = useFormFields(filters)
 
   const rows = useQueryResult(missingHeadOfFamilyReportQuery(filters.value()))
 
@@ -64,12 +55,7 @@ export default React.memo(function MissingHeadOfFamily() {
         <Title size={1}>{i18n.reports.missingHeadOfFamily.title}</Title>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
-          <DatePickerF bind={startDate} locale="fi" />
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
-          <DatePickerF bind={endDate} locale="fi" />
+          <DateRangePickerF bind={range} locale={lang} />
         </FilterRow>
 
         {featureFlags.experimental?.personDuplicate && (
@@ -109,8 +95,8 @@ export default React.memo(function MissingHeadOfFamily() {
               ]}
               filename={`Puuttuvat päämiehet ${filters
                 .value()
-                .startDate.formatIso()}-${
-                filters.value().endDate?.formatIso() ?? ''
+                .range.start.formatIso()}-${
+                filters.value().range.end?.formatIso() ?? ''
               }.csv`}
             />
             <TableScrollable>

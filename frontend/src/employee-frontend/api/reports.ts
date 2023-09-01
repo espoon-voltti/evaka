@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
@@ -133,8 +134,7 @@ export async function getPresenceReport(
 }
 
 export interface MissingHeadOfFamilyReportFilters {
-  startDate: LocalDate
-  endDate: LocalDate | undefined
+  range: DateRange
   showIntentionalDuplicates: boolean
 }
 
@@ -146,8 +146,8 @@ export async function getMissingHeadOfFamilyReport(
       '/reports/missing-head-of-family',
       {
         params: {
-          from: filters.startDate.formatIso(),
-          to: filters.endDate?.formatIso(),
+          from: filters.range.start.formatIso(),
+          to: filters.range.end?.formatIso(),
           showIntentionalDuplicates: filters.showIntentionalDuplicates
         }
       }

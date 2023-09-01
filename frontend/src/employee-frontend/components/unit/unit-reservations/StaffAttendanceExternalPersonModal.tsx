@@ -71,10 +71,7 @@ function initialFormState(
   }))
 
   return {
-    date: {
-      value: LocalDate.todayInHelsinkiTz().format(),
-      config: undefined
-    },
+    date: localDate.fromDate(LocalDate.todayInHelsinkiTz()),
     arrivalTime: LocalTime.nowInHelsinkiTz().format(),
     departureTime: '',
     name: '',

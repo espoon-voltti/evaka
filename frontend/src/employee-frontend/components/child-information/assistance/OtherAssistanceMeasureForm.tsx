@@ -86,11 +86,7 @@ export const OtherAssistanceMeasureForm = React.memo(
           domValue: initialData?.type ?? otherAssistanceMeasureTypes[0],
           options: typeOptions(i18n)
         },
-        validDuring: {
-          start: initialData?.validDuring.start?.format() ?? '',
-          end: initialData?.validDuring.end?.format() ?? '',
-          config: undefined
-        },
+        validDuring: localDateRange.fromRange(initialData?.validDuring),
         allRows: props.allRows,
         ignoredId: initialData?.id
       }),

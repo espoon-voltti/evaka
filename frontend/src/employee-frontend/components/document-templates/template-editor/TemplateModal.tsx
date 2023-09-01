@@ -6,6 +6,7 @@ import React, { useMemo } from 'react'
 
 import {
   boolean,
+  localDateRange,
   openEndedLocalDateRange,
   string
 } from 'lib-common/form/fields'
@@ -95,11 +96,7 @@ export default React.memo(function TemplateModal({
       },
       confidential: true,
       legalBasis: '',
-      validity: {
-        start: '',
-        end: '',
-        config: undefined
-      }
+      validity: localDateRange.empty()
     }),
     {
       ...i18n.validationErrors

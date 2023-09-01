@@ -72,11 +72,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
     assistanceFactorForm,
     () => ({
       capacityFactor: initialData?.capacityFactor.toString() ?? '',
-      validDuring: {
-        start: initialData?.validDuring.start?.format() ?? '',
-        end: initialData?.validDuring.end?.format() ?? '',
-        config: undefined
-      },
+      validDuring: localDateRange.fromRange(initialData?.validDuring),
       allRows: props.allRows,
       ignoredId: initialData?.id
     }),

@@ -84,11 +84,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
         domValue: initialData?.level ?? daycareAssistanceLevels[0],
         options: levelOptions(i18n)
       },
-      validDuring: {
-        start: initialData?.validDuring.start?.format() ?? '',
-        end: initialData?.validDuring.end?.format() ?? '',
-        config: undefined
-      },
+      validDuring: localDateRange.fromRange(initialData?.validDuring),
       allRows: props.allRows,
       ignoredId: initialData?.id
     }),

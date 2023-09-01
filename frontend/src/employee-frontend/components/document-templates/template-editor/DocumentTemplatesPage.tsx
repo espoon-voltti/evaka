@@ -47,11 +47,7 @@ const ValidityEditor = React.memo(function ValidityEditor({
     useMutationResult(updateDocumentTemplateValidityMutation)
   const form = useForm(
     validityForm,
-    () => ({
-      start: validity.start.format(),
-      end: validity.end?.format() ?? '',
-      config: undefined
-    }),
+    () => openEndedLocalDateRange.fromRange(validity),
     i18n.validationErrors
   )
 

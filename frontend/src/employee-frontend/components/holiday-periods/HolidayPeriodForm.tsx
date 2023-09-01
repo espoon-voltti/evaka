@@ -59,26 +59,17 @@ const updateHolidayPeriodForm = makeHolidayPeriodForm('update')
 type HolidayPeriodFormState = StateOf<typeof createHolidayPeriodForm>
 
 const emptyFormState: HolidayPeriodFormState = {
-  period: {
-    start: '',
-    end: '',
-    config: undefined
-  },
-  reservationDeadline: { value: '', config: undefined },
+  period: localDateRange.empty(),
+  reservationDeadline: localDate.empty(),
   confirm: false
 }
 
 function initialFormState(p: HolidayPeriod): HolidayPeriodFormState {
   return {
-    period: {
-      start: p.period.start.format(),
-      end: p.period.end.format(),
-      config: undefined
-    },
-    reservationDeadline: {
-      value: p.reservationDeadline.format(),
-      config: { maxDate: p.period.start }
-    },
+    period: localDateRange.fromRange(p.period),
+    reservationDeadline: localDate.fromDate(p.reservationDeadline, {
+      maxDate: p.period.start
+    }),
     confirm: true
   }
 }

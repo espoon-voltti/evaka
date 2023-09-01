@@ -54,107 +54,161 @@ const validateLocalDate = (
   return ValidationSuccess.of(date)
 }
 
-export const localDate = () =>
-  transformed(
-    object({
-      value: string(),
-      config: value<LocalDateConfig | undefined>()
-    }),
-    ({ value, config }) => {
-      if (value === '') return ValidationSuccess.of(undefined)
-      return validateLocalDate(value, config)
-    }
-  )
+export const localDate = Object.assign(
+  () =>
+    transformed(
+      object({
+        value: string(),
+        config: value<LocalDateConfig | undefined>()
+      }),
+      ({ value, config }) => {
+        if (value === '') return ValidationSuccess.of(undefined)
+        return validateLocalDate(value, config)
+      }
+    ),
+  {
+    empty: () => ({ value: '', config: undefined }),
+    fromDate: (date: LocalDate | null, config?: LocalDateConfig) => ({
+      value: date?.format() ?? '',
+      config
+    })
+  }
+)
 
 export type LocalDateField = FieldType<typeof localDate>
 
-export const localDateRange = () =>
-  transformed(
-    object({
-      start: string(),
-      end: string(),
-      config: value<LocalDateConfig | undefined>()
-    }),
-    ({
-      start,
-      end,
+export const localDateRange = Object.assign(
+  () =>
+    transformed(
+      object({
+        start: string(),
+        end: string(),
+        config: value<LocalDateConfig | undefined>()
+      }),
+      ({
+        start,
+        end,
+        config
+      }): ValidationResult<
+        FiniteDateRange | undefined,
+        'required' | 'timeFormat' | 'dateTooEarly' | 'dateTooLate'
+      > => {
+        if (start === '' && end === '') return ValidationSuccess.of(undefined)
+
+        const startDateResult = validateLocalDate(start, config)
+        const endDateResult = validateLocalDate(end, config)
+        if (!startDateResult.isValid || !endDateResult.isValid) {
+          const errors: FieldErrors<
+            'required' | 'timeFormat' | 'dateTooEarly' | 'dateTooLate'
+          > = {}
+          if (start === '') {
+            errors.start = 'required'
+          } else if (!startDateResult.isValid) {
+            errors.start = startDateResult.error
+          }
+          if (end === '') {
+            errors.end = 'required'
+          } else if (!endDateResult.isValid) {
+            errors.end = endDateResult.error
+          }
+          return ValidationError.fromFieldErrors(errors)
+        }
+
+        const startDate = startDateResult.value
+        const endDate = endDateResult.value
+
+        if (endDate.isBefore(startDate)) {
+          return ValidationError.of('timeFormat')
+        }
+
+        return ValidationSuccess.of(new FiniteDateRange(startDate, endDate))
+      }
+    ),
+  {
+    empty: (config?: LocalDateConfig) => ({ start: '', end: '', config }),
+    fromRange: (
+      range: FiniteDateRange | null | undefined,
+      config?: LocalDateConfig
+    ) => ({
+      start: range?.start.format() ?? '',
+      end: range?.end.format() ?? '',
       config
-    }): ValidationResult<
-      FiniteDateRange | undefined,
-      'required' | 'timeFormat' | 'dateTooEarly' | 'dateTooLate'
-    > => {
-      if (start === '' && end === '') return ValidationSuccess.of(undefined)
-
-      const startDateResult = validateLocalDate(start, config)
-      const endDateResult = validateLocalDate(end, config)
-      if (!startDateResult.isValid || !endDateResult.isValid) {
-        const errors: FieldErrors<
-          'required' | 'timeFormat' | 'dateTooEarly' | 'dateTooLate'
-        > = {}
-        if (start === '') {
-          errors.start = 'required'
-        } else if (!startDateResult.isValid) {
-          errors.start = startDateResult.error
-        }
-        if (end === '') {
-          errors.end = 'required'
-        } else if (!endDateResult.isValid) {
-          errors.end = endDateResult.error
-        }
-        return ValidationError.fromFieldErrors(errors)
-      }
-
-      const startDate = startDateResult.value
-      const endDate = endDateResult.value
-
-      if (endDate.isBefore(startDate)) {
-        return ValidationError.of('timeFormat')
-      }
-
-      return ValidationSuccess.of(new FiniteDateRange(startDate, endDate))
-    }
-  )
+    }),
+    fromDates: (
+      start: LocalDate | null | undefined,
+      end: LocalDate | null | undefined,
+      config?: LocalDateConfig
+    ) => ({
+      start: start?.format() ?? '',
+      end: end?.format() ?? '',
+      config
+    })
+  }
+)
 
 export type LocalDateRangeField = FieldType<typeof localDateRange>
 
-export const openEndedLocalDateRange = () =>
-  transformed(
-    object({
-      start: string(),
-      end: string(),
-      config: value<LocalDateConfig | undefined>()
+export const openEndedLocalDateRange = Object.assign(
+  () =>
+    transformed(
+      object({
+        start: string(),
+        end: string(),
+        config: value<LocalDateConfig | undefined>()
+      }),
+      ({ start, end, config }) => {
+        if (start === '' && end === '') return ValidationSuccess.of(undefined)
+
+        const startDateResult = validateLocalDate(start, config)
+        const endDateResult =
+          end === ''
+            ? ValidationSuccess.of(null)
+            : validateLocalDate(end, config)
+        if (!startDateResult.isValid || !endDateResult.isValid) {
+          const errors: FieldErrors<
+            'required' | 'timeFormat' | 'dateTooEarly' | 'dateTooLate'
+          > = {}
+          if (start === '') {
+            errors.start = 'required'
+          } else if (!startDateResult.isValid) {
+            errors.start = startDateResult.error
+          }
+          if (!endDateResult.isValid) {
+            errors.end = endDateResult.error
+          }
+          return ValidationError.fromFieldErrors(errors)
+        }
+
+        const startDate = startDateResult.value
+        const endDate = endDateResult.value
+
+        if (endDate !== null && endDate.isBefore(startDate)) {
+          return ValidationError.of('timeFormat')
+        }
+
+        return ValidationSuccess.of(new DateRange(startDate, endDate))
+      }
+    ),
+  {
+    fromRange: (
+      range: DateRange | null | undefined,
+      config?: LocalDateConfig
+    ) => ({
+      start: range?.start.format() ?? '',
+      end: range?.end?.format() ?? '',
+      config
     }),
-    ({ start, end, config }) => {
-      if (start === '' && end === '') return ValidationSuccess.of(undefined)
-
-      const startDateResult = validateLocalDate(start, config)
-      const endDateResult =
-        end === '' ? ValidationSuccess.of(null) : validateLocalDate(end, config)
-      if (!startDateResult.isValid || !endDateResult.isValid) {
-        const errors: FieldErrors<
-          'required' | 'timeFormat' | 'dateTooEarly' | 'dateTooLate'
-        > = {}
-        if (start === '') {
-          errors.start = 'required'
-        } else if (!startDateResult.isValid) {
-          errors.start = startDateResult.error
-        }
-        if (!endDateResult.isValid) {
-          errors.end = endDateResult.error
-        }
-        return ValidationError.fromFieldErrors(errors)
-      }
-
-      const startDate = startDateResult.value
-      const endDate = endDateResult.value
-
-      if (endDate !== null && endDate.isBefore(startDate)) {
-        return ValidationError.of('timeFormat')
-      }
-
-      return ValidationSuccess.of(new DateRange(startDate, endDate))
-    }
-  )
+    fromDates: (
+      start: LocalDate | null | undefined,
+      end: LocalDate | null | undefined,
+      config?: LocalDateConfig
+    ) => ({
+      start: start?.format() ?? '',
+      end: end?.format() ?? '',
+      config
+    })
+  }
+)
 
 export const localTime = () =>
   transformed(

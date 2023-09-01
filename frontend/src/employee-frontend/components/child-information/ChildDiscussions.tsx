@@ -100,9 +100,9 @@ const CreationModal = React.memo(function CreationModal({
   const form = useForm(
     discussionForm,
     () => ({
-      offeredDate: { value: '', config: undefined },
-      heldDate: { value: '', config: undefined },
-      counselingDate: { value: '', config: undefined }
+      offeredDate: localDate.empty(),
+      heldDate: localDate.empty(),
+      counselingDate: localDate.empty()
     }),
     i18n.validationErrors
   )
@@ -209,15 +209,9 @@ function initialFormState(
   discussion: ChildDiscussionData
 ): StateOf<typeof discussionForm> {
   return {
-    offeredDate: {
-      value: discussion.offeredDate?.format() ?? '',
-      config: undefined
-    },
-    heldDate: { value: discussion.heldDate?.format() ?? '', config: undefined },
-    counselingDate: {
-      value: discussion.counselingDate?.format() ?? '',
-      config: undefined
-    }
+    offeredDate: localDate.fromDate(discussion.offeredDate),
+    heldDate: localDate.fromDate(discussion.heldDate),
+    counselingDate: localDate.fromDate(discussion.counselingDate)
   }
 }
 

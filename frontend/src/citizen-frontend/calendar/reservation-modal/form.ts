@@ -314,11 +314,10 @@ export function initialState(
   const selectedChildren = availableChildren.map((child) => child.id)
   return {
     selectedChildren,
-    dateRange: {
-      start: initialStart?.format() ?? '',
-      end: initialEnd?.format() ?? '',
-      config: { minDate: dayProperties.minDate, maxDate: dayProperties.maxDate }
-    },
+    dateRange: localDateRange.fromDates(initialStart, initialEnd, {
+      minDate: dayProperties.minDate,
+      maxDate: dayProperties.maxDate
+    }),
     repetition: {
       domValue:
         initialStart !== null && initialEnd !== null

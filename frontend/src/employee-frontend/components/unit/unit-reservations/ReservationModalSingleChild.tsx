@@ -170,14 +170,10 @@ export function initialState(
   i18n: Translations
 ): StateOf<typeof reservationForm> {
   return {
-    dateRange: {
-      start: initialStart?.format() ?? '',
-      end: initialEnd?.format() ?? '',
-      config: {
-        minDate: reservableDates.start,
-        maxDate: reservableDates.end
-      }
-    },
+    dateRange: localDateRange.fromDates(initialStart, initialEnd, {
+      minDate: reservableDates.start,
+      maxDate: reservableDates.end
+    }),
     repetition: {
       domValue: 'DAILY' as const,
       options: repetitionOptions(i18n)

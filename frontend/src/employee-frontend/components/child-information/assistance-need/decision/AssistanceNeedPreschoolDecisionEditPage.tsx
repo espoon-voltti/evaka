@@ -287,31 +287,20 @@ const DecisionEditor = React.memo(function DecisionEditor({
         domValue: decision.form.type || '',
         options: getTypeOptions(decision.form.language)
       },
-      validFrom: {
-        value: decision.form.validFrom?.format() ?? '',
-        config: undefined
-      },
-      basisDocumentPedagogicalReportDate: {
-        value: decision.form.basisDocumentPedagogicalReportDate?.format() ?? '',
-        config: undefined
-      },
-      basisDocumentPsychologistStatementDate: {
-        value:
-          decision.form.basisDocumentPsychologistStatementDate?.format() ?? '',
-        config: undefined
-      },
-      basisDocumentSocialReportDate: {
-        value: decision.form.basisDocumentSocialReportDate?.format() ?? '',
-        config: undefined
-      },
-      basisDocumentDoctorStatementDate: {
-        value: decision.form.basisDocumentDoctorStatementDate?.format() ?? '',
-        config: undefined
-      },
-      guardiansHeardOn: {
-        value: decision.form.guardiansHeardOn?.format() ?? '',
-        config: undefined
-      }
+      validFrom: localDate.fromDate(decision.form.validFrom),
+      basisDocumentPedagogicalReportDate: localDate.fromDate(
+        decision.form.basisDocumentPedagogicalReportDate
+      ),
+      basisDocumentPsychologistStatementDate: localDate.fromDate(
+        decision.form.basisDocumentPsychologistStatementDate
+      ),
+      basisDocumentSocialReportDate: localDate.fromDate(
+        decision.form.basisDocumentSocialReportDate
+      ),
+      basisDocumentDoctorStatementDate: localDate.fromDate(
+        decision.form.basisDocumentDoctorStatementDate
+      ),
+      guardiansHeardOn: localDate.fromDate(decision.form.guardiansHeardOn)
     }),
     i18n.validationErrors
   )

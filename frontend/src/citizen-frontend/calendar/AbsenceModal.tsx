@@ -82,11 +82,9 @@ function initialFormState(
       ? { startDate: initialDate, endDate: initialDate }
       : { startDate: LocalDate.todayInSystemTz(), endDate: null }
   return {
-    range: {
-      start: range.startDate.format(),
-      end: range.endDate?.format() ?? '',
-      config: { minDate: LocalDate.todayInSystemTz() }
-    },
+    range: localDateRange.fromDates(range.startDate, range.endDate, {
+      minDate: LocalDate.todayInSystemTz()
+    }),
     selectedChildren,
     absenceType: undefined,
     contractDayAbsenceTypeSettings: getContractDayAbsenceTypeSettings(
