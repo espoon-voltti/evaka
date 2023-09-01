@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+
 import classNames from 'classnames'
 import React, { useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
 import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
@@ -16,11 +18,8 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import UnderRowStatusIcon from '../../atoms/StatusIcon'
 import { useTranslations } from '../../i18n'
 
-import DatePicker, {
-  DatePickerProps,
-  DatePickerSpacer,
-  nativeDatePickerEnabled
-} from './DatePicker'
+import DatePicker, { DatePickerProps } from './DatePicker'
+import { nativeDatePickerEnabled } from './helpers'
 
 interface DateRangePickerProps
   extends Omit<DatePickerProps, 'date' | 'onChange'> {
@@ -148,6 +147,14 @@ const DateRangePicker = React.memo(function DateRangePicker({
 })
 
 export default DateRangePicker
+
+export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
+  return <DateInputSpacer>–</DateInputSpacer>
+})
+
+const DateInputSpacer = styled.div`
+  padding: 6px;
+`
 
 export interface DateRangePickerFProps
   extends Omit<DateRangePickerProps, 'start' | 'end' | 'onChange'> {

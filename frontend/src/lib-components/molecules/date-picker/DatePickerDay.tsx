@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { fi, sv, enGB } from 'date-fns/locale'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { DayPicker, DayModifiers } from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
@@ -12,62 +12,49 @@ import { capitalizeFirstLetter } from 'lib-common/string'
 
 interface Props {
   handleDayClick: (day: Date, modifiers?: DayModifiers) => void
-  inputValue: LocalDate | null
+  inputValue: string
   locale: 'fi' | 'sv' | 'en'
-  isInvalidDate?: (date: LocalDate) => boolean
-  initialMonth?: LocalDate
   minDate?: LocalDate
   maxDate?: LocalDate
+  initialMonth?: LocalDate
 }
 
 export default React.memo(function DatePickerDay({
   handleDayClick,
   inputValue,
   locale,
-  isInvalidDate,
-  initialMonth,
   minDate,
-  maxDate
+  maxDate,
+  initialMonth
 }: Props) {
-  const localeData = useLocaleWithCapitalizedNames(locale)
-  const [month, setMonth] = useState<Date>(
-    initialMonth?.toSystemTzDate() ??
-      LocalDate.todayInHelsinkiTz().toSystemTzDate()
+  const date = useMemo(
+    () => LocalDate.parseFiOrNull(inputValue) ?? undefined,
+    [inputValue]
   )
 
-  useEffect(() => {
-    if (inputValue) {
-      setMonth(inputValue.toSystemTzDate())
-    }
-  }, [inputValue])
+  const localeData = useLocaleWithCapitalizedNames(locale)
+  const [month, setMonth] = useState<Date>(
+    () =>
+      initialMonth?.toSystemTzDate() ??
+      date?.toSystemTzDate() ??
+      LocalDate.todayInHelsinkiTz().toSystemTzDate()
+  )
 
   return (
     <DayPicker
       onDayClick={handleDayClick}
       locale={localeData}
-      selected={inputValue?.toSystemTzDate() ?? undefined}
+      selected={date?.toSystemTzDate()}
       month={month}
-      onMonthChange={(m) => setMonth(m)}
+      onMonthChange={setMonth}
       disabled={(date: Date) => {
         const localDate = LocalDate.fromSystemTzDate(date)
-
-        if (isInvalidDate?.(localDate)) {
-          return true
-        }
-
-        if (minDate && minDate.isAfter(localDate)) {
-          return true
-        }
-
-        if (maxDate && maxDate.isBefore(localDate)) {
-          return true
-        }
-
-        return false
+        return (
+          (minDate && minDate.isAfter(localDate)) ||
+          (maxDate && maxDate.isBefore(localDate)) ||
+          false
+        )
       }}
-      defaultMonth={
-        inputValue?.toSystemTzDate() ?? initialMonth?.toSystemTzDate()
-      }
     />
   )
 })

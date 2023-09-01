@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -12,25 +12,21 @@ import InputField, { InputInfo } from '../../atoms/form/InputField'
 import { useTranslations } from '../../i18n'
 
 interface Props {
-  date: LocalDate | null
-  setDate: (date: LocalDate | null) => void
+  value: string
+  onChange: (value: string) => void
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
-  onKeyPress?: (e: React.KeyboardEvent) => void
   'data-qa'?: string
   id?: string
   required?: boolean
   locale: 'fi' | 'sv' | 'en'
   useBrowserPicker?: boolean
-  minDate?: LocalDate
-  maxDate?: LocalDate
-  datePickerVisible: boolean
 }
 
-const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
+const DISALLOWED_CHARACTERS = /[^0-9.]+/g
 
 const DateInputField = styled(InputField)`
   &::-webkit-date-and-time-value {
@@ -39,114 +35,65 @@ const DateInputField = styled(InputField)`
 `
 
 export default React.memo(function DatePickerInput({
-  date,
-  setDate,
+  value,
+  onChange,
   info,
   hideErrorsBeforeTouched,
   disabled,
   onFocus,
   onBlur,
-  onKeyPress,
   id,
   required,
   locale,
   useBrowserPicker = false,
-  minDate,
-  maxDate,
-  datePickerVisible,
-  ...props
+  'data-qa': dataQa
 }: Props) {
   const i18n = useTranslations()
   const ariaId = useUniqueId('date-picker-input')
-  const formattedDate = useMemo(() => (date ? date.format() : ''), [date])
-
-  const [inputValue, setInputValue] = useState(formattedDate)
-  const [hasFocus, setHasFocus] = useState(false)
-
-  if (!hasFocus && formattedDate !== inputValue) {
-    // When the input has no focus, keep it in sync with the date prop
-    setInputValue(formattedDate)
-  }
-  const isValid = useMemo(
-    () => LocalDate.parseFiOrNull(inputValue) !== null,
-    [inputValue]
-  )
-
-  const handleFocus = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      setHasFocus(true)
-      onFocus(e)
-    },
-    [onFocus]
-  )
-
-  const handleBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      setHasFocus(false)
-      onBlur(e)
-    },
-    [onBlur]
-  )
 
   const handleChange = useCallback(
     (target: EventTarget & HTMLInputElement) => {
       if (useBrowserPicker) {
-        setDate(
+        onChange(
           target.valueAsDate
-            ? LocalDate.fromSystemTzDate(target.valueAsDate)
-            : null
+            ? LocalDate.fromSystemTzDate(target.valueAsDate).format(
+                'dd.MM.yyyy'
+              )
+            : ''
         )
       } else {
         const value = target.value.replace(DISALLOWED_CHARACTERS, '')
-        setInputValue(value)
-        setDate(LocalDate.parseFiOrNull(value))
+        onChange(value)
       }
     },
-    [setDate, useBrowserPicker]
+    [onChange, useBrowserPicker]
   )
-
-  const dateProps = useBrowserPicker
-    ? {
-        type: 'date' as const,
-        min: minDate?.formatIso(),
-        max: maxDate?.formatIso()
-      }
-    : {}
 
   return (
     <>
       <DateInputField
         placeholder={i18n.datePicker.placeholder}
-        value={useBrowserPicker ? date?.formatIso() ?? '' : inputValue}
+        value={value}
         onChangeTarget={handleChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
         aria-describedby={ariaId}
-        info={
-          !datePickerVisible && !isValid && inputValue !== ''
-            ? {
-                status: 'warning',
-                text: i18n.datePicker.validationErrors.validDate
-              }
-            : info
-        }
+        info={info}
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         readonly={disabled}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onKeyPress={onKeyPress}
-        data-qa={props['data-qa']}
+        data-qa={dataQa}
         id={id}
         required={required}
         width="s"
-        {...dateProps}
       />
-      <StyledP lang={locale} id={ariaId}>
+      <HelpTextForScreenReader lang={locale} id={ariaId}>
         {i18n.datePicker.description}
-      </StyledP>
+      </HelpTextForScreenReader>
     </>
   )
 })
 
-const StyledP = styled.p`
+const HelpTextForScreenReader = styled.p`
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;
