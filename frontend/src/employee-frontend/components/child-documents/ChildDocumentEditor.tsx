@@ -231,6 +231,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 text={i18n.childInformation.childDocuments.editor.publish}
                 primary
                 onClick={publishAndGoBack}
+                disabled
               />
             )}
           </FixedSpaceRow>
