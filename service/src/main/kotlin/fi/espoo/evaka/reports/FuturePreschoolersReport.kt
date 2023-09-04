@@ -109,8 +109,6 @@ LEFT JOIN (
     SELECT guardian_id AS id FROM guardian WHERE child_id = p.id
     UNION
     SELECT parent_id AS id FROM foster_parent WHERE child_id = p.id AND valid_during @> :today
-    EXCEPT 
-    SELECT guardian_id AS id FROM guardian_blocklist where child_id = p.id
     LIMIT 1
     )
 LEFT JOIN (
@@ -120,8 +118,6 @@ LEFT JOIN (
     SELECT guardian_id AS id FROM guardian WHERE child_id = p.id
     UNION
     SELECT parent_id AS id FROM foster_parent WHERE child_id = p.id AND valid_during @> :today
-    EXCEPT 
-    SELECT guardian_id AS id FROM guardian_blocklist where child_id = p.id
     LIMIT 1
     OFFSET 1
     )
