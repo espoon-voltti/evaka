@@ -66,7 +66,8 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           ? new DateRange(form.startDate, form.endDate)
           : null,
         new DateRange(initialForm.startDate, initialForm.endDate),
-        false // only range can be edited
+        false, // only range can be edited
+        LocalDate.todayInHelsinkiTz()
       ),
     [form, initialForm]
   )

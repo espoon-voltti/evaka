@@ -74,7 +74,8 @@ function ServiceNeedEditorRow({
           ? new DateRange(initialForm.startDate, initialForm.endDate ?? null)
           : null,
         form.optionId !== initialForm.optionId ||
-          form.shiftCare !== initialForm.shiftCare
+          form.shiftCare !== initialForm.shiftCare,
+        LocalDate.todayInHelsinkiTz()
       ),
     [form, initialForm]
   )

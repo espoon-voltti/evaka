@@ -13,13 +13,14 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 export const isChangeRetroactive = (
   newRange: DateRange | FiniteDateRange | null,
   prevRange: DateRange | FiniteDateRange | null,
-  contentChanged: boolean
+  contentChanged: boolean,
+  today: LocalDate
 ): boolean => {
   if (!newRange) {
     // form is not yet valid anyway
     return false
   }
-  const processedEnd = LocalDate.todayInHelsinkiTz().withDate(1).subDays(1)
+  const processedEnd = today.withDate(1).subDays(1)
 
   const newRangeAffectsHistory = newRange.start.isEqualOrBefore(processedEnd)
   if (prevRange === null) {

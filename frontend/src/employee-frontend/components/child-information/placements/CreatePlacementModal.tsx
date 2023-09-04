@@ -60,7 +60,8 @@ function CreatePlacementModal({ childId, reload }: Props) {
           ? new FiniteDateRange(form.startDate, form.endDate)
           : null,
         null,
-        false
+        false,
+        LocalDate.todayInHelsinkiTz()
       ),
     [form]
   )

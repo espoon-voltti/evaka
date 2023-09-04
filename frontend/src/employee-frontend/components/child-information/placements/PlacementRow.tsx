@@ -130,7 +130,8 @@ export default React.memo(function PlacementRow({
       isChangeRetroactive(
         new DateRange(form.startDate, form.endDate),
         new DateRange(placement.startDate, placement.endDate),
-        false // only range can be edited
+        false, // only range can be edited
+        LocalDate.todayInHelsinkiTz()
       ),
     [form, placement]
   )
