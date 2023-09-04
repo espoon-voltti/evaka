@@ -102,7 +102,7 @@ const features: Features = {
       fosterParents: true,
       serviceWorkerMessaging: true,
       childDocuments: false,
-      citizenEmailNotificationSettings: false,
+      citizenEmailNotificationSettings: true,
       feeDecisionIgnoredStatus: false
     }
   }
