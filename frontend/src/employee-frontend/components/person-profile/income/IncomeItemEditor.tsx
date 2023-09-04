@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import isEqual from 'lodash/isEqual'
+import omit from 'lodash/omit'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
@@ -13,6 +15,7 @@ import {
   incomeEffects,
   IncomeValue
 } from 'lib-common/api-types/income'
+import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -40,6 +43,9 @@ import {
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeBody, IncomeFields } from '../../../types/income'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../common/RetroactiveConfirmation'
 
 import IncomeTable, {
   IncomeTableData,
@@ -163,14 +169,27 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
 }: Props) {
   const { i18n, lang } = useTranslation()
 
-  const [editedIncome, setEditedIncome] = useState<IncomeForm>(() =>
-    baseIncome ? incomeFormFromIncome(baseIncome) : emptyIncome
+  const initialForm = useMemo(
+    () => (baseIncome ? incomeFormFromIncome(baseIncome) : emptyIncome),
+    [baseIncome]
   )
+  const [editedIncome, setEditedIncome] = useState<IncomeForm>(initialForm)
   const [validationErrors, setValidationErrors] = useState<
     Partial<{ [K in keyof Income | 'dates']: boolean }>
   >({})
+  const retroactive = useMemo(() => {
+    const initialContent = omit(initialForm, ['validFrom', 'validTo'])
+    const editedContent = omit(editedIncome, ['validFrom', 'validTo'])
+    return isChangeRetroactive(
+      new DateRange(editedIncome.validFrom, editedIncome.validTo ?? null),
+      new DateRange(initialForm.validFrom, initialForm.validTo ?? null),
+      !isEqual(initialContent, editedContent),
+      LocalDate.todayInHelsinkiTz()
+    )
+  }, [editedIncome, initialForm])
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
-  const onChange = useCallback(
+  const onRangeChange = useCallback(
     (from: LocalDate | null, to: LocalDate | null) =>
       from
         ? setEditedIncome((prev) => ({
@@ -202,11 +221,20 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         <DateRangePicker
           start={editedIncome.validFrom}
           end={editedIncome.validTo || null}
-          onChange={onChange}
+          onChange={onRangeChange}
           onValidationResult={setValidationResult}
           locale={lang}
         />
       </div>
+      {retroactive && (
+        <>
+          <Gap size="m" />
+          <RetroactiveConfirmation
+            confirmed={confirmedRetroactive}
+            setConfirmed={setConfirmedRetroactive}
+          />
+        </>
+      )}
       <Gap size="L" />
 
       <Label>{i18n.personProfile.income.details.effect}</Label>
@@ -322,7 +350,10 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}
-          disabled={Object.values(validationErrors).some(Boolean)}
+          disabled={
+            Object.values(validationErrors).some(Boolean) ||
+            (retroactive && !confirmedRetroactive)
+          }
           onClick={(): Promise<Result<unknown>> | void => {
             const body = formToIncomeBody(editedIncome)
             if (!body) return
