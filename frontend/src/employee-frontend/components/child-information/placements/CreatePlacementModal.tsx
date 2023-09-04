@@ -6,6 +6,7 @@ import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -16,6 +17,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { placementTypes } from 'lib-customizations/employee'
 import { faMapMarkerAlt } from 'lib-icons'
@@ -23,6 +25,9 @@ import { faMapMarkerAlt } from 'lib-icons'
 import { createPlacement } from '../../../api/child/placements'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../common/RetroactiveConfirmation'
 import { unitsQuery } from '../../unit/queries'
 
 export interface Props {
@@ -48,6 +53,19 @@ function CreatePlacementModal({ childId, reload }: Props) {
     endDate: LocalDate.todayInSystemTz()
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
+  const retroactive = useMemo(
+    () =>
+      isChangeRetroactive(
+        form.endDate.isEqualOrAfter(form.startDate)
+          ? new FiniteDateRange(form.startDate, form.endDate)
+          : null,
+        null,
+        false,
+        LocalDate.todayInHelsinkiTz()
+      ),
+    [form]
+  )
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const unitOptions = useMemo(() => {
     const activeUnits = form.startDate.isAfter(form.endDate)
@@ -116,7 +134,11 @@ function CreatePlacementModal({ childId, reload }: Props) {
       type="info"
       resolveAction={submitForm}
       resolveLabel={i18n.common.confirm}
-      resolveDisabled={errors.length > 0 || submitting}
+      resolveDisabled={
+        errors.length > 0 ||
+        (retroactive && !confirmedRetroactive) ||
+        submitting
+      }
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
     >
@@ -138,6 +160,20 @@ function CreatePlacementModal({ childId, reload }: Props) {
             getItemLabel={(type) => i18n.placement.type[type]}
           />
         </section>
+
+        {form.type === 'TEMPORARY_DAYCARE' ||
+        form.type === 'TEMPORARY_DAYCARE_PART_DAY' ? (
+          <>
+            <AlertBox
+              thin
+              message={
+                i18n.childInformation.placements.createPlacement
+                  .temporaryDaycareWarning
+              }
+            />
+            <Gap size="xs" />
+          </>
+        ) : null}
 
         <section data-qa="unit-select">
           <div className="bold">
@@ -175,16 +211,12 @@ function CreatePlacementModal({ childId, reload }: Props) {
           />
         </section>
 
-        {form.type === 'TEMPORARY_DAYCARE' ||
-        form.type === 'TEMPORARY_DAYCARE_PART_DAY' ? (
-          <AlertBox
-            thin
-            message={
-              i18n.childInformation.placements.createPlacement
-                .temporaryDaycareWarning
-            }
+        {retroactive && (
+          <RetroactiveConfirmation
+            confirmed={confirmedRetroactive}
+            setConfirmed={setConfirmedRetroactive}
           />
-        ) : null}
+        )}
 
         {errors.map((error) => (
           <ValidationError key={error}>{error}</ValidationError>

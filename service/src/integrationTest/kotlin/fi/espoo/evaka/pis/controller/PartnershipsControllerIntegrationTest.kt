@@ -109,7 +109,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val getResponse = controller.getPartnerships(dbInstance(), user, clock, person.id)
         assertEquals(1, getResponse.size)
-        with(getResponse.first()) {
+        with(getResponse.first().data) {
             assertNotNull(this.id)
             assertEquals(startDate, this.startDate)
             assertEquals(endDate, this.endDate)
@@ -124,13 +124,6 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.SERVICE_WORKER)
             )
-        )
-    }
-
-    @Test
-    fun `unit supervisor can delete partnerships`() {
-        canDeletePartnership(
-            AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR))
         )
     }
 

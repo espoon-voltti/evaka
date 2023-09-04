@@ -5,12 +5,14 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Gap } from 'lib-components/white-space'
 import { faChild } from 'lib-icons'
 
 import { addParentship, updateParentship } from '../../../api/parentships'
@@ -19,6 +21,9 @@ import { DbPersonSearch as PersonSearch } from '../../../components/common/Perso
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../common/RetroactiveConfirmation'
 
 interface Props {
   headPersonId: UUID
@@ -38,12 +43,30 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const [personData, setPersonData] = useState<Result<PersonSummary>>(
     Loading.of()
   )
-  const initialForm: FridgeChildForm = {
-    child: parentship && parentship.child,
-    startDate: parentship ? parentship.startDate : LocalDate.todayInSystemTz(),
-    endDate: parentship ? parentship.endDate : LocalDate.todayInSystemTz()
-  }
+  const initialForm: FridgeChildForm = useMemo(
+    () => ({
+      child: parentship && parentship.child,
+      startDate: parentship
+        ? parentship.startDate
+        : LocalDate.todayInSystemTz(),
+      endDate: parentship ? parentship.endDate : LocalDate.todayInSystemTz()
+    }),
+    [parentship]
+  )
   const [form, setForm] = useState<FridgeChildForm>(initialForm)
+  const retroactive = useMemo(
+    () =>
+      isChangeRetroactive(
+        form.endDate.isEqualOrAfter(form.startDate)
+          ? new DateRange(form.startDate, form.endDate)
+          : null,
+        new DateRange(initialForm.startDate, initialForm.endDate),
+        false, // only range can be edited
+        LocalDate.todayInHelsinkiTz()
+      ),
+    [form, initialForm]
+  )
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const validationErrors = useMemo(() => {
     const errors = []
@@ -131,7 +154,11 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           type="info"
           resolveAction={childFormActions}
           resolveLabel={i18n.common.confirm}
-          resolveDisabled={!form.child || validationErrors.length > 0}
+          resolveDisabled={
+            !form.child ||
+            validationErrors.length > 0 ||
+            (retroactive && !confirmedRetroactive)
+          }
           rejectAction={clearUiMode}
           rejectLabel={i18n.common.cancel}
           data-qa="fridge-child-modal"
@@ -192,6 +219,15 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               data-qa="fridge-child-end-date"
             />
           </section>
+          {retroactive && (
+            <>
+              <Gap size="xs" />
+              <RetroactiveConfirmation
+                confirmed={confirmedRetroactive}
+                setConfirmed={setConfirmedRetroactive}
+              />
+            </>
+          )}
           {validationErrors.map((error) => (
             <div className="error" key={error}>
               {error}

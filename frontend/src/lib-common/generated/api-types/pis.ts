@@ -367,6 +367,14 @@ export interface PartnershipUpdateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.PartnershipWithPermittedActions
+*/
+export interface PartnershipWithPermittedActions {
+  data: Partnership
+  permittedActions: Action.Partnership[]
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.PersonAddressDTO
 */
 export interface PersonAddressDTO {

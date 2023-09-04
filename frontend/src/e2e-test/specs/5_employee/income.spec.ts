@@ -72,6 +72,7 @@ describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
@@ -83,6 +84,7 @@ describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('INCOME')
 
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
@@ -97,6 +99,10 @@ describe('Income', () => {
 
   test('Income editor save button is disabled with invalid values', async () => {
     await incomesSection.openNewIncomeForm()
+
+    await incomesSection.fillIncomeStartDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
+    await waitUntilFalse(() => incomesSection.saveIsDisabled())
 
     // not a number
     await incomesSection.fillIncome('MAIN_INCOME', 'asd')
@@ -121,6 +127,7 @@ describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('INCOME')
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
@@ -134,6 +141,7 @@ describe('Income', () => {
     await incomesSection.fillIncome('SECONDARY_INCOME', '200')
     await incomesSection.fillIncome('ALL_EXPENSES', '300')
     await incomesSection.fillIncome('MAIN_INCOME', '')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
 
     await waitUntilEqual(() => incomesSection.getIncomeSum(), '200 €')
@@ -145,6 +153,7 @@ describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
 
     await incomesSection.chooseIncomeEffect('INCOME')
 
@@ -164,12 +173,14 @@ describe('Income', () => {
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.3.2020')
     await incomesSection.fillIncomeEndDate('31.3.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
@@ -181,12 +192,14 @@ describe('Income', () => {
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.3.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.2.2020')
     await incomesSection.fillIncomeEndDate('30.4.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.saveFailing()
 

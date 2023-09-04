@@ -24,6 +24,7 @@ import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -40,6 +41,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     private val clock = RealEvakaClock()
     private val unitSupervisor =
         AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
     lateinit var placementId: PlacementId
 
@@ -321,7 +323,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val idToDelete = givenServiceNeed(10, 19, placementId)
         givenServiceNeed(20, 30, placementId)
 
-        serviceNeedController.deleteServiceNeed(dbInstance(), unitSupervisor, clock, idToDelete)
+        serviceNeedController.deleteServiceNeed(dbInstance(), admin, clock, idToDelete)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)

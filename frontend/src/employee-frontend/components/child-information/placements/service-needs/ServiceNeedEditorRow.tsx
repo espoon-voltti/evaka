@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
+import DateRange from 'lib-common/date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
   ServiceNeedOption,
@@ -32,6 +34,9 @@ import {
 } from '../../../../api/child/service-needs'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
+import RetroactiveConfirmation, {
+  isChangeRetroactive
+} from '../../../common/RetroactiveConfirmation'
 
 interface ServiceNeedCreateRowProps {
   placement: DaycarePlacementWithDetails
@@ -57,12 +62,31 @@ function ServiceNeedEditorRow({
   const [form, setForm] = useState<FormData>(initialForm)
   const [overlapWarning, setOverlapWarning] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const retroactive = useMemo(
+    () =>
+      isChangeRetroactive(
+        form.startDate &&
+          (form.endDate === undefined ||
+            form.endDate.isEqualOrAfter(form.startDate))
+          ? new DateRange(form.startDate, form.endDate ?? null)
+          : null,
+        initialForm.startDate
+          ? new DateRange(initialForm.startDate, initialForm.endDate ?? null)
+          : null,
+        form.optionId !== initialForm.optionId ||
+          form.shiftCare !== initialForm.shiftCare,
+        LocalDate.todayInHelsinkiTz()
+      ),
+    [form, initialForm]
+  )
+  const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const formIsValid =
     form.startDate &&
     form.endDate &&
     form.optionId &&
-    !form.endDate.isBefore(form.startDate)
+    !form.endDate.isBefore(form.startDate) &&
+    (!retroactive || confirmedRetroactive)
 
   const optionIds = useMemo(() => options.map(({ id }) => id), [options])
 
@@ -123,7 +147,7 @@ function ServiceNeedEditorRow({
 
   return (
     <>
-      <Tr>
+      <StyledTr hideBottomBorder={retroactive}>
         <Td>
           <FixedSpaceRow spacing="xs" alignItems="center">
             <DatePickerDeprecated
@@ -199,7 +223,21 @@ function ServiceNeedEditorRow({
             />
           </FixedSpaceRow>
         </Td>
-      </Tr>
+      </StyledTr>
+
+      {retroactive && (
+        <StyledTr hideTopBorder>
+          <Td colSpan={2}>
+            <RetroactiveConfirmation
+              confirmed={confirmedRetroactive}
+              setConfirmed={setConfirmedRetroactive}
+            />
+          </Td>
+          <Td />
+          <Td />
+          <Td />
+        </StyledTr>
+      )}
 
       {overlapWarning && (
         <InfoModal
@@ -227,5 +265,15 @@ interface FormData {
   optionId: UUID | undefined
   shiftCare: ShiftCareType
 }
+
+const StyledTr = styled(Tr)<{
+  hideTopBorder?: boolean
+  hideBottomBorder?: boolean
+}>`
+  td {
+    ${(p) => (p.hideTopBorder ? 'border-top: none;' : '')}
+    ${(p) => (p.hideBottomBorder ? 'border-bottom: none;' : '')}
+  }
+`
 
 export default ServiceNeedEditorRow

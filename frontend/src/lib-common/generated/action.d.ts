@@ -325,6 +325,12 @@ export type Parentship =
   | 'RETRY'
   | 'UPDATE'
 
+export type Partnership =
+  | 'DELETE'
+  | 'READ'
+  | 'RETRY'
+  | 'UPDATE'
+
 export type Payment = 'SEND'
 
 export type Person =

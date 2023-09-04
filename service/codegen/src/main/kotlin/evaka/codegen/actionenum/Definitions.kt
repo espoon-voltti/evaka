@@ -45,6 +45,7 @@ val generatedFiles =
                 generateEnum<Action.OtherAssistanceMeasure>(),
                 generateEnum<Action.Pairing>(),
                 generateEnum<Action.Parentship>(),
+                generateEnum<Action.Partnership>(),
                 generateEnum<Action.Payment>(),
                 generateEnum<Action.Person>(),
                 generateEnum<Action.Placement>(),
