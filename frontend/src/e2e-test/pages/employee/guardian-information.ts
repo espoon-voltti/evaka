@@ -309,6 +309,7 @@ export class IncomeSection extends Section {
 
   incomeNotificationRows = this.findAllByDataQa('income-notification-sent-date')
   incomeNotifications = this.findAllByDataQa('income-notifications')
+  confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
 
   async assertIncomeStatementChildName(nth: number, childName: string) {
     await this.#childIncomeStatementsTitles.nth(nth).assertTextEquals(childName)

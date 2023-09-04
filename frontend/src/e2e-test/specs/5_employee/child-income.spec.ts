@@ -40,6 +40,7 @@ describe('Child Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
@@ -51,6 +52,7 @@ describe('Child Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.chooseIncomeEffect('INCOME')
 
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
