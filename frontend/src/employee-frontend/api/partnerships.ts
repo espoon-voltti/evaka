@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { Partnership } from 'lib-common/generated/api-types/pis'
+import {
+  Partnership,
+  PartnershipWithPermittedActions
+} from 'lib-common/generated/api-types/pis'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -14,18 +17,20 @@ import { client } from './client'
 
 export async function getPartnerships(
   id: UUID
-): Promise<Result<Partnership[]>> {
+): Promise<Result<PartnershipWithPermittedActions[]>> {
   return client
-    .get<JsonOf<Partnership[]>>('/partnerships', {
+    .get<JsonOf<PartnershipWithPermittedActions[]>>('/partnerships', {
       params: { personId: id }
     })
-    .then((res) => res.data)
-    .then((dataArray) =>
-      dataArray.map((data) => ({
-        ...data,
-        startDate: LocalDate.parseIso(data.startDate),
-        endDate: LocalDate.parseNullableIso(data.endDate),
-        partners: data.partners.map(deserializePersonJSON)
+    .then((res) =>
+      res.data.map(({ permittedActions, data }) => ({
+        permittedActions,
+        data: {
+          ...data,
+          startDate: LocalDate.parseIso(data.startDate),
+          endDate: LocalDate.parseNullableIso(data.endDate),
+          partners: data.partners.map(deserializePersonJSON)
+        }
       }))
     )
     .then((v) => Success.of(v))

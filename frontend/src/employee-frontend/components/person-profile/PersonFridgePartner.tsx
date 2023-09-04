@@ -7,7 +7,7 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Partnership, PersonJSON } from 'lib-common/generated/api-types/pis'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -63,7 +63,11 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   const selectedPartnership = useMemo(
     () =>
       partnerships
-        .map((ps) => ps.find((partner) => partner.id === selectedPartnershipId))
+        .map((ps) =>
+          ps
+            .map(({ data }) => data)
+            .find((partner) => partner.id === selectedPartnershipId)
+        )
         .getOrElse(undefined),
     [partnerships, selectedPartnershipId]
   )
@@ -142,7 +146,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                 partnerships,
                 ['startDate', 'endDate'],
                 ['desc', 'desc']
-              ).map((fridgePartner: Partnership, i: number) =>
+              ).map(({ permittedActions, data: fridgePartner }, i) =>
                 fridgePartner.partners
                   .filter((p) => p.id !== id)
                   .map((partner: PersonJSON) => (
@@ -188,8 +192,8 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                               `remove-fridge-partner-${fridgePartner.id}`
                             )
                           }}
-                          editable={true}
-                          deletable={true}
+                          editable={permittedActions.includes('UPDATE')}
+                          deletable={permittedActions.includes('DELETE')}
                         />
                       </ButtonsTd>
                     </Tr>

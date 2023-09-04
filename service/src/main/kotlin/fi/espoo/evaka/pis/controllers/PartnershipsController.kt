@@ -90,17 +90,33 @@ class PartnershipsController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): List<Partnership> {
+    ): List<PartnershipWithPermittedActions> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Person.READ_PARTNERSHIPS,
                         personId
                     )
-                    it.getPartnershipsForPerson(personId, includeConflicts = true)
+                    val partnerships =
+                        tx.getPartnershipsForPerson(personId, includeConflicts = true)
+
+                    val permittedActions =
+                        accessControl.getPermittedActions<PartnershipId, Action.Partnership>(
+                            tx,
+                            user,
+                            clock,
+                            partnerships.map { it.id }
+                        )
+
+                    partnerships.map {
+                        PartnershipWithPermittedActions(
+                            data = it,
+                            permittedActions = permittedActions[it.id] ?: emptySet()
+                        )
+                    }
                 }
             }
             .also {
@@ -252,4 +268,9 @@ class PartnershipsController(
     )
 
     data class PartnershipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate?)
+
+    data class PartnershipWithPermittedActions(
+        val data: Partnership,
+        val permittedActions: Set<Action.Partnership>
+    )
 }

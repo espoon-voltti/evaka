@@ -1620,10 +1620,7 @@ sealed interface Action {
     }
     enum class Partnership(override vararg val defaultRules: ScopedActionRule<in PartnershipId>) :
         ScopedAction<PartnershipId> {
-        DELETE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership()
-        ),
+        DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
@@ -1807,10 +1804,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceNeed()
         ),
-        DELETE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceNeed()
-        );
+        DELETE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
