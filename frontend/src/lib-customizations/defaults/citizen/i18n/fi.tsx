@@ -2346,23 +2346,9 @@ export default {
     }
   },
   validationErrors: {
-    required: 'Pakollinen tieto',
-    requiredSelection: 'Valinta puuttuu',
-    format: 'Anna oikeassa muodossa',
-    integerFormat: 'Anna kokonaisluku',
-    ssn: 'Virheellinen henkilötunnus',
-    phone: 'Virheellinen numero',
-    email: 'Virheellinen sähköpostiosoite',
-    preferredStartDate: 'Aloituspäivä ei ole sallittu',
-    timeFormat: 'Tarkista',
-    timeRequired: 'Pakollinen',
-    unitNotSelected: 'Valitse vähintään yksi hakutoive',
-    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
-    httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu',
-    outsideUnitOperationTime: 'Yksikön aukiolo ylittyy',
-    openAttendance: 'Avoin kirjaus',
-    ...components.datePicker.validationErrors
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
+    outsideUnitOperationTime: 'Yksikön aukiolo ylittyy'
   },
   placement: {
     type: {

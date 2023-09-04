@@ -2359,23 +2359,9 @@ const sv: Translations = {
     }
   },
   validationErrors: {
-    required: 'Värde saknas',
-    requiredSelection: 'Val saknas',
-    format: 'Ange rätt format',
-    integerFormat: 'Ange ett heltal',
-    ssn: 'Ogiltigt personbeteckning',
-    phone: 'Ogiltigt telefonnummer',
-    email: 'Ogiltig e-postadress',
-    preferredStartDate: 'Ogiltigt datum',
-    timeFormat: 'Kolla',
-    timeRequired: 'Nödvändig',
-    unitNotSelected: 'Välj minst en enhet',
-    emailsDoNotMatch: 'E-postadresserna är olika',
-    httpUrl: 'Ange i formen https://example.com',
-    unselectableDate: 'Ogiltigt datum',
-    outsideUnitOperationTime: 'Utanför enhetens öppettid',
-    openAttendance: 'Öppen närvaro',
-    ...components.datePicker.validationErrors
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
+    outsideUnitOperationTime: 'Utanför enhetens öppettid'
   },
   placement: {
     type: {

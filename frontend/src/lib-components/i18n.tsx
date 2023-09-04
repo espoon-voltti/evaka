@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,6 +10,11 @@ export interface Translations {
     failure: string
     success: string
   }
+  common: {
+    add: string
+    close: string
+    remove: string
+  }
   datePicker: {
     placeholder: string
     description: string
@@ -18,6 +23,16 @@ export interface Translations {
       dateTooEarly: string
       dateTooLate: string
     }
+  }
+  documentTemplates: {
+    templateQuestions: {
+      label: string
+      infoText: string
+      withText: string
+      options: string
+      multiline: string
+    }
+    noSelection: string
   }
   loginErrorModal: {
     header: string
@@ -31,6 +46,23 @@ export interface Translations {
   reloadNotification: {
     title: string
     buttonText: string
+  }
+  validationErrors: {
+    required: string
+    requiredSelection: string
+    format: string
+    integerFormat: string
+    ssn: string
+    phone: string
+    email: string
+    preferredStartDate: string
+    timeFormat: string
+    timeRequired: string
+    unitNotSelected: string
+    emailsDoNotMatch: string
+    httpUrl: string
+    unselectableDate: string
+    openAttendance: string
   }
 }
 

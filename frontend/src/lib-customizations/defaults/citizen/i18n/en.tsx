@@ -2118,23 +2118,9 @@ const en: Translations = {
     }
   },
   validationErrors: {
-    required: 'Value missing',
-    requiredSelection: 'Please select one of the options',
-    format: 'Give value in correct format',
-    integerFormat: 'Give an integer value',
-    ssn: 'Invalid person identification number',
-    phone: 'Invalid telephone number',
-    email: 'Invalid email',
-    preferredStartDate: 'Invalid preferred start date',
-    timeFormat: 'Check',
-    timeRequired: 'Required',
-    unitNotSelected: 'Pick at least one choice',
-    emailsDoNotMatch: 'The emails do not match',
-    httpUrl: 'Valid url format is https://example.com',
-    unselectableDate: 'Invalid date',
-    outsideUnitOperationTime: 'Outside opening hours',
-    openAttendance: 'Open attendance',
-    ...components.datePicker.validationErrors
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
+    outsideUnitOperationTime: 'Outside opening hours'
   },
   placement: {
     // TODO i18n

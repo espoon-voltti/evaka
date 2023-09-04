@@ -33,7 +33,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../state/i18n'
+import { useTranslations } from '../../i18n'
 
 import {
   DocumentQuestionDescriptor,
@@ -104,7 +104,7 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
   const { template, answer } = useFormFields(bind)
   const { label, infoText, options } = useFormFields(template)
   const optionElems = useFormElems(options)
@@ -192,7 +192,7 @@ const Preview = React.memo(function Preview({
 }: {
   bind: BoundForm<TemplateForm>
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
 
   const [prevBindState, setPrevBindState] = useState(bind.state)
 
@@ -224,7 +224,7 @@ const OptionView = React.memo(function OptionView({
   onDelete: () => void
   index: number
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
   const { label, withText } = useFormFields(bind)
 
   return (
@@ -253,7 +253,7 @@ const TemplateView = React.memo(function TemplateView({
 }: {
   bind: BoundForm<TemplateForm>
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
   const { label, infoText, options } = useFormFields(bind)
   const optionElems = useFormElems(options)
 

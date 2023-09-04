@@ -4164,14 +4164,7 @@ export const fi = {
       CHECKBOX_GROUP: 'Monivalinta',
       RADIO_BUTTON_GROUP: 'Monivalinta (valitse yksi)'
     },
-    templateQuestions: {
-      label: 'Otsikko',
-      options: 'Vaihtoehdot',
-      infoText: 'Ohjeteksti',
-      multiline: 'Salli monirivinen vastaus',
-      withText: 'Pyydetään lisätietoja'
-    },
-    noSelection: 'Ei valintaa'
+    ...components.documentTemplates
   },
   vasuTemplates: {
     title: 'Opetussuunnitelmapohjat',
@@ -4317,26 +4310,12 @@ export const fi = {
     text: 'Olet kirjautunut sisään Espoon kaupungin eVaka-palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
   },
   validationErrors: {
-    required: 'Pakollinen tieto',
-    requiredSelection: 'Valinta puuttuu',
-    format: 'Anna oikeassa muodossa',
-    integerFormat: 'Anna kokonaisluku',
-    ssn: 'Virheellinen henkilötunnus',
-    phone: 'Virheellinen numero',
-    email: 'Virheellinen sähköpostiosoite',
-    preferredStartDate: 'Aloituspäivä ei ole sallittu',
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
     dateRangeNotLinear:
       'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
     timeRangeNotLinear: 'Tarkista järjestys',
-    timeFormat: 'Tarkista',
-    timeRequired: 'Pakollinen',
-    unitNotSelected: 'Valitse vähintään yksi hakutoive',
-    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
-    httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu',
-    guardianMustBeHeard: 'Huoltajaa on kuultava',
-    openAttendance: 'Avoin kirjaus',
-    ...components.datePicker.validationErrors
+    guardianMustBeHeard: 'Huoltajaa on kuultava'
   },
   holidayPeriods: {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',

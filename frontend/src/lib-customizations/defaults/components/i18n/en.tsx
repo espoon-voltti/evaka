@@ -8,6 +8,11 @@ const components = {
     failure: 'Failed to load',
     success: 'Success'
   },
+  common: {
+    add: 'Add',
+    close: 'Close',
+    remove: 'Remove'
+  },
   datePicker: {
     placeholder: 'dd.mm.yyyy',
     description:
@@ -17,6 +22,17 @@ const components = {
       dateTooEarly: 'Pick a later date',
       dateTooLate: 'Pick an earlier date'
     }
+  },
+  documentTemplates: {
+    // only on employee frontend
+    templateQuestions: {
+      label: 'Label',
+      options: 'Options',
+      infoText: 'Info text',
+      multiline: 'Allow multiline answer',
+      withText: 'With extra info'
+    },
+    noSelection: 'No selection'
   },
   loginErrorModal: {
     header: 'Login failed',
@@ -31,6 +47,23 @@ const components = {
   reloadNotification: {
     title: 'New version of eVaka is available',
     buttonText: 'Reload page'
+  },
+  validationErrors: {
+    required: 'Value missing',
+    requiredSelection: 'Please select one of the options',
+    format: 'Give value in correct format',
+    integerFormat: 'Give an integer value',
+    ssn: 'Invalid person identification number',
+    phone: 'Invalid telephone number',
+    email: 'Invalid email',
+    preferredStartDate: 'Invalid preferred start date',
+    timeFormat: 'Check',
+    timeRequired: 'Required',
+    unitNotSelected: 'Pick at least one choice',
+    emailsDoNotMatch: 'The emails do not match',
+    httpUrl: 'Valid url format is https://example.com',
+    unselectableDate: 'Invalid date',
+    openAttendance: 'Open attendance'
   }
 }
 

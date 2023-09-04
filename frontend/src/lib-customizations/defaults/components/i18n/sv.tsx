@@ -8,6 +8,11 @@ const components = {
     failure: 'Något gick fel',
     success: 'Klar'
   },
+  common: {
+    add: 'Lägg till',
+    close: 'Stäng',
+    remove: 'Ta bort'
+  },
   datePicker: {
     placeholder: 'dd.mm.åååå',
     description:
@@ -17,6 +22,17 @@ const components = {
       dateTooEarly: 'Välj ett senare datum',
       dateTooLate: 'Välj ett tidigare datum'
     }
+  },
+  documentTemplates: {
+    // only on employee frontend
+    templateQuestions: {
+      label: 'titel',
+      options: 'alternativ',
+      infoText: 'info text',
+      multiline: 'Tillåt flerradssvar',
+      withText: 'Med extra info'
+    },
+    noSelection: 'inget val'
   },
   loginErrorModal: {
     header: 'Inloggningen misslyckades',
@@ -31,6 +47,23 @@ const components = {
   reloadNotification: {
     title: 'En ny version av eVaka är tillgänglig',
     buttonText: 'Ladda om sidan'
+  },
+  validationErrors: {
+    required: 'Värde saknas',
+    requiredSelection: 'Val saknas',
+    format: 'Ange rätt format',
+    integerFormat: 'Ange ett heltal',
+    ssn: 'Ogiltigt personbeteckning',
+    phone: 'Ogiltigt telefonnummer',
+    email: 'Ogiltig e-postadress',
+    preferredStartDate: 'Ogiltigt datum',
+    timeFormat: 'Kolla',
+    timeRequired: 'Nödvändig',
+    unitNotSelected: 'Välj minst en enhet',
+    emailsDoNotMatch: 'E-postadresserna är olika',
+    httpUrl: 'Ange i formen https://example.com',
+    unselectableDate: 'Ogiltigt datum',
+    openAttendance: 'Öppen närvaro'
   }
 }
 
