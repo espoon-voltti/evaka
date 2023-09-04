@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 
 import { boolean, localDate, localDateRange } from 'lib-common/form/fields'
 import { object, required, validated } from 'lib-common/form/form'
-import { useForm, useFormField, useFormFields } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
@@ -36,7 +36,7 @@ const maxPeriod = 15 * 7 * 24 * 60 * 60 * 1000 // 15 weeks
 
 function makeHolidayPeriodForm(mode: 'create' | 'update') {
   return object({
-    period: validated(required(localDateRange), (output) =>
+    period: validated(required(localDateRange()), (output) =>
       // Extra validations when creating a new holiday period
       mode === 'create'
         ? output.start.isBefore(minStartDate)
@@ -48,7 +48,7 @@ function makeHolidayPeriodForm(mode: 'create' | 'update') {
           : undefined
         : undefined
     ),
-    reservationDeadline: required(localDate),
+    reservationDeadline: required(localDate()),
     confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
   })
 }
@@ -59,21 +59,17 @@ const updateHolidayPeriodForm = makeHolidayPeriodForm('update')
 type HolidayPeriodFormState = StateOf<typeof createHolidayPeriodForm>
 
 const emptyFormState: HolidayPeriodFormState = {
-  period: {
-    startDate: null,
-    endDate: null
-  },
-  reservationDeadline: null,
+  period: localDateRange.empty(),
+  reservationDeadline: localDate.empty(),
   confirm: false
 }
 
 function initialFormState(p: HolidayPeriod): HolidayPeriodFormState {
   return {
-    period: {
-      startDate: p.period.start,
-      endDate: p.period.end
-    },
-    reservationDeadline: p.reservationDeadline,
+    period: localDateRange.fromRange(p.period),
+    reservationDeadline: localDate.fromDate(p.reservationDeadline, {
+      maxDate: p.period.start
+    }),
     confirm: true
   }
 }
@@ -102,6 +98,21 @@ export default React.memo(function HolidayPeriodForm({
     {
       ...i18n.validationErrors,
       ...i18n.holidayPeriods.validationErrors
+    },
+    {
+      onUpdate(_, nextState, form) {
+        const period = form.shape.period.validate(nextState.period)
+        if (period.isValid) {
+          return {
+            ...nextState,
+            reservationDeadline: {
+              ...nextState.reservationDeadline,
+              config: { maxDate: period.value.start } // reservation deadline must be before the start of the period
+            }
+          }
+        }
+        return nextState
+      }
     }
   )
 
@@ -123,8 +134,6 @@ export default React.memo(function HolidayPeriodForm({
   const hideErrorsBeforeTouched = holidayPeriod === undefined
 
   const { period, reservationDeadline, confirm } = useFormFields(form)
-  const startDate = useFormField(period, 'startDate')
-
   return (
     <>
       <H1>{i18n.titles.holidayPeriod}</H1>
@@ -139,7 +148,6 @@ export default React.memo(function HolidayPeriodForm({
           bind={reservationDeadline}
           locale={lang}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-          maxDate={startDate.state ?? undefined}
           data-qa="input-reservation-deadline"
         />
       </ListGrid>

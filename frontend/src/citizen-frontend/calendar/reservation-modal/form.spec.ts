@@ -23,6 +23,11 @@ const thursdayLastWeek = monday.subDays(4)
 const tuesdayNextWeek = sunday.addDays(2)
 const fridayNextWeek = sunday.addDays(5)
 
+const reservableRange = new FiniteDateRange(
+  LocalDate.of(2020, 8, 1),
+  LocalDate.of(2021, 7, 31)
+)
+
 // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
 const selectedRange = new FiniteDateRange(monday, tuesdayNextWeek)
 
@@ -75,7 +80,11 @@ describe('resetTimes', () => {
 
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
-      const dayProperties = new DayProperties(emptyCalendarDays, [])
+      const dayProperties = new DayProperties(
+        emptyCalendarDays,
+        reservableRange,
+        []
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -99,7 +108,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -135,7 +144,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -170,7 +179,7 @@ describe('resetTimes', () => {
           children: [emptyChild]
         }))
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -232,7 +241,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       // Common reservations for child-1 and child-2
       expect(
@@ -318,7 +327,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       // Empty days for child-1 and child-2
       expect(
@@ -371,7 +380,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -413,7 +426,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -470,7 +487,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -519,7 +540,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -565,7 +590,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -611,7 +640,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -636,7 +669,11 @@ describe('resetTimes', () => {
     it('No reservable days', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
-      const dayProperties = new DayProperties(emptyCalendarDays, [])
+      const dayProperties = new DayProperties(
+        emptyCalendarDays,
+        reservableRange,
+        []
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -660,7 +697,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -698,7 +735,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -733,7 +770,7 @@ describe('resetTimes', () => {
           children: [emptyChild]
         }))
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -790,7 +827,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       // Common absence for child-1 and child-2
       expect(
@@ -927,7 +964,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       // Common absence for child-1 and child-2
       expect(
@@ -1067,7 +1104,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       // Common reservations for child-1 and child-2
       expect(
@@ -1258,7 +1295,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1341,7 +1378,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1400,7 +1437,11 @@ describe('resetTimes', () => {
         (day) => ({ ...day, children: [emptyChild] })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1439,7 +1480,11 @@ describe('resetTimes', () => {
         (day) => ({ ...day, children: [emptyChild] })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1500,7 +1545,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       // Common absences for child-1 and child-2
       expect(
@@ -1605,7 +1654,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       // Common absences for child-1 and child-2
       expect(
@@ -1716,7 +1769,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       // Common reservations for child-1 and child-2
       expect(
@@ -1832,7 +1889,11 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1938,7 +1999,7 @@ describe('resetTimes', () => {
         end: LocalTime.of(16, 0)
       }
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1973,7 +2034,11 @@ describe('resetTimes', () => {
     it('No reservable days', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
-      const dayProperties = new DayProperties(emptyCalendarDays, [])
+      const dayProperties = new DayProperties(
+        emptyCalendarDays,
+        reservableRange,
+        []
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2000,7 +2065,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2036,7 +2101,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2070,7 +2135,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2278,7 +2343,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2423,7 +2488,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2483,7 +2548,11 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2627,7 +2696,11 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2816,7 +2889,11 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2941,7 +3018,11 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, holidayPeriods)
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2985,7 +3066,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(
@@ -3079,7 +3160,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 
       expect(
         resetTimes(

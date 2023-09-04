@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import isEqual from 'lodash/isEqual'
-import maxBy from 'lodash/maxBy'
-import minBy from 'lodash/minBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -82,8 +80,8 @@ export default React.memo(function ReservationModal({
   } = reservationsResponse
 
   const dayProperties = useMemo(
-    () => new DayProperties(calendarDays, holidayPeriods),
-    [calendarDays, holidayPeriods]
+    () => new DayProperties(calendarDays, reservableRange, holidayPeriods),
+    [calendarDays, holidayPeriods, reservableRange]
   )
   const form = useForm(
     reservationForm,
@@ -153,18 +151,7 @@ export default React.memo(function ReservationModal({
   )
 
   const { selectedChildren, repetition, dateRange, times } = useFormFields(form)
-
   const [showAllErrors, setShowAllErrors] = useState(false)
-
-  const { minDate, maxDate } = useMemo(() => {
-    const dates = calendarDays.filter(
-      (day) => reservableRange.includes(day.date) && day.children.length > 0
-    )
-    return {
-      minDate: minBy(dates, (d) => d.date.valueOf())?.date,
-      maxDate: maxBy(dates, (d) => d.date.valueOf())?.date
-    }
-  }, [calendarDays, reservableRange])
 
   const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
 
@@ -250,8 +237,10 @@ export default React.memo(function ReservationModal({
                   width="auto"
                   ariaLabel={i18n.common.openExpandingInfo}
                   info={
-                    maxDate !== undefined
-                      ? i18n.calendar.reservationModal.dateRangeInfo(maxDate)
+                    dayProperties.maxDate !== undefined
+                      ? i18n.calendar.reservationModal.dateRangeInfo(
+                          dayProperties.maxDate
+                        )
                       : i18n.calendar.reservationModal.noReservableDays
                   }
                   inlineChildren
@@ -262,9 +251,6 @@ export default React.memo(function ReservationModal({
                 <DateRangePickerF
                   bind={dateRange}
                   locale={lang}
-                  isInvalidDate={() => null} //TODO: isInvalidDate
-                  minDate={minDate}
-                  maxDate={maxDate}
                   hideErrorsBeforeTouched={!showAllErrors}
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')

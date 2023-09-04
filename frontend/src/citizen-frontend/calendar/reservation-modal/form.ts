@@ -6,7 +6,12 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { localDateRange, string, localTimeRange } from 'lib-common/form/fields'
+import {
+  string,
+  localTimeRange,
+  localDateRange,
+  FieldType
+} from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -42,38 +47,41 @@ export const MAX_TIME_RANGE = {
   end: LocalTime.MAX
 }
 
-export const limitedLocalTimeRange = transformed(
-  object({
-    value: localTimeRange,
-    validRange: value<TimeRange>()
-  }),
-  ({
-    value,
-    validRange
-  }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
-    if (value === undefined) return ValidationSuccess.of(undefined)
+export const limitedLocalTimeRange = () =>
+  transformed(
+    object({
+      value: localTimeRange(),
+      validRange: value<TimeRange>()
+    }),
+    ({
+      value,
+      validRange
+    }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
+      if (value === undefined) return ValidationSuccess.of(undefined)
 
-    // Don't allow reservations with same start and end times
-    if (value.start.isEqual(value.end)) {
-      return ValidationError.field('value', 'timeFormat')
-    }
+      // Don't allow reservations with same start and end times
+      if (value.start.isEqual(value.end)) {
+        return ValidationError.field('value', 'timeFormat')
+      }
 
-    let errors: FieldErrors<'range'> | undefined = undefined
-    if (!timeRangeContains(value.start, validRange)) {
-      errors = errors ?? {}
-      errors.startTime = 'range'
+      let errors: FieldErrors<'range'> | undefined = undefined
+      if (!timeRangeContains(value.start, validRange)) {
+        errors = errors ?? {}
+        errors.startTime = 'range'
+      }
+      if (!timeRangeContains(value.end, validRange)) {
+        errors = errors ?? {}
+        errors.endTime = 'range'
+      }
+      if (errors !== undefined) {
+        return ValidationError.fromFieldErrors({ value: errors })
+      } else {
+        return ValidationSuccess.of(value)
+      }
     }
-    if (!timeRangeContains(value.end, validRange)) {
-      errors = errors ?? {}
-      errors.endTime = 'range'
-    }
-    if (errors !== undefined) {
-      return ValidationError.fromFieldErrors({ value: errors })
-    } else {
-      return ValidationSuccess.of(value)
-    }
-  }
-)
+  )
+
+export type LimitedLocalTimeRangeField = FieldType<typeof limitedLocalTimeRange>
 
 export function timeRangeContains(
   inputTime: LocalTime,
@@ -84,14 +92,14 @@ export function timeRangeContains(
 
 export function emptyTimeRange(
   validRange: TimeRange
-): StateOf<typeof limitedLocalTimeRange> {
+): StateOf<LimitedLocalTimeRangeField> {
   return {
     value: { startTime: '', endTime: '' },
     validRange
   }
 }
 
-export const timeRanges = mapped(array(limitedLocalTimeRange), (output) => {
+export const timeRanges = mapped(array(limitedLocalTimeRange()), (output) => {
   const nonEmpty = output.flatMap((x) => x ?? [])
   return nonEmpty.length === 0
     ? undefined // All inputs empty => no value
@@ -223,7 +231,7 @@ export const reservationForm = mapped(
     selectedChildren: validated(array(string()), (value) =>
       value.length > 0 ? undefined : 'required'
     ),
-    dateRange: required(localDateRange),
+    dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion
   }),
@@ -306,10 +314,10 @@ export function initialState(
   const selectedChildren = availableChildren.map((child) => child.id)
   return {
     selectedChildren,
-    dateRange: {
-      startDate: initialStart,
-      endDate: initialEnd
-    },
+    dateRange: localDateRange.fromDates(initialStart, initialEnd, {
+      minDate: dayProperties.minDate,
+      maxDate: dayProperties.maxDate
+    }),
     repetition: {
       domValue:
         initialStart !== null && initialEnd !== null
@@ -634,7 +642,7 @@ const reservationNotRequiredForAnyChild = (
 const bindUnboundedTimeRanges = (
   ranges: TimeRange[],
   validRange: TimeRange
-): StateOf<typeof limitedLocalTimeRange>[] => {
+): StateOf<LimitedLocalTimeRangeField>[] => {
   const formatted = ranges.map(({ start, end }) => ({
     value: { startTime: start.format(), endTime: end.format() },
     validRange
@@ -688,15 +696,31 @@ export class DayProperties {
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly combinedOperationDays: Set<number>
 
+  minDate: LocalDate | undefined
+  maxDate: LocalDate | undefined
+
   constructor(
     public readonly calendarDays: ReservationResponseDay[],
+    reservableRange: FiniteDateRange,
     private readonly holidayPeriods: HolidayPeriodInfo[]
   ) {
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const combinedOperationDays = new Set<number>()
     const holidays = new Set<string>()
 
+    let minDate: LocalDate | undefined = undefined
+    let maxDate: LocalDate | undefined = undefined
+
     calendarDays.forEach((day) => {
+      if (reservableRange.includes(day.date) && day.children.length > 0) {
+        if (!minDate || day.date.isBefore(minDate)) {
+          minDate = day.date
+        }
+        if (!maxDate || day.date.isAfter(maxDate)) {
+          maxDate = day.date
+        }
+      }
+
       const dayOfWeek = day.date.getIsoDayOfWeek()
       if (day.holiday) {
         holidays.add(day.date.formatIso())
@@ -713,6 +737,8 @@ export class DayProperties {
       })
     })
 
+    this.minDate = minDate
+    this.maxDate = maxDate
     this.calendarDays = calendarDays
     this.reservableDaysByChild = reservableDaysByChild
     this.combinedOperationDays = combinedOperationDays

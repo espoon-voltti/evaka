@@ -37,7 +37,7 @@ import StatusLabel from '../../common/StatusLabel'
 export const otherAssistanceMeasureForm = transformed(
   object({
     type: required(oneOf<OtherAssistanceMeasureType>()),
-    validDuring: required(localDateRange),
+    validDuring: required(localDateRange()),
     allRows: value<OtherAssistanceMeasureResponse[]>(),
     ignoredId: value<UUID | undefined>()
   }),
@@ -86,10 +86,7 @@ export const OtherAssistanceMeasureForm = React.memo(
           domValue: initialData?.type ?? otherAssistanceMeasureTypes[0],
           options: typeOptions(i18n)
         },
-        validDuring: {
-          startDate: initialData?.validDuring.start ?? null,
-          endDate: initialData?.validDuring.end ?? null
-        },
+        validDuring: localDateRange.fromRange(initialData?.validDuring),
         allRows: props.allRows,
         ignoredId: initialData?.id
       }),

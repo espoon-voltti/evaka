@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { boolean, optionalLocalDate, string } from 'lib-common/form/fields'
+import { boolean, localDate, string } from 'lib-common/form/fields'
 import {
   array,
   mapped,
+  nullBlank,
   object,
   oneOf,
   required,
@@ -99,7 +100,7 @@ const form = mapped(
     language: required(oneOf<AssistanceNeedDecisionLanguage>()),
 
     type: oneOf<AssistanceNeedPreschoolDecisionType>(),
-    validFrom: optionalLocalDate,
+    validFrom: nullBlank(localDate()),
 
     extendedCompulsoryEducation: boolean(),
     extendedCompulsoryEducationInfo: string(),
@@ -117,15 +118,15 @@ const form = mapped(
     basisDocumentPsychologistStatement: boolean(),
     basisDocumentSocialReport: boolean(),
     basisDocumentDoctorStatement: boolean(),
-    basisDocumentPedagogicalReportDate: optionalLocalDate,
-    basisDocumentPsychologistStatementDate: optionalLocalDate,
-    basisDocumentSocialReportDate: optionalLocalDate,
-    basisDocumentDoctorStatementDate: optionalLocalDate,
+    basisDocumentPedagogicalReportDate: nullBlank(localDate()),
+    basisDocumentPsychologistStatementDate: nullBlank(localDate()),
+    basisDocumentSocialReportDate: nullBlank(localDate()),
+    basisDocumentDoctorStatementDate: nullBlank(localDate()),
     basisDocumentOtherOrMissing: boolean(),
     basisDocumentOtherOrMissingInfo: string(),
     basisDocumentsInfo: string(),
 
-    guardiansHeardOn: optionalLocalDate,
+    guardiansHeardOn: nullBlank(localDate()),
     guardianInfo: array(guardianForm),
     otherRepresentativeHeard: boolean(),
     otherRepresentativeDetails: string(),
@@ -285,7 +286,21 @@ const DecisionEditor = React.memo(function DecisionEditor({
       type: {
         domValue: decision.form.type || '',
         options: getTypeOptions(decision.form.language)
-      }
+      },
+      validFrom: localDate.fromDate(decision.form.validFrom),
+      basisDocumentPedagogicalReportDate: localDate.fromDate(
+        decision.form.basisDocumentPedagogicalReportDate
+      ),
+      basisDocumentPsychologistStatementDate: localDate.fromDate(
+        decision.form.basisDocumentPsychologistStatementDate
+      ),
+      basisDocumentSocialReportDate: localDate.fromDate(
+        decision.form.basisDocumentSocialReportDate
+      ),
+      basisDocumentDoctorStatementDate: localDate.fromDate(
+        decision.form.basisDocumentDoctorStatementDate
+      ),
+      guardiansHeardOn: localDate.fromDate(decision.form.guardiansHeardOn)
     }),
     i18n.validationErrors
   )

@@ -37,7 +37,7 @@ export const assistanceFactorForm = transformed(
     capacityFactor: validated(mapped(string(), Number.parseFloat), (number) =>
       Number.isFinite(number) && number >= 0.0 ? undefined : 'format'
     ),
-    validDuring: required(localDateRange),
+    validDuring: required(localDateRange()),
     allRows: value<AssistanceFactorResponse[]>(),
     ignoredId: value<UUID | undefined>()
   }),
@@ -72,10 +72,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
     assistanceFactorForm,
     () => ({
       capacityFactor: initialData?.capacityFactor.toString() ?? '',
-      validDuring: {
-        startDate: initialData?.validDuring.start ?? null,
-        endDate: initialData?.validDuring.end ?? null
-      },
+      validDuring: localDateRange.fromRange(initialData?.validDuring),
       allRows: props.allRows,
       ignoredId: initialData?.id
     }),

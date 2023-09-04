@@ -38,7 +38,7 @@ import StatusLabel from '../../common/StatusLabel'
 export const preschoolAssistanceForm = transformed(
   object({
     level: required(oneOf<PreschoolAssistanceLevel>()),
-    validDuring: required(localDateRange),
+    validDuring: required(localDateRange()),
     allRows: value<PreschoolAssistanceResponse[]>(),
     ignoredId: value<UUID | undefined>()
   }),
@@ -85,10 +85,7 @@ export const PreschoolAssistanceForm = React.memo(
           domValue: initialData?.level ?? preschoolAssistanceLevels[0],
           options: levelOptions(i18n)
         },
-        validDuring: {
-          startDate: initialData?.validDuring.start ?? null,
-          endDate: initialData?.validDuring.end ?? null
-        },
+        validDuring: localDateRange.fromRange(initialData?.validDuring),
         allRows: props.allRows,
         ignoredId: initialData?.id
       }),

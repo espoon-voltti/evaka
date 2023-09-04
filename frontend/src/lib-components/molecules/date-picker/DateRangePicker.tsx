@@ -1,11 +1,13 @@
 // SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+
 import classNames from 'classnames'
 import React, { useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
-import { BoundFormShape, useFormField } from 'lib-common/form/hooks'
-import { Form } from 'lib-common/form/types'
+import { LocalDateRangeField } from 'lib-common/form/fields'
+import { BoundForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 import {
   InputFieldUnderRow,
@@ -16,11 +18,11 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import UnderRowStatusIcon from '../../atoms/StatusIcon'
 import { useTranslations } from '../../i18n'
 
-import DatePicker, {
-  DatePickerProps,
-  DatePickerSpacer,
-  nativeDatePickerEnabled
-} from './DatePicker'
+import DatePicker, { DatePickerProps } from './DatePicker'
+import DateRangePickerLowLevel, {
+  DateRangePickerLowLevelProps
+} from './DateRangePickerLowLevel'
+import { nativeDatePickerEnabled } from './helpers'
 
 interface DateRangePickerProps
   extends Omit<DatePickerProps, 'date' | 'onChange'> {
@@ -149,46 +151,49 @@ const DateRangePicker = React.memo(function DateRangePicker({
 
 export default DateRangePicker
 
+export const DatePickerSpacer = React.memo(function DatePickerSpacer() {
+  return <DateInputSpacer>–</DateInputSpacer>
+})
+
+const DateInputSpacer = styled.div`
+  padding: 6px;
+`
+
 export interface DateRangePickerFProps
-  extends Omit<DateRangePickerProps, 'start' | 'end' | 'onChange'> {
-  bind: BoundFormShape<
-    {
-      startDate: LocalDate | null
-      endDate: LocalDate | null
-    },
-    {
-      startDate: Form<unknown, string, LocalDate | null, unknown>
-      endDate: Form<unknown, string, LocalDate | null, unknown>
-    }
-  >
-  externalRangeValidation?: boolean
-  info?: InputInfo
+  extends Omit<
+    DateRangePickerLowLevelProps,
+    | 'start'
+    | 'end'
+    | 'onChangeStart'
+    | 'onChangeEnd'
+    | 'startInfo'
+    | 'endInfo'
+    | 'minDate'
+    | 'maxDate'
+  > {
+  bind: BoundForm<LocalDateRangeField>
+  info?: InputInfo | undefined
 }
 
 export const DateRangePickerF = React.memo(function DateRangePickerF({
   bind,
-  externalRangeValidation,
   info: infoOverride,
   ...props
 }: DateRangePickerFProps) {
+  const { start, end, config } = useFormFields(bind)
   const info = infoOverride ?? bind.inputInfo()
-  const startDate = useFormField(bind, 'startDate')
-  const endDate = useFormField(bind, 'endDate')
   return (
     <div>
-      <DateRangePicker
+      <DateRangePickerLowLevel
+        start={start.state}
+        end={end.state}
+        onChangeStart={start.set}
+        onChangeEnd={end.set}
+        startInfo={start.inputInfo()}
+        endInfo={end.inputInfo()}
+        minDate={config.state?.minDate}
+        maxDate={config.state?.maxDate}
         {...props}
-        start={startDate.state}
-        end={endDate.state}
-        onChange={(start, end) => {
-          startDate.set(start)
-          endDate.set(end)
-        }}
-        externalRangeValidation={externalRangeValidation}
-        startInfo={
-          'startInfo' in props ? props.startInfo : startDate.inputInfo()
-        }
-        endInfo={'endInfo' in props ? props.endInfo : endDate.inputInfo()}
       />
       {info !== undefined ? (
         <InputFieldUnderRow className={classNames(info.status)}>

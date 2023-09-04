@@ -6,8 +6,8 @@ import { faPen, faTrash } from 'Icons'
 import React, { useCallback, useContext, useState } from 'react'
 
 import { Result } from 'lib-common/api'
-import { optionalLocalDate } from 'lib-common/form/fields'
-import { object } from 'lib-common/form/form'
+import { localDate } from 'lib-common/form/fields'
+import { nullBlank, object } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import {
@@ -100,9 +100,9 @@ const CreationModal = React.memo(function CreationModal({
   const form = useForm(
     discussionForm,
     () => ({
-      offeredDate: null,
-      heldDate: null,
-      counselingDate: null
+      offeredDate: localDate.empty(),
+      heldDate: localDate.empty(),
+      counselingDate: localDate.empty()
     }),
     i18n.validationErrors
   )
@@ -145,7 +145,7 @@ const CreationModal = React.memo(function CreationModal({
       </FixedSpaceRow>
       <Gap />
       <FixedSpaceRow alignItems="center" justifyContent="center">
-        <Label>{i18n.childInformation.childDiscussion.held}</Label>
+        <Label>{i18n.childInformation.childDiscussion.held}</Label>2
         <DatePickerF
           bind={heldDateState}
           locale={lang}
@@ -200,18 +200,18 @@ const ChildDiscussionSummary = React.memo(function ChildDiscussionSummary({
 })
 
 const discussionForm = object({
-  offeredDate: optionalLocalDate,
-  heldDate: optionalLocalDate,
-  counselingDate: optionalLocalDate
+  offeredDate: nullBlank(localDate()),
+  heldDate: nullBlank(localDate()),
+  counselingDate: nullBlank(localDate())
 })
 
 function initialFormState(
   discussion: ChildDiscussionData
 ): StateOf<typeof discussionForm> {
   return {
-    offeredDate: discussion.offeredDate,
-    heldDate: discussion.heldDate,
-    counselingDate: discussion.counselingDate
+    offeredDate: localDate.fromDate(discussion.offeredDate),
+    heldDate: localDate.fromDate(discussion.heldDate),
+    counselingDate: localDate.fromDate(discussion.counselingDate)
   }
 }
 

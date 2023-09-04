@@ -6,7 +6,8 @@ import React, { useMemo } from 'react'
 
 import {
   boolean,
-  localOpenEndedDateRange,
+  localDateRange,
+  openEndedLocalDateRange,
   string
 } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
@@ -37,7 +38,7 @@ const documentTemplateForm = object({
   language: required(oneOf<DocumentLanguage>()),
   confidential: boolean(),
   legalBasis: string(),
-  validity: required(localOpenEndedDateRange)
+  validity: required(openEndedLocalDateRange())
 })
 
 interface Props {
@@ -95,10 +96,7 @@ export default React.memo(function TemplateModal({
       },
       confidential: true,
       legalBasis: '',
-      validity: {
-        startDate: null,
-        endDate: null
-      }
+      validity: localDateRange.empty()
     }),
     {
       ...i18n.validationErrors
