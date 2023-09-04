@@ -3755,6 +3755,23 @@ export const fi = {
       description:
         'Työkalu uuden laskugeneraattorin analysointiin vs vanha laskugeneraattori',
       report: 'Raportti laskugeneraattorien eroavaisuuksista'
+    },
+    futurePreschoolers: {
+      title: 'Tulevat esikoululaiset',
+      description:
+        'Raportti tulevan vuoden esiopetuksen lapsista ja ryhmistä automaattisijoitustyökalua varten',
+      futurePreschoolersCount: (count: number) =>
+        count === 1
+          ? `${count} tuleva esikoululainen`
+          : `${count} tulevaa esikoululaista`,
+      municipalGroupCount: (count: number) =>
+        count === 1
+          ? `${count} ryhmä esiopetusta antavissa kunnallisissa yksiköissä`
+          : `${count} ryhmää esiopetusta antavissa kunnallisissa yksiköissä`,
+      privateVoucherGroupCount: (count: number) =>
+        count === 1
+          ? `${count} ryhmä esiopetusta antavissa palveluseteliyksiköissä`
+          : `${count} ryhmää esiopetusta antavissa palveluseteliyksiköissä`
     }
   },
   unitEditor: {

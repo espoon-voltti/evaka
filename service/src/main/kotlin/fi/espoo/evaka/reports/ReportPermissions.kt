@@ -38,7 +38,8 @@ enum class Report {
     SERVICE_VOUCHER_VALUE,
     SEXTET,
     STARTING_PLACEMENTS,
-    VARDA_ERRORS
+    VARDA_ERRORS,
+    FUTURE_PRESCHOOLERS
 }
 
 @RestController
@@ -164,6 +165,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.VARDA_ERRORS.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_VARDA_REPORT)
+                    },
+                    Report.FUTURE_PRESCHOOLERS.takeIf {
+                        permittedGlobalActions.contains(Action.Global.READ_FUTURE_PRESCHOOLERS)
                     }
                 )
             }
