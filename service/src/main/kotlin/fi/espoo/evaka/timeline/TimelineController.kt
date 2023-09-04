@@ -164,6 +164,7 @@ private fun Database.Read.getFeeDecisions(personId: PersonId, range: FiniteDateR
                 totalFee = it.totalFee
             )
         }
+        .sortedBy { it.range.start }
 
 data class TimelineValueDecision(
     val id: VoucherValueDecisionId,
@@ -240,6 +241,7 @@ private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange
                 lastName = it.person.lastName
             )
         }
+        .sortedBy { it.range.start }
 
 data class TimelineChild(
     val id: ParentshipId,
@@ -280,6 +282,7 @@ private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange
                 dateOfBirth = it.child.dateOfBirth
             )
         }
+        .sortedBy { it.range.start }
 
 data class TimelinePlacement(
     val id: PlacementId,
