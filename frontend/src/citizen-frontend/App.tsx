@@ -27,6 +27,7 @@ import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
+import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
@@ -237,6 +238,16 @@ export default createBrowserRouter([
           <RequireAuth strength="WEAK">
             <ScrollToTop>
               <ChildPage />
+            </ScrollToTop>
+          </RequireAuth>
+        )
+      },
+      {
+        path: '/child-documents/:id',
+        element: (
+          <RequireAuth>
+            <ScrollToTop>
+              <ChildDocumentPage />
             </ScrollToTop>
           </RequireAuth>
         )
