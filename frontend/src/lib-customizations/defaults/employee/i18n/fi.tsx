@@ -736,7 +736,8 @@ export const fi = {
         infoList: 'Lisätietoja muista toimista:',
         info: {
           TRANSPORT_BENEFIT: (): React.ReactNode => undefined,
-          ACCULTURATION_SUPPORT: (): React.ReactNode => undefined
+          ACCULTURATION_SUPPORT: (): React.ReactNode => undefined,
+          FINNISH_SECOND_LANGUAGE: (): React.ReactNode => undefined
         }
       }
     },
