@@ -709,7 +709,8 @@ export const fi = {
         },
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu',
-          ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)'
+          ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
+          FINNISH_SECOND_LANGUAGE: 'Suomi toisena kielenä opetus'
         }
       },
       assistanceFactor: {
