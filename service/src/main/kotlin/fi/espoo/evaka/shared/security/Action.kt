@@ -437,6 +437,20 @@ sealed interface Action {
             READ_ATTENDANCE_SUMMARY(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+            ),
+            READ_CHILD_DOCUMENTS(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+            );
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class ChildDocument(
+            override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>
+        ) : ScopedAction<ChildDocumentId> {
+            READ(
+                IsCitizen(allowWeakLogin = false).guardianOfPublishedChildOfChildDocument(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument()
             );
 
             override fun toString(): String = "${javaClass.name}.$name"

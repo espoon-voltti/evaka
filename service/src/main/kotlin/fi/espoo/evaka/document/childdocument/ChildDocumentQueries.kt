@@ -39,6 +39,20 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
         .list()
 }
 
+fun Database.Read.getChildDocumentsByGuardian(childId: PersonId): List<ChildDocumentSummary> {
+    return createQuery(
+            """
+            SELECT cd.id, dt.type, cd.published_at, dt.name as template_name
+            FROM child_document cd
+            JOIN document_template dt on cd.template_id = dt.id
+            WHERE cd.child_id = :childId
+        """
+        )
+        .bind("childId", childId)
+        .mapTo<ChildDocumentSummary>()
+        .list()
+}
+
 fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
     return createQuery(
             """
