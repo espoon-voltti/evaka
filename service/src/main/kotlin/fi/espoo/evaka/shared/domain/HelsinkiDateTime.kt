@@ -191,13 +191,26 @@ data class HelsinkiDateTimeRange(
     override fun gap(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
         tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
 
-    override fun subtract(other: HelsinkiDateTimeRange): List<HelsinkiDateTimeRange> =
+    override fun subtract(
+        other: HelsinkiDateTimeRange
+    ): BoundedRange.SubtractResult<HelsinkiDateTimeRange> =
         if (this.overlaps(other)) {
             val left = tryCreate(this.start, other.start)
             val right = tryCreate(other.end, this.end)
-            listOfNotNull(left, right)
-        } else listOf(this)
-
+            if (left != null) {
+                if (right != null) {
+                    BoundedRange.SubtractResult.Split(left, right)
+                } else {
+                    BoundedRange.SubtractResult.LeftRemainder(left)
+                }
+            } else {
+                if (right != null) {
+                    BoundedRange.SubtractResult.RightRemainder(right)
+                } else {
+                    BoundedRange.SubtractResult.None
+                }
+            }
+        } else BoundedRange.SubtractResult.Original(this)
     override fun merge(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
 

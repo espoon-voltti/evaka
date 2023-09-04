@@ -97,7 +97,7 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
      * - [2,5].subtract([2,3]) returns {[4,5]}
      * - [2,5].subtract([3,4]) returns {[2,2], [5,5]}
      */
-    fun subtract(other: This): List<This>
+    fun subtract(other: This): SubtractResult<This>
 
     /**
      * Merges this range with the given range, returning the smallest range that contains both
@@ -113,4 +113,31 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
      * Example: [3,4] includes 3 and 4 but not 5
      */
     fun includes(point: Point): Boolean
+
+    sealed class SubtractResult<out This> : Iterable<This> {
+        abstract val left: This?
+        abstract val right: This?
+        object None : SubtractResult<Nothing>() {
+            override val left: Nothing? = null
+            override val right: Nothing? = null
+            override fun iterator(): Iterator<Nothing> = sequenceOf<Nothing>().iterator()
+        }
+        data class LeftRemainder<This>(override val left: This) : SubtractResult<This>() {
+            override val right: Nothing? = null
+            override fun iterator(): Iterator<This> = sequenceOf(left).iterator()
+        }
+        data class RightRemainder<This>(override val right: This) : SubtractResult<This>() {
+            override val left: Nothing? = null
+            override fun iterator(): Iterator<This> = sequenceOf(right).iterator()
+        }
+        data class Split<This>(override val left: This, override val right: This) :
+            SubtractResult<This>() {
+            override fun iterator(): Iterator<This> = sequenceOf(left, right).iterator()
+        }
+        data class Original<This>(val range: This) : SubtractResult<This>() {
+            override val left: This? = null
+            override val right: This? = null
+            override fun iterator(): Iterator<This> = sequenceOf(range).iterator()
+        }
+    }
 }

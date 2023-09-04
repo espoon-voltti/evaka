@@ -81,24 +81,25 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
             maxOf(this.start, other.start).minusDays(1)
         )
 
-    override fun subtract(other: FiniteDateRange): List<FiniteDateRange> = complement(other)
-    fun complement(other: FiniteDateRange): List<FiniteDateRange> {
-        return when {
-            !other.overlaps(this) -> listOf(this)
-            other.contains(this) -> emptyList()
-            other.start <= this.start && other.end < this.end ->
-                listOf(FiniteDateRange(other.end.plusDays(1), this.end))
-            other.start > this.start && other.end >= this.end ->
-                listOf(FiniteDateRange(this.start, other.start.minusDays(1)))
-            other.start > this.start && other.end < this.end ->
-                listOf(
-                    FiniteDateRange(this.start, other.start.minusDays(1)),
-                    FiniteDateRange(other.end.plusDays(1), this.end)
-                )
-            else -> error("Bug: missing when case")
-        }
-    }
-
+    override fun subtract(other: FiniteDateRange): BoundedRange.SubtractResult<FiniteDateRange> =
+        if (this.overlaps(other)) {
+            val left = tryCreate(this.start, other.start.minusDays(1))
+            val right = tryCreate(other.end.plusDays(1), this.end)
+            if (left != null) {
+                if (right != null) {
+                    BoundedRange.SubtractResult.Split(left, right)
+                } else {
+                    BoundedRange.SubtractResult.LeftRemainder(left)
+                }
+            } else {
+                if (right != null) {
+                    BoundedRange.SubtractResult.RightRemainder(right)
+                } else {
+                    BoundedRange.SubtractResult.None
+                }
+            }
+        } else BoundedRange.SubtractResult.Original(this)
+    fun complement(other: FiniteDateRange): List<FiniteDateRange> = this.subtract(other).toList()
     fun complement(others: Collection<FiniteDateRange>): List<FiniteDateRange> {
         return others.fold(
             initial = listOf(this),

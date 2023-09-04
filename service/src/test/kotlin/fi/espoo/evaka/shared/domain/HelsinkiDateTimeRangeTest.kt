@@ -254,8 +254,8 @@ class HelsinkiDateTimeRangeTest {
         val b = testRange(4, 6)
         val x = listOf(a)
         val y = listOf(b)
-        assertEquals(x, a.subtract(b))
-        assertEquals(y, b.subtract(a))
+        assertEquals(x, a.subtract(b).toList())
+        assertEquals(y, b.subtract(a).toList())
     }
 
     @Test
@@ -266,7 +266,7 @@ class HelsinkiDateTimeRangeTest {
         // X
         val a = testRange(1, 6)
         val x = emptyList<HelsinkiDateTimeRange>()
-        assertEquals(x, a.subtract(a))
+        assertEquals(x, a.subtract(a).toList())
     }
 
     @Test
@@ -280,8 +280,8 @@ class HelsinkiDateTimeRangeTest {
         val b = testRange(3, 6)
         val x = listOf(testRange(1, 3))
         val y = listOf(testRange(4, 6))
-        assertEquals(x, a.subtract(b))
-        assertEquals(y, b.subtract(a))
+        assertEquals(x, a.subtract(b).toList())
+        assertEquals(y, b.subtract(a).toList())
     }
 
     @Test
@@ -293,8 +293,8 @@ class HelsinkiDateTimeRangeTest {
         val a = testRange(1, 6)
         val b = testRange(2, 5)
         val x = listOf(testRange(1, 2), testRange(5, 6))
-        assertEquals(x, a.subtract(b))
-        assertEquals(emptyList(), b.subtract(a))
+        assertEquals(x, a.subtract(b).toList())
+        assertEquals(emptyList(), b.subtract(a).toList())
     }
 
     @Test
