@@ -17,12 +17,12 @@ import styled, { useTheme } from 'styled-components'
 
 import { appVersion } from 'lib-common/globals'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import Toast from 'lib-components/molecules/Toast'
 import { faExclamation, faInfo, faRedo } from 'lib-icons'
 
 import InlineButton from './atoms/buttons/InlineButton'
 import { useTranslations } from './i18n'
 import { FixedSpaceColumn } from './layout/flex-helpers'
+import Toast from './molecules/Toast'
 import { defaultMargins } from './white-space'
 
 interface NotificationsState {
@@ -212,7 +212,7 @@ function useReloadNotification(
 
   const onClose = useCallback(() => {
     if (timer.current) clearInterval(timer.current)
-    timer.current = setTimeout(maybeShow, REMIND_INTERVAL)
+    timer.current = window.setTimeout(maybeShow, REMIND_INTERVAL)
   }, [maybeShow])
 
   useEffect(() => {

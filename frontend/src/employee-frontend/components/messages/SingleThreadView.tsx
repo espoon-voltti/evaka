@@ -119,7 +119,7 @@ function SingleMessage({
         )}
       </InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
-        <Linkify>{message.content}</Linkify>
+        <Linkify text={message.content} />
       </MessageContent>
       {message.attachments.length > 0 && (
         <>
