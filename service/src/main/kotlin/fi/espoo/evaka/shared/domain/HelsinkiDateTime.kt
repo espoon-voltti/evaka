@@ -181,6 +181,10 @@ data class HelsinkiDateTimeRange(
 
     override fun rightAdjacentTo(other: HelsinkiDateTimeRange): Boolean = other.end == this.start
 
+    override fun strictlyLeftTo(other: HelsinkiDateTimeRange): Boolean = this.end <= other.start
+
+    override fun strictlyRightTo(other: HelsinkiDateTimeRange): Boolean = other.end <= this.start
+
     override fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
         tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
 

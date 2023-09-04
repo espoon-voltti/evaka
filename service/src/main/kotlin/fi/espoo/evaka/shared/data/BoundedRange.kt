@@ -44,6 +44,24 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
     fun rightAdjacentTo(other: This): Boolean
 
     /**
+     * Returns true if this range is strictly left to (= ends before) the given range.
+     *
+     * If true, there's no overlap, but a gap between the ranges may or may not be present.
+     *
+     * Example: [2,3] and [2,5] are both strictly left to [6,7] but [2,6] isn't
+     */
+    fun strictlyLeftTo(other: This): Boolean
+
+    /**
+     * Returns true if this range is strictly right to (= starts after) the given range.
+     *
+     * If true, there's no overlap, but a gap between the ranges may or may not be present.
+     *
+     * Example: [4,6] and [5,6] are both strictly right to [2,3] but [3,6] isn't
+     */
+    fun strictlyRightTo(other: This): Boolean
+
+    /**
      * Returns true if this range is immediately left or right adjacent to the given range.
      *
      * Example: [4,5] is adjacent to [2,3] and [6,7] but not [1,2] or [7,8]

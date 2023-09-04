@@ -64,6 +64,10 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
     override fun rightAdjacentTo(other: FiniteDateRange): Boolean =
         other.end.plusDays(1) == this.start
 
+    override fun strictlyLeftTo(other: FiniteDateRange): Boolean = this.end < other.start
+
+    override fun strictlyRightTo(other: FiniteDateRange): Boolean = other.end < this.start
+
     override fun intersection(other: FiniteDateRange): FiniteDateRange? =
         tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
 
