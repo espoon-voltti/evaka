@@ -129,7 +129,7 @@ function SingleMessage({ message, ours }: { message: Message; ours: boolean }) {
         <SentDate white={ours}>{formatDateOrTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
-        <Linkify>{message.content}</Linkify>
+        <Linkify text={message.content} />
       </MessageContent>
     </MessageContainer>
   )

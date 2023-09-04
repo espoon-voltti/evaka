@@ -6578,7 +6578,6 @@ __metadata:
     react-focus-lock: 2.9.4
     react-image-crop: ^10.1.5
     react-leaflet: ^4.2.1
-    react-linkify: ^1.0.0-alpha
     react-router-dom: ^6.15.0
     react-select: ^5.7.3
     seamless-scroll-polyfill: 2.3.4
@@ -8660,15 +8659,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"linkify-it@npm:^2.0.3":
-  version: 2.2.0
-  resolution: "linkify-it@npm:2.2.0"
-  dependencies:
-    uc.micro: ^1.0.1
-  checksum: d198871d0b3f3cfdb745dae564bfd6743474f20cd0ef1057e6ca29451834749e7f3da52b59b4de44e98f31a1e5c71bdad160490d4ae54de251cbcde57e4d7837
-  languageName: node
-  linkType: hard
-
 "linkify-it@npm:^4.0.1":
   version: 4.0.1
   resolution: "linkify-it@npm:4.0.1"
@@ -10541,16 +10531,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-linkify@npm:^1.0.0-alpha":
-  version: 1.0.0-alpha
-  resolution: "react-linkify@npm:1.0.0-alpha"
-  dependencies:
-    linkify-it: ^2.0.3
-    tlds: ^1.199.0
-  checksum: abff36e1fdd9db822278292379e070d471d96ddda2d199565edd9ecff3d17faa31a3c83bd2be8fa4c0f9589dd97553ba77c553047b94cfd94e0f528b9e91fafa
-  languageName: node
-  linkType: hard
-
 "react-onclickoutside@npm:^6.12.2":
   version: 6.12.2
   resolution: "react-onclickoutside@npm:6.12.2"
@@ -11574,15 +11554,6 @@ __metadata:
   version: 3.0.0
   resolution: "titleize@npm:3.0.0"
   checksum: 71fbbeabbfb36ccd840559f67f21e356e1d03da2915b32d2ae1a60ddcc13a124be2739f696d2feb884983441d159a18649e8d956648d591bdad35c430a6b6d28
-  languageName: node
-  linkType: hard
-
-"tlds@npm:^1.199.0":
-  version: 1.231.0
-  resolution: "tlds@npm:1.231.0"
-  bin:
-    tlds: bin.js
-  checksum: a77078c8d329c8a1f91d58459f48174a4d2be2cea1e48b8d732a3122dd394b23c5c18187882ad0139d01076191167242afa2307ec3f63c0ae9dcea0c9e9b48cc
   languageName: node
   linkType: hard
 

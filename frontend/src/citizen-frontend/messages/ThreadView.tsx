@@ -146,7 +146,7 @@ const SingleMessage = React.memo(
           ).join(', ')}
         </InformationText>
         <MessageContent data-qa="thread-reader-content">
-          <Linkify>{message.content}</Linkify>
+          <Linkify text={message.content} />
         </MessageContent>
         {message.attachments.length > 0 && (
           <>
