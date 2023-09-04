@@ -52,7 +52,7 @@ abstract class RangeBasedSet<
     protected abstract fun range(start: Point, end: Point): Range
 
     companion object {
-        protected fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> add(
+        fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> add(
             ranges: List<Range>,
             range: Range
         ): List<Range> =
@@ -65,7 +65,7 @@ abstract class RangeBasedSet<
                     result
                 }
 
-        protected fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> remove(
+        fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> remove(
             ranges: List<Range>,
             range: Range
         ): List<Range> =
@@ -80,7 +80,7 @@ abstract class RangeBasedSet<
                     result
                 }
 
-        protected fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> intersection(
+        fun <Point : Comparable<Point>, Range : BoundedRange<Point, Range>> intersection(
             iterA: Iterator<Range>,
             iterB: Iterator<Range>
         ): List<Range> {
