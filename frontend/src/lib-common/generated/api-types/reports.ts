@@ -317,13 +317,13 @@ export interface FuturePreschoolersReportRow {
   childPostOffice: string
   childPostalCode: string
   childSsn: string | null
-  guardian1Address: string
+  guardian1Address: string | null
   guardian1Email: string | null
-  guardian1FirstName: string
-  guardian1LastName: string
+  guardian1FirstName: string | null
+  guardian1LastName: string | null
   guardian1Phone: string | null
-  guardian1PostOffice: string
-  guardian1PostalCode: string
+  guardian1PostOffice: string | null
+  guardian1PostalCode: string | null
   guardian2Address: string | null
   guardian2Email: string | null
   guardian2FirstName: string | null
