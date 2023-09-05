@@ -12,12 +12,17 @@ import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops/vasu/components/VasuStateChip'
 import { useTranslation } from 'citizen-frontend/localization'
+import { Result } from 'lib-common/api'
+import { ChildDocumentSummary } from 'lib-common/generated/api-types/document'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { tabletMin } from 'lib-components/breakpoints'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import {
   Desktop,
   MobileAndTablet
@@ -26,9 +31,11 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
-import { Dimmed, P } from 'lib-components/typography'
+import { Dimmed, H3, P } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { faExclamation, faLockAlt } from 'lib-icons'
+
+import { childDocumentSummariesQuery } from '../../../child-documents/queries'
 
 import {
   childVasuSummariesQuery,
@@ -131,6 +138,31 @@ const VasuTable = React.memo(function VasuTable({
   )
 })
 
+const AssistanceDocumentsTable = React.memo(function AssistanceDocumentsTable({
+  summaries
+}: {
+  summaries: ChildDocumentSummary[]
+}) {
+  return (
+    <VasuTableContainer>
+      <tbody>
+        {summaries.map((document) => (
+          <VasuTr key={document.id} data-qa={`vasu-${document.id}`}>
+            <DateTd data-qa={`published-at-${document.id}`}>
+              {document.publishedAt?.toLocalDate().format() ?? ''}
+            </DateTd>
+            <LinkTd>
+              <Link to={`/child-documents/${document.id}`} data-qa="vasu-link">
+                {document.templateName}
+              </Link>
+            </LinkTd>
+          </VasuTr>
+        ))}
+      </tbody>
+    </VasuTableContainer>
+  )
+})
+
 const MobileRowContainer = styled.div`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   padding: ${defaultMargins.s};
@@ -152,7 +184,7 @@ const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
 `
 
-export default React.memo(function VasuAndLeopsSection({
+export default React.memo(function PedagogicalDocumentsSection({
   childId
 }: {
   childId: UUID
@@ -179,7 +211,10 @@ export default React.memo(function VasuAndLeopsSection({
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
       <RequireAuth>
-        <VasuAndLeopsContent childId={childId} />
+        <FixedSpaceColumn>
+          <VasuAndLeopsContent childId={childId} />
+          <AssistanceNeedDocumentsContent childId={childId} />
+        </FixedSpaceColumn>
       </RequireAuth>
     </ResponsiveWholePageCollapsible>
   )
@@ -198,6 +233,8 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
 
   return (
     <>
+      <H3>{i18n.children.vasu.plansTitle}</H3>
+      <P noMargin>{i18n.children.vasu.plansLawDisclaimer}</P>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
@@ -265,3 +302,50 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
     </>
   )
 })
+
+const AssistanceNeedDocumentsContent = React.memo(
+  function AssistanceNeedDocumentsContent({ childId }: { childId: UUID }) {
+    const documentsResult: Result<ChildDocumentSummary[]> = useQueryResult(
+      childDocumentSummariesQuery(childId)
+    )
+    const i18n = useTranslation()
+
+    return (
+      <>
+        <H3>{i18n.children.vasu.assistanceNeedDocumentsTitle}</H3>
+        {renderResult(documentsResult, (documents) =>
+          documents.length === 0 ? (
+            <PaddingBox>
+              <Gap size="s" />
+              <Dimmed>{i18n.children.vasu.noDocuments}</Dimmed>
+            </PaddingBox>
+          ) : (
+            <>
+              <MobileAndTablet>
+                {documents.map((document) => (
+                  <MobileRowContainer key={document.id}>
+                    <FixedSpaceRow justifyContent="space-between">
+                      <span data-qa={`published-at-${document.id}`}>
+                        {document.publishedAt?.toLocalDate().format() ?? ''}
+                      </span>
+                    </FixedSpaceRow>
+                    <Gap size="xs" />
+                    <Link
+                      to={`/child-documents/${document.id}`}
+                      data-qa="child-document-link"
+                    >
+                      {document.templateName}
+                    </Link>
+                  </MobileRowContainer>
+                ))}
+              </MobileAndTablet>
+              <Desktop>
+                <AssistanceDocumentsTable summaries={documents} />
+              </Desktop>
+            </>
+          )
+        )}
+      </>
+    )
+  }
+)

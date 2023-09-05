@@ -2225,11 +2225,16 @@ const en: Translations = {
       empty: 'Not defined'
     },
     vasu: {
-      title:
-        'Early childhood education and care plan and learning plan for pre-primary education',
+      // TODO
+      title: 'Pedagogiset asiakirjat',
+      plansTitle: 'Suunnitelmat',
+      plansLawDisclaimer:
+        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
+      noVasus: 'Ei suunnitelmia',
+      assistanceNeedDocumentsTitle: 'Tuen tarpeeseen liittyvät asiakirjat',
+      noDocuments: 'Ei asiakirjoja',
       lastModified: 'Last modified',
       lastPublished: 'Last published',
-      noVasus: 'No early childhood education or pre-primary learning plans',
       leavePage: 'Leave page',
       edited: 'Edited',
       eventTypes: {

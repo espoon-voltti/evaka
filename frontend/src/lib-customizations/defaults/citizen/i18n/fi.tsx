@@ -2448,9 +2448,13 @@ export default {
       pageCount: (current: number, total: number) => `Sivu ${current}/${total}`
     },
     vasu: {
-      title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
-      noVasus:
-        'Ei varhaiskasvatussuunnitelmia tai esiopetuksen oppimissuunnitelmia',
+      title: 'Pedagogiset asiakirjat',
+      plansTitle: 'Suunnitelmat',
+      plansLawDisclaimer:
+        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
+      noVasus: 'Ei suunnitelmia',
+      assistanceNeedDocumentsTitle: 'Tuen tarpeeseen liittyvät asiakirjat',
+      noDocuments: 'Ei asiakirjoja',
       lastModified: 'Viimeisin muokkauspäivämäärä',
       lastPublished: 'Viimeksi julkaistu huoltajalle',
       leavePage: 'Poistu',

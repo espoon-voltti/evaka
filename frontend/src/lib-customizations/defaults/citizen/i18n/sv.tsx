@@ -2465,11 +2465,16 @@ const sv: Translations = {
       empty: 'Inte definierat'
     },
     vasu: {
-      title: 'Plan för småbarnspedagogik och lärande inom förskoleundervisning',
+      // TODO
+      title: 'Pedagogiset asiakirjat',
+      plansTitle: 'Suunnitelmat',
+      plansLawDisclaimer:
+        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
+      noVasus: 'Ei suunnitelmia',
+      assistanceNeedDocumentsTitle: 'Tuen tarpeeseen liittyvät asiakirjat',
+      noDocuments: 'Ei asiakirjoja',
       lastModified: 'Senaste redigeringsdatum',
       lastPublished: 'Senaste publicering för vårdnadshavare',
-      noVasus:
-        'Inga planer för småbarnspedagogik eller lärande inom förskoleundervisning',
       leavePage: 'Lämna sidan',
       edited: 'Redigerad',
       eventTypes: {
