@@ -258,7 +258,7 @@ describe('Intermittent shiftcare reservation calendar', () => {
 const openPage = (time: HelsinkiDateTime) =>
   Page.open({
     mockedTime: time.toSystemTzDate(),
-    employeeCustomizations: {
+    overrides: {
       featureFlags: {
         experimental: {
           intermittentShiftCare: true

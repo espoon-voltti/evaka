@@ -30,7 +30,7 @@ beforeEach(async () => {
 
   page = await Page.open({
     mockedTime: now.toSystemTzDate(),
-    employeeCustomizations: {
+    overrides: {
       featureFlags: {
         preschoolApplication: {
           connectedDaycarePreferredStartDate: false

@@ -47,7 +47,7 @@ beforeEach(async () => {
 
   page = await Page.open({
     mockedTime: mockedTime.toSystemTzDate(),
-    employeeCustomizations: {
+    overrides: {
       featureFlags: { decisionDraftMultipleUnits: true }
     }
   })

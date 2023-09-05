@@ -12,14 +12,7 @@ import playwright, {
   Page
 } from 'playwright'
 
-import { JsonOf } from 'lib-common/json'
-import {
-  CitizenCustomizations,
-  CommonCustomizations,
-  DeepPartial,
-  EmployeeCustomizations,
-  EmployeeMobileCustomizations
-} from 'lib-customizations/types'
+import { DeepPartial } from 'lib-customizations/types'
 
 import config from './config'
 
@@ -67,13 +60,7 @@ afterAll(async () => {
 })
 
 const initScript = (options: EvakaBrowserContextOptions) => {
-  const override = (key: keyof EvakaBrowserContextOptions) => {
-    const value = options[key]
-    return value
-      ? `window.evaka.${key} = JSON.parse('${JSON.stringify(value)}')`
-      : ''
-  }
-  const { mockedTime } = options
+  const { mockedTime, overrides } = options
 
   return `
 window.evaka = window.evaka ?? {}
@@ -83,10 +70,11 @@ ${
     ? `window.evaka.mockedTime = new Date('${mockedTime.toISOString()}')`
     : ''
 }
-${override('citizenCustomizations')}
-${override('commonCustomizations')}
-${override('employeeCustomizations')}
-${override('employeeMobileCustomizations')}
+${
+  overrides
+    ? `window.evaka.overrides = JSON.parse('${JSON.stringify(overrides)}')`
+    : ''
+}
   `
 }
 
@@ -170,25 +158,13 @@ function configurePage(page: Page) {
 
 export interface EvakaBrowserContextOptions {
   mockedTime?: Date
-  citizenCustomizations?: DeepPartial<JsonOf<CitizenCustomizations>>
-  employeeCustomizations?: DeepPartial<JsonOf<EmployeeCustomizations>>
-  employeeMobileCustomizations?: DeepPartial<
-    JsonOf<EmployeeMobileCustomizations>
-  >
-  commonCustomizations?: DeepPartial<JsonOf<CommonCustomizations>>
+  overrides?: DeepPartial<EvakaWindowConfig['overrides']>
 }
 
 export async function newBrowserContext(
   options?: BrowserContextOptions & EvakaBrowserContextOptions
 ): Promise<BrowserContext> {
-  const {
-    mockedTime,
-    citizenCustomizations,
-    employeeCustomizations,
-    employeeMobileCustomizations,
-    commonCustomizations,
-    ...otherOptions
-  } = options ?? {}
+  const { mockedTime, overrides, ...otherOptions } = options ?? {}
   const ctx = await browser.newContext(otherOptions)
   await ctx.tracing.start({
     snapshots: true,
@@ -200,10 +176,7 @@ export async function newBrowserContext(
   await ctx.addInitScript({
     content: initScript({
       mockedTime,
-      citizenCustomizations,
-      employeeCustomizations,
-      employeeMobileCustomizations,
-      commonCustomizations
+      overrides
     })
   })
   return ctx

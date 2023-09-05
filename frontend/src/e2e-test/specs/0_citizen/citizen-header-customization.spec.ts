@@ -14,8 +14,10 @@ beforeEach(async () => {
 describe('Citizen header customization', () => {
   test('English language can be disabled', async () => {
     const page = await Page.open({
-      citizenCustomizations: {
-        langs: ['fi', 'sv']
+      overrides: {
+        citizen: {
+          langs: ['fi', 'sv']
+        }
       }
     })
     await enduserLogin(page)

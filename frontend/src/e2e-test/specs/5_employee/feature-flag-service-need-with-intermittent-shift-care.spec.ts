@@ -44,7 +44,7 @@ beforeEach(async () => {
   admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
-    employeeCustomizations: {
+    overrides: {
       featureFlags: {
         experimental: {
           intermittentShiftCare: true

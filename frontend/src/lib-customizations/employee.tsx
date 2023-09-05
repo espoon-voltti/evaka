@@ -4,11 +4,10 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import defaultsUntyped from '@evaka/customizations/employee'
+import customizationsUntyped from '@evaka/customizations/employee'
 import mergeWith from 'lodash/mergeWith'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee/i18n/fi'
@@ -16,30 +15,18 @@ import { sv } from './defaults/employee/i18n/sv'
 import { fi as vasuFI } from './defaults/employee/i18n/vasu/fi'
 import { sv as vasuSV } from './defaults/employee/i18n/vasu/sv'
 import type { EmployeeCustomizations } from './types'
+import { FeatureFlags } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const defaults: EmployeeCustomizations = defaultsUntyped
-
-declare global {
-  interface EvakaWindowConfig {
-    employeeCustomizations?: Partial<JsonOf<EmployeeCustomizations>>
-  }
-}
+const customizations: EmployeeCustomizations = customizationsUntyped
 
 const overrides =
-  typeof window !== 'undefined'
-    ? window.evaka?.employeeCustomizations
-    : undefined
-
-const customizations: EmployeeCustomizations = overrides
-  ? mergeWith({}, defaults, overrides, mergeCustomizer)
-  : defaults
+  typeof window !== 'undefined' ? window.evaka?.overrides : undefined
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
   appConfig,
   cityLogo,
-  featureFlags,
   absenceTypes,
   assistanceMeasures,
   daycareAssistanceLevels,
@@ -50,6 +37,12 @@ const {
   unitProviderTypes,
   voucherValueDecisionTypes
 }: EmployeeCustomizations = customizations
+const featureFlags: FeatureFlags = mergeWith(
+  {},
+  customizations.featureFlags,
+  overrides?.featureFlags,
+  mergeCustomizer
+)
 export {
   appConfig,
   cityLogo,

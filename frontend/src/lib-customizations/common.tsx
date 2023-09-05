@@ -6,10 +6,8 @@
 // @ts-ignore
 import defaultsUntyped from '@evaka/customizations/common'
 import isArray from 'lodash/isArray'
-import mergeWith from 'lodash/mergeWith'
 import React from 'react'
 
-import { JsonOf } from 'lib-common/json'
 import {
   faBabyCarriage,
   faEuroSign,
@@ -28,20 +26,7 @@ export const mergeCustomizer = (
     : undefined // fall back to default merge logic
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const defaults: CommonCustomizations = defaultsUntyped
-
-declare global {
-  interface EvakaWindowConfig {
-    commonCustomizations?: Partial<JsonOf<CommonCustomizations>>
-  }
-}
-
-const overrides =
-  typeof window !== 'undefined' ? window.evaka?.commonCustomizations : undefined
-
-const customizations: CommonCustomizations = overrides
-  ? mergeWith({}, defaults, overrides, mergeCustomizer)
-  : defaults
+const customizations: CommonCustomizations = defaultsUntyped
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { theme }: CommonCustomizations = customizations

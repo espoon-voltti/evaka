@@ -70,7 +70,7 @@ describe('Child Information - Child discussion section', () => {
   beforeEach(async () => {
     page = await Page.open({
       mockedTime: LocalDate.of(2023, 7, 1).toSystemTzDate(),
-      employeeCustomizations: {
+      overrides: {
         featureFlags: { childDiscussion: true }
       }
     })

@@ -230,7 +230,7 @@ async function openCalendarPage(
     viewport,
     screen: viewport,
     mockedTime: time.toSystemTzDate(),
-    citizenCustomizations: {
+    overrides: {
       featureFlags: {
         experimental: {
           intermittentShiftCare: true

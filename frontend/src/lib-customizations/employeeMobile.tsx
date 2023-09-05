@@ -4,35 +4,27 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import defaultsUntyped from '@evaka/customizations/employeeMobile'
+import customizationsUntyped from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
-
-import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
-import type { EmployeeMobileCustomizations } from './types'
+import type { EmployeeMobileCustomizations, FeatureFlags } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const defaults: EmployeeMobileCustomizations = defaultsUntyped
-
-declare global {
-  interface EvakaWindowConfig {
-    employeeMobileCustomizations?: Partial<JsonOf<EmployeeMobileCustomizations>>
-  }
-}
+const customizations: EmployeeMobileCustomizations = customizationsUntyped
 
 const overrides =
-  typeof window !== 'undefined'
-    ? window.evaka?.employeeMobileCustomizations
-    : undefined
-
-const customizations: EmployeeMobileCustomizations = overrides
-  ? mergeWith({}, defaults, overrides, mergeCustomizer)
-  : defaults
+  typeof window !== 'undefined' ? window.evaka?.overrides : undefined
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { appConfig, featureFlags }: EmployeeMobileCustomizations = customizations
+const { appConfig }: EmployeeMobileCustomizations = customizations
+const featureFlags: FeatureFlags = mergeWith(
+  {},
+  customizations.featureFlags,
+  overrides?.featureFlags,
+  mergeCustomizer
+)
 export { appConfig, featureFlags }
 
 export type Lang = 'fi'

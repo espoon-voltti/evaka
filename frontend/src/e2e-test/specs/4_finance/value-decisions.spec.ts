@@ -229,7 +229,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
   beforeEach(async () => {
     page = await Page.open({
       acceptDownloads: true,
-      employeeCustomizations: {
+      overrides: {
         featureFlags: {
           financeDecisionHandlerSelect: true
         }

@@ -52,7 +52,7 @@ describe('Missing head of family report', () => {
       mockedTime: mockedToday
         .toHelsinkiDateTime(LocalTime.of(8, 0))
         .toSystemTzDate(),
-      employeeCustomizations: {
+      overrides: {
         featureFlags: { experimental: { personDuplicate: true } }
       }
     })

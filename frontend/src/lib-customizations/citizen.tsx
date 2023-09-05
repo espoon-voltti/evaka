@@ -4,45 +4,38 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import defaultsUntyped from '@evaka/customizations/citizen'
+import customizationsUntyped from '@evaka/customizations/citizen'
 import mergeWith from 'lodash/mergeWith'
-
-import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import en from './defaults/citizen/i18n/en'
 import fi from './defaults/citizen/i18n/fi'
 import sv from './defaults/citizen/i18n/sv'
 import type { CitizenCustomizations } from './types'
+import { FeatureFlags } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const defaults: CitizenCustomizations = defaultsUntyped
-
-declare global {
-  interface EvakaWindowConfig {
-    citizenCustomizations?: Partial<JsonOf<CitizenCustomizations>>
-  }
-}
+const customizations: CitizenCustomizations = customizationsUntyped
 
 const overrides =
-  typeof window !== 'undefined'
-    ? window.evaka?.citizenCustomizations
-    : undefined
-
-const customizations: CitizenCustomizations = overrides
-  ? mergeWith({}, defaults, overrides, mergeCustomizer)
-  : defaults
+  typeof window !== 'undefined' ? window.evaka?.overrides : undefined
 
 const {
   appConfig,
   cityLogo,
-  featureFlags,
   footerLogo,
-  langs,
   mapConfig,
   routeLinkRootUrl,
   getMaxPreferredUnits
 }: CitizenCustomizations = customizations
+const langs: CitizenCustomizations['langs'] =
+  overrides?.citizen?.langs ?? customizations.langs
+const featureFlags: FeatureFlags = mergeWith(
+  {},
+  customizations.featureFlags,
+  overrides?.featureFlags,
+  mergeCustomizer
+)
 export {
   appConfig,
   cityLogo,

@@ -21,6 +21,7 @@ import {
   PlacementPlanRejectReason,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
+import { JsonOf } from 'lib-common/json'
 import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
 
@@ -44,8 +45,14 @@ declare global {
     evaka?: EvakaWindowConfig
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface EvakaWindowConfig {}
+  interface EvakaWindowConfig {
+    overrides?: {
+      featureFlags?: Partial<JsonOf<FeatureFlags>>
+      citizen?: {
+        langs?: JsonOf<CitizenCustomizations['langs']>
+      }
+    }
+  }
 }
 
 type DeepPartial<T> = {

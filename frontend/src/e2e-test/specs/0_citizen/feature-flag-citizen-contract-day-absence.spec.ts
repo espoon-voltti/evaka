@@ -88,7 +88,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       viewport,
       screen: viewport,
       mockedTime: today.toSystemTzDate(),
-      citizenCustomizations: {
+      overrides: {
         featureFlags: {
           citizenShiftCareAbsence: false,
           citizenContractDayAbsence: true
