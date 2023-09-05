@@ -62,6 +62,7 @@ object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
     ): InvoiceGenerationLogic = InvoiceGenerationLogic.Default
 }
 
+private val PRESCHOOL_CLUB_FREE_MONTHS = setOf(Month.JUNE)
 private val PRESCHOOL_CLUB_HALF_FEE_MONTHS = setOf(Month.AUGUST)
 private val calculateHalfFee: (Int) -> Int = { fee ->
     BigDecimal(fee).divide(BigDecimal(2), 0, RoundingMode.HALF_UP).toInt()
@@ -151,6 +152,10 @@ class DraftInvoiceGenerator(
         val childrenPartialMonth = getPartialMonthChildren(placements, decisions, operationalDays)
         val childrenFullMonthAbsences =
             getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
+        val isFreeMonth: (FeeDecisionChild) -> Boolean = { part ->
+            part.placement.type == PlacementType.PRESCHOOL_CLUB &&
+                PRESCHOOL_CLUB_FREE_MONTHS.contains(invoicePeriod.start.month)
+        }
         val isHalfFeeMonth: (FeeDecisionChild) -> Boolean = { part ->
             part.placement.type == PlacementType.PRESCHOOL_CLUB &&
                 PRESCHOOL_CLUB_HALF_FEE_MONTHS.contains(invoicePeriod.start.month)
@@ -172,6 +177,7 @@ class DraftInvoiceGenerator(
             val getDecisionPartMaxFee: (FeeDecisionChild) -> Int = { part ->
                 val baseFee =
                     when {
+                        isFreeMonth(part) -> 0
                         isHalfFeeMonth(part) -> calculateHalfFee(part.baseFee)
                         else -> part.baseFee
                     }
@@ -293,6 +299,7 @@ class DraftInvoiceGenerator(
                                                     part.placement.type
                                                 ),
                                                 when {
+                                                    isFreeMonth(part) -> 0
                                                     isHalfFeeMonth(part) ->
                                                         calculateHalfFee(part.fee)
                                                     else -> part.fee
@@ -301,6 +308,7 @@ class DraftInvoiceGenerator(
                                                     Pair(feeAlteration.type, feeAlteration.effect)
                                                 },
                                                 when {
+                                                    isFreeMonth(part) -> 0
                                                     isHalfFeeMonth(part) -> {
                                                         val fee = calculateHalfFee(part.fee)
                                                         part.feeAlterations.fold(fee) {
