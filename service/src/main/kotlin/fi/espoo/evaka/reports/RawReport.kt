@@ -138,7 +138,9 @@ SELECT
 
     ab1.absence_type as absence_paid,
     ab2.absence_type as absence_free,
-    7 as staff_dimensioning
+    7 as staff_dimensioning,
+    holiday.date IS NOT NULL as is_holiday,
+    date_part('isodow', t) = ANY(ARRAY[1, 2, 3, 4, 5]) as is_weekday
 FROM generate_series(:start_date, :end_date, '1 day') t
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
 JOIN daycare u on u.id = pl.unit_id
@@ -207,5 +209,7 @@ data class RawReportRow(
     val realizedCapacity: Double,
     val absencePaid: AbsenceType?,
     val absenceFree: AbsenceType?,
-    val staffDimensioning: Int
+    val staffDimensioning: Int,
+    val isWeekday: Boolean,
+    val isHoliday: Boolean
 )
