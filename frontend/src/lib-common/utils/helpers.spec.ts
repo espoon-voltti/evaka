@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isProduction, getEnvironment } from './helpers'
+import { getEnvironment } from './helpers'
 
 function defineWindowLocation(host: string) {
   const oldLocation = window.location
@@ -17,18 +17,6 @@ function defineWindowLocation(host: string) {
 describe('helpers', () => {
   afterEach(() => {
     jest.restoreAllMocks()
-  })
-
-  describe('isProduction', () => {
-    it('returns true when hostname is espoonvarhaiskasvatus.fi', () => {
-      defineWindowLocation('espoonvarhaiskasvatus.fi')
-      expect(isProduction()).toBeTruthy()
-    })
-
-    it('returns false when hostname is staging.espoonvarhaiskasvatus.fi', () => {
-      defineWindowLocation('staging.espoonvarhaiskasvatus.fi')
-      expect(isProduction()).toBeFalsy()
-    })
   })
 
   describe('getEnvironment', () => {
