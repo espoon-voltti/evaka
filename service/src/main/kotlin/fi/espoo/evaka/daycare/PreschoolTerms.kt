@@ -19,7 +19,9 @@ data class PreschoolTerm(
     val extendedTerm: FiniteDateRange,
     /*The official application period. The end date is not enforced though, but applications are accepted
     until end of term.*/
-    val applicationPeriod: FiniteDateRange
+    val applicationPeriod: FiniteDateRange,
+    /*Preschool is not arranged during term breaks (e.g. Christmas holiday).*/
+    val termBreaks: DateSet
 ) {
     fun isApplicationAccepted(date: LocalDate) =
         FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
@@ -32,7 +34,8 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
             finnish_preschool,
             swedish_preschool,
             extended_term,
-            application_period
+            application_period,
+            term_breaks
         FROM preschool_term
         ORDER BY extended_term
         """

@@ -203,6 +203,7 @@ export interface ChildServiceNeedInfo {
 export interface ClubTerm {
   applicationPeriod: FiniteDateRange
   term: FiniteDateRange
+  termBreaks: FiniteDateRange[]
 }
 
 /**
@@ -489,6 +490,7 @@ export interface PreschoolTerm {
   extendedTerm: FiniteDateRange
   finnishPreschool: FiniteDateRange
   swedishPreschool: FiniteDateRange
+  termBreaks: FiniteDateRange[]
 }
 
 /**

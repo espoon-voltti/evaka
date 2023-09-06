@@ -12,18 +12,35 @@ data class ClubTerm(
     /*The period during which club activity is arranged.*/
     val term: FiniteDateRange,
     /*The official application period.*/
-    val applicationPeriod: FiniteDateRange
+    val applicationPeriod: FiniteDateRange,
+    /*Club is not arranged during these periods (e.g. Christmas holiday).*/
+    val termBreaks: List<FiniteDateRange>
 )
 
 fun Database.Read.getClubTerms(): List<ClubTerm> {
-    return createQuery("SELECT term, application_period FROM club_term order by term")
+    return createQuery("SELECT term, application_period, term_breaks FROM club_term order by term")
         .mapTo<ClubTerm>()
         .list()
 }
 
 fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? {
-    return createQuery("SELECT term, application_period FROM club_term WHERE term @> :date LIMIT 1")
+    return createQuery(
+            "SELECT term, application_period, term_breaks FROM club_term WHERE term @> :date LIMIT 1"
+        )
         .bind("date", date)
         .mapTo<ClubTerm>()
         .firstOrNull()
+}
+
+fun Database.Transaction.insertClubTerm(term: ClubTerm) {
+    createUpdate(
+            """
+        INSERT INTO club_term (term, application_period, term_breaks)
+        VALUES (:term, :applicationPeriod, :termBreaks)
+        """
+        )
+        .bind("term", term.term)
+        .bind("applicationPeriod", term.applicationPeriod)
+        .bind("termBreaks", term.termBreaks)
+        .execute()
 }
