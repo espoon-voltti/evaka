@@ -18,8 +18,10 @@ import router from './App'
 import './index.css'
 
 // Load Sentry before React to make Sentry's integrations work automatically
-Sentry.init(sentryConfig)
-Sentry.addGlobalEventProcessor(sentryEventFilter)
+if (sentryConfig) {
+  Sentry.init(sentryConfig)
+  Sentry.addGlobalEventProcessor(sentryEventFilter)
+}
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
