@@ -710,7 +710,7 @@ export const fi = {
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu',
           ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
-          FINNISH_SECOND_LANGUAGE: 'Suomi toisena kielenä opetus'
+          ANOMALOUS_EDUCATION_START: 'Opetuksen poikkeava aloittamisajankohta'
         }
       },
       assistanceFactor: {
@@ -737,7 +737,7 @@ export const fi = {
         info: {
           TRANSPORT_BENEFIT: (): React.ReactNode => undefined,
           ACCULTURATION_SUPPORT: (): React.ReactNode => undefined,
-          FINNISH_SECOND_LANGUAGE: (): React.ReactNode => undefined
+          ANOMALOUS_EDUCATION_START: (): React.ReactNode => undefined
         }
       }
     },

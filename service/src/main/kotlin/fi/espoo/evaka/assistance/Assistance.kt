@@ -87,7 +87,7 @@ data class PreschoolAssistanceUpdate(
 enum class OtherAssistanceMeasureType : DatabaseEnum {
     TRANSPORT_BENEFIT,
     ACCULTURATION_SUPPORT,
-    FINNISH_SECOND_LANGUAGE;
+    ANOMALOUS_EDUCATION_START;
 
     override val sqlType: String
         get() = "other_assistance_measure_type"
