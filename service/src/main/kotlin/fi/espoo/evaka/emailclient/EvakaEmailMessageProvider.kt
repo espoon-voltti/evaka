@@ -310,7 +310,7 @@ $unsubscribeEn
         )
     }
 
-    override fun vasuNotification(language: Language, childId: ChildId): EmailContent {
+    override fun childDocumentNotification(language: Language, childId: ChildId): EmailContent {
         return EmailContent.fromHtml(
             subject = "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka",
             html =
@@ -328,6 +328,10 @@ $unsubscribeSv
 $unsubscribeEn
 """
         )
+    }
+
+    override fun vasuNotification(language: Language, childId: ChildId): EmailContent {
+        return childDocumentNotification(language, childId)
     }
 
     override fun pedagogicalDocumentNotification(
