@@ -134,7 +134,12 @@ const ReservationTimes = React.memo(function ReservationTimes({
 })
 
 interface ReadOnlyDayProps {
-  mode: 'noChildren' | 'absentNotEditable' | 'reservationClosed' | 'holiday'
+  mode:
+    | 'noChildren'
+    | 'absentNotEditable'
+    | 'termBreak'
+    | 'reservationClosed'
+    | 'holiday'
   label: React.ReactNode
   dataQaPrefix?: string
 }
@@ -188,6 +193,14 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
             </FixedSpaceRow>
           )}
         </>
+      )
+    case 'termBreak':
+      return (
+        <FixedSpaceRow fullWidth alignItems="center">
+          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+          <MiddleCell>{i18n.calendar.termBreak}</MiddleCell>
+          <RightCell />
+        </FixedSpaceRow>
       )
     case 'reservationClosed':
       return (

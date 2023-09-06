@@ -7,10 +7,13 @@ package fi.espoo.evaka.daycare.service
 import fi.espoo.evaka.attendance.getChildAttendanceStartDatesByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
+import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
@@ -47,6 +50,8 @@ fun getGroupMonthCalendar(
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
+    val clubTerms = tx.getClubTerms()
+    val preschoolTerms = tx.getPreschoolTerms()
     val daycare =
         tx.getDaycare(tx.getDaycareIdByGroup(groupId))
             ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
@@ -142,7 +147,11 @@ fun getGroupMonthCalendar(
                                             backupCares[child.id]?.any { it.includes(date) }
                                                 ?: false,
                                         missingHolidayReservation =
-                                            placement.type.requiresAttendanceReservations() &&
+                                            placement.type.scheduleType(
+                                                date,
+                                                clubTerms,
+                                                preschoolTerms
+                                            ) == ScheduleType.RESERVATION_REQUIRED &&
                                                 isHolidayPeriodDate &&
                                                 childReservations.isEmpty() &&
                                                 childAbsences.isEmpty(),

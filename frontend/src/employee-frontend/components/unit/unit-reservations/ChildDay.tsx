@@ -122,7 +122,7 @@ export default React.memo(function ChildDay({
     dailyServiceTimes,
     inOtherUnit,
     isInBackupGroup,
-    requiresReservation
+    scheduleType
   } = dailyData
 
   const serviceTimeOfDay =
@@ -220,7 +220,7 @@ export default React.memo(function ChildDay({
             </ReservationTime>
           </>
         ) : day.isInHolidayPeriod &&
-          requiresReservation &&
+          scheduleType === 'RESERVATION_REQUIRED' &&
           reservation == null ? (
           // holiday period, no reservation yet
           <Tooltip

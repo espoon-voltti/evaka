@@ -7,6 +7,7 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
+import { mapScheduleType } from 'lib-common/api-types/placement'
 import {
   ReservableTimeRange,
   ReservationResponseDay,
@@ -210,16 +211,13 @@ const groupChildren = (
           }
         }
 
-        if (!child.requiresReservation) {
-          return {
-            childId: child.childId,
-            type: 'present'
-          }
-        }
-
         return {
           childId: child.childId,
-          type: 'missing-reservation'
+          type: mapScheduleType(child.scheduleType, {
+            RESERVATION_REQUIRED: () => 'missing-reservation',
+            FIXED_SCHEDULE: () => 'present',
+            TERM_BREAK: () => 'absent'
+          })
         }
       }),
       ({ type, text }) => `${type},${text ?? ''}`

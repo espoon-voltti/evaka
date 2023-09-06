@@ -10,6 +10,7 @@ import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { PlacementType } from './placement'
+import { ScheduleType } from './placement'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
@@ -39,7 +40,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Nothing
   */
@@ -48,7 +49,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Present
   */
@@ -57,7 +58,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Reservations
   */
@@ -92,7 +93,7 @@ export namespace ReservableTimeRange {
     type: 'INTERMITTENT_SHIFT_CARE'
     placementUnitOperationTime: TimeRange | null
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.Normal
   */
@@ -115,7 +116,7 @@ export namespace Reservation {
   export interface NoTimes {
     type: 'NO_TIMES'
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.Reservation.Times
   */
@@ -161,9 +162,9 @@ export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
   attendances: OpenTimeRange[]
   childId: UUID
-  requiresReservation: boolean
   reservableTimeRange: ReservableTimeRange
   reservations: Reservation[]
+  scheduleType: ScheduleType
   shiftCare: boolean
 }
 

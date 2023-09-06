@@ -312,6 +312,7 @@ const sv: Translations = {
     newReservationBtn: 'Anmäl närvaro',
     missingReservation: 'Ingen närvaro',
     reservationNotRequired: '–',
+    termBreak: 'Ingen undervisning idag',
     reservation: 'Närvarande',
     reservationNoTimes: 'Närvarande',
     realized: 'Förverkligad',

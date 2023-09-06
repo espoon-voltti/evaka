@@ -284,6 +284,14 @@ export interface PlacementUpdateRequestBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.placement.ScheduleType
+*/
+export type ScheduleType =
+  | 'RESERVATION_REQUIRED'
+  | 'FIXED_SCHEDULE'
+  | 'TERM_BREAK'
+
+/**
 * Generated from fi.espoo.evaka.placement.TerminatablePlacementGroup
 */
 export interface TerminatablePlacementGroup {

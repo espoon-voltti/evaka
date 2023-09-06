@@ -7,11 +7,16 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.ClubTerm
+import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.getClubTerms
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -62,6 +67,8 @@ class ReservationControllerCitizen(
                         user.id
                     )
                     val holidays = tx.getHolidays(requestedRange)
+                    val preschoolTerms = tx.getPreschoolTerms()
+                    val clubTerms = tx.getClubTerms()
                     val children = tx.getReservationChildren(user.id, clock.today())
                     val childIds = children.map { it.id }.toSet()
                     val placements = tx.getReservationPlacements(childIds, requestedRange)
@@ -114,21 +121,31 @@ class ReservationControllerCitizen(
                                     children =
                                         // Includes all children that are eligible for daycare
                                         // on this date: have a placement and is an operation day in
-                                        // their unit or child has intermittent shift care
+                                        // their unit, or child has intermittent shift care.
+                                        //
+                                        // Preschool/club only children are eligible when there's
+                                        // activity on the date. This excludes e.g. Christmas or
+                                        // winter holidays.
                                         children
                                             .mapNotNull { child ->
-                                                placementDay(
-                                                        date,
-                                                        isHoliday,
-                                                        placements[child.id],
-                                                        backupPlacements[child.id],
-                                                    )
+                                                placements[child.id]
+                                                    ?.find { it.range.includes(date) }
+                                                    ?.let { placement ->
+                                                        placementDay(
+                                                            date,
+                                                            isHoliday,
+                                                            placement,
+                                                            backupPlacements[child.id],
+                                                            clubTerms,
+                                                            preschoolTerms
+                                                        )
+                                                    }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
                                                         ReservationResponseDayChild(
                                                             childId = child.id,
-                                                            requiresReservation =
-                                                                placementDay.requiresReservation,
+                                                            scheduleType =
+                                                                placementDay.scheduleType,
                                                             shiftCare = placementDay.shiftCare,
                                                             absence = absences[key],
                                                             reservations = reservations[key]
@@ -284,7 +301,7 @@ class ReservationControllerCitizen(
 }
 
 data class PlacementDay(
-    val requiresReservation: Boolean,
+    val scheduleType: ScheduleType,
     val shiftCare: Boolean,
     val reservableTimeRange: ReservableTimeRange
 )
@@ -292,11 +309,11 @@ data class PlacementDay(
 private fun placementDay(
     date: LocalDate,
     isHoliday: Boolean,
-    placements: List<ReservationPlacement>?,
+    placement: ReservationPlacement,
     backupPlacements: List<ReservationBackupPlacement>?,
+    clubTerms: List<ClubTerm>,
+    preschoolTerms: List<PreschoolTerm>
 ): PlacementDay? {
-    val placement = placements?.find { it.range.includes(date) } ?: return null
-
     val serviceNeed = placement.serviceNeeds.find { it.range.includes(date) }
     val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
 
@@ -317,7 +334,7 @@ private fun placementDay(
 
     return if (operationTime != null || shiftCare) {
         PlacementDay(
-            requiresReservation = placement.type.requiresAttendanceReservations(),
+            scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
             shiftCare = shiftCare,
             reservableTimeRange =
                 if (shiftCareType == ShiftCareType.INTERMITTENT) {
@@ -345,7 +362,7 @@ data class ReservationResponseDay(
 
 data class ReservationResponseDayChild(
     val childId: ChildId,
-    val requiresReservation: Boolean, // Whether reservations are required
+    val scheduleType: ScheduleType,
     val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
     val absence: AbsenceInfo?,
     val reservations: List<Reservation>,

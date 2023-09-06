@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.daycare
 
+import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
@@ -25,6 +27,15 @@ data class PreschoolTerm(
 ) {
     fun isApplicationAccepted(date: LocalDate) =
         FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
+
+    fun scheduleType(date: LocalDate): ScheduleType? =
+        when {
+            finnishPreschool.includes(date) -> {
+                if (termBreaks.includes(date)) ScheduleType.TERM_BREAK
+                else ScheduleType.FIXED_SCHEDULE
+            }
+            else -> null
+        }
 }
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
@@ -47,4 +58,27 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
 
 fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
     return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
+}
+
+fun Database.Transaction.insertPreschoolTerm(term: PreschoolTerm) {
+    createUpdate(
+            """
+        INSERT INTO preschool_term (
+            finnish_preschool,
+            swedish_preschool,
+            extended_term,
+            application_period,
+            term_breaks
+        ) VALUES (
+            :finnishPreschool,
+            :swedishPreschool,
+            :extendedTerm,
+            :applicationPeriod,
+            :termBreaks
+        )
+        """
+                .trimIndent()
+        )
+        .bindKotlin(term)
+        .execute()
 }

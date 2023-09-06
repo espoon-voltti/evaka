@@ -6,10 +6,13 @@ package fi.espoo.evaka.reservations
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.daycare.getClubTerms
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
@@ -130,6 +133,8 @@ fun createReservationsAndAbsences(
         }
 
     val reservationsRange = reservationRequestRange(requests)
+    val clubTerms = tx.getClubTerms()
+    val preschoolTerms = tx.getPreschoolTerms()
     val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
 
     val childIds = requests.map { it.childId }.toSet()
@@ -147,8 +152,7 @@ fun createReservationsAndAbsences(
         placements[req.childId]
             ?.find { it.range.includes(req.date) }
             ?.type
-            ?.requiresAttendanceReservations()
-            ?: false
+            ?.scheduleType(req.date, clubTerms, preschoolTerms) == ScheduleType.RESERVATION_REQUIRED
     }
 
     val validated =

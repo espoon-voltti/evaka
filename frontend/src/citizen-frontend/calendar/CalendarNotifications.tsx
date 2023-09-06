@@ -153,7 +153,7 @@ function reservationsExistForPeriod(
     if (period.includes(day.date)) {
       return day.children.every(
         (child) =>
-          !child.requiresReservation ||
+          child.scheduleType !== 'RESERVATION_REQUIRED' ||
           child.reservations.length > 0 ||
           child.absence !== null
       )

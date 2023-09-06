@@ -315,6 +315,7 @@ const en: Translations = {
     newReservationBtn: 'Register attendance',
     missingReservation: 'No attendance',
     reservationNotRequired: '–',
+    termBreak: 'No teaching today',
     reservation: 'Registered attendance',
     reservationNoTimes: 'Present',
     realized: 'Realized',

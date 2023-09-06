@@ -7,11 +7,14 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -21,11 +24,16 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestCareArea
+import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestHoliday
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -35,9 +43,11 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -77,16 +87,31 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @BeforeEach
     fun before() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insertTestPlacement(
+        db.transaction { tx ->
+            tx.insertServiceNeedOptions()
+
+            tx.insertTestCareArea(testArea)
+            tx.insertTestDaycare(testDaycare)
+
+            tx.insertTestEmployee(testDecisionMaker_1)
+            tx.insertTestEmployee(DevEmployee(testStaffId))
+
+            tx.insertTestPerson(testAdult_1)
+            tx.upsertCitizenUser(testAdult_1.id)
+
+            listOf(testChild_1, testChild_2).forEach { child ->
+                tx.insertTestPerson(child)
+                tx.insertTestChild(DevChild(id = child.id))
+            }
+
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertTestPlacement(
+            tx.insertTestPlacement(
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     type = PlacementType.DAYCARE,
@@ -95,7 +120,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 )
                 .also { placementId ->
                     // contract days on monday and tuesday
-                    it.insertTestServiceNeed(
+                    tx.insertTestServiceNeed(
                         confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         placementId = placementId,
                         period = FiniteDateRange(monday, tuesday),
@@ -103,10 +128,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE
                     )
                 }
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
-
-            it.insertTestEmployee(DevEmployee(testStaffId))
+            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
         }
     }
 
@@ -115,14 +138,23 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insertTestHoliday(wednesday)
 
-            // Reservation not required (PRESCHOOL)
+            tx.insertTestPerson(testChild_3)
+            tx.insertTestChild(DevChild(id = testChild_3.id))
+
+            // Fixed schedule (PRESCHOOL)
             tx.insertTestPlacement(
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 type = PlacementType.PRESCHOOL,
                 startDate = monday,
-                endDate = wednesday
+                endDate = thursday
             )
+
+            // Term break on thursday
+            tx.insertPreschoolTerm(
+                preschoolTerm2021.copy(termBreaks = DateSet.of(FiniteDateRange(thursday, thursday)))
+            )
+
             tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
         }
 
@@ -195,7 +227,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         ),
                                         dayChild(
                                             testChild_3.id,
-                                            requiresReservation = false,
+                                            scheduleType = ScheduleType.FIXED_SCHEDULE,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
                                                     testDaycare.operationTimes[0]!!
@@ -225,7 +257,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         ),
                                         dayChild(
                                             testChild_3.id,
-                                            requiresReservation = false,
+                                            scheduleType = ScheduleType.FIXED_SCHEDULE,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
                                                     testDaycare.operationTimes[1]!!
@@ -242,7 +274,17 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         ReservationResponseDay(
                             date = thursday,
                             holiday = false,
-                            children = emptyList()
+                            children =
+                                listOf(
+                                    dayChild(
+                                        testChild_3.id,
+                                        scheduleType = ScheduleType.TERM_BREAK,
+                                        reservableTimeRange =
+                                            ReservableTimeRange.Normal(
+                                                testDaycare.operationTimes[0]!!
+                                            )
+                                    )
+                                )
                         )
                     )
             ),
@@ -260,6 +302,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
         db.transaction { tx ->
             tx.insertTestHoliday(tuesday)
+
+            listOf(testChild_3, testChild_4).forEach { child ->
+                tx.insertTestPerson(child)
+                tx.insertTestChild(DevChild(id = child.id))
+            }
 
             // Normal shift care
             tx.insertTestDaycare(roundTheClockDaycare)
@@ -976,7 +1023,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private fun dayChild(
         childId: ChildId,
         reservableTimeRange: ReservableTimeRange,
-        requiresReservation: Boolean = true,
+        scheduleType: ScheduleType = ScheduleType.RESERVATION_REQUIRED,
         shiftCare: Boolean = false,
         absence: AbsenceInfo? = null,
         reservations: List<Reservation> = emptyList(),
@@ -984,7 +1031,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     ) =
         ReservationResponseDayChild(
             childId,
-            requiresReservation,
+            scheduleType,
             shiftCare,
             absence,
             reservations,

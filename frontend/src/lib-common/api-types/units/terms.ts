@@ -9,7 +9,8 @@ import { JsonOf } from '../../json'
 
 export const deserializeClubTerm = (clubTerm: JsonOf<ClubTerm>): ClubTerm => ({
   applicationPeriod: FiniteDateRange.parseJson(clubTerm.applicationPeriod),
-  term: FiniteDateRange.parseJson(clubTerm.term)
+  term: FiniteDateRange.parseJson(clubTerm.term),
+  termBreaks: clubTerm.termBreaks.map((t) => FiniteDateRange.parseJson(t))
 })
 
 export const deserializePreschoolTerm = (
@@ -18,5 +19,6 @@ export const deserializePreschoolTerm = (
   finnishPreschool: FiniteDateRange.parseJson(preschoolTerm.finnishPreschool),
   swedishPreschool: FiniteDateRange.parseJson(preschoolTerm.swedishPreschool),
   extendedTerm: FiniteDateRange.parseJson(preschoolTerm.extendedTerm),
-  applicationPeriod: FiniteDateRange.parseJson(preschoolTerm.applicationPeriod)
+  applicationPeriod: FiniteDateRange.parseJson(preschoolTerm.applicationPeriod),
+  termBreaks: preschoolTerm.termBreaks.map((t) => FiniteDateRange.parseJson(t))
 })
