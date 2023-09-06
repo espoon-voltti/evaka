@@ -3355,6 +3355,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `free july 2021 if child has been placed in preschool club all the time`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            listOf(
+                PlacementType.PRESCHOOL_CLUB to
+                    DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
+            )
+        )
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `no free july 2020 if even one mandatory month has no placement`() {
         initFreeJulyTestData(
             DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
@@ -3404,6 +3417,22 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `free july 2020 if child has a mix of preschool club and daycare placements`() {
+        initFreeJulyTestData(
+            DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            listOf(
+                PlacementType.PRESCHOOL_CLUB to
+                    DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.DAYCARE to
+                    DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
+            )
+        )
+
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
     }
 
     @Test
@@ -5925,6 +5954,88 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Tuple(1, 14500, 14500, ProductKey("PRESCHOOL_CLUB")),
                 Tuple(2, 1450, 2900, ProductKey("SURPLUS_DAY"))
             )
+    }
+
+    @Test
+    fun `preschool club placement in may full month is full price`() {
+        initByPeriodAndPlacementType(
+            DateRange(LocalDate.of(2024, 5, 1), LocalDate.of(2024, 5, 31)),
+            PlacementType.PRESCHOOL_CLUB
+        )
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2024, Month.MAY))
+        }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price })
+            .containsExactly(Tuple(1, 28900, 28900))
+    }
+
+    @Test
+    fun `preschool club placement in may half month is full price`() {
+        initByPeriodAndPlacementType(
+            DateRange(LocalDate.of(2024, 5, 10), LocalDate.of(2024, 5, 22)),
+            PlacementType.PRESCHOOL_CLUB
+        )
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2024, Month.MAY))
+        }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price })
+            .containsExactly(Tuple(1, 28900, 28900))
+    }
+
+    @Test
+    fun `preschool club placement in june full month is free`() {
+        initByPeriodAndPlacementType(
+            DateRange(LocalDate.of(2024, 6, 1), LocalDate.of(2024, 6, 30)),
+            PlacementType.PRESCHOOL_CLUB
+        )
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2024, Month.JUNE))
+        }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `preschool club placement in june half month is free`() {
+        initByPeriodAndPlacementType(
+            DateRange(LocalDate.of(2024, 6, 11), LocalDate.of(2024, 6, 26)),
+            PlacementType.PRESCHOOL_CLUB
+        )
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2024, Month.JUNE))
+        }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `preschool club placement in june full month surplus days is free`() {
+        initByPeriodAndPlacementType(
+            DateRange(LocalDate.of(2024, 6, 1), LocalDate.of(2024, 6, 30)),
+            PlacementType.PRESCHOOL_CLUB,
+            snDaycareContractDays10
+        )
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2024, Month.JUNE))
+        }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
     }
 
     private fun initByPeriodAndPlacementType(
