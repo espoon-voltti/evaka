@@ -103,7 +103,7 @@ const features: Features = {
       serviceWorkerMessaging: true,
       childDocuments: false,
       citizenEmailNotificationSettings: true,
-      feeDecisionIgnoredStatus: false
+      feeDecisionIgnoredStatus: true
     }
   }
 }
