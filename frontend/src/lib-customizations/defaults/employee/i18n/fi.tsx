@@ -832,7 +832,7 @@ export const fi = {
       pageTitle: 'Päätös tuesta esiopetuksessa',
       decisionNumber: 'Päätösnumero',
       confidential: 'Salassa pidettävä',
-      lawReference: 'Perusopetuslaki 17 §',
+      lawReference: 'JulkL 24.1 §',
       types: {
         NEW: 'Erityinen tuki alkaa',
         CONTINUING: 'Erityinen tuki jatkuu',
