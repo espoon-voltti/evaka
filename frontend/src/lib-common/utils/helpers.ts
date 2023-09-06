@@ -31,12 +31,6 @@ export const isAutomatedTest =
   (typeof window !== 'undefined' ? window.evaka?.automatedTest : undefined) ??
   false
 
-export const isIOS = () =>
-  ['iPad', 'iPhone', 'iPad Simulator', 'iPhone Simulator'].includes(
-    navigator.platform
-  ) ||
-  (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
-
 declare global {
   interface Window {
     evaka?: EvakaWindowConfig
