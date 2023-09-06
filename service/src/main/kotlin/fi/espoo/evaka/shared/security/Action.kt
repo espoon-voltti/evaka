@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -2066,15 +2067,30 @@ sealed interface Action {
                 .inPlacementGroupOfChildOfChildDocument()
         ),
         UPDATE(
-            HasGlobalRole(ADMIN),
+            HasGlobalRole(ADMIN)
+                .andChildDocumentInStatus(
+                    statuses = DocumentStatus.values().filter { it.editable }
+                ),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfChildDocument(),
+                .inPlacementUnitOfChildOfChildDocument(editable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument()
+                .inPlacementGroupOfChildOfChildDocument(editable = true)
         ),
         PUBLISH(
+            HasGlobalRole(ADMIN)
+                .andChildDocumentInStatus(
+                    DocumentStatus.values().filter { it != DocumentStatus.COMPLETED }
+                ),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(publishable = true),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChildOfChildDocument(publishable = true)
+        ),
+        NEXT_STATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
@@ -2083,15 +2099,15 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfChildDocument()
         ),
-        UNPUBLISH(HasGlobalRole(ADMIN)),
+        PREV_STATE(HasGlobalRole(ADMIN)),
         DELETE(
-            HasGlobalRole(ADMIN),
+            HasGlobalRole(ADMIN).andChildDocumentInStatus(listOf(DocumentStatus.DRAFT)),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfChildDocument(),
+                .inPlacementUnitOfChildOfChildDocument(deletable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument()
+                .inPlacementGroupOfChildOfChildDocument(deletable = true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

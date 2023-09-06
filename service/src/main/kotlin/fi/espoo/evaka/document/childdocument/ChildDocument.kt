@@ -75,8 +75,15 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
 
 @Json data class DocumentContent(val answers: List<AnsweredQuestion<*>>)
 
+enum class DocumentStatus(val editable: Boolean) {
+    DRAFT(editable = true),
+    PREPARED(editable = true),
+    COMPLETED(editable = false)
+}
+
 data class ChildDocumentSummary(
     val id: ChildDocumentId,
+    val status: DocumentStatus,
     val type: DocumentType,
     val templateName: String,
     val publishedAt: HelsinkiDateTime?
@@ -84,6 +91,7 @@ data class ChildDocumentSummary(
 
 data class ChildDocumentCitizenSummary(
     val id: ChildDocumentId,
+    val status: DocumentStatus,
     val type: DocumentType,
     val templateName: String,
     val publishedAt: HelsinkiDateTime,
@@ -99,6 +107,7 @@ data class ChildBasics(
 
 data class ChildDocumentDetails(
     val id: ChildDocumentId,
+    val status: DocumentStatus,
     val publishedAt: HelsinkiDateTime?,
     @Json val content: DocumentContent,
     @Nested("child") val child: ChildBasics,

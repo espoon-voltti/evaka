@@ -13,6 +13,7 @@ import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
@@ -86,7 +87,8 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
               {document.child.firstName} {document.child.lastName}
             </H2>
           </FixedSpaceColumn>
-          <FixedSpaceColumn>
+          <FixedSpaceColumn spacing="xs">
+            <ChildDocumentStateChip status={document.status} />
             {document.template.confidential && (
               <Label>{i18n.children.vasu.confidential}</Label>
             )}

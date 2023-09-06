@@ -17,7 +17,9 @@ export const testTranslations: Translations = {
   },
   common: {
     add: '',
+    cancel: '',
     close: '',
+    confirm: '',
     no: '',
     remove: '',
     yes: ''
@@ -39,7 +41,12 @@ export const testTranslations: Translations = {
       options: '',
       multiline: ''
     },
-    noSelection: ''
+    noSelection: '',
+    documentStates: {
+      DRAFT: '',
+      PREPARED: '',
+      COMPLETED: ''
+    }
   },
   loginErrorModal: {
     header: '',

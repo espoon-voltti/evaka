@@ -789,16 +789,44 @@ export const fi = {
         document: 'Lomake',
         status: 'Tila',
         open: 'Avaa lomake',
-        published: 'Julkaistu',
-        draft: 'Luonnos'
+        published: 'Julkaistu'
       },
       addNew: 'Luo uusi lomake',
       select: 'Valitse lomake',
       removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
+      statuses: {
+        DRAFT: 'Luonnos',
+        PREPARED: 'Laadittu',
+        COMPLETED: 'Valmis'
+      },
       editor: {
         preview: 'Esikatsele',
         publish: 'Julkaise huoltajalle',
-        unpublish: 'Palauta luonnokseksi'
+        publishConfirmTitle: 'Haluatko varmasti julkaista huoltajalle?',
+        publishConfirmText:
+          'Huoltaja saa nähdäkseen tämänhetkisen version. Tämän jälkeen tekemäsi muutokset eivät näy huoltajalle ennen kuin julkaiset uudelleen.',
+        goToNextStatus: {
+          DRAFT: 'Julkaise luonnos-tilassa',
+          PREPARED: 'Julkaise laadittu-tilassa',
+          COMPLETED: 'Julkaise valmis-tilassa'
+        },
+        goToNextStatusConfirmTitle: {
+          DRAFT: 'Haluatko varmasti julkaista asiakirjan luonnos-tilassa?',
+          PREPARED: 'Haluatko varmasti julkaista asiakirjan laadittu-tilassa?',
+          COMPLETED: 'Haluatko varmasti julkaista asiakirjan valmis-tilassa?'
+        },
+        goToPrevStatus: {
+          DRAFT: 'Palauta luonnokseksi',
+          PREPARED: 'Palauta laadituksi',
+          COMPLETED: 'Palauta valmiiksi'
+        },
+        goToPrevStatusConfirmTitle: {
+          DRAFT: 'Haluatko varmasti palauttaa asiakirjan luonnokseksi?',
+          PREPARED: 'Haluatko varmasti palauttaa asiakirjan laadituksi?',
+          COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?'
+        },
+        deleteDraft: 'Poista luonnos',
+        deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?'
       }
     },
     assistanceNeedPreschoolDecision: {
@@ -4109,7 +4137,8 @@ export const fi = {
     title: 'Lomakepohjat',
     documentTypes: {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
-      PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio'
+      PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
+      HOJKS: 'HOJKS'
     },
     languages: {
       FI: 'Suomenkielinen',

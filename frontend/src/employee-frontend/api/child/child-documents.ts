@@ -7,7 +7,8 @@ import {
   ChildDocumentSummary,
   ChildDocumentCreateRequest,
   DocumentContent,
-  ChildDocumentWithPermittedActions
+  ChildDocumentWithPermittedActions,
+  DocumentStatus
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -81,9 +82,21 @@ export async function putChildDocumentPublish(id: UUID): Promise<void> {
     .then((res) => res.data)
 }
 
-export async function putChildDocumentUnpublish(id: UUID): Promise<void> {
+export async function putChildDocumentNextState(
+  id: UUID,
+  newStatus: DocumentStatus
+): Promise<void> {
   return client
-    .put<JsonOf<void>>(`/child-documents/${id}/unpublish`)
+    .put<JsonOf<void>>(`/child-documents/${id}/next-state`, { newStatus })
+    .then((res) => res.data)
+}
+
+export async function putChildDocumentPrevState(
+  id: UUID,
+  newStatus: DocumentStatus
+): Promise<void> {
+  return client
+    .put<JsonOf<void>>(`/child-documents/${id}/prev-state`, { newStatus })
     .then((res) => res.data)
 }
 

@@ -19,11 +19,13 @@ import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import { Table, Thead, Th, Tbody, Tr, Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -102,9 +104,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
               <Td>{document.publishedAt?.format() ?? '-'}</Td>
               <Td>{document.templateName}</Td>
               <Td data-qa="document-status">
-                {document.publishedAt
-                  ? i18n.childInformation.childDocuments.table.published
-                  : i18n.childInformation.childDocuments.table.draft}
+                <ChildDocumentStateChip status={document.status} />
               </Td>
               <Td>
                 {!document.publishedAt && (
@@ -195,26 +195,40 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
 
   return renderResult(
     combine(documentsResult, documentTemplatesResult),
-    ([documents, templates]) => (
-      <FixedSpaceColumn>
-        <AddButtonRow
-          text={i18n.childInformation.childDocuments.addNew}
-          onClick={() => setCreationModalOpen(true)}
-          disabled={templates.length < 1}
-          data-qa="create-document"
-        />
+    ([documents, templates]) => {
+      const validTemplates = templates
+        .filter(
+          (template) =>
+            !documents.some(
+              (doc) => doc.type === template.type && doc.status !== 'COMPLETED'
+            )
+        )
+        .filter(
+          (template) =>
+            featureFlags.experimental?.hojks || template.type !== 'HOJKS'
+        )
 
-        {creationModalOpen && (
-          <CreationModal
-            childId={childId}
-            templates={templates}
-            onClose={() => setCreationModalOpen(false)}
+      return (
+        <FixedSpaceColumn>
+          <AddButtonRow
+            text={i18n.childInformation.childDocuments.addNew}
+            onClick={() => setCreationModalOpen(true)}
+            disabled={validTemplates.length < 1}
+            data-qa="create-document"
           />
-        )}
 
-        <ChildDocuments childId={childId} documents={documents} />
-      </FixedSpaceColumn>
-    )
+          {creationModalOpen && (
+            <CreationModal
+              childId={childId}
+              templates={validTemplates}
+              onClose={() => setCreationModalOpen(false)}
+            />
+          )}
+
+          <ChildDocuments childId={childId} documents={documents} />
+        </FixedSpaceColumn>
+      )
+    }
   )
 })
 

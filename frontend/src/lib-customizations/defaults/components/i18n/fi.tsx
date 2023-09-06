@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const components = {
+import { Translations } from 'lib-components/i18n'
+
+const components: Translations = {
   asyncButton: {
     inProgress: 'Ladataan',
     failure: 'Lataus epäonnistui',
@@ -10,7 +12,9 @@ const components = {
   },
   common: {
     add: 'Lisää',
+    cancel: 'Peruuta',
     close: 'Sulje',
+    confirm: 'Vahvista',
     no: 'Ei',
     remove: 'Poista',
     yes: 'Kyllä'
@@ -33,7 +37,12 @@ const components = {
       multiline: 'Salli monirivinen vastaus',
       withText: 'Pyydetään lisätietoja'
     },
-    noSelection: 'Ei valintaa'
+    noSelection: 'Ei valintaa',
+    documentStates: {
+      DRAFT: 'Luonnos',
+      PREPARED: 'Laadittu',
+      COMPLETED: 'Valmis'
+    }
   },
   loginErrorModal: {
     header: 'Kirjautuminen epäonnistui',

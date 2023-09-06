@@ -4,6 +4,8 @@
 
 import React, { useContext, useMemo } from 'react'
 
+import { DocumentStatus } from 'lib-common/generated/api-types/document'
+
 export interface Translations {
   asyncButton: {
     inProgress: string
@@ -12,7 +14,9 @@ export interface Translations {
   }
   common: {
     add: string
+    cancel: string
     close: string
+    confirm: string
     no: string
     remove: string
     yes: string
@@ -35,6 +39,7 @@ export interface Translations {
       multiline: string
     }
     noSelection: string
+    documentStates: Record<DocumentStatus, string>
   }
   loginErrorModal: {
     header: string

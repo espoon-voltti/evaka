@@ -24,6 +24,7 @@ import {
 } from 'lib-common/generated/api-types/decision'
 import {
   DocumentContent,
+  DocumentStatus,
   DocumentTemplateContent,
   DocumentType
 } from 'lib-common/generated/api-types/document'
@@ -693,6 +694,7 @@ export interface DevDocumentTemplate {
 
 export interface DevChildDocument {
   id: UUID
+  status: DocumentStatus
   childId: UUID
   templateId: UUID
   content: DocumentContent

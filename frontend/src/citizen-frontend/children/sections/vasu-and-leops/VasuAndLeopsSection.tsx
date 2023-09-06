@@ -12,12 +12,16 @@ import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops/vasu/components/VasuStateChip'
 import { useTranslation } from 'citizen-frontend/localization'
-import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
+import {
+  ChildDocumentCitizenSummary,
+  DocumentType
+} from 'lib-common/generated/api-types/document'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { tabletMin } from 'lib-components/breakpoints'
+import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -29,6 +33,7 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Dimmed, H3 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faExclamation, faLockAlt } from 'lib-icons'
 
@@ -169,6 +174,9 @@ const AssistanceDocumentsTable = React.memo(function AssistanceDocumentsTable({
                 {document.templateName}
               </Link>
             </LinkTd>
+            <StateTd>
+              <ChildDocumentStateChip status={document.status} />
+            </StateTd>
           </VasuTr>
         ))}
       </tbody>
@@ -244,8 +252,19 @@ export default React.memo(function PedagogicalDocumentsSection({
             >
               {i18n.children.vasu.givePermissionToShareInfoVasu}
             </ExpandingInfo>
+            <H3>{i18n.children.vasu.plansTitle}</H3>
             <VasuAndLeopsContent childId={childId} />
-            <OtherDocumentsContent childId={childId} />
+            {featureFlags.experimental?.hojks && (
+              <>
+                <H3>{i18n.children.vasu.hojksTitle}</H3>
+                <ChildDocumentsContent childId={childId} types={['HOJKS']} />
+              </>
+            )}
+            <H3>{i18n.children.vasu.otherDocumentsTitle}</H3>
+            <ChildDocumentsContent
+              childId={childId}
+              types={['PEDAGOGICAL_ASSESSMENT', 'PEDAGOGICAL_REPORT']}
+            />
           </FixedSpaceColumn>
         </PaddingBox>
       </RequireAuth>
@@ -265,7 +284,6 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
 
   return (
     <>
-      <H3>{i18n.children.vasu.plansTitle}</H3>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
@@ -314,17 +332,20 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
   )
 })
 
-const OtherDocumentsContent = React.memo(function OtherDocumentsContent({
-  childId
+const ChildDocumentsContent = React.memo(function OtherDocumentsContent({
+  childId,
+  types
 }: {
   childId: UUID
+  types: DocumentType[]
 }) {
-  const documentsResult = useQueryResult(childDocumentSummariesQuery(childId))
   const i18n = useTranslation()
+  const documentsResult = useQueryResult(
+    childDocumentSummariesQuery(childId)
+  ).map((docs) => docs.filter((doc) => types.includes(doc.type)))
 
   return (
     <>
-      <H3>{i18n.children.vasu.otherDocumentsTitle}</H3>
       {renderResult(documentsResult, (documents) =>
         documents.length === 0 ? (
           <PaddingBox>
@@ -340,6 +361,7 @@ const OtherDocumentsContent = React.memo(function OtherDocumentsContent({
                     <span data-qa={`published-at-${document.id}`}>
                       {document.publishedAt?.toLocalDate().format() ?? ''}
                     </span>
+                    <ChildDocumentStateChip status={document.status} />
                   </FixedSpaceRow>
                   <Gap size="xs" />
                   <Link

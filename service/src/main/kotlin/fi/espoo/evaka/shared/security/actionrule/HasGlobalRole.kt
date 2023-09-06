@@ -6,9 +6,11 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
@@ -180,6 +182,18 @@ ${
     if (careTypes.isNotEmpty()) "AND (${bind(careTypes)} && daycare.type)"
     else ""
 }
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun andChildDocumentInStatus(statuses: List<DocumentStatus>) =
+        rule<ChildDocumentId> { _, _ ->
+            sql(
+                """
+SELECT id
+FROM child_document
+WHERE status = ANY(${bind(statuses)}::child_document_status[])
             """
                     .trimIndent()
             )

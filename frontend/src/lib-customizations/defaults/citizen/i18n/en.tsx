@@ -2227,8 +2227,11 @@ const en: Translations = {
     },
     vasu: {
       title: 'Pedagogical documents',
-      plansTitle: 'Plans',
+      plansTitle:
+        'Early childhood education and care plans and learning plans for pre-primary education',
       noVasus: 'No plans',
+      hojksTitle:
+        'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat', // TODO
       otherDocumentsTitle: 'Other documents',
       noDocuments: 'No documents',
       lastModified: 'Last modified',

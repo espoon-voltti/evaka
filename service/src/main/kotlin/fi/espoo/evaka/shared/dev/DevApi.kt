@@ -52,6 +52,7 @@ import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.DocumentContent
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -2258,6 +2259,7 @@ data class DevDocumentTemplate(
 
 data class DevChildDocument(
     val id: ChildDocumentId = ChildDocumentId(UUID.randomUUID()),
+    val status: DocumentStatus,
     val childId: ChildId,
     val templateId: DocumentTemplateId,
     @Json val content: DocumentContent,

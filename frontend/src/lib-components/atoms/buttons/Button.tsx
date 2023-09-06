@@ -86,7 +86,6 @@ export interface ButtonProps extends BaseProps {
   primary?: boolean
   disabled?: boolean
   type?: 'submit' | 'button'
-  'data-qa'?: string
 }
 
 export default React.memo(function Button({

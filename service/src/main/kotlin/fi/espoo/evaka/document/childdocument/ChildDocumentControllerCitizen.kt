@@ -63,7 +63,7 @@ class ChildDocumentControllerCitizen(private val accessControl: AccessControl) {
                         documentId
                     )
 
-                    tx.getChildDocument(documentId)?.takeIf { it.publishedAt != null }
+                    tx.getCitizenChildDocument(documentId)
                         ?: throw NotFound("Document $documentId not found")
                 }
             }

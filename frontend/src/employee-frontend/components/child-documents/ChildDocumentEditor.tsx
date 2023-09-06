@@ -19,6 +19,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
+import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
@@ -29,21 +30,27 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import {
+  childDocumentNextStateMutation,
+  childDocumentPrevStateMutation,
   childDocumentQuery,
+  deleteChildDocumentMutation,
   publishChildDocumentMutation,
   queryKeys,
-  unpublishChildDocumentMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
 
+import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
+
 const ActionBar = styled.div`
   position: sticky;
+  z-index: 1;
   bottom: 0;
   left: 0;
   right: 0;
@@ -57,7 +64,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 }: {
   documentAndPermissions: ChildDocumentWithPermittedActions
 }) {
-  const document = documentAndPermissions.data
+  const { data: document, permittedActions } = documentAndPermissions
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const bind = useForm(
@@ -71,12 +78,6 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   const [lastSavedContent, setLastSavedContent] = useState(document.content)
   const { mutateAsync: updateChildDocumentContent } = useMutationResult(
     updateChildDocumentContentMutation
-  )
-  const { mutateAsync: publishChildDocument } = useMutationResult(
-    publishChildDocumentMutation
-  )
-  const { mutateAsync: unpublishChildDocument } = useMutationResult(
-    unpublishChildDocumentMutation
   )
 
   // invalidate cached document on onmount
@@ -110,7 +111,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
 
   const debouncedValidContent = useDebounce(
-    document.publishedAt === null && bind.isValid() ? bind.value() : null,
+    bind.isValid() ? bind.value() : null,
     1000
   )
 
@@ -122,15 +123,14 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 
   const goBack = () => navigate(`/child-information/${document.child.id}`)
 
-  const publishAndGoBack = async () => {
-    const result = await publishChildDocument({
-      documentId: document.id,
-      childId: document.child.id
-    })
-    if (result.isSuccess) {
-      goBack()
-    }
-  }
+  const nextStatus = useMemo(
+    () => getNextDocumentStatus(document.template.type, document.status),
+    [document.template.type, document.status]
+  )
+  const prevStatus = useMemo(
+    () => getPrevDocumentStatus(document.template.type, document.status),
+    [document.template.type, document.status]
+  )
 
   return (
     <div>
@@ -149,6 +149,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
               justifyContent="start"
               alignItems="flex-end"
             >
+              <ChildDocumentStateChip status={document.status} />
               {document.template.confidential && (
                 <strong>
                   {i18n.documentTemplates.templateEditor.confidential}
@@ -168,7 +169,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
         <Container>
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceRow alignItems="center">
-              {preview || document.publishedAt ? (
+              {preview || !permittedActions.includes('UPDATE') ? (
                 <Button
                   text={i18n.common.goBack}
                   onClick={goBack}
@@ -181,23 +182,43 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   data-qa="return-button"
                 />
               )}
-              {preview && !document.publishedAt && (
-                <Button
-                  text={i18n.common.edit}
-                  onClick={() => setPreview(false)}
-                />
-              )}
-              {document.publishedAt &&
-                documentAndPermissions.permittedActions.includes(
-                  'UNPUBLISH'
-                ) && (
-                  <Button
-                    text={i18n.childInformation.childDocuments.editor.unpublish}
-                    onClick={() =>
-                      unpublishChildDocument({
-                        documentId: document.id,
-                        childId: document.child.id
-                      })
+
+              {preview &&
+                permittedActions.includes('DELETE') &&
+                document.status === 'DRAFT' && (
+                  <ConfirmedMutation
+                    buttonText={
+                      i18n.childInformation.childDocuments.editor.deleteDraft
+                    }
+                    mutation={deleteChildDocumentMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id
+                    })}
+                    onSuccess={goBack}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.editor
+                        .deleteDraftConfirmTitle
+                    }
+                  />
+                )}
+              {preview &&
+                permittedActions.includes('PREV_STATE') &&
+                prevStatus != null && (
+                  <ConfirmedMutation
+                    buttonText={
+                      i18n.childInformation.childDocuments.editor
+                        .goToPrevStatus[prevStatus]
+                    }
+                    mutation={childDocumentPrevStateMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id,
+                      newStatus: prevStatus
+                    })}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.editor
+                        .goToPrevStatusConfirmTitle[prevStatus]
                     }
                   />
                 )}
@@ -217,22 +238,69 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 </FixedSpaceRow>
               )}
             </FixedSpaceRow>
-            {!preview && (
-              <Button
-                text={i18n.childInformation.childDocuments.editor.preview}
-                primary
-                onClick={() => setPreview(true)}
-                disabled={!saved}
-                data-qa="preview-button"
-              />
-            )}
-            {preview && !document.publishedAt && (
-              <Button
-                text={i18n.childInformation.childDocuments.editor.publish}
-                primary
-                onClick={publishAndGoBack}
-              />
-            )}
+
+            <FixedSpaceRow>
+              {preview && permittedActions.includes('UPDATE') && (
+                <Button
+                  text={i18n.common.edit}
+                  onClick={() => setPreview(false)}
+                />
+              )}
+              {!preview && (
+                <Button
+                  text={i18n.childInformation.childDocuments.editor.preview}
+                  primary
+                  onClick={() => setPreview(true)}
+                  disabled={!saved}
+                  data-qa="preview-button"
+                />
+              )}
+              {preview && permittedActions.includes('PUBLISH') && (
+                <ConfirmedMutation
+                  buttonText={
+                    i18n.childInformation.childDocuments.editor.publish
+                  }
+                  mutation={publishChildDocumentMutation}
+                  onClick={() => ({
+                    documentId: document.id,
+                    childId: document.child.id
+                  })}
+                  confirmationTitle={
+                    i18n.childInformation.childDocuments.editor
+                      .publishConfirmTitle
+                  }
+                  confirmationText={
+                    i18n.childInformation.childDocuments.editor
+                      .publishConfirmText
+                  }
+                />
+              )}
+              {preview &&
+                permittedActions.includes('NEXT_STATE') &&
+                nextStatus != null && (
+                  <ConfirmedMutation
+                    buttonText={
+                      i18n.childInformation.childDocuments.editor
+                        .goToNextStatus[nextStatus]
+                    }
+                    primary
+                    mutation={childDocumentNextStateMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id,
+                      newStatus: nextStatus
+                    })}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.editor
+                        .goToNextStatusConfirmTitle[nextStatus]
+                    }
+                    confirmationText={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmText
+                    }
+                  />
+                )}
+            </FixedSpaceRow>
           </FixedSpaceRow>
         </Container>
       </ActionBar>

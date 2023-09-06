@@ -2467,8 +2467,11 @@ const sv: Translations = {
     },
     vasu: {
       title: 'Pedagogiska dokument',
-      plansTitle: 'Planer',
+      plansTitle:
+        'Planer för småbarnspedagogik och lärande inom förskoleundervisning',
       noVasus: 'Inga planer',
+      hojksTitle:
+        'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat', // TODO
       otherDocumentsTitle: 'Andra dokument',
       noDocuments: 'Inga dokument',
       lastModified: 'Senaste redigeringsdatum',

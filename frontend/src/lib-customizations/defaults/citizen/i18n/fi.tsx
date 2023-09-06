@@ -2450,8 +2450,11 @@ export default {
     },
     vasu: {
       title: 'Pedagogiset asiakirjat',
-      plansTitle: 'Suunnitelmat',
+      plansTitle:
+        'Varhaiskasvatussuunnitelmat ja esiopetuksen oppimissuunnitelmat',
       noVasus: 'Ei suunnitelmia',
+      hojksTitle:
+        'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat',
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
       lastModified: 'Viimeisin muokkauspäivämäärä',

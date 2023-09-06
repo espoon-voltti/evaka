@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -48,12 +49,23 @@ class ChildDocumentController(
                         Action.Child.CREATE_CHILD_DOCUMENT,
                         body.childId
                     )
-                    tx.getTemplate(body.templateId)?.also {
-                        if (!it.published || !it.validity.includes(clock.today())) {
-                            throw BadRequest("Invalid template")
+
+                    val template =
+                        tx.getTemplate(body.templateId)?.also {
+                            if (!it.published || !it.validity.includes(clock.today())) {
+                                throw BadRequest("Invalid template")
+                            }
                         }
+                            ?: throw NotFound()
+
+                    val sameTypeAlreadyStarted =
+                        tx.getChildDocuments(body.childId).any {
+                            it.type == template.type && it.status != DocumentStatus.COMPLETED
+                        }
+                    if (sameTypeAlreadyStarted) {
+                        throw Conflict("Child already has incomplete document of same type")
                     }
-                        ?: throw NotFound()
+
                     tx.insertChildDocument(body)
                 }
             }
@@ -121,7 +133,7 @@ class ChildDocumentController(
     }
 
     @PutMapping("/{documentId}/content")
-    fun updateDraftDocumentContent(
+    fun updateDocumentContent(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -141,12 +153,12 @@ class ChildDocumentController(
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
-                    if (document.publishedAt != null)
-                        throw BadRequest("Cannot update contents of published document")
+                    if (!document.status.editable)
+                        throw BadRequest("Cannot update contents of document in this status")
 
                     validateContentAgainstTemplate(body, document.template.content)
 
-                    tx.updateDraftChildDocumentContent(documentId, body)
+                    tx.updateChildDocumentContent(documentId, document.status, body)
                 }
                 .also { Audit.ChildDocumentUpdateContent.log(targetId = documentId) }
         }
@@ -193,12 +205,18 @@ class ChildDocumentController(
             .also { Audit.ChildDocumentPublish.log(targetId = documentId) }
     }
 
-    @PutMapping("/{documentId}/unpublish")
-    fun unpublishDocument(
+    data class StatusChangeRequest(
+        // needed to ensure idempotency
+        val newStatus: DocumentStatus
+    )
+
+    @PutMapping("/{documentId}/next-state")
+    fun nextState(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: StatusChangeRequest
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -206,13 +224,57 @@ class ChildDocumentController(
                         tx,
                         user,
                         clock,
-                        Action.ChildDocument.UNPUBLISH,
+                        Action.ChildDocument.NEXT_STATE,
                         documentId
                     )
-                    tx.unpublishChildDocument(documentId)
+                    val statusTransition =
+                        validateStatusTransition(
+                            tx = tx,
+                            documentId = documentId,
+                            requestedStatus = body.newStatus,
+                            goingForward = true
+                        )
+
+                    tx.changeStatusAndPublish(documentId, statusTransition, clock.now())
+                    emailNotificationService.scheduleEmailNotification(tx, documentId, clock.now())
                 }
             }
-            .also { Audit.ChildDocumentUnpublish.log(targetId = documentId) }
+            .also {
+                Audit.ChildDocumentNextState.log(targetId = documentId, objectId = body.newStatus)
+                Audit.ChildDocumentPublish.log(targetId = documentId)
+            }
+    }
+
+    @PutMapping("/{documentId}/prev-state")
+    fun prevState(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: StatusChangeRequest
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.NEXT_STATE,
+                        documentId
+                    )
+                    val statusTransition =
+                        validateStatusTransition(
+                            tx = tx,
+                            documentId = documentId,
+                            requestedStatus = body.newStatus,
+                            goingForward = false
+                        )
+                    tx.changeStatus(documentId, statusTransition)
+                }
+            }
+            .also {
+                Audit.ChildDocumentNextState.log(targetId = documentId, objectId = body.newStatus)
+            }
     }
 
     @DeleteMapping("/{documentId}")
@@ -231,11 +293,8 @@ class ChildDocumentController(
                         Action.ChildDocument.DELETE,
                         documentId
                     )
-                    tx.getChildDocument(documentId)?.also {
-                        if (it.publishedAt != null)
-                            throw BadRequest("Can not delete published document")
-                    }
-                    tx.deleteChildDocumentDraft(documentId)
+                    tx.getChildDocument(documentId)
+                    tx.deleteUnpublishedChildDocumentDraft(documentId)
                 }
             }
             .also { Audit.ChildDocumentDelete.log(targetId = documentId) }
