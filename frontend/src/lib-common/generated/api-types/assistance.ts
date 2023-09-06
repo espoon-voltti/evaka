@@ -117,7 +117,8 @@ export interface OtherAssistanceMeasureResponse {
 */
 export const otherAssistanceMeasureTypes = [
   'TRANSPORT_BENEFIT',
-  'ACCULTURATION_SUPPORT'
+  'ACCULTURATION_SUPPORT',
+  'FINNISH_SECOND_LANGUAGE'
 ] as const
 
 export type OtherAssistanceMeasureType = typeof otherAssistanceMeasureTypes[number]

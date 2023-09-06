@@ -343,3 +343,4 @@ V343__update_finance_staff_role_check.sql
 V344__assistance_preschool_decision_attachment_dates.sql
 V345__service_need_option_fee.sql
 V346__fee_decision_ignored_drafts.sql
+V347__add_finnish_second_language_assistance_measure_type.sql
