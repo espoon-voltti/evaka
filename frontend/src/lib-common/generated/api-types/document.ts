@@ -83,6 +83,17 @@ export interface ChildBasics {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenSummary
+*/
+export interface ChildDocumentCitizenSummary {
+  id: UUID
+  publishedAt: HelsinkiDateTime
+  templateName: string
+  type: DocumentType
+  unread: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
 */
 export interface ChildDocumentCreateRequest {

@@ -6,6 +6,7 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
@@ -36,6 +37,28 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
         )
         .bind("childId", childId)
         .mapTo<ChildDocumentSummary>()
+        .list()
+}
+
+fun Database.Read.getChildDocumentCitizenSummaries(
+    user: AuthenticatedUser.Citizen,
+    childId: PersonId
+): List<ChildDocumentCitizenSummary> {
+    return createQuery(
+            """
+            SELECT cd.id, dt.type, cd.published_at, dt.name as template_name,
+                (NOT EXISTS(
+                    SELECT 1 FROM child_document_read cdr 
+                    WHERE cdr.person_id = :personId AND cdr.document_id = cd.id
+                )) as unread
+            FROM child_document cd
+            JOIN document_template dt on cd.template_id = dt.id
+            WHERE cd.child_id = :childId
+        """
+        )
+        .bind("personId", user.id)
+        .bind("childId", childId)
+        .mapTo<ChildDocumentCitizenSummary>()
         .list()
 }
 
@@ -98,6 +121,23 @@ fun Database.Transaction.updateDraftChildDocumentContent(
         .bind("id", id)
         .bind("content", content)
         .updateExactlyOne()
+}
+
+fun Database.Transaction.markChildDocumentAsRead(
+    user: AuthenticatedUser.Citizen,
+    id: ChildDocumentId,
+    now: HelsinkiDateTime
+) {
+    createUpdate<Any> {
+            sql(
+                """
+            INSERT INTO child_document_read (document_id, person_id, read_at) 
+            VALUES (${bind(id)}, ${bind(user.id)}, ${bind(now)})
+            ON CONFLICT DO NOTHING;
+        """
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {

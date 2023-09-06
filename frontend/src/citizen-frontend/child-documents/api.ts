@@ -5,8 +5,8 @@
 import { client } from 'citizen-frontend/api-client'
 import DateRange from 'lib-common/date-range'
 import {
-  ChildDocumentDetails,
-  ChildDocumentSummary
+  ChildDocumentCitizenSummary,
+  ChildDocumentDetails
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -14,10 +14,10 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 const deserializeChildDocumentSummary = (
-  data: JsonOf<ChildDocumentSummary>
-): ChildDocumentSummary => ({
+  data: JsonOf<ChildDocumentCitizenSummary>
+): ChildDocumentCitizenSummary => ({
   ...data,
-  publishedAt: HelsinkiDateTime.parseNullableIso(data.publishedAt)
+  publishedAt: HelsinkiDateTime.parseIso(data.publishedAt)
 })
 
 const deserializeChildDocumentDetails = (
@@ -37,9 +37,9 @@ const deserializeChildDocumentDetails = (
 
 export function getChildDocumentSummaries(
   childId: UUID
-): Promise<ChildDocumentSummary[]> {
+): Promise<ChildDocumentCitizenSummary[]> {
   return client
-    .get<JsonOf<ChildDocumentSummary[]>>(`/citizen/child-documents`, {
+    .get<JsonOf<ChildDocumentCitizenSummary[]>>(`/citizen/child-documents`, {
       params: { childId }
     })
     .then(({ data }) => data.map(deserializeChildDocumentSummary))
@@ -51,4 +51,14 @@ export function getChildDocumentDetails(
   return client
     .get<JsonOf<ChildDocumentDetails>>(`/citizen/child-documents/${id}`)
     .then((res) => deserializeChildDocumentDetails(res.data))
+}
+
+export async function markChildDocumentRead(id: UUID): Promise<void> {
+  await client.put(`/citizen/child-documents/${id}/read`)
+}
+
+export function getUnreadChildDocumentsCount(): Promise<Record<UUID, number>> {
+  return client
+    .get<JsonOf<Record<UUID, number>>>(`/citizen/child-documents/unread-count`)
+    .then((res) => res.data)
 }

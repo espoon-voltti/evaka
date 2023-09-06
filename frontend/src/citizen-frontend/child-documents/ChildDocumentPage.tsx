@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
 import { useForm } from 'lib-common/form/hooks'
 import { ChildDocumentDetails } from 'lib-common/generated/api-types/document'
-import { useQueryResult } from 'lib-common/query'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -24,7 +24,7 @@ import Content, {
 } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import { childDocumentDetailsQuery } from './queries'
+import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
 
 export default React.memo(function ChildDocumentPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
@@ -58,6 +58,11 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
   document: ChildDocumentDetails
 }) {
   const i18n = useTranslation()
+
+  const { mutateAsync: markRead } = useMutation(childDocumentReadMutation)
+  useEffect(() => {
+    void markRead(document.id)
+  }, [markRead, document.id])
 
   const bind = useForm(
     documentForm,

@@ -82,6 +82,14 @@ data class ChildDocumentSummary(
     val publishedAt: HelsinkiDateTime?
 )
 
+data class ChildDocumentCitizenSummary(
+    val id: ChildDocumentId,
+    val type: DocumentType,
+    val templateName: String,
+    val publishedAt: HelsinkiDateTime,
+    val unread: Boolean
+)
+
 data class ChildBasics(
     val id: PersonId,
     val firstName: String,

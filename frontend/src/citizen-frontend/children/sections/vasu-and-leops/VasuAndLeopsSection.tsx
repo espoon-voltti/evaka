@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -12,8 +12,7 @@ import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops/vasu/components/VasuStateChip'
 import { useTranslation } from 'citizen-frontend/localization'
-import { Result } from 'lib-common/api'
-import { ChildDocumentSummary } from 'lib-common/generated/api-types/document'
+import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -33,9 +32,13 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { Dimmed, H3, P } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { faExclamation, faLockAlt } from 'lib-icons'
 
-import { childDocumentSummariesQuery } from '../../../child-documents/queries'
+import {
+  childDocumentSummariesQuery,
+  unreadChildDocumentsCountQuery
+} from '../../../child-documents/queries'
 
 import {
   childVasuSummariesQuery,
@@ -47,12 +50,18 @@ const VasuTableContainer = styled.table`
   border-collapse: collapse;
 `
 
-const VasuTr = styled.tr`
+const VasuTr = styled.tr<{ unread?: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   & td {
     vertical-align: top;
     padding: ${defaultMargins.s};
+  }
+
+  ${(p) => (p.unread ? `border-left: 4px solid ${colors.status.success};` : '')}
+
+  * {
+    ${(p) => (p.unread ? 'font-weight: bold;' : '')}
   }
 `
 
@@ -141,13 +150,17 @@ const VasuTable = React.memo(function VasuTable({
 const AssistanceDocumentsTable = React.memo(function AssistanceDocumentsTable({
   summaries
 }: {
-  summaries: ChildDocumentSummary[]
+  summaries: ChildDocumentCitizenSummary[]
 }) {
   return (
     <VasuTableContainer>
       <tbody>
         {summaries.map((document) => (
-          <VasuTr key={document.id} data-qa={`vasu-${document.id}`}>
+          <VasuTr
+            key={document.id}
+            data-qa={`vasu-${document.id}`}
+            unread={document.unread}
+          >
             <DateTd data-qa={`published-at-${document.id}`}>
               {document.publishedAt?.toLocalDate().format() ?? ''}
             </DateTd>
@@ -163,9 +176,13 @@ const AssistanceDocumentsTable = React.memo(function AssistanceDocumentsTable({
   )
 })
 
-const MobileRowContainer = styled.div`
+const MobileRowContainer = styled.div<{ unread: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   padding: ${defaultMargins.s};
+
+  > * {
+    ${(p) => (p.unread ? 'font-weight: bold;' : '')}
+  }
 `
 
 const MobilePermissionToShareContainer = styled.div`
@@ -199,13 +216,24 @@ export default React.memo(function PedagogicalDocumentsSection({
     unreadVasuDocumentsCountQuery
   )
 
+  const { data: unreadChildDocumentsCount } = useQuery(
+    unreadChildDocumentsCountQuery
+  )
+
+  const unreadCount = useMemo(
+    () =>
+      (unreadVasuDocumentsCount?.[childId] ?? 0) +
+      (unreadChildDocumentsCount?.[childId] ?? 0),
+    [childId, unreadVasuDocumentsCount, unreadChildDocumentsCount]
+  )
+
   return (
     <ResponsiveWholePageCollapsible
       title={i18n.children.vasu.title}
       open={open}
       toggleOpen={() => setOpen(!open)}
       opaque
-      countIndicator={unreadVasuDocumentsCount?.[childId]}
+      countIndicator={unreadCount > 0 ? unreadCount : undefined}
       data-qa="collapsible-vasu"
       contentPadding="zero"
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
@@ -265,7 +293,7 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
             </PaddingBox>
             <MobileAndTablet>
               {items.map((vasu) => (
-                <MobileRowContainer key={vasu.id}>
+                <MobileRowContainer key={vasu.id} unread={false}>
                   <FixedSpaceRow justifyContent="space-between">
                     <span data-qa={`published-at-${vasu.id}`}>
                       {vasu.publishedAt?.toLocalDate().format() ?? ''}
@@ -305,9 +333,7 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
 
 const AssistanceNeedDocumentsContent = React.memo(
   function AssistanceNeedDocumentsContent({ childId }: { childId: UUID }) {
-    const documentsResult: Result<ChildDocumentSummary[]> = useQueryResult(
-      childDocumentSummariesQuery(childId)
-    )
+    const documentsResult = useQueryResult(childDocumentSummariesQuery(childId))
     const i18n = useTranslation()
 
     return (
@@ -323,7 +349,10 @@ const AssistanceNeedDocumentsContent = React.memo(
             <>
               <MobileAndTablet>
                 {documents.map((document) => (
-                  <MobileRowContainer key={document.id}>
+                  <MobileRowContainer
+                    key={document.id}
+                    unread={document.unread}
+                  >
                     <FixedSpaceRow justifyContent="space-between">
                       <span data-qa={`published-at-${document.id}`}>
                         {document.publishedAt?.toLocalDate().format() ?? ''}
