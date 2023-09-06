@@ -5,6 +5,7 @@
 import { theme } from '@evaka/customizations/common'
 export { theme } from '@evaka/customizations/common'
 import isArray from 'lodash/isArray'
+import mergeWith from 'lodash/mergeWith'
 import React from 'react'
 
 import {
@@ -14,6 +15,8 @@ import {
   faTreePalm
 } from 'lib-icons'
 
+import { DeepPartial } from './types'
+
 export const mergeCustomizer = (
   original: unknown,
   customized: unknown
@@ -21,6 +24,11 @@ export const mergeCustomizer = (
   isArray(customized) || React.isValidElement(customized as never)
     ? customized
     : undefined // fall back to default merge logic
+
+export const mergeTranslations = <T>(
+  defaults: T,
+  overrides: DeepPartial<T>
+): T => mergeWith({}, overrides, defaults, mergeCustomizer)
 
 // mimic lib-components/colors api:
 

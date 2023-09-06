@@ -5,15 +5,20 @@
 export { citizenConfig as appConfig } from './appConfigs'
 import { CitizenModule } from 'lib-customizations/types'
 
+import en from '../defaults/citizen/i18n/en'
+import fi from '../defaults/citizen/i18n/fi'
+import sv from '../defaults/citizen/i18n/sv'
+
 import EspooLogo from './assets/EspooLogoBlue.svg'
+
 export { featureFlags } from './featureFlags'
 export { mapConfig } from './mapConfig'
 
 export const langs: CitizenModule['langs'] = ['fi', 'sv', 'en']
 export const translations: CitizenModule['translations'] = {
-  fi: {},
-  sv: {},
-  en: {}
+  fi,
+  sv,
+  en
 }
 
 export const footerLogo: CitizenModule['footerLogo'] = undefined

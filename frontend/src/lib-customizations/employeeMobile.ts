@@ -2,11 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export { appConfig } from '@evaka/customizations/employeeMobile'
-import {
-  featureFlags as baseFeatureFlags,
-  translations as baseTranslations
-} from '@evaka/customizations/employeeMobile'
+export { appConfig, translations } from '@evaka/customizations/employeeMobile'
+import { featureFlags as baseFeatureFlags } from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
 
 import { mergeCustomizer } from './common'
@@ -26,7 +23,3 @@ export { featureFlags }
 
 export type Lang = 'fi'
 export type Translations = typeof fi
-
-export const translations: { [K in Lang]: Translations } = {
-  fi: mergeWith({}, fi, baseTranslations.fi, mergeCustomizer)
-}

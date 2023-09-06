@@ -9,15 +9,14 @@ declare module '@evaka/customizations/citizen' {
   import { Lang, Translations } from 'lib-customizations/citizen'
   import {
     BaseAppConfig,
-    DeepPartial,
     FeatureFlags,
     ImgProps,
     MapConfig
   } from 'lib-customizations/types'
 
   export const appConfig: BaseAppConfig
-  export const langs: readonly Lang[]
-  export const translations: Record<Lang, DeepPartial<Translations>>
+  export const langs: Lang[]
+  export const translations: Record<Lang, Translations>
   export const cityLogo: ImgProps
   export const footerLogo: React.ReactNode
   export const routeLinkRootUrl: string

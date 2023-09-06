@@ -8,19 +8,17 @@ export {
   footerLogo,
   mapConfig,
   routeLinkRootUrl,
+  translations,
   getMaxPreferredUnits
 } from '@evaka/customizations/citizen'
 import {
   langs as baseLangs,
-  featureFlags as baseFeatureFlags,
-  translations as baseTranslations
+  featureFlags as baseFeatureFlags
 } from '@evaka/customizations/citizen'
 import mergeWith from 'lodash/mergeWith'
 
 import { mergeCustomizer } from './common'
-import en from './defaults/citizen/i18n/en'
 import fi from './defaults/citizen/i18n/fi'
-import sv from './defaults/citizen/i18n/sv'
 import type { CitizenModule, FeatureFlags } from './types'
 
 const overrides =
@@ -38,9 +36,3 @@ export { featureFlags, langs }
 export type Lang = 'fi' | 'sv' | 'en'
 
 export type Translations = typeof fi
-
-export const translations: Record<Lang, Translations> = {
-  fi: mergeWith({}, fi, baseTranslations.fi, mergeCustomizer),
-  sv: mergeWith({}, sv, baseTranslations.sv, mergeCustomizer),
-  en: mergeWith({}, en, baseTranslations.en, mergeCustomizer)
-}

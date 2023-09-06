@@ -28,23 +28,22 @@ declare module '@evaka/customizations/employee' {
   } from 'lib-customizations/employee'
   import {
     BaseAppConfig,
-    DeepPartial,
     FeatureFlags,
     ImgProps
   } from 'lib-customizations/types'
 
   export const appConfig: BaseAppConfig
-  export const translations: Record<Lang, DeepPartial<Translations>>
-  export const vasuTranslations: Record<VasuLang, DeepPartial<VasuTranslations>>
+  export const translations: Record<Lang, Translations>
+  export const vasuTranslations: Record<VasuLang, VasuTranslations>
   export const featureFlags: FeatureFlags
   export const cityLogo: React.JSX.Element | ImgProps
-  export const placementTypes: readonly PlacementType[]
-  export const absenceTypes: readonly AbsenceType[]
-  export const assistanceMeasures: readonly AssistanceMeasure[]
-  export const daycareAssistanceLevels: readonly DaycareAssistanceLevel[]
-  export const otherAssistanceMeasureTypes: readonly OtherAssistanceMeasureType[]
-  export const placementPlanRejectReasons: readonly PlacementPlanRejectReason[]
-  export const preschoolAssistanceLevels: readonly PreschoolAssistanceLevel[]
-  export const unitProviderTypes: readonly ProviderType[]
-  export const voucherValueDecisionTypes: readonly VoucherValueDecisionType[]
+  export const placementTypes: PlacementType[]
+  export const absenceTypes: AbsenceType[]
+  export const assistanceMeasures: AssistanceMeasure[]
+  export const daycareAssistanceLevels: DaycareAssistanceLevel[]
+  export const otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
+  export const placementPlanRejectReasons: PlacementPlanRejectReason[]
+  export const preschoolAssistanceLevels: PreschoolAssistanceLevel[]
+  export const unitProviderTypes: ProviderType[]
+  export const voucherValueDecisionTypes: VoucherValueDecisionType[]
 }

@@ -4,21 +4,26 @@
 
 import React from 'react'
 
+import {
+  daycareAssistanceLevels as allDaycareAssistanceLevels,
+  otherAssistanceMeasureTypes as allOtherAssistanceMeasureTypes,
+  preschoolAssistanceLevels as allPreschoolAssistanceLevels
+} from 'lib-common/generated/api-types/assistance'
 import type { EmployeeModule } from 'lib-customizations/types'
 
-import Logo from './assets/EspooLogoPrimary.svg'
+import { mergeTranslations } from '../common'
+import { fi } from '../defaults/employee/i18n/fi'
+import { sv } from '../defaults/employee/i18n/sv'
+import { fi as vasuFi } from '../defaults/employee/i18n/vasu/fi'
+import { sv as vasuSv } from '../defaults/employee/i18n/vasu/sv'
 
-export {
-  daycareAssistanceLevels,
-  otherAssistanceMeasureTypes,
-  preschoolAssistanceLevels
-} from 'lib-common/generated/api-types/assistance'
+import Logo from './assets/EspooLogoPrimary.svg'
 
 export { employeeConfig as appConfig } from './appConfigs'
 export { featureFlags } from './featureFlags'
 
 export const translations: EmployeeModule['translations'] = {
-  fi: {
+  fi: mergeTranslations(fi, {
     childInformation: {
       pedagogicalDocument: {
         explanation:
@@ -30,12 +35,12 @@ export const translations: EmployeeModule['translations'] = {
           'Kuvaillaan huoltajalle, mikä tilanteessa oli lapselle merkityksellistä oppimisen ja kehityksen näkökulmasta. Voit myös linkittää toiminnan vasun sisältöihin'
       }
     }
-  },
-  sv: {}
+  }),
+  sv
 }
 export const vasuTranslations: EmployeeModule['vasuTranslations'] = {
-  FI: {},
-  SV: {}
+  FI: vasuFi,
+  SV: vasuSv
 }
 export const cityLogo: EmployeeModule['cityLogo'] = (
   <img src={Logo} alt="Espoo Logo" data-qa="footer-city-logo" />
@@ -79,3 +84,9 @@ export const unitProviderTypes: EmployeeModule['unitProviderTypes'] = [
 ]
 export const voucherValueDecisionTypes: EmployeeModule['voucherValueDecisionTypes'] =
   ['NORMAL', 'RELIEF_ACCEPTED', 'RELIEF_PARTLY_ACCEPTED', 'RELIEF_REJECTED']
+export const daycareAssistanceLevels: EmployeeModule['daycareAssistanceLevels'] =
+  [...allDaycareAssistanceLevels]
+export const otherAssistanceMeasureTypes: EmployeeModule['otherAssistanceMeasureTypes'] =
+  [...allOtherAssistanceMeasureTypes]
+export const preschoolAssistanceLevels: EmployeeModule['preschoolAssistanceLevels'] =
+  [...allPreschoolAssistanceLevels]
