@@ -48,9 +48,6 @@ and a few other important directories:
 - [`docs`](docs/) – General eVaka documentation
 - [`evaka-bom`](evaka-bom/) – Shared BOM for eVaka Gradle projects, for
   easier dependency updates and control
-- [`espoo-customizations`](espoo-customizations/) – A common directory with
-  placeholder files for anything specific to Espoo's eVaka implementation that
-  cannot be licensed alongside the core
 
 ## Contributing
 

@@ -5,7 +5,7 @@
 import type { CitizenCustomizations } from 'lib-customizations/types'
 
 import { citizenConfig } from './appConfigs'
-import EspooLogo from './assets/EspooLogoBlue.svg'
+import EspooLogo from './assets/EspooLogoPrimary.svg'
 import featureFlags from './featureFlags'
 import mapConfig from './mapConfig'
 
