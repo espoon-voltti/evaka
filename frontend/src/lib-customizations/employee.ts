@@ -13,7 +13,7 @@ import { fi as vasuFI } from './defaults/employee/i18n/vasu/fi'
 import { FeatureFlags } from './types'
 
 export {
-  appConfig,
+  sentryConfig,
   cityLogo,
   absenceTypes,
   assistanceMeasures,

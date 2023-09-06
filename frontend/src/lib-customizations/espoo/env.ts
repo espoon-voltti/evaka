@@ -4,7 +4,7 @@
 
 export type Env = 'staging' | 'prod'
 
-export const env = (): Env | 'default' => {
+export const env = (): Env | undefined => {
   if (window.location.host === 'espoonvarhaiskasvatus.fi') {
     return 'prod'
   }
@@ -13,5 +13,5 @@ export const env = (): Env | 'default' => {
     return 'staging'
   }
 
-  return 'default'
+  return undefined
 }

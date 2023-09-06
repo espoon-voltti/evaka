@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 declare module '@evaka/customizations/employee' {
+  import type { BrowserOptions as SentryOptions } from '@sentry/browser'
   import React from 'react'
 
   import {
@@ -26,13 +27,9 @@ declare module '@evaka/customizations/employee' {
     Translations,
     VasuTranslations
   } from 'lib-customizations/employee'
-  import {
-    BaseAppConfig,
-    FeatureFlags,
-    ImgProps
-  } from 'lib-customizations/types'
+  import { FeatureFlags, ImgProps } from 'lib-customizations/types'
 
-  export const appConfig: BaseAppConfig
+  export const sentryConfig: SentryOptions | undefined
   export const translations: Record<Lang, Translations>
   export const vasuTranslations: Record<VasuLang, VasuTranslations>
   export const featureFlags: FeatureFlags

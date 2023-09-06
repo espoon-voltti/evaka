@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export { citizenConfig as appConfig } from './appConfigs'
+export { citizenConfig as sentryConfig } from './sentryConfigs'
 import { CitizenModule } from 'lib-customizations/types'
 
 import en from '../defaults/citizen/i18n/en'

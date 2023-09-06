@@ -20,20 +20,15 @@ import { RouterProvider } from 'react-router-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
-import { getEnvironment } from 'lib-common/utils/helpers'
 import colors from 'lib-customizations/common'
-import { appConfig } from 'lib-customizations/employee'
+import { sentryConfig } from 'lib-customizations/employee'
 
 import router from './App'
 import 'chartjs-adapter-date-fns'
 import './index.css'
 
 // Load Sentry before React to make Sentry's integrations work automatically
-Sentry.init({
-  enabled: appConfig.sentry?.enabled === true,
-  dsn: appConfig.sentry?.dsn,
-  environment: getEnvironment()
-})
+Sentry.init(sentryConfig)
 Sentry.addGlobalEventProcessor(sentryEventFilter)
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:

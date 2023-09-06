@@ -48,13 +48,6 @@ interface ImgProps {
   alt: string
 }
 
-export interface BaseAppConfig {
-  sentry?: {
-    dsn: string
-    enabled: boolean
-  }
-}
-
 export interface MapConfig {
   center: LatLngExpression
   initialZoom: number

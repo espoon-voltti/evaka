@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 declare module '@evaka/customizations/employeeMobile' {
-  import { Lang, Translations } from 'lib-customizations/employeeMobile'
-  import { BaseAppConfig, FeatureFlags } from 'lib-customizations/types'
+  import type { BrowserOptions as SentryOptions } from '@sentry/browser'
 
-  export const appConfig: BaseAppConfig
+  import { Lang, Translations } from 'lib-customizations/employeeMobile'
+  import { FeatureFlags } from 'lib-customizations/types'
+
+  export const sentryConfig: SentryOptions | undefined
   export const featureFlags: FeatureFlags
   export const translations: Record<Lang, Translations>
 }

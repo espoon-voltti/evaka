@@ -3,18 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 declare module '@evaka/customizations/citizen' {
+  import type { BrowserOptions as SentryOptions } from '@sentry/browser'
   import React from 'react'
 
   import { ApplicationType } from 'lib-common/generated/api-types/application'
   import { Lang, Translations } from 'lib-customizations/citizen'
-  import {
-    BaseAppConfig,
-    FeatureFlags,
-    ImgProps,
-    MapConfig
-  } from 'lib-customizations/types'
+  import { FeatureFlags, ImgProps, MapConfig } from 'lib-customizations/types'
 
-  export const appConfig: BaseAppConfig
+  export const sentryConfig: SentryOptions | undefined
   export const langs: Lang[]
   export const translations: Record<Lang, Translations>
   export const cityLogo: ImgProps

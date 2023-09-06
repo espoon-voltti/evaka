@@ -16,11 +16,4 @@ export type OmitInUnion<T, K extends keyof T> = T extends T ? Omit<T, K> : never
 
 // CONCRETE TYPES
 
-export interface BaseAppConfig {
-  sentry: {
-    dsn: string
-    enabled: boolean
-  }
-}
-
 export type UUID = string

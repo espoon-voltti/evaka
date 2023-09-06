@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export { appConfig, translations } from '@evaka/customizations/employeeMobile'
+export {
+  sentryConfig,
+  translations
+} from '@evaka/customizations/employeeMobile'
 import { featureFlags as baseFeatureFlags } from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
 

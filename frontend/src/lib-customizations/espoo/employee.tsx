@@ -19,7 +19,7 @@ import { sv as vasuSv } from '../defaults/employee/i18n/vasu/sv'
 
 import Logo from './assets/EspooLogoPrimary.svg'
 
-export { employeeConfig as appConfig } from './appConfigs'
+export { employeeConfig as sentryConfig } from './sentryConfigs'
 export { featureFlags } from './featureFlags'
 
 export const translations: EmployeeModule['translations'] = {

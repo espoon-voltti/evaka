@@ -10,18 +10,13 @@ import { createRoot } from 'react-dom/client'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
-import { getEnvironment } from 'lib-common/utils/helpers'
-import { appConfig } from 'lib-customizations/employeeMobile'
+import { sentryConfig } from 'lib-customizations/employeeMobile'
 
 import App from './App'
 import './index.css'
 
 // Load Sentry before React to make Sentry's integrations work automatically
-Sentry.init({
-  enabled: appConfig.sentry?.enabled === true,
-  dsn: appConfig.sentry?.dsn,
-  environment: getEnvironment()
-})
+Sentry.init(sentryConfig)
 Sentry.addGlobalEventProcessor(sentryEventFilter)
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
