@@ -28,7 +28,10 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
-import { daycareAssistanceLevels } from 'lib-customizations/employee'
+import {
+  daycareAssistanceLevels,
+  featureFlags
+} from 'lib-customizations/employee'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
@@ -65,11 +68,19 @@ interface Props {
 const levelOptions = (
   i18n: Translations
 ): OneOfOption<DaycareAssistanceLevel>[] =>
-  daycareAssistanceLevels.map((level) => ({
-    value: level,
-    domValue: level,
-    label: i18n.childInformation.assistance.types.daycareAssistanceLevel[level]
-  }))
+  daycareAssistanceLevels
+    .filter((level) => {
+      if (featureFlags.hideGeneralSupportDaycareAssistanceLevel) {
+        return level !== 'GENERAL_SUPPORT'
+      }
+      return true
+    })
+    .map((level) => ({
+      value: level,
+      domValue: level,
+      label:
+        i18n.childInformation.assistance.types.daycareAssistanceLevel[level]
+    }))
 
 export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
   props: Props

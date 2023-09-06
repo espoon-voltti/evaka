@@ -121,6 +121,11 @@ interface BaseFeatureFlags {
    */
   assistanceActionOther: boolean
 
+  /**
+   * Whether to show GENERAL_SUPPORT option for daycare assistance level
+   */
+  hideGeneralSupportDaycareAssistanceLevel: boolean
+
   daycareApplication: {
     /**
      * Citizen must specify daily daycare start and end times the daycare application

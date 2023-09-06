@@ -1033,6 +1033,10 @@ class AssistanceFactorRow extends InlineAssistanceRow {
 
 class DaycareAssistanceForm extends InlineAssistanceForm {
   level = new Select(this.findByDataQa('level'))
+
+  async assertValues(assertion: (text: string[]) => boolean): Promise<void> {
+    await waitUntilTrue(async () => assertion(await this.level.allOptions))
+  }
 }
 
 class DaycareAssistanceRow extends InlineAssistanceRow {
