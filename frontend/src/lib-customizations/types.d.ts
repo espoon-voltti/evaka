@@ -3,42 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import 'react'
+
+import type * as CitizenAlias from '@evaka/customizations/citizen'
+import type * as CommonAlias from '@evaka/customizations/common'
+import type * as EmployeeAlias from '@evaka/customizations/employee'
+import type * as EmployeeMobileAlias from '@evaka/customizations/employeeMobile'
 import type { LatLngExpression } from 'leaflet'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
-import {
-  DaycareAssistanceLevel,
-  OtherAssistanceMeasureType,
-  PreschoolAssistanceLevel
-} from 'lib-common/generated/api-types/assistance'
-import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
-import {
-  AbsenceType,
-  ProviderType
-} from 'lib-common/generated/api-types/daycare'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
-import {
-  PlacementPlanRejectReason,
-  PlacementType
-} from 'lib-common/generated/api-types/placement'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from 'lib-common/json'
-import { Theme } from 'lib-common/theme'
 import { DeepReadonly } from 'lib-common/types'
 
-import {
-  Lang as LangCitizen,
-  Translations as TranslationsCitizen
-} from './citizen'
-import {
-  Lang as LangEmployee,
-  Translations as TranslationsEmployee,
-  VasuLang as VasuLangEmployee,
-  VasuTranslations as VasuTranslationsEmployee
-} from './employee'
-import {
-  Lang as LangEmployeeMobile,
-  Translations as TranslationsEmployeeMobile
-} from './employeeMobile'
+export type CitizenModule = typeof CitizenAlias
+export type CommonModule = typeof CommonAlias
+export type EmployeeMobileModule = typeof EmployeeMobileAlias
+export type EmployeeModule = typeof EmployeeAlias
 
 declare global {
   interface Window {
@@ -49,7 +29,7 @@ declare global {
     overrides?: {
       featureFlags?: Partial<JsonOf<FeatureFlags>>
       citizen?: {
-        langs?: JsonOf<CitizenCustomizations['langs']>
+        langs?: JsonOf<CitizenModule['langs']>
       }
     }
   }
@@ -75,23 +55,7 @@ export interface BaseAppConfig {
   }
 }
 
-export interface CommonCustomizations {
-  theme: Theme
-}
-
-export interface CitizenCustomizations {
-  appConfig: BaseAppConfig
-  langs: LangCitizen[]
-  translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
-  cityLogo: ImgProps
-  footerLogo?: JSX.Element
-  routeLinkRootUrl: string
-  mapConfig: MapConfig
-  featureFlags: FeatureFlags
-  getMaxPreferredUnits: (type: ApplicationType) => number
-}
-
-interface MapConfig {
+export interface MapConfig {
   center: LatLngExpression
   initialZoom: number
   addressZoom: number
@@ -263,34 +227,3 @@ interface BaseFeatureFlags {
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
-
-type CityLogo = JSX.Element | ImgProps
-
-export interface EmployeeCustomizations {
-  appConfig: BaseAppConfig
-  translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
-  vasuTranslations: Record<
-    VasuLangEmployee,
-    DeepPartial<VasuTranslationsEmployee>
-  >
-  cityLogo: CityLogo
-  featureFlags: FeatureFlags
-  placementTypes: PlacementType[]
-  absenceTypes: AbsenceType[]
-  assistanceMeasures: AssistanceMeasure[]
-  daycareAssistanceLevels: DaycareAssistanceLevel[]
-  otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
-  placementPlanRejectReasons: PlacementPlanRejectReason[]
-  preschoolAssistanceLevels: PreschoolAssistanceLevel[]
-  unitProviderTypes: ProviderType[]
-  voucherValueDecisionTypes: VoucherValueDecisionType[]
-}
-
-export interface EmployeeMobileCustomizations {
-  appConfig: BaseAppConfig
-  featureFlags: FeatureFlags
-  translations: Record<
-    LangEmployeeMobile,
-    DeepPartial<TranslationsEmployeeMobile>
-  >
-}

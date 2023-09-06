@@ -2,31 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { CitizenCustomizations } from 'lib-customizations/types'
+export { citizenConfig as appConfig } from './appConfigs'
+import { CitizenModule } from 'lib-customizations/types'
 
-import { citizenConfig } from './appConfigs'
 import EspooLogo from './assets/EspooLogoBlue.svg'
-import featureFlags from './featureFlags'
-import mapConfig from './mapConfig'
+export { featureFlags } from './featureFlags'
+export { mapConfig } from './mapConfig'
 
-const customizations: CitizenCustomizations = {
-  appConfig: citizenConfig,
-  langs: ['fi', 'sv', 'en'],
-  translations: {
-    fi: {},
-    sv: {},
-    en: {}
-  },
-  cityLogo: {
-    src: EspooLogo,
-    alt: 'Espoo Logo'
-  },
-  routeLinkRootUrl: 'https://reittiopas.hsl.fi/reitti/',
-  mapConfig,
-  featureFlags,
-  getMaxPreferredUnits() {
-    return 3
-  }
+export const langs: CitizenModule['langs'] = ['fi', 'sv', 'en']
+export const translations: CitizenModule['translations'] = {
+  fi: {},
+  sv: {},
+  en: {}
 }
 
-export default customizations
+export const footerLogo: CitizenModule['footerLogo'] = undefined
+
+export const cityLogo: CitizenModule['cityLogo'] = {
+  src: EspooLogo,
+  alt: 'Espoo Logo'
+}
+
+export const routeLinkRootUrl = 'https://reittiopas.hsl.fi/reitti/'
+
+export const getMaxPreferredUnits = () => 3

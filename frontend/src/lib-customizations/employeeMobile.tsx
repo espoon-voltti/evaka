@@ -2,34 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import customizationsUntyped from '@evaka/customizations/employeeMobile'
+export { appConfig } from '@evaka/customizations/employeeMobile'
+import {
+  featureFlags as baseFeatureFlags,
+  translations as baseTranslations
+} from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
-import type { EmployeeMobileCustomizations, FeatureFlags } from './types'
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const customizations: EmployeeMobileCustomizations = customizationsUntyped
+import type { FeatureFlags } from './types'
 
 const overrides =
   typeof window !== 'undefined' ? window.evaka?.overrides : undefined
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { appConfig }: EmployeeMobileCustomizations = customizations
 const featureFlags: FeatureFlags = mergeWith(
   {},
-  customizations.featureFlags,
+  baseFeatureFlags,
   overrides?.featureFlags,
   mergeCustomizer
 )
-export { appConfig, featureFlags }
+export { featureFlags }
 
 export type Lang = 'fi'
 export type Translations = typeof fi
 
 export const translations: { [K in Lang]: Translations } = {
-  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer)
+  fi: mergeWith({}, fi, baseTranslations.fi, mergeCustomizer)
 }

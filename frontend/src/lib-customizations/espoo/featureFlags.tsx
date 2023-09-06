@@ -108,6 +108,4 @@ const features: Features = {
   }
 }
 
-const featureFlags = features[env()]
-
-export default featureFlags
+export const featureFlags = features[env()]

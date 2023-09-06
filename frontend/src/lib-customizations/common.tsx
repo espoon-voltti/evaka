@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import defaultsUntyped from '@evaka/customizations/common'
+import { theme } from '@evaka/customizations/common'
+export { theme } from '@evaka/customizations/common'
 import isArray from 'lodash/isArray'
 import React from 'react'
 
@@ -15,8 +14,6 @@ import {
   faTreePalm
 } from 'lib-icons'
 
-import type { CommonCustomizations } from './types'
-
 export const mergeCustomizer = (
   original: unknown,
   customized: unknown
@@ -24,14 +21,6 @@ export const mergeCustomizer = (
   isArray(customized) || React.isValidElement(customized as never)
     ? customized
     : undefined // fall back to default merge logic
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const customizations: CommonCustomizations = defaultsUntyped
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { theme }: CommonCustomizations = customizations
-
-export { theme }
 
 // mimic lib-components/colors api:
 

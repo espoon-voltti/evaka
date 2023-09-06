@@ -32,6 +32,8 @@ yalc.lock
 src/lib-customizations/**/*
 !src/lib-customizations/defaults
 !src/lib-customizations/defaults/**/*
+!src/lib-customizations/typings
+!src/lib-customizations/typings/**/*
 !src/lib-customizations/espoo
 !src/lib-customizations/espoo/**/*
 !src/lib-customizations/README.md

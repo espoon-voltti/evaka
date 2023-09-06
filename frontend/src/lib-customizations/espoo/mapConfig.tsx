@@ -4,7 +4,7 @@
 
 import { MapConfig } from 'lib-customizations/types'
 
-const mapConfig: MapConfig = {
+export const mapConfig: MapConfig = {
   center: [60.184147, 24.704897],
   initialZoom: 12,
   addressZoom: 14,
@@ -22,5 +22,3 @@ const mapConfig: MapConfig = {
     'PRIVATE_SERVICE_VOUCHER'
   ]
 }
-
-export default mapConfig

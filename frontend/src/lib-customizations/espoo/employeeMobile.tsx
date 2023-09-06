@@ -2,17 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { EmployeeMobileCustomizations } from 'lib-customizations/types'
+import { EmployeeMobileModule } from '../types'
 
-import { employeeMobileConfig } from './appConfigs'
-import featureFlags from './featureFlags'
+export { employeeMobileConfig as appConfig } from './appConfigs'
+export { featureFlags } from './featureFlags'
 
-const customizations: EmployeeMobileCustomizations = {
-  appConfig: employeeMobileConfig,
-  featureFlags,
-  translations: {
-    fi: {}
-  }
+export const translations: EmployeeMobileModule['translations'] = {
+  fi: {}
 }
-
-export default customizations

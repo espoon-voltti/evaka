@@ -5,7 +5,8 @@
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/lib-customizations",
-    "types": ["node"]
+    "types": ["node"],
+    "typeRoots": ["../../node_modules/@types", "./typings"]
   },
   "references": [
     { "path": "../lib-common" },
