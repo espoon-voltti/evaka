@@ -3,8 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 /// <reference lib="WebWorker" />
+
+import { sentryConfig } from '@evaka/customizations/employeeMobile'
+import * as Sentry from '@sentry/browser'
+
+import { sentryEventFilter } from 'lib-common/sentry'
+
 /** @type {ServiceWorkerGlobalScope} */
 const serviceWorker = self
+
+Sentry.init(sentryConfig)
+Sentry.addGlobalEventProcessor(sentryEventFilter)
 
 serviceWorker.addEventListener('install', (event) => {
   // Attempt to replace previous service worker(s) immediately

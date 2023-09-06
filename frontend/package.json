@@ -334,6 +334,12 @@
             "method"
           ]
         }
+      },
+      {
+        "files": "src/**/service-worker.js",
+        "parserOptions": {
+          "sourceType": "module"
+        }
       }
     ]
   },
