@@ -2231,7 +2231,7 @@ const en: Translations = {
       plansLawDisclaimer:
         'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
       noVasus: 'Ei suunnitelmia',
-      assistanceNeedDocumentsTitle: 'Tuen tarpeeseen liittyvät asiakirjat',
+      otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
       lastModified: 'Last modified',
       lastPublished: 'Last published',

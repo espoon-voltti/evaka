@@ -26,11 +26,8 @@ import {
   Desktop,
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
-import {
-  ExpandingInfoBox,
-  InfoButton
-} from 'lib-components/molecules/ExpandingInfo'
-import { Dimmed, H3, P } from 'lib-components/typography'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { Dimmed, H3 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faExclamation, faLockAlt } from 'lib-icons'
@@ -197,10 +194,6 @@ const PaddingBox = styled.div`
   }
 `
 
-const ParagraphInfoButton = styled(InfoButton)`
-  margin-left: ${defaultMargins.xs};
-`
-
 export default React.memo(function PedagogicalDocumentsSection({
   childId
 }: {
@@ -239,10 +232,19 @@ export default React.memo(function PedagogicalDocumentsSection({
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
       <RequireAuth>
-        <FixedSpaceColumn>
-          <VasuAndLeopsContent childId={childId} />
-          <AssistanceNeedDocumentsContent childId={childId} />
-        </FixedSpaceColumn>
+        <PaddingBox>
+          <FixedSpaceColumn>
+            <ExpandingInfo
+              info={i18n.children.vasu.givePermissionToShareInfoVasuInfoText}
+              ariaLabel=""
+              closeLabel={i18n.common.close}
+            >
+              {i18n.children.vasu.givePermissionToShareInfoVasu}
+            </ExpandingInfo>
+            <VasuAndLeopsContent childId={childId} />
+            <OtherDocumentsContent childId={childId} />
+          </FixedSpaceColumn>
+        </PaddingBox>
       </RequireAuth>
     </ResponsiveWholePageCollapsible>
   )
@@ -255,14 +257,12 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
 }) {
   const vasus = useQueryResult(childVasuSummariesQuery(childId))
   const i18n = useTranslation()
-  const [infoOpen, setInfoOpen] = useState(false)
 
   const user = useUser()
 
   return (
     <>
       <H3>{i18n.children.vasu.plansTitle}</H3>
-      <P noMargin>{i18n.children.vasu.plansLawDisclaimer}</P>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
@@ -271,26 +271,6 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
           </PaddingBox>
         ) : (
           <>
-            <PaddingBox>
-              <P>
-                {i18n.children.vasu.givePermissionToShareInfoVasu}
-                <ParagraphInfoButton
-                  aria-label={i18n.common.openExpandingInfo}
-                  onClick={() => setInfoOpen(!infoOpen)}
-                  open={infoOpen}
-                />
-              </P>
-              {infoOpen && (
-                <ExpandingInfoBox
-                  close={() => setInfoOpen(false)}
-                  info={
-                    i18n.children.vasu.givePermissionToShareInfoVasuInfoText
-                  }
-                  width="full"
-                  closeLabel=""
-                />
-              )}
-            </PaddingBox>
             <MobileAndTablet>
               {items.map((vasu) => (
                 <MobileRowContainer key={vasu.id} unread={false}>
@@ -331,50 +311,49 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
   )
 })
 
-const AssistanceNeedDocumentsContent = React.memo(
-  function AssistanceNeedDocumentsContent({ childId }: { childId: UUID }) {
-    const documentsResult = useQueryResult(childDocumentSummariesQuery(childId))
-    const i18n = useTranslation()
+const OtherDocumentsContent = React.memo(function OtherDocumentsContent({
+  childId
+}: {
+  childId: UUID
+}) {
+  const documentsResult = useQueryResult(childDocumentSummariesQuery(childId))
+  const i18n = useTranslation()
 
-    return (
-      <>
-        <H3>{i18n.children.vasu.assistanceNeedDocumentsTitle}</H3>
-        {renderResult(documentsResult, (documents) =>
-          documents.length === 0 ? (
-            <PaddingBox>
-              <Gap size="s" />
-              <Dimmed>{i18n.children.vasu.noDocuments}</Dimmed>
-            </PaddingBox>
-          ) : (
-            <>
-              <MobileAndTablet>
-                {documents.map((document) => (
-                  <MobileRowContainer
-                    key={document.id}
-                    unread={document.unread}
+  return (
+    <>
+      <H3>{i18n.children.vasu.otherDocumentsTitle}</H3>
+      {renderResult(documentsResult, (documents) =>
+        documents.length === 0 ? (
+          <PaddingBox>
+            <Gap size="s" />
+            <Dimmed>{i18n.children.vasu.noDocuments}</Dimmed>
+          </PaddingBox>
+        ) : (
+          <>
+            <MobileAndTablet>
+              {documents.map((document) => (
+                <MobileRowContainer key={document.id} unread={document.unread}>
+                  <FixedSpaceRow justifyContent="space-between">
+                    <span data-qa={`published-at-${document.id}`}>
+                      {document.publishedAt?.toLocalDate().format() ?? ''}
+                    </span>
+                  </FixedSpaceRow>
+                  <Gap size="xs" />
+                  <Link
+                    to={`/child-documents/${document.id}`}
+                    data-qa="child-document-link"
                   >
-                    <FixedSpaceRow justifyContent="space-between">
-                      <span data-qa={`published-at-${document.id}`}>
-                        {document.publishedAt?.toLocalDate().format() ?? ''}
-                      </span>
-                    </FixedSpaceRow>
-                    <Gap size="xs" />
-                    <Link
-                      to={`/child-documents/${document.id}`}
-                      data-qa="child-document-link"
-                    >
-                      {document.templateName}
-                    </Link>
-                  </MobileRowContainer>
-                ))}
-              </MobileAndTablet>
-              <Desktop>
-                <AssistanceDocumentsTable summaries={documents} />
-              </Desktop>
-            </>
-          )
-        )}
-      </>
-    )
-  }
-)
+                    {document.templateName}
+                  </Link>
+                </MobileRowContainer>
+              ))}
+            </MobileAndTablet>
+            <Desktop>
+              <AssistanceDocumentsTable summaries={documents} />
+            </Desktop>
+          </>
+        )
+      )}
+    </>
+  )
+})

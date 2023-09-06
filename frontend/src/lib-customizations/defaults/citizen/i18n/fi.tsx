@@ -2453,7 +2453,7 @@ export default {
       plansLawDisclaimer:
         'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
       noVasus: 'Ei suunnitelmia',
-      assistanceNeedDocumentsTitle: 'Tuen tarpeeseen liittyvät asiakirjat',
+      otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
       lastModified: 'Viimeisin muokkauspäivämäärä',
       lastPublished: 'Viimeksi julkaistu huoltajalle',
@@ -2482,7 +2482,7 @@ export default {
       givePermissionToShareInfoVasu:
         'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
       givePermissionToShareInfoVasuInfoText:
-        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Sunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41§, Perusopetuslaki 41§).',
+        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi yksikön henkilökuntaan. Sunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41§, Perusopetuslaki 41§).',
       givePermissionToShareTitleVasu:
         'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
       givePermissionToShareTitleLeops:
