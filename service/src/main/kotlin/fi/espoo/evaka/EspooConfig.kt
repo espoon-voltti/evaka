@@ -10,7 +10,7 @@ import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.EspooScheduledJob
 import fi.espoo.evaka.espoo.EspooScheduledJobs
-import fi.espoo.evaka.espoobi.EspooBiPoc
+import fi.espoo.evaka.espoo.bi.EspooBiPoc
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient

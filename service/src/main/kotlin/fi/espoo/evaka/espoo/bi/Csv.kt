@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.espoobi
+package fi.espoo.evaka.espoo.bi
 
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
