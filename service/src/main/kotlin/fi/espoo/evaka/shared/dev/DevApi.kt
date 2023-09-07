@@ -52,6 +52,7 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -122,6 +123,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
@@ -2254,6 +2256,14 @@ data class DevDocumentTemplate(
     val validity: DateRange,
     val published: Boolean = true,
     @Json val content: DocumentTemplateContent
+)
+
+data class DevChildDocument(
+    val id: ChildDocumentId = ChildDocumentId(UUID.randomUUID()),
+    val childId: ChildId,
+    val templateId: DocumentTemplateId,
+    @Json val content: DocumentContent,
+    val publishedAt: HelsinkiDateTime?
 )
 
 data class Citizen(

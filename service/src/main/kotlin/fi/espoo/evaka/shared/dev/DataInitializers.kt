@@ -1556,6 +1556,16 @@ VALUES (:id, :name, :type, :language, :confidential, :legalBasis, :validity, :pu
         )
         .let(::DocumentTemplateId)
 
+fun Database.Transaction.insertTestChildDocument(row: DevChildDocument) =
+    insertTestDataRow(
+            row,
+            """
+INSERT INTO child_document (id, child_id, template_id, content, published_at)
+VALUES (:id, :childId, :templateId, :content, :publishedAt)
+"""
+        )
+        .let(::DocumentTemplateId)
+
 fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,
     opTimes: List<TimeRange>
