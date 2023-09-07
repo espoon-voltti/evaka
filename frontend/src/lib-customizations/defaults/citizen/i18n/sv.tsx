@@ -1457,7 +1457,7 @@ const sv: Translations = {
       pageTitle: 'Beslut om stöd i förskoleundervisningen',
       decisionNumber: 'Beslutsnummer',
       confidential: 'Konfidentiellt',
-      lawReference: 'Lagen om grundläggande utbildning 17 §',
+      lawReference: '24.1 § i offentlighetslagen',
       types: {
         NEW: 'Särskilt stöd börjar',
         CONTINUING: 'Särskilt stöd fortsätter',
