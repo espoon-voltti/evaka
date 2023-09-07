@@ -53,26 +53,12 @@ fun Database.Read.getChildDocumentCitizenSummaries(
                 )) as unread
             FROM child_document cd
             JOIN document_template dt on cd.template_id = dt.id
-            WHERE cd.child_id = :childId
+            WHERE cd.child_id = :childId AND published_at IS NOT NULL
         """
         )
         .bind("personId", user.id)
         .bind("childId", childId)
         .mapTo<ChildDocumentCitizenSummary>()
-        .list()
-}
-
-fun Database.Read.getChildDocumentsByGuardian(childId: PersonId): List<ChildDocumentSummary> {
-    return createQuery(
-            """
-            SELECT cd.id, dt.type, cd.published_at, dt.name as template_name
-            FROM child_document cd
-            JOIN document_template dt on cd.template_id = dt.id
-            WHERE cd.child_id = :childId
-        """
-        )
-        .bind("childId", childId)
-        .mapTo<ChildDocumentSummary>()
         .list()
 }
 
