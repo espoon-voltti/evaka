@@ -2450,8 +2450,6 @@ export default {
     vasu: {
       title: 'Pedagogiset asiakirjat',
       plansTitle: 'Suunnitelmat',
-      plansLawDisclaimer:
-        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
       noVasus: 'Ei suunnitelmia',
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',

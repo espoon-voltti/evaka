@@ -2465,14 +2465,11 @@ const sv: Translations = {
       empty: 'Inte definierat'
     },
     vasu: {
-      // TODO
-      title: 'Pedagogiset asiakirjat',
-      plansTitle: 'Suunnitelmat',
-      plansLawDisclaimer:
-        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
-      noVasus: 'Ei suunnitelmia',
-      otherDocumentsTitle: 'Muut asiakirjat',
-      noDocuments: 'Ei asiakirjoja',
+      title: 'Pedagogiska dokument',
+      plansTitle: 'Planer',
+      noVasus: 'Inga planer',
+      otherDocumentsTitle: 'Andra dokument',
+      noDocuments: 'Inga dokument',
       lastModified: 'Senaste redigeringsdatum',
       lastPublished: 'Senaste publicering för vårdnadshavare',
       leavePage: 'Lämna sidan',

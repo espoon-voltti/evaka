@@ -2225,14 +2225,11 @@ const en: Translations = {
       empty: 'Not defined'
     },
     vasu: {
-      // TODO
-      title: 'Pedagogiset asiakirjat',
-      plansTitle: 'Suunnitelmat',
-      plansLawDisclaimer:
-        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
-      noVasus: 'Ei suunnitelmia',
-      otherDocumentsTitle: 'Muut asiakirjat',
-      noDocuments: 'Ei asiakirjoja',
+      title: 'Pedagogical documents',
+      plansTitle: 'Plans',
+      noVasus: 'No plans',
+      otherDocumentsTitle: 'Other documents',
+      noDocuments: 'No documents',
       lastModified: 'Last modified',
       lastPublished: 'Last published',
       leavePage: 'Leave page',
