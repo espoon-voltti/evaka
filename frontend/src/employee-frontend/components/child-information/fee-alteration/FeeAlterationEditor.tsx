@@ -4,7 +4,13 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
+import {
+  deleteAttachment,
+  getAttachmentUrl,
+  saveFeeAlterationAttachment
+} from 'employee-frontend/api/attachments'
 import { Result, Success } from 'lib-common/api'
+import { Attachment } from 'lib-common/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -13,6 +19,8 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import DateRangeInput from '../../../components/common/DateRangeInput'
@@ -22,14 +30,19 @@ import { PartialFeeAlteration } from '../../../types/fee-alteration'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 
-const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
+const newFeeAlteration = (
+  personId: UUID,
+  feeAlterationId?: UUID
+): PartialFeeAlteration => ({
+  id: feeAlterationId ?? null,
   personId,
   type: 'DISCOUNT',
   amount: 0,
   isAbsolute: false,
   notes: '',
   validFrom: LocalDate.todayInSystemTz(),
-  validTo: null
+  validTo: null,
+  attachments: []
 })
 
 interface Props {
@@ -103,6 +116,7 @@ export default React.memo(function FeeAlterationEditor({
               value: (
                 <FixedSpaceRow>
                   <DateRangeInput
+                    data-qa="fee-alteration-date-range-input"
                     start={edited.validFrom}
                     end={edited.validTo ? edited.validTo : undefined}
                     onChange={(start: LocalDate, end?: LocalDate) =>
@@ -132,6 +146,22 @@ export default React.memo(function FeeAlterationEditor({
             }
           ]}
         />
+        <FeeAlterationAttachments
+          feeAlterationId={baseFeeAlteration?.id ?? null}
+          attachments={baseFeeAlteration?.attachments ?? []}
+          onUploaded={(attachment) => {
+            setEdited((prev) => ({
+              ...prev,
+              attachments: prev.attachments.concat(attachment)
+            }))
+          }}
+          onDeleted={(deletedId) => {
+            setEdited((prev) => ({
+              ...prev,
+              attachments: prev.attachments.filter(({ id }) => id !== deletedId)
+            }))
+          }}
+        />
         <Gap size="m" />
         <FixedSpaceRow justifyContent="flex-end">
           <Button
@@ -140,6 +170,7 @@ export default React.memo(function FeeAlterationEditor({
           />
           <AsyncButton
             primary
+            data-qa="fee-alteration-editor-save-button"
             type="submit"
             onClick={onSubmit}
             onSuccess={onSuccess}
@@ -153,3 +184,59 @@ export default React.memo(function FeeAlterationEditor({
     </div>
   )
 })
+
+function FeeAlterationAttachments({
+  feeAlterationId,
+  attachments,
+  onUploaded,
+  onDeleted
+}: {
+  feeAlterationId: UUID | null
+  attachments: Attachment[]
+  onUploaded: (attachment: Attachment) => void
+  onDeleted: (id: UUID) => void
+}) {
+  const { i18n } = useTranslation()
+
+  const handleUpload = useCallback(
+    async (file: File, onUploadProgress: (percentage: number) => void) =>
+      (
+        await saveFeeAlterationAttachment(
+          feeAlterationId,
+          file,
+          onUploadProgress
+        )
+      ).map((id) => {
+        onUploaded({ id, name: file.name, contentType: file.type })
+        return id
+      }),
+    [feeAlterationId, onUploaded]
+  )
+
+  const handleDelete = useCallback(
+    async (id: UUID) =>
+      (await deleteAttachment(id)).map(() => {
+        onDeleted(id)
+      }),
+    [onDeleted]
+  )
+
+  return (
+    <>
+      <Title size={4}>
+        {i18n.childInformation.feeAlteration.employeeAttachments.title}
+      </Title>
+      <P>
+        {i18n.childInformation.feeAlteration.employeeAttachments.description}
+      </P>
+      <FileUpload
+        data-qa="fee-alteration-attachment-upload"
+        files={attachments}
+        onUpload={handleUpload}
+        onDelete={handleDelete}
+        getDownloadUrl={getAttachmentUrl}
+        i18n={i18n.fileUpload}
+      />
+    </>
+  )
+}

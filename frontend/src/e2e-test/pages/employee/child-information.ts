@@ -1100,7 +1100,72 @@ class MessageBlocklistSection extends Section {
   }
 }
 
-class FeeAlterationsSection extends Section {}
+class FeeAlterationEditorPage {
+  constructor(private readonly page: Page) {}
+
+  #startDate = new DatePickerDeprecated(
+    this.page.findByDataQa('date-range-input-start-date')
+  )
+  #endDate = new DatePickerDeprecated(
+    this.page.findByDataQa('date-range-input-end-date')
+  )
+
+  #alterationValueInput = new TextInput(
+    this.page.findByDataQa('fee-alteration-amount-input')
+  )
+  #alterationEditorSaveButton = this.page.findByDataQa(
+    'fee-alteration-editor-save-button'
+  )
+
+  async uploadAttachment(filePath: string) {
+    await new FileInput(
+      this.page.findByDataQa('btn-upload-file')
+    ).setInputFiles(filePath)
+  }
+
+  async createNewFeeAlteration(
+    startDate: string,
+    endDate: string,
+    value: number,
+    attachment: string
+  ) {
+    await this.#startDate.fill(startDate)
+    await this.#endDate.fill(endDate)
+    await this.#alterationValueInput.fill(`${value}`)
+    await this.uploadAttachment(attachment)
+  }
+
+  async save() {
+    await this.#alterationEditorSaveButton.click()
+  }
+}
+
+export class FeeAlterationsSection extends Section {
+  #createFeeAlterationButton = this.findByDataQa('create-fee-alteration-button')
+
+  async openNewFeeAlterationEditorPage(): Promise<FeeAlterationEditorPage> {
+    await this.#createFeeAlterationButton.click()
+    return new FeeAlterationEditorPage(this.page)
+  }
+
+  async assertAlterationDateRange(expected: string, nth = 0) {
+    const feeAlterationDates = this.findAllByDataQa('fee-alteration-dates')
+    await feeAlterationDates.nth(nth).assertTextEquals(expected)
+  }
+
+  async assertAlterationAmount(expected: string, nth = 0) {
+    const feeAlterationAmounts = this.findAllByDataQa('fee-alteration-amount')
+    await feeAlterationAmounts.nth(nth).assertTextEquals(expected)
+  }
+
+  async assertAttachmentExists(name: string) {
+    await waitUntilTrue(async () =>
+      (await this.page.findAllByDataQa('attachment').allInnerTexts()).includes(
+        name
+      )
+    )
+  }
+}
 
 class ApplicationsSection extends Section {
   #createApplication = this.find('[data-qa="button-create-application"]')

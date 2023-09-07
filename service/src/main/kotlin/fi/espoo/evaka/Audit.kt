@@ -47,6 +47,7 @@ enum class Audit(
     AttachmentsDelete,
     AttachmentsRead,
     AttachmentsUploadForApplication,
+    AttachmentsUploadForFeeAlteration,
     AttachmentsUploadForIncome,
     AttachmentsUploadForIncomeStatement,
     AttachmentsUploadForMessageDraft,

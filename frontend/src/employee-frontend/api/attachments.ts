@@ -72,6 +72,22 @@ export async function saveIncomeAttachment(
   )
 }
 
+export async function saveFeeAlterationAttachment(
+  feeAlterationId: UUID | null,
+  file: File,
+  onUploadProgress: (percentage: number) => void
+): Promise<Result<UUID>> {
+  return await doSaveAttachment(
+    {
+      path: feeAlterationId
+        ? `/attachments/fee-alteration/${feeAlterationId}`
+        : `/attachments/fee-alteration`
+    },
+    file,
+    onUploadProgress
+  )
+}
+
 export const saveMessageAttachment = (
   draftId: UUID,
   file: File,
