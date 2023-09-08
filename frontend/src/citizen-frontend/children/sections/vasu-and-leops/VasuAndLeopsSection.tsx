@@ -155,14 +155,17 @@ const AssistanceDocumentsTable = React.memo(function AssistanceDocumentsTable({
         {summaries.map((document) => (
           <VasuTr
             key={document.id}
-            data-qa={`vasu-${document.id}`}
+            data-qa={`child-document-${document.id}`}
             unread={document.unread}
           >
             <DateTd data-qa={`published-at-${document.id}`}>
               {document.publishedAt?.toLocalDate().format() ?? ''}
             </DateTd>
             <LinkTd>
-              <Link to={`/child-documents/${document.id}`} data-qa="vasu-link">
+              <Link
+                to={`/child-documents/${document.id}`}
+                data-qa="child-document-link"
+              >
                 {document.templateName}
               </Link>
             </LinkTd>

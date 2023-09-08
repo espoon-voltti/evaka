@@ -22,6 +22,11 @@ import Content, {
   Container,
   ContentArea
 } from 'lib-components/layout/Container'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
@@ -74,6 +79,21 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
   return (
     <Container>
       <ContentArea opaque>
+        <FixedSpaceRow justifyContent="space-between">
+          <FixedSpaceColumn>
+            <H1 noMargin>{document.template.name}</H1>
+            <H2 noMargin>
+              {document.child.firstName} {document.child.lastName}
+            </H2>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn>
+            {document.template.confidential && (
+              <Label>{i18n.children.vasu.confidential}</Label>
+            )}
+            <span>{document.template.legalBasis}</span>
+          </FixedSpaceColumn>
+        </FixedSpaceRow>
+        <Gap />
         <DocumentView bind={bind} readOnly hideInfos />
       </ContentArea>
     </Container>

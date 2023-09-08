@@ -2253,6 +2253,7 @@ const en: Translations = {
         DAYCARE: 'Early childhood plan events',
         PRESCHOOL: 'Pre-primary plan events'
       },
+      confidential: 'Confidential',
       noRecord: 'No record',
       givePermissionToShareInfoVasu:
         'If necessary, some information from the plan will be transferred to other recipients (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',

@@ -1451,7 +1451,7 @@ export default {
       annulmentReason: 'Päätöksen mitätöinnin perustelu',
       pageTitle: 'Päätös tuesta esiopetuksessa',
       decisionNumber: 'Päätösnumero',
-      confidential: 'Salassa pidettävä',
+      confidential: 'Salassapidettävä',
       lawReference: 'JulkL 24.1 §',
       types: {
         NEW: 'Erityinen tuki alkaa',
@@ -1687,7 +1687,7 @@ export default {
           REJECTED: 'Hylätty',
           ANNULLED: 'Mitätöity'
         },
-        confidential: 'Salassa pidettävä',
+        confidential: 'Salassapidettävä',
         lawReference: 'Varhaiskasvatuslaki 40 §',
         appealInstructionsTitle: 'Oikaisuvaatimusohje',
         appealInstructions: (
@@ -2476,6 +2476,7 @@ export default {
         DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
         PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
       },
+      confidential: 'Salassapidettävä',
       noRecord: 'Ei merkintää',
       givePermissionToShareInfoVasu:
         'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',

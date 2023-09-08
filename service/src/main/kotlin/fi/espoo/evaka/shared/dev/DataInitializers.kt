@@ -39,6 +39,7 @@ import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
@@ -1564,7 +1565,7 @@ INSERT INTO child_document (id, child_id, template_id, content, published_at)
 VALUES (:id, :childId, :templateId, :content, :publishedAt)
 """
         )
-        .let(::DocumentTemplateId)
+        .let(::ChildDocumentId)
 
 fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,

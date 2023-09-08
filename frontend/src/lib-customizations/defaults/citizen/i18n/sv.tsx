@@ -2494,6 +2494,7 @@ const sv: Translations = {
         PRESCHOOL:
           'Händelser gällande plan för barnets lärande inom förskoleundervisning'
       },
+      confidential: 'Konfidentiellt',
       noRecord: 'Inga anmärkningar',
       givePermissionToShareInfoVasu:
         'Vid behov kommer nödvändiga delar av planen att överföras till övriga mottagare. (Lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)',

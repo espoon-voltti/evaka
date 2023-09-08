@@ -76,8 +76,10 @@ import {
   DevCalendarEventAttendee,
   DevChildConsent,
   DevChildDiscussion,
+  DevChildDocument,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
+  DevDocumentTemplate,
   DevFixedPeriodQuestionnaire,
   DevHoliday,
   DevHolidayPeriod,
@@ -1160,6 +1162,28 @@ export async function publishVasuDocument(documentId: UUID): Promise<UUID> {
     const { data } = await devClient.post<UUID>(
       `/vasu/doc/publish/${documentId}`
     )
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDocumentTemplateFixture(
+  fixture: DevDocumentTemplate
+): Promise<UUID> {
+  try {
+    const { data } = await devClient.post<UUID>('/document-templates', fixture)
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertChildDocumentFixture(
+  fixture: DevChildDocument
+): Promise<UUID> {
+  try {
+    const { data } = await devClient.post<UUID>('/child-documents', fixture)
     return data
   } catch (e) {
     throw new DevApiError(e)

@@ -1281,6 +1281,24 @@ RETURNING id
         }
     }
 
+    @PostMapping("/document-templates")
+    fun createDocumentTemplate(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: DevDocumentTemplate
+    ): DocumentTemplateId {
+        return db.connect { dbc -> dbc.transaction { tx -> tx.insertTestDocumentTemplate(body) } }
+    }
+
+    @PostMapping("/child-documents")
+    fun createChildDocument(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: DevChildDocument
+    ): ChildDocumentId {
+        return db.connect { dbc -> dbc.transaction { tx -> tx.insertTestChildDocument(body) } }
+    }
+
     @PostMapping("/service-need")
     fun createServiceNeeds(db: Database, @RequestBody serviceNeeds: List<DevServiceNeed>) {
         db.connect { dbc ->
