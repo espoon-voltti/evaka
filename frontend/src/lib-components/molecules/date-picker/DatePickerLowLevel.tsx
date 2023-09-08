@@ -234,6 +234,8 @@ export default React.memo(function DatePickerLowLevel({
         locale={locale}
         useBrowserPicker={nativeDatePickerEnabled}
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        minDate={minDate}
+        maxDate={maxDate}
       />
       {!nativeDatePickerEnabled && showDatePicker ? (
         <DayPickerPositioner ref={pickerRef} openAbove={openAbove}>
