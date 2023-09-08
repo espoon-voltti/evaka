@@ -34,6 +34,15 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
     private fun childLink(language: Language, childId: ChildId) =
         link(language, "/children/$childId")
     private fun incomeLink(language: Language) = link(language, "/income")
+    private fun unsubscribeLink(language: Language) =
+        link(language, "/personal-details#notifications")
+
+    private val unsubscribeFi =
+        """<p><small>Jos et halua enää saada tämänkaltaisia viestejä, voit muuttaa asetuksia eVakan Omat tiedot -sivulla: ${unsubscribeLink(Language.fi)}</small></p>"""
+    private val unsubscribeSv =
+        """<p><small>Om du inte längre vill ta emot meddelanden som detta, kan du ändra dina inställningar på eVakas Personuppgifter-sida: ${unsubscribeLink(Language.sv)}</small></p>"""
+    private val unsubscribeEn =
+        """<p><small>If you no longer want to receive messages like this, you can change your settings on eVaka's Personal information page: ${unsubscribeLink(Language.en)}</small></p>"""
 
     override fun pendingDecisionNotification(language: Language): EmailContent {
         return EmailContent.fromHtml(
@@ -44,14 +53,17 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.</p>
 <p>Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen ${frontPageLink(Language.fi)}, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.</p>
 <p>Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000</p>
+$unsubscribeFi
 <hr>
 <p>Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.</p>
 <p>Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen ${frontPageLink(Language.sv)} eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.</p>
 <p>Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600</p>
+$unsubscribeSv
 <hr>
 <p>You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.</p>
 <p>The person who submitted the application can accept or reject an unanswered decision by logging in to ${frontPageLink(Language.en)} or by sending the completed form on the last page of the decision to the address specified on the page.</p>
 <p>You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.</p>
+$unsubscribeEn
 """
         )
     }
@@ -63,6 +75,8 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         EmailContent.fromHtml(
             subject = applicationReceivedSubject,
             html =
+                // This transactional message and cannot be unsubscribed from, so the unsubscribe
+                // links are not included
                 """
 <p>Hyvä(t) huoltaja(t),</p>
 <p>Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.</p>
@@ -77,6 +91,8 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         EmailContent.fromHtml(
             subject = applicationReceivedSubject,
             html =
+                // This transactional message and cannot be unsubscribed from, so the unsubscribe
+                // links are not included
                 """
 <p>Hyvä(t) huoltaja(t),<br>Lapsenne varhaiskasvatushakemus on vastaanotettu.</p>
 <p>Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.</p>
@@ -125,6 +141,8 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             EmailContent.fromHtml(
                 subject = applicationReceivedSubject,
                 html =
+                    // This transactional message and cannot be unsubscribed from, so the
+                    // unsubscribe links are not included
                     """
 <p>Hyvä(t) huoltaja(t),</p>
 <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
@@ -161,6 +179,8 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             EmailContent.fromHtml(
                 subject = applicationReceivedSubject,
                 html =
+                    // This transactional message and cannot be unsubscribed from, so the
+                    // unsubscribe links are not included
                     """
 <p>Hyvä(t) huoltaja(t),</p>
 <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.</p>
@@ -215,10 +235,13 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
             html =
                 """
 <p>Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian: ${calendarLink(Language.fi)}</p>
+$unsubscribeFi
 <hr>
 <p>Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt: ${calendarLink(Language.sv)}</p>
+$unsubscribeSv
 <hr>
 <p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible: ${calendarLink(Language.en)}</p>
+$unsubscribeEn
 """
         )
     }
@@ -231,14 +254,17 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Hyvä(t) huoltaja(t),</p>
 <p>Lapsellenne on tehty päätös.</p>
 <p>Päätös on nähtävissä eVakassa osoitteessa ${frontPageLink(Language.fi)}.</p>
+$unsubscribeFi
 <hr>
 <p>Bästa vårdnadshavare,</p>
 <p>Beslut har fattats angående ditt barn.</p>
 <p>Beslutet finns att se i eVaka på ${frontPageLink(Language.sv)}.</p>
+$unsubscribeSv
 <hr>
 <p>Dear guardian(s),</p>
 <p>A decision has been made regarding your child.</p>
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
+$unsubscribeEn
 """
         )
 
@@ -271,12 +297,15 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
 <p>Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
 <hr>
 <p>Du har fått ett nytt $typeSv i eVaka. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(Language.sv, thread.id)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
 <hr>
 <p>You have received a new $typeEn in eVaka. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
 """
         )
     }
@@ -288,12 +317,15 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
 <p>Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: ${childLink(Language.fi, childId)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
 <hr>
 <p>Du har fått ett nytt dokument i eVaka. Läs dokumentet här: ${childLink(Language.sv, childId)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
 <hr>
 <p>You have received a new eVaka document. Read the document here: ${childLink(Language.en, childId)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
 """
         )
     }
@@ -309,12 +341,15 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
                 """
 <p>Sinulle on saapunut uusi pedagoginen dokumentti eVakaan. Lue dokumentti täältä: ${childLink(Language.fi, childId)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
 <hr>
 <p>Du har fått ett nytt pedagogiskt dokument i eVaka. Läs dokumentet här: ${childLink(Language.sv, childId)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
 <hr>
 <p>You have received a new eVaka pedagogical document. Read the document here: ${childLink(Language.en, childId)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
 """
         )
     }
@@ -344,6 +379,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tulotiedot: ${incomeLink(Language.fi)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
 <hr>
 <p>Bästa klient</p>
 <p>Inkomstuppgifterna som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel granskas årligen.</p>
@@ -353,6 +389,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
 <hr>
 <p>Dear client</p>
 <p>The income information used for determining the early childhood education fee or the out-of-pocket cost of a service voucher is reviewed every year.</p>
@@ -362,6 +399,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
 """
         )
     }
@@ -380,6 +418,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tulotiedot: ${incomeLink(Language.fi)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
 <hr>
 <p>Bästa klient</p>
 <p>Du har ännu inte lämnat in en ny inkomstutredning. Inkomstuppgifterna som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel granskas årligen.</p>
@@ -389,6 +428,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
 <hr>
 <p>Dear client</p>
 <p>You have not yet submitted your latest income information. The income information used for determining the early childhood education fee or the out-of-pocket cost of a service voucher is reviewed every year.</p>
@@ -398,6 +438,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
 """
         )
     }
@@ -412,16 +453,19 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan, sillä ette ole toimittaneet uusia tulotietoja määräaikaan mennessä.</p>
 <p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
 <hr>
 <p>Bästä klient</p>
 <p>Din följande klientavgift bestäms enligt den högsta avgiften, eftersom du inte har lämnat in en inkomstutredning inom utsatt tid.</p>
 <p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
 <hr>
 <p>Dear client</p>
 <p>Your next client fee will be determined based on the highest fee category as you did not provide your latest income information by the deadline.</p>
 <p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
 """
         )
     }
@@ -450,14 +494,17 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 <p>eVakaan on lisätty uusia kalenteritapahtumia:</p>
 $eventsHtml
 <p>Katso lisää kalenterissa: ${calendarLink(Language.fi)}</p>
+$unsubscribeFi
 <hr>
 <p>Nya kalenderhändelser i eVaka:</p>
 $eventsHtml
 <p>Se mer i kalendern: ${calendarLink(Language.sv)}</p>
+$unsubscribeSv
 <hr>
 <p>New calendar events in eVaka:</p>
 $eventsHtml
 <p>See more in the calendar: ${calendarLink(Language.en)}</p>
+$unsubscribeEn
 """
         )
     }
