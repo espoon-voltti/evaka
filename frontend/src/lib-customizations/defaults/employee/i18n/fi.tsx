@@ -2401,6 +2401,8 @@ export const fi = {
       },
       missingHolidayReservation: 'Lomavaraus puuttuu',
       missingHolidayReservationShort: 'Lomavar. puuttuu',
+      fixedSchedule: 'Läsnä',
+      termBreak: 'Ei toimintaa',
       missingServiceTime: 'Sop.aika puuttuu',
       serviceTimeIndicator: '(s)',
       legend: {
