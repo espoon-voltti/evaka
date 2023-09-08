@@ -228,6 +228,109 @@ FROM pedagogical_document
 """
             )
         }
+
+    val getAssistanceFactors =
+        csvQuery<BiAssistanceFactor> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, capacity_factor,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM assistance_factor
+"""
+            )
+        }
+
+    val getDaycareAssistanceEntries =
+        csvQuery<BiDaycareAssistanceEntry> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, level,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM daycare_assistance
+"""
+            )
+        }
+
+    val getPreschoolAssistanceEntries =
+        csvQuery<BiPreschoolAssistanceEntry> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, level,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM preschool_assistance
+"""
+            )
+        }
+
+    val getAssistanceNeedVoucherCoefficients =
+        csvQuery<BiAssistanceNeedVoucherCoefficient> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, coefficient,
+    lower(validity_period) AS start_date, upper(validity_period) - 1 AS end_date
+FROM assistance_need_voucher_coefficient
+"""
+            )
+        }
+
+    val getAssistanceActions =
+        csvQuery<BiAssistanceAction> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, start_date, end_date,
+    other_action != '' AS has_other_action
+FROM assistance_action
+"""
+            )
+        }
+
+    val getAssistanceActionOptionRefs =
+        csvQuery<BiAssistanceActionOptionRef> {
+            sql(
+                """
+SELECT
+    action_id AS action, option.value AS option
+FROM assistance_action_option_ref
+JOIN assistance_action_option option ON option.id = option_id
+"""
+            )
+        }
+
+    val getAssistanceNeedDaycareDecisions =
+        csvQuery<BiAssistanceNeedDaycareDecision> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, selected_unit AS unit,
+    lower(validity_period) AS valid_from, upper(validity_period) - 1 AS valid_to,
+    status,
+    'ASSISTANCE_ENDS' = ANY(assistance_levels) AS assistance_ends,
+    'ASSISTANCE_SERVICES_FOR_TIME' = ANY(assistance_levels) AS assistance_services_for_time,
+    'ENHANCED_ASSISTANCE' = ANY(assistance_levels) AS enhanced_assistance,
+    'SPECIAL_ASSISTANCE' = ANY(assistance_levels) AS special_assistance
+FROM assistance_need_decision
+WHERE status != 'DRAFT'
+"""
+            )
+        }
+
+    val getAssistanceNeedPreschoolDecisions =
+        csvQuery<BiAssistanceNeedPreschoolDecision> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, selected_unit AS unit,
+    type, valid_from, status
+FROM assistance_need_preschool_decision
+WHERE status != 'DRAFT'
+"""
+            )
+        }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =
