@@ -20,7 +20,7 @@ import {
   TextInput
 } from '../../../utils/page'
 
-export class UnitDiaryPage {
+export class UnitMonthCalendarPage {
   constructor(private page: Page) {}
 
   #unitName = this.page.find('[data-qa="attendances-unit-name"]')

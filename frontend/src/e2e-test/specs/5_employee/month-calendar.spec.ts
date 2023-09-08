@@ -81,7 +81,7 @@ describe('Employee - Absences', () => {
     await groupSection.assertChildCount(1)
   })
 
-  test('User can open the diary page and add an absence for a child with only one absence category', async () => {
+  test('User can open the month calendar and add an absence for a child with only one absence category', async () => {
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
     const groupsPage = await unitPage.openGroupsPage()
 
@@ -91,15 +91,15 @@ describe('Employee - Absences', () => {
     const groupSection = await groupsPage.openGroupCollapsible(
       daycareGroupFixture.id
     )
-    const diaryPage = await groupSection.openDiary()
+    const monthCalendarPage = await groupSection.openMonthCalendar()
 
     // Can add an absence
-    await diaryPage.addAbsenceToChild(
+    await monthCalendarPage.addAbsenceToChild(
       fixtures.enduserChildFixtureJari.id,
       today,
       'SICKLEAVE'
     )
-    await diaryPage.childHasAbsence(
+    await monthCalendarPage.childHasAbsence(
       fixtures.enduserChildFixtureJari.id,
       today,
       'SICKLEAVE',
@@ -107,12 +107,12 @@ describe('Employee - Absences', () => {
     )
 
     // Can change the absence type
-    await diaryPage.addAbsenceToChild(
+    await monthCalendarPage.addAbsenceToChild(
       fixtures.enduserChildFixtureJari.id,
       today,
       'UNKNOWN_ABSENCE'
     )
-    await diaryPage.childHasAbsence(
+    await monthCalendarPage.childHasAbsence(
       fixtures.enduserChildFixtureJari.id,
       today,
       'UNKNOWN_ABSENCE',
@@ -120,7 +120,7 @@ describe('Employee - Absences', () => {
     )
 
     // Hover shows type and who is the absence maker
-    await diaryPage.assertTooltipContains(
+    await monthCalendarPage.assertTooltipContains(
       fixtures.enduserChildFixtureJari.id,
       today,
       [
@@ -130,34 +130,34 @@ describe('Employee - Absences', () => {
     )
 
     // Can clear an absence
-    await diaryPage.addAbsenceToChild(
+    await monthCalendarPage.addAbsenceToChild(
       fixtures.enduserChildFixtureJari.id,
       today,
       'NO_ABSENCE'
     )
-    await diaryPage.childHasNoAbsence(
+    await monthCalendarPage.childHasNoAbsence(
       fixtures.enduserChildFixtureJari.id,
       today,
       'BILLABLE'
     )
   })
 
-  test('User can open the diary page and add an absence for a child with two absence categories', async () => {
+  test('User can open the month calendar and add an absence for a child with two absence categories', async () => {
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
     const groupsPage = await unitPage.openGroupsPage()
     const groupSection = await groupsPage.openGroupCollapsible(
       daycareGroupFixture.id
     )
-    const diaryPage = await groupSection.openDiary()
+    const monthCalendarPage = await groupSection.openMonthCalendar()
 
     // Can add an absence
-    await diaryPage.addAbsenceToChild(
+    await monthCalendarPage.addAbsenceToChild(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'SICKLEAVE',
       ['BILLABLE']
     )
-    await diaryPage.childHasAbsence(
+    await monthCalendarPage.childHasAbsence(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'SICKLEAVE',
@@ -165,13 +165,13 @@ describe('Employee - Absences', () => {
     )
 
     // Can change the absence type
-    await diaryPage.addAbsenceToChild(
+    await monthCalendarPage.addAbsenceToChild(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'UNKNOWN_ABSENCE',
       ['NONBILLABLE']
     )
-    await diaryPage.childHasAbsence(
+    await monthCalendarPage.childHasAbsence(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'UNKNOWN_ABSENCE',
@@ -179,7 +179,7 @@ describe('Employee - Absences', () => {
     )
 
     // Hover shows type and who is the absence maker
-    await diaryPage.assertTooltipContains(
+    await monthCalendarPage.assertTooltipContains(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       [
@@ -189,18 +189,18 @@ describe('Employee - Absences', () => {
     )
 
     // Can clear an absence
-    await diaryPage.addAbsenceToChild(
+    await monthCalendarPage.addAbsenceToChild(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'NO_ABSENCE',
       ['BILLABLE', 'NONBILLABLE']
     )
-    await diaryPage.childHasNoAbsence(
+    await monthCalendarPage.childHasNoAbsence(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'BILLABLE'
     )
-    await diaryPage.childHasNoAbsence(
+    await monthCalendarPage.childHasNoAbsence(
       fixtures.enduserChildFixtureKaarina.id,
       today,
       'NONBILLABLE'
@@ -217,15 +217,15 @@ describe('Employee - Absences', () => {
     const groupSection = await groupsPage.openGroupCollapsible(
       daycareGroupFixture.id
     )
-    const diaryPage = await groupSection.openDiary()
+    const monthCalendarPage = await groupSection.openMonthCalendar()
 
-    await diaryPage.fillStaffAttendance(0, 3)
+    await monthCalendarPage.fillStaffAttendance(0, 3)
 
     // Change to another page and back to reload data
     await unitPage.openGroupsPage()
-    await groupSection.openDiary()
+    await groupSection.openMonthCalendar()
 
-    await diaryPage.assertStaffAttendance(0, 3)
+    await monthCalendarPage.assertStaffAttendance(0, 3)
   })
 
   describe('Holiday period reservations', () => {
@@ -246,37 +246,37 @@ describe('Employee - Absences', () => {
       const groupSection = await groupsPage.openGroupCollapsible(
         daycareGroupFixture.id
       )
-      const diaryPage = await groupSection.openDiary()
+      const monthCalendarPage = await groupSection.openMonthCalendar()
 
       // Today is not in a holiday period
-      await diaryPage
+      await monthCalendarPage
         .absenceCell(fixtures.enduserChildFixtureKaarina.id, today)
         .waitUntilVisible()
-      await diaryPage
+      await monthCalendarPage
         .absenceCell(fixtures.enduserChildFixtureKaarina.id, today)
         .missingHolidayReservation.waitUntilHidden()
 
       // Missing holiday reservation is shown for holiday period dates
-      await diaryPage.nextWeekButton.click()
+      await monthCalendarPage.nextWeekButton.click()
       let date = holidayStart
       while (date <= holidayEnd) {
-        await diaryPage
+        await monthCalendarPage
           .absenceCell(fixtures.enduserChildFixtureKaarina.id, date)
           .missingHolidayReservation.waitUntilVisible()
         date = date.addDays(1)
       }
 
       // Adding an absence hides the missing holiday reservation marker
-      await diaryPage.addAbsenceToChild(
+      await monthCalendarPage.addAbsenceToChild(
         fixtures.enduserChildFixtureKaarina.id,
         holidayStart,
         'UNKNOWN_ABSENCE',
         ['NONBILLABLE']
       )
-      await diaryPage
+      await monthCalendarPage
         .absenceCell(fixtures.enduserChildFixtureKaarina.id, holidayStart)
         .waitUntilVisible()
-      await diaryPage
+      await monthCalendarPage
         .absenceCell(fixtures.enduserChildFixtureKaarina.id, holidayStart)
         .missingHolidayReservation.waitUntilHidden()
     })
