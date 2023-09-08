@@ -230,7 +230,8 @@ fun terminateBilledDaycare(
                     childId = childId,
                     unitId = unitId,
                     startDate = terminationDate.plusDays(1),
-                    endDate = placement.endDate
+                    endDate = placement.endDate,
+                    placeGuarantee = false
                 )
             }
         }

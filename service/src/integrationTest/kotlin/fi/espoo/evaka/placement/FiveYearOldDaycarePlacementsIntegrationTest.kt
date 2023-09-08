@@ -37,7 +37,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     testDaycare.id,
                     FiniteDateRange(startDate, endDate),
                     PlacementType.DAYCARE,
-                    useFiveYearsOldDaycare = true
+                    useFiveYearsOldDaycare = true,
+                    placeGuarantee = false
                 )
             }
 
@@ -72,7 +73,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     testDaycare.id,
                     FiniteDateRange(startDate, endDate),
                     PlacementType.DAYCARE,
-                    useFiveYearsOldDaycare = false
+                    useFiveYearsOldDaycare = false,
+                    placeGuarantee = false
                 )
             }
 
@@ -97,7 +99,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     testDaycare.id,
                     FiniteDateRange(startDate, endDate),
                     PlacementType.DAYCARE_PART_TIME,
-                    useFiveYearsOldDaycare = true
+                    useFiveYearsOldDaycare = true,
+                    placeGuarantee = false
                 )
             }
 
@@ -122,7 +125,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         testDaycare.id,
                         FiniteDateRange(originalStartDate, originalEndDate),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -164,7 +168,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         testDaycare.id,
                         FiniteDateRange(originalStartDate, originalEndDate),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -206,7 +211,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         testDaycare.id,
                         FiniteDateRange(originalStartDate, originalEndDate),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -248,7 +254,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         testDaycare.id,
                         FiniteDateRange(originalStartDate, originalEndDate),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -290,7 +297,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         testDaycare.id,
                         FiniteDateRange(originalStartDate, originalEndDate),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -328,7 +336,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         testDaycare.id,
                         FiniteDateRange(originalStartDate, originalEndDate),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = false
+                        useFiveYearsOldDaycare = false,
+                        placeGuarantee = false
                     )
                 }
                 .first()

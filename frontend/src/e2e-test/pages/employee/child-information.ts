@@ -719,6 +719,27 @@ export class PlacementsSection extends Section {
   #terminatedByGuardian = (placementId: string) =>
     this.#placementRow(placementId).find('[data-qa="placement-terminated"]')
 
+  async assertPlacementRows(
+    rows: { unitName: string; period: string; status: string }[]
+  ) {
+    const placements = this.findAllByDataQa('placement-row')
+    await placements.assertCount(rows.length)
+    await Promise.all(
+      rows.map(async (row, index) => {
+        const placement = placements.nth(index)
+        await placement
+          .findByDataQa('toolbar-accordion-title')
+          .assertTextEquals(row.unitName)
+        await placement
+          .findByDataQa('toolbar-accordion-subtitle')
+          .assertTextEquals(row.period)
+        await placement
+          .findByDataQa('placement-toolbar')
+          .assertTextEquals(row.status)
+      })
+    )
+  }
+
   async openPlacement(id: string) {
     const placementRow = this.#placementRow(id)
     if ((await placementRow.getAttribute('data-status')) === 'closed') {
@@ -792,11 +813,13 @@ export class PlacementsSection extends Section {
   async createNewPlacement({
     unitName,
     startDate,
-    endDate
+    endDate,
+    placeGuarantee = false
   }: {
     unitName: string
     startDate: string
     endDate: string
+    placeGuarantee?: boolean
   }) {
     await this.find('[data-qa="create-new-placement-button"]').click()
 
@@ -813,6 +836,12 @@ export class PlacementsSection extends Section {
       modal.find('[data-qa="create-placement-end-date"]')
     )
     await end.fill(endDate)
+
+    if (placeGuarantee) {
+      await new Checkbox(
+        modal.findByDataQa('create-placement-place-guarantee')
+      ).check()
+    }
 
     await modal.submit()
   }

@@ -86,7 +86,8 @@ export const fi = {
       active: 'Aktiivinen',
       coming: 'Tulossa',
       completed: 'Päättynyt',
-      conflict: 'Konflikti'
+      conflict: 'Konflikti',
+      guarantee: 'Takuupaikka'
     },
     careTypeLabels: {
       club: 'Kerho',
@@ -1396,7 +1397,11 @@ export const fi = {
         title: 'Uusi sijoitus',
         text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekkäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
-        unitMissing: 'Yksikkö puuttuu'
+        unitMissing: 'Yksikkö puuttuu',
+        placeGuarantee: {
+          title: 'Varhaiskasvatuspaikkatakuu',
+          info: 'Tulevaisuuden sijoitus liittyy varhaiskasvatuspaikkatakuuseen'
+        }
       },
       error: {
         conflict: {

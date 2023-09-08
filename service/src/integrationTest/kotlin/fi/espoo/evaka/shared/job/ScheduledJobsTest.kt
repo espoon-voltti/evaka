@@ -369,7 +369,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.now().minusDays(100),
-                    endDate = LocalDate.now().plusDays(100)
+                    endDate = LocalDate.now().plusDays(100),
+                    false
                 )
                 it.createChildDailyNote(
                     testChild_2.id,

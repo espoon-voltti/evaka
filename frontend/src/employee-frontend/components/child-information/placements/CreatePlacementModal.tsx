@@ -13,13 +13,15 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { placementTypes } from 'lib-customizations/employee'
+import { featureFlags, placementTypes } from 'lib-customizations/employee'
 import { faMapMarkerAlt } from 'lib-icons'
 
 import { createPlacement } from '../../../api/child/placements'
@@ -40,6 +42,7 @@ interface Form {
   startDate: LocalDate
   endDate: LocalDate
   unit: { id: string; name: string; ghostUnit: boolean } | null
+  placeGuarantee: boolean
 }
 
 function CreatePlacementModal({ childId, reload }: Props) {
@@ -50,7 +53,8 @@ function CreatePlacementModal({ childId, reload }: Props) {
     type: 'DAYCARE',
     unit: null,
     startDate: LocalDate.todayInSystemTz(),
-    endDate: LocalDate.todayInSystemTz()
+    endDate: LocalDate.todayInSystemTz(),
+    placeGuarantee: false
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
   const retroactive = useMemo(
@@ -113,7 +117,8 @@ function CreatePlacementModal({ childId, reload }: Props) {
       type: form.type,
       unitId: form.unit.id,
       startDate: form.startDate,
-      endDate: form.endDate
+      endDate: form.endDate,
+      placeGuarantee: form.placeGuarantee
     })
       .then((res) => {
         setSubmitting(false)
@@ -210,6 +215,32 @@ function CreatePlacementModal({ childId, reload }: Props) {
             type="full-width"
           />
         </section>
+
+        {featureFlags.placementGuarantee && (
+          <section>
+            <ExpandingInfo
+              info={
+                i18n.childInformation.placements.createPlacement.placeGuarantee
+                  .info
+              }
+              closeLabel={i18n.common.close}
+              ariaLabel=""
+              width="auto"
+            >
+              <Checkbox
+                label={
+                  i18n.childInformation.placements.createPlacement
+                    .placeGuarantee.title
+                }
+                checked={form.placeGuarantee}
+                onChange={(checked) =>
+                  setForm({ ...form, placeGuarantee: checked })
+                }
+                data-qa="create-placement-place-guarantee"
+              />
+            </ExpandingInfo>
+          </section>
+        )}
 
         {retroactive && (
           <RetroactiveConfirmation

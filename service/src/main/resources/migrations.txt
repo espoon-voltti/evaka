@@ -345,3 +345,4 @@ V345__service_need_option_fee.sql
 V346__fee_decision_ignored_drafts.sql
 V347__add_finnish_second_language_assistance_measure_type.sql
 V348__alter_finnish_second_language_assistance_measure_type.sql
+V349__placement_guarantee.sql

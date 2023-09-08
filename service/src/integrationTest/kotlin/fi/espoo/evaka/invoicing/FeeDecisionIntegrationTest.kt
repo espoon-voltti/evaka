@@ -468,7 +468,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 firstPlacementStartingThisMonthChild.child.id,
                 firstPlacementStartingThisMonthChild.placement.unitId,
                 LocalDate.now(),
-                LocalDate.now()
+                LocalDate.now(),
+                false
             )
         }
 
@@ -480,7 +481,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 previousPlacementChild.child.id,
                 previousPlacementChild.placement.unitId,
                 LocalDate.now().minusMonths(1),
-                LocalDate.now()
+                LocalDate.now(),
+                false
             )
         }
 

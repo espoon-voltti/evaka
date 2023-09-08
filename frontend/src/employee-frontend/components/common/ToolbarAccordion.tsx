@@ -44,9 +44,13 @@ function ToolbarAccordion({
       <AccordionCollapseWrapper>
         <TitleRow showBorder={showBorder}>
           <Title>
-            <H4 noMargin>{title}</H4>
+            <H4 noMargin data-qa="toolbar-accordion-title">
+              {title}
+            </H4>
             <Gap size="s" horizontal />
-            <H4 noMargin>{subtitle}</H4>
+            <H4 noMargin data-qa="toolbar-accordion-subtitle">
+              {subtitle}
+            </H4>
           </Title>
           <Gap size="m" horizontal />
           <Toolbar>

@@ -11,13 +11,19 @@ import { colors } from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 
-export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
+export type StatusLabelType =
+  | 'coming'
+  | 'active'
+  | 'completed'
+  | 'conflict'
+  | 'guarantee'
 
 const colorsByStatus: Record<StatusLabelType, string> = {
   active: colors.accents.a3emerald,
   coming: colors.accents.a7mint,
   completed: colors.accents.a8lightBlue,
-  conflict: colors.status.warning
+  conflict: colors.status.warning,
+  guarantee: colors.accents.a7mint
 }
 type Props =
   | {

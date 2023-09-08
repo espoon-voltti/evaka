@@ -497,7 +497,8 @@ SELECT
     child_id,
     unit_id,
     start_date,
-    end_date
+    end_date,
+    place_guarantee
 FROM placement
 WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedTypes::placement_type[])
         """

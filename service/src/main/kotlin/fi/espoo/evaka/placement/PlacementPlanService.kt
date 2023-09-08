@@ -261,7 +261,8 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             unitId = unitId,
             placementTypePeriods = placementTypePeriods,
             serviceNeed = serviceNeed,
-            cancelPlacementsAfterClub = true
+            cancelPlacementsAfterClub = true,
+            placeGuarantee = false
         )
         val timeline = Timeline.of(placementTypePeriods.map { it.first })
         asyncJobRunner.plan(
@@ -307,7 +308,8 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
                 startDate = period.start,
                 endDate = period.end,
                 terminationRequestedBy = null,
-                terminationRequestedDate = null
+                terminationRequestedDate = null,
+                placeGuarantee = false
             )
         }
     }

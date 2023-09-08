@@ -86,6 +86,7 @@ export interface DaycarePlacementWithDetails {
   id: UUID
   isRestrictedFromUser: boolean
   missingServiceNeedDays: number
+  placeGuarantee: boolean
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
   terminatedBy: EvakaUser | null
@@ -143,6 +144,7 @@ export interface MissingGroupPlacementServiceNeed {
 export interface PlacementCreateRequestBody {
   childId: UUID
   endDate: LocalDate
+  placeGuarantee: boolean
   startDate: LocalDate
   type: PlacementType
   unitId: UUID

@@ -26,7 +26,7 @@ import org.jdbi.v3.core.result.RowView
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery(
             """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
 FROM placement p
 WHERE p.id = :id
         """
@@ -55,7 +55,7 @@ fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> 
 fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
     return createQuery(
             """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
 FROM placement p
 WHERE p.child_id = :childId
         """
@@ -73,7 +73,7 @@ fun Database.Read.getPlacementsForChildDuring(
 ): List<Placement> {
     return createQuery(
             """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
@@ -90,7 +90,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
 fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? {
     return createQuery(
             """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
 FROM placement p
 WHERE p.child_id = :childId
 AND daterange(p.start_date, p.end_date, '[]') @> :today
@@ -137,12 +137,13 @@ fun Database.Transaction.insertPlacement(
     childId: ChildId,
     unitId: DaycareId,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
+    placeGuarantee: Boolean
 ): Placement {
     return createQuery(
             """
-            INSERT INTO placement (type, child_id, unit_id, start_date, end_date) 
-            VALUES (:type::placement_type, :childId, :unitId, :startDate, :endDate)
+            INSERT INTO placement (type, child_id, unit_id, start_date, end_date, place_guarantee)
+            VALUES (:type::placement_type, :childId, :unitId, :startDate, :endDate, :placeGuarantee)
             RETURNING *
         """
                 .trimIndent()
@@ -152,6 +153,7 @@ fun Database.Transaction.insertPlacement(
         .bind("unitId", unitId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
+        .bind("placeGuarantee", placeGuarantee)
         .mapTo<Placement>()
         .list()
         .first()
@@ -406,6 +408,7 @@ fun Database.Read.getDaycarePlacements(
             terminated_by.name AS terminated_by_name,
             terminated_by.type AS terminated_by_type,
             pl.unit_id AS daycare_id,
+            pl.place_guarantee,
             d.name AS daycare_name,
             d.provider_type AS daycare_provider_type,
             d.enabled_pilot_features AS daycare_enabled_pilot_features,

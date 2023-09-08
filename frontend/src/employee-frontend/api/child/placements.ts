@@ -5,8 +5,8 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  PlacementResponse,
-  PlacementType
+  PlacementCreateRequestBody,
+  PlacementResponse
 } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -15,21 +15,13 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export interface PlacementCreate {
-  childId: UUID
-  type: PlacementType
-  unitId: UUID
-  startDate: LocalDate
-  endDate: LocalDate
-}
-
 export interface PlacementUpdate {
   startDate: LocalDate
   endDate: LocalDate
 }
 
 export async function createPlacement(
-  body: PlacementCreate
+  body: PlacementCreateRequestBody
 ): Promise<Result<null>> {
   return client
     .post(`/placements`, {

@@ -455,8 +455,8 @@ fun Database.Transaction.insertTestPlacement(placement: DevPlacement) =
     insertTestDataRow(
             placement,
             """
-INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by)
-VALUES (:id, :type, :childId, :unitId, :startDate, :endDate, :terminationRequestedDate, :terminatedBy)
+INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
+VALUES (:id, :type, :childId, :unitId, :startDate, :endDate, :terminationRequestedDate, :terminatedBy, :placeGuarantee)
 RETURNING id
 """
         )
@@ -470,12 +470,13 @@ fun Database.Transaction.insertTestPlacement(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     terminationRequestedDate: LocalDate? = null,
-    terminatedBy: EvakaUserId? = null
+    terminatedBy: EvakaUserId? = null,
+    placeGuarantee: Boolean = false
 ): PlacementId {
     createUpdate(
             """
-            INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by)
-            VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate, :terminationRequestedDate, :terminatedBy)
+            INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
+            VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate, :terminationRequestedDate, :terminatedBy, :placeGuarantee)
             """
         )
         .bind("id", id)
@@ -486,6 +487,7 @@ fun Database.Transaction.insertTestPlacement(
         .bind("endDate", endDate)
         .bind("terminationRequestedDate", terminationRequestedDate)
         .bind("terminatedBy", terminatedBy)
+        .bind("placeGuarantee", placeGuarantee)
         .execute()
     return id
 }

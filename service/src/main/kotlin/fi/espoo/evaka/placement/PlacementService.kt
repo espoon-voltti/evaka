@@ -52,7 +52,8 @@ fun createPlacements(
     unitId: DaycareId,
     placementTypePeriods: List<Pair<FiniteDateRange, PlacementType>>,
     serviceNeed: ApplicationServiceNeed? = null,
-    cancelPlacementsAfterClub: Boolean? = false
+    cancelPlacementsAfterClub: Boolean? = false,
+    placeGuarantee: Boolean
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
@@ -64,7 +65,8 @@ fun createPlacements(
         }
 
     return placementTypePeriods.map { (period, type) ->
-        val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)
+        val placement =
+            tx.insertPlacement(type, childId, unitId, period.start, period.end, placeGuarantee)
         if (serviceNeed?.placementType == type) {
             tx.insertServiceNeed(
                 placement.id,
@@ -87,7 +89,8 @@ fun createPlacement(
     period: FiniteDateRange,
     type: PlacementType,
     serviceNeed: ApplicationServiceNeed? = null,
-    useFiveYearsOldDaycare: Boolean = false
+    useFiveYearsOldDaycare: Boolean = false,
+    placeGuarantee: Boolean
 ): List<Placement> {
     val placementTypePeriods =
         if (useFiveYearsOldDaycare) {
@@ -95,7 +98,14 @@ fun createPlacement(
         } else {
             listOf(period to type)
         }
-    return createPlacements(tx, childId, unitId, placementTypePeriods, serviceNeed)
+    return createPlacements(
+        tx,
+        childId,
+        unitId,
+        placementTypePeriods,
+        serviceNeed,
+        placeGuarantee = placeGuarantee
+    )
 }
 
 fun Database.Transaction.updatePlacement(
@@ -153,7 +163,14 @@ fun Database.Transaction.updatePlacement(
             }
 
         newPeriods.forEach { (period, type) ->
-            insertPlacement(type, old.childId, old.unitId, period.start, period.end)
+            insertPlacement(
+                type,
+                old.childId,
+                old.unitId,
+                period.start,
+                period.end,
+                old.placeGuarantee
+            )
         }
     } catch (e: Exception) {
         throw mapPSQLException(e)
@@ -413,7 +430,8 @@ private fun Database.Transaction.splitPlacementWithGap(
         childId = placement.childId,
         unitId = placement.unitId,
         startDate = gapEndInclusive.plusDays(1),
-        endDate = placement.endDate
+        endDate = placement.endDate,
+        placeGuarantee = placement.placeGuarantee
     )
 }
 
@@ -503,7 +521,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
-                updated = daycarePlacement.updated
+                updated = daycarePlacement.updated,
+                placeGuarantee = daycarePlacement.placeGuarantee
             )
         }
         .map(::addMissingGroupPlacements)
@@ -649,7 +668,8 @@ data class DaycarePlacementDetails(
     val missingServiceNeedDays: Int,
     val terminationRequestedDate: LocalDate?,
     val updated: HelsinkiDateTime?,
-    @Nested("terminated_by") val terminatedBy: EvakaUser?
+    @Nested("terminated_by") val terminatedBy: EvakaUser?,
+    val placeGuarantee: Boolean
 )
 
 data class DaycarePlacementWithDetails(
@@ -665,7 +685,8 @@ data class DaycarePlacementWithDetails(
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
-    val updated: HelsinkiDateTime?
+    val updated: HelsinkiDateTime?,
+    val placeGuarantee: Boolean
 )
 
 data class PlacementResponse(

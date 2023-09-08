@@ -1,0 +1,2 @@
+ALTER TABLE placement ADD COLUMN place_guarantee BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE placement ALTER COLUMN place_guarantee DROP DEFAULT;
