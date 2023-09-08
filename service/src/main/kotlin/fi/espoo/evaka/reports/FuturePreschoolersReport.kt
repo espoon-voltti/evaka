@@ -100,7 +100,7 @@ SELECT p.id,
     NULL AS language_emphasis_group, -- cannot be obtained from current evaka dataset
     CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN true ELSE false END AS two_year_preschool
 FROM person p
-JOIN placement pl ON pl.child_id = p.id
+JOIN placement pl ON pl.child_id = p.id AND pl.start_date < :today AND pl.end_date >= :today
 JOIN daycare d ON d.id = pl.unit_id
 LEFT JOIN (
     SELECT id, last_name, first_name, street_address, postal_code, post_office, phone, email
