@@ -38,10 +38,13 @@ fun <T : Any> toCsvRecords(
 ): Sequence<String> {
     check(clazz.isData)
     val props = clazz.declaredMemberProperties.toList()
-    val header = props.joinToString(CSV_FIELD_SEPARATOR) { CsvEscape.escapeCsv(it.name) }
+    val header =
+        props.joinToString(CSV_FIELD_SEPARATOR, postfix = CSV_RECORD_SEPARATOR) {
+            CsvEscape.escapeCsv(it.name)
+        }
     return sequenceOf(header) +
         values.map { record ->
-            props.joinToString(CSV_FIELD_SEPARATOR) {
+            props.joinToString(CSV_FIELD_SEPARATOR, postfix = CSV_RECORD_SEPARATOR) {
                 CsvEscape.escapeCsv(printField(it.get(record)))
             }
         }

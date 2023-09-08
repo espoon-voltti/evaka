@@ -88,41 +88,36 @@ import java.time.Month
 import java.util.UUID
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.springframework.http.converter.HttpMessageConverter
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
 
-class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val user = AuthenticatedUser.Integration
-
+class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun getAreas() {
         val id = db.transaction { it.insertTestArea() }
-        assertSingleRowContainingId(EspooBiPoc.getAreas, id)
+        assertSingleRowContainingId(EspooBi.getAreas, id)
     }
 
     @Test
     fun getUnits() {
         val id = db.transaction { it.insertTestDaycare() }
-        assertSingleRowContainingId(EspooBiPoc.getUnits, id)
+        assertSingleRowContainingId(EspooBi.getUnits, id)
     }
 
     @Test
     fun getGroups() {
         val id = db.transaction { it.insertTestGroup() }
-        assertSingleRowContainingId(EspooBiPoc.getGroups, id)
+        assertSingleRowContainingId(EspooBi.getGroups, id)
     }
 
     @Test
     fun getChildren() {
         val id = db.transaction { it.insertTestChild() }
-        assertSingleRowContainingId(EspooBiPoc.getChildren, id)
+        assertSingleRowContainingId(EspooBi.getChildren, id)
     }
 
     @Test
     fun getPlacements() {
         val id = db.transaction { it.insertTestPlacement() }
-        assertSingleRowContainingId(EspooBiPoc.getPlacements, id)
+        assertSingleRowContainingId(EspooBi.getPlacements, id)
     }
 
     @Test
@@ -138,7 +133,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
             }
-        assertSingleRowContainingId(EspooBiPoc.getGroupPlacements, id)
+        assertSingleRowContainingId(EspooBi.getGroupPlacements, id)
     }
 
     @Test
@@ -153,7 +148,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getAbsences, id)
+        assertSingleRowContainingId(EspooBi.getAbsences, id)
     }
 
     @Test
@@ -166,13 +161,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getGroupCaretakerAllocations, id)
+        assertSingleRowContainingId(EspooBi.getGroupCaretakerAllocations, id)
     }
 
     @Test
     fun getApplications() {
         val id = db.transaction { it.insertTestApplicationWithForm() }
-        assertSingleRowContainingId(EspooBiPoc.getApplications, id)
+        assertSingleRowContainingId(EspooBi.getApplications, id)
     }
 
     @Test
@@ -192,13 +187,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getDecisions, id)
+        assertSingleRowContainingId(EspooBi.getDecisions, id)
     }
 
     @Test
     fun getServiceNeedOptions() {
         val id = db.transaction { it.insertTestServiceNeedOption() }
-        assertSingleRowContainingId(EspooBiPoc.getServiceNeedOptions, id)
+        assertSingleRowContainingId(EspooBi.getServiceNeedOptions, id)
     }
 
     @Test
@@ -212,32 +207,32 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     optionId = it.insertTestServiceNeedOption(),
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getServiceNeeds, id)
+        assertSingleRowContainingId(EspooBi.getServiceNeeds, id)
     }
 
     @Test
     fun getFeeDecisions() {
         val id = db.transaction { it.insertTestFeeDecision() }
-        assertSingleRowContainingId(EspooBiPoc.getFeeDecisions, id)
+        assertSingleRowContainingId(EspooBi.getFeeDecisions, id)
     }
 
     @Test
     fun getFeeDecisionChildren() {
         val feeDecisionId = db.transaction { it.insertTestFeeDecision() }
         // We intentionally test for *fee decision id*, not the child row id
-        assertSingleRowContainingId(EspooBiPoc.getFeeDecisionChildren, feeDecisionId)
+        assertSingleRowContainingId(EspooBi.getFeeDecisionChildren, feeDecisionId)
     }
 
     @Test
     fun getVoucherValueDecisions() {
         val id = db.transaction { it.insertTestVoucherValueDecision() }
-        assertSingleRowContainingId(EspooBiPoc.getVoucherValueDecisions, id)
+        assertSingleRowContainingId(EspooBi.getVoucherValueDecisions, id)
     }
 
     @Test
     fun getCurriculumTemplates() {
         val id = db.transaction { it.insertTestCurriculumTemplate() }
-        assertSingleRowContainingId(EspooBiPoc.getCurriculumTemplates, id)
+        assertSingleRowContainingId(EspooBi.getCurriculumTemplates, id)
     }
 
     @Test
@@ -256,7 +251,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
             }
-        assertSingleRowContainingId(EspooBiPoc.getCurriculumDocuments, id)
+        assertSingleRowContainingId(EspooBi.getCurriculumDocuments, id)
     }
 
     @Test
@@ -271,17 +266,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getPedagogicalDocuments, id)
+        assertSingleRowContainingId(EspooBi.getPedagogicalDocuments, id)
     }
 
-    private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
-        val request = MockHttpServletRequest()
-        val response = MockHttpServletResponse()
-        val messageConverters = emptyList<HttpMessageConverter<*>>()
-        route(dbInstance(), user).writeTo(request, response) { messageConverters }
+    private fun assertSingleRowContainingId(query: CsvQuery, id: Id<*>) {
+        val lines =
+            db.read { tx -> query(tx).map { it.trim() }.filter { it.isNotEmpty() }.toList() }
 
-        val content = response.contentAsString
-        val lines = content.lineSequence().map { it.trim() }.filter { it.isNotEmpty() }
         assertTrue(lines.first().looksLikeHeaderRow())
         assertTrue(lines.drop(1).single().contains(id.toString()))
     }
