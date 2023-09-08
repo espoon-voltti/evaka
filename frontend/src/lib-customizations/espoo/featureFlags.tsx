@@ -41,7 +41,6 @@ const features: Features = {
       serviceWorkerMessaging: true,
       childDocuments: true,
       assistanceNeedPreschoolDecisions: true,
-      citizenEmailNotificationSettings: true,
       feeDecisionIgnoredStatus: true
     }
   },
@@ -72,7 +71,6 @@ const features: Features = {
       serviceWorkerMessaging: true,
       childDocuments: true,
       assistanceNeedPreschoolDecisions: true,
-      citizenEmailNotificationSettings: true,
       feeDecisionIgnoredStatus: true
     }
   },
@@ -102,7 +100,6 @@ const features: Features = {
       fosterParents: true,
       serviceWorkerMessaging: true,
       childDocuments: false,
-      citizenEmailNotificationSettings: true,
       feeDecisionIgnoredStatus: true
     }
   }
