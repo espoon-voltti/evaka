@@ -3203,7 +3203,7 @@ __metadata:
     nodemon: ^3.0.1
     passport: ^0.6.0
     pino: ^8.15.0
-    pino-http: ^8.4.0
+    pino-http: ^8.5.0
     pino-pretty: ^10.2.0
     prettier: ^3.0.0
     pump: ^3.0.0
@@ -5702,15 +5702,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-http@npm:^8.4.0":
-  version: 8.4.0
-  resolution: "pino-http@npm:8.4.0"
+"pino-http@npm:^8.5.0":
+  version: 8.5.0
+  resolution: "pino-http@npm:8.5.0"
   dependencies:
     get-caller-file: ^2.0.5
     pino: ^8.0.0
     pino-std-serializers: ^6.0.0
     process-warning: ^2.0.0
-  checksum: cfe39fcae92609dad5169ecc738bb11a76aabe5d508dc3b32cdf83622fc7ef21a5683186cd73e306ab85f251c490a28be8facc73339a44e95daf798c34d032ae
+  checksum: fa166bf5bb39de4708c5992a529b0a91fd42fe4456b8135616601878f1bfc7e3f7e0c74d38ee8b63adc78e2d493da5906f3f4d5c6f37b1f3ff54672f0003b840
   languageName: node
   linkType: hard
 

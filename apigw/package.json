@@ -39,7 +39,7 @@
     "nocache": "^4.0.0",
     "passport": "^0.6.0",
     "pino": "^8.15.0",
-    "pino-http": "^8.4.0",
+    "pino-http": "^8.5.0",
     "pino-pretty": "^10.2.0",
     "pump": "^3.0.0",
     "query-string": "^8.1.0",
