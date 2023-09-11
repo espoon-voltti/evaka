@@ -47,6 +47,60 @@ beforeEach(async () => {
 })
 
 describe('Employee - Absences', () => {
+  test('Child is not shown in calendar for term break days', async () => {
+    const term = new FiniteDateRange(today, today.addYears(1))
+    const monday = LocalDate.of(2023, 3, 6)
+    const termBreak = new FiniteDateRange(monday.addDays(1), monday.addDays(3))
+    await Fixture.preschoolTerm()
+      .with({
+        finnishPreschool: term,
+        swedishPreschool: term,
+        applicationPeriod: term,
+        extendedTerm: term,
+        termBreaks: [termBreak]
+      })
+      .save()
+
+    const placement = await Fixture.placement()
+      .with({
+        childId: enduserChildFixtureKaarina.id,
+        unitId: daycareFixture.id,
+        type: 'PRESCHOOL',
+        startDate: today,
+        endDate: today.addYears(1)
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withPlacement(placement)
+      .withGroup(group)
+      .save()
+
+    await unitPage.navigateToUnit(daycareFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+
+    const groupSection = await groupsPage.openGroupCollapsible(
+      daycareGroupFixture.id
+    )
+    const monthCalendarPage = await groupSection.openMonthCalendar()
+
+    // Monday is visible
+    await monthCalendarPage
+      .absenceCell(enduserChildFixtureKaarina.id, monday)
+      .waitUntilVisible()
+
+    // Tue-Thu are term break days
+    for (const date of termBreak.dates()) {
+      await monthCalendarPage
+        .absenceCell(enduserChildFixtureKaarina.id, date)
+        .waitUntilHidden()
+    }
+
+    // Fri is visible
+    await monthCalendarPage
+      .absenceCell(enduserChildFixtureKaarina.id, monday.addDays(4))
+      .waitUntilVisible()
+  })
+
   test('User can open the month calendar and add an absence for a child with only one absence category', async () => {
     const placement = await Fixture.placement()
       .with({

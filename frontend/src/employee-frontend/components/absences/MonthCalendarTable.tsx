@@ -93,7 +93,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
         </FixedSpaceRow>
       </ChildNameTd>
       {days.map(([date, day]) =>
-        day !== undefined ? (
+        day !== undefined && day.scheduleType !== 'TERM_BREAK' ? (
           <CalendarTd
             key={`${child.id}${date.formatIso()}`}
             $isToday={date.isToday()}

@@ -19,6 +19,7 @@ import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
 import { Reservation } from './reservations'
+import { ScheduleType } from './placement'
 import { ShiftCareType } from './serviceneed'
 import { TerminatedPlacement } from './placement'
 import { TimeRange } from './shared'
@@ -426,6 +427,7 @@ export interface GroupMonthCalendarDayChild {
   dailyServiceTimes: TimeRange | null
   missingHolidayReservation: boolean
   reservations: ChildReservation[]
+  scheduleType: ScheduleType
 }
 
 /**
