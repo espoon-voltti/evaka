@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
 import java.time.LocalDate
+import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 data class Quadruple<out A, out B, out C, out D>(
@@ -37,6 +38,8 @@ data class Quadruple<out A, out B, out C, out D>(
     val third: C,
     val fourth: D
 )
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 class FinanceDecisionGenerator(
@@ -50,6 +53,45 @@ class FinanceDecisionGenerator(
     final val v1 = env.feeDecisionGeneratorV1Enabled
     final val v2 = env.feeDecisionGeneratorV2Enabled
     final val useV2Tables = v1 && v2
+
+    fun scheduleBatchGeneration(tx: Database.Transaction, clock: EvakaClock) {
+        if (!v2) return
+
+        val inserted =
+            tx.createUpdate(
+                    """
+WITH ids AS (
+    SELECT head_of_child AS head_of_family_id
+    FROM fridge_child
+
+    UNION
+
+    SELECT head_of_family_id
+    FROM fee_decision
+)
+INSERT INTO async_job(type, payload, retry_count, retry_interval)
+SELECT 'GenerateFinanceDecisions',
+       jsonb_build_object(
+               'user', NULL,
+               'person', jsonb_build_object(
+                       'adultId', head_of_family_id,
+                       'skipPropagation', true
+                   ),
+               'dateRange', jsonb_build_object(
+                       'start', :from,
+                       'end', NULL
+                   )
+           ),
+       3,
+       interval '5 minutes'
+FROM ids;
+        """
+                )
+                .bind("from", clock.today().minusMonths(15))
+                .execute()
+
+        logger.info { "Scheduled GenerateFinanceDecisions for $inserted people" }
+    }
 
     fun createRetroactiveFeeDecisions(
         tx: Database.Transaction,

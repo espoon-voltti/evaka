@@ -12,6 +12,7 @@ import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
+import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
@@ -63,6 +64,10 @@ enum class ScheduledJob(
             enabled = true,
             schedule = JobSchedule.cron("0 0 0 25 * ?") // Monthly on 25th
         )
+    ),
+    GenerateFinanceDecisions(
+        ScheduledJobs::generateFinanceDecisions,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(2, 0)))
     ),
     KoskiUpdate(
         ScheduledJobs::koskiUpdate,
@@ -137,6 +142,7 @@ class ScheduledJobs(
     private val missingReservationsReminders: MissingReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val calendarEventNotificationService: CalendarEventNotificationService,
+    private val financeDecisionGenerator: FinanceDecisionGenerator,
     env: ScheduledJobsEnv<ScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -231,6 +237,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     fun freezeVoucherValueReports(db: Database.Connection, clock: EvakaClock) {
         val now = clock.now()
         db.transaction { freezeVoucherValueReportRows(it, now.year, now.month.value, now) }
+    }
+
+    fun generateFinanceDecisions(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { financeDecisionGenerator.scheduleBatchGeneration(it, clock) }
     }
 
     fun removeExpiredNotes(db: Database.Connection, clock: EvakaClock) {
