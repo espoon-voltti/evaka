@@ -6572,7 +6572,7 @@ __metadata:
     react-autosize-textarea: ^7.1.0
     react-chartjs-2: ^5.2.0
     react-csv: ^2.2.2
-    react-datepicker: ^4.16.0
+    react-datepicker: ^4.17.0
     react-day-picker: ^8.8.0
     react-dom: ^18.2.0
     react-focus-lock: 2.9.4
@@ -10420,20 +10420,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-datepicker@npm:^4.16.0":
-  version: 4.16.0
-  resolution: "react-datepicker@npm:4.16.0"
+"react-datepicker@npm:^4.17.0":
+  version: 4.17.0
+  resolution: "react-datepicker@npm:4.17.0"
   dependencies:
     "@popperjs/core": ^2.11.8
     classnames: ^2.2.6
     date-fns: ^2.30.0
     prop-types: ^15.7.2
-    react-onclickoutside: ^6.12.2
+    react-onclickoutside: ^6.13.0
     react-popper: ^2.3.0
   peerDependencies:
     react: ^16.9.0 || ^17 || ^18
     react-dom: ^16.9.0 || ^17 || ^18
-  checksum: 59da0305ca3a353ca007cf526320335790d73108942cc8f0d7177a1dfd020b28c5ea70f9d042f240cd2eadd09b3aa22357e6b6f509b42b6d8d51d73d20c97476
+  checksum: 62d40e952684aad59add3f8dde85862934e3e8b00af8ef53e22c9240d514dde0a563ffa7d41d7dd8a383e7e70f2fcf3165c49dfbc8e78e1cbcecdef8a4081c4c
   languageName: node
   linkType: hard
 
@@ -10531,13 +10531,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-onclickoutside@npm:^6.12.2":
-  version: 6.12.2
-  resolution: "react-onclickoutside@npm:6.12.2"
+"react-onclickoutside@npm:^6.13.0":
+  version: 6.13.0
+  resolution: "react-onclickoutside@npm:6.13.0"
   peerDependencies:
     react: ^15.5.x || ^16.x || ^17.x || ^18.x
     react-dom: ^15.5.x || ^16.x || ^17.x || ^18.x
-  checksum: a0c7f4fbcf84e00d50b3fc18208e5fdc4e97b17daf910f176659e079038a560d2e299955804d20e6ca2bf375404d03fdb865dc7f5f85cab3e60b493be4375e77
+  checksum: a7cfe62e91f7f92891cda7b885d6eec7b2854850f8703ccafcea5c04bb93a210a566a70b51b9fae0cc30c3485e04eb6a3f3ae58f495cac3ec2747b4fc44d1ad2
   languageName: node
   linkType: hard
 
