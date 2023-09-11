@@ -114,6 +114,51 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
      */
     fun includes(point: Point): Boolean
 
+    /**
+     * Returns a description of the relation between this range and the given range.
+     *
+     * There are three possibilities:
+     * - this range is strictly left to the given range
+     * - this range has some overlap with the given range
+     * - this range is strictly right to the given range
+     */
+    fun relationTo(other: This): Relation<This>
+
+    /** Describes the relation between two ranges ("first" and "second"). */
+    sealed class Relation<Range> {
+        /**
+         * First range is strictly left to the second range (= the first range ends before the
+         * second range)
+         */
+        data class LeftTo<Range>(val gap: Range?) : Relation<Range>()
+        /** Ranges overlap at least partially */
+        data class Overlap<Range>(
+            /** A possible remainder extending to the left of the overlap */
+            val left: Remainder<Range>?,
+            /** The overlapping part of the ranges */
+            val overlap: Range,
+            /** A possible remainder extending to the right of the overlap */
+            val right: Remainder<Range>?
+        ) : Relation<Range>()
+        /**
+         * First range is strictly right to the second range (= the second range ends before the
+         * first range)
+         */
+        data class RightTo<Range>(val gap: Range?) : Relation<Range>()
+
+        /**
+         * Describes the remainder extending to the left or right of an overlap between two ranges
+         */
+        data class Remainder<Range>(
+            val range: Range,
+            /**
+             * `true` if the remainder belongs to the first range, `false` if it belongs to the
+             * second
+             */
+            val isFirst: Boolean
+        )
+    }
+
     sealed class SubtractResult<out This> : Iterable<This> {
         abstract val left: This?
         abstract val right: This?

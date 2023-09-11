@@ -110,37 +110,33 @@ abstract class RangeBasedMap<
 
             var newRange: Range? = range
             for ((oldRange, oldValue) in entries) {
-                if (newRange == null || oldRange.strictlyLeftTo(newRange)) {
+                if (newRange == null) {
                     append(oldRange to oldValue)
                     continue
                 }
-                newRange =
-                    when (val overlap = oldRange.intersection(newRange)) {
-                        null -> {
-                            // If the old range is not on the left side and there's no overlap, it
-                            // must be on the right side. Since the old ranges are sorted, further
-                            // entries are guaranteed to not overlap.
-                            append(newRange to newValue)
-                            append(oldRange to oldValue)
-                            null
-                        }
-                        else -> {
-                            val subNew = newRange.subtract(overlap)
-                            val subOld = oldRange.subtract(overlap)
-
-                            // only one left range can be non-null, because otherwise there would
-                            // be more overlap
-                            subNew.left?.let { append(it to newValue) }
-                            subOld.left?.let { append(it to oldValue) }
-
-                            append(overlap to resolve(overlap, oldValue, newValue))
-
-                            // only one right range can be non-null, because otherwise there would
-                            // be more overlap
-                            subOld.right?.let { append(it to oldValue) }
-                            subNew.right
-                        }
+                when (val relation = oldRange.relationTo(newRange)) {
+                    is BoundedRange.Relation.LeftTo -> {
+                        append(oldRange to oldValue)
                     }
+                    is BoundedRange.Relation.Overlap -> {
+                        relation.left?.let {
+                            append(it.range to if (it.isFirst) oldValue else newValue)
+                        }
+                        append(relation.overlap to resolve(relation.overlap, oldValue, newValue))
+                        newRange =
+                            relation.right?.let { remainder ->
+                                if (remainder.isFirst) {
+                                    append(remainder.range to oldValue)
+                                }
+                                remainder.range.takeIf { !remainder.isFirst }
+                            }
+                    }
+                    is BoundedRange.Relation.RightTo -> {
+                        append(newRange to newValue)
+                        append(oldRange to oldValue)
+                        newRange = null
+                    }
+                }
             }
             newRange?.let { append(it to newValue) }
             return result

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -348,6 +349,75 @@ class HelsinkiDateTimeRangeTest {
         val a = testRange(2, 5)
         val b = testDateTime(1)
         assertFalse(a.includes(b))
+    }
+
+    @Test
+    fun `relation is correct when ranges have no overlap but there is a gap`() {
+        //   12345678
+        // A --_
+        // B      --_
+        val a = testRange(1, 3)
+        val b = testRange(6, 8)
+        assertEquals(BoundedRange.Relation.LeftTo(gap = testRange(3, 6)), a.relationTo(b))
+        assertEquals(BoundedRange.Relation.RightTo(gap = testRange(3, 6)), b.relationTo(a))
+    }
+
+    @Test
+    fun `relation is correct when ranges are adjacent`() {
+        //   12345
+        // A --_
+        // B   --_
+        val a = testRange(1, 3)
+        val b = testRange(3, 5)
+        assertEquals(
+            BoundedRange.Relation.LeftTo<HelsinkiDateTimeRange>(gap = null),
+            a.relationTo(b)
+        )
+        assertEquals(
+            BoundedRange.Relation.RightTo<HelsinkiDateTimeRange>(gap = null),
+            b.relationTo(a)
+        )
+    }
+
+    @Test
+    fun `relation is correct when ranges are equal`() {
+        //   12345
+        // A -----
+        // A -----
+        val a = testRange(1, 5)
+        assertEquals(
+            BoundedRange.Relation.Overlap(
+                left = null,
+                overlap = a,
+                right = null,
+            ),
+            a.relationTo(a)
+        )
+    }
+
+    @Test
+    fun `relation is correct when there is overlap`() {
+        //   12345678
+        // A -----_
+        // B   -----_
+        val a = testRange(1, 6)
+        val b = testRange(3, 8)
+        assertEquals(
+            BoundedRange.Relation.Overlap(
+                left = BoundedRange.Relation.Remainder(testRange(1, 3), isFirst = true),
+                overlap = testRange(3, 6),
+                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = false)
+            ),
+            a.relationTo(b)
+        )
+        assertEquals(
+            BoundedRange.Relation.Overlap(
+                left = BoundedRange.Relation.Remainder(testRange(1, 3), isFirst = false),
+                overlap = testRange(3, 6),
+                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = true)
+            ),
+            b.relationTo(a)
+        )
     }
 
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))

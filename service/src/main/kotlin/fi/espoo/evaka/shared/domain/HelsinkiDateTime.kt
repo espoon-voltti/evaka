@@ -217,6 +217,52 @@ data class HelsinkiDateTimeRange(
     override fun includes(point: HelsinkiDateTime): Boolean =
         this.start <= point && point < this.end
 
+    override fun relationTo(
+        other: HelsinkiDateTimeRange
+    ): BoundedRange.Relation<HelsinkiDateTimeRange> =
+        when {
+            this.end <= other.start ->
+                BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
+            other.end <= this.start ->
+                BoundedRange.Relation.RightTo(gap = tryCreate(other.end, this.start))
+            else ->
+                BoundedRange.Relation.Overlap(
+                    left =
+                        when {
+                            this.start < other.start ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(this.start, other.start),
+                                    isFirst = true
+                                )
+                            other.start < this.start ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(other.start, this.start),
+                                    isFirst = false
+                                )
+                            else -> null
+                        },
+                    overlap =
+                        HelsinkiDateTimeRange(
+                            maxOf(this.start, other.start),
+                            minOf(this.end, other.end)
+                        ),
+                    right =
+                        when {
+                            other.end < this.end ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(other.end, this.end),
+                                    isFirst = true
+                                )
+                            this.end < other.end ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(this.end, other.end),
+                                    isFirst = false
+                                )
+                            else -> null
+                        }
+                )
+        }
+
     companion object {
         fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =
             if (start < end) HelsinkiDateTimeRange(start, end) else null
