@@ -23,7 +23,9 @@ import {
   familyWithDeadGuardian,
   enduserDeceasedChildFixture,
   enduserNonSsnChildFixture,
-  daycareFixturePrivateVoucher
+  daycareFixturePrivateVoucher,
+  preschoolTermFixtures,
+  clubTermFixtures
 } from './fixtures'
 
 import * as devApi from '.'
@@ -54,6 +56,12 @@ export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
 export const initializeAreaAndPersonData = async (): Promise<
   typeof areaAndPersonFixtures
 > => {
+  for (const preschoolTermFixture of preschoolTermFixtures) {
+    await Fixture.preschoolTerm().with(preschoolTermFixture).save()
+  }
+  for (const clubTermFixture of clubTermFixtures) {
+    await Fixture.clubTerm().with(clubTermFixture).save()
+  }
   const careArea = await Fixture.careArea()
     .with(areaAndPersonFixtures.careAreaFixture)
     .save()

@@ -22,6 +22,7 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
+import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import {
   FixedPeriodQuestionnaire,
   HolidayPeriod
@@ -132,7 +133,9 @@ import {
   insertOtherAssistanceMeasureFixtures,
   insertAssistanceNeedPreschoolDecisionFixtures,
   insertDocumentTemplateFixture,
-  insertChildDocumentFixture
+  insertChildDocumentFixture,
+  insertPreschoolTerm,
+  insertClubTerm
 } from './index'
 
 export const fullDayTimeRange: TimeRange = {
@@ -144,6 +147,156 @@ export const nonFullDayTimeRange: TimeRange = {
   start: LocalTime.of(1, 0),
   end: LocalTime.of(23, 0)
 }
+
+export const preschoolTermFixture2020: PreschoolTerm = {
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2020, 8, 13),
+    LocalDate.of(2021, 6, 4)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2020, 8, 18),
+    LocalDate.of(2021, 6, 4)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2020, 8, 1),
+    LocalDate.of(2021, 6, 4)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2020, 1, 8),
+    LocalDate.of(2020, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const preschoolTermFixture2021: PreschoolTerm = {
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2021, 8, 11),
+    LocalDate.of(2022, 6, 3)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2021, 8, 11),
+    LocalDate.of(2022, 6, 3)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2021, 8, 1),
+    LocalDate.of(2022, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2021, 1, 8),
+    LocalDate.of(2021, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const preschoolTermFixture2022: PreschoolTerm = {
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2022, 8, 11),
+    LocalDate.of(2023, 6, 2)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2022, 8, 11),
+    LocalDate.of(2023, 6, 2)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2022, 8, 1),
+    LocalDate.of(2023, 6, 2)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2022, 1, 10),
+    LocalDate.of(2022, 1, 21)
+  ),
+  termBreaks: []
+}
+
+export const preschoolTermFixture2023: PreschoolTerm = {
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2023, 8, 11),
+    LocalDate.of(2024, 6, 3)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2023, 8, 13),
+    LocalDate.of(2024, 6, 6)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2023, 8, 1),
+    LocalDate.of(2024, 6, 6)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2023, 1, 8),
+    LocalDate.of(2023, 1, 20)
+  ),
+  termBreaks: [
+    new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+    new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+    new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
+  ]
+}
+
+export const preschoolTermFixtures = [
+  preschoolTermFixture2020,
+  preschoolTermFixture2021,
+  preschoolTermFixture2022,
+  preschoolTermFixture2023
+]
+
+export const clubTermFixture2020: ClubTerm = {
+  term: new FiniteDateRange(
+    LocalDate.of(2020, 8, 13),
+    LocalDate.of(2021, 6, 4)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2020, 1, 8),
+    LocalDate.of(2020, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const clubTermFixture2021: ClubTerm = {
+  term: new FiniteDateRange(
+    LocalDate.of(2021, 8, 11),
+    LocalDate.of(2022, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2021, 1, 8),
+    LocalDate.of(2021, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const clubTermFixture2022: ClubTerm = {
+  term: new FiniteDateRange(
+    LocalDate.of(2022, 8, 10),
+    LocalDate.of(2023, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2022, 1, 8),
+    LocalDate.of(2022, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const clubTermFixture2023: ClubTerm = {
+  term: new FiniteDateRange(
+    LocalDate.of(2023, 8, 10),
+    LocalDate.of(2024, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2023, 1, 8),
+    LocalDate.of(2023, 1, 20)
+  ),
+  termBreaks: [
+    new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+    new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+    new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
+  ]
+}
+
+export const clubTermFixtures = [
+  clubTermFixture2020,
+  clubTermFixture2021,
+  clubTermFixture2022,
+  clubTermFixture2023
+]
 
 export const careAreaFixture: CareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
@@ -1204,6 +1357,14 @@ export class Fixture {
     })
   }
 
+  static preschoolTerm(): PreschoolTermBuilder {
+    return new PreschoolTermBuilder(preschoolTermFixture2023)
+  }
+
+  static clubTerm(): ClubTermBuilder {
+    return new ClubTermBuilder(clubTermFixture2023)
+  }
+
   static person(): PersonBuilder {
     const id = uniqueLabel()
     return new PersonBuilder({
@@ -2078,6 +2239,30 @@ export class CareAreaBuilder extends FixtureBuilder<CareArea> {
   // Note: shallow copy
   copy() {
     return new CareAreaBuilder({ ...this.data })
+  }
+}
+
+export class PreschoolTermBuilder extends FixtureBuilder<PreschoolTerm> {
+  async save() {
+    await insertPreschoolTerm(this.data)
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new PreschoolTermBuilder({ ...this.data })
+  }
+}
+
+export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
+  async save() {
+    await insertClubTerm(this.data)
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new ClubTermBuilder({ ...this.data })
   }
 }
 
