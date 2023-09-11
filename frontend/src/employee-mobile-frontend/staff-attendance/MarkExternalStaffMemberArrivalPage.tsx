@@ -16,6 +16,7 @@ import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -37,6 +38,7 @@ interface FormState {
   arrived: string
   name: string
   group: GroupInfo | null
+  isDaycareResponsible: boolean
 }
 
 export default function MarkExternalStaffMemberArrivalPage() {
@@ -53,7 +55,8 @@ export default function MarkExternalStaffMemberArrivalPage() {
     group: unitInfoResponse
       .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
       .getOrElse(null),
-    name: ''
+    name: '',
+    isDaycareResponsible: true
   }))
 
   const formIsValid = () =>
@@ -112,6 +115,16 @@ export default function MarkExternalStaffMemberArrivalPage() {
                   onChange={(group) => setForm((old) => ({ ...old, group }))}
                   data-qa="input-group"
                 />
+                <Checkbox
+                  label={i18n.staff.isDaycareResponsible}
+                  checked={form.isDaycareResponsible}
+                  onChange={(state) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      isDaycareResponsible: state
+                    }))
+                  }
+                />
               </ListGrid>
             ) : (
               <H4 centered={true}>{i18n.attendances.notOperationalDate}</H4>
@@ -135,7 +148,8 @@ export default function MarkExternalStaffMemberArrivalPage() {
                           request: {
                             arrived: LocalTime.parse(form.arrived),
                             groupId: form.group.id,
-                            name: form.name.trim()
+                            name: form.name.trim(),
+                            isDaycareResponsible: form.isDaycareResponsible
                           }
                         }
                       : cancelMutation

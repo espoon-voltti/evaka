@@ -196,7 +196,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     data class ExternalStaffArrivalRequest(
         val name: String,
         val groupId: GroupId,
-        val arrived: LocalTime
+        val arrived: LocalTime,
+        val isDaycareResponsible: Boolean
     )
 
     @PostMapping("/arrival-external")
@@ -225,7 +226,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             name = body.name,
                             groupId = body.groupId,
                             arrived = arrivedTimeOrDefault,
-                            occupancyCoefficient = occupancyCoefficientSeven
+                            occupancyCoefficient =
+                                if (body.isDaycareResponsible) occupancyCoefficientSeven
+                                else occupancyCoefficientZero
                         )
                     )
                 }

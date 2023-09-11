@@ -2451,7 +2451,7 @@ export const fi = {
       nextDay: 'Seuraava päivä',
       addPersonModal: {
         description:
-          'Lisää väliaikaisesti läsnäoleva henkilö, joka lasketaan mukaan käyttöasteeseen.',
+          'Lisää väliaikaisesti läsnäoleva henkilö ja valitse lasketaanko hänet mukaan käyttöasteeseen.',
         arrival: 'Saapumisaika',
         name: 'Nimi',
         namePlaceholder: 'Sukunimi Etunimi',

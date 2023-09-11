@@ -204,6 +204,7 @@ export interface ExternalAttendanceUpsert {
 export interface ExternalStaffArrivalRequest {
   arrived: LocalTime
   groupId: UUID
+  isDaycareResponsible: boolean
   name: string
 }
 
@@ -409,6 +410,7 @@ export interface UpsertExternalAttendance {
   attendanceId: UUID | null
   departed: HelsinkiDateTime | null
   groupId: UUID
+  isDaycareResponsible: boolean
   name: string | null
 }
 

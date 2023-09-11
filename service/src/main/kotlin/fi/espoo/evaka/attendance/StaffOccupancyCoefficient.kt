@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.StaffOccupancyCoefficientId
 import java.math.BigDecimal
 
 val occupancyCoefficientSeven = BigDecimal("7.0")
+val occupancyCoefficientZero = BigDecimal.ZERO
 
 data class StaffOccupancyCoefficient(
     val id: StaffOccupancyCoefficientId,
