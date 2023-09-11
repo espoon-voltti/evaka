@@ -509,31 +509,3 @@ WHERE EXISTS (SELECT 1 FROM all_placements p WHERE dst.child_id = p.child_id)
         .mapTo<DailyServiceTimeRow>()
         .map { toDailyServiceTimes(it) }
         .groupBy { it.childId }
-
-fun Database.Read.countAbsenceDays(
-    childId: ChildId,
-    range: FiniteDateRange,
-    types: Set<AbsenceType>
-): Int {
-    val sql =
-        """
-SELECT count(a.date)
-FROM absence a
-JOIN realized_placement_one(a.date) p ON p.child_id = a.child_id
-JOIN daycare u ON u.id = p.unit_id
-WHERE a.child_id = :childId
-AND a.date BETWEEN :start AND :end
-AND a.absence_type = ANY (:types)
-AND date_part('isodow', a.date) = ANY (u.operation_days)
-AND (NOT EXISTS (SELECT FROM holiday WHERE date = a.date) OR array_length(u.operation_days, 1) = 7)
-    """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("start", range.start)
-        .bind("end", range.end)
-        .bind("types", types)
-        .mapTo<Int>()
-        .one()
-}

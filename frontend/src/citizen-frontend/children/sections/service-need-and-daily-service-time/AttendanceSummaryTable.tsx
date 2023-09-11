@@ -101,32 +101,26 @@ interface AttendanceSummaryProps {
 
 const AttendanceSummary = ({
   serviceNeeds,
-  attendanceSummary: { plannedDays, realizedDays }
+  attendanceSummary: { attendanceDays }
 }: AttendanceSummaryProps) => {
   const t = useTranslation()
   return (
     <>
       {serviceNeeds.length > 0 ? (
         serviceNeeds.map(({ startDate, contractDaysPerMonth }) => {
-          const plannedWarning =
-            contractDaysPerMonth !== null && plannedDays > contractDaysPerMonth
-          const realizedWarning =
-            contractDaysPerMonth !== null && realizedDays > contractDaysPerMonth
+          const warning =
+            contractDaysPerMonth !== null &&
+            attendanceDays > contractDaysPerMonth
           return (
             <React.Fragment key={startDate.formatIso()}>
               <ListGrid>
-                <Label>{t.children.attendanceSummary.planned}</Label>
+                <Label>{t.children.attendanceSummary.attendanceDays}</Label>
                 <span>
-                  <Days warning={plannedWarning}>{plannedDays}</Days> /{' '}
-                  {contractDaysPerMonth} {t.common.datetime.dayShort}
-                </span>
-                <Label>{t.children.attendanceSummary.realized}</Label>
-                <span>
-                  <Days warning={realizedWarning}>{realizedDays}</Days> /{' '}
+                  <Days warning={warning}>{attendanceDays}</Days> /{' '}
                   {contractDaysPerMonth} {t.common.datetime.dayShort}
                 </span>
               </ListGrid>
-              {(plannedWarning || realizedWarning) && (
+              {warning && (
                 <AlertBox message={t.children.attendanceSummary.warning} />
               )}
             </React.Fragment>

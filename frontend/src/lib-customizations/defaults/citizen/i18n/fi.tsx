@@ -2405,8 +2405,7 @@ export default {
     },
     attendanceSummary: {
       title: 'Läsnäolot',
-      planned: 'Suunnitelma',
-      realized: 'Toteuma',
+      attendanceDays: 'Sopimuspäivät',
       warning: 'Kuukauden sopimuspäivien määrä on ylittynyt.',
       empty: 'Ei sopimuspäiviä valitulla ajanjaksolla'
     },

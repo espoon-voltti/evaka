@@ -5,13 +5,12 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.attendance.countChildAttendanceDays
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.countAbsenceDays
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
+import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.placement.getPlacementSummary
-import fi.espoo.evaka.reservations.countReservationDays
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.ServiceNeedSummary
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
@@ -19,10 +18,13 @@ import fi.espoo.evaka.serviceneed.getServiceNeedSummary
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import java.time.YearMonth
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -117,22 +119,37 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         Action.Citizen.Child.READ_ATTENDANCE_SUMMARY,
                         childId
                     )
-                    val range = FiniteDateRange(yearMonth.atDay(1), yearMonth.atEndOfMonth())
-                    val reservationDays = tx.countReservationDays(childId, range)
-                    val attendanceDays = tx.countChildAttendanceDays(childId, range)
-                    val unplannedAbsenceDays =
-                        tx.countAbsenceDays(
-                            childId,
-                            range,
-                            setOf(
-                                AbsenceType.OTHER_ABSENCE,
-                                AbsenceType.UNKNOWN_ABSENCE,
-                                AbsenceType.SICKLEAVE,
-                                AbsenceType.FORCE_MAJEURE,
-                                AbsenceType.UNAUTHORIZED_ABSENCE
-                            )
-                        )
-                    AttendanceSummary(reservationDays, attendanceDays + unplannedAbsenceDays)
+
+                    val operationalDays = tx.operationalDays(yearMonth.year, yearMonth.month)
+                    val range = DateRange(yearMonth.atDay(1), yearMonth.atEndOfMonth())
+                    val placements = tx.getChildPlacementTypesByRange(childId, range)
+                    val plannedAbsences =
+                        tx.getAbsencesOfChildByRange(childId, range).filter { absence ->
+                            val placement =
+                                placements.find { placement ->
+                                    placement.period.includes(absence.date)
+                                }
+                            placement != null &&
+                                operationalDays.forUnit(placement.unitId).contains(absence.date) &&
+                                setOf(
+                                        AbsenceType.PLANNED_ABSENCE,
+                                        AbsenceType.FREE_ABSENCE,
+                                        AbsenceType.PARENTLEAVE
+                                    )
+                                    .contains(absence.absenceType)
+                        }
+
+                    val operationalDates =
+                        placements.fold(setOf<LocalDate>()) { dates, placement ->
+                            placement.period.intersection(range)?.let { range ->
+                                val unitDates = operationalDays.forUnit(placement.unitId)
+                                dates.plus(unitDates.filter { date -> range.includes(date) })
+                            }
+                                ?: dates
+                        }
+                    AttendanceSummary(
+                        attendanceDays = operationalDates.count() - plannedAbsences.count()
+                    )
                 }
             }
             .also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = childId) }
@@ -161,4 +178,4 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     }
 }
 
-data class AttendanceSummary(val plannedDays: Int, val realizedDays: Int)
+data class AttendanceSummary(val attendanceDays: Int)

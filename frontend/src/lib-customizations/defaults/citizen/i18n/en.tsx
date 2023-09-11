@@ -2226,8 +2226,7 @@ const en: Translations = {
     },
     attendanceSummary: {
       title: 'Attendances',
-      planned: 'Planned',
-      realized: 'Realized',
+      attendanceDays: 'Contract days',
       warning: 'The number of contract days per month has been exceeded.',
       empty: 'No contract days in the selected period'
     },
