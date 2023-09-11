@@ -72,12 +72,15 @@ enum class PlacementType : DatabaseEnum {
             DAYCARE_PART_TIME -> ScheduleType.RESERVATION_REQUIRED
             DAYCARE_FIVE_YEAR_OLDS -> ScheduleType.RESERVATION_REQUIRED
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> ScheduleType.RESERVATION_REQUIRED
+            // Fall back to FIXED_SCHEDULE outside preschool terms for situations where placement's
+            // start/end is outside the term. This might happen in Espoo if swedish terms differ
+            // from finnish terms, for example.
             PRESCHOOL -> preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
-                    ?: ScheduleType.TERM_BREAK
+                    ?: ScheduleType.FIXED_SCHEDULE
+            PREPARATORY -> preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
+                    ?: ScheduleType.FIXED_SCHEDULE
             PRESCHOOL_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             PRESCHOOL_CLUB -> ScheduleType.RESERVATION_REQUIRED
-            PREPARATORY -> preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
-                    ?: ScheduleType.TERM_BREAK
             PREPARATORY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             TEMPORARY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             TEMPORARY_DAYCARE_PART_DAY -> ScheduleType.RESERVATION_REQUIRED
