@@ -8,9 +8,6 @@ set -euo pipefail
 
 cd "$( dirname "${BASH_SOURCE[0]}")"
 
-rm ./espoo-customizations -rf
-cp ../espoo-customizations . -rp
-
 if [ "${1:-}" = "test" ] || [ "${1:-}" = "builder" ]; then
     docker build -t evaka/frontend-builder \
         --target=builder \
@@ -23,8 +20,6 @@ else
         --build-arg commit="$(git rev-parse HEAD)" \
         -f Dockerfile .
 fi
-
-rm ./espoo-customizations -r
 
 if [ "${1:-}" = "test" ]; then
     docker run --rm evaka/frontend-builder:latest yarn lint

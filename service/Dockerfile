@@ -31,7 +31,6 @@ COPY ./service/certificates/ /certificates/
 # We only add public certificates to truststore here, but keytool requires password, so using dummy password
 RUN TRUSTSTORE_PASSWORD="public-certificates-only" /certificates/integraatiopalvelu.sh truststore
 
-COPY ./espoo-customizations/ ./espoo-customizations/
 COPY ./service/gradle/ ./service/gradle/
 COPY ./service/custom-ktlint-rules/ ./service/custom-ktlint-rules/
 COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./service/settings.gradle.kts ./service/

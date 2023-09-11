@@ -123,12 +123,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Copy customizations
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        run: |
-          cd frontend
-          cp -rp ../espoo-customizations .
-
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
@@ -212,12 +206,6 @@ jobs:
           EOF
           ./frontend/setup-pro-icons.sh
           rm frontend/.npmrc
-
-      - name: Copy customizations
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        run: |
-          mkdir -p frontend/espoo-customizations/
-          cp -rp customizations/espoo/* frontend/espoo-customizations/
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -357,12 +345,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Copy customizations
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        run: |
-          rm -r espoo-customizations/
-          cp -rp customizations/espoo/ espoo-customizations/
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
