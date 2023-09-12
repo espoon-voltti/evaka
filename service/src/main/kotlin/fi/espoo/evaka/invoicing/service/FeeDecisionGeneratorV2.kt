@@ -74,9 +74,7 @@ fun generateAndInsertFeeDecisionsV2(
                 minDate,
                 useV2Tables
             )
-            .mapNotNull { draft ->
-                draft.validDuring.intersection(activePeriod)?.let { draft.copy(validDuring = it) }
-            }
+            .filter { draft -> draft.validDuring.overlaps(activePeriod) }
 
     val existingDraftDecisions =
         tx.findFeeDecisionsForHeadOfFamily(
