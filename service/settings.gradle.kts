@@ -9,9 +9,6 @@ include("sficlient")
 include("evaka-bom")
 include("codegen")
 
-project(":service-lib").projectDir = file("../service-lib")
-project(":evaka-bom").projectDir = file("../evaka-bom")
-
 dependencyResolutionManagement {
     repositories {
         mavenCentral()

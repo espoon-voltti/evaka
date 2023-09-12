@@ -35,8 +35,8 @@ COPY ./service/gradle/ ./service/gradle/
 COPY ./service/custom-ktlint-rules/ ./service/custom-ktlint-rules/
 COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./service/settings.gradle.kts ./service/
 COPY ./service/vtjclient/build.gradle.kts ./service/vtjclient/build.gradle.kts
-COPY ./service-lib/*.kts ./service-lib/
-COPY ./evaka-bom/*.kts ./evaka-bom/
+COPY ./service/service-lib/*.kts ./service/service-lib/
+COPY ./service/evaka-bom/*.kts ./service/evaka-bom/
 COPY ./service/sficlient/*.kts ./service/sficlient/
 
 WORKDIR /evaka/service

@@ -17,6 +17,10 @@
 /codegen/target/
 /buildSrc/build/
 /buildSrc/target/
+/evaka-bom/build/
+/evaka-bom/target/
+/service-lib/build/
+/service-lib/target/
 /sficlient/build/
 /sficlient/target/
 /vtjclient/build/

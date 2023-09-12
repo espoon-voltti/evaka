@@ -27,17 +27,16 @@
 !service/custom-ktlint-rules/settings.gradle.kts
 !service/custom-ktlint-rules/src
 
-!service/vtjclient/*.kts
-!service/vtjclient/src
+!service/evaka-bom/*.kts
+!service/evaka-bom/src
+
+!service/service-lib/*.kts
+!service/service-lib/src
 
 !service/sficlient/*.kts
 !service/sficlient/src
 
-!evaka-bom/*.kts
-
-!service-lib/*.kts
-!service-lib/src
-
-!espoo-customizations
+!service/vtjclient/*.kts
+!service/vtjclient/src
 
 !frontend/src/
