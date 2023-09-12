@@ -98,7 +98,7 @@ enum class ScheduledJob(
         ScheduledJobs::vardaUpdate,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 0 23 * * 1,2,3,4,5"), // mon - fri @ 23 pm
+            schedule = JobSchedule.cron("0 0 23 * * 2,4"), // tue and thu @ 23 pm
             retryCount = 1
         )
     ),
@@ -106,7 +106,7 @@ enum class ScheduledJob(
         ScheduledJobs::vardaReset,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 0 20 * * 1,2,3,4,5"), // mon - fri @ 20 pm
+            schedule = JobSchedule.cron("0 0 23 * * 1,3,5"), // mon, wed, fri @ 23 pm
             retryCount = 1
         )
     ),
