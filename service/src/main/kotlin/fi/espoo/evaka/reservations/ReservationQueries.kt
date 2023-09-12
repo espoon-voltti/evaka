@@ -525,25 +525,3 @@ fun Database.Read.getReservationContractDayRanges(
         .mapTo<ChildContractDays>()
         .associate { it.childId to it.contractDays }
 }
-
-fun Database.Read.countReservationDays(childId: ChildId, range: FiniteDateRange): Int {
-    val sql =
-        """
-SELECT count(DISTINCT ar.date)
-FROM attendance_reservation ar
-JOIN realized_placement_one(ar.date) p ON p.child_id = ar.child_id
-JOIN daycare u ON u.id = p.unit_id
-WHERE ar.child_id = :childId
-AND ar.date BETWEEN :start AND :end
-AND date_part('isodow', ar.date) = ANY (u.operation_days)
-AND (NOT EXISTS (SELECT FROM holiday WHERE date = ar.date) OR array_length(u.operation_days, 1) = 7)
-    """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("start", range.start)
-        .bind("end", range.end)
-        .mapTo<Int>()
-        .one()
-}

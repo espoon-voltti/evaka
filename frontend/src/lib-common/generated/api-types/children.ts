@@ -13,8 +13,7 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.children.AttendanceSummary
 */
 export interface AttendanceSummary {
-  plannedDays: number
-  realizedDays: number
+  attendanceDays: number
 }
 
 /**
