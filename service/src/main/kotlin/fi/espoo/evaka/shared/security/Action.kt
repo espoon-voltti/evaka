@@ -449,7 +449,7 @@ sealed interface Action {
             override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>
         ) : ScopedAction<ChildDocumentId> {
             READ(
-                IsCitizen(allowWeakLogin = false).guardianOfPublishedChildOfChildDocument(),
+                IsCitizen(allowWeakLogin = false).guardianOfChildOfPublishedChildDocument(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument()
             );
 

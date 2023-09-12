@@ -373,7 +373,7 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
             )
         }
 
-    fun guardianOfPublishedChildOfChildDocument() =
+    fun guardianOfChildOfPublishedChildDocument() =
         rule<ChildDocumentId> { citizenId, _ ->
             sql(
                 """
