@@ -143,12 +143,18 @@ fun resetVardaChild(
                 logger.info(
                     "VardaService: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})"
                 )
-                handleNewEvakaServiceNeed(
+                val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
+                val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
+                addServiceNeedDataToVarda(
                     db,
                     client,
-                    serviceNeedId,
+                    evakaServiceNeed,
+                    newVardaServiceNeed,
                     feeDecisionMinDate,
                     municipalOrganizerOid
+                )
+                logger.info(
+                    "VardaService: successfully created new service need from $serviceNeedId"
                 )
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
@@ -159,27 +165,6 @@ fun resetVardaChild(
             logger.warn("VardaService: failed to reset child $childId: ${e.message}", e)
         }
     }
-}
-
-fun handleNewEvakaServiceNeed(
-    db: Database.Connection,
-    client: VardaClient,
-    evakaServiceNeedId: ServiceNeedId,
-    feeDecisionMinDate: LocalDate,
-    municipalOrganizerOid: String
-) {
-    logger.info("VardaService: creating a new service need from $evakaServiceNeedId")
-    val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
-    val newVardaServiceNeed = evakaServiceNeed.toVardaServiceNeed()
-    addServiceNeedDataToVarda(
-        db,
-        client,
-        evakaServiceNeed,
-        newVardaServiceNeed,
-        feeDecisionMinDate,
-        municipalOrganizerOid
-    )
-    logger.info("VardaService: successfully created new service need from $evakaServiceNeedId")
 }
 
 fun deleteChildDataFromVardaAndDb(
