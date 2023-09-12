@@ -15,7 +15,6 @@ import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -68,8 +67,6 @@ class ReservationControllerCitizen(
                     val placements = tx.getReservationPlacements(childIds, requestedRange)
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
-                    val contractDayRanges =
-                        tx.getReservationContractDayRanges(childIds, requestedRange)
 
                     val reservationData =
                         tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
@@ -125,7 +122,6 @@ class ReservationControllerCitizen(
                                                         isHoliday,
                                                         placements[child.id],
                                                         backupPlacements[child.id],
-                                                        contractDayRanges[child.id]
                                                     )
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
@@ -134,8 +130,6 @@ class ReservationControllerCitizen(
                                                             requiresReservation =
                                                                 placementDay.requiresReservation,
                                                             shiftCare = placementDay.shiftCare,
-                                                            contractDays =
-                                                                placementDay.contractDays,
                                                             absence = absences[key],
                                                             reservations = reservations[key]
                                                                     ?: listOf(),
@@ -235,6 +229,17 @@ class ReservationControllerCitizen(
                         body.childIds
                     )
 
+                    val reservableRange =
+                        getReservableRange(
+                            clock.now(),
+                            featureConfig.citizenReservationThresholdHours
+                        )
+                    val childContractDays =
+                        body.dateRange.intersection(reservableRange)?.let { range ->
+                            tx.getReservationContractDayRanges(body.childIds, range)
+                        }
+                            ?: emptyMap()
+
                     val deleted =
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->
@@ -246,7 +251,24 @@ class ReservationControllerCitizen(
                             user.evakaUserId,
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { date ->
-                                    AbsenceInsert(childId, date, body.absenceType)
+                                    AbsenceInsert(
+                                        childId,
+                                        date,
+                                        if (
+                                            reservableRange.includes(date) &&
+                                                body.absenceType === OTHER_ABSENCE
+                                        ) {
+                                            val hasContractDays =
+                                                childContractDays[childId]?.includes(date) ?: false
+                                            if (hasContractDays) {
+                                                PLANNED_ABSENCE
+                                            } else {
+                                                body.absenceType
+                                            }
+                                        } else {
+                                            body.absenceType
+                                        }
+                                    )
                                 }
                             }
                         )
@@ -264,7 +286,6 @@ class ReservationControllerCitizen(
 data class PlacementDay(
     val requiresReservation: Boolean,
     val shiftCare: Boolean,
-    val contractDays: Boolean,
     val reservableTimeRange: ReservableTimeRange
 )
 
@@ -273,7 +294,6 @@ private fun placementDay(
     isHoliday: Boolean,
     placements: List<ReservationPlacement>?,
     backupPlacements: List<ReservationBackupPlacement>?,
-    contractDayRanges: Timeline?
 ): PlacementDay? {
     val placement = placements?.find { it.range.includes(date) } ?: return null
 
@@ -282,7 +302,6 @@ private fun placementDay(
 
     // Backup placements take precedence
     val operationTimes = backupPlacementForDate?.operationTimes ?: placement.operationTimes
-    val contractDays = contractDayRanges?.includes(date) ?: false
 
     val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
     val alwaysOpen = operationTimes.all { it != null }
@@ -299,7 +318,6 @@ private fun placementDay(
     return if (operationTime != null || shiftCare) {
         PlacementDay(
             requiresReservation = placement.type.requiresAttendanceReservations(),
-            contractDays = contractDays,
             shiftCare = shiftCare,
             reservableTimeRange =
                 if (shiftCareType == ShiftCareType.INTERMITTENT) {
@@ -329,7 +347,6 @@ data class ReservationResponseDayChild(
     val childId: ChildId,
     val requiresReservation: Boolean, // Whether reservations are required
     val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
-    val contractDays: Boolean,
     val absence: AbsenceInfo?,
     val reservations: List<Reservation>,
     val attendances: List<OpenTimeRange>,

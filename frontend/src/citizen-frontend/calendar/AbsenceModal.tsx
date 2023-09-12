@@ -6,7 +6,6 @@ import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { localDateRange } from 'lib-common/form/fields'
 import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
@@ -15,7 +14,6 @@ import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   AbsenceRequest,
   ReservationChild,
-  ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -29,7 +27,6 @@ import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -56,11 +53,7 @@ const absenceForm = mapped(
   object({
     selectedChildren: array(value<UUID>()),
     range: required(localDateRange()),
-    absenceType: required(value<AbsenceType | undefined>()),
-    contractDayAbsenceTypeSettings: value<{
-      visible: boolean
-      enabled: boolean
-    }>()
+    absenceType: required(value<AbsenceType | undefined>())
   }),
   (output): AbsenceRequest => ({
     childIds: output.selectedChildren,
@@ -71,9 +64,7 @@ const absenceForm = mapped(
 
 function initialFormState(
   initialDate: LocalDate | undefined,
-  availableChildren: ReservationChild[],
-  reservableRange: FiniteDateRange,
-  calendarDays: ReservationResponseDay[]
+  availableChildren: ReservationChild[]
 ): StateOf<typeof absenceForm> {
   const selectedChildren =
     availableChildren.length == 1 ? [availableChildren[0].id] : []
@@ -86,13 +77,7 @@ function initialFormState(
       minDate: LocalDate.todayInSystemTz()
     }),
     selectedChildren,
-    absenceType: undefined,
-    contractDayAbsenceTypeSettings: getContractDayAbsenceTypeSettings(
-      selectedChildren,
-      range,
-      reservableRange,
-      calendarDays
-    )
+    absenceType: undefined
   }
 }
 
@@ -122,42 +107,10 @@ export default React.memo(function AbsenceModal({
 
   const form = useForm(
     absenceForm,
-    () =>
-      initialFormState(
-        initialDate,
-        reservationsResponse.children,
-        reservationsResponse.reservableRange,
-        reservationsResponse.days
-      ),
-    i18n.validationErrors,
-    {
-      onUpdate: (prevState, nextState) => {
-        const range = absenceForm.shape.range.validate(nextState.range)
-        const contractDayAbsenceTypeSettings =
-          range.isValid &&
-          (prevState.selectedChildren !== nextState.selectedChildren ||
-            prevState.range !== nextState.range)
-            ? getContractDayAbsenceTypeSettings(
-                nextState.selectedChildren,
-                { startDate: range.value.start, endDate: range.value.end },
-                reservationsResponse.reservableRange,
-                reservationsResponse.days
-              )
-            : nextState.contractDayAbsenceTypeSettings
-        const absenceType =
-          nextState.absenceType === 'PLANNED_ABSENCE' &&
-          !showShiftCareAbsenceType &&
-          (!contractDayAbsenceTypeSettings.visible ||
-            !contractDayAbsenceTypeSettings.enabled)
-            ? undefined
-            : nextState.absenceType
-        return { ...nextState, absenceType, contractDayAbsenceTypeSettings }
-      }
-    }
+    () => initialFormState(initialDate, reservationsResponse.children),
+    i18n.validationErrors
   )
   const { selectedChildren, range, absenceType } = useFormFields(form)
-  const contractDayAbsenceTypeSettings =
-    form.state.contractDayAbsenceTypeSettings
 
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
 
@@ -237,14 +190,6 @@ export default React.memo(function AbsenceModal({
               </LineContainer>
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.absenceType}</H2>
-                {contractDayAbsenceTypeSettings.visible &&
-                  !contractDayAbsenceTypeSettings.enabled && (
-                    <AlertBox
-                      message={
-                        i18n.calendar.absenceModal.contractDayAbsenceTypeWarning
-                      }
-                    />
-                  )}
                 <FixedSpaceFlexWrap verticalSpacing="xs">
                   <ChoiceChip
                     text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
@@ -262,8 +207,7 @@ export default React.memo(function AbsenceModal({
                     }
                     data-qa="absence-OTHER_ABSENCE"
                   />
-                  {(showShiftCareAbsenceType ||
-                    contractDayAbsenceTypeSettings.visible) && (
+                  {showShiftCareAbsenceType ? (
                     <>
                       <ChoiceChip
                         text={
@@ -276,15 +220,10 @@ export default React.memo(function AbsenceModal({
                             selected ? 'PLANNED_ABSENCE' : undefined
                           )
                         }
-                        disabled={
-                          !showShiftCareAbsenceType &&
-                          contractDayAbsenceTypeSettings.visible &&
-                          !contractDayAbsenceTypeSettings.enabled
-                        }
                         data-qa="absence-PLANNED_ABSENCE"
                       />
                     </>
-                  )}
+                  ) : null}
                 </FixedSpaceFlexWrap>
                 {showAllErrors && !absenceType.isValid() ? (
                   <Warning data-qa="modal-absence-type-required-error">
@@ -326,46 +265,6 @@ export default React.memo(function AbsenceModal({
     </ModalAccessibilityWrapper>
   )
 })
-
-const getContractDayAbsenceTypeSettings = (
-  selectedChildren: UUID[],
-  range: {
-    startDate: LocalDate | null
-    endDate: LocalDate | null
-  },
-  reservableRange: FiniteDateRange,
-  calendarDays: ReservationResponseDay[]
-) => {
-  if (
-    featureFlags.citizenContractDayAbsence &&
-    range.startDate !== null &&
-    reservableRange.includes(range.startDate)
-  ) {
-    const startDate = range.startDate
-    const endDate = range.endDate ?? reservableRange.end
-
-    const relevantDays = calendarDays.filter(
-      (d) => startDate.isEqualOrBefore(d.date) && endDate.isEqualOrAfter(d.date)
-    )
-    return {
-      visible: relevantDays.some((day) =>
-        day.children.some(
-          (child) =>
-            child.contractDays && selectedChildren.includes(child.childId)
-        )
-      ),
-      enabled:
-        selectedChildren.length > 0 &&
-        relevantDays.every((day) =>
-          day.children.every(
-            (child) =>
-              !selectedChildren.includes(child.childId) || child.contractDays
-          )
-        )
-    }
-  }
-  return { visible: false, enabled: false }
-}
 
 const Warning = styled.div`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};

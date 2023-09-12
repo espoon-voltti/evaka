@@ -24,12 +24,14 @@ import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -456,6 +458,62 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         val absences =
             db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
         assertEquals(listOf(), absences)
+    }
+
+    @Test
+    fun `correct absence types are created`() {
+        // given
+        db.transaction { tx ->
+            // monday: no service need
+            // tuesday: contract days
+            tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
+                .let { placementId ->
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period = FiniteDateRange(tuesday, tuesday),
+                        optionId = snDaycareContractDays15.id,
+                        confirmedBy = employeeUser.evakaUserId,
+                    )
+                }
+            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                monday,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Absent(
+                        childId = testChild_1.id,
+                        date = monday,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = testChild_1.id,
+                        date = tuesday,
+                    ),
+                )
+            )
+        }
+
+        // then 2 absences with correct types are added
+        val absences =
+            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange) }
+                .flatMap { day -> day.children.map { child -> day.date to child.absence } }
+
+        assertEquals(
+            listOf(
+                monday to AbsenceType.OTHER_ABSENCE,
+                tuesday to AbsenceType.PLANNED_ABSENCE,
+            ),
+            absences
+        )
     }
 
     @Test

@@ -161,7 +161,6 @@ export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
   attendances: OpenTimeRange[]
   childId: UUID
-  contractDays: boolean
   requiresReservation: boolean
   reservableTimeRange: ReservableTimeRange
   reservations: Reservation[]

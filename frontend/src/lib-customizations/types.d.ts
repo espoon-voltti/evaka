@@ -110,11 +110,6 @@ interface BaseFeatureFlags {
    * citizen's absence modal
    */
   citizenShiftCareAbsence: boolean
-  /**
-   * Whether to show PLANNED_ABSENCE as a third absence option for contract day children in
-   * citizen's absence modal
-   */
-  citizenContractDayAbsence: boolean
 
   /**
    * Enable assistance action type "other"

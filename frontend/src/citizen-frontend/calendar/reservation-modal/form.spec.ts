@@ -55,7 +55,6 @@ const defaultReservableTimeRange = {
 const emptyChild: ReservationResponseDayChild = {
   childId: 'child-1',
   requiresReservation: true,
-  contractDays: false,
   shiftCare: false,
   absence: null,
   reservations: [],
