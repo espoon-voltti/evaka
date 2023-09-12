@@ -439,8 +439,8 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
             ),
             READ_CHILD_DOCUMENTS(
-                IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).guardianOfChild(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
