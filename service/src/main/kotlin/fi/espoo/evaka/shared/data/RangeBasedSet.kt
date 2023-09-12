@@ -18,8 +18,7 @@ package fi.espoo.evaka.shared.data
 abstract class RangeBasedSet<
     Point : Comparable<Point>,
     Range : BoundedRange<Point, Range>,
-    This : RangeBasedSet<Point, Range, This>>(protected val ranges: List<Range>) :
-    Iterable<Range> by ranges {
+    This : RangeBasedSet<Point, Range, This>>(protected val ranges: List<Range>) {
     /** Returns a sequence of all non-adjacent ranges in the set, sorted in ascending order */
     fun ranges(): Sequence<Range> = this.ranges.asSequence()
 
@@ -47,6 +46,12 @@ abstract class RangeBasedSet<
     fun add(range: Range): This = add(this.ranges, range).toThis()
     /** Returns a new set containing all the given ranges and all currently contained ranges. */
     fun addAll(vararg ranges: Range): This = ranges.fold(this.ranges, ::add).toThis()
+    /**
+     * Returns a new set containing all the ranges in the given set and all currently contained
+     * ranges.
+     */
+    fun addAll(set: RangeBasedSet<Point, Range, This>): This =
+        set.ranges.fold(this.ranges, ::add).toThis()
     /** Returns a new set containing all the given ranges and all currently contained ranges. */
     fun addAll(ranges: Iterable<Range>): This = ranges.fold(this.ranges, ::add).toThis()
     /** Returns a new set containing all the given ranges and all currently contained ranges. */
@@ -56,6 +61,12 @@ abstract class RangeBasedSet<
     fun remove(range: Range): This = remove(this.ranges, range).toThis()
     /** Returns a new set with all the given ranges removed from the currently contained ranges. */
     fun removeAll(vararg ranges: Range): This = ranges.fold(this.ranges, ::remove).toThis()
+    /**
+     * Returns a new set with all the ranges in the given set removed from the currently contained
+     * ranges.
+     */
+    fun removeAll(set: RangeBasedSet<Point, Range, This>): This =
+        set.ranges.fold(this.ranges, ::remove).toThis()
     /** Returns a new set with all the given ranges removed from the currently contained ranges. */
     fun removeAll(ranges: Iterable<Range>): This = ranges.fold(this.ranges, ::remove).toThis()
     /** Returns a new set with all the given ranges removed from the currently contained ranges. */
@@ -67,6 +78,12 @@ abstract class RangeBasedSet<
     /** Returns true if any of the ranges includes the given point. */
     fun includes(date: Point): Boolean = this.ranges.any { it.includes(date) }
 
+    /**
+     * Returns a new set representing the intersections of currently contained ranges and ranges in
+     * the given set.
+     */
+    fun intersection(other: RangeBasedSet<Point, Range, This>): This =
+        intersection(this.ranges.iterator(), other.ranges().iterator()).toThis()
     /**
      * Returns a new set representing the intersections of currently contained ranges and the given
      * ranges.

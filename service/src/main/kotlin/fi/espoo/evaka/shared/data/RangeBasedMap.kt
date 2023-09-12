@@ -19,8 +19,7 @@ abstract class RangeBasedMap<
     T,
     Point : Comparable<Point>,
     Range : BoundedRange<Point, Range>,
-    This : RangeBasedMap<T, Point, Range, This>>(protected val entries: List<Pair<Range, T>>) :
-    Iterable<Pair<Range, T>> by entries {
+    This : RangeBasedMap<T, Point, Range, This>>(protected val entries: List<Pair<Range, T>>) {
     /**
      * Returns a sequence of all ranges in the map, sorted in ascending order.
      *
@@ -69,6 +68,12 @@ abstract class RangeBasedMap<
      */
     fun set(ranges: Sequence<Range>, value: T): This = update(ranges, value) { _, _, new -> new }
     /**
+     * Returns a new map with all the ranges in the given map set to the given values. Any existing
+     * values overlapping in any way with the given ranges are *overwritten*.
+     */
+    fun setAll(map: RangeBasedMap<T, Point, Range, This>): This =
+        update(map.entries) { _, _, new -> new }
+    /**
      * Returns a new map with all the given ranges set to the given values. Any existing values
      * overlapping in any way with the given ranges are *overwritten*.
      */
@@ -79,6 +84,18 @@ abstract class RangeBasedMap<
      */
     fun setAll(ranges: Sequence<Pair<Range, T>>): This = update(ranges) { _, _, new -> new }
 
+    /**
+     * Returns a new map with all the ranges in the given map updated with the given values. Any
+     * existing values overlapping in any way with the given ranges are resolved using the given
+     * resolve function.
+     */
+    fun update(
+        map: RangeBasedMap<T, Point, Range, This>,
+        resolve: (range: Range, old: T, new: T) -> T
+    ): This =
+        map.entries
+            .fold(this.entries) { acc, (range, value) -> update(acc, range, value, resolve) }
+            .toThis()
     /**
      * Returns a new map with all the given ranges updated with the given values. Any existing
      * values overlapping in any way with the given ranges are resolved using the given resolve
