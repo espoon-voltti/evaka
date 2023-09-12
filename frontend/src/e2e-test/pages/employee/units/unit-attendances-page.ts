@@ -10,6 +10,7 @@ import { UUID } from 'lib-common/types'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   AsyncButton,
+  Checkbox,
   DatePicker,
   DatePickerDeprecated,
   Element,
@@ -260,12 +261,14 @@ export class UnitStaffAttendancesTable extends Element {
 
   async assertTableRow({
     rowIx = 0,
+    hasStaffOccupancyEffect,
     name,
     nth = 0,
     plannedAttendances,
     attendances
   }: {
     rowIx?: number
+    hasStaffOccupancyEffect?: boolean
     name?: string
     nth?: number
     timeNth?: number
@@ -304,6 +307,16 @@ export class UnitStaffAttendancesTable extends Element {
           .findAllByDataQa('departure-time')
           .nth(i)
           .assertTextEquals(departure)
+      }
+    }
+
+    if (hasStaffOccupancyEffect !== undefined) {
+      if (hasStaffOccupancyEffect) {
+        await row
+          .findByDataQa('icon-occupancy-coefficient-pos')
+          .waitUntilVisible()
+      } else {
+        await row.findByDataQa('icon-occupancy-coefficient').waitUntilVisible()
       }
     }
   }
@@ -625,6 +638,14 @@ export class StaffAttendanceAddPersonModal extends Element {
     await new Select(this.findByDataQa('add-person-group-select')).selectOption(
       groupId
     )
+  }
+
+  async setStaffOccupancyEffect(value: boolean) {
+    const isResponsible = new Checkbox(
+      this.findByDataQa('has-staff-occupancy-effect')
+    )
+    if (value) await isResponsible.check()
+    else await isResponsible.uncheck()
   }
 
   async setArrivalDate(date: string) {

@@ -200,6 +200,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           <CheckboxF
             label={i18n.unit.staffOccupancies.title}
             bind={isDaycareResponsible}
+            data-qa="has-staff-occupancy-effect"
           />
         </div>
 
