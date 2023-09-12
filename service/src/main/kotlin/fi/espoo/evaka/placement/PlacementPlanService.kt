@@ -17,9 +17,9 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -263,7 +263,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             serviceNeed = serviceNeed,
             cancelPlacementsAfterClub = true
         )
-        val timeline = Timeline.of(placementTypePeriods.map { it.first })
+        val timeline = DateSet.of(placementTypePeriods.map { it.first })
         asyncJobRunner.plan(
             tx,
             timeline

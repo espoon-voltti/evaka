@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -29,12 +30,15 @@ fun maxEndDate(first: LocalDate?, second: LocalDate?): LocalDate? {
 }
 
 /** A closed (inclusive) date range with finite start and end */
-data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
+data class FiniteDateRange(override val start: LocalDate, override val end: LocalDate) :
+    BoundedRange<LocalDate, FiniteDateRange> {
     init {
         require(start <= end) {
             "Attempting to initialize invalid finite date range with start: $start, end: $end"
         }
     }
+
+    override fun toString(): String = "[$start,$end]"
 
     fun asDateRange(): DateRange = DateRange(start, end)
 
@@ -46,58 +50,112 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         )
 
     /** Returns true if this date range fully contains the given date range. */
-    fun contains(other: FiniteDateRange) = this.start <= other.start && other.end <= this.end
-
-    /** Returns true if this date range fully contains the given date range. */
     fun contains(other: DateRange) = this.asDateRange().contains(other)
 
     /** Returns true if this date range includes the given date. */
-    fun includes(date: LocalDate) = this.start <= date && date <= this.end
+    override fun includes(point: LocalDate) = this.start <= point && point <= this.end
 
-    /** Returns true if this date range overlaps at least partially with the given date range. */
-    fun overlaps(other: FiniteDateRange) = this.start <= other.end && other.start <= this.end
+    override fun overlaps(other: FiniteDateRange): Boolean =
+        this.start <= other.end && other.start <= this.end
 
     /** Returns true if this date range overlaps at least partially with the given date range. */
     fun overlaps(other: DateRange) = this.asDateRange().overlaps(other)
 
-    fun leftAdjacentTo(other: FiniteDateRange): Boolean = this.end.plusDays(1) == other.start
-    fun rightAdjacentTo(other: FiniteDateRange): Boolean = other.end.plusDays(1) == this.start
-    fun adjacentTo(other: FiniteDateRange): Boolean =
-        leftAdjacentTo(other) || rightAdjacentTo(other)
+    override fun leftAdjacentTo(other: FiniteDateRange): Boolean =
+        this.end.plusDays(1) == other.start
+    override fun rightAdjacentTo(other: FiniteDateRange): Boolean =
+        other.end.plusDays(1) == this.start
 
-    fun intersection(other: FiniteDateRange): FiniteDateRange? {
-        val start = maxOf(this.start, other.start)
-        val end = minOf(this.end, other.end)
-        return if (start <= end) FiniteDateRange(start, end) else null
-    }
+    override fun strictlyLeftTo(other: FiniteDateRange): Boolean = this.end < other.start
+
+    override fun strictlyRightTo(other: FiniteDateRange): Boolean = other.end < this.start
+
+    override fun intersection(other: FiniteDateRange): FiniteDateRange? =
+        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
 
     fun intersection(other: DateRange): FiniteDateRange? {
         return other.intersection(this)
     }
 
-    fun complement(other: FiniteDateRange): List<FiniteDateRange> {
-        return when {
-            !other.overlaps(this) -> listOf(this)
-            other.contains(this) -> emptyList()
-            other.start <= this.start && other.end < this.end ->
-                listOf(FiniteDateRange(other.end.plusDays(1), this.end))
-            other.start > this.start && other.end >= this.end ->
-                listOf(FiniteDateRange(this.start, other.start.minusDays(1)))
-            other.start > this.start && other.end < this.end ->
-                listOf(
-                    FiniteDateRange(this.start, other.start.minusDays(1)),
-                    FiniteDateRange(other.end.plusDays(1), this.end)
-                )
-            else -> error("Bug: missing when case")
-        }
-    }
+    override fun gap(other: FiniteDateRange): FiniteDateRange? =
+        tryCreate(
+            minOf(this.end, other.end).plusDays(1),
+            maxOf(this.start, other.start).minusDays(1)
+        )
 
+    override fun subtract(other: FiniteDateRange): BoundedRange.SubtractResult<FiniteDateRange> =
+        if (this.overlaps(other)) {
+            val left = tryCreate(this.start, other.start.minusDays(1))
+            val right = tryCreate(other.end.plusDays(1), this.end)
+            if (left != null) {
+                if (right != null) {
+                    BoundedRange.SubtractResult.Split(left, right)
+                } else {
+                    BoundedRange.SubtractResult.LeftRemainder(left)
+                }
+            } else {
+                if (right != null) {
+                    BoundedRange.SubtractResult.RightRemainder(right)
+                } else {
+                    BoundedRange.SubtractResult.None
+                }
+            }
+        } else BoundedRange.SubtractResult.Original(this)
+    fun complement(other: FiniteDateRange): List<FiniteDateRange> = this.subtract(other).toList()
     fun complement(others: Collection<FiniteDateRange>): List<FiniteDateRange> {
         return others.fold(
             initial = listOf(this),
             operation = { acc, other -> acc.flatMap { it.complement(other) } }
         )
     }
+
+    override fun merge(other: FiniteDateRange): FiniteDateRange =
+        FiniteDateRange(minOf(this.start, other.start), maxOf(this.end, other.end))
+
+    override fun relationTo(other: FiniteDateRange): BoundedRange.Relation<FiniteDateRange> =
+        when {
+            this.end < other.start ->
+                BoundedRange.Relation.LeftTo(
+                    gap = tryCreate(this.end.plusDays(1), other.start.minusDays(1))
+                )
+            other.end < this.start ->
+                BoundedRange.Relation.RightTo(
+                    gap = tryCreate(other.end.plusDays(1), this.start.minusDays(1))
+                )
+            else ->
+                BoundedRange.Relation.Overlap(
+                    left =
+                        when {
+                            this.start < other.start ->
+                                BoundedRange.Relation.Remainder(
+                                    range = FiniteDateRange(this.start, other.start.minusDays(1)),
+                                    isFirst = true
+                                )
+                            other.start < this.start ->
+                                BoundedRange.Relation.Remainder(
+                                    range = FiniteDateRange(other.start, this.start.minusDays(1)),
+                                    isFirst = false
+                                )
+                            else -> null
+                        },
+                    overlap =
+                        FiniteDateRange(maxOf(this.start, other.start), minOf(this.end, other.end)),
+                    right =
+                        when {
+                            other.end < this.end ->
+                                BoundedRange.Relation.Remainder(
+                                    range = FiniteDateRange(other.end.plusDays(1), this.end),
+                                    isFirst = true
+                                )
+                            this.end < other.end ->
+                                BoundedRange.Relation.Remainder(
+                                    range = FiniteDateRange(this.end.plusDays(1), other.end),
+                                    isFirst = false
+                                )
+                            else -> null
+                        }
+                )
+        }
 
     /** Returns a lazy sequence of all dates included in this date range. */
     fun dates(): Sequence<LocalDate> =
@@ -108,6 +166,8 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
 
     companion object {
+        fun tryCreate(start: LocalDate, end: LocalDate): FiniteDateRange? =
+            if (start <= end) FiniteDateRange(start, end) else null
         fun ofMonth(year: Int, month: Month): FiniteDateRange =
             ofMonth(LocalDate.of(year, month, 1))
         fun ofMonth(date: LocalDate): FiniteDateRange {

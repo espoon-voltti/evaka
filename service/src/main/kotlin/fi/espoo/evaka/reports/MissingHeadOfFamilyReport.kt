@@ -7,8 +7,8 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
@@ -122,7 +122,7 @@ ORDER BY last_name, first_name
                 childId = row.mapColumn("child_id"),
                 firstName = row.mapColumn("first_name"),
                 lastName = row.mapColumn("last_name"),
-                rangesWithoutHead = row.mapColumn<Timeline>("without_head").ranges().toList(),
+                rangesWithoutHead = row.mapColumn<DateSet>("without_head").ranges().toList(),
             )
         }
         .toList()

@@ -5,7 +5,7 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -61,11 +61,11 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = Timeline.of(preschoolTerm2020),
-                present = Timeline.of(preschoolTerm2020),
-                plannedAbsence = Timeline.of(),
-                sickLeaveAbsence = Timeline.of(),
-                unknownAbsence = Timeline.of()
+                placement = DateSet.of(preschoolTerm2020),
+                present = DateSet.of(preschoolTerm2020),
+                plannedAbsence = DateSet.of(),
+                sickLeaveAbsence = DateSet.of(),
+                unknownAbsence = DateSet.of()
             ),
             timelines
         )
@@ -116,16 +116,16 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = Timeline.of(preschoolTerm2020),
+                placement = DateSet.of(preschoolTerm2020),
                 present =
-                    Timeline.of(
+                    DateSet.of(
                         FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
                         FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
                     ),
-                plannedAbsence = Timeline.of(),
-                sickLeaveAbsence = Timeline.of(),
+                plannedAbsence = DateSet.of(),
+                sickLeaveAbsence = DateSet.of(),
                 unknownAbsence =
-                    Timeline.of(
+                    DateSet.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29))
                     )
             ),
@@ -160,18 +160,18 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = Timeline.of(preschoolTerm2020),
+                placement = DateSet.of(preschoolTerm2020),
                 present =
-                    Timeline.of(
+                    DateSet.of(
                         FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
                         FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
                     ),
-                plannedAbsence = Timeline.of(),
+                plannedAbsence = DateSet.of(),
                 sickLeaveAbsence =
-                    Timeline.of(
+                    DateSet.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29))
                     ),
-                unknownAbsence = Timeline.of()
+                unknownAbsence = DateSet.of()
             ),
             timelines
         )
@@ -219,11 +219,11 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = Timeline.of(preschoolTerm2020),
-                present = Timeline.of(preschoolTerm2020),
-                plannedAbsence = Timeline.of(),
-                sickLeaveAbsence = Timeline.of(),
-                unknownAbsence = Timeline.of()
+                placement = DateSet.of(preschoolTerm2020),
+                present = DateSet.of(preschoolTerm2020),
+                plannedAbsence = DateSet.of(),
+                sickLeaveAbsence = DateSet.of(),
+                unknownAbsence = DateSet.of()
             ),
             timelines
         )
@@ -267,18 +267,18 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = Timeline.of(preschoolTerm2020),
+                placement = DateSet.of(preschoolTerm2020),
                 present =
-                    Timeline.of(
+                    DateSet.of(
                         FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 28)),
                         FiniteDateRange(LocalDate.of(2021, 4, 7), preschoolTerm2020.end)
                     ),
                 plannedAbsence =
-                    Timeline.of(
+                    DateSet.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 29), LocalDate.of(2021, 4, 6))
                     ),
-                sickLeaveAbsence = Timeline.of(),
-                unknownAbsence = Timeline.of()
+                sickLeaveAbsence = DateSet.of(),
+                unknownAbsence = DateSet.of()
             ),
             timelines
         )

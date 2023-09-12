@@ -9,7 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -58,8 +58,8 @@ val dateRangeArgumentFactory =
         }
     }
 
-val timelineArgumentFactory =
-    pgObjectArgumentFactory<Timeline> {
+val dateSetArgumentFactory =
+    pgObjectArgumentFactory<DateSet> {
         PGobject().apply {
             type = "datemultirange"
             if (it != null) {
@@ -260,9 +260,9 @@ private class Parser(private var text: CharSequence) {
     }
 }
 
-val timelineColumnMapper = PgObjectColumnMapper { obj ->
+val dateSetColumnMapper = PgObjectColumnMapper { obj ->
     assert(obj.type == "datemultirange")
-    obj.value?.let(::Parser)?.parseMultiRange { it.parseFiniteDateRange() }?.let { Timeline.of(it) }
+    obj.value?.let(::Parser)?.parseMultiRange { it.parseFiniteDateRange() }?.let { DateSet.of(it) }
 }
 
 val finiteDateRangeColumnMapper = PgObjectColumnMapper { obj ->

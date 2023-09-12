@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.domain
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
+import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Duration
@@ -163,27 +164,110 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
 // microsecond precision
 private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1000L)
 
-data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiDateTime) {
+data class HelsinkiDateTimeRange(
+    override val start: HelsinkiDateTime,
+    override val end: HelsinkiDateTime
+) : BoundedRange<HelsinkiDateTime, HelsinkiDateTimeRange> {
     init {
         check(start <= end) {
             "Attempting to initialize invalid time range with start: $start, end: $end"
         }
     }
 
-    fun contains(other: HelsinkiDateTimeRange) = this.start <= other.start && other.end <= this.end
+    override fun toString(): String = "[$start,$end)"
 
-    fun overlaps(other: HelsinkiDateTimeRange) = this.start < other.end && other.start < this.end
+    override fun overlaps(other: HelsinkiDateTimeRange) =
+        this.start < other.end && other.start < this.end
 
-    fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+    override fun leftAdjacentTo(other: HelsinkiDateTimeRange): Boolean = this.end == other.start
+
+    override fun rightAdjacentTo(other: HelsinkiDateTimeRange): Boolean = other.end == this.start
+
+    override fun strictlyLeftTo(other: HelsinkiDateTimeRange): Boolean = this.end <= other.start
+
+    override fun strictlyRightTo(other: HelsinkiDateTimeRange): Boolean = other.end <= this.start
+
+    override fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
+
+    override fun gap(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
+        tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
+
+    override fun subtract(
+        other: HelsinkiDateTimeRange
+    ): BoundedRange.SubtractResult<HelsinkiDateTimeRange> =
         if (this.overlaps(other)) {
-            val start = maxOf(this.start, other.start)
-            val end = minOf(this.end, other.end)
-            HelsinkiDateTimeRange(start, end)
-        } else {
-            null
+            val left = tryCreate(this.start, other.start)
+            val right = tryCreate(other.end, this.end)
+            if (left != null) {
+                if (right != null) {
+                    BoundedRange.SubtractResult.Split(left, right)
+                } else {
+                    BoundedRange.SubtractResult.LeftRemainder(left)
+                }
+            } else {
+                if (right != null) {
+                    BoundedRange.SubtractResult.RightRemainder(right)
+                } else {
+                    BoundedRange.SubtractResult.None
+                }
+            }
+        } else BoundedRange.SubtractResult.Original(this)
+    override fun merge(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange =
+        HelsinkiDateTimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
+
+    override fun includes(point: HelsinkiDateTime): Boolean =
+        this.start <= point && point < this.end
+
+    override fun relationTo(
+        other: HelsinkiDateTimeRange
+    ): BoundedRange.Relation<HelsinkiDateTimeRange> =
+        when {
+            this.end <= other.start ->
+                BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
+            other.end <= this.start ->
+                BoundedRange.Relation.RightTo(gap = tryCreate(other.end, this.start))
+            else ->
+                BoundedRange.Relation.Overlap(
+                    left =
+                        when {
+                            this.start < other.start ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(this.start, other.start),
+                                    isFirst = true
+                                )
+                            other.start < this.start ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(other.start, this.start),
+                                    isFirst = false
+                                )
+                            else -> null
+                        },
+                    overlap =
+                        HelsinkiDateTimeRange(
+                            maxOf(this.start, other.start),
+                            minOf(this.end, other.end)
+                        ),
+                    right =
+                        when {
+                            other.end < this.end ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(other.end, this.end),
+                                    isFirst = true
+                                )
+                            this.end < other.end ->
+                                BoundedRange.Relation.Remainder(
+                                    range = HelsinkiDateTimeRange(this.end, other.end),
+                                    isFirst = false
+                                )
+                            else -> null
+                        }
+                )
         }
 
     companion object {
+        fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =
+            if (start < end) HelsinkiDateTimeRange(start, end) else null
         fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
             HelsinkiDateTimeRange(
                 HelsinkiDateTime.of(date, startTime),

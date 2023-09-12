@@ -7,7 +7,7 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -200,9 +200,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     }
 
     @Test
-    fun testTimeline() {
+    fun testDateSet() {
         val input =
-            Timeline.of(
+            DateSet.of(
                 FiniteDateRange.ofMonth(2020, Month.JANUARY),
                 FiniteDateRange.ofMonth(2020, Month.FEBRUARY),
                 FiniteDateRange.ofMonth(2020, Month.APRIL),
@@ -227,8 +227,8 @@ SELECT :input = datemultirange(
     }
 
     @Test
-    fun testNullTimeline() {
-        data class QueryResult(val value: Timeline?)
+    fun testNullDateSet() {
+        data class QueryResult(val value: DateSet?)
 
         val result =
             db.read {
