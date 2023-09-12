@@ -24,7 +24,8 @@ import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.varda.VardaService
+import fi.espoo.evaka.varda.old.VardaResetService
+import fi.espoo.evaka.varda.old.VardaUpdateService
 import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
 import java.time.LocalTime
 import mu.KotlinLogging
@@ -101,6 +102,14 @@ enum class ScheduledJob(
             retryCount = 1
         )
     ),
+    VardaReset(
+        ScheduledJobs::vardaReset,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 0 20 * * 1,2,3,4,5"), // mon - fri @ 20 pm
+            retryCount = 1
+        )
+    ),
     InactivePeopleCleanup(
         ScheduledJobs::inactivePeopleCleanup,
         ScheduledJobSettings(
@@ -134,7 +143,9 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class ScheduledJobs(
-    private val vardaService: VardaService,
+    // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
+    private val vardaUpdateService: VardaUpdateService,
+    private val vardaResetService: VardaResetService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
@@ -212,7 +223,15 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        vardaService.startVardaUpdate(db, clock)
+        // Use this once varda fixes their MA003 validation retry glitch
+        // vardaService.startVardaUpdate(db, clock)
+        // Remove this once varda fixes their MA003 validation retry glitch
+        vardaUpdateService.startVardaUpdate(db, clock)
+    }
+
+    // Remove this once varda fixes their MA003 validation retry glitch
+    fun vardaReset(db: Database.Connection, clock: EvakaClock) {
+        vardaResetService.planVardaReset(db, clock, addNewChildren = true)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {
