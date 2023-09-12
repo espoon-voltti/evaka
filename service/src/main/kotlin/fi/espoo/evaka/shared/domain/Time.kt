@@ -38,6 +38,8 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         }
     }
 
+    override fun toString(): String = "[$start,$end]"
+
     fun asDateRange(): DateRange = DateRange(start, end)
 
     fun asHelsinkiDateTimeRange(): HelsinkiDateTimeRange =

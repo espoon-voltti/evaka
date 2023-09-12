@@ -174,6 +174,8 @@ data class HelsinkiDateTimeRange(
         }
     }
 
+    override fun toString(): String = "[$start,$end)"
+
     override fun overlaps(other: HelsinkiDateTimeRange) =
         this.start < other.end && other.start < this.end
 
