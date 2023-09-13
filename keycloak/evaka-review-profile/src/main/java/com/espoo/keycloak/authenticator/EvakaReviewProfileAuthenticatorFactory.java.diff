@@ -1,5 +1,5 @@
---- IdpReviewProfileAuthenticatorFactory.java.orig	2023-03-10 14:15:52.462843088 +0200
-+++ EvakaReviewProfileAuthenticatorFactory.java	2023-03-10 14:41:41.028401869 +0200
+--- ../../../../../../../../update/IdpReviewProfileAuthenticatorFactory.java.22.0.3.orig	2023-09-13 17:28:42.940373827 +0300
++++ EvakaReviewProfileAuthenticatorFactory.java	2023-05-09 15:41:59.335105053 +0300
 @@ -15,7 +15,7 @@
   * limitations under the License.
   */
