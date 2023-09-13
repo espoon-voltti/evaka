@@ -189,16 +189,22 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   }, [editedIncome, initialForm])
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
+  const [prevValidFrom, setPrevValidFrom] = useState(editedIncome.validFrom)
   const onRangeChange = useCallback(
-    (from: LocalDate | null, to: LocalDate | null) =>
-      from
-        ? setEditedIncome((prev) => ({
-            ...prev,
-            validFrom: from,
-            validTo: to ? to : undefined
-          }))
-        : undefined,
-    [setEditedIncome]
+    (from: LocalDate | null, to: LocalDate | null) => {
+      if (from) {
+        setEditedIncome((prev) => ({
+          ...prev,
+          validFrom: from,
+          validTo:
+            to || from.isEqual(prevValidFrom)
+              ? to ?? undefined
+              : from.addYears(1).subDays(1)
+        }))
+        setPrevValidFrom(from)
+      }
+    },
+    [prevValidFrom]
   )
 
   const setIncomeData = useCallback((data: IncomeTableData) => {
