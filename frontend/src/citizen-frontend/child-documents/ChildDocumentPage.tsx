@@ -94,7 +94,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
           </FixedSpaceColumn>
         </FixedSpaceRow>
         <Gap />
-        <DocumentView bind={bind} readOnly hideInfos />
+        <DocumentView bind={bind} readOnly />
       </ContentArea>
     </Container>
   )

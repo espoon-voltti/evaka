@@ -11,7 +11,9 @@ const components = {
   common: {
     add: 'Add',
     close: 'Close',
-    remove: 'Remove'
+    no: 'No',
+    remove: 'Remove',
+    yes: 'Yes'
   },
   datePicker: {
     placeholder: 'dd.mm.yyyy',

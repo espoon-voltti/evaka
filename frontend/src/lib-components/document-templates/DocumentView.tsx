@@ -20,14 +20,9 @@ import {
 interface Props {
   bind: BoundForm<typeof documentForm>
   readOnly?: boolean
-  hideInfos?: boolean
 }
 
-export default React.memo(function DocumentView({
-  bind,
-  readOnly,
-  hideInfos
-}: Props) {
+export default React.memo(function DocumentView({ bind, readOnly }: Props) {
   const sectionElems = useFormElems(bind)
 
   return (
@@ -38,7 +33,6 @@ export default React.memo(function DocumentView({
             key={section.state.id}
             bind={section}
             readOnly={readOnly ?? false}
-            hideInfos={hideInfos}
           />
         ))}
       </FixedSpaceColumn>
@@ -49,12 +43,10 @@ export default React.memo(function DocumentView({
 interface DocumentSectionProps {
   bind: BoundForm<typeof documentSectionForm>
   readOnly: boolean
-  hideInfos?: boolean
 }
 export const DocumentSectionView = React.memo(function DocumentSectionView({
   bind,
-  readOnly,
-  hideInfos
+  readOnly
 }: DocumentSectionProps) {
   const i18n = useTranslations()
   const { label, questions, infoText } = useFormFields(bind)
@@ -62,7 +54,7 @@ export const DocumentSectionView = React.memo(function DocumentSectionView({
   return (
     <div data-qa="document-section">
       <ExpandingInfo
-        info={hideInfos ? undefined : infoText.state}
+        info={readOnly ? undefined : infoText.state}
         closeLabel={i18n.common.close}
         ariaLabel=""
       >

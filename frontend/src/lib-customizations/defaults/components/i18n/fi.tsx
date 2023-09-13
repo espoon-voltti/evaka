@@ -11,7 +11,9 @@ const components = {
   common: {
     add: 'Lisää',
     close: 'Sulje',
-    remove: 'Poista'
+    no: 'Ei',
+    remove: 'Poista',
+    yes: 'Kyllä'
   },
   datePicker: {
     placeholder: 'pp.kk.vvvv',
