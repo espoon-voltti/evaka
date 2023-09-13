@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG KEYCLOAK_VERSION=22.0.1
+ARG KEYCLOAK_VERSION=22.0.3
 
 ## Package containers ##
 
