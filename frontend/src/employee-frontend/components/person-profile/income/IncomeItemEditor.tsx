@@ -208,8 +208,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   }, [])
 
   const setValidationResult = useCallback(
-    (errors: boolean) =>
-      setValidationErrors((prev) => ({ ...prev, dates: errors })),
+    (isValid: boolean) =>
+      setValidationErrors((prev) => ({ ...prev, dates: !isValid })),
     [setValidationErrors]
   )
 

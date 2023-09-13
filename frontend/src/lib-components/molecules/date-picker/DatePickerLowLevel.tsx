@@ -98,6 +98,7 @@ export interface DatePickerLowLevelProps {
   initialMonth?: LocalDate
   minDate?: LocalDate
   maxDate?: LocalDate
+  useBrowserPicker?: boolean
 }
 
 export default React.memo(function DatePickerLowLevel({
@@ -114,6 +115,7 @@ export default React.memo(function DatePickerLowLevel({
   initialMonth,
   minDate,
   maxDate,
+  useBrowserPicker = nativeDatePickerEnabled,
   'data-qa': dataQa
 }: DatePickerLowLevelProps) {
   const [showDatePicker, useShowDatePicker] = useBoolean(false)
@@ -225,14 +227,14 @@ export default React.memo(function DatePickerLowLevel({
         value={value}
         onChange={onChange}
         onFocus={handleFocus}
-        onBlur={handleBlur}
+        onBlur={!showDatePicker ? handleBlur : undefined}
         disabled={disabled}
         info={showDatePicker ? undefined : info}
         data-qa={dataQa}
         id={id}
         required={required}
         locale={locale}
-        useBrowserPicker={nativeDatePickerEnabled}
+        useBrowserPicker={useBrowserPicker}
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         minDate={minDate}
         maxDate={maxDate}
