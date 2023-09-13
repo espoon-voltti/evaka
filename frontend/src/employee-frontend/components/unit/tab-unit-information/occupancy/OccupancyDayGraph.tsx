@@ -204,16 +204,20 @@ const Graph = React.memo(function Graph({
   )
 
   return (
-    <div onMouseOver={showTooltip} onMouseOut={hideTooltip}>
+    <GraphContainer onMouseOver={showTooltip} onMouseOut={hideTooltip}>
       <Line data={data} options={graphOptions} height={100} />
       <ChartTooltip
         position={tooltipParams.position}
         content={tooltipContent}
         visible={tooltipVisible}
       />
-    </div>
+    </GraphContainer>
   )
 })
+
+const GraphContainer = styled.div`
+  position: relative;
+`
 
 function graphData(
   queryDate: LocalDate,
