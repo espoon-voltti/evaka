@@ -36,8 +36,8 @@ beforeEach(async () => {
   )
 })
 
-describe('Child fee deviation', () => {
-  it('Create a new fee deviation with attachment', async () => {
+describe('Child fee alteration', () => {
+  it('Create a new fee alteration with attachment', async () => {
     const testFileName1 = 'test_file.png'
     const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
 
@@ -47,34 +47,30 @@ describe('Child fee deviation', () => {
     const feeAlteration = {
       startDate: '01.01.2020',
       endDate: '31.01.2020',
-      amount: 10,
+      amount: '10',
       attachment: testFilePath1
     }
 
     const feeAlteration2 = {
       startDate: '01.02.2020',
       endDate: '29.02.2020',
-      amount: 20,
+      amount: '20',
       attachment: testFilePath2
     }
 
-    let editor = await feeAlterationSection.openNewFeeAlterationEditorPage()
-    await editor.createNewFeeAlteration(
-      feeAlteration.startDate,
-      feeAlteration.endDate,
-      feeAlteration.amount,
-      feeAlteration.attachment
-    )
-    await editor.save()
+    const editor = await feeAlterationSection.openNewFeeAlterationEditorPage()
+    await editor.startDateInput.fill(feeAlteration.startDate)
+    await editor.endDateInput.fill(feeAlteration.endDate)
+    await editor.alterationValueInput.fill(feeAlteration.amount)
+    await editor.uploadAttachmentAndAssert(feeAlteration.attachment)
+    await editor.saveButton.click()
 
-    editor = await feeAlterationSection.openNewFeeAlterationEditorPage()
-    await editor.createNewFeeAlteration(
-      feeAlteration2.startDate,
-      feeAlteration2.endDate,
-      feeAlteration2.amount,
-      feeAlteration2.attachment
-    )
-    await editor.save()
+    const editor2 = await feeAlterationSection.openNewFeeAlterationEditorPage()
+    await editor2.startDateInput.fill(feeAlteration2.startDate)
+    await editor2.endDateInput.fill(feeAlteration2.endDate)
+    await editor2.alterationValueInput.fill(feeAlteration2.amount)
+    await editor2.uploadAttachmentAndAssert(feeAlteration2.attachment)
+    await editor2.saveButton.click()
 
     await feeAlterationSection.assertAlterationDateRange(
       `${feeAlteration2.startDate} - ${feeAlteration2.endDate}`,

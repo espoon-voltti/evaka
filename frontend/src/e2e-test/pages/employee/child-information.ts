@@ -1103,40 +1103,34 @@ class MessageBlocklistSection extends Section {
 class FeeAlterationEditorPage {
   constructor(private readonly page: Page) {}
 
-  #startDate = new DatePickerDeprecated(
+  readonly startDateInput = new DatePickerDeprecated(
     this.page.findByDataQa('date-range-input-start-date')
   )
-  #endDate = new DatePickerDeprecated(
+  readonly endDateInput = new DatePickerDeprecated(
     this.page.findByDataQa('date-range-input-end-date')
   )
 
-  #alterationValueInput = new TextInput(
+  readonly alterationValueInput = new TextInput(
     this.page.findByDataQa('fee-alteration-amount-input')
   )
-  #alterationEditorSaveButton = this.page.findByDataQa(
+  readonly saveButton = this.page.findByDataQa(
     'fee-alteration-editor-save-button'
   )
 
-  async uploadAttachment(filePath: string) {
+  async uploadedCount() {
+    return this.page.findAllByDataQa('file-download-button').count()
+  }
+
+  async waitUntilReady() {
+    await this.startDateInput.waitUntilVisible()
+  }
+
+  async uploadAttachmentAndAssert(filePath: string) {
+    const initiallyUploadedCount = await this.uploadedCount()
     await new FileInput(
       this.page.findByDataQa('btn-upload-file')
     ).setInputFiles(filePath)
-  }
-
-  async createNewFeeAlteration(
-    startDate: string,
-    endDate: string,
-    value: number,
-    attachment: string
-  ) {
-    await this.#startDate.fill(startDate)
-    await this.#endDate.fill(endDate)
-    await this.#alterationValueInput.fill(`${value}`)
-    await this.uploadAttachment(attachment)
-  }
-
-  async save() {
-    await this.#alterationEditorSaveButton.click()
+    await waitUntilEqual(() => this.uploadedCount(), initiallyUploadedCount + 1)
   }
 }
 
@@ -1145,7 +1139,9 @@ export class FeeAlterationsSection extends Section {
 
   async openNewFeeAlterationEditorPage(): Promise<FeeAlterationEditorPage> {
     await this.#createFeeAlterationButton.click()
-    return new FeeAlterationEditorPage(this.page)
+    const editorPage = new FeeAlterationEditorPage(this.page)
+    await editorPage.waitUntilReady()
+    return editorPage
   }
 
   async assertAlterationDateRange(expected: string, nth = 0) {
