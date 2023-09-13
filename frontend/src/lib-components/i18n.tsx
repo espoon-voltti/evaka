@@ -13,7 +13,9 @@ export interface Translations {
   common: {
     add: string
     close: string
+    no: string
     remove: string
+    yes: string
   }
   datePicker: {
     placeholder: string

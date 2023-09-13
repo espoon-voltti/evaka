@@ -76,7 +76,12 @@ const View = React.memo(function View({
   const i18n = useTranslations()
   const { template, answer } = useFormFields(bind)
   const { label, infoText } = useFormFields(template)
-  return (
+  return readOnly ? (
+    <FixedSpaceColumn spacing="xs">
+      <Label>{label.state}</Label>
+      <span>{answer.state ? i18n.common.yes : i18n.common.no}</span>
+    </FixedSpaceColumn>
+  ) : (
     <ExpandingInfo
       info={infoText.value()}
       width="full"

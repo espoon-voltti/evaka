@@ -11,7 +11,9 @@ const components = {
   common: {
     add: 'Lägg till',
     close: 'Stäng',
-    remove: 'Ta bort'
+    no: 'Nej',
+    remove: 'Ta bort',
+    yes: 'Ja'
   },
   datePicker: {
     placeholder: 'dd.mm.åååå',
