@@ -61,7 +61,7 @@ const features: Features = {
     financeDecisionHandlerSelect: false,
     childDiscussion: false,
     feeDecisionPreschoolClubFilter: false,
-    placementGuarantee: false,
+    placementGuarantee: true,
     experimental: {
       leops: true,
       assistanceNeedDecisions: true,
