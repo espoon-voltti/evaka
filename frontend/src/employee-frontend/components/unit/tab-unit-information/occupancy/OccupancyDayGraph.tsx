@@ -205,7 +205,12 @@ const Graph = React.memo(function Graph({
 
   return (
     <GraphContainer onMouseOver={showTooltip} onMouseOut={hideTooltip}>
-      <Line data={data} options={graphOptions} height={100} />
+      <Line
+        data={data}
+        options={graphOptions}
+        width="auto"
+        height={undefined}
+      />
       <ChartTooltip
         position={tooltipParams.position}
         content={tooltipContent}
@@ -217,6 +222,9 @@ const Graph = React.memo(function Graph({
 
 const GraphContainer = styled.div`
   position: relative;
+  width: 100%;
+  height: 400px;
+  max-height: 40vh;
 `
 
 function graphData(
@@ -338,6 +346,8 @@ function graphData(
   }
 
   const graphOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         type: 'time',
