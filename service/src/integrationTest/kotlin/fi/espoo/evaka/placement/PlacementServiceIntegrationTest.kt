@@ -80,7 +80,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId,
                     unitId,
                     placementStart,
-                    placementEnd
+                    placementEnd,
+                    false
                 )
             daycarePlacementId = oldPlacement.id
 
@@ -112,7 +113,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 30)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -138,7 +140,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId,
                     FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
                     PlacementType.PRESCHOOL,
-                    useFiveYearsOldDaycare = true
+                    useFiveYearsOldDaycare = true,
+                    placeGuarantee = false
                 )
             }
 
@@ -165,7 +168,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 20)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -196,7 +200,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 30)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -245,7 +250,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 21)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -281,7 +287,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 19)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -325,7 +332,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 21)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -354,7 +362,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 19)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -390,7 +399,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 20)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -419,7 +429,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 21)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -448,7 +459,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 19)
                         ),
                         PlacementType.PRESCHOOL,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -484,7 +496,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 31)
                         ),
                         PlacementType.PRESCHOOL_DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -499,7 +512,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 25)
                         ),
                         PlacementType.PREPARATORY,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -544,7 +558,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     LocalDate.of(year, month, 19)
                                 ) to PlacementType.CLUB
                             ),
-                        cancelPlacementsAfterClub = true
+                        cancelPlacementsAfterClub = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -590,7 +605,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     LocalDate.of(year, month, 19)
                                 ) to PlacementType.CLUB
                             ),
-                        cancelPlacementsAfterClub = true
+                        cancelPlacementsAfterClub = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -622,7 +638,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     LocalDate.of(year, month, 19)
                                 ) to PlacementType.CLUB
                             ),
-                        cancelPlacementsAfterClub = true
+                        cancelPlacementsAfterClub = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -643,7 +660,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId,
                     unitId,
                     LocalDate.of(year + 2, 8, 1),
-                    LocalDate.of(year + 2, 12, 1)
+                    LocalDate.of(year + 2, 12, 1),
+                    false
                 )
             }
 
@@ -660,7 +678,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     LocalDate.of(year, month, 19)
                                 ) to PlacementType.CLUB
                             ),
-                        cancelPlacementsAfterClub = true
+                        cancelPlacementsAfterClub = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -684,21 +703,24 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         childId,
                         unitId,
                         LocalDate.of(year + 1, 8, 1),
-                        LocalDate.of(year + 2, 6, 30)
+                        LocalDate.of(year + 2, 6, 30),
+                        false
                     ),
                     it.insertPlacement(
                         PlacementType.DAYCARE,
                         childId,
                         unitId,
                         LocalDate.of(year + 2, 7, 1),
-                        LocalDate.of(year + 2, 7, 31)
+                        LocalDate.of(year + 2, 7, 31),
+                        false
                     ),
                     it.insertPlacement(
                         PlacementType.PRESCHOOL,
                         childId,
                         unitId,
                         LocalDate.of(year + 2, 9, 1),
-                        LocalDate.of(year + 3, 4, 11)
+                        LocalDate.of(year + 3, 4, 11),
+                        false
                     )
                 )
             }
@@ -716,7 +738,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     LocalDate.of(year, month, 19)
                                 ) to PlacementType.CLUB
                             ),
-                        cancelPlacementsAfterClub = true
+                        cancelPlacementsAfterClub = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -742,21 +765,24 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         childId,
                         unitId,
                         LocalDate.of(year + 1, 8, 1),
-                        LocalDate.of(year + 2, 6, 30)
+                        LocalDate.of(year + 2, 6, 30),
+                        false
                     ),
                     it.insertPlacement(
                         PlacementType.DAYCARE,
                         childId,
                         unitId,
                         LocalDate.of(year + 2, 7, 1),
-                        LocalDate.of(year + 2, 7, 31)
+                        LocalDate.of(year + 2, 7, 31),
+                        false
                     ),
                     it.insertPlacement(
                         PlacementType.PREPARATORY_DAYCARE,
                         childId,
                         unitId,
                         LocalDate.of(year + 2, 9, 1),
-                        LocalDate.of(year + 3, 4, 11)
+                        LocalDate.of(year + 3, 4, 11),
+                        false
                     )
                 )
             }
@@ -774,7 +800,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     LocalDate.of(year, month, 19)
                                 ) to PlacementType.CLUB
                             ),
-                        cancelPlacementsAfterClub = true
+                        cancelPlacementsAfterClub = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -802,7 +829,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 20)
                         ),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -834,7 +862,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 20)
                         ),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -900,7 +929,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 30)
                         ),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -928,7 +958,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 unitId,
                 FiniteDateRange(LocalDate.of(year, month, 15), LocalDate.of(year, month, 30)),
                 PlacementType.PRESCHOOL_DAYCARE,
-                useFiveYearsOldDaycare = true
+                useFiveYearsOldDaycare = true,
+                placeGuarantee = false
             )
         }
 
@@ -976,7 +1007,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 20)
                         ),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -1008,7 +1040,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             LocalDate.of(year, month, 20)
                         ),
                         PlacementType.DAYCARE,
-                        useFiveYearsOldDaycare = true
+                        useFiveYearsOldDaycare = true,
+                        placeGuarantee = false
                     )
                 }
                 .first()
@@ -1135,7 +1168,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null,
-                    updated = placements.first().updated
+                    updated = placements.first().updated,
+                    placeGuarantee = false
                 )
             ),
             placements
@@ -1295,7 +1329,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null,
-                    updated = placements.first().updated
+                    updated = placements.first().updated,
+                    placeGuarantee = false
                 )
             ),
             placements
@@ -1313,7 +1348,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         testChild_1.id,
                         testDaycare.id,
                         evakaLaunch.minusYears(1),
-                        evakaLaunch.plusYears(1)
+                        evakaLaunch.plusYears(1),
+                        false
                     )
                 tx.insertTestDaycareGroupPlacement(
                     placement.id,
@@ -1356,7 +1392,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         testChild_1.id,
                         testDaycare.id,
                         evakaLaunch.minusYears(1),
-                        evakaLaunch.plusYears(1)
+                        evakaLaunch.plusYears(1),
+                        false
                     )
                 tx.insertTestDaycareGroupPlacement(
                     placement.id,

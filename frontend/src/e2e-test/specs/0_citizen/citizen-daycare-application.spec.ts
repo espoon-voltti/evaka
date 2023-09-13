@@ -130,7 +130,8 @@ describe('Citizen daycare applications', () => {
         childId: fixtures.enduserChildFixtureJari.id,
         unitId: fixtures.daycareFixture.id,
         startDate: mockedDate.subYears(1),
-        endDate: mockedDate.addYears(1)
+        endDate: mockedDate.addYears(1),
+        placeGuarantee: false
       }
     ])
 

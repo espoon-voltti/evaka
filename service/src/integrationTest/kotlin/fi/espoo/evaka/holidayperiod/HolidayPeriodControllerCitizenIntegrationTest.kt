@@ -70,7 +70,8 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 child1.id,
                 testDaycare.id,
                 mockToday.minusYears(2),
-                mockToday.plusYears(1)
+                mockToday.plusYears(1),
+                false
             )
         }
     }
@@ -107,7 +108,8 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 child3.id,
                 testDaycare.id,
                 condition.start,
-                condition.end.minusDays(1)
+                condition.end.minusDays(1),
+                false
             )
             // child4 has two placements that cover the period together
             tx.insertPlacement(
@@ -115,14 +117,16 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 child4.id,
                 testDaycare.id,
                 condition.start,
-                condition.start.plusDays(5)
+                condition.start.plusDays(5),
+                false
             )
             tx.insertPlacement(
                 PlacementType.DAYCARE,
                 child4.id,
                 testDaycare.id,
                 condition.start.plusDays(6),
-                condition.end
+                condition.end,
+                false
             )
         }
         createFixedPeriodQuestionnaire(

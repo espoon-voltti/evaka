@@ -540,7 +540,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 childId = childId,
                 unitId = unitId,
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                placeGuarantee = false
             )
 
         http

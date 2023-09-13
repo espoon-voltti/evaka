@@ -20,7 +20,8 @@ data class Placement(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val terminationRequestedDate: LocalDate?,
-    val terminationRequestedBy: EvakaUserId?
+    val terminationRequestedBy: EvakaUserId?,
+    val placeGuarantee: Boolean
 )
 
 data class PlacementSummary(

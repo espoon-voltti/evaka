@@ -272,7 +272,7 @@ export default React.memo(function PlacementRow({
       statusLabel={getStatusLabelByDateRange(placement)}
     />
   ) : (
-    <div>
+    <div data-qa="placement-row">
       <ToolbarAccordion
         title={placement.daycare.name}
         subtitle={`${placement.startDate.format()} - ${placement.endDate.format()}`}
@@ -281,6 +281,11 @@ export default React.memo(function PlacementRow({
         toolbar={
           <Toolbar
             dateRange={placement}
+            guarantee={
+              placement.placeGuarantee &&
+              placement.startDate.isAfter(LocalDate.todayInHelsinkiTz())
+            }
+            dataQa="placement-toolbar"
             onEdit={() => startEdit()}
             dataQaEdit="btn-edit-placement"
             editable={permittedActions.includes('UPDATE')}

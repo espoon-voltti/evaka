@@ -37,6 +37,7 @@ const ToolbarStatus = styled.div`
 interface ToolbarProps {
   dateRange?: DateRangeOpen
   conflict?: boolean
+  guarantee?: boolean
   warning?: string
   disableAll?: boolean
   onEdit?: () => undefined | void
@@ -59,6 +60,7 @@ function Toolbar({
   onCopy,
   warning,
   conflict,
+  guarantee,
   disableAll,
   editable: editAllowed,
   deletable: deleteAllowed,
@@ -140,7 +142,11 @@ function Toolbar({
         <ToolbarStatus>
           <StatusLabel
             status={
-              conflict ? 'conflict' : getStatusLabelByDateRange(dateRange)
+              conflict
+                ? 'conflict'
+                : guarantee
+                ? 'guarantee'
+                : getStatusLabelByDateRange(dateRange)
             }
           />
         </ToolbarStatus>

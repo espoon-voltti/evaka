@@ -1070,7 +1070,8 @@ export function createDaycarePlacementFixture(
   unitId: string,
   startDate = LocalDate.of(2022, 5, 1),
   endDate = LocalDate.of(2023, 8, 31),
-  type: PlacementType = 'DAYCARE'
+  type: PlacementType = 'DAYCARE',
+  placeGuarantee = false
 ): DaycarePlacement {
   return {
     id,
@@ -1078,7 +1079,8 @@ export function createDaycarePlacementFixture(
     childId,
     unitId,
     startDate,
-    endDate
+    endDate,
+    placeGuarantee
   }
 }
 
@@ -1087,7 +1089,8 @@ export function createPreschoolDaycarePlacementFixture(
   childId: string,
   unitId: string,
   startDate = LocalDate.of(2022, 5, 1),
-  endDate = LocalDate.of(2023, 8, 31)
+  endDate = LocalDate.of(2023, 8, 31),
+  placeGuarantee = false
 ): DaycarePlacement {
   return {
     id,
@@ -1095,7 +1098,8 @@ export function createPreschoolDaycarePlacementFixture(
     childId,
     unitId,
     startDate,
-    endDate
+    endDate,
+    placeGuarantee
   }
 }
 
@@ -1352,7 +1356,8 @@ export class Fixture {
       unitId: 'not set',
       type: 'DAYCARE',
       startDate: LocalDate.todayInSystemTz(),
-      endDate: LocalDate.todayInSystemTz().addYears(1)
+      endDate: LocalDate.todayInSystemTz().addYears(1),
+      placeGuarantee: false
     })
   }
 

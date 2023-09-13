@@ -217,7 +217,8 @@ class PlacementController(
                             unitId = body.unitId,
                             period = FiniteDateRange(body.startDate, body.endDate),
                             type = body.type,
-                            useFiveYearsOldDaycare = useFiveYearsOldDaycare
+                            useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                            placeGuarantee = body.placeGuarantee
                         )
                         .also {
                             generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
@@ -461,7 +462,8 @@ data class PlacementCreateRequestBody(
     val childId: ChildId,
     val unitId: DaycareId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
+    val placeGuarantee: Boolean
 )
 
 data class PlacementUpdateRequestBody(val startDate: LocalDate, val endDate: LocalDate)

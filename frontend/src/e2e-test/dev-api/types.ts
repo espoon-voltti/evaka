@@ -121,6 +121,7 @@ export interface DaycarePlacement {
   unitId: UUID
   startDate: LocalDate
   endDate: LocalDate
+  placeGuarantee: boolean
 }
 
 export interface DaycareGroupPlacement {

@@ -60,7 +60,8 @@ describe('Citizen children page', () => {
           childId: child.id,
           unitId: fixtures.daycareFixture.id,
           startDate: mockedDate.subMonths(1),
-          endDate: mockedDate
+          endDate: mockedDate,
+          placeGuarantee: false
         }))
       )
       await page.reload()
@@ -87,7 +88,8 @@ describe('Citizen children page', () => {
         childId: fixtures.enduserChildFixtureKaarina.id,
         unitId,
         startDate: startDate,
-        endDate: endDate
+        endDate: endDate,
+        placeGuarantee: false
       }
     ])
   }
@@ -219,7 +221,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.daycareFixture.id,
           startDate: daycare1Start,
-          endDate: daycare1End
+          endDate: daycare1End,
+          placeGuarantee: false
         },
         {
           id: uuidv4(),
@@ -227,7 +230,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: daycare2start,
-          endDate: daycare2end
+          endDate: daycare2end,
+          placeGuarantee: false
         },
         {
           id: uuidv4(),
@@ -235,7 +239,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: preschool1Start,
-          endDate: preschool1End
+          endDate: preschool1End,
+          placeGuarantee: false
         },
         {
           id: uuidv4(),
@@ -243,7 +248,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: preschool2Start,
-          endDate: preschool2End
+          endDate: preschool2End,
+          placeGuarantee: false
         },
         {
           id: uuidv4(),
@@ -251,7 +257,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: daycareAfterPreschoolStart,
-          endDate: daycareAfterPreschoolEnd
+          endDate: daycareAfterPreschoolEnd,
+          placeGuarantee: false
         }
       ]
       await insertDaycarePlacementFixtures(placements)
@@ -288,7 +295,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.daycareFixture.id,
           startDate: daycare1Start,
-          endDate: daycare1End
+          endDate: daycare1End,
+          placeGuarantee: false
         },
         {
           id: uuidv4(),
@@ -296,7 +304,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: daycare2start,
-          endDate: daycare2end
+          endDate: daycare2end,
+          placeGuarantee: false
         }
       ]
       await insertDaycarePlacementFixtures(placements)
@@ -350,7 +359,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: preschool2Start,
-          endDate: preschool2End
+          endDate: preschool2End,
+          placeGuarantee: false
         },
         {
           id: uuidv4(),
@@ -358,7 +368,8 @@ describe('Citizen children page', () => {
           childId: fixtures.enduserChildFixtureKaarina.id,
           unitId: fixtures.preschoolFixture.id,
           startDate: daycareAfterPreschoolStart,
-          endDate: daycareAfterPreschoolEnd
+          endDate: daycareAfterPreschoolEnd,
+          placeGuarantee: false
         }
       ]
       await insertDaycarePlacementFixtures(placements)
