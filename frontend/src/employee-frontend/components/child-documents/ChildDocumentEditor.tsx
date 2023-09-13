@@ -19,6 +19,11 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
+import DocumentView from 'lib-components/document-templates/DocumentView'
+import {
+  documentForm,
+  getDocumentFormInitialState
+} from 'lib-components/document-templates/documents'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -36,11 +41,6 @@ import {
   unpublishChildDocumentMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
-import DocumentView from '../document-templates/DocumentView'
-import {
-  documentForm,
-  getDocumentFormInitialState
-} from '../document-templates/documents'
 
 const ActionBar = styled.div`
   position: sticky;
@@ -231,7 +231,6 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 text={i18n.childInformation.childDocuments.editor.publish}
                 primary
                 onClick={publishAndGoBack}
-                disabled
               />
             )}
           </FixedSpaceRow>

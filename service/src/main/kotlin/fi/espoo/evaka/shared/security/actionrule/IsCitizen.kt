@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
@@ -367,6 +368,32 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} A
 SELECT id
 FROM assistance_need_preschool_decision ad
 WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfPublishedChildDocument() =
+        rule<ChildDocumentId> { citizenId, _ ->
+            sql(
+                """
+SELECT id
+FROM child_document cd
+WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = cd.child_id)
+    AND cd.published_at IS NOT NULL 
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildOfPublishedChildDocument() =
+        rule<ChildDocumentId> { citizenId, now ->
+            sql(
+                """
+SELECT id
+FROM child_document cd
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
+    AND cd.published_at IS NOT NULL 
             """
                     .trimIndent()
             )

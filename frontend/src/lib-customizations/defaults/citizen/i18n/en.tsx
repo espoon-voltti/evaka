@@ -2118,23 +2118,9 @@ const en: Translations = {
     }
   },
   validationErrors: {
-    required: 'Value missing',
-    requiredSelection: 'Please select one of the options',
-    format: 'Give value in correct format',
-    integerFormat: 'Give an integer value',
-    ssn: 'Invalid person identification number',
-    phone: 'Invalid telephone number',
-    email: 'Invalid email',
-    preferredStartDate: 'Invalid preferred start date',
-    timeFormat: 'Check',
-    timeRequired: 'Required',
-    unitNotSelected: 'Pick at least one choice',
-    emailsDoNotMatch: 'The emails do not match',
-    httpUrl: 'Valid url format is https://example.com',
-    unselectableDate: 'Invalid date',
-    outsideUnitOperationTime: 'Outside opening hours',
-    openAttendance: 'Open attendance',
-    ...components.datePicker.validationErrors
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
+    outsideUnitOperationTime: 'Outside opening hours'
   },
   placement: {
     // TODO i18n
@@ -2239,11 +2225,13 @@ const en: Translations = {
       empty: 'Not defined'
     },
     vasu: {
-      title:
-        'Early childhood education and care plan and learning plan for pre-primary education',
+      title: 'Pedagogical documents',
+      plansTitle: 'Plans',
+      noVasus: 'No plans',
+      otherDocumentsTitle: 'Other documents',
+      noDocuments: 'No documents',
       lastModified: 'Last modified',
       lastPublished: 'Last published',
-      noVasus: 'No early childhood education or pre-primary learning plans',
       leavePage: 'Leave page',
       edited: 'Edited',
       eventTypes: {
@@ -2265,6 +2253,7 @@ const en: Translations = {
         DAYCARE: 'Early childhood plan events',
         PRESCHOOL: 'Pre-primary plan events'
       },
+      confidential: 'Confidential',
       noRecord: 'No record',
       givePermissionToShareInfoVasu:
         'If necessary, some information from the plan will be transferred to other recipients (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',

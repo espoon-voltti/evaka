@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -12,23 +12,30 @@ import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops/vasu/components/VasuStateChip'
 import { useTranslation } from 'citizen-frontend/localization'
+import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { tabletMin } from 'lib-components/breakpoints'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import {
   Desktop,
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
-import {
-  ExpandingInfoBox,
-  InfoButton
-} from 'lib-components/molecules/ExpandingInfo'
-import { Dimmed, P } from 'lib-components/typography'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { Dimmed, H3 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { faExclamation, faLockAlt } from 'lib-icons'
+
+import {
+  childDocumentSummariesQuery,
+  unreadChildDocumentsCountQuery
+} from '../../../child-documents/queries'
 
 import {
   childVasuSummariesQuery,
@@ -40,12 +47,18 @@ const VasuTableContainer = styled.table`
   border-collapse: collapse;
 `
 
-const VasuTr = styled.tr`
+const VasuTr = styled.tr<{ unread?: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   & td {
     vertical-align: top;
     padding: ${defaultMargins.s};
+  }
+
+  ${(p) => (p.unread ? `border-left: 4px solid ${colors.status.success};` : '')}
+
+  * {
+    ${(p) => (p.unread ? 'font-weight: bold;' : '')}
   }
 `
 
@@ -131,9 +144,45 @@ const VasuTable = React.memo(function VasuTable({
   )
 })
 
-const MobileRowContainer = styled.div`
+const AssistanceDocumentsTable = React.memo(function AssistanceDocumentsTable({
+  summaries
+}: {
+  summaries: ChildDocumentCitizenSummary[]
+}) {
+  return (
+    <VasuTableContainer>
+      <tbody>
+        {summaries.map((document) => (
+          <VasuTr
+            key={document.id}
+            data-qa={`child-document-${document.id}`}
+            unread={document.unread}
+          >
+            <DateTd data-qa={`published-at-${document.id}`}>
+              {document.publishedAt?.toLocalDate().format() ?? ''}
+            </DateTd>
+            <LinkTd>
+              <Link
+                to={`/child-documents/${document.id}`}
+                data-qa="child-document-link"
+              >
+                {document.templateName}
+              </Link>
+            </LinkTd>
+          </VasuTr>
+        ))}
+      </tbody>
+    </VasuTableContainer>
+  )
+})
+
+const MobileRowContainer = styled.div<{ unread: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   padding: ${defaultMargins.s};
+
+  > * {
+    ${(p) => (p.unread ? 'font-weight: bold;' : '')}
+  }
 `
 
 const MobilePermissionToShareContainer = styled.div`
@@ -148,11 +197,7 @@ const PaddingBox = styled.div`
   }
 `
 
-const ParagraphInfoButton = styled(InfoButton)`
-  margin-left: ${defaultMargins.xs};
-`
-
-export default React.memo(function VasuAndLeopsSection({
+export default React.memo(function PedagogicalDocumentsSection({
   childId
 }: {
   childId: UUID
@@ -167,19 +212,42 @@ export default React.memo(function VasuAndLeopsSection({
     unreadVasuDocumentsCountQuery
   )
 
+  const { data: unreadChildDocumentsCount } = useQuery(
+    unreadChildDocumentsCountQuery
+  )
+
+  const unreadCount = useMemo(
+    () =>
+      (unreadVasuDocumentsCount?.[childId] ?? 0) +
+      (unreadChildDocumentsCount?.[childId] ?? 0),
+    [childId, unreadVasuDocumentsCount, unreadChildDocumentsCount]
+  )
+
   return (
     <ResponsiveWholePageCollapsible
       title={i18n.children.vasu.title}
       open={open}
       toggleOpen={() => setOpen(!open)}
       opaque
-      countIndicator={unreadVasuDocumentsCount?.[childId]}
+      countIndicator={unreadCount > 0 ? unreadCount : undefined}
       data-qa="collapsible-vasu"
       contentPadding="zero"
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >
       <RequireAuth>
-        <VasuAndLeopsContent childId={childId} />
+        <PaddingBox>
+          <FixedSpaceColumn>
+            <ExpandingInfo
+              info={i18n.children.vasu.givePermissionToShareInfoVasuInfoText}
+              ariaLabel=""
+              closeLabel={i18n.common.close}
+            >
+              {i18n.children.vasu.givePermissionToShareInfoVasu}
+            </ExpandingInfo>
+            <VasuAndLeopsContent childId={childId} />
+            <OtherDocumentsContent childId={childId} />
+          </FixedSpaceColumn>
+        </PaddingBox>
       </RequireAuth>
     </ResponsiveWholePageCollapsible>
   )
@@ -192,12 +260,12 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
 }) {
   const vasus = useQueryResult(childVasuSummariesQuery(childId))
   const i18n = useTranslation()
-  const [infoOpen, setInfoOpen] = useState(false)
 
   const user = useUser()
 
   return (
     <>
+      <H3>{i18n.children.vasu.plansTitle}</H3>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
@@ -206,29 +274,9 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
           </PaddingBox>
         ) : (
           <>
-            <PaddingBox>
-              <P>
-                {i18n.children.vasu.givePermissionToShareInfoVasu}
-                <ParagraphInfoButton
-                  aria-label={i18n.common.openExpandingInfo}
-                  onClick={() => setInfoOpen(!infoOpen)}
-                  open={infoOpen}
-                />
-              </P>
-              {infoOpen && (
-                <ExpandingInfoBox
-                  close={() => setInfoOpen(false)}
-                  info={
-                    i18n.children.vasu.givePermissionToShareInfoVasuInfoText
-                  }
-                  width="full"
-                  closeLabel=""
-                />
-              )}
-            </PaddingBox>
             <MobileAndTablet>
               {items.map((vasu) => (
-                <MobileRowContainer key={vasu.id}>
+                <MobileRowContainer key={vasu.id} unread={false}>
                   <FixedSpaceRow justifyContent="space-between">
                     <span data-qa={`published-at-${vasu.id}`}>
                       {vasu.publishedAt?.toLocalDate().format() ?? ''}
@@ -258,6 +306,53 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
                 summaries={items}
                 permissionToShareRequired={permissionToShareRequired}
               />
+            </Desktop>
+          </>
+        )
+      )}
+    </>
+  )
+})
+
+const OtherDocumentsContent = React.memo(function OtherDocumentsContent({
+  childId
+}: {
+  childId: UUID
+}) {
+  const documentsResult = useQueryResult(childDocumentSummariesQuery(childId))
+  const i18n = useTranslation()
+
+  return (
+    <>
+      <H3>{i18n.children.vasu.otherDocumentsTitle}</H3>
+      {renderResult(documentsResult, (documents) =>
+        documents.length === 0 ? (
+          <PaddingBox>
+            <Gap size="s" />
+            <Dimmed>{i18n.children.vasu.noDocuments}</Dimmed>
+          </PaddingBox>
+        ) : (
+          <>
+            <MobileAndTablet>
+              {documents.map((document) => (
+                <MobileRowContainer key={document.id} unread={document.unread}>
+                  <FixedSpaceRow justifyContent="space-between">
+                    <span data-qa={`published-at-${document.id}`}>
+                      {document.publishedAt?.toLocalDate().format() ?? ''}
+                    </span>
+                  </FixedSpaceRow>
+                  <Gap size="xs" />
+                  <Link
+                    to={`/child-documents/${document.id}`}
+                    data-qa="child-document-link"
+                  >
+                    {document.templateName}
+                  </Link>
+                </MobileRowContainer>
+              ))}
+            </MobileAndTablet>
+            <Desktop>
+              <AssistanceDocumentsTable summaries={documents} />
             </Desktop>
           </>
         )

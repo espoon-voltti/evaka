@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.children
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
@@ -53,3 +54,16 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
         .bind("userId", id)
         .mapTo<Child>()
         .list()
+
+fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<ChildId> =
+    createQuery(
+            """
+SELECT child_id FROM guardian WHERE guardian_id = :userId
+UNION ALL
+SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+"""
+        )
+        .bind("today", today)
+        .bind("userId", userId)
+        .mapTo<ChildId>()
+        .toList()

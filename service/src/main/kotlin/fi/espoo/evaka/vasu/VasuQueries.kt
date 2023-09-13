@@ -452,19 +452,6 @@ WHERE id = :id
         .execute()
 }
 
-fun Database.Read.getCitizenVasuChildren(today: LocalDate, userId: PersonId): List<ChildId> =
-    createQuery(
-            """
-SELECT child_id FROM guardian WHERE guardian_id = :userId
-UNION ALL
-SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
-"""
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .mapTo<ChildId>()
-        .toList()
-
 fun Database.Transaction.deleteVasuDocument(id: VasuDocumentId) {
     createUpdate("DELETE FROM curriculum_content WHERE document_id = :id").bind("id", id).execute()
     createUpdate("DELETE FROM curriculum_document_event WHERE curriculum_document_id = :id")

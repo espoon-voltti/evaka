@@ -28,7 +28,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/child-documents")
-class ChildDocumentController(private val accessControl: AccessControl) {
+class ChildDocumentController(
+    private val accessControl: AccessControl,
+    private val emailNotificationService: ChildDocumentNotificationService
+) {
     @PostMapping
     fun createDocument(
         db: Database,
@@ -184,6 +187,7 @@ class ChildDocumentController(private val accessControl: AccessControl) {
                         documentId
                     )
                     tx.publishChildDocument(documentId, clock.now())
+                    emailNotificationService.scheduleEmailNotification(tx, documentId, clock.now())
                 }
             }
             .also { Audit.ChildDocumentPublish.log(targetId = documentId) }

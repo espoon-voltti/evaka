@@ -61,8 +61,10 @@ import {
   DevCalendarEvent,
   DevCalendarEventAttendee,
   DevChildConsent,
+  DevChildDocument,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
+  DevDocumentTemplate,
   DevHoliday,
   DevIncome,
   DevPayment,
@@ -128,7 +130,9 @@ import {
   insertDaycareAssistanceFixtures,
   insertPreschoolAssistanceFixtures,
   insertOtherAssistanceMeasureFixtures,
-  insertAssistanceNeedPreschoolDecisionFixtures
+  insertAssistanceNeedPreschoolDecisionFixtures,
+  insertDocumentTemplateFixture,
+  insertChildDocumentFixture
 } from './index'
 
 export const fullDayTimeRange: TimeRange = {
@@ -1949,6 +1953,55 @@ export class Fixture {
   ): AttendanceReservationBuilder {
     return new AttendanceReservationBuilder(data)
   }
+
+  static documentTemplate(): DocumentTemplateBuilder {
+    return new DocumentTemplateBuilder({
+      id: uuidv4(),
+      type: 'PEDAGOGICAL_REPORT',
+      language: 'FI',
+      name: 'Pedagoginen selvitys',
+      confidential: true,
+      legalBasis: '§1',
+      published: false,
+      validity: new DateRange(LocalDate.of(2000, 1, 1), null),
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'osio 1',
+            infoText: '',
+            questions: [
+              {
+                id: 'q1',
+                type: 'TEXT',
+                label: 'kysymys 1',
+                infoText: '',
+                multiline: false
+              }
+            ]
+          }
+        ]
+      }
+    })
+  }
+
+  static childDocument(): ChildDocumentBuilder {
+    return new ChildDocumentBuilder({
+      id: uuidv4(),
+      childId: 'not_set',
+      templateId: 'not_set',
+      publishedAt: null,
+      content: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      }
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2643,5 +2696,47 @@ export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservatio
 
   copy() {
     return new AttendanceReservationBuilder({ ...this.data })
+  }
+}
+
+export class DocumentTemplateBuilder extends FixtureBuilder<DevDocumentTemplate> {
+  async save() {
+    await insertDocumentTemplateFixture(this.data)
+    return this
+  }
+
+  withPublished(published: boolean) {
+    this.data.published = published
+    return this
+  }
+
+  copy() {
+    return new DocumentTemplateBuilder({ ...this.data })
+  }
+}
+
+export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
+  async save() {
+    await insertChildDocumentFixture(this.data)
+    return this
+  }
+
+  withChild(childId: UUID) {
+    this.data.childId = childId
+    return this
+  }
+
+  withTemplate(templateId: UUID) {
+    this.data.templateId = templateId
+    return this
+  }
+
+  withPublishedAt(publishedAt: HelsinkiDateTime | null) {
+    this.data.publishedAt = publishedAt
+    return this
+  }
+
+  copy() {
+    return new ChildDocumentBuilder({ ...this.data })
   }
 }

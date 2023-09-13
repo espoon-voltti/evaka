@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../utils'
 import { AsyncButton, Page, Radio, TextInput } from '../../utils/page'
@@ -208,4 +209,10 @@ export class CitizenChildPage {
   async assertVasuChildCount(expectedCount: number) {
     await waitUntilEqual(() => this.#vasuChildContainer.count(), expectedCount)
   }
+
+  childDocumentRow = (documentId: UUID) =>
+    this.page.find(`tr[data-qa="child-document-${documentId}"]`)
+
+  childDocumentLink = (documentId: UUID) =>
+    this.childDocumentRow(documentId).findByDataQa('child-document-link')
 }

@@ -8,6 +8,11 @@ const components = {
     failure: 'Lataus epäonnistui',
     success: 'Valmis'
   },
+  common: {
+    add: 'Lisää',
+    close: 'Sulje',
+    remove: 'Poista'
+  },
   datePicker: {
     placeholder: 'pp.kk.vvvv',
     description:
@@ -17,6 +22,16 @@ const components = {
       dateTooEarly: 'Valitse myöhäisempi päivä',
       dateTooLate: 'Valitse aikaisempi päivä'
     }
+  },
+  documentTemplates: {
+    templateQuestions: {
+      label: 'Otsikko',
+      options: 'Vaihtoehdot',
+      infoText: 'Ohjeteksti',
+      multiline: 'Salli monirivinen vastaus',
+      withText: 'Pyydetään lisätietoja'
+    },
+    noSelection: 'Ei valintaa'
   },
   loginErrorModal: {
     header: 'Kirjautuminen epäonnistui',
@@ -31,6 +46,23 @@ const components = {
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
+  },
+  validationErrors: {
+    required: 'Pakollinen tieto',
+    requiredSelection: 'Valinta puuttuu',
+    format: 'Anna oikeassa muodossa',
+    integerFormat: 'Anna kokonaisluku',
+    ssn: 'Virheellinen henkilötunnus',
+    phone: 'Virheellinen numero',
+    email: 'Virheellinen sähköpostiosoite',
+    preferredStartDate: 'Aloituspäivä ei ole sallittu',
+    timeFormat: 'Tarkista',
+    timeRequired: 'Pakollinen',
+    unitNotSelected: 'Valitse vähintään yksi hakutoive',
+    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
+    httpUrl: 'Anna muodossa https://example.com',
+    unselectableDate: 'Päivä ei ole sallittu',
+    openAttendance: 'Avoin kirjaus'
   }
 }
 

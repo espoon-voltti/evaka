@@ -2359,23 +2359,9 @@ const sv: Translations = {
     }
   },
   validationErrors: {
-    required: 'Värde saknas',
-    requiredSelection: 'Val saknas',
-    format: 'Ange rätt format',
-    integerFormat: 'Ange ett heltal',
-    ssn: 'Ogiltigt personbeteckning',
-    phone: 'Ogiltigt telefonnummer',
-    email: 'Ogiltig e-postadress',
-    preferredStartDate: 'Ogiltigt datum',
-    timeFormat: 'Kolla',
-    timeRequired: 'Nödvändig',
-    unitNotSelected: 'Välj minst en enhet',
-    emailsDoNotMatch: 'E-postadresserna är olika',
-    httpUrl: 'Ange i formen https://example.com',
-    unselectableDate: 'Ogiltigt datum',
-    outsideUnitOperationTime: 'Utanför enhetens öppettid',
-    openAttendance: 'Öppen närvaro',
-    ...components.datePicker.validationErrors
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
+    outsideUnitOperationTime: 'Utanför enhetens öppettid'
   },
   placement: {
     type: {
@@ -2479,11 +2465,13 @@ const sv: Translations = {
       empty: 'Inte definierat'
     },
     vasu: {
-      title: 'Plan för småbarnspedagogik och lärande inom förskoleundervisning',
+      title: 'Pedagogiska dokument',
+      plansTitle: 'Planer',
+      noVasus: 'Inga planer',
+      otherDocumentsTitle: 'Andra dokument',
+      noDocuments: 'Inga dokument',
       lastModified: 'Senaste redigeringsdatum',
       lastPublished: 'Senaste publicering för vårdnadshavare',
-      noVasus:
-        'Inga planer för småbarnspedagogik eller lärande inom förskoleundervisning',
       leavePage: 'Lämna sidan',
       edited: 'Redigerad',
       eventTypes: {
@@ -2506,11 +2494,12 @@ const sv: Translations = {
         PRESCHOOL:
           'Händelser gällande plan för barnets lärande inom förskoleundervisning'
       },
+      confidential: 'Konfidentiellt',
       noRecord: 'Inga anmärkningar',
       givePermissionToShareInfoVasu:
         'Vid behov kommer nödvändiga delar av planen att överföras till övriga mottagare. (Lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)',
       givePermissionToShareInfoVasuInfoText:
-        'Tag kontakt med enheten för småbarnspedagogik om du vill ändra de i planen nämnda mottagarna. Planen kan överlåtas till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §).',
+        'Tag kontakt med enheten om du vill ändra de i planen nämnda mottagarna. Planen kan överlåtas till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §).',
       givePermissionToShareTitleVasu:
         'Bekräftelse att överföra barnets plan för småbarnspedagogik till övriga mottagare',
       givePermissionToShareTitleLeops:

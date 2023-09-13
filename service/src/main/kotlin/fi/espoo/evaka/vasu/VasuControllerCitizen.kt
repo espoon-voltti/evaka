@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -78,7 +79,7 @@ class VasuControllerCitizen(
                         Action.Citizen.Person.READ_VASU_UNREAD_COUNT,
                         user.id
                     )
-                    val children = tx.getCitizenVasuChildren(clock.today(), user.id)
+                    val children = tx.getCitizenChildIds(clock.today(), user.id)
                     if (!featureConfig.curriculumDocumentPermissionToShareRequired) {
                         return@read children.associateWith { 0 }
                     }

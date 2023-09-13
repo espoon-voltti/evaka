@@ -15,6 +15,7 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -191,6 +192,15 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendChildDocumentNotificationEmail(
+        val documentId: ChildDocumentId,
+        val childId: ChildId,
+        val recipientId: PersonId,
+        val language: Language
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendPatuReport(val dateRange: DateRange) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -322,6 +332,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendApplicationEmail::class,
                     SendAssistanceNeedDecisionEmail::class,
                     SendAssistanceNeedPreschoolDecisionEmail::class,
+                    SendChildDocumentNotificationEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
                     SendOutdatedIncomeNotificationEmail::class,

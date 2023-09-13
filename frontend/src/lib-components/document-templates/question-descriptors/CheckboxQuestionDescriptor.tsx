@@ -20,7 +20,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
-import { useTranslation } from '../../../state/i18n'
+import { useTranslations } from '../../i18n'
 
 import {
   DocumentQuestionDescriptor,
@@ -73,7 +73,7 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
   const { template, answer } = useFormFields(bind)
   const { label, infoText } = useFormFields(template)
   return (
@@ -93,7 +93,7 @@ const Preview = React.memo(function Preview({
 }: {
   bind: BoundForm<TemplateForm>
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
 
   const [prevBindState, setPrevBindState] = useState(bind.state)
 
@@ -121,7 +121,7 @@ const TemplateView = React.memo(function TemplateView({
 }: {
   bind: BoundForm<TemplateForm>
 }) {
-  const { i18n } = useTranslation()
+  const i18n = useTranslations()
   const { label, infoText } = useFormFields(bind)
 
   return (

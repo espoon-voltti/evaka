@@ -1451,7 +1451,7 @@ export default {
       annulmentReason: 'Päätöksen mitätöinnin perustelu',
       pageTitle: 'Päätös tuesta esiopetuksessa',
       decisionNumber: 'Päätösnumero',
-      confidential: 'Salassa pidettävä',
+      confidential: 'Salassapidettävä',
       lawReference: 'JulkL 24.1 §',
       types: {
         NEW: 'Erityinen tuki alkaa',
@@ -1687,7 +1687,7 @@ export default {
           REJECTED: 'Hylätty',
           ANNULLED: 'Mitätöity'
         },
-        confidential: 'Salassa pidettävä',
+        confidential: 'Salassapidettävä',
         lawReference: 'Varhaiskasvatuslaki 40 §',
         appealInstructionsTitle: 'Oikaisuvaatimusohje',
         appealInstructions: (
@@ -2346,23 +2346,9 @@ export default {
     }
   },
   validationErrors: {
-    required: 'Pakollinen tieto',
-    requiredSelection: 'Valinta puuttuu',
-    format: 'Anna oikeassa muodossa',
-    integerFormat: 'Anna kokonaisluku',
-    ssn: 'Virheellinen henkilötunnus',
-    phone: 'Virheellinen numero',
-    email: 'Virheellinen sähköpostiosoite',
-    preferredStartDate: 'Aloituspäivä ei ole sallittu',
-    timeFormat: 'Tarkista',
-    timeRequired: 'Pakollinen',
-    unitNotSelected: 'Valitse vähintään yksi hakutoive',
-    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
-    httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu',
-    outsideUnitOperationTime: 'Yksikön aukiolo ylittyy',
-    openAttendance: 'Avoin kirjaus',
-    ...components.datePicker.validationErrors
+    ...components.validationErrors,
+    ...components.datePicker.validationErrors,
+    outsideUnitOperationTime: 'Yksikön aukiolo ylittyy'
   },
   placement: {
     type: {
@@ -2462,9 +2448,11 @@ export default {
       pageCount: (current: number, total: number) => `Sivu ${current}/${total}`
     },
     vasu: {
-      title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
-      noVasus:
-        'Ei varhaiskasvatussuunnitelmia tai esiopetuksen oppimissuunnitelmia',
+      title: 'Pedagogiset asiakirjat',
+      plansTitle: 'Suunnitelmat',
+      noVasus: 'Ei suunnitelmia',
+      otherDocumentsTitle: 'Muut asiakirjat',
+      noDocuments: 'Ei asiakirjoja',
       lastModified: 'Viimeisin muokkauspäivämäärä',
       lastPublished: 'Viimeksi julkaistu huoltajalle',
       leavePage: 'Poistu',
@@ -2488,11 +2476,12 @@ export default {
         DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
         PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
       },
+      confidential: 'Salassapidettävä',
       noRecord: 'Ei merkintää',
       givePermissionToShareInfoVasu:
         'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
       givePermissionToShareInfoVasuInfoText:
-        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Sunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41§, Perusopetuslaki 41§).',
+        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi yksikön henkilökuntaan. Sunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41§, Perusopetuslaki 41§).',
       givePermissionToShareTitleVasu:
         'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
       givePermissionToShareTitleLeops:

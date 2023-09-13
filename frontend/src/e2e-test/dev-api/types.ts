@@ -23,6 +23,11 @@ import {
   DecisionType
 } from 'lib-common/generated/api-types/decision'
 import {
+  DocumentContent,
+  DocumentTemplateContent,
+  DocumentType
+} from 'lib-common/generated/api-types/document'
+import {
   FixedPeriodQuestionnaireBody,
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
@@ -683,4 +688,24 @@ export function deserializeDiscussionData(
       ? LocalDate.parseIso(data.counselingDate)
       : null
   }
+}
+
+export interface DevDocumentTemplate {
+  id: UUID
+  name: string
+  type: DocumentType
+  language: string
+  confidential: boolean
+  legalBasis: string
+  validity: DateRange
+  published: boolean
+  content: DocumentTemplateContent
+}
+
+export interface DevChildDocument {
+  id: UUID
+  childId: UUID
+  templateId: UUID
+  content: DocumentContent
+  publishedAt: HelsinkiDateTime | null
 }

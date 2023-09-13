@@ -10,6 +10,7 @@ import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
+import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
 import { childrenQuery } from '../children/queries'
 import { childConsentNotificationsQuery } from '../children/sections/consents/queries'
 import { unreadPedagogicalDocumentsCountQuery } from '../children/sections/pedagogical-documents/queries'
@@ -31,6 +32,10 @@ export function useUnreadChildNotifications() {
     unreadVasuDocumentsCountQuery,
     { enabled: loggedIn }
   )
+  const { data: unreadChildDocumentsCount = empty } = useQuery(
+    unreadChildDocumentsCountQuery,
+    { enabled: loggedIn }
+  )
 
   const unreadChildNotifications = useMemo(() => {
     const counts: Record<UUID, number> = {}
@@ -41,13 +46,15 @@ export function useUnreadChildNotifications() {
 
     addCounts(unreadPedagogicalDocumentsCount)
     addCounts(unreadVasuDocumentsCount)
+    addCounts(unreadChildDocumentsCount)
     addCounts(childConsentNotifications)
 
     return counts
   }, [
     childConsentNotifications,
     unreadPedagogicalDocumentsCount,
-    unreadVasuDocumentsCount
+    unreadVasuDocumentsCount,
+    unreadChildDocumentsCount
   ])
 
   const totalUnreadChildNotifications = useMemo(

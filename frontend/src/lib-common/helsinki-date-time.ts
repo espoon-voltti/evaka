@@ -195,6 +195,9 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
     }
     return result
   }
+  static parseNullableIso(value: string | null): HelsinkiDateTime | null {
+    return value !== null ? this.parseIso(value) : null
+  }
   static tryParseIso(value: string): HelsinkiDateTime | undefined {
     return HelsinkiDateTime.tryFromDate(parseJSON(value))
   }
