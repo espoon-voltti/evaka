@@ -45,9 +45,9 @@ class EspooScheduledJobs(
     private val logger = KotlinLogging.logger {}
 
     fun sendPatuReport(db: Database.Connection, clock: EvakaClock) {
-        val yesterday = clock.today().minusDays(1)
-        logger.info("Sending patu report for $yesterday")
-        patuReportingService.sendPatuReport(db, DateRange(yesterday, yesterday))
+        val fourtyDaysAgo = clock.today().minusDays(40)
+        logger.info("Sending patu report for $fourtyDaysAgo")
+        patuReportingService.sendPatuReport(db, DateRange(fourtyDaysAgo, fourtyDaysAgo))
     }
 
     fun planBiJobs(db: Database.Connection, clock: EvakaClock) {

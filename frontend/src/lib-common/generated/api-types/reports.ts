@@ -580,6 +580,8 @@ export interface RawReportRow {
   hasAssistanceNeed: boolean
   hasServiceNeed: boolean
   hoursPerWeek: number
+  isHoliday: boolean
+  isWeekday: boolean
   language: string | null
   lastName: string
   partDay: boolean
