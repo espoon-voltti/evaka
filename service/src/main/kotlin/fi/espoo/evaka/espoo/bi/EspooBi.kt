@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.espoobi
+package fi.espoo.evaka.espoo.bi
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -10,15 +10,15 @@ import fi.espoo.evaka.shared.db.QuerySql
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.function.ServerResponse
 
-object EspooBiPoc {
+object EspooBi {
     val getAreas =
-        streamingCsvRoute<BiArea> { sql("""
+        csvQuery<BiArea> { sql("""
 SELECT id, created, updated, name
 FROM care_area
 """) }
 
     val getUnits =
-        streamingCsvRoute<BiUnit> {
+        csvQuery<BiUnit> {
             sql(
                 """
 SELECT
@@ -35,15 +35,13 @@ FROM daycare
         }
 
     val getGroups =
-        streamingCsvRoute<BiGroup> {
-            sql("""
+        csvQuery<BiGroup> { sql("""
 SELECT id, name, start_date, end_date
 FROM daycare_group
-""")
-        }
+""") }
 
     val getChildren =
-        streamingCsvRoute<BiChild> {
+        csvQuery<BiChild> {
             sql(
                 """
 SELECT
@@ -56,7 +54,7 @@ JOIN person USING (id)
         }
 
     val getPlacements =
-        streamingCsvRoute<BiPlacement> {
+        csvQuery<BiPlacement> {
             sql(
                 """
 SELECT id, created, updated, child_id AS child, unit_id AS unit, start_date, end_date, FALSE AS is_backup, type
@@ -71,7 +69,7 @@ FROM backup_care
         }
 
     val getGroupPlacements =
-        streamingCsvRoute<BiGroupPlacement> {
+        csvQuery<BiGroupPlacement> {
             sql(
                 """
 SELECT id, created, updated, daycare_placement_id AS placement, daycare_group_id AS "group", start_date, end_date
@@ -87,7 +85,7 @@ WHERE group_id IS NOT NULL
         }
 
     val getAbsences =
-        streamingCsvRoute<BiAbsence> {
+        csvQuery<BiAbsence> {
             sql(
                 """
 SELECT id, modified_at AS updated, child_id AS child, date, category
@@ -97,7 +95,7 @@ FROM absence
         }
 
     val getGroupCaretakerAllocations =
-        streamingCsvRoute<BiGroupCaretakerAllocation> {
+        csvQuery<BiGroupCaretakerAllocation> {
             sql(
                 """
 SELECT id, created, updated, group_id AS "group", amount, start_date, end_date
@@ -107,7 +105,7 @@ FROM daycare_caretaker
         }
 
     val getApplications =
-        streamingCsvRoute<BiApplication> {
+        csvQuery<BiApplication> {
             sql(
                 """
 SELECT
@@ -128,7 +126,7 @@ WHERE status != 'CREATED'
         }
 
     val getDecisions =
-        streamingCsvRoute<BiDecision> {
+        csvQuery<BiDecision> {
             sql(
                 """
 SELECT id, created, updated, application_id AS application, sent_date, status, type, start_date, end_date
@@ -138,7 +136,7 @@ FROM decision
         }
 
     val getServiceNeedOptions =
-        streamingCsvRoute<BiServiceNeedOption> {
+        csvQuery<BiServiceNeedOption> {
             sql(
                 """
 SELECT id, created, updated, name_fi AS name, valid_placement_type
@@ -148,7 +146,7 @@ FROM service_need_option
         }
 
     val getServiceNeeds =
-        streamingCsvRoute<BiServiceNeed> {
+        csvQuery<BiServiceNeed> {
             sql(
                 """
 SELECT id, created, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care = 'FULL' as shift_care
@@ -158,7 +156,7 @@ FROM service_need
         }
 
     val getFeeDecisions =
-        streamingCsvRoute<BiFeeDecision> {
+        csvQuery<BiFeeDecision> {
             sql(
                 """
 SELECT
@@ -171,7 +169,7 @@ WHERE status NOT IN ('DRAFT', 'IGNORED')
         }
 
     val getFeeDecisionChildren =
-        streamingCsvRoute<BiFeeDecisionChild> {
+        csvQuery<BiFeeDecisionChild> {
             sql(
                 """
 SELECT
@@ -184,7 +182,7 @@ FROM fee_decision_child
         }
 
     val getVoucherValueDecisions =
-        streamingCsvRoute<BiVoucherValueDecision> {
+        csvQuery<BiVoucherValueDecision> {
             sql(
                 """
 SELECT
@@ -199,7 +197,7 @@ WHERE status != 'DRAFT'
         }
 
     val getCurriculumTemplates =
-        streamingCsvRoute<BiCurriculumTemplate> {
+        csvQuery<BiCurriculumTemplate> {
             sql(
                 """
 SELECT
@@ -210,7 +208,7 @@ FROM curriculum_template
         }
 
     val getCurriculumDocuments =
-        streamingCsvRoute<BiCurriculumDocument> {
+        csvQuery<BiCurriculumDocument> {
             sql(
                 """
 SELECT
@@ -221,12 +219,115 @@ FROM curriculum_document
         }
 
     val getPedagogicalDocuments =
-        streamingCsvRoute<BiPedagogicalDocument> {
+        csvQuery<BiPedagogicalDocument> {
             sql(
                 """
 SELECT
     id, created, updated, child_id AS child
 FROM pedagogical_document
+"""
+            )
+        }
+
+    val getAssistanceFactors =
+        csvQuery<BiAssistanceFactor> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, capacity_factor,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM assistance_factor
+"""
+            )
+        }
+
+    val getDaycareAssistanceEntries =
+        csvQuery<BiDaycareAssistanceEntry> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, level,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM daycare_assistance
+"""
+            )
+        }
+
+    val getPreschoolAssistanceEntries =
+        csvQuery<BiPreschoolAssistanceEntry> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, level,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM preschool_assistance
+"""
+            )
+        }
+
+    val getAssistanceNeedVoucherCoefficients =
+        csvQuery<BiAssistanceNeedVoucherCoefficient> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, coefficient,
+    lower(validity_period) AS start_date, upper(validity_period) - 1 AS end_date
+FROM assistance_need_voucher_coefficient
+"""
+            )
+        }
+
+    val getAssistanceActions =
+        csvQuery<BiAssistanceAction> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, start_date, end_date,
+    other_action != '' AS has_other_action
+FROM assistance_action
+"""
+            )
+        }
+
+    val getAssistanceActionOptionRefs =
+        csvQuery<BiAssistanceActionOptionRef> {
+            sql(
+                """
+SELECT
+    action_id AS action, option.value AS option
+FROM assistance_action_option_ref
+JOIN assistance_action_option option ON option.id = option_id
+"""
+            )
+        }
+
+    val getAssistanceNeedDaycareDecisions =
+        csvQuery<BiAssistanceNeedDaycareDecision> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, selected_unit AS unit,
+    lower(validity_period) AS valid_from, upper(validity_period) - 1 AS valid_to,
+    status,
+    'ASSISTANCE_ENDS' = ANY(assistance_levels) AS assistance_ends,
+    'ASSISTANCE_SERVICES_FOR_TIME' = ANY(assistance_levels) AS assistance_services_for_time,
+    'ENHANCED_ASSISTANCE' = ANY(assistance_levels) AS enhanced_assistance,
+    'SPECIAL_ASSISTANCE' = ANY(assistance_levels) AS special_assistance
+FROM assistance_need_decision
+WHERE status != 'DRAFT'
+"""
+            )
+        }
+
+    val getAssistanceNeedPreschoolDecisions =
+        csvQuery<BiAssistanceNeedPreschoolDecision> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, selected_unit AS unit,
+    type, valid_from, status
+FROM assistance_need_preschool_decision
+WHERE status != 'DRAFT'
 """
             )
         }
@@ -239,25 +340,23 @@ private fun printEspooBiCsvField(value: Any?): String =
 
 typealias StreamingCsvRoute = (db: Database, user: AuthenticatedUser.Integration) -> ServerResponse
 
-private inline fun <reified T : Any> streamingCsvRoute(
+typealias CsvQuery = (tx: Database.Read) -> Sequence<String>
+
+private inline fun <reified T : Any> csvQuery(
     crossinline f: QuerySql.Builder<T>.() -> QuerySql<T>
-): StreamingCsvRoute = { db, _ ->
+): CsvQuery = { tx ->
+    toCsvRecords(::printEspooBiCsvField, T::class, tx.createQuery { f() }.mapTo<T>().asSequence())
+}
+
+fun streamingCsvRoute(query: CsvQuery): StreamingCsvRoute = { db, _ ->
     ServerResponse.ok().build { _, response ->
         db.connect { dbc ->
             dbc.read { tx ->
-                val records =
-                    toCsvRecords(
-                        ::printEspooBiCsvField,
-                        T::class,
-                        tx.createQuery { f() }.mapTo<T>().asSequence()
-                    )
+                val records = query(tx)
                 val charset = CSV_CHARSET
                 response.setHeader("Content-Type", "text/csv;charset=${charset.name()}")
                 val writer = response.outputStream.bufferedWriter(charset)
-                records.forEach {
-                    writer.append(it)
-                    writer.append(CSV_RECORD_SEPARATOR)
-                }
+                records.forEach { writer.append(it) }
                 writer.flush()
             }
         }

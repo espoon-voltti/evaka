@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.espoobi
+package fi.espoo.evaka.espoo.bi
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
@@ -11,6 +11,14 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
+import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
@@ -47,30 +55,42 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevAssistanceFactor
+import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
+import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareAssistance
 import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertPedagogicalDocument
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
+import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
+import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestDaycareAssistance
 import fi.espoo.evaka.shared.dev.insertTestDaycareCaretaker
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestDecision
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestPreschoolAssistance
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -88,41 +108,36 @@ import java.time.Month
 import java.util.UUID
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.springframework.http.converter.HttpMessageConverter
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
 
-class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val user = AuthenticatedUser.Integration
-
+class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun getAreas() {
         val id = db.transaction { it.insertTestArea() }
-        assertSingleRowContainingId(EspooBiPoc.getAreas, id)
+        assertSingleRowContainingId(EspooBi.getAreas, id)
     }
 
     @Test
     fun getUnits() {
         val id = db.transaction { it.insertTestDaycare() }
-        assertSingleRowContainingId(EspooBiPoc.getUnits, id)
+        assertSingleRowContainingId(EspooBi.getUnits, id)
     }
 
     @Test
     fun getGroups() {
         val id = db.transaction { it.insertTestGroup() }
-        assertSingleRowContainingId(EspooBiPoc.getGroups, id)
+        assertSingleRowContainingId(EspooBi.getGroups, id)
     }
 
     @Test
     fun getChildren() {
         val id = db.transaction { it.insertTestChild() }
-        assertSingleRowContainingId(EspooBiPoc.getChildren, id)
+        assertSingleRowContainingId(EspooBi.getChildren, id)
     }
 
     @Test
     fun getPlacements() {
         val id = db.transaction { it.insertTestPlacement() }
-        assertSingleRowContainingId(EspooBiPoc.getPlacements, id)
+        assertSingleRowContainingId(EspooBi.getPlacements, id)
     }
 
     @Test
@@ -138,7 +153,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
             }
-        assertSingleRowContainingId(EspooBiPoc.getGroupPlacements, id)
+        assertSingleRowContainingId(EspooBi.getGroupPlacements, id)
     }
 
     @Test
@@ -153,7 +168,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getAbsences, id)
+        assertSingleRowContainingId(EspooBi.getAbsences, id)
     }
 
     @Test
@@ -166,13 +181,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getGroupCaretakerAllocations, id)
+        assertSingleRowContainingId(EspooBi.getGroupCaretakerAllocations, id)
     }
 
     @Test
     fun getApplications() {
         val id = db.transaction { it.insertTestApplicationWithForm() }
-        assertSingleRowContainingId(EspooBiPoc.getApplications, id)
+        assertSingleRowContainingId(EspooBi.getApplications, id)
     }
 
     @Test
@@ -192,13 +207,13 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getDecisions, id)
+        assertSingleRowContainingId(EspooBi.getDecisions, id)
     }
 
     @Test
     fun getServiceNeedOptions() {
         val id = db.transaction { it.insertTestServiceNeedOption() }
-        assertSingleRowContainingId(EspooBiPoc.getServiceNeedOptions, id)
+        assertSingleRowContainingId(EspooBi.getServiceNeedOptions, id)
     }
 
     @Test
@@ -212,32 +227,32 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     optionId = it.insertTestServiceNeedOption(),
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getServiceNeeds, id)
+        assertSingleRowContainingId(EspooBi.getServiceNeeds, id)
     }
 
     @Test
     fun getFeeDecisions() {
         val id = db.transaction { it.insertTestFeeDecision() }
-        assertSingleRowContainingId(EspooBiPoc.getFeeDecisions, id)
+        assertSingleRowContainingId(EspooBi.getFeeDecisions, id)
     }
 
     @Test
     fun getFeeDecisionChildren() {
         val feeDecisionId = db.transaction { it.insertTestFeeDecision() }
         // We intentionally test for *fee decision id*, not the child row id
-        assertSingleRowContainingId(EspooBiPoc.getFeeDecisionChildren, feeDecisionId)
+        assertSingleRowContainingId(EspooBi.getFeeDecisionChildren, feeDecisionId)
     }
 
     @Test
     fun getVoucherValueDecisions() {
         val id = db.transaction { it.insertTestVoucherValueDecision() }
-        assertSingleRowContainingId(EspooBiPoc.getVoucherValueDecisions, id)
+        assertSingleRowContainingId(EspooBi.getVoucherValueDecisions, id)
     }
 
     @Test
     fun getCurriculumTemplates() {
         val id = db.transaction { it.insertTestCurriculumTemplate() }
-        assertSingleRowContainingId(EspooBiPoc.getCurriculumTemplates, id)
+        assertSingleRowContainingId(EspooBi.getCurriculumTemplates, id)
     }
 
     @Test
@@ -256,7 +271,7 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
             }
-        assertSingleRowContainingId(EspooBiPoc.getCurriculumDocuments, id)
+        assertSingleRowContainingId(EspooBi.getCurriculumDocuments, id)
     }
 
     @Test
@@ -271,17 +286,159 @@ class EspooBiPocTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-        assertSingleRowContainingId(EspooBiPoc.getPedagogicalDocuments, id)
+        assertSingleRowContainingId(EspooBi.getPedagogicalDocuments, id)
     }
 
-    private fun assertSingleRowContainingId(route: StreamingCsvRoute, id: Id<*>) {
-        val request = MockHttpServletRequest()
-        val response = MockHttpServletResponse()
-        val messageConverters = emptyList<HttpMessageConverter<*>>()
-        route(dbInstance(), user).writeTo(request, response) { messageConverters }
+    @Test
+    fun getAssistanceFactors() {
+        val id =
+            db.transaction {
+                it.insertTestAssistanceFactor(DevAssistanceFactor(childId = it.insertTestChild()))
+            }
+        assertSingleRowContainingId(EspooBi.getAssistanceFactors, id)
+    }
 
-        val content = response.contentAsString
-        val lines = content.lineSequence().map { it.trim() }.filter { it.isNotEmpty() }
+    @Test
+    fun getDaycareAssistanceEntries() {
+        val id =
+            db.transaction {
+                it.insertTestDaycareAssistance(DevDaycareAssistance(childId = it.insertTestChild()))
+            }
+        assertSingleRowContainingId(EspooBi.getDaycareAssistanceEntries, id)
+    }
+
+    @Test
+    fun getPreschoolAssistanceEntries() {
+        val id =
+            db.transaction {
+                it.insertTestPreschoolAssistance(
+                    DevPreschoolAssistance(childId = it.insertTestChild())
+                )
+            }
+        assertSingleRowContainingId(EspooBi.getPreschoolAssistanceEntries, id)
+    }
+
+    @Test
+    fun getAssistanceNeedVoucherCoefficients() {
+        val id =
+            db.transaction {
+                it.insertAssistanceNeedVoucherCoefficient(
+                        childId = it.insertTestChild(),
+                        AssistanceNeedVoucherCoefficientRequest(
+                            coefficient = 2.0,
+                            validityPeriod = FiniteDateRange.ofMonth(2019, Month.JANUARY)
+                        )
+                    )
+                    .id
+            }
+        assertSingleRowContainingId(EspooBi.getAssistanceNeedVoucherCoefficients, id)
+    }
+
+    @Test
+    fun getAssistanceNeedDaycareDecisions() {
+        val id =
+            db.transaction {
+                val child = it.insertTestChild()
+                it.insertTestAssistanceNeedDecision(
+                    childId = child,
+                    DevAssistanceNeedDecision(
+                        decisionNumber = 999,
+                        childId = child,
+                        validityPeriod = DateRange.ofMonth(2019, Month.JANUARY),
+                        status = AssistanceNeedDecisionStatus.ACCEPTED,
+                        language = AssistanceNeedDecisionLanguage.FI,
+                        decisionMade = null,
+                        sentForDecision = null,
+                        selectedUnit = null,
+                        preparedBy1 = null,
+                        preparedBy2 = null,
+                        decisionMaker = null,
+                        pedagogicalMotivation = null,
+                        structuralMotivationOptions =
+                            StructuralMotivationOptions(false, false, false, false, false, false),
+                        structuralMotivationDescription = null,
+                        careMotivation = null,
+                        serviceOptions = ServiceOptions(false, false, false, false, false),
+                        servicesMotivation = null,
+                        expertResponsibilities = null,
+                        guardiansHeardOn = null,
+                        guardianInfo = emptySet(),
+                        viewOfGuardians = null,
+                        otherRepresentativeHeard = false,
+                        otherRepresentativeDetails = null,
+                        assistanceLevels = emptySet(),
+                        motivationForDecision = null,
+                        unreadGuardianIds = null,
+                        annulmentReason = "",
+                    )
+                )
+            }
+        assertSingleRowContainingId(EspooBi.getAssistanceNeedDaycareDecisions, id)
+    }
+
+    @Test
+    fun getAssistanceNeedPreschoolDecisions() {
+        val id =
+            db.transaction {
+                val child = it.insertTestChild()
+                it.insertTestAssistanceNeedPreschoolDecision(
+                    DevAssistanceNeedPreschoolDecision(
+                        decisionNumber = 999,
+                        childId = child,
+                        form =
+                            AssistanceNeedPreschoolDecisionForm(
+                                language = AssistanceNeedDecisionLanguage.FI,
+                                type = AssistanceNeedPreschoolDecisionType.NEW,
+                                validFrom = LocalDate.of(2019, 1, 1),
+                                extendedCompulsoryEducation = false,
+                                extendedCompulsoryEducationInfo = "",
+                                grantedAssistanceService = false,
+                                grantedInterpretationService = false,
+                                grantedAssistiveDevices = false,
+                                grantedServicesBasis = "",
+                                selectedUnit = it.insertTestDaycare(),
+                                primaryGroup = "",
+                                decisionBasis = "",
+                                basisDocumentPedagogicalReport = false,
+                                basisDocumentPsychologistStatement = false,
+                                basisDocumentSocialReport = false,
+                                basisDocumentDoctorStatement = false,
+                                basisDocumentPedagogicalReportDate = null,
+                                basisDocumentPsychologistStatementDate = null,
+                                basisDocumentSocialReportDate = null,
+                                basisDocumentDoctorStatementDate = null,
+                                basisDocumentOtherOrMissing = false,
+                                basisDocumentOtherOrMissingInfo = "",
+                                basisDocumentsInfo = "",
+                                guardiansHeardOn = null,
+                                guardianInfo = emptySet(),
+                                otherRepresentativeHeard = false,
+                                otherRepresentativeDetails = "",
+                                viewOfGuardians = "",
+                                preparer1EmployeeId = it.insertTestEmployee(DevEmployee()),
+                                preparer1Title = "",
+                                preparer1PhoneNumber = "",
+                                preparer2EmployeeId = null,
+                                preparer2Title = "",
+                                preparer2PhoneNumber = "",
+                                decisionMakerEmployeeId = it.insertTestEmployee(DevEmployee()),
+                                decisionMakerTitle = "",
+                            ),
+                        status = AssistanceNeedDecisionStatus.ACCEPTED,
+                        annulmentReason = "",
+                        sentForDecision = null,
+                        decisionMade = LocalDate.of(2019, 5, 1),
+                        unreadGuardianIds = emptySet(),
+                    )
+                )
+            }
+        assertSingleRowContainingId(EspooBi.getAssistanceNeedPreschoolDecisions, id)
+    }
+
+    private fun assertSingleRowContainingId(query: CsvQuery, id: Id<*>) {
+        val lines =
+            db.read { tx -> query(tx).map { it.trim() }.filter { it.isNotEmpty() }.toList() }
+
         assertTrue(lines.first().looksLikeHeaderRow())
         assertTrue(lines.drop(1).single().contains(id.toString()))
     }

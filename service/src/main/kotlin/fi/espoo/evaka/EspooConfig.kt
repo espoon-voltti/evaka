@@ -5,12 +5,18 @@
 package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.espoo.EspooAsyncJob
+import fi.espoo.evaka.espoo.EspooAsyncJobRegistration
 import fi.espoo.evaka.espoo.EspooScheduledJob
 import fi.espoo.evaka.espoo.EspooScheduledJobs
-import fi.espoo.evaka.espoobi.EspooBiPoc
+import fi.espoo.evaka.espoo.bi.CsvQuery
+import fi.espoo.evaka.espoo.bi.EspooBi
+import fi.espoo.evaka.espoo.bi.EspooBiClient
+import fi.espoo.evaka.espoo.bi.streamingCsvRoute
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -28,7 +34,6 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.getAuthenticatedUser
 import fi.espoo.evaka.shared.controllers.ErrorResponse
 import fi.espoo.evaka.shared.controllers.ExceptionHandler
@@ -51,6 +56,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
@@ -64,6 +70,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 @Configuration
 @Profile("espoo_evaka")
+@Import(EspooAsyncJobRegistration::class)
 class EspooConfig {
     @Bean fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)
 
@@ -151,6 +158,23 @@ class EspooConfig {
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
+    fun espooAsyncJobRunner(
+        jdbi: Jdbi,
+        tracer: Tracer,
+        env: Environment
+    ): AsyncJobRunner<EspooAsyncJob> =
+        AsyncJobRunner(EspooAsyncJob::class, listOf(EspooAsyncJob.pool), jdbi, tracer)
+
+    @Bean @Lazy fun espooBiEnv(env: Environment) = EspooBiEnv.fromEnvironment(env)
+
+    @Bean
+    fun espooBiSender(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>, fuel: FuelManager) =
+        when (env.espooBiEnabled) {
+            true -> EspooBiClient(fuel, biEnv.getObject())
+            false -> null
+        }
+
+    @Bean
     fun espooBiPocRouter(
         env: EspooEnv,
         jdbi: Jdbi,
@@ -164,10 +188,10 @@ class EspooConfig {
                         .build()
 
             fun route(
-                f: (db: Database, user: AuthenticatedUser.Integration) -> ServerResponse
+                query: CsvQuery,
             ): (ServerRequest) -> ServerResponse = { req ->
                 try {
-                    f(Database(jdbi, tracer), req.getAuthenticatedUser())
+                    streamingCsvRoute(query)(Database(jdbi, tracer), req.getAuthenticatedUser())
                 } catch (e: BadRequest) {
                     error(exceptionHandler.badRequest(req.servletRequest(), e))
                 } catch (e: NotFound) {
@@ -183,27 +207,24 @@ class EspooConfig {
 
             router {
                 path("/integration/espoo-bi-poc").nest {
-                    GET("/areas", route(EspooBiPoc.getAreas))
-                    GET("/units", route(EspooBiPoc.getUnits))
-                    GET("/groups", route(EspooBiPoc.getGroups))
-                    GET("/children", route(EspooBiPoc.getChildren))
-                    GET("/placements", route(EspooBiPoc.getPlacements))
-                    GET("/group-placements", route(EspooBiPoc.getGroupPlacements))
-                    GET("/absences", route(EspooBiPoc.getAbsences))
-                    GET(
-                        "/group-caretaker-allocations",
-                        route(EspooBiPoc.getGroupCaretakerAllocations)
-                    )
-                    GET("/applications", route(EspooBiPoc.getApplications))
-                    GET("/decisions", route(EspooBiPoc.getDecisions))
-                    GET("/service-need-options", route(EspooBiPoc.getServiceNeedOptions))
-                    GET("/service-needs", route(EspooBiPoc.getServiceNeeds))
-                    GET("/fee-decisions", route(EspooBiPoc.getFeeDecisions))
-                    GET("/fee-decision-children", route(EspooBiPoc.getFeeDecisionChildren))
-                    GET("/voucher-value-decisions", route(EspooBiPoc.getVoucherValueDecisions))
-                    GET("/curriculum-templates", route(EspooBiPoc.getCurriculumTemplates))
-                    GET("/curriculum-documents", route(EspooBiPoc.getCurriculumDocuments))
-                    GET("/pedagogical-documents", route(EspooBiPoc.getPedagogicalDocuments))
+                    GET("/areas", route(EspooBi.getAreas))
+                    GET("/units", route(EspooBi.getUnits))
+                    GET("/groups", route(EspooBi.getGroups))
+                    GET("/children", route(EspooBi.getChildren))
+                    GET("/placements", route(EspooBi.getPlacements))
+                    GET("/group-placements", route(EspooBi.getGroupPlacements))
+                    GET("/absences", route(EspooBi.getAbsences))
+                    GET("/group-caretaker-allocations", route(EspooBi.getGroupCaretakerAllocations))
+                    GET("/applications", route(EspooBi.getApplications))
+                    GET("/decisions", route(EspooBi.getDecisions))
+                    GET("/service-need-options", route(EspooBi.getServiceNeedOptions))
+                    GET("/service-needs", route(EspooBi.getServiceNeeds))
+                    GET("/fee-decisions", route(EspooBi.getFeeDecisions))
+                    GET("/fee-decision-children", route(EspooBi.getFeeDecisionChildren))
+                    GET("/voucher-value-decisions", route(EspooBi.getVoucherValueDecisions))
+                    GET("/curriculum-templates", route(EspooBi.getCurriculumTemplates))
+                    GET("/curriculum-documents", route(EspooBi.getCurriculumDocuments))
+                    GET("/pedagogical-documents", route(EspooBi.getPedagogicalDocuments))
                 }
             }
         } else {
@@ -249,14 +270,16 @@ class EspooConfig {
     @Bean
     fun espooScheduledJobs(
         patuReportingService: PatuReportingService,
+        espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
         env: ScheduledJobsEnv<EspooScheduledJob>
-    ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, env)
+    ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env)
 }
 
 data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
-    val espooBiPocEnabled: Boolean
+    val espooBiPocEnabled: Boolean,
+    val espooBiEnabled: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
@@ -268,7 +291,8 @@ data class EspooEnv(
                     )
                         ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
-                espooBiPocEnabled = env.lookup("espoo.integration.bi_poc.enabled") ?: false
+                espooBiPocEnabled = env.lookup("espoo.integration.bi_poc.enabled") ?: false,
+                espooBiEnabled = env.lookup("espoo.integration.bi.enabled") ?: false
             )
     }
 }
@@ -297,6 +321,21 @@ data class EspooInvoiceIntegrationEnv(
                         )
                     ),
                 sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false
+            )
+    }
+}
+
+data class EspooBiEnv(
+    val url: String,
+    val username: String,
+    val password: Sensitive<String>,
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            EspooBiEnv(
+                url = env.lookup("espoo.integration.bi.url"),
+                username = env.lookup("espoo.integration.bi.username"),
+                password = Sensitive(env.lookup("espoo.integration.bi.password"))
             )
     }
 }

@@ -5,7 +5,11 @@
 package fi.espoo.evaka.espoo
 
 import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.espoo.bi.EspooBiTable
 import fi.espoo.evaka.reports.patu.PatuReportingService
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.AsyncJobType
+import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -22,11 +26,16 @@ enum class EspooScheduledJob(
     SendPatuReport(
         EspooScheduledJobs::sendPatuReport,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 0)))
+    ),
+    PlanBiJobs(
+        EspooScheduledJobs::planBiJobs,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
     )
 }
 
 class EspooScheduledJobs(
     private val patuReportingService: PatuReportingService,
+    private val espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
     env: ScheduledJobsEnv<EspooScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -39,5 +48,19 @@ class EspooScheduledJobs(
         val yesterday = clock.today().minusDays(1)
         logger.info("Sending patu report for $yesterday")
         patuReportingService.sendPatuReport(db, DateRange(yesterday, yesterday))
+    }
+
+    fun planBiJobs(db: Database.Connection, clock: EvakaClock) {
+        val tables = EspooBiTable.values()
+        logger.info("Planning BI jobs for ${tables.size} tables")
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(EspooAsyncJob.SendBiTable::class)))
+            espooAsyncJobRunner.plan(
+                tx,
+                tables.asSequence().map(EspooAsyncJob::SendBiTable),
+                runAt = clock.now(),
+                retryCount = 1
+            )
+        }
     }
 }

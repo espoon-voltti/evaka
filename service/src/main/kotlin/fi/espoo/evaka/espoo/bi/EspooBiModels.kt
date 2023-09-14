@@ -2,11 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.espoobi
+package fi.espoo.evaka.espoo.bi
 
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.assistance.DaycareAssistanceLevel
+import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
@@ -224,4 +228,85 @@ data class BiPedagogicalDocument(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val child: UUID,
+)
+
+data class BiAssistanceFactor(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val capacityFactor: BigDecimal,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
+data class BiDaycareAssistanceEntry(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val level: DaycareAssistanceLevel,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
+data class BiPreschoolAssistanceEntry(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val level: PreschoolAssistanceLevel,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
+data class BiAssistanceNeedVoucherCoefficient(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val coefficient: BigDecimal,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
+data class BiAssistanceAction(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val hasOtherAction: Boolean,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
+data class BiAssistanceActionOptionRef(
+    val action: UUID,
+    val option: String,
+)
+
+data class BiAssistanceNeedDaycareDecision(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val unit: UUID?,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
+    val assistanceEnds: Boolean,
+    val assistanceServicesForTime: Boolean,
+    val enhancedAssistance: Boolean,
+    val specialAssistance: Boolean,
+)
+
+data class BiAssistanceNeedPreschoolDecision(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val unit: UUID?,
+    val type: AssistanceNeedPreschoolDecisionType?,
+    val validFrom: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
 )
