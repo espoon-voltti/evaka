@@ -416,7 +416,7 @@ class AssistanceNeedPreschoolDecisionController(
                         id
                     )
                     val assistanceDecision = tx.getAssistanceNeedPreschoolDecisionById(id)
-                    featureConfig.assistanceDecisionMakerRoles?.let { roles ->
+                    featureConfig.preschoolAssistanceDecisionMakerRoles?.let { roles ->
                         tx.getEmployeesByRoles(roles, assistanceDecision.form.selectedUnit)
                     }
                         ?: tx.getEmployees().sortedBy { it.email }

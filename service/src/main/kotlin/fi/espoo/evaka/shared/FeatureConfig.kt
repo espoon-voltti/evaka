@@ -112,6 +112,13 @@ data class FeatureConfig(
      */
     val assistanceDecisionMakerRoles: Set<UserRole>?,
 
+    /**
+     * Employees with given user roles to show as options for preschool assistance decision makers.
+     *
+     * May contain global and unit scoped roles (null = all roles are visible).
+     */
+    val preschoolAssistanceDecisionMakerRoles: Set<UserRole>?,
+
     /** The number of days citizens can move daycare start forward */
     val requestedStartUpperLimit: Int,
 
