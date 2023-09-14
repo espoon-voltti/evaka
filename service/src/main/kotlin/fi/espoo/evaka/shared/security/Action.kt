@@ -2007,6 +2007,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
+        READ_PLACEMENT_GUARANTEE_REPORT(
+            HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+        ),
         READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
             HasUnitRole(

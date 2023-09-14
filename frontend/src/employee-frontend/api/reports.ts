@@ -32,6 +32,7 @@ import {
   OccupancyUnitReportResultRow,
   PartnersInDifferentAddressReportRow,
   PlacementCountReportResult,
+  PlacementGuaranteeReportRow,
   PlacementSketchingReportRow,
   PreschoolGroupsReportRow,
   PresenceReportRow,
@@ -475,6 +476,28 @@ export async function getPlacementCountReport(
     })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
+}
+
+export interface PlacementGuaranteeReportFilters {
+  date: LocalDate
+  unitId: UUID | null
+}
+
+export async function getPlacementGuaranteeReport(
+  filters: PlacementGuaranteeReportFilters
+): Promise<PlacementGuaranteeReportRow[]> {
+  return client
+    .get<JsonOf<PlacementGuaranteeReportRow[]>>(
+      '/reports/placement-guarantee',
+      { params: filters }
+    )
+    .then((response) =>
+      response.data.map((row) => ({
+        ...row,
+        placementStartDate: LocalDate.parseIso(row.placementStartDate),
+        placementEndDate: LocalDate.parseIso(row.placementEndDate)
+      }))
+    )
 }
 
 export interface VoucherProviderChildrenReportFilters {

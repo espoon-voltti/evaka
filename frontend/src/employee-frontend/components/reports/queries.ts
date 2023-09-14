@@ -10,11 +10,13 @@ import {
   getFuturePreschoolersReport,
   getMissingHeadOfFamilyReport,
   getOccupanciesReport,
+  getPlacementGuaranteeReport,
   getPreschoolGroupsReport,
   getVardaErrorsReport,
   getVoucherServiceProvidersReport,
   MissingHeadOfFamilyReportFilters,
   OccupancyReportFilters,
+  PlacementGuaranteeReportFilters,
   startVardaUpdate,
   VoucherServiceProvidersFilters
 } from '../../api/reports'
@@ -27,6 +29,10 @@ const queryKeys = createQueryKeys('reports', {
     filters
   ],
   occupancies: (filters: OccupancyReportFilters) => ['occupancies', filters],
+  placementGuarantee: (filters: PlacementGuaranteeReportFilters) => [
+    'placementGuarantee',
+    filters
+  ],
   voucherServiceProviders: (filters: VoucherServiceProvidersFilters) => [
     'voucherServiceProviders',
     filters
@@ -52,6 +58,11 @@ export const occupanciesReportQuery = query({
       ? getOccupanciesReport(filters)
       : Promise.resolve([]),
   queryKey: queryKeys.occupancies
+})
+
+export const placementGuaranteeReportQuery = query({
+  api: getPlacementGuaranteeReport,
+  queryKey: queryKeys.placementGuarantee
 })
 
 export const voucherServiceProvidersReportQuery = query({
