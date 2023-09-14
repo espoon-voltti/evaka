@@ -532,11 +532,10 @@ LEFT JOIN application a ON p.id IS NULL AND a.child_id IN (
     fc_head.child_id,
     fc_spouse.child_id
 )
-LEFT JOIN application_form af ON af.application_id = a.id AND af.latest
 
 LEFT JOIN daycare d ON d.id IN (
     p.unit_id, 
-    (af.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
+    (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
 )
 LEFT JOIN care_area ca ON ca.id = d.care_area_id
 

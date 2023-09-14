@@ -378,8 +378,7 @@ fun Database.Transaction.insertTestApplication(
 
 fun Database.Transaction.insertTestApplicationForm(
     applicationId: ApplicationId,
-    document: DaycareFormV0,
-    revision: Int = 1
+    document: DaycareFormV0
 ) {
     check(getApplicationType(applicationId) == document.type) {
         "Invalid form type for the application"
@@ -387,30 +386,18 @@ fun Database.Transaction.insertTestApplicationForm(
 
     createUpdate(
             """
-UPDATE application_form SET latest = FALSE
-WHERE application_id = :applicationId AND revision < :revision
+UPDATE application SET document = :document, form_modified = now()
+WHERE id = :applicationId
 """
         )
         .bind("applicationId", applicationId)
-        .bind("revision", revision)
-        .execute()
-    createUpdate(
-            // language=SQL
-            """
-INSERT INTO application_form (application_id, revision, document, latest)
-VALUES (:applicationId, :revision, :document, TRUE)
-"""
-        )
-        .bind("applicationId", applicationId)
-        .bind("revision", revision)
         .bindJson("document", document)
         .execute()
 }
 
 fun Database.Transaction.insertTestClubApplicationForm(
     applicationId: ApplicationId,
-    document: ClubFormV0,
-    revision: Int = 1
+    document: ClubFormV0
 ) {
     check(getApplicationType(applicationId) == document.type) {
         "Invalid form type for the application"
@@ -418,22 +405,11 @@ fun Database.Transaction.insertTestClubApplicationForm(
 
     createUpdate(
             """
-UPDATE application_form SET latest = FALSE
-WHERE application_id = :applicationId AND revision < :revision
+UPDATE application SET document = :document, form_modified = now()
+WHERE id = :applicationId
 """
         )
         .bind("applicationId", applicationId)
-        .bind("revision", revision)
-        .execute()
-    createUpdate(
-            // language=SQL
-            """
-INSERT INTO application_form (application_id, revision, document, latest)
-VALUES (:applicationId, :revision, :document, TRUE)
-"""
-        )
-        .bind("applicationId", applicationId)
-        .bind("revision", revision)
         .bindJson("document", document)
         .execute()
 }
@@ -1179,33 +1155,14 @@ fun Database.Transaction.insertApplicationForm(applicationForm: DevApplicationFo
 
     createUpdate(
             """
-UPDATE application_form SET latest = FALSE
-WHERE application_id = :applicationId AND revision < :revision
+UPDATE application SET document = :document, form_modified = now()
+WHERE id = :applicationId
 """
         )
         .bind("applicationId", applicationForm.applicationId)
-        .bind("revision", applicationForm.revision)
-        .execute()
-    val id = applicationForm.id ?: UUID.randomUUID()
-
-    // language=sql
-    val sql =
-        """
-        INSERT INTO application_form(id, application_id, created, revision, updated, document, latest)
-        VALUES(:id, :applicationId, :created, :revision, :updated, :document::JSON, TRUE)
-        """
-            .trimIndent()
-
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("applicationId", applicationForm.applicationId)
-        .bind("created", applicationForm.createdDate)
-        .bind("revision", applicationForm.revision)
-        .bind("updated", applicationForm.updated)
         .bindJson("document", applicationForm.document)
         .execute()
-
-    return id
+    return applicationForm.id ?: UUID.randomUUID()
 }
 
 data class DevFamilyContact(
