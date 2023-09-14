@@ -8,13 +8,18 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
+import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.Daycare
+import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -69,6 +74,9 @@ class AttendanceReservationController(private val ac: AccessControl) {
                         Action.Unit.READ_ATTENDANCE_RESERVATIONS,
                         unitId
                     )
+                    val clubTerms = tx.getClubTerms()
+                    val preschoolTerms = tx.getPreschoolTerms()
+
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val unitName = unit.name
 
@@ -159,7 +167,9 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                                 rows,
                                                 serviceTimes,
                                                 childData,
-                                                includeNonOperationalDays
+                                                includeNonOperationalDays,
+                                                clubTerms,
+                                                preschoolTerms
                                             )
                                     )
                                 }
@@ -170,7 +180,9 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                     it,
                                     serviceTimes,
                                     childData,
-                                    includeNonOperationalDays
+                                    includeNonOperationalDays,
+                                    clubTerms,
+                                    preschoolTerms
                                 )
                             }
                                 ?: emptyList(),
@@ -267,7 +279,7 @@ data class UnitAttendanceReservations(
         val dailyServiceTimes: DailyServiceTimesValue?,
         val inOtherUnit: Boolean,
         val isInBackupGroup: Boolean,
-        val requiresReservation: Boolean
+        val scheduleType: ScheduleType
     )
 
     data class AttendanceTimes(val startTime: String, val endTime: String?)
@@ -509,7 +521,9 @@ private fun toChildDayRows(
     rows: List<ChildPlacementStatus>,
     serviceTimes: Map<ChildId, List<DailyServiceTimesValue>>,
     childData: Map<ChildId, ChildData>,
-    includeNonOperationalDays: Boolean
+    includeNonOperationalDays: Boolean,
+    clubTerms: List<ClubTerm>,
+    preschoolTerms: List<PreschoolTerm>
 ): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.childId }
@@ -545,7 +559,9 @@ private fun toChildDayRows(
                                     rowIndex,
                                     child,
                                     serviceTimes[childId],
-                                    includeNonOperationalDays
+                                    includeNonOperationalDays,
+                                    clubTerms,
+                                    preschoolTerms
                                 )
                             }
                         )
@@ -559,7 +575,9 @@ private fun dailyRecord(
     rowIndex: Int,
     childData: ChildData,
     serviceTimes: List<DailyServiceTimesValue>?,
-    includeNonOperationalDays: Boolean
+    includeNonOperationalDays: Boolean,
+    clubTerms: List<ClubTerm>,
+    preschoolTerms: List<PreschoolTerm>
 ): UnitAttendanceReservations.ChildRecordOfDay {
     val date = placementStatus.date
     val inOtherUnit = placementStatus.inOtherUnit
@@ -579,6 +597,6 @@ private fun dailyRecord(
         inOtherUnit = inOtherUnit,
         isInBackupGroup =
             placementStatus.isOriginalGroup && placementStatus.group != placementStatus.otherGroup,
-        requiresReservation = placementStatus.placementType.requiresAttendanceReservations()
+        scheduleType = placementStatus.placementType.scheduleType(date, clubTerms, preschoolTerms)
     )
 }

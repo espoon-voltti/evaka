@@ -158,7 +158,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `reminder is not sent when child 's placement does not require reservations`() {
         val placementType = PlacementType.PRESCHOOL
-        assertFalse(placementType.requiresAttendanceReservations())
+        assertFalse(PlacementType.requiringAttendanceReservations.contains(placementType))
 
         db.transaction { tx ->
             tx.createUpdate("UPDATE placement SET type = :type")

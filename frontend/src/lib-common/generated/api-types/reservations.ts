@@ -10,6 +10,7 @@ import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { PlacementType } from './placement'
+import { ScheduleType } from './placement'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
@@ -161,9 +162,9 @@ export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
   attendances: OpenTimeRange[]
   childId: UUID
-  requiresReservation: boolean
   reservableTimeRange: ReservableTimeRange
   reservations: Reservation[]
+  scheduleType: ScheduleType
   shiftCare: boolean
 }
 

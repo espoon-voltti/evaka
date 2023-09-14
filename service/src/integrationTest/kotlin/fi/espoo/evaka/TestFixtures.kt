@@ -18,9 +18,12 @@ import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.insertClubTerm
+import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.EmployeeWithName
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
@@ -36,6 +39,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -610,63 +614,66 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertAssistanceBasisOptions()
 }
 
-val preschoolTerms =
-    listOf(
-        // 2020-2021
-        PreschoolTerm(
-            FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
-            FiniteDateRange(LocalDate.of(2020, 8, 18), LocalDate.of(2021, 6, 4)),
-            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 6, 4)),
-            FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20))
-        ),
-        // 2021-2022
-        PreschoolTerm(
-            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
-            FiniteDateRange(LocalDate.of(2021, 8, 13), LocalDate.of(2022, 6, 3)),
-            FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
-            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20))
-        ),
-        // 2022-2023
-        PreschoolTerm(
-            FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
-            FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
-            FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2023, 6, 2)),
-            FiniteDateRange(LocalDate.of(2022, 1, 10), LocalDate.of(2022, 1, 21))
-        ),
-        // 2023-2024
-        PreschoolTerm(
-            FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
-            FiniteDateRange(LocalDate.of(2023, 8, 13), LocalDate.of(2024, 6, 6)),
-            FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 6)),
-            FiniteDateRange(LocalDate.of(2023, 1, 8), LocalDate.of(2023, 1, 20))
+val preschoolTerm2020 =
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 8, 18), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
+        DateSet.empty()
+    )
+val preschoolTerm2021 =
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 8, 13), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+        DateSet.empty()
+    )
+val preschoolTerm2022 =
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 1, 10), LocalDate.of(2022, 1, 21)),
+        DateSet.empty()
+    )
+val preschoolTerm2023 =
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
+        FiniteDateRange(LocalDate.of(2023, 8, 13), LocalDate.of(2024, 6, 6)),
+        FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 6)),
+        FiniteDateRange(LocalDate.of(2023, 1, 8), LocalDate.of(2023, 1, 20)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+            FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+            FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
         )
     )
 
+val preschoolTerms =
+    listOf(preschoolTerm2020, preschoolTerm2021, preschoolTerm2022, preschoolTerm2023)
+
 fun Database.Transaction.insertPreschoolTerms() {
-    prepareBatch(
-            """
-INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
-VALUES (:finnishPreschool, :swedishPreschool, :extendedTerm, :applicationPeriod)
-"""
-        )
-        .let { batch ->
-            preschoolTerms.forEach { term -> batch.bindKotlin(term).add() }
-            batch.execute()
-        }
+    preschoolTerms.forEach { insertPreschoolTerm(it) }
 }
 
-fun Database.Transaction.insertClubTerms() {
-    createUpdate(
-            """
-INSERT INTO club_term (term, application_period)
-VALUES
-    -- 2020-2021
-    ('[2020-08-13, 2021-06-04]', '[2020-01-08, 2020-01-20]'),
-    -- 2021-2022
-    ('[2021-08-11, 2022-06-03]', '[2021-01-08, 2021-01-20]');
-"""
+val clubTerms =
+    listOf(
+        ClubTerm(
+            FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+            FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
+            DateSet.empty()
+        ),
+        ClubTerm(
+            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+            DateSet.empty()
         )
-        .execute()
+    )
+
+fun Database.Transaction.insertClubTerms() {
+    clubTerms.forEach { insertClubTerm(it) }
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {

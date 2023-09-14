@@ -10,6 +10,7 @@ import {
   AbsenceType,
   ChildServiceNeedInfo
 } from '../generated/api-types/daycare'
+import { ScheduleType } from '../generated/api-types/placement'
 import { Reservation } from '../generated/api-types/reservations'
 import { JsonOf } from '../json'
 import LocalDate from '../local-date'
@@ -46,7 +47,7 @@ export interface ChildRecordOfDay {
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
-  requiresReservation: boolean
+  scheduleType: ScheduleType
 }
 
 interface Group {

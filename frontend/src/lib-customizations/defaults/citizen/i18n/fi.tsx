@@ -312,6 +312,7 @@ export default {
     newReservationBtn: 'Ilmoita läsnäolo',
     missingReservation: 'Ilmoitus puuttuu',
     reservationNotRequired: 'Ilmoitusta ei tarvita',
+    termBreak: 'Ei opetusta tänään',
     reservation: 'Ilmoitettu aika',
     reservationNoTimes: 'Läsnä',
     realized: 'Toteutunut aika',

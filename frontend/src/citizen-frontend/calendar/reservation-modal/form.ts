@@ -129,7 +129,11 @@ type DayOutput =
 export const day = mapped(
   union({
     readOnly: value<
-      'noChildren' | 'holiday' | 'absentNotEditable' | 'reservationClosed'
+      | 'noChildren'
+      | 'holiday'
+      | 'absentNotEditable'
+      | 'termBreak'
+      | 'reservationClosed'
     >(),
     reservation,
     reservationNoTimes: noTimes
@@ -489,6 +493,13 @@ export function resetDay(
     }
   }
 
+  if (allChildrenOnTermBreak(calendarDays, selectedChildren)) {
+    return {
+      branch: 'readOnly',
+      state: 'termBreak'
+    }
+  }
+
   const validTimeRanges = calendarDays.flatMap((d) =>
     d.children
       .filter((c) => selectedChildren.includes(c.childId))
@@ -578,7 +589,8 @@ const hasReservationsForEveryChild = (
       day.children.some(
         (child) =>
           child.childId === childId &&
-          (child.reservations.length > 0 || !child.requiresReservation) &&
+          (child.reservations.length > 0 ||
+            child.scheduleType !== 'RESERVATION_REQUIRED') &&
           child.absence === null
       )
     )
@@ -593,7 +605,7 @@ const hasNoReservationsForSomeChild = (
       day.children.some(
         (child) =>
           child.childId === childId &&
-          child.requiresReservation &&
+          child.scheduleType === 'RESERVATION_REQUIRED' &&
           child.reservations.length === 0 &&
           child.absence === null
       )
@@ -627,6 +639,19 @@ const allChildrenAreAbsentNotEditable = (
     )
   )
 
+const allChildrenOnTermBreak = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
+) =>
+  calendarDays.every((day) =>
+    selectedChildren.every((childId) =>
+      day.children.some(
+        (child) =>
+          child.childId === childId && child.scheduleType === 'TERM_BREAK'
+      )
+    )
+  )
+
 const reservationNotRequiredForAnyChild = (
   calendarDays: ReservationResponseDay[],
   selectedChildren: string[]
@@ -634,7 +659,9 @@ const reservationNotRequiredForAnyChild = (
   calendarDays.every((day) =>
     selectedChildren.every((childId) =>
       day.children.some(
-        (child) => child.childId === childId && !child.requiresReservation
+        (child) =>
+          child.childId === childId &&
+          child.scheduleType !== 'RESERVATION_REQUIRED'
       )
     )
   )

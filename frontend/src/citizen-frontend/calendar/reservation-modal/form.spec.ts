@@ -54,7 +54,7 @@ const defaultReservableTimeRange = {
 
 const emptyChild: ReservationResponseDayChild = {
   childId: 'child-1',
-  requiresReservation: true,
+  scheduleType: 'RESERVATION_REQUIRED',
   shiftCare: false,
   absence: null,
   reservations: [],
@@ -303,17 +303,17 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              requiresReservation: false
+              scheduleType: 'FIXED_SCHEDULE'
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              requiresReservation: false
+              scheduleType: 'FIXED_SCHEDULE'
             },
             {
               ...emptyChild,
               childId: 'child-3',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? {
@@ -360,6 +360,43 @@ describe('resetTimes', () => {
           day: {
             branch: 'reservationNoTimes',
             state: 'notSet'
+          }
+        }
+      })
+    })
+
+    it('Term break', () => {
+      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
+      //          b  b        | b  b  b  b  n        | b  b  b  b  b
+      const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
+        (day) => ({
+          ...day,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              scheduleType: 'TERM_BREAK'
+            }
+          ]
+        })
+      )
+
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+
+      // Empty days for child-1 and child-2
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'DAILY',
+          selectedRange,
+          selectedChildren: ['child-1']
+        })
+      ).toEqual({
+        branch: 'dailyTimes',
+        state: {
+          weekDayRange: [1, 5],
+          day: {
+            branch: 'readOnly',
+            state: 'termBreak'
           }
         }
       })
@@ -1274,7 +1311,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 4
                   ? { type: 'OTHER_ABSENCE', editable: true }
@@ -1283,7 +1320,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 3 ||
                 day.date.getIsoDayOfWeek() === 4
@@ -1857,7 +1894,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              requiresReservation: true,
+              scheduleType: 'RESERVATION_REQUIRED',
               reservations:
                 day.date.getIsoDayOfWeek() === 4
                   ? [{ type: 'NO_TIMES' }]
@@ -1878,7 +1915,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? { type: 'OTHER_ABSENCE', editable: true }
@@ -2296,13 +2333,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             }
           ]
@@ -2314,13 +2351,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              requiresReservation: false
+              scheduleType: 'FIXED_SCHEDULE'
             }
           ]
         },
@@ -2331,12 +2368,12 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              requiresReservation: false
+              scheduleType: 'FIXED_SCHEDULE'
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              requiresReservation: false
+              scheduleType: 'FIXED_SCHEDULE'
             }
           ]
         }
@@ -2989,7 +3026,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence: aa
             }
           ]
@@ -3000,7 +3037,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              requiresReservation: false,
+              scheduleType: 'FIXED_SCHEDULE',
               absence: ae
             }
           ]
@@ -3011,7 +3048,7 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              requiresReservation: false
+              scheduleType: 'FIXED_SCHEDULE'
             }
           ]
         }

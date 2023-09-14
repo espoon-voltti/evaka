@@ -120,7 +120,7 @@ const CalendarPage = React.memo(function CalendarPage() {
           day.children.length > 0 &&
           day.children.some(
             (child) =>
-              child.requiresReservation &&
+              child.scheduleType === 'RESERVATION_REQUIRED' &&
               child.reservations.length === 0 &&
               !child.absence
           )

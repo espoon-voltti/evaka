@@ -7,6 +7,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
+import { mapScheduleType } from 'lib-common/api-types/placement'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { array, mapped, object, value } from 'lib-common/form/form'
 import {
@@ -21,6 +22,7 @@ import {
   AttendingChild,
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
+import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   AbsenceInfo,
   DailyReservationRequest,
@@ -210,7 +212,7 @@ function View({
         ) : (
           <Reservations
             reservations={child.reservations}
-            requiresReservation={child.requiresReservation}
+            scheduleType={child.scheduleType}
             reservableTimeRange={child.reservableTimeRange}
           />
         )
@@ -700,11 +702,11 @@ const Absence = React.memo(function Absence({
 
 const Reservations = React.memo(function Reservations({
   reservations,
-  requiresReservation,
+  scheduleType,
   reservableTimeRange
 }: {
   reservations: Reservation[]
-  requiresReservation: boolean
+  scheduleType: ScheduleType
   reservableTimeRange: ReservableTimeRange
 }) {
   const i18n = useTranslation()
@@ -728,14 +730,22 @@ const Reservations = React.memo(function Reservations({
         </ReservationRow>
       ))}
     </div>
-  ) : requiresReservation ? (
-    <ReservationStatus data-qa="no-reservations">
-      {i18n.calendar.missingReservation}
-    </ReservationStatus>
   ) : (
-    <span data-qa="reservation-not-required">
-      {i18n.calendar.reservationNotRequired}
-    </span>
+    mapScheduleType(scheduleType, {
+      RESERVATION_REQUIRED: () => (
+        <ReservationStatus data-qa="no-reservations">
+          {i18n.calendar.missingReservation}
+        </ReservationStatus>
+      ),
+      FIXED_SCHEDULE: () => (
+        <span data-qa="reservation-not-required">
+          {i18n.calendar.reservationNotRequired}
+        </span>
+      ),
+      TERM_BREAK: () => (
+        <span data-qa="term-break">{i18n.calendar.termBreak}</span>
+      )
+    })
   )
 })
 

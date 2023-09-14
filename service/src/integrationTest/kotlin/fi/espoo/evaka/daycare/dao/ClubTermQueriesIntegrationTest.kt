@@ -5,8 +5,11 @@
 package fi.espoo.evaka.daycare.dao
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getClubTerms
+import fi.espoo.evaka.daycare.insertClubTerm
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -18,13 +21,20 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun setUp() {
-        db.transaction {
-            it.execute(
-                """INSERT INTO club_term (term, application_period) VALUES
-                ('[2020-08-13,2021-06-04]', '[2020-01-08,2020-01-20]'),
-                ('[2021-08-11,2022-06-03]', '[2021-01-08,2021-01-20]')
-                """
-                    .trimIndent()
+        db.transaction { tx ->
+            tx.insertClubTerm(
+                ClubTerm(
+                    FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+                    FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
+                    DateSet.empty()
+                )
+            )
+            tx.insertClubTerm(
+                ClubTerm(
+                    FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                    FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+                    DateSet.empty()
+                )
             )
         }
     }
