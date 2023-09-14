@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { LocalDateRangeField } from 'lib-common/form/fields'
@@ -13,16 +13,14 @@ import {
   InputFieldUnderRow,
   InputInfo
 } from 'lib-components/atoms/form/InputField'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import UnderRowStatusIcon from '../../atoms/StatusIcon'
 import { useTranslations } from '../../i18n'
 
-import DatePicker, { DatePickerProps } from './DatePicker'
+import { DatePickerProps } from './DatePicker'
 import DateRangePickerLowLevel, {
   DateRangePickerLowLevelProps
 } from './DateRangePickerLowLevel'
-import { nativeDatePickerEnabled } from './helpers'
 
 interface DateRangePickerProps
   extends Omit<DatePickerProps, 'date' | 'onChange'> {
@@ -32,7 +30,6 @@ interface DateRangePickerProps
   startInfo?: InputInfo
   endInfo?: InputInfo
   'data-qa'?: string
-  externalRangeValidation?: boolean
   onValidationResult?: (hasErrors: boolean) => void
 }
 
@@ -40,112 +37,122 @@ const DateRangePicker = React.memo(function DateRangePicker({
   start,
   end,
   onChange,
-  'data-qa': dataQa,
-  externalRangeValidation,
   onValidationResult,
+  minDate,
+  maxDate,
   ...datePickerProps
 }: DateRangePickerProps) {
   const i18n = useTranslations()
-  const [internalStart, setInternalStart] = useState(start)
-  const [internalEnd, setInternalEnd] = useState(end)
+  const [internalStart, setInternalStart] = useState(start?.format() ?? '')
+  const [internalEnd, setInternalEnd] = useState(end?.format() ?? '')
   const [internalStartError, setInternalStartError] = useState<InputInfo>()
   const [internalEndError, setInternalEndError] = useState<InputInfo>()
 
-  useEffect(() => {
-    setInternalStart(start)
-  }, [start])
-
-  useEffect(() => {
-    setInternalEnd(end)
-  }, [end])
-
-  useEffect(() => {
-    setInternalStartError(undefined)
-    setInternalEndError(undefined)
-
-    if (
-      !externalRangeValidation &&
-      internalStart &&
-      internalEnd &&
-      internalStart.isAfter(internalEnd)
-    ) {
-      setInternalStartError({
-        text: i18n.datePicker.validationErrors.dateTooLate,
-        status: 'warning'
-      })
-      setInternalEndError({
-        text: i18n.datePicker.validationErrors.dateTooEarly,
-        status: 'warning'
-      })
-      if (onValidationResult) onValidationResult(true)
-      return
-    }
-
-    if (
-      start?.formatIso() !== internalStart?.formatIso() ||
-      end?.formatIso() !== internalEnd?.formatIso()
-    ) {
-      onChange(internalStart, internalEnd)
-    }
-  }, [
-    i18n,
-    internalStart,
-    internalEnd,
-    onChange,
-    externalRangeValidation,
-    start,
-    end,
-    onValidationResult
-  ])
-
-  const minDateForEnd = useMemo(
-    () =>
-      (nativeDatePickerEnabled &&
-      (!datePickerProps.minDate ||
-        internalStart?.isAfter(datePickerProps.minDate))
-        ? internalStart
-        : datePickerProps.minDate) ?? undefined,
-    [datePickerProps.minDate, internalStart]
+  const validate = useCallback(
+    (start: LocalDate | null, end: LocalDate | null): boolean => {
+      let isValid = true
+      if (start && minDate && start.isBefore(minDate)) {
+        setInternalStartError({
+          text: i18n.datePicker.validationErrors.dateTooEarly,
+          status: 'warning'
+        })
+        isValid = false
+      }
+      if (end && maxDate && end.isAfter(maxDate)) {
+        setInternalEndError({
+          text: i18n.datePicker.validationErrors.dateTooEarly,
+          status: 'warning'
+        })
+        isValid = false
+      }
+      if (start && end && isValid && start.isAfter(end)) {
+        setInternalStartError({
+          text: i18n.datePicker.validationErrors.dateTooLate,
+          status: 'warning'
+        })
+        setInternalEndError({
+          text: i18n.datePicker.validationErrors.dateTooEarly,
+          status: 'warning'
+        })
+        isValid = false
+      }
+      if (isValid) {
+        setInternalStartError(undefined)
+        setInternalEndError(undefined)
+      }
+      if (onValidationResult) onValidationResult(isValid)
+      return isValid
+    },
+    [
+      i18n.datePicker.validationErrors.dateTooEarly,
+      i18n.datePicker.validationErrors.dateTooLate,
+      minDate,
+      maxDate,
+      onValidationResult
+    ]
   )
 
-  const maxDateForStart = useMemo(
-    () =>
-      (nativeDatePickerEnabled &&
-      (!datePickerProps.maxDate ||
-        internalEnd?.isBefore(datePickerProps.maxDate))
-        ? internalEnd
-        : datePickerProps.maxDate) ?? undefined,
-    [datePickerProps.maxDate, internalEnd]
+  const prevStart = useRef(start)
+  const prevEnd = useRef(end)
+  if (
+    prevStart.current?.formatIso() !== start?.formatIso() ||
+    prevEnd.current?.formatIso() !== end?.formatIso()
+  ) {
+    prevStart.current = start
+    if (start !== null) {
+      setInternalStart(start.format())
+    }
+    prevEnd.current = end
+    if (end !== null) {
+      setInternalEnd(end.format())
+    }
+    validate(start, end)
+  }
+
+  const handleChange = useCallback(
+    (startStr: string, endStr: string) => {
+      const newStart = LocalDate.parseFiOrNull(startStr)
+      const newEnd = LocalDate.parseFiOrNull(endStr)
+      const isValid = validate(newStart, newEnd)
+      if (
+        isValid &&
+        (newStart?.formatIso() !== start?.formatIso() ||
+          newEnd?.formatIso() !== end?.formatIso())
+      ) {
+        onChange(newStart, newEnd)
+      }
+    },
+    [end, onChange, start, validate]
+  )
+
+  const handleChangeStart = useCallback(
+    (newStart: string) => {
+      setInternalStart(newStart)
+      handleChange(newStart, internalEnd)
+    },
+    [handleChange, internalEnd]
+  )
+
+  const handleChangeEnd = useCallback(
+    (newEnd: string) => {
+      setInternalEnd(newEnd)
+      handleChange(internalStart, newEnd)
+    },
+    [handleChange, internalStart]
   )
 
   return (
-    <FixedSpaceRow data-qa={dataQa}>
-      <DatePicker
-        date={internalStart}
-        onChange={(date) => setInternalStart(date)}
-        data-qa="start-date"
-        initialMonth={internalStart ?? datePickerProps.minDate}
-        {...datePickerProps}
-        maxDate={maxDateForStart}
-        info={
-          internalStartError ??
-          datePickerProps.startInfo ??
-          datePickerProps.info
-        }
-      />
-      <DatePickerSpacer />
-      <DatePicker
-        date={internalEnd}
-        onChange={(date) => setInternalEnd(date)}
-        data-qa="end-date"
-        initialMonth={internalEnd ?? internalStart ?? minDateForEnd}
-        {...datePickerProps}
-        minDate={minDateForEnd}
-        info={
-          internalEndError ?? datePickerProps.endInfo ?? datePickerProps.info
-        }
-      />
-    </FixedSpaceRow>
+    <DateRangePickerLowLevel
+      start={internalStart}
+      end={internalEnd}
+      onChangeStart={handleChangeStart}
+      onChangeEnd={handleChangeEnd}
+      startInfo={internalStartError ?? datePickerProps.startInfo}
+      endInfo={internalEndError ?? datePickerProps.endInfo}
+      minDate={minDate}
+      maxDate={maxDate}
+      {...datePickerProps}
+    />
   )
 })
 

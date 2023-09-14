@@ -18,7 +18,7 @@ export interface Props {
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void
-  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
+  onBlur: ((e: React.FocusEvent<HTMLInputElement>) => void) | undefined
   'data-qa'?: string
   id?: string
   required?: boolean

@@ -13,7 +13,6 @@ import DatePickerLowLevel, {
   DatePickerLowLevelProps
 } from './DatePickerLowLevel'
 import { DatePickerSpacer } from './DateRangePicker'
-import { nativeDatePickerEnabled } from './helpers'
 
 export interface DateRangePickerLowLevelProps
   extends Omit<DatePickerLowLevelProps, 'value' | 'onChange' | 'info'> {
@@ -33,6 +32,8 @@ export default React.memo(function DateRangePickerLowLevel({
   startInfo,
   endInfo,
   'data-qa': dataQa,
+  minDate,
+  maxDate,
   ...datePickerProps
 }: DateRangePickerLowLevelProps) {
   const startDate = useMemo(() => LocalDate.parseFiOrNull(start), [start])
@@ -40,20 +41,15 @@ export default React.memo(function DateRangePickerLowLevel({
 
   const minDateForEnd = useMemo(
     () =>
-      (nativeDatePickerEnabled &&
-      (!datePickerProps.minDate || startDate?.isAfter(datePickerProps.minDate))
-        ? startDate
-        : datePickerProps.minDate) ?? undefined,
-    [datePickerProps.minDate, startDate]
+      (!minDate || startDate?.isAfter(minDate) ? startDate : minDate) ??
+      undefined,
+    [minDate, startDate]
   )
 
   const maxDateForStart = useMemo(
     () =>
-      (nativeDatePickerEnabled &&
-      (!datePickerProps.maxDate || endDate?.isBefore(datePickerProps.maxDate))
-        ? endDate
-        : datePickerProps.maxDate) ?? undefined,
-    [datePickerProps.maxDate, endDate]
+      (!maxDate || endDate?.isBefore(maxDate) ? endDate : maxDate) ?? undefined,
+    [maxDate, endDate]
   )
 
   return (
@@ -62,10 +58,11 @@ export default React.memo(function DateRangePickerLowLevel({
         value={start}
         onChange={onChangeStart}
         info={startInfo}
-        initialMonth={startDate ?? datePickerProps.minDate}
+        initialMonth={startDate ?? minDate}
         data-qa="start-date"
-        {...datePickerProps}
+        minDate={minDate}
         maxDate={maxDateForStart}
+        {...datePickerProps}
       />
       <DatePickerSpacer />
       <DatePickerLowLevel
@@ -74,8 +71,9 @@ export default React.memo(function DateRangePickerLowLevel({
         info={endInfo}
         initialMonth={endDate ?? startDate ?? minDateForEnd}
         data-qa="end-date"
-        {...datePickerProps}
         minDate={minDateForEnd}
+        maxDate={maxDate}
+        {...datePickerProps}
       />
     </FixedSpaceRow>
   )
