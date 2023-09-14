@@ -21,7 +21,7 @@ sealed interface EspooAsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(EspooAsyncJob::class, "espoo"),
                 AsyncJobPool.Config(concurrency = 1),
-                setOf(EspooAsyncJob::class)
+                setOf(SendBiTable::class)
             )
     }
 }
