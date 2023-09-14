@@ -57,17 +57,23 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
     padding: calc(${defaultMargins.s} - 1px) calc(${defaultMargins.m} - 2px);
   }
 
-  ${DeleteThreadButton} {
-    opacity: 0;
-  }
-
-  ${DeleteThreadButton}:focus {
-    opacity: 1;
-  }
-
-  &:hover {
+  @media (pointer: coarse) {
     ${DeleteThreadButton} {
+      display: none;
+    }
+  }
+  @media (pointer: fine) {
+    ${DeleteThreadButton} {
+      opacity: 0;
+    }
+
+    ${DeleteThreadButton}:focus {
       opacity: 1;
+    }
+    &:hover {
+      ${DeleteThreadButton} {
+        opacity: 1;
+      }
     }
   }
 
