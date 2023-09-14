@@ -221,7 +221,7 @@ rules are configured [here](./owasp-suppressions.xml).
 
 ### Add metadata to log entries
 
-Use the [KLogger extensions in service-lib](../service-lib/src/main/kotlin/fi/espoo/voltti/logging/loggers/AppMiscLoggers.kt)
+Use the [KLogger extensions in service-lib](service-lib/src/main/kotlin/fi/espoo/voltti/logging/loggers/AppMiscLoggers.kt)
 to add custom metadata to log entries (useful for querying/statistical analysis):
 
 ```kotlin

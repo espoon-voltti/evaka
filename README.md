@@ -39,14 +39,14 @@ The applications consists of several sub-projects:
   development environment, using e.g. [Docker](https://www.docker.com)
 - [`proxy`](proxy/) – [Nginx](https://www.nginx.com) image for proxying
   fronetend requests to services
-- [`service-lib`](service-lib/) – Old common library for service projects,
+- [`service/service-lib`](service/service-lib/) – Old common library for service projects,
   but today only used by `service`.
 
 and a few other important directories:
 
 - [`bin`](bin/) – Helper shell scripts
 - [`docs`](docs/) – General eVaka documentation
-- [`evaka-bom`](evaka-bom/) – Shared BOM for eVaka Gradle projects, for
+- [`service/evaka-bom`](service/evaka-bom/) – Shared BOM for eVaka Gradle projects, for
   easier dependency updates and control
 
 ## Contributing
