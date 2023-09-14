@@ -195,6 +195,7 @@ export interface ExternalAttendanceUpsert {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   groupId: UUID
+  hasStaffOccupancyEffect: boolean
   id: UUID | null
 }
 

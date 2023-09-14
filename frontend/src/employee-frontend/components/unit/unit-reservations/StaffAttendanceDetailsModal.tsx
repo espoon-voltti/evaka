@@ -53,6 +53,7 @@ export interface ModalAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   type: StaffAttendanceType
+  occupancyCoefficient: number
 }
 
 export interface ModalPlannedAttendance {
@@ -65,6 +66,7 @@ interface Props<
 > {
   date: LocalDate
   name: string
+  previousStaffOccupancyEffect?: boolean
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
   isExternal: boolean
@@ -82,6 +84,7 @@ export interface EditedAttendance {
   arrived: string
   departed: string
   type: StaffAttendanceType
+  hasStaffOccupancyEffect: boolean
 }
 
 export interface ValidationError {
@@ -100,6 +103,7 @@ function StaffAttendanceDetailsModal<
 >({
   date,
   name,
+  previousStaffOccupancyEffect,
   attendances,
   plannedAttendances,
   isExternal,
@@ -119,18 +123,21 @@ function StaffAttendanceDetailsModal<
 
   const initialEditState = useMemo(
     () =>
-      sortedAttendances.map(({ id, groupId, arrived, departed, type }) => ({
-        id,
-        groupId,
-        arrived: date.isEqual(arrived.toLocalDate())
-          ? arrived.toLocalTime().format()
-          : '',
-        departed:
-          departed && date.isEqual(departed.toLocalDate())
-            ? departed.toLocalTime().format()
+      sortedAttendances.map(
+        ({ id, groupId, arrived, departed, type, occupancyCoefficient }) => ({
+          id,
+          groupId,
+          arrived: date.isEqual(arrived.toLocalDate())
+            ? arrived.toLocalTime().format()
             : '',
-        type
-      })),
+          departed:
+            departed && date.isEqual(departed.toLocalDate())
+              ? departed.toLocalTime().format()
+              : '',
+          type,
+          hasStaffOccupancyEffect: occupancyCoefficient > 0
+        })
+      ),
     [date, sortedAttendances]
   )
   const [{ editState, editStateDate }, setEditState] = useState<{
@@ -146,7 +153,10 @@ function StaffAttendanceDetailsModal<
   }
 
   const updateAttendance = useCallback(
-    (index: number, data: Omit<EditedAttendance, 'id'>) =>
+    (
+      index: number,
+      data: Omit<EditedAttendance, 'id' | 'hasStaffOccupancyEffect'>
+    ) =>
       setEditState(({ editState, editStateDate }) => ({
         editStateDate,
         editState: editState.map((row, i) =>
@@ -174,11 +184,12 @@ function StaffAttendanceDetailsModal<
             groupId: defaultGroupId,
             arrived: '',
             departed: '',
-            type: 'PRESENT'
+            type: 'PRESENT',
+            hasStaffOccupancyEffect: previousStaffOccupancyEffect ?? true
           }
         ]
       })),
-    [defaultGroupId]
+    [defaultGroupId, previousStaffOccupancyEffect]
   )
   const [requestBody, errors] = validate(editState)
   const save = useCallback(() => {

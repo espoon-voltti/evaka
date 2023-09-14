@@ -313,6 +313,9 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
     <StaffAttendanceDetailsModal
       isExternal={true}
       onSave={onSaveExternal}
+      previousStaffOccupancyEffect={
+        detailsModalConfig.attendances[0]?.occupancyCoefficient > 0 ?? true
+      }
       validate={externalAttendanceValidator(detailsModalConfig)}
       name={detailsModalConfig.name}
       date={detailsModalConfig.date}
