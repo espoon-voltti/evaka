@@ -821,6 +821,7 @@ sealed interface Action {
             IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment(),
             IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocumentOfAttachment()
         ),
+        READ_FEE_ALTERATION_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE_APPLICATION_ATTACHMENT(
             HasGlobalRole(ADMIN),
             HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(),
@@ -838,7 +839,8 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment()
-        );
+        ),
+        DELETE_FEE_ALTERATION_ATTACHMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1375,8 +1377,8 @@ sealed interface Action {
         override vararg val defaultRules: ScopedActionRule<in FeeAlterationId>
     ) : ScopedAction<FeeAlterationId> {
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
-
+        DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN));
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class FeeDecision(override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>) :

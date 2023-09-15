@@ -58,6 +58,7 @@ export interface EmployeeWithName {
 */
 export interface FeeAlteration {
   amount: number
+  attachments: FeeAlterationAttachment[]
   id: UUID | null
   isAbsolute: boolean
   notes: string
@@ -67,6 +68,15 @@ export interface FeeAlteration {
   updatedBy: UUID | null
   validFrom: LocalDate
   validTo: LocalDate | null
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationAttachment
+*/
+export interface FeeAlterationAttachment {
+  contentType: string
+  id: UUID
+  name: string
 }
 
 /**

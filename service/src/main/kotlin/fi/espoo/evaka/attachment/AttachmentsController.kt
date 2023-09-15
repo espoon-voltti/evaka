@@ -18,6 +18,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.checkFileContentTypeAndExtension
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -353,6 +354,44 @@ class AttachmentsController(
             }
     }
 
+    @PostMapping(
+        value = ["/attachments/fee-alteration/{feeAlterationId}", "/attachments/fee-alteration"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
+    fun uploadFeeAlterationAttachment(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(required = false) feeAlterationId: FeeAlterationId?,
+        @RequestPart("file") file: MultipartFile
+    ): AttachmentId {
+        return db.connect { dbc ->
+                if (feeAlterationId != null) {
+                    dbc.read {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.FeeAlteration.UPLOAD_ATTACHMENT,
+                            feeAlterationId
+                        )
+                    }
+                }
+                val attachTo =
+                    if (feeAlterationId != null) AttachmentParent.FeeAlteration(feeAlterationId)
+                    else AttachmentParent.None
+
+                handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+            }
+            .also { attachmentId ->
+                Audit.AttachmentsUploadForFeeAlteration.log(
+                    targetId = feeAlterationId,
+                    objectId = attachmentId,
+                    meta = mapOf("size" to file.size)
+                )
+            }
+    }
+
     private fun checkAttachmentCount(
         db: Database.Connection,
         attachTo: AttachmentParent,
@@ -378,6 +417,7 @@ class AttachmentsController(
                         )
                     is AttachmentParent.MessageDraft,
                     is AttachmentParent.MessageContent -> 0
+                    is AttachmentParent.FeeAlteration -> Integer.MAX_VALUE
                 }
             }
         if (count >= maxAttachmentsPerUser) {
@@ -506,6 +546,14 @@ class AttachmentsController(
                                 Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
                                 attachment.id
                             )
+                        is AttachmentParent.FeeAlteration ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
+                                attachment.id
+                            )
                     }.exhaust()
                     attachment
                 }
@@ -589,6 +637,14 @@ class AttachmentsController(
                             user,
                             clock,
                             Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                            attachment.id
+                        )
+                    is AttachmentParent.FeeAlteration ->
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.DELETE_FEE_ALTERATION_ATTACHMENTS,
                             attachment.id
                         )
                 }.exhaust()

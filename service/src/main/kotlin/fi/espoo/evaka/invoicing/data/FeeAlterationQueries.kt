@@ -77,7 +77,17 @@ SELECT
     valid_to,
     notes,
     updated_at,
-    updated_by
+    updated_by,
+    (SELECT coalesce(jsonb_agg(json_build_object(
+            'id', id,
+            'name', name,
+            'contentType', content_type
+          )), '[]'::jsonb) FROM (
+            SELECT a.id, a.name, a.content_type
+            FROM attachment a
+            WHERE a.fee_alteration_id = :id
+            ORDER BY a.created
+        ) s) AS attachments
 FROM fee_alteration
 WHERE id = :id
         """
@@ -101,7 +111,17 @@ SELECT
     valid_to,
     notes,
     updated_at,
-    updated_by
+    updated_by,
+    (SELECT coalesce(jsonb_agg(json_build_object(
+            'id', id,
+            'name', name,
+            'contentType', content_type
+          )), '[]'::jsonb) FROM (
+            SELECT a.id, a.name, a.content_type
+            FROM attachment a
+            WHERE a.fee_alteration_id = fee_alteration.id
+            ORDER BY a.created
+        ) s) AS attachments
 FROM fee_alteration
 WHERE person_id = :personId
 ORDER BY valid_from DESC, valid_to DESC
@@ -131,7 +151,8 @@ SELECT
     valid_to,
     notes,
     updated_at,
-    updated_by
+    updated_by,
+    '[]' as attachments
 FROM fee_alteration
 WHERE
     person_id = ANY(:personIds)

@@ -76,6 +76,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
         {permittedActions.has('CREATE_FEE_ALTERATION') && (
           <AddButtonRow
             text={i18n.childInformation.feeAlteration.create}
+            data-qa="create-fee-alteration-button"
             onClick={() => {
               toggleUiMode(newFeeAlterationUiMode)
               scrollToRef(refSectionTop)
@@ -98,7 +99,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
             feeAlterations={feeAlterations}
             toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
             isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
-            cancel={clearUiMode}
+            cancel={onSuccess}
             update={updateFeeAlteration}
             onSuccess={onSuccess}
             onFailure={onFailure}

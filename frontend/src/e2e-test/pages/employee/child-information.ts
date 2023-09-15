@@ -1100,7 +1100,68 @@ class MessageBlocklistSection extends Section {
   }
 }
 
-class FeeAlterationsSection extends Section {}
+class FeeAlterationEditorPage {
+  constructor(private readonly page: Page) {}
+
+  readonly startDateInput = new DatePickerDeprecated(
+    this.page.findByDataQa('date-range-input-start-date')
+  )
+  readonly endDateInput = new DatePickerDeprecated(
+    this.page.findByDataQa('date-range-input-end-date')
+  )
+
+  readonly alterationValueInput = new TextInput(
+    this.page.findByDataQa('fee-alteration-amount-input')
+  )
+  readonly saveButton = this.page.findByDataQa(
+    'fee-alteration-editor-save-button'
+  )
+
+  async uploadedCount() {
+    return this.page.findAllByDataQa('file-download-button').count()
+  }
+
+  async waitUntilReady() {
+    await this.startDateInput.waitUntilVisible()
+  }
+
+  async uploadAttachmentAndAssert(filePath: string) {
+    const initiallyUploadedCount = await this.uploadedCount()
+    await new FileInput(
+      this.page.findByDataQa('btn-upload-file')
+    ).setInputFiles(filePath)
+    await waitUntilEqual(() => this.uploadedCount(), initiallyUploadedCount + 1)
+  }
+}
+
+export class FeeAlterationsSection extends Section {
+  #createFeeAlterationButton = this.findByDataQa('create-fee-alteration-button')
+
+  async openNewFeeAlterationEditorPage(): Promise<FeeAlterationEditorPage> {
+    await this.#createFeeAlterationButton.click()
+    const editorPage = new FeeAlterationEditorPage(this.page)
+    await editorPage.waitUntilReady()
+    return editorPage
+  }
+
+  async assertAlterationDateRange(expected: string, nth = 0) {
+    const feeAlterationDates = this.findAllByDataQa('fee-alteration-dates')
+    await feeAlterationDates.nth(nth).assertTextEquals(expected)
+  }
+
+  async assertAlterationAmount(expected: string, nth = 0) {
+    const feeAlterationAmounts = this.findAllByDataQa('fee-alteration-amount')
+    await feeAlterationAmounts.nth(nth).assertTextEquals(expected)
+  }
+
+  async assertAttachmentExists(name: string) {
+    await waitUntilTrue(async () =>
+      (await this.page.findAllByDataQa('attachment').allInnerTexts()).includes(
+        name
+      )
+    )
+  }
+}
 
 class ApplicationsSection extends Section {
   #createApplication = this.find('[data-qa="button-create-application"]')

@@ -268,6 +268,7 @@ export type Decision =
 export type FeeAlteration =
   | 'DELETE'
   | 'UPDATE'
+  | 'UPLOAD_ATTACHMENT'
 
 export type Group =
   | 'CREATE_ABSENCES'

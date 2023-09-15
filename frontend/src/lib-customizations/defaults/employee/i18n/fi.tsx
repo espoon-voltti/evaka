@@ -1364,6 +1364,12 @@ export const fi = {
         DISCOUNT: 'Alennus',
         INCREASE: 'Korotus',
         RELIEF: 'Huojennus'
+      },
+      attachmentsTitle: 'Liitteet',
+      employeeAttachments: {
+        title: 'Lisää liitteitä',
+        description:
+          'Tässä voit lisätä asiakkaan toimittamia liitteitä maksujen alennuksiin, vapautuksiin tai korotuksiin.'
       }
     },
     placements: {

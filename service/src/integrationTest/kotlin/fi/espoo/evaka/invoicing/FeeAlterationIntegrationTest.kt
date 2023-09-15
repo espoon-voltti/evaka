@@ -5,16 +5,20 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationAttachment
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
@@ -26,10 +30,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.ResponseEntity
+import org.springframework.mock.web.MockMultipartFile
 
 class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeAlterationController: FeeAlterationController
-
+    @Autowired private lateinit var attachmentsController: AttachmentsController
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
@@ -43,6 +49,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
+    private val testFeeAlterationId = FeeAlterationId(UUID.randomUUID())
     private val user =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val personId = testChild_1.id
@@ -50,7 +57,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     private val testFeeAlteration =
         FeeAlteration(
-            id = FeeAlterationId(UUID.randomUUID()),
+            id = testFeeAlterationId,
             personId = personId,
             type = FeeAlteration.Type.DISCOUNT,
             amount = 50,
@@ -157,6 +164,45 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEqualEnough(listOf(testFeeAlteration), result.map { it.data })
     }
 
+    @Test
+    fun `add an attachment`() {
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+
+        val attachmentId = uploadAttachment(testFeeAlterationId)
+
+        val result = getFeeAlterations(personId)
+        assertEqualEnough(
+            listOf(
+                testFeeAlteration.copy(
+                    attachments =
+                        listOf(FeeAlterationAttachment(attachmentId, "evaka-logo.png", "image/png"))
+                )
+            ),
+            result.map { it.data }
+        )
+    }
+
+    @Test
+    fun `attachment gets deleted on fee alteration deletion`() {
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
+        val attachmentId = uploadAttachment(testFeeAlterationId)
+
+        val result = getFeeAlterations(personId)
+        assertEqualEnough(
+            listOf(
+                testFeeAlteration.copy(
+                    attachments =
+                        listOf(FeeAlterationAttachment(attachmentId, "evaka-logo.png", "image/png"))
+                )
+            ),
+            result.map { it.data }
+        )
+
+        deleteFeeAlteration(testFeeAlterationId)
+
+        assertThrows<NotFound> { getAttachment(attachmentId) }
+    }
+
     private fun createFeeAlteration(body: FeeAlteration) {
         feeAlterationController.createFeeAlteration(dbInstance(), user, RealEvakaClock(), body)
     }
@@ -178,5 +224,24 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     private fun deleteFeeAlteration(id: FeeAlterationId) {
         feeAlterationController.deleteFeeAlteration(dbInstance(), user, RealEvakaClock(), id)
+    }
+    private fun uploadAttachment(id: FeeAlterationId): AttachmentId {
+        return attachmentsController.uploadFeeAlterationAttachment(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id,
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+        )
+    }
+
+    private fun getAttachment(id: AttachmentId): ResponseEntity<Any> {
+        return attachmentsController.getAttachment(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id,
+            "evaka-logo.png"
+        )
     }
 }

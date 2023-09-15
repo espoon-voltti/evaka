@@ -34,6 +34,7 @@ export default React.memo(function FeeAlterationRowInput({
         onChange={(type) => type && setEdited({ ...edited, type })}
       />
       <AmountInput
+        data-qa="fee-alteration-amount-input"
         type="number"
         value={edited.amount !== undefined ? edited.amount.toString() : ''}
         onChange={(value) =>

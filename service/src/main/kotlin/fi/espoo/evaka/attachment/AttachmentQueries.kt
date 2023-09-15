@@ -7,6 +7,7 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
@@ -32,14 +33,15 @@ fun Database.Transaction.insertAttachment(
         val incomeStatementId: IncomeStatementId? = null,
         val incomeId: IncomeId? = null,
         val messageDraftId: MessageDraftId? = null,
-        val pedagogicalDocumentId: PedagogicalDocumentId? = null
+        val pedagogicalDocumentId: PedagogicalDocumentId? = null,
+        val feeAlterationId: FeeAlterationId? = null
     )
 
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, uploaded_by, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :userId, :type)
+        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
         """
             .trimIndent()
 
@@ -61,6 +63,8 @@ fun Database.Transaction.insertAttachment(
                     throw IllegalArgumentException("attachments are saved via draft")
                 is AttachmentParent.PedagogicalDocument ->
                     AttachmentParentColumn(pedagogicalDocumentId = attachTo.pedagogicalDocumentId)
+                is AttachmentParent.FeeAlteration ->
+                    AttachmentParentColumn(feeAlterationId = attachTo.feeAlterationId)
             }
         )
         .bind("userId", user.evakaUserId)
@@ -262,4 +266,29 @@ fun Database.Read.userPedagogicalDocumentCount(
         .bind("userId", userId)
         .mapTo<Int>()
         .first()
+}
+
+fun Database.Transaction.associateFeeAlterationAttachments(
+    personId: EvakaUserId,
+    feeAlterationId: FeeAlterationId,
+    attachmentIds: List<AttachmentId>
+) {
+    val numRows =
+        createUpdate(
+                """
+        UPDATE attachment SET fee_alteration_id = :feeAlterationId
+        WHERE id = ANY(:attachmentIds)
+          AND income_id IS NULL
+          AND uploaded_by = :personId
+        """
+                    .trimIndent()
+            )
+            .bind("feeAlterationId", feeAlterationId)
+            .bind("attachmentIds", attachmentIds)
+            .bind("personId", personId)
+            .execute()
+
+    if (numRows < attachmentIds.size) {
+        throw BadRequest("Cannot associate all requested attachments")
+    }
 }

@@ -6,6 +6,7 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
@@ -20,6 +21,7 @@ sealed class AttachmentParent {
     data class MessageContent(val messageContentId: MessageContentId) : AttachmentParent()
     data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) :
         AttachmentParent()
+    data class FeeAlteration(val feeAlterationId: FeeAlterationId) : AttachmentParent()
     object None : AttachmentParent()
 }
 
