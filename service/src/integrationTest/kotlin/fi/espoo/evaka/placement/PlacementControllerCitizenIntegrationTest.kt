@@ -779,7 +779,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         )
 
         val backupCares = db.transaction { it.getBackupCaresForChild(child.id) }
-        assertEquals(0, backupCares.size)
+        assertEquals(emptyList(), backupCares)
     }
 
     @Test

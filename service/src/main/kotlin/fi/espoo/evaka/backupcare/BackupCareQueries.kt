@@ -4,10 +4,13 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.data.DateMap
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
@@ -184,105 +187,43 @@ fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
         .mapTo<ChildId>()
         .one()
 
-fun Database.Transaction.deleteOrMoveConflictingBackupCares(
-    childId: ChildId,
-    oldRange: FiniteDateRange,
-    newRange: FiniteDateRange?
-) {
-    if (newRange == null) {
-        createUpdate(
-                // language=SQL
-                """
-            DELETE FROM backup_care
-            WHERE child_id = :childId AND :range @> daterange(start_date, end_date, '[]')
-            """
-                    .trimIndent()
-            )
-            .bind("childId", childId)
-            .bind("range", oldRange)
-            .execute()
+/** Recreates backup cares for a child so that they are always within placements. */
+fun Database.Transaction.recreateBackupCares(childId: ChildId) {
+    val placementDates =
+        DateSet.of(
+            getPlacementsForChild(childId).asSequence().map {
+                FiniteDateRange(it.startDate, it.endDate)
+            }
+        )
+    val placementSpan = placementDates.spanningRange()
+    val backupCares = getBackupCaresForChild(childId)
 
-        createUpdate(
-                // language=SQL
-                """
-            UPDATE backup_care
-            SET end_date = :startDate - INTERVAL '1 day'
-            WHERE child_id = :childId AND :startDate BETWEEN start_date AND end_date
-            """
-                    .trimIndent()
-            )
-            .bind("childId", childId)
-            .bind("startDate", oldRange.start)
-            .execute()
-
-        createUpdate(
-                """
-            UPDATE backup_care
-            SET start_date = :endDate + INTERVAL '1 day'
-            WHERE child_id = :childId AND :endDate BETWEEN start_date AND end_date
-            """
-                    .trimIndent()
-            )
-            .bind("childId", childId)
-            .bind("endDate", oldRange.end)
-            .execute()
-    } else {
-        createUpdate(
-                // language=SQL
-                """
-            DELETE FROM backup_care
-            WHERE child_id = :childId
-            AND (
-                -- delete backup cares that were previously wholly contained within the range but would no longer
-                (daterange(start_date, end_date, '[]') @> :oldRange AND NOT (daterange(start_date, end_date, '[]') @> :newRange))
-                -- also delete backup cares that would have reversed validity period after shrinking
-                OR (start_date BETWEEN :oldStart AND :newStart AND :newStart > end_date)
-                OR (end_date BETWEEN :newEnd AND :oldEnd AND :newEnd < start_date)
-            )
-            """
-                    .trimIndent()
-            )
-            .bind("childId", childId)
-            .bind("oldRange", oldRange)
-            .bind("newRange", newRange)
-            .bind("newStart", newRange.start)
-            .bind("oldStart", oldRange.start)
-            .bind("newEnd", newRange.end)
-            .bind("oldEnd", oldRange.end)
-            .execute()
-
-        if (newRange.start.isAfter(oldRange.start)) {
-            // the range was shrunk by moving the start date to a later date
-            createUpdate(
-                    // language=SQL
-                    """
-                UPDATE backup_care
-                SET start_date = :newStart
-                WHERE child_id = :childId AND start_date BETWEEN :oldStart AND :newStart
-                """
-                        .trimIndent()
-                )
-                .bind("childId", childId)
-                .bind("newStart", newRange.start)
-                .bind("oldStart", oldRange.start)
-                .execute()
+    val desired =
+        if (placementSpan == null)
+            DateMap.empty() // no placements -> we shouldn't have backup cares
+        else {
+            // Invalid backup care ranges are either 1. outside placements completely, or 2. in gaps
+            // between placements
+            val backupCareDates = DateMap.of(backupCares.asSequence().map { it.period to it.id })
+            val backupCareSpan = backupCareDates.spanningRange() ?: return
+            val outsidePlacements = backupCareSpan.subtract(placementSpan)
+            backupCareDates.removeAll(outsidePlacements).removeAll(placementDates.gaps())
         }
 
-        if (newRange.end.isBefore(oldRange.end)) {
-            // the range was shrunk by moving the end date to an earlier date
-            createUpdate(
-                    // language=SQL
-                    """
-                UPDATE backup_care
-                SET end_date = :newEnd
-                WHERE child_id = :childId AND end_date BETWEEN :newEnd AND :oldEnd
-                """
-                        .trimIndent()
+    for (backupCare in backupCares) {
+        deleteBackupCare(backupCare.id)
+    }
+    for ((id, newRanges) in desired.transpose()) {
+        val backupCare = backupCares.find { it.id == id }!!
+        for (range in newRanges.ranges()) {
+            createBackupCare(
+                childId,
+                NewBackupCare(
+                    unitId = backupCare.unit.id,
+                    groupId = backupCare.group?.id,
+                    period = range
                 )
-                .bind("childId", childId)
-                .bind("newEnd", newRange.end)
-                .bind("oldEnd", oldRange.end)
-                .execute()
+            )
         }
     }
 }

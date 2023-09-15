@@ -1131,6 +1131,7 @@ fun Database.Transaction.insertTestBackupCare(backupCare: DevBackupCare) =
             """
 INSERT INTO backup_care (id, child_id, unit_id, group_id, start_date, end_date)
 VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
+RETURNING id
 """
         )
         .bind("id", backupCare.id ?: BackupCareId(UUID.randomUUID()))
@@ -1139,7 +1140,9 @@ VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
         .bind("groupId", backupCare.groupId)
         .bind("startDate", backupCare.period.start)
         .bind("endDate", backupCare.period.end)
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<BackupCareId>()
+        .single()
 
 fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
     // language=sql
