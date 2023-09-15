@@ -13,6 +13,7 @@ import fi.espoo.evaka.pairing.MobileDeviceDetails
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDevice
 import fi.espoo.evaka.pairing.getDeviceByToken
+import fi.espoo.evaka.pairing.updateDeviceTracking
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -218,15 +219,20 @@ class SystemController(
             .also { Audit.EmployeeGetOrCreate.log(targetId = id) }
     }
 
-    @GetMapping("/system/mobile-devices/{id}")
-    fun getMobileDevice(
+    data class MobileDeviceTracking(val userAgent: String)
+
+    @PostMapping("/system/mobile-devices/{id}")
+    fun authenticateMobileDevice(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
-        @PathVariable id: MobileDeviceId
+        clock: EvakaClock,
+        @PathVariable id: MobileDeviceId,
+        @RequestBody tracking: MobileDeviceTracking
     ): MobileDeviceDetails =
         db.connect { dbc ->
-                dbc.read { tx ->
+                dbc.transaction { tx ->
                     val device = tx.getDevice(id)
+                    tx.updateDeviceTracking(id, lastSeen = clock.now(), tracking)
                     device.copy(
                         pushApplicationServerKey =
                             webPush?.applicationServerKey.takeIf {

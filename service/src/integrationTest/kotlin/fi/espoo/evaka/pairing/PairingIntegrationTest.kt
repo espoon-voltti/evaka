@@ -116,7 +116,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(PairingStatus.PAIRED, getPairingStatus(id))
 
         // mobile > apigw: fetching device to recreate session
-        val res5 = getMobileDevice(deviceId)
+        val res5 = authenticateMobileDevice(deviceId)
         assertEquals(deviceId, res5.id)
 
         // web: removing device
@@ -125,7 +125,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(0, listRes4.size)
 
         // mobile > apigw: fetching device to recreate session should fail
-        assertThrows<NotFound> { getMobileDevice(deviceId) }
+        assertThrows<NotFound> { authenticateMobileDevice(deviceId) }
     }
 
     @Test
@@ -526,6 +526,12 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun deleteMobileDevice(id: MobileDeviceId) =
         mobileDevicesController.deleteMobileDevice(dbInstance(), user, clock, id)
 
-    private fun getMobileDevice(id: MobileDeviceId): MobileDeviceDetails =
-        systemController.getMobileDevice(dbInstance(), AuthenticatedUser.SystemInternalUser, id)
+    private fun authenticateMobileDevice(id: MobileDeviceId): MobileDeviceDetails =
+        systemController.authenticateMobileDevice(
+            dbInstance(),
+            AuthenticatedUser.SystemInternalUser,
+            clock,
+            id,
+            SystemController.MobileDeviceTracking(userAgent = "007")
+        )
 }

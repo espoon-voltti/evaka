@@ -7,7 +7,7 @@ import _ from 'lodash'
 import { toRequestHandler } from '../../shared/express.js'
 import {
   getEmployeeDetails,
-  getMobileDevice,
+  authenticateMobileDevice,
   UUID
 } from '../../shared/service-client.js'
 import { saveLogoutToken, saveSession } from '../../shared/session.js'
@@ -56,7 +56,7 @@ async function validateUser(
   if (!user || !user.id) return undefined
   switch (user.userType) {
     case 'MOBILE': {
-      const device = await getMobileDevice(req, user.id)
+      const device = await authenticateMobileDevice(req, user.id)
       if (!device) {
         return undefined
       }
