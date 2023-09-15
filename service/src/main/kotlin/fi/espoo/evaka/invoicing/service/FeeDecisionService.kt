@@ -53,6 +53,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.voltti.logging.loggers.info
 import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
@@ -128,9 +129,13 @@ class FeeDecisionService(
                 }
 
         if (waitingForSending.isNotEmpty()) {
-            logger.info(
+            val logMeta =
+                mapOf(
+                    "feeDecisionIds" to waitingForSending.map { it.id },
+                )
+            logger.info(logMeta) {
                 "Warning: when creating fee decisions, skipped ${waitingForSending.size} fee decisions because head of family had overlapping fee decisions waiting for sending"
-            )
+            }
         }
 
         val remainingDecisions =
