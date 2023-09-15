@@ -336,6 +336,9 @@ server {
   location ~* ^/internal_redirect/(.*) {
     internal;
 
+    # Pass trough Content-Disposition header from original X-Accel-Redirect response
+    add_header Content-Disposition $upstream_http_content_disposition;
+
     # Don't proxy sensitive headers
     proxy_set_header        Authorization '';
     proxy_set_header        Cookie '';
