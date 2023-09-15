@@ -49,7 +49,7 @@ export default React.memo(function TimelinePage() {
     () =>
       new FiniteDateRange(
         LocalDate.todayInHelsinkiTz().subMonths(15).withDate(1),
-        LocalDate.todayInHelsinkiTz().addMonths(7).withDate(1)
+        LocalDate.todayInHelsinkiTz().addMonths(6).lastDayOfMonth()
       ),
     []
   )
@@ -252,5 +252,13 @@ const getTimelineContentRange = (t: Timeline): DateRange | null => {
 
   if (allRanges.length === 0) return null
 
-  return allRanges.reduce((union, range) => range.spanningRange(union))
+  const spanningRange = allRanges.reduce((union, range) =>
+    range.spanningRange(union)
+  )
+
+  // extended to from start of month to end of month
+  return new DateRange(
+    spanningRange.start.withDate(1),
+    spanningRange.end ? spanningRange.end.lastDayOfMonth() : null
+  )
 }
