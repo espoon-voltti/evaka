@@ -249,6 +249,7 @@ class EspooConfig {
             enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
             curriculumDocumentPermissionToShareRequired = true,
             assistanceDecisionMakerRoles = null,
+            preschoolAssistanceDecisionMakerRoles = null,
             requestedStartUpperLimit = 14,
             partialAbsenceThresholdsEnabled = true,
             postOffice = "ESPOO",
