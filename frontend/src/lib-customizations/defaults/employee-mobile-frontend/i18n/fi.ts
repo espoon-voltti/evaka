@@ -309,7 +309,7 @@ export const fi = {
   staff: {
     title: 'Henkilökunnan määrä tänään',
     daycareResponsible: 'Kasvatusvastuullisia',
-    isDaycareResponsible: 'Kasvatusvastuullisuus',
+    staffOccupancyEffect: 'Kasvatusvastuullisuus',
     other: 'Muita (esim. avustajat, opiskelijat, veot)',
     cancel: 'Peru muokkaus',
     realizedGroupOccupancy: 'Ryhmän käyttöaste tänään',

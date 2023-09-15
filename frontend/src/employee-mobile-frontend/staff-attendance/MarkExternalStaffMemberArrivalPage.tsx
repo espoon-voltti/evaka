@@ -38,7 +38,7 @@ interface FormState {
   arrived: string
   name: string
   group: GroupInfo | null
-  isDaycareResponsible: boolean
+  hasStaffOccupancyEffect: boolean
 }
 
 export default function MarkExternalStaffMemberArrivalPage() {
@@ -56,7 +56,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
       .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
       .getOrElse(null),
     name: '',
-    isDaycareResponsible: true
+    hasStaffOccupancyEffect: true
   }))
 
   const formIsValid = () =>
@@ -116,12 +116,12 @@ export default function MarkExternalStaffMemberArrivalPage() {
                   data-qa="input-group"
                 />
                 <Checkbox
-                  label={i18n.staff.isDaycareResponsible}
-                  checked={form.isDaycareResponsible}
+                  label={i18n.staff.staffOccupancyEffect}
+                  checked={form.hasStaffOccupancyEffect}
                   onChange={(state) =>
                     setForm((prev) => ({
                       ...prev,
-                      isDaycareResponsible: state
+                      hasStaffOccupancyEffect: state
                     }))
                   }
                 />
@@ -149,7 +149,8 @@ export default function MarkExternalStaffMemberArrivalPage() {
                             arrived: LocalTime.parse(form.arrived),
                             groupId: form.group.id,
                             name: form.name.trim(),
-                            isDaycareResponsible: form.isDaycareResponsible
+                            hasStaffOccupancyEffect:
+                              form.hasStaffOccupancyEffect
                           }
                         }
                       : cancelMutation

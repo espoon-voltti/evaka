@@ -161,7 +161,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val attendanceId: StaffAttendanceExternalId?,
         val name: String?,
         val groupId: GroupId,
-        val isDaycareResponsible: Boolean,
+        val hasStaffOccupancyEffect: Boolean,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
@@ -247,7 +247,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     it.groupId,
                                     it.arrived,
                                     it.departed,
-                                    if (it.isDaycareResponsible) occupancyCoefficientSeven
+                                    if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                     else occupancyCoefficientZero
                                 )
                             }

@@ -59,7 +59,7 @@ const externalPersonForm = object({
     value.length < 3 ? 'required' : undefined
   ),
   group: required(oneOf<UUID>()),
-  isDaycareResponsible: required(boolean())
+  hasStaffOccupancyEffect: required(boolean())
 })
 
 function initialFormState(
@@ -81,7 +81,7 @@ function initialFormState(
       options: groupOptions,
       domValue: defaultGroupId
     },
-    isDaycareResponsible: true
+    hasStaffOccupancyEffect: true
   }
 }
 
@@ -118,7 +118,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
             : null,
           name: formValue.name,
           groupId: formValue.group,
-          isDaycareResponsible: formValue.isDaycareResponsible
+          hasStaffOccupancyEffect: formValue.hasStaffOccupancyEffect
         }
       ],
       staffAttendances: []
@@ -132,7 +132,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
   const name = useFormField(form, 'name')
   const group = useFormField(form, 'group')
   const groupError = group.validationError()
-  const isDaycareResponsible = useFormField(form, 'isDaycareResponsible')
+  const hasStaffOccupancyEffect = useFormField(form, 'hasStaffOccupancyEffect')
 
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-add-person-modal">
@@ -199,7 +199,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
         <div>
           <CheckboxF
             label={i18n.unit.staffOccupancies.title}
-            bind={isDaycareResponsible}
+            bind={hasStaffOccupancyEffect}
             data-qa="has-staff-occupancy-effect"
           />
         </div>
