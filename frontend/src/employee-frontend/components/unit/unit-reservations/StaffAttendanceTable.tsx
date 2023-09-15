@@ -727,7 +727,8 @@ export const staffAttendanceValidator =
         groupId !== undefined
       ) {
         body[i] = {
-          ...item,
+          id: item.id,
+          type: item.type,
           arrived,
           departed,
           groupId
