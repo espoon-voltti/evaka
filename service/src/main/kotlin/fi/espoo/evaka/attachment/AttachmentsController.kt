@@ -417,11 +417,7 @@ class AttachmentsController(
                         )
                     is AttachmentParent.MessageDraft,
                     is AttachmentParent.MessageContent -> 0
-                    is AttachmentParent.FeeAlteration ->
-                        it.userFeeAlterationAttachmentCount(
-                            attachTo.feeAlterationId,
-                            user.evakaUserId
-                        )
+                    is AttachmentParent.FeeAlteration -> Integer.MAX_VALUE
                 }
             }
         if (count >= maxAttachmentsPerUser) {

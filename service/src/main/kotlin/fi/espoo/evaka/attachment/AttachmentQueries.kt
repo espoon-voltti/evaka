@@ -268,19 +268,6 @@ fun Database.Read.userPedagogicalDocumentCount(
         .first()
 }
 
-fun Database.Read.userFeeAlterationAttachmentCount(
-    feeAlterationId: FeeAlterationId,
-    userId: EvakaUserId
-): Int {
-    return this.createQuery(
-            "SELECT COUNT(*) FROM attachment WHERE fee_alteration_id = :feeAlterationId AND uploaded_by = :userId"
-        )
-        .bind("feeAlterationId", feeAlterationId)
-        .bind("userId", userId)
-        .mapTo<Int>()
-        .first()
-}
-
 fun Database.Transaction.associateFeeAlterationAttachments(
     personId: EvakaUserId,
     feeAlterationId: FeeAlterationId,
