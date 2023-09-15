@@ -10,6 +10,7 @@ import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
   Combobox,
+  DatePicker,
   DatePickerDeprecated,
   MultiSelect,
   Page,
@@ -29,6 +30,11 @@ export default class ReportsPage {
   async openApplicationsReport() {
     await this.page.find('[data-qa="report-applications"]').click()
     return new ApplicationsReport(this.page)
+  }
+
+  async openPlacementGuaranteeReport() {
+    await this.page.find('[data-qa="report-placement-guarantee"]').click()
+    return new PlacementGuaranteeReport(this.page)
   }
 
   async openPlacementSketchingReport() {
@@ -131,6 +137,43 @@ export class ApplicationsReport {
     )
     await fromInput.fill(from.format())
     await toInput.fill(to.format())
+  }
+}
+
+export class PlacementGuaranteeReport {
+  constructor(private page: Page) {}
+
+  async selectDate(formattedDate: string) {
+    const datePicker = new DatePicker(this.page.findByDataQa('date-picker'))
+    await datePicker.fill(formattedDate)
+  }
+
+  async selectUnit(unitName: string) {
+    const unitSelector = new Combobox(this.page.findByDataQa('unit-selector'))
+    await unitSelector.fillAndSelectFirst(unitName)
+  }
+
+  async assertRows(
+    expected: {
+      areaName: string
+      unitName: string
+      childName: string
+      placementPeriod: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('placement-guarantee-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
+        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
+        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row
+          .findByDataQa('placement-period')
+          .assertTextEquals(data.placementPeriod)
+      })
+    )
   }
 }
 

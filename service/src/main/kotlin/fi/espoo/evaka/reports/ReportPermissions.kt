@@ -31,6 +31,7 @@ enum class Report {
     OCCUPANCY,
     PARTNERS_IN_DIFFERENT_ADDRESS,
     PLACEMENT_COUNT,
+    PLACEMENT_GUARANTEE,
     PLACEMENT_SKETCHING,
     PRESENCE,
     RAW,
@@ -135,6 +136,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.PLACEMENT_COUNT.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_PLACEMENT_COUNT_REPORT)
+                    },
+                    Report.PLACEMENT_GUARANTEE.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT
+                        )
                     },
                     Report.PLACEMENT_SKETCHING.takeIf {
                         permittedGlobalActions.contains(

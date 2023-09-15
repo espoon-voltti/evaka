@@ -3272,6 +3272,8 @@ export const fi = {
       clock: 'Klo',
       startDate: 'Alkaen',
       endDate: 'Päättyen',
+      firstName: 'Etunimi',
+      lastName: 'Sukunimi',
       childName: 'Lapsen nimi',
       child: 'Lapsi',
       under3y: '<3v',
@@ -3703,6 +3705,11 @@ export const fi = {
       placementsOver3: 'Vähintään 3v',
       placementsUnder3: 'Alle 3v',
       total: 'Yhteensä'
+    },
+    placementGuarantee: {
+      title: 'Varhaiskasvatuspaikkatakuu',
+      description:
+        'Raportti näyttää varhaiskasvatuspaikkatakuulla olevat lapset'
     },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',

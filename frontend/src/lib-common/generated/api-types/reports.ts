@@ -496,6 +496,21 @@ export interface PlacementCountReportResult {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.PlacementGuaranteeReportRow
+*/
+export interface PlacementGuaranteeReportRow {
+  areaId: UUID
+  areaName: string
+  childFirstName: string
+  childId: UUID
+  childLastName: string
+  placementEndDate: LocalDate
+  placementStartDate: LocalDate
+  unitId: UUID
+  unitName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
@@ -629,6 +644,7 @@ export type Report =
   | 'OCCUPANCY'
   | 'PARTNERS_IN_DIFFERENT_ADDRESS'
   | 'PLACEMENT_COUNT'
+  | 'PLACEMENT_GUARANTEE'
   | 'PLACEMENT_SKETCHING'
   | 'PRESENCE'
   | 'RAW'

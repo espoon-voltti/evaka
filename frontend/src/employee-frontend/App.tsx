@@ -85,6 +85,7 @@ import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
 import ReportOccupancies from './components/reports/Occupancies'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
 import PlacementCount from './components/reports/PlacementCount'
+import PlacementGuarantee from './components/reports/PlacementGuarantee'
 import PlacementSketching from './components/reports/PlacementSketching'
 import ReportPresences from './components/reports/PresenceReport'
 import ReportRaw from './components/reports/Raw'
@@ -679,6 +680,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <FuturePreschoolersReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/placement-guarantee',
+          element: (
+            <EmployeeRoute title="reports">
+              <PlacementGuarantee />
             </EmployeeRoute>
           )
         },
