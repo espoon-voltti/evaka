@@ -12,15 +12,14 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import java.lang.Error
 
 fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest
 ): ChildDocumentId {
     return createQuery(
             """
-            INSERT INTO child_document(child_id, template_id, content)
-            VALUES (:childId, :templateId, :content)
+            INSERT INTO child_document(child_id, template_id, status, content)
+            VALUES (:childId, :templateId, 'DRAFT', :content)
             RETURNING id
         """
         )
@@ -169,7 +168,7 @@ fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: Helsinki
             """
             UPDATE child_document
             SET published_at = :now, published_content = content
-            WHERE id = :id
+            WHERE id = :id AND status <> 'COMPLETED'
         """
         )
         .bind("id", id)
@@ -195,14 +194,14 @@ fun validateStatusTransition(
 ): StatusTransition {
     val document = tx.getChildDocument(documentId) ?: throw NotFound()
 
-    val statusList = document.template.type.states
+    val statusList = document.template.type.statuses
     val currentIndex = statusList.indexOf(document.status)
     if (currentIndex < 0) {
-        throw Error("document $documentId is in invalid status")
+        throw IllegalStateException("document $documentId is in invalid status")
     }
     val newStatus =
         statusList.getOrNull(if (goingForward) currentIndex + 1 else currentIndex - 1)
-            ?: throw BadRequest("Already in the ${if(goingForward) "final" else "first"} state")
+            ?: throw BadRequest("Already in the ${if(goingForward) "final" else "first"} status")
     if (newStatus != requestedStatus) {
         throw Conflict("Idempotency issue: statuses do not match")
     }
@@ -239,11 +238,20 @@ fun Database.Transaction.changeStatusAndPublish(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.deleteUnpublishedChildDocumentDraft(id: ChildDocumentId) {
+fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
+    createUpdate(
+            """
+            DELETE FROM child_document_read
+            WHERE document_id = :id
+        """
+        )
+        .bind("id", id)
+        .execute()
+
     createUpdate(
             """
             DELETE FROM child_document
-            WHERE id = :id AND status = 'DRAFT' AND published_at IS NULL 
+            WHERE id = :id AND status = 'DRAFT'
         """
         )
         .bind("id", id)

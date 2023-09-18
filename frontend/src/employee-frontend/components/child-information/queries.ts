@@ -47,8 +47,8 @@ import {
   getChildDocuments,
   postChildDocument,
   putChildDocumentContent,
-  putChildDocumentNextState,
-  putChildDocumentPrevState,
+  putChildDocumentNextStatus,
+  putChildDocumentPrevStatus,
   putChildDocumentPublish
 } from '../../api/child/child-documents'
 import { getUnitsRaw } from '../../api/daycare'
@@ -118,18 +118,18 @@ export const publishChildDocumentMutation = mutation({
   ]
 })
 
-export const childDocumentNextStateMutation = mutation({
+export const childDocumentNextStatusMutation = mutation({
   api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
-    putChildDocumentNextState(arg.documentId, arg.newStatus),
+    putChildDocumentNextStatus(arg.documentId, arg.newStatus),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
   ]
 })
 
-export const childDocumentPrevStateMutation = mutation({
+export const childDocumentPrevStatusMutation = mutation({
   api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
-    putChildDocumentPrevState(arg.documentId, arg.newStatus),
+    putChildDocumentPrevStatus(arg.documentId, arg.newStatus),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)

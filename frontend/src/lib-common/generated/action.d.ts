@@ -239,8 +239,8 @@ export type ChildDiscussion =
 
 export type ChildDocument =
   | 'DELETE'
-  | 'NEXT_STATE'
-  | 'PREV_STATE'
+  | 'NEXT_STATUS'
+  | 'PREV_STATUS'
   | 'PUBLISH'
   | 'READ'
   | 'UPDATE'

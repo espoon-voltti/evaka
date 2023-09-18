@@ -2470,8 +2470,7 @@ const sv: Translations = {
       plansTitle:
         'Planer för småbarnspedagogik och lärande inom förskoleundervisning',
       noVasus: 'Inga planer',
-      hojksTitle:
-        'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat', // TODO
+      hojksTitle: 'Individuella planer för hur undervisningen ska ordnas',
       otherDocumentsTitle: 'Andra dokument',
       noDocuments: 'Inga dokument',
       lastModified: 'Senaste redigeringsdatum',

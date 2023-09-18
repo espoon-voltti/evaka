@@ -82,21 +82,21 @@ export async function putChildDocumentPublish(id: UUID): Promise<void> {
     .then((res) => res.data)
 }
 
-export async function putChildDocumentNextState(
+export async function putChildDocumentNextStatus(
   id: UUID,
   newStatus: DocumentStatus
 ): Promise<void> {
   return client
-    .put<JsonOf<void>>(`/child-documents/${id}/next-state`, { newStatus })
+    .put<JsonOf<void>>(`/child-documents/${id}/next-status`, { newStatus })
     .then((res) => res.data)
 }
 
-export async function putChildDocumentPrevState(
+export async function putChildDocumentPrevStatus(
   id: UUID,
   newStatus: DocumentStatus
 ): Promise<void> {
   return client
-    .put<JsonOf<void>>(`/child-documents/${id}/prev-state`, { newStatus })
+    .put<JsonOf<void>>(`/child-documents/${id}/prev-status`, { newStatus })
     .then((res) => res.data)
 }
 

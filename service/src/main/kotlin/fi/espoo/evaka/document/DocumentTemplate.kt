@@ -76,8 +76,9 @@ data class Section(
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 
+/** statuses is an ordered list which defines a linear state machine */
 @ConstList("documentTypes")
-enum class DocumentType(val states: List<DocumentStatus>) {
+enum class DocumentType(val statuses: List<DocumentStatus>) {
     PEDAGOGICAL_REPORT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED))

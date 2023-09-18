@@ -2263,6 +2263,7 @@ data class DevChildDocument(
     val childId: ChildId,
     val templateId: DocumentTemplateId,
     @Json val content: DocumentContent,
+    @Json val publishedContent: DocumentContent?,
     val publishedAt: HelsinkiDateTime?
 )
 

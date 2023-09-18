@@ -37,8 +37,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import {
-  childDocumentNextStateMutation,
-  childDocumentPrevStateMutation,
+  childDocumentNextStatusMutation,
+  childDocumentPrevStatusMutation,
   childDocumentQuery,
   deleteChildDocumentMutation,
   publishChildDocumentMutation,
@@ -116,10 +116,10 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   )
 
   useEffect(() => {
-    if (debouncedValidContent !== null) {
+    if (!preview && debouncedValidContent !== null) {
       void save(debouncedValidContent)
     }
-  }, [debouncedValidContent, save])
+  }, [preview, debouncedValidContent, save])
 
   const goBack = () => navigate(`/child-information/${document.child.id}`)
 
@@ -203,14 +203,14 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   />
                 )}
               {preview &&
-                permittedActions.includes('PREV_STATE') &&
+                permittedActions.includes('PREV_STATUS') &&
                 prevStatus != null && (
                   <ConfirmedMutation
                     buttonText={
                       i18n.childInformation.childDocuments.editor
                         .goToPrevStatus[prevStatus]
                     }
-                    mutation={childDocumentPrevStateMutation}
+                    mutation={childDocumentPrevStatusMutation}
                     onClick={() => ({
                       documentId: document.id,
                       childId: document.child.id,
@@ -240,12 +240,14 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
             </FixedSpaceRow>
 
             <FixedSpaceRow>
-              {preview && permittedActions.includes('UPDATE') && (
-                <Button
-                  text={i18n.common.edit}
-                  onClick={() => setPreview(false)}
-                />
-              )}
+              {preview &&
+                permittedActions.includes('UPDATE') &&
+                document.status !== 'COMPLETED' && (
+                  <Button
+                    text={i18n.common.edit}
+                    onClick={() => setPreview(false)}
+                  />
+                )}
               {!preview && (
                 <Button
                   text={i18n.childInformation.childDocuments.editor.preview}
@@ -255,28 +257,30 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   data-qa="preview-button"
                 />
               )}
-              {preview && permittedActions.includes('PUBLISH') && (
-                <ConfirmedMutation
-                  buttonText={
-                    i18n.childInformation.childDocuments.editor.publish
-                  }
-                  mutation={publishChildDocumentMutation}
-                  onClick={() => ({
-                    documentId: document.id,
-                    childId: document.child.id
-                  })}
-                  confirmationTitle={
-                    i18n.childInformation.childDocuments.editor
-                      .publishConfirmTitle
-                  }
-                  confirmationText={
-                    i18n.childInformation.childDocuments.editor
-                      .publishConfirmText
-                  }
-                />
-              )}
               {preview &&
-                permittedActions.includes('NEXT_STATE') &&
+                permittedActions.includes('PUBLISH') &&
+                document.status !== 'COMPLETED' && (
+                  <ConfirmedMutation
+                    buttonText={
+                      i18n.childInformation.childDocuments.editor.publish
+                    }
+                    mutation={publishChildDocumentMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id
+                    })}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmTitle
+                    }
+                    confirmationText={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmText
+                    }
+                  />
+                )}
+              {preview &&
+                permittedActions.includes('NEXT_STATUS') &&
                 nextStatus != null && (
                   <ConfirmedMutation
                     buttonText={
@@ -284,7 +288,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                         .goToNextStatus[nextStatus]
                     }
                     primary
-                    mutation={childDocumentNextStateMutation}
+                    mutation={childDocumentNextStatusMutation}
                     onClick={() => ({
                       documentId: document.id,
                       childId: document.child.id,

@@ -210,8 +210,8 @@ class ChildDocumentController(
         val newStatus: DocumentStatus
     )
 
-    @PutMapping("/{documentId}/next-state")
-    fun nextState(
+    @PutMapping("/{documentId}/next-status")
+    fun nextStatus(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -224,7 +224,7 @@ class ChildDocumentController(
                         tx,
                         user,
                         clock,
-                        Action.ChildDocument.NEXT_STATE,
+                        Action.ChildDocument.NEXT_STATUS,
                         documentId
                     )
                     val statusTransition =
@@ -240,13 +240,13 @@ class ChildDocumentController(
                 }
             }
             .also {
-                Audit.ChildDocumentNextState.log(targetId = documentId, objectId = body.newStatus)
+                Audit.ChildDocumentNextStatus.log(targetId = documentId, objectId = body.newStatus)
                 Audit.ChildDocumentPublish.log(targetId = documentId)
             }
     }
 
-    @PutMapping("/{documentId}/prev-state")
-    fun prevState(
+    @PutMapping("/{documentId}/prev-status")
+    fun prevStatus(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -259,7 +259,7 @@ class ChildDocumentController(
                         tx,
                         user,
                         clock,
-                        Action.ChildDocument.NEXT_STATE,
+                        Action.ChildDocument.PREV_STATUS,
                         documentId
                     )
                     val statusTransition =
@@ -273,7 +273,7 @@ class ChildDocumentController(
                 }
             }
             .also {
-                Audit.ChildDocumentNextState.log(targetId = documentId, objectId = body.newStatus)
+                Audit.ChildDocumentNextStatus.log(targetId = documentId, objectId = body.newStatus)
             }
     }
 
@@ -293,8 +293,7 @@ class ChildDocumentController(
                         Action.ChildDocument.DELETE,
                         documentId
                     )
-                    tx.getChildDocument(documentId)
-                    tx.deleteUnpublishedChildDocumentDraft(documentId)
+                    tx.deleteChildDocumentDraft(documentId)
                 }
             }
             .also { Audit.ChildDocumentDelete.log(targetId = documentId) }

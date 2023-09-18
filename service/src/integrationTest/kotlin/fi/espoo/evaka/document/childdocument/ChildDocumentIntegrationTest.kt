@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.Action
@@ -177,8 +176,8 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         Action.ChildDocument.PUBLISH,
                         Action.ChildDocument.READ,
                         Action.ChildDocument.UPDATE,
-                        Action.ChildDocument.NEXT_STATE,
-                        Action.ChildDocument.PREV_STATE
+                        Action.ChildDocument.NEXT_STATUS,
+                        Action.ChildDocument.PREV_STATUS
                     )
             ),
             document
@@ -328,7 +327,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 now,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
-        controller.nextState(
+        controller.nextStatus(
             dbInstance(),
             employeeUser,
             now,
@@ -336,7 +335,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED)
         )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         }
     }
@@ -467,7 +466,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), employeeUser, now, id).data
     private fun nextState(id: ChildDocumentId, status: DocumentStatus) =
-        controller.nextState(
+        controller.nextStatus(
             dbInstance(),
             employeeUser,
             now,
@@ -475,7 +474,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             ChildDocumentController.StatusChangeRequest(status)
         )
     private fun prevState(id: ChildDocumentId, status: DocumentStatus) =
-        controller.prevState(
+        controller.prevStatus(
             dbInstance(),
             employeeUser,
             now,

@@ -2230,8 +2230,7 @@ const en: Translations = {
       plansTitle:
         'Early childhood education and care plans and learning plans for pre-primary education',
       noVasus: 'No plans',
-      hojksTitle:
-        'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat', // TODO
+      hojksTitle: 'Individual education plans',
       otherDocumentsTitle: 'Other documents',
       noDocuments: 'No documents',
       lastModified: 'Last modified',

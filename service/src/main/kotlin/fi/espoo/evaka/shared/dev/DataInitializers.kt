@@ -1542,7 +1542,7 @@ fun Database.Transaction.insertTestChildDocument(row: DevChildDocument) =
             row,
             """
 INSERT INTO child_document (id, status, child_id, template_id, content, published_content, published_at)
-VALUES (:id, :status, :childId, :templateId, :content, ${if(row.publishedAt == null) "NULL" else ":content"}, :publishedAt)
+VALUES (:id, :status, :childId, :templateId, :content, :publishedContent, :publishedAt)
 """
         )
         .let(::ChildDocumentId)

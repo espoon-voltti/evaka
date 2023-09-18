@@ -14,7 +14,8 @@ import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops
 import { useTranslation } from 'citizen-frontend/localization'
 import {
   ChildDocumentCitizenSummary,
-  DocumentType
+  DocumentType,
+  documentTypes
 } from 'lib-common/generated/api-types/document'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
 import { useQuery, useQueryResult } from 'lib-common/query'
@@ -263,7 +264,7 @@ export default React.memo(function PedagogicalDocumentsSection({
             <H3>{i18n.children.vasu.otherDocumentsTitle}</H3>
             <ChildDocumentsContent
               childId={childId}
-              types={['PEDAGOGICAL_ASSESSMENT', 'PEDAGOGICAL_REPORT']}
+              types={documentTypes.filter((type) => type !== 'HOJKS')}
             />
           </FixedSpaceColumn>
         </PaddingBox>

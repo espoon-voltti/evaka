@@ -698,5 +698,6 @@ export interface DevChildDocument {
   childId: UUID
   templateId: UUID
   content: DocumentContent
+  publishedContent: DocumentContent | null
   publishedAt: HelsinkiDateTime | null
 }
