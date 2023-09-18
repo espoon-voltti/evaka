@@ -313,6 +313,10 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
     <StaffAttendanceDetailsModal
       isExternal={true}
       onSave={onSaveExternal}
+      previousStaffOccupancyEffect={
+        detailsModalConfig.attendances[0] === undefined ||
+        detailsModalConfig.attendances[0].occupancyCoefficient > 0
+      }
       validate={externalAttendanceValidator(detailsModalConfig)}
       name={detailsModalConfig.name}
       date={detailsModalConfig.date}
@@ -724,7 +728,8 @@ export const staffAttendanceValidator =
         groupId !== undefined
       ) {
         body[i] = {
-          ...item,
+          id: item.id,
+          type: item.type,
           arrived,
           departed,
           groupId

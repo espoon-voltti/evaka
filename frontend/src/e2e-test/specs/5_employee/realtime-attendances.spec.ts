@@ -544,13 +544,16 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.setArrivalTime('11:00')
       await addPersonModal.typeName('Sijainen Saija')
       await addPersonModal.selectGroup(groupId)
+      await addPersonModal.setStaffOccupancyEffect(false)
+
       await addPersonModal.save()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 2,
         name: 'Sijainen Saija',
-        attendances: [['11:00', '–']]
+        attendances: [['11:00', '–']],
+        hasStaffOccupancyEffect: false
       })
 
       let modal = await staffAttendances.openDetails(1, mockedToday)
@@ -562,7 +565,8 @@ describe('Realtime staff attendances', () => {
         rowIx: 1,
         nth: 2,
         name: 'Sijainen Saija',
-        attendances: [['11:00', '13:00']]
+        attendances: [['11:00', '13:00']],
+        hasStaffOccupancyEffect: false
       })
 
       modal = await staffAttendances.openDetails(1, mockedToday)
@@ -578,7 +582,9 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.setArrivalTime('11:00')
       await addPersonModal.setDepartureTime('13:00')
       await addPersonModal.typeName('Sijainen Saija')
+      await addPersonModal.setStaffOccupancyEffect(false)
       await addPersonModal.selectGroup(groupId)
+
       await addPersonModal.save()
 
       let modal = await staffAttendances.openDetails(1, mockedToday.subDays(1))
@@ -598,7 +604,8 @@ describe('Realtime staff attendances', () => {
         rowIx: 1,
         nth: 0,
         name: 'Sijainen Saija',
-        attendances: [['11:00', '13:00']]
+        attendances: [['11:00', '13:00']],
+        hasStaffOccupancyEffect: false
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,
@@ -619,13 +626,15 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.setDepartureTime('16:00')
       await addPersonModal.typeName('Sijainen Saija')
       await addPersonModal.selectGroup(groupId)
+      await addPersonModal.setStaffOccupancyEffect(true)
       await addPersonModal.save()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 2,
         name: 'Sijainen Saija',
-        attendances: [['11:00', '16:00']]
+        attendances: [['11:00', '16:00']],
+        hasStaffOccupancyEffect: true
       })
     })
 

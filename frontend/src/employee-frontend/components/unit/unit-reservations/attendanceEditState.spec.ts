@@ -32,7 +32,8 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null
+          departed: null,
+          occupancyCoefficient: 7
         }
       ])
     )
@@ -42,14 +43,16 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: '07:00'
+        departed: '07:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '08:00',
-        departed: '12:00'
+        departed: '12:00',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toEqual([
@@ -79,7 +82,8 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null
+          departed: null,
+          occupancyCoefficient: 0
         }
       ])
     )
@@ -89,14 +93,16 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: '07:00'
+        departed: '07:00',
+        hasStaffOccupancyEffect: false
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '08:00',
-        departed: '12:00'
+        departed: '12:00',
+        hasStaffOccupancyEffect: false
       }
     ])
     expect(body).toEqual([
@@ -105,14 +111,16 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-        departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(7, 0))
+        departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(7, 0)),
+        hasStaffOccupancyEffect: false
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(8, 0)),
-        departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(12, 0))
+        departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(12, 0)),
+        hasStaffOccupancyEffect: false
       }
     ])
     expect(errors).toEqual([{}, {}])
@@ -126,14 +134,16 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '12:00',
-        departed: '16:00'
+        departed: '16:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '16:00',
-        departed: '10:00'
+        departed: '10:00',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toEqual([
@@ -163,7 +173,8 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: ''
+        departed: '',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toBeUndefined()
@@ -178,7 +189,8 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null
+          departed: null,
+          occupancyCoefficient: 7
         }
       ])
     )
@@ -188,7 +200,8 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: ''
+        departed: '',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toEqual(undefined)
@@ -202,14 +215,16 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '07:00',
-        departed: ''
+        departed: '',
+        hasStaffOccupancyEffect: true
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group2',
         arrived: '08:00',
-        departed: ''
+        departed: '',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toBeUndefined()
@@ -224,7 +239,8 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: 'invalid',
-        departed: 'also invalid'
+        departed: 'also invalid',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toBeUndefined()
@@ -239,7 +255,8 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null
+          departed: null,
+          occupancyCoefficient: 7
         }
       ])
     )
@@ -249,14 +266,16 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: '07:00'
+        departed: '07:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '10:00',
-        departed: '09:00'
+        departed: '09:00',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toEqual([
@@ -286,7 +305,8 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: ''
+        departed: '',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toBeUndefined()
@@ -301,7 +321,8 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: 'group1',
         arrived: '',
-        departed: ''
+        departed: '',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toBeUndefined()
@@ -316,35 +337,40 @@ describe('validateEditState', () => {
         type: 'PRESENT',
         groupId: null,
         arrived: '08:00',
-        departed: '09:00'
+        departed: '09:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: 'id2',
         type: 'OVERTIME',
         groupId: null,
         arrived: '09:00',
-        departed: '10:00'
+        departed: '10:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: 'id3',
         type: 'JUSTIFIED_CHANGE',
         groupId: null,
         arrived: '10:00',
-        departed: '11:00'
+        departed: '11:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: 'id4',
         type: 'TRAINING',
         groupId: null,
         arrived: '11:00',
-        departed: '12:00'
+        departed: '12:00',
+        hasStaffOccupancyEffect: true
       },
       {
         id: 'id5',
         type: 'OTHER_WORK',
         groupId: null,
         arrived: '12:00',
-        departed: '13:00'
+        departed: '13:00',
+        hasStaffOccupancyEffect: true
       }
     ])
     expect(body).toBeUndefined()

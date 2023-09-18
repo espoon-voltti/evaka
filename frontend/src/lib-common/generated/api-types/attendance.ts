@@ -195,6 +195,7 @@ export interface ExternalAttendanceUpsert {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   groupId: UUID
+  hasStaffOccupancyEffect: boolean
   id: UUID | null
 }
 
@@ -204,6 +205,7 @@ export interface ExternalAttendanceUpsert {
 export interface ExternalStaffArrivalRequest {
   arrived: LocalTime
   groupId: UUID
+  hasStaffOccupancyEffect: boolean
   name: string
 }
 
@@ -409,6 +411,7 @@ export interface UpsertExternalAttendance {
   attendanceId: UUID | null
   departed: HelsinkiDateTime | null
   groupId: UUID
+  hasStaffOccupancyEffect: boolean
   name: string | null
 }
 

@@ -161,6 +161,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val attendanceId: StaffAttendanceExternalId?,
         val name: String?,
         val groupId: GroupId,
+        val hasStaffOccupancyEffect: Boolean,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
@@ -246,7 +247,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     it.groupId,
                                     it.arrived,
                                     it.departed,
-                                    occupancyCoefficientSeven
+                                    if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
+                                    else occupancyCoefficientZero
                                 )
                             }
                         staffAttendanceIds + externalStaffAttendanceIds
@@ -344,6 +346,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     data class ExternalAttendanceUpsert(
         val id: StaffAttendanceExternalId?,
         val groupId: GroupId,
+        val hasStaffOccupancyEffect: Boolean,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
@@ -399,7 +402,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             it.groupId,
                             it.arrived,
                             it.departed,
-                            occupancyCoefficientSeven
+                            if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
+                            else occupancyCoefficientZero
                         )
                     }
                 }

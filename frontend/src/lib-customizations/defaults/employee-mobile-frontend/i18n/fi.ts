@@ -245,7 +245,7 @@ export const fi = {
       },
       externalPerson: 'Muu henkilö',
       markExternalPerson: 'Kirjaa muu henkilö',
-      markExternalPersonTitle: 'Kirjaa muu vastuullinen henkilö sisään',
+      markExternalPersonTitle: 'Kirjaa muu työntekijä sisään',
       markArrived: 'Kirjaudu läsnäolevaksi',
       markDeparted: 'Kirjaudu poissaolevaksi',
       loginWithPin: 'Kirjaudu PIN-koodilla',
@@ -309,6 +309,7 @@ export const fi = {
   staff: {
     title: 'Henkilökunnan määrä tänään',
     daycareResponsible: 'Kasvatusvastuullisia',
+    staffOccupancyEffect: 'Kasvatusvastuullisuus',
     other: 'Muita (esim. avustajat, opiskelijat, veot)',
     cancel: 'Peru muokkaus',
     realizedGroupOccupancy: 'Ryhmän käyttöaste tänään',

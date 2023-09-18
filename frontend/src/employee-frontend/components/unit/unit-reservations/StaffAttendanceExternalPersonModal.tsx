@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import { localDate, localTime, string } from 'lib-common/form/fields'
+import { localDate, localTime, string, boolean } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -21,6 +21,7 @@ import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import {
   InputFieldF,
   InputFieldUnderRow
@@ -57,7 +58,8 @@ const externalPersonForm = object({
   name: validated(string(), (value) =>
     value.length < 3 ? 'required' : undefined
   ),
-  group: required(oneOf<UUID>())
+  group: required(oneOf<UUID>()),
+  hasStaffOccupancyEffect: required(boolean())
 })
 
 function initialFormState(
@@ -78,7 +80,8 @@ function initialFormState(
     group: {
       options: groupOptions,
       domValue: defaultGroupId
-    }
+    },
+    hasStaffOccupancyEffect: true
   }
 }
 
@@ -114,7 +117,8 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
               )
             : null,
           name: formValue.name,
-          groupId: formValue.group
+          groupId: formValue.group,
+          hasStaffOccupancyEffect: formValue.hasStaffOccupancyEffect
         }
       ],
       staffAttendances: []
@@ -128,6 +132,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
   const name = useFormField(form, 'name')
   const group = useFormField(form, 'group')
   const groupError = group.validationError()
+  const hasStaffOccupancyEffect = useFormField(form, 'hasStaffOccupancyEffect')
 
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-add-person-modal">
@@ -189,6 +194,14 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
               <StatusIcon status="warning" />
             </InputFieldUnderRow>
           )}
+        </div>
+
+        <div>
+          <CheckboxF
+            label={i18n.unit.staffOccupancies.title}
+            bind={hasStaffOccupancyEffect}
+            data-qa="has-staff-occupancy-effect"
+          />
         </div>
 
         <Gap size="xs" />
