@@ -159,7 +159,7 @@ When changes are merged to master: update `playwright` tag:
 git checkout master
 git pull
 git tag -f playwright
-git push -f --tags
+git push --force origin tag playwright
 ```
 
 ## Database dump
