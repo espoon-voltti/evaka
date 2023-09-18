@@ -80,6 +80,7 @@ const tooltipWidth = 275
 const tooltipHeight = 150
 const PositionedDiv = styled.div<{ pos: Position; opacity: number }>`
   position: absolute;
+  pointer-events: none;
   opacity: ${(p) => p.opacity};
   z-index: 9999;
   width: ${tooltipWidth}px;
@@ -106,6 +107,7 @@ const PositionedDiv = styled.div<{ pos: Position; opacity: number }>`
 const caretSize = 12
 const Caret = styled.span<{ pos: Position; opacity: number }>`
   position: absolute;
+  pointer-events: none;
   opacity: ${(p) => p.opacity};
   top: ${({ pos }) => pos.y}px;
   left: ${({ pos }) => pos.x}px;
