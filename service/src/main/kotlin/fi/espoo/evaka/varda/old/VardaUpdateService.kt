@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.varda.*
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
-import java.time.Duration
 import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -84,8 +83,7 @@ class VardaUpdateService(
                 tx,
                 serviceNeedDiffsByChild.values.map { AsyncJob.UpdateVardaChild(it) },
                 runAt = clock.now(),
-                retryCount = 2,
-                retryInterval = Duration.ofMinutes(10)
+                retryCount = 1
             )
         }
     }

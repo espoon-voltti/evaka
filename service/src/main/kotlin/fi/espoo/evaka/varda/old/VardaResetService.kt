@@ -62,8 +62,7 @@ class VardaResetService(
             asyncJobRunner.plan(
                 tx,
                 resetChildIds.map { AsyncJob.ResetVardaChildOld(it) },
-                retryCount = 2,
-                retryInterval = Duration.ofMinutes(10),
+                retryCount = 1,
                 runAt = clock.now()
             )
         }
