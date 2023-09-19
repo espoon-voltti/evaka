@@ -99,6 +99,8 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
      */
     fun subtract(other: This): SubtractResult<This>
 
+    operator fun minus(other: This): SubtractResult<This> = subtract(other)
+
     /**
      * Merges this range with the given range, returning the smallest range that contains both
      * ranges.

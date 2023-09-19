@@ -206,8 +206,8 @@ fun Database.Transaction.recreateBackupCares(childId: ChildId) {
             // between placements
             val backupCareDates = DateMap.of(backupCares.asSequence().map { it.period to it.id })
             val backupCareSpan = backupCareDates.spanningRange() ?: return
-            val outsidePlacements = backupCareSpan.subtract(placementSpan)
-            backupCareDates.removeAll(outsidePlacements).removeAll(placementDates.gaps())
+            val outsidePlacements = backupCareSpan - placementSpan
+            backupCareDates - outsidePlacements - placementDates.gaps()
         }
 
     for (backupCare in backupCares) {
