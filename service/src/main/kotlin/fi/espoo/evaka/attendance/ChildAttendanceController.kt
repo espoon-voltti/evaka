@@ -69,7 +69,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): List<Child> {
+    ): List<AttendanceChild> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -93,7 +93,7 @@ class ChildAttendanceController(
                         val stickyNotes =
                             stickyNotesForChildrenInUnit.filter { it.childId == child.id }
 
-                        Child(
+                        AttendanceChild(
                             id = child.id,
                             firstName = child.firstName,
                             lastName = child.lastName,

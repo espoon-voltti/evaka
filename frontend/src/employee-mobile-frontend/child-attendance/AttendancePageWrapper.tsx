@@ -8,7 +8,10 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
+import {
+  AttendanceChild,
+  GroupInfo
+} from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -136,7 +139,7 @@ const ChildSearch = React.memo(function Search({
   unitId: string
   show: boolean
   toggleShow: () => void
-  unitChildren: Child[]
+  unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }) {
   const { i18n } = useTranslation()

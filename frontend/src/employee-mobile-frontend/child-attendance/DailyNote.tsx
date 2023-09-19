@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { GroupNote } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
@@ -42,7 +42,7 @@ const GroupNotes = React.memo(function GroupNotes({
 })
 
 interface Props {
-  child: Child | undefined
+  child: AttendanceChild | undefined
   groupNotes: GroupNote[] | undefined
 }
 

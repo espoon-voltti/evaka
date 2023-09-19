@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import {
   AttendanceStatus,
-  Child
+  AttendanceChild
 } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
@@ -21,7 +21,7 @@ import { useTranslation } from '../common/i18n'
 
 import ChildListItem from './ChildListItem'
 
-export interface ListItem extends Child {
+export interface ListItem extends AttendanceChild {
   status: AttendanceStatus
 }
 

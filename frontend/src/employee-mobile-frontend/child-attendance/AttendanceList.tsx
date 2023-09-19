@@ -6,7 +6,7 @@ import React, { useCallback, useMemo } from 'react'
 
 import {
   AttendanceStatus,
-  Child
+  AttendanceChild
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -22,7 +22,7 @@ interface Props {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   groupId: UUID | 'all'
   activeStatus: AttendanceStatus
-  unitChildren: Child[]
+  unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }
 

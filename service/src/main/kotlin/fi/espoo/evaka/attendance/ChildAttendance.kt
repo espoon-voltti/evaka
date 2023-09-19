@@ -27,7 +27,7 @@ data class ContactInfo(
     val priority: Int?
 )
 
-data class Child(
+data class AttendanceChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,

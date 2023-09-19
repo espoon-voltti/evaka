@@ -7,7 +7,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -15,7 +15,7 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../common/i18n'
 
 interface Props {
-  child: Child
+  child: AttendanceChild
   unitId: string
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   groupIdOrAll: string | 'all'

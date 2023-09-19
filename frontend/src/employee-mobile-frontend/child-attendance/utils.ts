@@ -6,15 +6,15 @@ import { useMemo } from 'react'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
-  Child,
+  AttendanceChild,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 
 export function useChild(
-  children: Result<Child[]>,
+  children: Result<AttendanceChild[]>,
   childId: UUID
-): Result<Child> {
+): Result<AttendanceChild> {
   return useMemo(
     () =>
       children
