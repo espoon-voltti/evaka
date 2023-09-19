@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger {}
 
 @Service
-class ChildDocumentNotificationService(
+class ChildDocumentService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
@@ -32,6 +33,31 @@ class ChildDocumentNotificationService(
 ) {
     init {
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
+    }
+
+    fun completeAndPublishChildDocumentsAtEndOfTerm(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime
+    ) {
+        val documentIds =
+            tx.createQuery<Any> {
+                    sql(
+                        """
+                SELECT cd.id
+                FROM child_document cd 
+                JOIN document_template dt on dt.id = cd.template_id
+                WHERE dt.validity << ${bind(FiniteDateRange(now.toLocalDate(), now.toLocalDate()))} AND cd.status <> 'COMPLETED'
+            """
+                            .trimIndent()
+                    )
+                }
+                .mapTo<ChildDocumentId>()
+                .list()
+
+        if (documentIds.isNotEmpty()) {
+            tx.markCompletedAndPublish(documentIds, now)
+            documentIds.forEach { scheduleEmailNotification(tx, it, now) }
+        }
     }
 
     fun scheduleEmailNotification(

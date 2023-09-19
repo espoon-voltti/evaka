@@ -238,6 +238,22 @@ fun Database.Transaction.changeStatusAndPublish(
         .updateExactlyOne()
 }
 
+fun Database.Transaction.markCompletedAndPublish(
+    ids: List<ChildDocumentId>,
+    now: HelsinkiDateTime
+) {
+    createUpdate<Any> {
+            sql(
+                """
+                UPDATE child_document
+                SET status = 'COMPLETED', published_at = ${bind(now)}, published_content = content
+                WHERE id = ANY(${bind(ids)})
+            """
+            )
+        }
+        .execute()
+}
+
 fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
     createUpdate(
             """

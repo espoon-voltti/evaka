@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
-class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: ChildDocumentController
 
     lateinit var employeeUser: AuthenticatedUser

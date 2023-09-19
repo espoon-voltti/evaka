@@ -11,6 +11,7 @@ import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
+import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
@@ -42,6 +43,10 @@ enum class ScheduledJob(
     CloseVasusWithExpiredTemplate(
         ScheduledJobs::closeVasusWithExpiredTemplate,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 40)))
+    ),
+    CompleteChildDocumentsWithExpiredTemplate(
+        ScheduledJobs::completeChildDocumentsWithExpiredTemplate,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 45)))
     ),
     DvvUpdate(
         ScheduledJobs::dvvUpdate,
@@ -154,6 +159,7 @@ class ScheduledJobs(
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val calendarEventNotificationService: CalendarEventNotificationService,
     private val financeDecisionGenerator: FinanceDecisionGenerator,
+    private val childDocumentService: ChildDocumentService,
     env: ScheduledJobsEnv<ScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -297,6 +303,12 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun closeVasusWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx -> closeVasusWithExpiredTemplate(tx, clock.now()) }
+    }
+
+    fun completeChildDocumentsWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            childDocumentService.completeAndPublishChildDocumentsAtEndOfTerm(tx, clock.now())
+        }
     }
 
     fun sendCalendarEventDigests(db: Database.Connection, clock: EvakaClock) {

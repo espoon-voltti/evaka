@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/child-documents")
 class ChildDocumentController(
     private val accessControl: AccessControl,
-    private val emailNotificationService: ChildDocumentNotificationService
+    private val emailNotificationService: ChildDocumentService
 ) {
     @PostMapping
     fun createDocument(
