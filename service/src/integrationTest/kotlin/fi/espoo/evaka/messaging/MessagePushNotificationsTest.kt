@@ -106,7 +106,13 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                 sender = citizenAccount,
                 recipients = setOf(groupAccount),
                 children = emptySet(),
-                msg = NewMessageStub(title = "Test", content = "Test", urgent = false)
+                msg =
+                    NewMessageStub(
+                        title = "Test",
+                        content = "Test",
+                        urgent = false,
+                        sensitive = false
+                    )
             )
         }
         clock.tick(Duration.ofMinutes(30))

@@ -63,6 +63,7 @@ const messageToUpdatableDraftWithAccount = (
 ): Draft => ({
   content: m.content,
   urgent: m.urgent,
+  sensitive: false,
   recipientIds: recipients.map(({ key }) => key),
   recipientNames: recipients.map(({ text }) => text),
   title: m.title,
@@ -75,6 +76,7 @@ const getEmptyMessage = (sender: SelectOption, title: string): Message => ({
   title,
   content: '',
   urgent: false,
+  sensitive: false,
   attachments: [],
   type: 'MESSAGE' as const
 })

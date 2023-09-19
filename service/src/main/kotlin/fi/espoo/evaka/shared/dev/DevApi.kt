@@ -1644,6 +1644,7 @@ RETURNING id
                             type = MessageType.MESSAGE,
                             title = "Testiviesti",
                             urgent = false,
+                            sensitive = false,
                             isCopy = false
                         )
                     )

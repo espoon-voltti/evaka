@@ -6,13 +6,13 @@ import sortBy from 'lodash/sortBy'
 
 import { Paged } from 'lib-common/api'
 import {
-  deserializeMessageThread,
+  deserializeCitizenMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging'
 import {
   CitizenMessageBody,
+  CitizenMessageThread,
   GetReceiversResponse,
-  MessageThread,
   ReplyToMessageBody,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
@@ -24,14 +24,14 @@ import { client } from '../api-client'
 export async function getReceivedMessages(
   page: number,
   pageSize: number
-): Promise<Paged<MessageThread>> {
+): Promise<Paged<CitizenMessageThread>> {
   return client
-    .get<JsonOf<Paged<MessageThread>>>('/citizen/messages/received', {
+    .get<JsonOf<Paged<CitizenMessageThread>>>('/citizen/messages/received', {
       params: { page, pageSize }
     })
     .then((res) => ({
       ...res.data,
-      data: res.data.data.map((d) => deserializeMessageThread(d))
+      data: res.data.data.map((d) => deserializeCitizenMessageThread(d))
     }))
 }
 

@@ -319,6 +319,7 @@ class MessageController(
         val content: String,
         val type: MessageType,
         val urgent: Boolean,
+        val sensitive: Boolean,
         val recipients: Set<MessageRecipient>,
         val recipientNames: List<String>,
         val attachmentIds: Set<AttachmentId> = setOf(),
@@ -338,6 +339,16 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { tx ->
                     val senderAccountType = tx.getMessageAccountType(accountId)
+                    if (
+                        body.sensitive &&
+                            (senderAccountType != AccountType.PERSONAL ||
+                                body.recipients.size != 1 ||
+                                body.recipients.first().type != MessageRecipientType.CHILD)
+                    ) {
+                        throw BadRequest(
+                            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient"
+                        )
+                    }
                     if (
                         senderAccountType == AccountType.MUNICIPAL &&
                             body.type != MessageType.BULLETIN
@@ -382,7 +393,8 @@ class MessageController(
                                 NewMessageStub(
                                     title = body.title,
                                     content = body.content,
-                                    urgent = body.urgent
+                                    urgent = body.urgent,
+                                    sensitive = body.sensitive
                                 ),
                             recipients = body.recipients,
                             recipientNames = body.recipientNames,

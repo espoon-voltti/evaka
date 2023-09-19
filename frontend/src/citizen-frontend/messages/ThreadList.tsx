@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -25,10 +25,12 @@ import { mobileBottomNavHeight } from '../navigation/const'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import ThreadListItem from './ThreadListItem'
-import { MessageContext } from './state'
+import { isRedactedThread, MessageContext } from './state'
 
-const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
-  thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)
+const hasUnreadMessages = (thread: CitizenMessageThread, accountId: UUID) =>
+  isRedactedThread(thread)
+    ? thread.hasUnreadMessages
+    : thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)
 
 interface Props {
   accountId: UUID

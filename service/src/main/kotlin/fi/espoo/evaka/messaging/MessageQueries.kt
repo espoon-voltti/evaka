@@ -312,6 +312,7 @@ fun Database.Transaction.insertThreadsWithMessages(
     type: MessageType,
     title: String,
     urgent: Boolean,
+    sensitive: Boolean,
     isCopy: Boolean,
     contentId: MessageContentId,
     senderId: MessageAccountId,
@@ -324,7 +325,7 @@ fun Database.Transaction.insertThreadsWithMessages(
         prepareBatch(
             """
 WITH new_thread AS (
-    INSERT INTO message_thread (message_type, title, urgent, is_copy, application_id) VALUES (:messageType, :title, :urgent, :isCopy, :applicationId) RETURNING id
+    INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy, application_id) VALUES (:messageType, :title, :urgent, :sensitive, :isCopy, :applicationId) RETURNING id
 )
 INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, recipient_names)
 SELECT
@@ -350,6 +351,7 @@ RETURNING id, thread_id
             .bind("messageType", type)
             .bind("title", title)
             .bind("urgent", urgent)
+            .bind("sensitive", sensitive)
             .bind("isCopy", isCopy)
             .bind("contentId", contentId)
             .bind("senderId", senderId)
@@ -368,15 +370,17 @@ fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
     urgent: Boolean,
+    sensitive: Boolean,
     isCopy: Boolean
 ): MessageThreadId {
     // language=SQL
     val insertThreadSql =
-        "INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id"
+        "INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy) VALUES (:messageType, :title, :urgent, :sensitive, :isCopy) RETURNING id"
     return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
         .bind("urgent", urgent)
+        .bind("sensitive", sensitive)
         .bind("isCopy", isCopy)
         .exactlyOne<MessageThreadId>()
 }
@@ -406,6 +410,7 @@ private data class ReceivedThread(
     val title: String,
     val type: MessageType,
     val urgent: Boolean,
+    val sensitive: Boolean,
     val isCopy: Boolean,
     @Json val children: List<MessageChild>
 )
@@ -426,7 +431,8 @@ SELECT
     t.id,
     t.title,
     t.message_type AS type,
-    t.urgent,
+    t.urgent, 
+    t.sensitive, 
     t.is_copy,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
@@ -480,6 +486,7 @@ SELECT
     t.title,
     t.message_type AS type,
     t.urgent,
+    t.sensitive,
     t.is_copy,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
@@ -614,6 +621,7 @@ private fun combineThreadsAndMessages(
                     type = thread.type,
                     title = thread.title,
                     urgent = thread.urgent,
+                    sensitive = thread.sensitive,
                     isCopy = thread.isCopy,
                     children = thread.children,
                     messages = messages
@@ -629,6 +637,7 @@ data class MessageCopy(
     val title: String,
     val type: MessageType,
     val urgent: Boolean,
+    val sensitive: Boolean,
     val sentAt: HelsinkiDateTime,
     val content: String,
     val senderId: MessageAccountId,
@@ -657,6 +666,7 @@ SELECT
     t.title,
     t.message_type AS type,
     t.urgent,
+    t.sensitive,
     m.sent_at,
     m.sender_name,
     m.sender_id,
@@ -870,11 +880,12 @@ WITH pageable_messages AS (
         t.title,
         t.message_type,
         t.urgent,
+        t.sensitive,
         COUNT(*) OVER () AS count
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
     WHERE sender_id = :accountId
-    GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent
+    GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
     ORDER BY sent_at DESC
     LIMIT :pageSize OFFSET :offset
 ),
@@ -898,6 +909,7 @@ SELECT
     msg.title AS thread_title,
     msg.message_type AS type,
     msg.urgent,
+    msg.sensitive,
     mc.content,
     (SELECT jsonb_agg(jsonb_build_object(
            'id', rec.recipient_id,
@@ -914,7 +926,7 @@ SELECT
 FROM pageable_messages msg
 JOIN recipients rec ON msg.content_id = rec.content_id
 JOIN message_content mc ON msg.content_id = mc.id
-GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.title
+GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.sensitive, msg.title
 ORDER BY msg.sent_at DESC
     """
             .trimIndent()
@@ -972,6 +984,7 @@ SELECT
             t.title,
             t.message_type AS type,
             t.urgent,
+            t.sensitive,
             t.is_copy,
             coalesce((
                          SELECT jsonb_agg(jsonb_build_object(
@@ -1021,6 +1034,7 @@ SELECT
     t.title,
     t.message_type AS type,
     t.urgent,
+    t.sensitive,
     t.is_copy,
     coalesce((
                  SELECT jsonb_agg(jsonb_build_object(
@@ -1446,7 +1460,7 @@ WHERE sender_id = :accountId AND content_id = :contentId
     val draftContent =
         this.createQuery(
                 """
-SELECT DISTINCT t.title, t.message_type AS type, t.urgent, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
+SELECT DISTINCT t.title, t.message_type AS type, t.urgent, t.sensitive, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
 FROM message_content c
 JOIN message m ON c.id = m.content_id
 JOIN message_thread t ON m.thread_id = t.id
@@ -1531,7 +1545,7 @@ fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
     createQuery<MessageThreadStub> {
             sql(
                 """
-SELECT id, message_type AS type, title, urgent, is_copy
+SELECT id, message_type AS type, title, urgent, sensitive, is_copy
 FROM message_thread
 WHERE id = ${bind(id)}
     """

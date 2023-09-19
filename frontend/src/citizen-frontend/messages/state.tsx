@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 
 import { Failure, Loading, Result } from 'lib-common/api'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   queryResult,
@@ -33,12 +33,14 @@ import {
   replyToThreadMutation
 } from './queries'
 
+import Regular = CitizenMessageThread.Regular
+
 export interface MessagePageState {
   accountId: Result<UUID>
-  threads: Result<MessageThread[]>
+  threads: Result<CitizenMessageThread[]>
   hasMoreThreads: boolean
   loadMoreThreads: () => void
-  selectedThread: MessageThread | undefined
+  selectedThread: CitizenMessageThread | undefined
   setSelectedThread: (threadId: UUID | undefined) => void
   sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
@@ -59,21 +61,33 @@ const defaultState: MessagePageState = {
 
 export const MessageContext = createContext<MessagePageState>(defaultState)
 
-const markMatchingThreadRead = (
-  threads: MessageThread[],
-  id: UUID
-): MessageThread[] =>
-  threads.map((t) =>
-    t.id === id
-      ? {
-          ...t,
-          messages: t.messages.map((m) => ({
-            ...m,
-            readAt: m.readAt ?? HelsinkiDateTime.now()
-          }))
-        }
-      : t
-  )
+export const isRedactedThread = (
+  thread: CitizenMessageThread
+): thread is CitizenMessageThread.Redacted =>
+  thread.type === 'REDACTED_MESSAGE_THREAD'
+export const isRegularThread = (
+  thread: CitizenMessageThread
+): thread is CitizenMessageThread.Regular => thread.type === 'MESSAGE_THREAD'
+
+const markMessagesReadByThreadId = (
+  threads: CitizenMessageThread[],
+  threadId: UUID
+): CitizenMessageThread[] =>
+  threads
+    .filter((t) => isRegularThread(t))
+    .map((t) => t as Regular)
+    .map(
+      (t): Regular =>
+        t.id === threadId
+          ? {
+              ...t,
+              messages: t.messages.map((m) => ({
+                ...m,
+                readAt: m.readAt ?? HelsinkiDateTime.now()
+              }))
+            }
+          : t
+    )
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
@@ -151,15 +165,17 @@ export const MessageContextProvider = React.memo(
       if (!accountId.isSuccess) return
       if (!selectedThreadId || !selectedThread) return
 
-      const hasUnreadMessages = selectedThread.messages.some(
-        (m) => !m.readAt && m.sender.id !== accountId.value
-      )
+      const hasUnreadMessages = isRedactedThread(selectedThread)
+        ? selectedThread.hasUnreadMessages
+        : selectedThread.messages.some(
+            (m) => !m.readAt && m.sender.id !== accountId.value
+          )
 
-      if (hasUnreadMessages) {
+      if (hasUnreadMessages && isRegularThread(selectedThread)) {
         markThreadRead(selectedThread.id)
         transformPages((page) => ({
           ...page,
-          data: markMatchingThreadRead(page.data, selectedThreadId)
+          data: markMessagesReadByThreadId(page.data, selectedThreadId)
         }))
       }
     }, [

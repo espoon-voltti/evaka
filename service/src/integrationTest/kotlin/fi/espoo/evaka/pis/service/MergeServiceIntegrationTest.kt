@@ -473,5 +473,6 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             title = "Juhannus",
             content = "Juhannus tulee kohta",
             urgent = false,
+            sensitive = false,
         )
 }

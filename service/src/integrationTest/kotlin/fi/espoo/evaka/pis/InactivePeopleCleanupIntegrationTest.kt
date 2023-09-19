@@ -271,7 +271,13 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId =
-                tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
+                tx.insertThread(
+                    MessageType.MESSAGE,
+                    "title",
+                    urgent = false,
+                    sensitive = false,
+                    isCopy = false
+                )
             val messageId =
                 tx.insertMessage(
                     now = now,
@@ -304,7 +310,13 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val contentId = tx.insertMessageContent("content", personAccount)
             val threadId =
-                tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
+                tx.insertThread(
+                    MessageType.MESSAGE,
+                    "title",
+                    urgent = false,
+                    sensitive = false,
+                    isCopy = false
+                )
             val messageId =
                 tx.insertMessage(
                     now = now,

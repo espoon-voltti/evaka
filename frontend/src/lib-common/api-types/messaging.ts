@@ -5,6 +5,7 @@
 import { UUID } from 'lib-common/types'
 
 import {
+  CitizenMessageThread,
   Message,
   MessageCopy,
   MessageRecipientType,
@@ -46,12 +47,30 @@ export const deserializeMessage = (message: JsonOf<Message>): Message => ({
   readAt: message.readAt ? HelsinkiDateTime.parseIso(message.readAt) : null
 })
 
+const deserializeCitizenMessages = (messages: JsonOf<Message[]>) =>
+  messages.map((m) => deserializeMessage(m))
+
 export const deserializeMessageThread = (
   json: JsonOf<MessageThread>
 ): MessageThread => ({
   ...json,
   messages: json.messages.map(deserializeMessage)
 })
+
+export const deserializeCitizenMessageThread = (
+  json: JsonOf<CitizenMessageThread>
+): CitizenMessageThread =>
+  json.type === 'MESSAGE_THREAD'
+    ? {
+        ...json,
+        messages: deserializeCitizenMessages(json.messages)
+      }
+    : {
+        ...json,
+        lastMessageSentAt: json.lastMessageSentAt
+          ? HelsinkiDateTime.parseIso(json.lastMessageSentAt)
+          : null
+      }
 
 export const deserializeReplyResponse = (
   responseData: JsonOf<ThreadReply>

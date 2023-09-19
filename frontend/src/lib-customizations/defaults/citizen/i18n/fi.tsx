@@ -458,7 +458,9 @@ export default {
       text: 'Viestejä ei poistamisen jälkeen saa enää palautettua takaisin.',
       cancel: 'Älä poista',
       confirm: 'Poista viestiketju'
-    }
+    },
+    sensitive: 'Arkaluontoinen viestiketju',
+    strongAuthRequired: 'Lukeminen vaatii vahvan tunnistautuminen'
   },
   applications: {
     title: 'Hakemukset',

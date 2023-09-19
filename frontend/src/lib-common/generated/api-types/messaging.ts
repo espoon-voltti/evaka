@@ -38,6 +38,42 @@ export interface CitizenMessageBody {
   title: string
 }
 
+export namespace CitizenMessageThread {
+  /**
+  * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Redacted
+  */
+  export interface Redacted {
+    type: 'REDACTED_MESSAGE_THREAD'
+    children: MessageChild[]
+    hasUnreadMessages: boolean
+    id: UUID
+    lastMessageSentAt: HelsinkiDateTime | null
+    sender: MessageAccount | null
+    urgent: boolean
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Regular
+  */
+  export interface Regular {
+    type: 'MESSAGE_THREAD'
+    children: MessageChild[]
+    id: UUID
+    isCopy: boolean
+    messageType: MessageType
+    messages: Message[]
+    sensitive: boolean
+    title: string
+    urgent: boolean
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.CitizenMessageThread
+*/
+export type CitizenMessageThread = CitizenMessageThread.Redacted | CitizenMessageThread.Regular
+
+
 /**
 * Generated from fi.espoo.evaka.messaging.DraftContent
 */
@@ -48,6 +84,7 @@ export interface DraftContent {
   id: UUID
   recipientIds: UUID[]
   recipientNames: string[]
+  sensitive: boolean
   title: string
   type: MessageType
   urgent: boolean
@@ -127,6 +164,7 @@ export interface MessageCopy {
   senderAccountType: AccountType
   senderId: UUID
   senderName: string
+  sensitive: boolean
   sentAt: HelsinkiDateTime
   threadId: UUID
   title: string
@@ -168,6 +206,7 @@ export interface MessageThread {
   id: UUID
   isCopy: boolean
   messages: Message[]
+  sensitive: boolean
   title: string
   type: MessageType
   urgent: boolean
@@ -190,6 +229,7 @@ export interface PostMessageBody {
   recipientNames: string[]
   recipients: MessageRecipient[]
   relatedApplicationId: UUID | null
+  sensitive: boolean
   title: string
   type: MessageType
   urgent: boolean
@@ -222,6 +262,7 @@ export interface SentMessage {
   contentId: UUID
   recipientNames: string[]
   recipients: MessageAccount[]
+  sensitive: boolean
   sentAt: HelsinkiDateTime
   threadTitle: string
   type: MessageType
@@ -262,6 +303,7 @@ export interface UpdatableDraftContent {
   content: string
   recipientIds: UUID[]
   recipientNames: string[]
+  sensitive: boolean
   title: string
   type: MessageType
   urgent: boolean

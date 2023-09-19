@@ -285,7 +285,8 @@ class MessageNotificationEmailServiceIntegrationTest :
                 type = type,
                 recipients = recipients.toSet(),
                 recipientNames = listOf(),
-                urgent = false
+                urgent = false,
+                sensitive = false
             )
         )
 

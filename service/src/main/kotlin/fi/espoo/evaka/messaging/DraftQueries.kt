@@ -55,6 +55,7 @@ fun Database.Transaction.updateDraft(
             title = :title,
             content = :content,
             urgent = :urgent,
+            sensitive = :sensitive,
             type = :type,
             recipient_ids = :recipientIds,
             recipient_names = :recipientNames
