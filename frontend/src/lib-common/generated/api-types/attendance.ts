@@ -17,6 +17,7 @@ import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
 import { Reservation } from './reservations'
+import { ScheduleType } from './placement'
 import { UUID } from '../../types'
 
 /**
@@ -71,6 +72,7 @@ export interface AttendanceChild {
   placementType: PlacementType
   preferredName: string
   reservations: Reservation[]
+  scheduleType: ScheduleType
   stickyNotes: ChildStickyNote[]
 }
 

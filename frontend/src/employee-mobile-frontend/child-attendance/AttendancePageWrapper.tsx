@@ -80,7 +80,7 @@ export default React.memo(function AttendancePageWrapper() {
           getPresentCount: (groupId: string | undefined) => {
             const presentChildren = children.filter(
               (child) =>
-                childAttendanceStatus(attendanceStatuses, child.id).status ===
+                childAttendanceStatus(child, attendanceStatuses).status ===
                 'PRESENT'
             )
             return groupId === undefined
@@ -158,7 +158,7 @@ const ChildSearch = React.memo(function Search({
             )
             .map((child) => ({
               ...child,
-              status: childAttendanceStatus(attendanceStatuses, child.id).status
+              status: childAttendanceStatus(child, attendanceStatuses).status
             })),
     [attendanceStatuses, freeText, unitChildren]
   )

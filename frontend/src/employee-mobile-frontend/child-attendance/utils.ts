@@ -32,14 +32,27 @@ export type AttendanceStatuses = Record<
 >
 
 export function childAttendanceStatus(
-  attendanceStatuses: Record<UUID, ChildAttendanceStatusResponse | undefined>,
-  childId: UUID
+  child: AttendanceChild,
+  attendanceStatuses: Record<UUID, ChildAttendanceStatusResponse | undefined>
 ): ChildAttendanceStatusResponse {
-  return attendanceStatuses[childId] ?? defaultChildAttendanceStatus
+  const status = attendanceStatuses[child.id]
+  if (status) return status
+
+  if (child.scheduleType === 'TERM_BREAK') {
+    return defaultChildAttendanceStatusTermBreak
+  }
+
+  return defaultChildAttendanceStatus
 }
 
 const defaultChildAttendanceStatus: ChildAttendanceStatusResponse = {
   status: 'COMING',
+  attendances: [],
+  absences: []
+}
+
+const defaultChildAttendanceStatusTermBreak: ChildAttendanceStatusResponse = {
+  status: 'ABSENT',
   attendances: [],
   absences: []
 }

@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
 import {
   careAreaFixture,
   daycare2Fixture,
@@ -19,6 +17,7 @@ import {
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserChildFixturePorriHatterRestricted,
+  familyWithTwoGuardians,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -31,12 +30,14 @@ import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let childAttendancePage: ChildAttendancePage
 let employee: EmployeeBuilder
+
+const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
+const today = now.toLocalDate()
 
 const group2 = {
   id: uuidv4(),
@@ -47,18 +48,30 @@ const group2 = {
 
 beforeEach(async () => {
   await resetDatabase()
-  fixtures = await initializeAreaAndPersonData()
   await insertDefaultServiceNeedOptions()
 
+  const careArea = await Fixture.careArea().with(careAreaFixture).save()
+  await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
   await Fixture.daycareGroup().with(daycareGroupFixture).save()
-
   await Fixture.daycareGroup().with(group2).save()
+
+  await Fixture.person().with(enduserChildFixtureKaarina).save()
+  await Fixture.child(enduserChildFixtureKaarina.id).save()
+
+  await Fixture.person().with(enduserChildFixtureJari).save()
+  await Fixture.child(enduserChildFixtureJari.id).save()
+
+  await Fixture.person().with(familyWithTwoGuardians.children[0]).save()
+  await Fixture.child(familyWithTwoGuardians.children[0].id).save()
+
+  await Fixture.person().with(enduserChildFixturePorriHatterRestricted).save()
+  await Fixture.child(enduserChildFixturePorriHatterRestricted.id).save()
 
   employee = await Fixture.employee()
     .with({ roles: ['ADMIN'] })
     .save()
 
-  page = await Page.open({ mockedTime: new Date('2022-05-17T13:00Z') })
+  page = await Page.open({ mockedTime: now.toSystemTzDate() })
 
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
@@ -73,7 +86,7 @@ async function createPlacements(
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId,
-      unitId: fixtures.daycareFixture.id,
+      unitId: daycareFixture.id,
       type: placementType,
       startDate: LocalDate.of(2021, 5, 1),
       endDate: LocalDate.of(2022, 8, 31)
@@ -94,12 +107,12 @@ const createPlacementAndReload = async (
   placementType: PlacementType
 ): Promise<DaycarePlacement> => {
   const daycarePlacementFixture = await createPlacements(
-    fixtures.familyWithTwoGuardians.children[0].id,
+    familyWithTwoGuardians.children[0].id,
     daycareGroupFixture.id,
     placementType
   )
 
-  const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+  const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
   await page.goto(mobileSignupUrl)
 
   return daycarePlacementFixture
@@ -110,7 +123,7 @@ const checkAbsenceTypeSelectionButtonsExistence = async (
   arrivalTime = '08:15',
   departureTime = '16:00'
 ) => {
-  await listPage.selectChild(fixtures.familyWithTwoGuardians.children[0].id)
+  await listPage.selectChild(familyWithTwoGuardians.children[0].id)
   await childPage.markPresentLink.click()
   await childAttendancePage.setTime(arrivalTime)
   await childAttendancePage.selectMarkPresent()
@@ -218,7 +231,7 @@ describe('Child mobile attendance list', () => {
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
     await createPlacements(enduserChildFixtureJari.id, group2.id)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
     await assertAttendanceCounts(3, 0, 0, 0, 3)
     await listPage.comingChildrenTab.click()
@@ -245,7 +258,7 @@ describe('Child mobile attendance list', () => {
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
@@ -261,7 +274,7 @@ describe('Child mobile attendance list', () => {
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
@@ -282,7 +295,7 @@ describe('Child mobile attendance list', () => {
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
@@ -314,7 +327,7 @@ describe('Child mobile attendance list', () => {
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
@@ -359,7 +372,7 @@ describe('Child mobile attendance list', () => {
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
     await createPlacements(enduserChildFixtureJari.id, group2.id)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await assertAttendanceCounts(3, 0, 0, 0, 3)
@@ -384,7 +397,7 @@ describe('Child mobile attendance list', () => {
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
     await createPlacements(enduserChildFixtureJari.id, group2.id)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await listPage.selectGroup('all')
@@ -424,7 +437,7 @@ describe('Child mobile attendance list', () => {
     const daycarePlacementFixture = await Fixture.placement()
       .with({
         childId,
-        unitId: fixtures.daycareFixture.id,
+        unitId: daycareFixture.id,
         startDate: placement1StartDate,
         endDate: placement1EndDate
       })
@@ -463,6 +476,38 @@ describe('Child mobile attendance list', () => {
     await page.goto(await pairMobileDevice(daycare2Fixture.id))
     await assertAttendanceCounts(1, 0, 0, 0, 1)
   })
+
+  test('Term break child is shown in absent list', async () => {
+    const term = new FiniteDateRange(
+      LocalDate.of(2021, 8, 15),
+      LocalDate.of(2022, 5, 31)
+    )
+
+    // Term break today
+    await Fixture.preschoolTerm()
+      .with({
+        finnishPreschool: term,
+        swedishPreschool: term,
+        extendedTerm: term,
+        applicationPeriod: new FiniteDateRange(
+          LocalDate.of(2022, 1, 10),
+          LocalDate.of(2022, 1, 20)
+        ),
+        termBreaks: [new FiniteDateRange(today, today)]
+      })
+      .save()
+
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child, daycareGroupFixture.id, 'PRESCHOOL')
+
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await assertAttendanceCounts(0, 0, 0, 1, 1)
+    await listPage.absentChildrenTab.click()
+    await listPage.selectChild(child)
+    await childPage.termBreak.waitUntilVisible()
+  })
 })
 
 describe('Notes on child departure page', () => {
@@ -472,7 +517,7 @@ describe('Notes on child departure page', () => {
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
     await createPlacements(enduserChildFixtureJari.id, group2.id)
 
-    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child1)

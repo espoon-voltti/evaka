@@ -165,6 +165,7 @@ export const fi = {
       markAbsentBeforehand: 'Tulevat poissaolot'
     },
     timeLabel: 'Merkintä',
+    termBreak: 'Ei toimintaa tänään',
     departureTime: 'Lähtöaika',
     arrivalTime: 'Saapumisaika',
     chooseGroup: 'Valitse ryhmä',

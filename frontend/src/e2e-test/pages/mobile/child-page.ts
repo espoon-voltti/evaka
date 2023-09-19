@@ -10,6 +10,7 @@ export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
   childName = this.page.findByDataQa('child-name')
+  termBreak = this.page.findByDataQa('term-break')
   markPresentLink = this.page.findByDataQa('mark-present-link')
   markDepartedLink = this.page.findByDataQa('mark-departed-link')
   markAbsentLink = this.page.findByDataQa('mark-absent-link')

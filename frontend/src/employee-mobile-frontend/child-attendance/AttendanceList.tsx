@@ -47,7 +47,7 @@ export default React.memo(function AttendanceList({
     (status: AttendanceStatus) =>
       groupChildren.filter(
         (child) =>
-          childAttendanceStatus(attendanceStatuses, child.id).status === status
+          childAttendanceStatus(child, attendanceStatuses).status === status
       ),
     [groupChildren, attendanceStatuses]
   )

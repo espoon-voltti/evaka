@@ -122,8 +122,8 @@ export default React.memo(function AttendanceChildPage() {
           ([child, group, attendanceStatuses]) => {
             if (!child) return null
             const childAttendance = childAttendanceStatus(
-              attendanceStatuses,
-              child.id
+              child,
+              attendanceStatuses
             )
             const today = LocalDate.todayInSystemTz()
             const childAge = today.differenceInYears(child.dateOfBirth)
@@ -193,19 +193,30 @@ export default React.memo(function AttendanceChildPage() {
                   </Zindex>
 
                   <FlexColumn paddingHorizontal="s">
-                    <AttendanceDailyServiceTimes
-                      times={child.dailyServiceTimes}
-                      reservations={child.reservations}
-                    />
-                    <ArrivalAndDeparture
-                      attendances={childAttendance.attendances}
-                      returnToComing={returnToComingModal}
-                    />
-                    <Gap size="m" />
-                    <Absences
-                      absences={childAttendance.absences}
-                      placementType={child.placementType}
-                    />
+                    {child.scheduleType !== 'TERM_BREAK' ? (
+                      <>
+                        <AttendanceDailyServiceTimes
+                          times={child.dailyServiceTimes}
+                          reservations={child.reservations}
+                        />
+                        <ArrivalAndDeparture
+                          attendances={childAttendance.attendances}
+                          returnToComing={returnToComingModal}
+                        />
+                        <Gap size="m" />
+                        <Absences
+                          absences={childAttendance.absences}
+                          placementType={child.placementType}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Center data-qa="term-break">
+                          {i18n.attendances.termBreak}
+                        </Center>
+                        <Gap size="XXL" />
+                      </>
+                    )}
                     <Gap size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
@@ -228,12 +239,13 @@ export default React.memo(function AttendanceChildPage() {
                         groupIdOrAll={groupId}
                       />
                     )}
-                    {childAttendance.status === 'ABSENT' && (
-                      <AttendanceChildAbsent
-                        childId={child.id}
-                        unitId={unitId}
-                      />
-                    )}
+                    {childAttendance.status === 'ABSENT' &&
+                      child.scheduleType !== 'TERM_BREAK' && (
+                        <AttendanceChildAbsent
+                          childId={childId}
+                          unitId={unitId}
+                        />
+                      )}
                   </FlexColumn>
                 </Shadow>
                 <BottomButtonWrapper>
