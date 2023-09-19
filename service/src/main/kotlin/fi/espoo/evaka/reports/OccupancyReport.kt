@@ -5,8 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.occupancy.OccupancyType
@@ -30,8 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class OccupancyReportController(env: EvakaEnv, private val accessControl: AccessControl) {
-    private val assistanceModel = env.assistanceModel
+class OccupancyReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
         db: Database,
@@ -58,7 +55,6 @@ class OccupancyReportController(env: EvakaEnv, private val accessControl: Access
                         )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.calculateUnitOccupancyReport(
-                        assistanceModel,
                         clock.today(),
                         careAreaId,
                         providerType,
@@ -109,7 +105,6 @@ class OccupancyReportController(env: EvakaEnv, private val accessControl: Access
                             Action.Unit.READ_OCCUPANCY_REPORT
                         )
                     tx.calculateGroupOccupancyReport(
-                        assistanceModel,
                         clock.today(),
                         careAreaId,
                         providerType,
@@ -155,7 +150,6 @@ data class OccupancyGroupReportResultRow(
 )
 
 private fun Database.Read.calculateUnitOccupancyReport(
-    assistanceModel: AssistanceModel,
     today: LocalDate,
     areaId: AreaId?,
     providerType: ProviderType?,
@@ -165,7 +159,6 @@ private fun Database.Read.calculateUnitOccupancyReport(
     unitFilter: AccessControlFilter<DaycareId>
 ): List<OccupancyUnitReportResultRow> {
     return calculateDailyUnitOccupancyValues(
-            assistanceModel,
             today,
             queryPeriod,
             type,
@@ -187,7 +180,6 @@ private fun Database.Read.calculateUnitOccupancyReport(
 }
 
 private fun Database.Read.calculateGroupOccupancyReport(
-    assistanceModel: AssistanceModel,
     today: LocalDate,
     areaId: AreaId?,
     providerType: ProviderType?,
@@ -200,7 +192,6 @@ private fun Database.Read.calculateGroupOccupancyReport(
         throw BadRequest("Unable to calculate planned occupancy at group level")
 
     return calculateDailyGroupOccupancyValues(
-            assistanceModel,
             today,
             queryPeriod,
             type,

@@ -12,10 +12,8 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
 
-import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 import AssistanceNeedPreschoolDecisionSection from './AssistanceNeedPreschoolDecisionSection'
@@ -87,54 +85,38 @@ const AssistanceContent = ({
   permittedActions: Set<Action.Child | Action.Person>
 }) => {
   const assistanceResult = useQueryResult(assistanceQuery(id))
-  const { user } = useContext(UserContext)
-  const useNewAssistanceModel =
-    user?.accessibleFeatures.useNewAssistanceModel ?? false
   return (
     <>
-      {useNewAssistanceModel && (
-        <>
-          {permittedActions.has('READ_ASSISTANCE_FACTORS') && (
-            <AssistanceFactorSection
-              childId={id}
-              rows={assistanceResult.map(
-                ({ assistanceFactors }) => assistanceFactors
-              )}
-            />
+      {permittedActions.has('READ_ASSISTANCE_FACTORS') && (
+        <AssistanceFactorSection
+          childId={id}
+          rows={assistanceResult.map(
+            ({ assistanceFactors }) => assistanceFactors
           )}
-          {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
-            <>
-              <HorizontalLine dashed slim />
-              <DaycareAssistanceSection
-                childId={id}
-                rows={assistanceResult.map(
-                  ({ daycareAssistances }) => daycareAssistances
-                )}
-              />
-            </>
-          )}
-          {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
-            <>
-              <HorizontalLine dashed slim />
-              <PreschoolAssistanceSection
-                childId={id}
-                rows={assistanceResult.map(
-                  ({ preschoolAssistances }) => preschoolAssistances
-                )}
-              />
-            </>
-          )}
-        </>
+        />
       )}
-      {permittedActions.has('READ_ASSISTANCE_NEED') &&
-        !useNewAssistanceModel && (
-          <AssistanceNeed
-            id={id}
-            assistanceNeeds={assistanceResult.map(
-              ({ assistanceNeeds }) => assistanceNeeds
+      {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
+        <>
+          <HorizontalLine dashed slim />
+          <DaycareAssistanceSection
+            childId={id}
+            rows={assistanceResult.map(
+              ({ daycareAssistances }) => daycareAssistances
             )}
           />
-        )}
+        </>
+      )}
+      {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
+        <>
+          <HorizontalLine dashed slim />
+          <PreschoolAssistanceSection
+            childId={id}
+            rows={assistanceResult.map(
+              ({ preschoolAssistances }) => preschoolAssistances
+            )}
+          />
+        </>
+      )}
       {permittedActions.has('READ_ASSISTANCE_ACTION') && (
         <>
           <HorizontalLine dashed slim />
@@ -146,18 +128,17 @@ const AssistanceContent = ({
           />
         </>
       )}
-      {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') &&
-        useNewAssistanceModel && (
-          <>
-            <HorizontalLine dashed slim />
-            <OtherAssistanceMeasureSection
-              childId={id}
-              rows={assistanceResult.map(
-                ({ otherAssistanceMeasures }) => otherAssistanceMeasures
-              )}
-            />
-          </>
-        )}
+      {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') && (
+        <>
+          <HorizontalLine dashed slim />
+          <OtherAssistanceMeasureSection
+            childId={id}
+            rows={assistanceResult.map(
+              ({ otherAssistanceMeasures }) => otherAssistanceMeasures
+            )}
+          />
+        </>
+      )}
     </>
   )
 }

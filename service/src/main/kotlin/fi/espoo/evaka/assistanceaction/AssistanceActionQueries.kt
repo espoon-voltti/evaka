@@ -24,16 +24,14 @@ fun Database.Transaction.insertAssistanceAction(
             start_date, 
             end_date, 
             updated_by, 
-            other_action,
-            measures
+            other_action
         )
         VALUES (
             :childId, 
             :startDate, 
             :endDate, 
             :updatedBy,
-            :otherAction,
-            :measures::assistance_measure[]
+            :otherAction
         )
         RETURNING id
         """
@@ -46,7 +44,6 @@ fun Database.Transaction.insertAssistanceAction(
             .bind("endDate", data.endDate)
             .bind("updatedBy", user.evakaUserId)
             .bind("otherAction", data.otherAction)
-            .bind("measures", data.measures.map { it.toString() })
             .mapTo<AssistanceActionId>()
             .first()
 
@@ -76,12 +73,12 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
     // language=sql
     val sql =
         """
-        SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action, measures
+        SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
         FROM assistance_action aa
         LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
         LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
         WHERE aa.id = :id
-        GROUP BY aa.id, child_id, start_date, end_date, other_action, measures
+        GROUP BY aa.id, child_id, start_date, end_date, other_action
         """
             .trimIndent()
     return createQuery(sql).bind("id", id).mapTo<AssistanceAction>().first()
@@ -91,12 +88,12 @@ fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<Assistance
     // language=sql
     val sql =
         """
-        SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action, measures
+        SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
         FROM assistance_action aa
         LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
         LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
         WHERE child_id = :childId
-        GROUP BY aa.id, child_id, start_date, end_date, other_action, measures
+        GROUP BY aa.id, child_id, start_date, end_date, other_action
         ORDER BY start_date DESC
         """
             .trimIndent()
@@ -115,8 +112,7 @@ fun Database.Transaction.updateAssistanceAction(
             start_date = :startDate,
             end_date = :endDate,
             updated_by = :updatedBy,
-            other_action = :otherAction,
-            measures = :measures::assistance_measure[]
+            other_action = :otherAction
         WHERE id = :id
         RETURNING id
         """
@@ -128,7 +124,6 @@ fun Database.Transaction.updateAssistanceAction(
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
-        .bind("measures", data.measures.map { it.toString() })
         .mapTo<AssistanceActionId>()
         .firstOrNull()
         ?: throw NotFound("Assistance action $id not found")

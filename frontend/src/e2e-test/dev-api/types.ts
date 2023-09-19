@@ -461,17 +461,6 @@ export interface ServiceNeedFixture {
   confirmedAt: LocalDate
 }
 
-export interface AssistanceNeed {
-  id: string
-  updatedBy: string
-  childId: string
-  startDate: LocalDate
-  endDate: LocalDate
-  capacityFactor: number
-  description: string
-  otherBasis: string
-}
-
 export interface DevAssistanceNeedPreschoolDecision {
   id: UUID
   decisionNumber: number

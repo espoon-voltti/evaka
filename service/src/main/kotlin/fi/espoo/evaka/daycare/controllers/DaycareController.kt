@@ -5,8 +5,6 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.CaretakerAmount
@@ -78,11 +76,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/daycares")
 class DaycareController(
-    env: EvakaEnv,
     private val daycareService: DaycareService,
     private val accessControl: AccessControl
 ) {
-    private val assistanceModel = env.assistanceModel
     @GetMapping
     fun getDaycares(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Daycare> {
         return db.connect { dbc ->
@@ -541,7 +537,7 @@ class DaycareController(
                                 unitId
                             )
                         ) {
-                            tx.getUnitChildrenCapacities(assistanceModel, unitId, from)
+                            tx.getUnitChildrenCapacities(unitId, from)
                         } else {
                             listOf()
                         }
@@ -558,7 +554,6 @@ class DaycareController(
                         ) {
                             getGroupOccupancies(
                                 tx,
-                                assistanceModel,
                                 clock.today(),
                                 unitId,
                                 period,
@@ -699,7 +694,6 @@ data class GroupOccupancies(
 
 private fun getGroupOccupancies(
     tx: Database.Read,
-    assistanceModel: AssistanceModel,
     today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
@@ -709,7 +703,6 @@ private fun getGroupOccupancies(
         confirmed =
             getGroupOccupancyResponses(
                 tx.calculateOccupancyPeriodsGroupLevel(
-                    assistanceModel,
                     today,
                     unitId,
                     period,
@@ -720,7 +713,6 @@ private fun getGroupOccupancies(
         realized =
             getGroupOccupancyResponses(
                 tx.calculateOccupancyPeriodsGroupLevel(
-                    assistanceModel,
                     today,
                     unitId,
                     period,

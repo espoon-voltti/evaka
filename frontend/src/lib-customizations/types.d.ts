@@ -11,7 +11,6 @@ import {
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
-import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
 import {
   AbsenceType,
   ProviderType
@@ -265,7 +264,6 @@ export interface EmployeeCustomizations {
   featureFlags: FeatureFlags
   placementTypes: PlacementType[]
   absenceTypes: AbsenceType[]
-  assistanceMeasures: AssistanceMeasure[]
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]

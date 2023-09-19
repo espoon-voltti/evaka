@@ -18,9 +18,7 @@ sealed interface DatabaseTable {
     sealed class Area : DatabaseTable
     sealed class AssistanceAction : DatabaseTable
     sealed class AssistanceActionOption : DatabaseTable
-    sealed class AssistanceBasisOption : DatabaseTable
     sealed class AssistanceFactor : DatabaseTable
-    sealed class AssistanceNeed : DatabaseTable
     sealed class AssistanceNeedDecision : DatabaseTable
     sealed class AssistanceNeedDecisionGuardian : DatabaseTable
     sealed class AssistanceNeedPreschoolDecision : DatabaseTable
@@ -106,11 +104,7 @@ typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
 
 typealias AssistanceActionOptionId = Id<DatabaseTable.AssistanceActionOption>
 
-typealias AssistanceBasisOptionId = Id<DatabaseTable.AssistanceBasisOption>
-
 typealias AssistanceFactorId = Id<DatabaseTable.AssistanceFactor>
-
-typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
 
 typealias AssistanceNeedDecisionId = Id<DatabaseTable.AssistanceNeedDecision>
 

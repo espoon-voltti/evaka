@@ -13,11 +13,10 @@ import {
 } from 'lib-common/generated/api-types/assistanceaction'
 import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { UserContext } from '../../../state/user'
 import { isActiveDateRange } from '../../../utils/date'
 import LabelValueList from '../../common/LabelValueList'
 import Toolbar from '../../common/Toolbar'
@@ -54,9 +53,6 @@ export default React.memo(function AssistanceActionRow({
   const { mutateAsync: deleteAssistanceAction } = useMutationResult(
     deleteAssistanceActionMutation
   )
-  const { user } = useContext(UserContext)
-  const useNewAssistanceModel =
-    user?.accessibleFeatures.useNewAssistanceModel ?? false
 
   return (
     <div>
@@ -140,26 +136,7 @@ export default React.memo(function AssistanceActionRow({
                     ) : null}
                   </ul>
                 )
-              },
-              assistanceMeasures.length > 0 &&
-                !useNewAssistanceModel && {
-                  label: i18n.childInformation.assistanceAction.fields.measures,
-                  value: (
-                    <ul>
-                      {assistanceMeasures.map(
-                        (measure) =>
-                          assistanceAction.measures.includes(measure) && (
-                            <li key={measure}>
-                              {
-                                i18n.childInformation.assistanceAction.fields
-                                  .measureTypes[measure]
-                              }
-                            </li>
-                          )
-                      )}
-                    </ul>
-                  )
-                }
+              }
             ]}
           />
         )}

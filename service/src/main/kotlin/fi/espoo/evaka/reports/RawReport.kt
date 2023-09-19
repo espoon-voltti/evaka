@@ -5,8 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.defaultOccupancyCoefficient
@@ -29,9 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class RawReportController(env: EvakaEnv, private val accessControl: AccessControl) {
-    private val assistanceModel = env.assistanceModel
-
+class RawReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/raw")
     fun getRawReport(
         db: Database,
@@ -52,7 +48,7 @@ class RawReportController(env: EvakaEnv, private val accessControl: AccessContro
                         Action.Global.READ_RAW_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getRawRows(assistanceModel, from, to)
+                    it.getRawRows(from, to)
                 }
             }
             .also {
@@ -63,11 +59,7 @@ class RawReportController(env: EvakaEnv, private val accessControl: AccessContro
     }
 }
 
-fun Database.Read.getRawRows(
-    assistanceModel: AssistanceModel,
-    from: LocalDate,
-    to: LocalDate
-): List<RawReportRow> {
+fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
     // language=sql
     val sql =
         """
@@ -156,10 +148,7 @@ LEFT JOIN daycare bcu on bc.unit_id = bcu.id
 LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
 LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
-${when (assistanceModel) {
-    AssistanceModel.OLD -> "LEFT JOIN assistance_need an ON an.child_id = p.id AND daterange(an.start_date, an.end_date, '[]') @> t::date"
-    AssistanceModel.NEW -> "LEFT JOIN assistance_factor an ON an.child_id = p.id AND an.valid_during @> t::date"
-}}
+LEFT JOIN assistance_factor an ON an.child_id = p.id AND an.valid_during @> t::date
 LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date AND ab1.category = 'BILLABLE'
 LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date AND ab2.category = 'NONBILLABLE'
 LEFT JOIN holiday ON t = holiday.date AND NOT (u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR bcu.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7])

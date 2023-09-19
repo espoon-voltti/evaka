@@ -45,7 +45,6 @@ import { UUID } from 'lib-common/types'
 
 import {
   Application,
-  AssistanceNeed,
   AssistanceNeedDecision,
   BackupCare,
   CareArea,
@@ -86,7 +85,6 @@ import {
 import {
   addVardaReset,
   addVardaServiceNeed,
-  insertAssistanceNeedFixtures,
   insertAssistanceNeedDecisionFixtures,
   insertBackupCareFixtures,
   insertCareAreaFixtures,
@@ -1433,19 +1431,6 @@ export class Fixture {
     return new ChildBuilder({ id })
   }
 
-  static assistanceNeed(): AssistanceNeedBuilder {
-    return new AssistanceNeedBuilder({
-      id: uuidv4(),
-      capacityFactor: 1.0,
-      childId: 'not_set',
-      description: '',
-      startDate: LocalDate.todayInSystemTz(),
-      endDate: LocalDate.todayInSystemTz(),
-      otherBasis: '',
-      updatedBy: ''
-    })
-  }
-
   static assistanceFactor(): AssistanceFactorBuilder {
     return new AssistanceFactorBuilder({
       id: uuidv4(),
@@ -2289,18 +2274,6 @@ export class ChildBuilder extends FixtureBuilder<Child> {
   // Note: shallow copy
   copy() {
     return new ChildBuilder({ ...this.data })
-  }
-}
-
-export class AssistanceNeedBuilder extends FixtureBuilder<AssistanceNeed> {
-  async save() {
-    await insertAssistanceNeedFixtures([this.data])
-    return this
-  }
-
-  // Note: shallow copy
-  copy() {
-    return new AssistanceNeedBuilder({ ...this.data })
   }
 }
 

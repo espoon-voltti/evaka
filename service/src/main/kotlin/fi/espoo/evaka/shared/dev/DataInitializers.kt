@@ -10,7 +10,6 @@ import fi.espoo.evaka.application.getApplicationType
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
-import fi.espoo.evaka.assistanceneed.insertAssistanceBasisOptionRefs
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -32,7 +31,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
@@ -746,24 +744,6 @@ RETURNING id
         )
         .let(::DecisionId)
 
-fun Database.Transaction.insertTestAssistanceNeed(
-    assistanceNeed: DevAssistanceNeed
-): AssistanceNeedId {
-    val id =
-        insertTestDataRow(
-                assistanceNeed,
-                """
-INSERT INTO assistance_need (id, updated_by, child_id, start_date, end_date, capacity_factor)
-VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :capacityFactor)
-RETURNING id
-"""
-            )
-            .let(::AssistanceNeedId)
-    val counts = insertAssistanceBasisOptionRefs(id, assistanceNeed.bases)
-    assert(counts.size == assistanceNeed.bases.size)
-    return id
-}
-
 fun Database.Transaction.insertTestAssistanceAction(
     assistanceAction: DevAssistanceAction
 ): AssistanceActionId {
@@ -771,8 +751,8 @@ fun Database.Transaction.insertTestAssistanceAction(
         insertTestDataRow(
                 assistanceAction,
                 """
-INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action, measures)
-VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction, :measures::assistance_measure[])
+INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action)
+VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction)
 RETURNING id
 """
             )

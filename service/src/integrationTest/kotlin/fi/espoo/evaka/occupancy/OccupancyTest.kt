@@ -6,7 +6,6 @@ package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.assistance.AssistanceModel
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -172,7 +171,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val period = FiniteDateRange(today.minusDays(1), today)
             val occupancyValues =
                 it.calculateDailyUnitOccupancyValues(
-                    AssistanceModel.NEW,
                     today,
                     period,
                     OccupancyType.CONFIRMED,
@@ -220,7 +218,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { tx ->
             val occupancyValues =
                 tx.calculateDailyGroupOccupancyValues(
-                    AssistanceModel.NEW,
                     today,
                     FiniteDateRange(today, today),
                     OccupancyType.CONFIRMED,
@@ -260,7 +257,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         val occupancies =
             db.read { tx ->
                 tx.calculateDailyGroupOccupancyValues(
-                        AssistanceModel.NEW,
                         today,
                         FiniteDateRange(rangeStart, rangeEnd),
                         OccupancyType.REALIZED,
@@ -311,7 +307,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { tx ->
             val occupancyValues =
                 tx.calculateDailyGroupOccupancyValues(
-                    AssistanceModel.NEW,
                     today,
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
@@ -370,7 +365,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { tx ->
             val occupancyValues =
                 tx.calculateDailyGroupOccupancyValues(
-                    AssistanceModel.NEW,
                     today,
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
@@ -722,9 +716,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    @ParameterizedTest
-    @EnumSource(AssistanceModel::class)
-    fun `occupancy is multiplied by assistance factor`(assistanceModel: AssistanceModel) {
+    @Test
+    fun `occupancy is multiplied by assistance factor`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
                 addPlacement()
@@ -733,23 +726,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     .fromDay(0)
                     .toDay(1)
                     .save()
-                when (assistanceModel) {
-                    AssistanceModel.OLD ->
-                        addAssistanceNeed()
-                            .createdBy(EvakaUserId(employeeId.raw))
-                            .withFactor(2.0)
-                            .fromDay(1)
-                            .toDay(1)
-                            .save()
-                    AssistanceModel.NEW ->
-                        tx.insertTestAssistanceFactor(
-                            DevAssistanceFactor(
-                                childId = childId,
-                                capacityFactor = 2.0,
-                                validDuring = today.plusDays(1).toFiniteDateRange()
-                            )
-                        )
-                }
+                tx.insertTestAssistanceFactor(
+                    DevAssistanceFactor(
+                        childId = childId,
+                        capacityFactor = 2.0,
+                        validDuring = today.plusDays(1).toFiniteDateRange()
+                    )
+                )
             }
         }
 
@@ -760,7 +743,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 OccupancyType.CONFIRMED,
                 today,
                 1.0,
-                assistanceModel
             )
             getAndAssertOccupancyInUnit(
                 tx,
@@ -768,7 +750,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 OccupancyType.CONFIRMED,
                 today.plusDays(1),
                 2.0,
-                assistanceModel
             )
         }
     }
@@ -1017,7 +998,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { tx ->
             val dailyOccupancyValues =
                 tx.calculateDailyGroupOccupancyValues(
-                        AssistanceModel.NEW,
                         today = today,
                         queryPeriod = FiniteDateRange(today.minusDays(2), today.plusDays(1)),
                         type = OccupancyType.REALIZED,
@@ -1060,7 +1040,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = OccupancyType.REALIZED,
                     unitFilter = AccessControlFilter.PermitAll,
                     unitId = daycareInArea1,
-                    assistanceModel = AssistanceModel.NEW
                 )
             assertTrue(values.isEmpty())
         }
@@ -1224,7 +1203,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { tx ->
             val map =
                 tx.calculateDailyUnitOccupancyValues(
-                        AssistanceModel.NEW,
                         today = today,
                         queryPeriod = FiniteDateRange(today.minusDays(3), today.plusDays(10)),
                         type = OccupancyType.CONFIRMED,
@@ -1304,7 +1282,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 (ProviderType?) -> List<DailyOccupancyValues<UnitKey>> =
                 { providerType ->
                     it.calculateDailyUnitOccupancyValues(
-                        AssistanceModel.NEW,
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
@@ -1362,7 +1339,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 (Set<CareType>) -> List<DailyOccupancyValues<UnitKey>> =
                 { unitTypes ->
                     it.calculateDailyUnitOccupancyValues(
-                        AssistanceModel.NEW,
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
@@ -1422,7 +1398,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 (ProviderType?) -> List<DailyOccupancyValues<UnitGroupKey>> =
                 { providerType ->
                     it.calculateDailyGroupOccupancyValues(
-                        AssistanceModel.NEW,
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
@@ -1480,7 +1455,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 (Set<CareType>) -> List<DailyOccupancyValues<UnitGroupKey>> =
                 { unitTypes ->
                     it.calculateDailyGroupOccupancyValues(
-                        AssistanceModel.NEW,
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
@@ -1546,7 +1520,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         type: OccupancyType,
         date: LocalDate,
         expectedSum: Double,
-        assistanceModel: AssistanceModel = AssistanceModel.NEW,
     ) {
         assertOccupancySum(
             expectedSum = expectedSum,
@@ -1554,7 +1527,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             groupingId = unitId,
             occupancyValues =
                 tx.calculateDailyUnitOccupancyValues(
-                    assistanceModel,
                     today = today,
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
@@ -1578,7 +1550,6 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             groupingId = groupId,
             occupancyValues =
                 tx.calculateDailyGroupOccupancyValues(
-                    AssistanceModel.NEW,
                     today = today,
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,

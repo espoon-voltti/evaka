@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
@@ -246,20 +245,6 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT af.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
 FROM assistance_factor af
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun inPlacementUnitOfChildOfAssistanceNeed() =
-        rule<AssistanceNeedId> { user, now ->
-            sql(
-                """
-SELECT an.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
-FROM assistance_need an
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}

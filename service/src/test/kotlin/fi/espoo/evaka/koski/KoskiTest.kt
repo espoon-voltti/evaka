@@ -33,7 +33,7 @@ class KoskiTest {
     fun testSimpleAbsenceScenario1() {
         val timelines =
             calculateStudyRightTimelines(
-                placementRanges = sequenceOf(preschoolTerm2020),
+                placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
                     sequenceOf(
@@ -84,7 +84,7 @@ class KoskiTest {
     fun testSimpleAbsenceScenario2() {
         val timelines =
             calculateStudyRightTimelines(
-                placementRanges = sequenceOf(preschoolTerm2020),
+                placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
                     sequenceOf(
@@ -146,7 +146,7 @@ class KoskiTest {
     fun testSimpleAbsenceScenario3() {
         val timelines =
             calculateStudyRightTimelines(
-                placementRanges = sequenceOf(preschoolTerm2020),
+                placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
                     sequenceOf(
@@ -191,7 +191,7 @@ class KoskiTest {
     fun testComplexAbsenceScenario1() {
         val timelines =
             calculateStudyRightTimelines(
-                placementRanges = sequenceOf(preschoolTerm2020),
+                placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
                     sequenceOf(
@@ -242,7 +242,7 @@ class KoskiTest {
     fun testComplexAbsenceScenario2() {
         val timelines =
             calculateStudyRightTimelines(
-                placementRanges = sequenceOf(preschoolTerm2020),
+                placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
                     sequenceOf(

@@ -770,27 +770,6 @@ export const fi = {
         actionTypes: {
           OTHER: 'Muu tukitoimi'
         },
-        measures: 'Toimenpiteet',
-        measureTypes: {
-          SPECIAL_ASSISTANCE_DECISION: 'Erityisen tuen päätös\n',
-          SPECIAL_ASSISTANCE_DECISION_INFO:
-            'Laita varhaiskasvatuksessa olevalle lapselle merkintä tähän kohtaan siitä päivästä lukien, kun päätös/kuuleminen on tehty. Laita esiopetuksessa olevalle lapselle merkintä, kun perusopetuslain mukainen erityisen tuen päätös on tehty.Esiopetuksessa ja liittyvässä varhaiskasvatuksessa merkintä laitetaan aina esiopetusajan päätöksen mukaan.',
-          INTENSIFIED_ASSISTANCE: 'Tehostettu tuki',
-          INTENSIFIED_ASSISTANCE_INFO:
-            'Laita varhaiskasvatuksessa olevalle lapselle merkintä tähän kohtaan siitä päivästä lukien, kun päätös on tehtyLaita esiopetuksessa tai valmistavassa opetuksessa merkintä, kun tehostetusta tuesta on sovittu. Esiopetuksessa/valmistavassa opetuksessa ja liittyvässä varhaiskasvatuksessa merkintä laitetaan aina esiopetusajan päätöksen mukaan.',
-          EXTENDED_COMPULSORY_EDUCATION: 'Pidennetty oppivelvollisuus',
-          EXTENDED_COMPULSORY_EDUCATION_INFO:
-            'Lapselle on tehty perusopetuksen toimesta pidennetyn oppivelvollisuuden päätös. Huom! Muista laittaa merkintä myös kohtaan erityisen tuen päätös sekä tukitoimiin, joita lapsella on.',
-          CHILD_SERVICE: 'Lastensuojelu',
-          CHILD_SERVICE_INFO:
-            'Lapsi on ohjattu lastensuojelun toimesta varhaiskasvatukseen. (Lapsen varhaiskasvatus on maksutonta)',
-          CHILD_ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
-          CHILD_ACCULTURATION_SUPPORT_INFO:
-            'Pakolais-, turvapaikanhakija tmv. Taustalla oleva lapsi, jonka tuen järjestämisestä on myönnetty korvaus (ELY)',
-          TRANSPORT_BENEFIT: 'Kuljetusetu',
-          TRANSPORT_BENEFIT_INFO:
-            'Lapsella on kuljetuspäätös varhaiskasvatukseen ja/tai esiopetukseen. Päätöksen ja merkinnän tekee varhaiskasvatuksen asiantuntija (lasten tukemisen tai esiopetuksen)'
-        },
         otherActionPlaceholder:
           'Voit kirjoittaa tähän lisätietoa muista tukitoimista.'
       },

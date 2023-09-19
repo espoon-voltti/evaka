@@ -59,14 +59,6 @@ const customizations: EmployeeCustomizations = {
     'PARENTLEAVE',
     'FORCE_MAJEURE'
   ],
-  assistanceMeasures: [
-    'SPECIAL_ASSISTANCE_DECISION',
-    'INTENSIFIED_ASSISTANCE',
-    'EXTENDED_COMPULSORY_EDUCATION',
-    'CHILD_SERVICE',
-    'CHILD_ACCULTURATION_SUPPORT',
-    'TRANSPORT_BENEFIT'
-  ],
   daycareAssistanceLevels: [...daycareAssistanceLevels],
   otherAssistanceMeasureTypes: [...otherAssistanceMeasureTypes],
   placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER'],

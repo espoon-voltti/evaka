@@ -8,7 +8,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.data.DateSet
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
@@ -144,20 +143,18 @@ data class KoskiActiveDataRaw(
     val approverName: String,
     val personOid: String?,
     val lastOfChild: Boolean,
-    val placementRanges: List<FiniteDateRange> = emptyList(),
+    val placements: DateSet = DateSet.of(),
     val holidays: Set<LocalDate> = emptySet(),
     @Json val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
-    val developmentalDisability1: List<FiniteDateRange> = emptyList(),
-    val developmentalDisability2: List<FiniteDateRange> = emptyList(),
-    val extendedCompulsoryEducation: List<FiniteDateRange> = emptyList(),
-    val transportBenefit: List<FiniteDateRange> = emptyList(),
-    val specialSupportDecision: List<FiniteDateRange> = emptyList(),
+    val specialSupportWithDecisionLevel1: DateSet = DateSet.of(),
+    val specialSupportWithDecisionLevel2: DateSet = DateSet.of(),
+    val transportBenefit: DateSet = DateSet.of(),
     val studyRightId: KoskiStudyRightId,
     val studyRightOid: String?
 ) {
     private val studyRightTimelines =
         calculateStudyRightTimelines(
-            placementRanges = placementRanges.asSequence(),
+            placements = placements,
             holidays = holidays,
             absences = preparatoryAbsences.asSequence()
         )
@@ -373,36 +370,31 @@ data class KoskiActiveDataRaw(
         // and when sending for unit B, the second "half".
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
+        val level1 = specialSupportWithDecisionLevel1.intersection(listOf(placementSpan))
+        val level2 = specialSupportWithDecisionLevel2.intersection(listOf(placementSpan))
+        val specialSupportWithDecision = level1.addAll(level2)
+
         // Koski only accepts one range
-        val longestEce =
-            DateSet.of(extendedCompulsoryEducation)
-                .intersection(DateSet.of(placementSpan))
-                .ranges()
-                .maxByOrNull { it.durationInDays() }
+        val longestEce = specialSupportWithDecision.ranges().maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
         val longestTransportBenefit =
-            DateSet.of(transportBenefit)
+            transportBenefit
                 .ranges()
                 .mapNotNull { it.intersection(placementSpan) }
                 .maxByOrNull { it.durationInDays() }
 
         return Lisätiedot(
                 vammainen =
-                    developmentalDisability1
-                        .mapNotNull { it.intersection(placementSpan) }
-                        .map { Aikajakso.from(it) }
-                        .takeIf { it.isNotEmpty() && longestEce != null },
+                    level1.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
                 vaikeastiVammainen =
-                    developmentalDisability2
-                        .mapNotNull { it.intersection(placementSpan) }
-                        .map { Aikajakso.from(it) }
-                        .takeIf { it.isNotEmpty() && longestEce != null },
+                    level2.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
                 pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
                 erityisenTuenPäätökset =
-                    (specialSupportDecision
-                        .mapNotNull { it.intersection(placementSpan) }
+                    (specialSupportWithDecision
+                        .ranges()
                         .map { ErityisenTuenPäätös.from(it) }
+                        .toList()
                         .takeIf { it.isNotEmpty() })
             )
             .takeIf {
@@ -436,11 +428,10 @@ internal data class StudyRightTimelines(
 )
 
 internal fun calculateStudyRightTimelines(
-    placementRanges: Sequence<FiniteDateRange>,
+    placements: DateSet,
     holidays: Set<LocalDate>,
     absences: Sequence<KoskiPreparatoryAbsence>
 ): StudyRightTimelines {
-    val placement = DateSet.of(placementRanges)
     val plannedAbsence =
         DateSet.of(
             DateSet.of(
@@ -452,7 +443,7 @@ internal fun calculateStudyRightTimelines(
                         .map { it.date.toFiniteDateRange() }
                 )
                 .fillWeekendAndHolidayGaps(holidays)
-                .intersection(placement)
+                .intersection(placements)
                 .ranges()
                 .filter { it.durationInDays() > 7 }
         )
@@ -464,7 +455,7 @@ internal fun calculateStudyRightTimelines(
                         .map { it.date.toFiniteDateRange() }
                 )
                 .fillWeekendAndHolidayGaps(holidays)
-                .intersection(placement)
+                .intersection(placements)
                 .ranges()
                 .filter { it.durationInDays() > 7 }
         )
@@ -476,15 +467,15 @@ internal fun calculateStudyRightTimelines(
                         .map { it.date.toFiniteDateRange() }
                 )
                 .fillWeekendAndHolidayGaps(holidays)
-                .intersection(placement)
+                .intersection(placements)
                 .ranges()
                 .filter { it.durationInDays() > 7 }
         )
 
     return StudyRightTimelines(
-        placement = placement,
+        placement = placements,
         present =
-            placement
+            placements
                 .removeAll(plannedAbsence)
                 .removeAll(sickLeaveAbsence)
                 .removeAll(unknownAbsence),

@@ -55,7 +55,6 @@ import config from '../config'
 
 import {
   Application,
-  AssistanceNeed,
   AssistanceNeedDecision,
   BackupCare,
   BackupPickup,
@@ -317,16 +316,6 @@ export async function insertDaycareGroupFixtures(
 export async function insertChildFixtures(fixture: Child[]): Promise<void> {
   try {
     await devClient.post(`/children`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertAssistanceNeedFixtures(
-  fixture: AssistanceNeed[]
-): Promise<void> {
-  try {
-    await devClient.post(`/assistance-needs`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

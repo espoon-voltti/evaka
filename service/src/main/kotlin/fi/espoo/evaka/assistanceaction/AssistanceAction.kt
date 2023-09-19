@@ -15,16 +15,14 @@ data class AssistanceAction(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val actions: Set<String>,
-    val otherAction: String,
-    val measures: Set<AssistanceMeasure>
+    val otherAction: String
 )
 
 data class AssistanceActionRequest(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val actions: Set<String> = emptySet(),
-    val otherAction: String = "",
-    val measures: Set<AssistanceMeasure> = emptySet()
+    val otherAction: String = ""
 )
 
 data class AssistanceActionResponse(
@@ -37,12 +35,3 @@ data class AssistanceActionOption(
     val nameFi: String,
     val descriptionFi: String?
 )
-
-enum class AssistanceMeasure {
-    SPECIAL_ASSISTANCE_DECISION,
-    INTENSIFIED_ASSISTANCE,
-    EXTENDED_COMPULSORY_EDUCATION,
-    CHILD_SERVICE,
-    CHILD_ACCULTURATION_SUPPORT,
-    TRANSPORT_BENEFIT
-}
