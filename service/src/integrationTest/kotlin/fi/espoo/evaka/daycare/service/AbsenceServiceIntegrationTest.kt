@@ -8,9 +8,12 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
+import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -20,6 +23,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevChild
@@ -91,6 +95,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId = ChildId(UUID.randomUUID()),
             absenceCategories = setOf(AbsenceCategory.BILLABLE),
             backupCare = false,
+            scheduleType = ScheduleType.RESERVATION_REQUIRED,
             missingHolidayReservation = false,
             absences = listOf(),
             reservations = listOf(),
@@ -282,6 +287,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `calendar has correct absence categories`() {
+        db.transaction { tx ->
+            tx.insertPreschoolTerm(
+                PreschoolTerm(
+                    finnishPreschool = FiniteDateRange(placementStart, placementEnd),
+                    swedishPreschool = FiniteDateRange(placementStart, placementEnd),
+                    extendedTerm = FiniteDateRange(placementStart, placementEnd),
+                    applicationPeriod = FiniteDateRange(placementStart, placementEnd),
+                    termBreaks = DateSet.empty()
+                )
+            )
+        }
         insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL)
         insertGroupPlacement(testChild_2.id, PlacementType.PRESCHOOL_DAYCARE)
         insertGroupPlacement(testChild_3.id, PlacementType.DAYCARE)
@@ -325,6 +341,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         listOf(
                                                 emptyDayChild.copy(
                                                     childId = testChild_1.id,
+                                                    scheduleType = ScheduleType.FIXED_SCHEDULE,
                                                     absenceCategories =
                                                         setOf(AbsenceCategory.NONBILLABLE),
                                                 ),
@@ -343,6 +360,71 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 )
                                             )
                                             .sortedBy { it.childId }
+                            )
+                        }
+                        .toList()
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `calendar has correct schedule types`() {
+        db.transaction { tx ->
+            tx.insertPreschoolTerm(
+                PreschoolTerm(
+                    finnishPreschool = FiniteDateRange(placementStart, placementEnd),
+                    swedishPreschool = FiniteDateRange(placementStart, placementEnd),
+                    extendedTerm = FiniteDateRange(placementStart, placementEnd),
+                    applicationPeriod = FiniteDateRange(placementStart, placementEnd),
+
+                    // First day is in a term break
+                    termBreaks = DateSet.of(FiniteDateRange(placementStart, placementStart))
+                )
+            )
+        }
+        insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL)
+
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    testDaycareGroup.id,
+                    placementStart.year,
+                    placementStart.monthValue,
+                    includeNonOperationalDays = false
+                )
+            }
+
+        assertEquals(
+            GroupMonthCalendar(
+                groupId = testDaycareGroup.id,
+                groupName = testDaycareGroup.name,
+                daycareName = testDaycare.name,
+                daycareOperationTimes = testDaycare.operationTimes,
+                children = listOf(child(testChild_1)),
+                days =
+                    FiniteDateRange.ofMonth(placementStart.year, placementStart.month)
+                        .dates()
+                        .map { date ->
+                            GroupMonthCalendarDay(
+                                date = date,
+                                holiday = date.isWeekend(),
+                                holidayPeriod = false,
+                                children =
+                                    if (date.isWeekend()) null
+                                    else
+                                        listOf(
+                                            emptyDayChild.copy(
+                                                childId = testChild_1.id,
+                                                scheduleType =
+                                                    if (date == placementStart)
+                                                        ScheduleType.TERM_BREAK
+                                                    else ScheduleType.FIXED_SCHEDULE,
+                                                absenceCategories =
+                                                    setOf(AbsenceCategory.NONBILLABLE),
+                                            ),
+                                        )
                             )
                         }
                         .toList()
@@ -639,7 +721,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     emptyDayChild.copy(
                                         childId = testChild_1.id,
                                         missingHolidayReservation = false,
-                                        absenceCategories = setOf(AbsenceCategory.NONBILLABLE)
+                                        absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
+                                        scheduleType = ScheduleType.TERM_BREAK
                                     )
                                 )
                     )

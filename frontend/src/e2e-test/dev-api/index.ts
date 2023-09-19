@@ -27,7 +27,9 @@ import {
 import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import {
   AbsenceCategory,
-  AbsenceType
+  AbsenceType,
+  ClubTerm,
+  PreschoolTerm
 } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecision,
@@ -1303,6 +1305,22 @@ export async function insertAbsence(
       absenceCategory,
       modifiedBy
     })
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertClubTerm(body: ClubTerm): Promise<void> {
+  try {
+    await devClient.post<void>('/club-term', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertPreschoolTerm(body: PreschoolTerm): Promise<void> {
+  try {
+    await devClient.post<void>('/preschool-term', body)
   } catch (e) {
     throw new DevApiError(e)
   }

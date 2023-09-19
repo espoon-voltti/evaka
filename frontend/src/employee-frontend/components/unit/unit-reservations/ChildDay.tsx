@@ -231,6 +231,10 @@ export default React.memo(function ChildDay({
               {i18n.unit.attendanceReservations.missingHolidayReservationShort}
             </ReservationTime>
           </Tooltip>
+        ) : scheduleType === 'TERM_BREAK' ? (
+          <ReservationTime data-qa="term-break">
+            {i18n.unit.attendanceReservations.termBreak}
+          </ReservationTime>
         ) : serviceTimeOfDay ? (
           // daily service times
           <>
@@ -243,6 +247,10 @@ export default React.memo(function ChildDay({
               {i18n.unit.attendanceReservations.serviceTimeIndicator}
             </ReservationTime>
           </>
+        ) : scheduleType === 'FIXED_SCHEDULE' ? (
+          <ReservationTime data-qa="fixed-schedule">
+            {i18n.unit.attendanceReservations.fixedSchedule}
+          </ReservationTime>
         ) : (
           // otherwise show missing service time indicator
           <ReservationTime warning data-qa="reservation-missing">

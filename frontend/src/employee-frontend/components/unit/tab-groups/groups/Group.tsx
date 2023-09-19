@@ -316,7 +316,7 @@ export default React.memo(function Group({
                 icon={faCalendarAlt}
                 text={i18n.unit.groups.diaryButton}
                 onClick={() => undefined}
-                data-qa="open-absence-diary-button"
+                data-qa="open-month-calendar-button"
               />
             </Link>
           )}

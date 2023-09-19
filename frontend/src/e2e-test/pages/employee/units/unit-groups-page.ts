@@ -11,7 +11,7 @@ import {
   TextInput
 } from '../../../utils/page'
 
-import { UnitDiaryPage } from './unit-diary-page'
+import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 
 export class UnitGroupsPage {
   constructor(private readonly page: Page) {}
@@ -216,7 +216,7 @@ export class GroupCollapsible extends Element {
   #groupStartDate = this.find('[data-qa="group-start-date"]')
   #groupEndDate = this.find('[data-qa="group-end-date"]')
 
-  #diaryButton = this.find('[data-qa="open-absence-diary-button"]')
+  #monthCalendarButton = this.find('[data-qa="open-month-calendar-button"]')
   #groupDailyNoteButton = this.find('[data-qa="btn-create-group-note"]')
 
   #childRows = this.find('[data-qa="table-of-group-placements"]').findAll(
@@ -252,9 +252,9 @@ export class GroupCollapsible extends Element {
     await this.#childRows.nth(n).find('[data-qa="remove-btn"]').click()
   }
 
-  async openDiary() {
-    await this.#diaryButton.click()
-    return new UnitDiaryPage(this.page)
+  async openMonthCalendar() {
+    await this.#monthCalendarButton.click()
+    return new UnitMonthCalendarPage(this.page)
   }
 
   async openGroupDailyNoteModal() {

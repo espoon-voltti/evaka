@@ -34,12 +34,16 @@ import fi.espoo.evaka.childdiscussion.getChildDiscussions
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.insertClubTerm
+import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.decision.Decision
@@ -253,13 +257,7 @@ class DevApi(
 
         db.connect { dbc ->
             dbc.waitUntilNoQueriesRunning(timeout = Duration.ofSeconds(10))
-            dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) {
-                it.resetDatabase()
-
-                // Terms are not inserted by fixtures
-                it.runDevScript("preschool-terms.sql")
-                it.runDevScript("club-terms.sql")
-            }
+            dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) { it.resetDatabase() }
         }
         MockEmailClient.clear()
     }
@@ -1565,6 +1563,16 @@ RETURNING id
         @PathVariable childId: ChildId
     ): List<ChildDiscussionData> {
         return db.connect { dbc -> dbc.read { tx -> tx.getChildDiscussions(childId) } }
+    }
+
+    @PostMapping("/club-term")
+    fun createClubTerm(db: Database, @RequestBody body: ClubTerm) {
+        db.connect { dbc -> dbc.transaction { tx -> tx.insertClubTerm(body) } }
+    }
+
+    @PostMapping("/preschool-term")
+    fun createPreschoolTerm(db: Database, @RequestBody body: PreschoolTerm) {
+        db.connect { dbc -> dbc.transaction { tx -> tx.insertPreschoolTerm(body) } }
     }
 
     enum class EmailMessageType {

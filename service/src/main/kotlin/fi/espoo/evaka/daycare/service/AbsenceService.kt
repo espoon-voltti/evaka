@@ -139,6 +139,8 @@ fun getGroupMonthCalendar(
                                     val childAbsences = absences[child.id to date] ?: emptyList()
                                     val childReservations =
                                         reservations[child.id to date] ?: emptyList()
+                                    val scheduleType =
+                                        placement.type.scheduleType(date, clubTerms, preschoolTerms)
 
                                     GroupMonthCalendarDayChild(
                                         childId = child.id,
@@ -146,12 +148,9 @@ fun getGroupMonthCalendar(
                                         backupCare =
                                             backupCares[child.id]?.any { it.includes(date) }
                                                 ?: false,
+                                        scheduleType = scheduleType,
                                         missingHolidayReservation =
-                                            placement.type.scheduleType(
-                                                date,
-                                                clubTerms,
-                                                preschoolTerms
-                                            ) == ScheduleType.RESERVATION_REQUIRED &&
+                                            scheduleType == ScheduleType.RESERVATION_REQUIRED &&
                                                 isHolidayPeriodDate &&
                                                 childReservations.isEmpty() &&
                                                 childAbsences.isEmpty(),
@@ -170,7 +169,7 @@ fun getGroupMonthCalendar(
                                                         is DailyServiceTimesValue.VariableTimes ->
                                                             null
                                                     }
-                                                }
+                                                },
                                     )
                                 }
                                 .sortedBy { it.childId }
@@ -430,7 +429,8 @@ data class GroupMonthCalendarDayChild(
     val missingHolidayReservation: Boolean,
     val absences: List<AbsenceWithModifierInfo>,
     val reservations: List<ChildReservation>,
-    val dailyServiceTimes: TimeRange?
+    val dailyServiceTimes: TimeRange?,
+    val scheduleType: ScheduleType
 )
 
 data class ChildServiceNeedInfo(
