@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.security.SecureRandom
 import java.util.UUID
@@ -62,6 +61,7 @@ fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: Strin
 }
 
 fun Database.Transaction.respondPairingChallengeCreateDevice(
+    clock: EvakaClock,
     id: PairingId,
     challengeKey: String,
     responseKey: String
@@ -94,7 +94,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
         .bind("challenge", challengeKey)
         .bind("response", responseKey)
         .bind("name", defaultDeviceName)
-        .bind("now", HelsinkiDateTime.now())
+        .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
         .firstOrNull()
@@ -102,6 +102,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
 }
 
 fun Database.Transaction.validatePairing(
+    clock: EvakaClock,
     id: PairingId,
     challengeKey: String,
     responseKey: String
@@ -123,7 +124,7 @@ RETURNING id, long_term_token
         .bind("id", id)
         .bind("challenge", challengeKey)
         .bind("response", responseKey)
-        .bind("now", HelsinkiDateTime.now())
+        .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .bind("longTermToken", UUID.randomUUID())
         .mapTo<MobileDeviceIdentity>()
@@ -142,7 +143,7 @@ fun Database.Read.fetchPairingReferenceIds(id: PairingId): Pair<DaycareId?, Empl
         ?: throw NotFound("Pairing not found")
 }
 
-fun Database.Read.fetchPairingStatus(id: PairingId): PairingStatus {
+fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingStatus {
     // language=sql
     val sql =
         """
@@ -153,7 +154,7 @@ fun Database.Read.fetchPairingStatus(id: PairingId): PairingStatus {
 
     return createQuery(sql)
         .bind("id", id)
-        .bind("now", HelsinkiDateTime.now())
+        .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<PairingStatus>()
         .list()

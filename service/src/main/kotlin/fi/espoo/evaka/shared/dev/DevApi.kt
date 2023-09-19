@@ -936,13 +936,19 @@ RETURNING id
     @PostMapping("/mobile/pairings/{id}/response")
     fun postPairingResponse(
         db: Database,
+        clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PairingsController.PostPairingResponseReq
     ): Pairing {
         return db.connect { dbc ->
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
             dbc.transaction {
-                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+                it.respondPairingChallengeCreateDevice(
+                    clock,
+                    id,
+                    body.challengeKey,
+                    body.responseKey
+                )
             }
         }
     }

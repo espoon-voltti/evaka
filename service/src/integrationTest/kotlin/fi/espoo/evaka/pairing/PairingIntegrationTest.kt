@@ -4,20 +4,22 @@
 
 package fi.espoo.evaka.pairing
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestCareArea
+import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -25,105 +27,105 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, emptySet())
-    private val testUnitId = testDaycare.id
+    @Autowired private lateinit var systemController: SystemController
+    @Autowired private lateinit var mobileDevicesController: MobileDevicesController
+    @Autowired private lateinit var pairingsController: PairingsController
+
+    private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
+
+    private lateinit var user: AuthenticatedUser.Employee
+    private lateinit var testUnit: DaycareId
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-            tx.updateDaycareAclWithEmployee(testUnitId, user.id, UserRole.UNIT_SUPERVISOR)
+            val area = tx.insertTestCareArea(DevCareArea())
+            testUnit = tx.insertTestDaycare(DevDaycare(areaId = area))
+            val employee = tx.insertTestEmployee(DevEmployee())
+            user = AuthenticatedUser.Employee(employee, emptySet())
+            tx.updateDaycareAclWithEmployee(testUnit, user.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
     @Test
     fun `mobile device life-cycle happy flow`() {
         // no devices initially
-        val listRes1 = getMobileDevicesAssertOk()
+        val listRes1 = getMobileDevices()
         assertEquals(0, listRes1.size)
 
         // web: init pairing
-        val res1 = postPairingAssertOk(testUnitId)
+        val res1 = postPairing(testUnit)
         val id = res1.id
         val challengeKey = res1.challengeKey
-        assertEquals(testUnitId, res1.unitId)
+        assertEquals(testUnit, res1.unitId)
         assertEquals(12, challengeKey.length)
         assertNull(res1.responseKey)
         assertNull(res1.mobileDeviceId)
         assertEquals(PairingStatus.WAITING_CHALLENGE, res1.status)
 
         // status polling
-        assertEquals(
-            PairingStatus.WAITING_CHALLENGE,
-            getPairingStatusAssertOk(id, authenticated = true)
-        )
+        assertEquals(PairingStatus.WAITING_CHALLENGE, getPairingStatus(id))
 
         // mobile: challenge
-        val res2 = postPairingChallengeAssertOk(challengeKey)
+        val res2 = postPairingChallenge(challengeKey)
         val responseKey = res2.responseKey
         assertEquals(id, res2.id)
-        assertEquals(testUnitId, res2.unitId)
+        assertEquals(testUnit, res2.unitId)
         assertEquals(challengeKey, res2.challengeKey)
         assertEquals(12, responseKey!!.length)
         assertNull(res1.mobileDeviceId)
         assertEquals(PairingStatus.WAITING_RESPONSE, res2.status)
 
         // status polling
-        assertEquals(
-            PairingStatus.WAITING_RESPONSE,
-            getPairingStatusAssertOk(id, authenticated = false)
-        )
-        assertEquals(
-            PairingStatus.WAITING_RESPONSE,
-            getPairingStatusAssertOk(id, authenticated = true)
-        )
+        assertEquals(PairingStatus.WAITING_RESPONSE, getPairingStatus(id))
 
         // web: response to challenge
-        val res3 = postPairingResponseAssertOk(id, challengeKey, responseKey)
+        val res3 = postPairingResponse(id, challengeKey, responseKey)
         assertEquals(id, res3.id)
-        assertEquals(testUnitId, res3.unitId)
+        assertEquals(testUnit, res3.unitId)
         assertEquals(challengeKey, res3.challengeKey)
         assertEquals(responseKey, res3.responseKey)
         val deviceId = res3.mobileDeviceId!!
         assertEquals(PairingStatus.READY, res3.status)
 
         // web: device has been created with default name
-        val listRes2 = getMobileDevicesAssertOk()
+        val listRes2 = getMobileDevices()
         assertEquals(1, listRes2.size)
         assertEquals(deviceId, listRes2.first().id)
         assertEquals("Nimeämätön laite", listRes2.first().name)
 
         // web: renaming device
-        putMobileDeviceNameAssertOk(deviceId, "Hippiäiset")
-        val listRes3 = getMobileDevicesAssertOk()
+        putMobileDeviceName(deviceId, "Hippiäiset")
+        val listRes3 = getMobileDevices()
         assertEquals(1, listRes3.size)
         assertEquals(deviceId, listRes3.first().id)
         assertEquals("Hippiäiset", listRes3.first().name)
 
         // status polling
-        assertEquals(PairingStatus.READY, getPairingStatusAssertOk(id, authenticated = false))
-        assertEquals(PairingStatus.READY, getPairingStatusAssertOk(id, authenticated = true))
+        assertEquals(PairingStatus.READY, getPairingStatus(id))
 
         // mobile > apigw: validating pairing to create session
-        val res4 = postPairingValidationAssertOk(id, challengeKey, responseKey)
+        val res4 = postPairingValidation(id, challengeKey, responseKey)
         assertEquals(deviceId, res4.id)
 
         // status polling
-        assertEquals(PairingStatus.PAIRED, getPairingStatusAssertOk(id, authenticated = false))
+        assertEquals(PairingStatus.PAIRED, getPairingStatus(id))
 
         // mobile > apigw: fetching device to recreate session
-        val res5 = getMobileDeviceAssertOk(deviceId)
+        val res5 = getMobileDevice(deviceId)
         assertEquals(deviceId, res5.id)
 
         // web: removing device
-        deleteMobileDeviceAssertOk(deviceId)
-        val listRes4 = getMobileDevicesAssertOk()
+        deleteMobileDevice(deviceId)
+        val listRes4 = getMobileDevices()
         assertEquals(0, listRes4.size)
 
         // mobile > apigw: fetching device to recreate session should fail
-        getMobileDeviceAssertFail(deviceId, 404)
+        assertThrows<NotFound> { getMobileDevice(deviceId) }
     }
 
     @Test
@@ -131,19 +133,19 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_CHALLENGE,
                 challengeKey = "foo",
                 responseKey = null,
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingChallengeAssertOk(pairing.challengeKey)
+        postPairingChallenge(pairing.challengeKey)
     }
 
     @Test
     fun `postPairingChallenge - pairing missing returns 404`() {
-        postPairingChallengeAssertFail("foo", 404)
+        assertThrows<NotFound> { postPairingChallenge("foo") }
     }
 
     @Test
@@ -151,14 +153,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_CHALLENGE,
                 challengeKey = "foo",
                 responseKey = null,
-                expires = HelsinkiDateTime.now().minusMinutes(1)
+                expires = clock.now().minusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingChallengeAssertFail(pairing.challengeKey, 404)
+        assertThrows<NotFound> { postPairingChallenge(pairing.challengeKey) }
     }
 
     @Test
@@ -166,14 +168,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingChallengeAssertFail(pairing.challengeKey, 404)
+        assertThrows<NotFound> { postPairingChallenge(pairing.challengeKey) }
     }
 
     @Test
@@ -181,14 +183,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingResponseAssertOk(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        postPairingResponse(pairing.id, pairing.challengeKey, pairing.responseKey!!)
     }
 
     @Test
@@ -196,19 +198,20 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingResponseAssertFail(
-            PairingId(UUID.randomUUID()),
-            pairing.challengeKey,
-            pairing.responseKey!!,
-            404
-        )
+        assertThrows<NotFound> {
+            postPairingResponse(
+                PairingId(UUID.randomUUID()),
+                pairing.challengeKey,
+                pairing.responseKey!!
+            )
+        }
     }
 
     @Test
@@ -216,14 +219,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingResponseAssertFail(pairing.id, "wrong", pairing.responseKey!!, 404)
+        assertThrows<NotFound> { postPairingResponse(pairing.id, "wrong", pairing.responseKey!!) }
     }
 
     @Test
@@ -231,14 +234,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingResponseAssertFail(pairing.id, pairing.challengeKey, "wrong", 404)
+        assertThrows<NotFound> { postPairingResponse(pairing.id, pairing.challengeKey, "wrong") }
     }
 
     @Test
@@ -246,14 +249,16 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingResponseAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
+        assertThrows<NotFound> {
+            postPairingResponse(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        }
     }
 
     @Test
@@ -261,14 +266,16 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1)
             )
         givenPairing(pairing, attempts = 101)
-        postPairingResponseAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
+        assertThrows<NotFound> {
+            postPairingResponse(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        }
     }
 
     @Test
@@ -276,14 +283,16 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().minusMinutes(1)
+                expires = clock.now().minusMinutes(1)
             )
         givenPairing(pairing)
-        postPairingResponseAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
+        assertThrows<NotFound> {
+            postPairingResponse(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        }
     }
 
     @Test
@@ -291,15 +300,15 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1),
+                expires = clock.now().plusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing)
-        postPairingValidationAssertOk(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        postPairingValidation(pairing.id, pairing.challengeKey, pairing.responseKey!!)
     }
 
     @Test
@@ -307,20 +316,21 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1),
+                expires = clock.now().plusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing)
-        postPairingValidationAssertFail(
-            PairingId(UUID.randomUUID()),
-            pairing.challengeKey,
-            pairing.responseKey!!,
-            404
-        )
+        assertThrows<NotFound> {
+            postPairingValidation(
+                PairingId(UUID.randomUUID()),
+                pairing.challengeKey,
+                pairing.responseKey!!
+            )
+        }
     }
 
     @Test
@@ -328,15 +338,15 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1),
+                expires = clock.now().plusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing)
-        postPairingValidationAssertFail(pairing.id, "wrong", pairing.responseKey!!, 404)
+        assertThrows<NotFound> { postPairingValidation(pairing.id, "wrong", pairing.responseKey!!) }
     }
 
     @Test
@@ -344,15 +354,15 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1),
+                expires = clock.now().plusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing)
-        postPairingValidationAssertFail(pairing.id, pairing.challengeKey, "wrong", 404)
+        assertThrows<NotFound> { postPairingValidation(pairing.id, pairing.challengeKey, "wrong") }
     }
 
     @Test
@@ -360,20 +370,17 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.PAIRED,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1),
+                expires = clock.now().plusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing)
-        postPairingValidationAssertFail(
-            pairing.id,
-            pairing.challengeKey,
-            pairing.responseKey!!,
-            404
-        )
+        assertThrows<NotFound> {
+            postPairingValidation(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        }
     }
 
     @Test
@@ -381,20 +388,17 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().plusMinutes(1),
+                expires = clock.now().plusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing, attempts = 101)
-        postPairingValidationAssertFail(
-            pairing.id,
-            pairing.challengeKey,
-            pairing.responseKey!!,
-            404
-        )
+        assertThrows<NotFound> {
+            postPairingValidation(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        }
     }
 
     @Test
@@ -402,20 +406,17 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnitId,
+                unitId = testUnit,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = HelsinkiDateTime.now().minusMinutes(1),
+                expires = clock.now().minusMinutes(1),
                 mobileDeviceId = MobileDeviceId(UUID.randomUUID())
             )
         givenPairing(pairing)
-        postPairingValidationAssertFail(
-            pairing.id,
-            pairing.challengeKey,
-            pairing.responseKey!!,
-            404
-        )
+        assertThrows<NotFound> {
+            postPairingValidation(pairing.id, pairing.challengeKey, pairing.responseKey!!)
+        }
     }
 
     @Test
@@ -466,203 +467,65 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun postPairingAssertOk(unitId: DaycareId): Pairing {
-        val (_, res, result) =
-            http
-                .post("/pairings")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingReq.Unit(unitId = unitId)
-                    )
-                )
-                .asUser(user)
-                .responseObject<Pairing>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun postPairingChallengeAssertOk(challengeKey: String): Pairing {
-        val (_, res, result) =
-            http
-                .post("/public/pairings/challenge")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingChallengeReq(challengeKey = challengeKey)
-                    )
-                )
-                .responseObject<Pairing>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun postPairingChallengeAssertFail(challengeKey: String, status: Int) {
-        val (_, res, _) =
-            http
-                .post("/public/pairings/challenge")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingChallengeReq(challengeKey = challengeKey)
-                    )
-                )
-                .response()
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun postPairingResponseAssertOk(
+    private fun postPairing(unitId: DaycareId): Pairing =
+        pairingsController.postPairing(
+            dbInstance(),
+            user,
+            clock,
+            PairingsController.PostPairingReq.Unit(unitId = unitId)
+        )
+    private fun postPairingChallenge(challengeKey: String): Pairing =
+        pairingsController.postPairingChallenge(
+            dbInstance(),
+            clock,
+            PairingsController.PostPairingChallengeReq(challengeKey = challengeKey)
+        )
+    private fun postPairingResponse(
         id: PairingId,
         challengeKey: String,
         responseKey: String
-    ): Pairing {
-        val (_, res, result) =
-            http
-                .post("/pairings/$id/response")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingResponseReq(
-                            challengeKey = challengeKey,
-                            responseKey = responseKey
-                        )
-                    )
-                )
-                .asUser(user)
-                .responseObject<Pairing>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun postPairingResponseAssertFail(
-        id: PairingId,
-        challengeKey: String,
-        responseKey: String,
-        status: Int
-    ) {
-        val (_, res, _) =
-            http
-                .post("/pairings/$id/response")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingResponseReq(
-                            challengeKey = challengeKey,
-                            responseKey = responseKey
-                        )
-                    )
-                )
-                .asUser(user)
-                .response()
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun postPairingValidationAssertOk(
+    ): Pairing =
+        pairingsController.postPairingResponse(
+            dbInstance(),
+            user,
+            clock,
+            id,
+            PairingsController.PostPairingResponseReq(
+                challengeKey = challengeKey,
+                responseKey = responseKey
+            )
+        )
+    private fun postPairingValidation(
         id: PairingId,
         challengeKey: String,
         responseKey: String
-    ): MobileDeviceIdentity {
-        val (_, res, result) =
-            http
-                .post("/system/pairings/$id/validation")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingResponseReq(
-                            challengeKey = challengeKey,
-                            responseKey = responseKey
-                        )
-                    )
-                )
-                .asUser(AuthenticatedUser.SystemInternalUser)
-                .responseObject<MobileDeviceIdentity>(jsonMapper)
+    ): MobileDeviceIdentity =
+        pairingsController.postPairingValidation(
+            dbInstance(),
+            AuthenticatedUser.SystemInternalUser,
+            clock,
+            id,
+            PairingsController.PostPairingValidationReq(
+                challengeKey = challengeKey,
+                responseKey = responseKey
+            )
+        )
+    private fun getPairingStatus(id: PairingId): PairingStatus =
+        pairingsController.getPairingStatus(dbInstance(), clock, id).status
 
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
+    private fun getMobileDevices(): List<MobileDevice> =
+        mobileDevicesController.getMobileDevices(dbInstance(), user, clock, testUnit)
+    private fun putMobileDeviceName(id: MobileDeviceId, name: String) =
+        mobileDevicesController.putMobileDeviceName(
+            dbInstance(),
+            user,
+            clock,
+            id,
+            MobileDevicesController.RenameRequest(name)
+        )
+    private fun deleteMobileDevice(id: MobileDeviceId) =
+        mobileDevicesController.deleteMobileDevice(dbInstance(), user, clock, id)
 
-    private fun postPairingValidationAssertFail(
-        id: PairingId,
-        challengeKey: String,
-        responseKey: String,
-        status: Int
-    ) {
-        val (_, res, _) =
-            http
-                .post("/system/pairings/$id/validation")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PairingsController.PostPairingResponseReq(
-                            challengeKey = challengeKey,
-                            responseKey = responseKey
-                        )
-                    )
-                )
-                .asUser(AuthenticatedUser.SystemInternalUser)
-                .response()
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun getPairingStatusAssertOk(id: PairingId, authenticated: Boolean): PairingStatus {
-        val (_, res, result) =
-            http
-                .get("/public/pairings/$id/status")
-                .let { if (authenticated) it.asUser(user) else it }
-                .responseObject<PairingsController.PairingStatusRes>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get().status
-    }
-
-    private fun getMobileDevicesAssertOk(): List<MobileDevice> {
-        val (_, res, result) =
-            http
-                .get("/mobile-devices?unitId=$testUnitId")
-                .asUser(user)
-                .responseObject<List<MobileDevice>>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDeviceDetails {
-        val (_, res, result) =
-            http
-                .get("/system/mobile-devices/$id")
-                .asUser(AuthenticatedUser.SystemInternalUser)
-                .responseObject<MobileDeviceDetails>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun getMobileDeviceAssertFail(id: MobileDeviceId, status: Int) {
-        val (_, res, _) =
-            http
-                .get("/system/mobile-devices/$id")
-                .asUser(AuthenticatedUser.SystemInternalUser)
-                .response()
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun putMobileDeviceNameAssertOk(id: MobileDeviceId, name: String) {
-        val (_, res, _) =
-            http
-                .put("/mobile-devices/$id/name")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        MobileDevicesController.RenameRequest(name = name)
-                    )
-                )
-                .asUser(user)
-                .response()
-
-        assertEquals(200, res.statusCode)
-    }
-
-    private fun deleteMobileDeviceAssertOk(id: MobileDeviceId) {
-        val (_, res, _) = http.delete("/mobile-devices/$id").asUser(user).response()
-        assertEquals(200, res.statusCode)
-    }
+    private fun getMobileDevice(id: MobileDeviceId): MobileDeviceDetails =
+        systemController.getMobileDevice(dbInstance(), AuthenticatedUser.SystemInternalUser, id)
 }
