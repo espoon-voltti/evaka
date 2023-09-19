@@ -307,7 +307,7 @@ export const jwtPrivateKey = required(
     ifNodeEnv(['local', 'test'], 'config/test-cert/jwt_private_key.pem')
 )
 
-export const serviceName = `evaka-${gatewayRole || 'dev'}-gw`
+export const serviceName = `evaka-${gatewayRole || 'api'}-gw`
 export const jwtKid = process.env.JWT_KID ?? serviceName
 
 export const evakaBaseUrl = required(

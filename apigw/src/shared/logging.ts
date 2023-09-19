@@ -29,7 +29,7 @@ import {
 
 const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   base: {
-    appName: `evaka-${gatewayRole || 'dev'}-gw`,
+    appName: `evaka-${gatewayRole || 'api'}-gw`,
     appBuild: appBuild,
     appCommit: appCommit,
     env: volttiEnv,

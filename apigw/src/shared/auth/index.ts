@@ -16,7 +16,7 @@ import { consumeLogoutToken, sessionCookie, SessionType } from '../session.js'
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
   (gatewayRole === 'internal' && 'ingw') ||
-  (gatewayRole === undefined && 'devgw')
+  (gatewayRole === undefined && 'apigw')
 
 export function requireAuthentication(
   req: Request,
