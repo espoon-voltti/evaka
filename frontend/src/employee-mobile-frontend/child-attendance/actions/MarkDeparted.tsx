@@ -24,6 +24,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
@@ -180,7 +181,9 @@ export default React.memo(function MarkDeparted() {
                       'SICKLEAVE',
                       'UNKNOWN_ABSENCE',
                       'PLANNED_ABSENCE',
-                      'NO_ABSENCE'
+                      ...(featureFlags.experimental?.noAbsenceType
+                        ? (['NO_ABSENCE'] as const)
+                        : ([] as const))
                     ]}
                     selectedAbsenceType={selectedAbsenceType}
                     setSelectedAbsenceType={setSelectedAbsenceType}

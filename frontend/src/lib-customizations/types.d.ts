@@ -251,6 +251,11 @@ interface BaseFeatureFlags {
      * Allows creating and displaying HOJKS documents
      */
     hojks?: boolean
+
+    /**
+     * Enables no absence type in mobile
+     */
+    noAbsenceType?: boolean
   }
 }
 
