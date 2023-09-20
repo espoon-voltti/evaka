@@ -43,6 +43,100 @@ import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
 import { assertRedisConnection, RedisClient } from '../shared/redis-client.js'
 
+export function internalGwRouter(
+  config: Config,
+  redisClient: RedisClient
+): Router {
+  const router = Router()
+  router.all('/system/*', (_, res) => res.sendStatus(404))
+
+  const integrationUsers = {
+    ...(titaniaConfig && {
+      [titaniaConfig.username]: titaniaConfig.password
+    })
+  }
+  router.use('/integration', expressBasicAuth({ users: integrationUsers }))
+  router.all('/integration/*', createProxy())
+
+  router.all('/auth/*', (req: express.Request, res, next) => {
+    if (req.session?.idpProvider === 'evaka') {
+      req.url = req.url.replace('saml', 'evaka')
+    }
+    next()
+  })
+
+  if (config.ad.type === 'mock') {
+    router.use('/auth/saml', createDevAdRouter())
+  } else if (config.ad.type === 'saml') {
+    router.use(
+      '/auth/saml',
+      createSamlRouter({
+        strategyName: 'ead',
+        strategy: createAdSamlStrategy(
+          config.ad,
+          createSamlConfig(
+            config.ad.saml,
+            redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+          )
+        ),
+        sessionType: 'employee'
+      })
+    )
+  }
+
+  if (!config.keycloakEmployee)
+    throw new Error('Missing Keycloak SAML configuration (employee)')
+  const keycloakEmployeeConfig = createSamlConfig(
+    config.keycloakEmployee,
+    redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+  )
+  router.use(
+    '/auth/evaka',
+    createSamlRouter({
+      strategyName: 'evaka',
+      strategy: createKeycloakEmployeeSamlStrategy(keycloakEmployeeConfig),
+      sessionType: 'employee'
+    })
+  )
+
+  if (enableDevApi) {
+    router.use('/dev-api', createProxy({ path: ({ url }) => `/dev-api${url}` }))
+
+    router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
+  }
+
+  router.post('/auth/mobile', express.json(), mobileDeviceSession)
+
+  router.use(checkMobileEmployeeIdToken(redisClient))
+
+  router.get(
+    '/auth/status',
+    refreshMobileSession,
+    csrf,
+    csrfCookie('employee'),
+    authStatus
+  )
+  router.all('/public/*', createProxy())
+  router.get('/version', (_, res) => {
+    res.send({ commitId: appCommit })
+  })
+  router.use(requireAuthentication)
+  router.use(csrf)
+  router.post(
+    '/auth/pin-login',
+    express.json(),
+    pinLoginRequestHandler(redisClient)
+  )
+  router.post(
+    '/auth/pin-logout',
+    express.json(),
+    pinLogoutRequestHandler(redisClient)
+  )
+
+  router.use(createProxy())
+  return router
+}
+
 export default function internalGwApp(
   config: Config,
   redisClient: RedisClient
@@ -87,101 +181,7 @@ export default function internalGwApp(
 
   app.use('/api/csp', csp)
 
-  function internalApiRouter() {
-    const router = Router()
-    router.all('/system/*', (_, res) => res.sendStatus(404))
-
-    const integrationUsers = {
-      ...(titaniaConfig && {
-        [titaniaConfig.username]: titaniaConfig.password
-      })
-    }
-    router.use('/integration', expressBasicAuth({ users: integrationUsers }))
-    router.all('/integration/*', createProxy())
-
-    router.all('/auth/*', (req: express.Request, res, next) => {
-      if (req.session?.idpProvider === 'evaka') {
-        req.url = req.url.replace('saml', 'evaka')
-      }
-      next()
-    })
-
-    if (config.ad.type === 'mock') {
-      router.use('/auth/saml', createDevAdRouter())
-    } else if (config.ad.type === 'saml') {
-      router.use(
-        '/auth/saml',
-        createSamlRouter({
-          strategyName: 'ead',
-          strategy: createAdSamlStrategy(
-            config.ad,
-            createSamlConfig(
-              config.ad.saml,
-              redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-            )
-          ),
-          sessionType: 'employee'
-        })
-      )
-    }
-
-    if (!config.keycloakEmployee)
-      throw new Error('Missing Keycloak SAML configuration (employee)')
-    const keycloakEmployeeConfig = createSamlConfig(
-      config.keycloakEmployee,
-      redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
-    )
-    router.use(
-      '/auth/evaka',
-      createSamlRouter({
-        strategyName: 'evaka',
-        strategy: createKeycloakEmployeeSamlStrategy(keycloakEmployeeConfig),
-        sessionType: 'employee'
-      })
-    )
-
-    if (enableDevApi) {
-      router.use(
-        '/dev-api',
-        createProxy({ path: ({ url }) => `/dev-api${url}` })
-      )
-
-      router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
-    }
-
-    router.post('/auth/mobile', express.json(), mobileDeviceSession)
-
-    router.use(checkMobileEmployeeIdToken(redisClient))
-
-    router.get(
-      '/auth/status',
-      refreshMobileSession,
-      csrf,
-      csrfCookie('employee'),
-      authStatus
-    )
-    router.all('/public/*', createProxy())
-    router.get('/version', (_, res) => {
-      res.send({ commitId: appCommit })
-    })
-    router.use(requireAuthentication)
-    router.use(csrf)
-    router.post(
-      '/auth/pin-login',
-      express.json(),
-      pinLoginRequestHandler(redisClient)
-    )
-    router.post(
-      '/auth/pin-logout',
-      express.json(),
-      pinLogoutRequestHandler(redisClient)
-    )
-
-    router.use(createProxy())
-    return router
-  }
-
-  app.use('/api/internal', internalApiRouter())
+  app.use('/api/internal', internalGwRouter(config, redisClient))
   app.use(errorHandler(true))
   return app
 }

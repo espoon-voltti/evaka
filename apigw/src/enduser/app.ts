@@ -30,6 +30,53 @@ import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml.js'
 import { assertRedisConnection, RedisClient } from '../shared/redis-client.js'
 
+export function enduserGwRouter(
+  config: Config,
+  redisClient: RedisClient
+): Router {
+  const router = Router()
+
+  router.use(publicRoutes)
+  router.use(mapRoutes)
+
+  if (config.sfi.type === 'mock') {
+    router.use('/auth/saml', createDevSfiRouter())
+  } else if (config.sfi.type === 'saml') {
+    const suomifiSamlConfig = createSamlConfig(
+      config.sfi.saml,
+      redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+    )
+    router.use(
+      '/auth/saml',
+      createSamlRouter({
+        strategyName: 'suomifi',
+        strategy: createSuomiFiStrategy(suomifiSamlConfig),
+        sessionType: 'enduser'
+      })
+    )
+  }
+
+  if (!config.keycloakCitizen)
+    throw new Error('Missing Keycloak SAML configuration (citizen)')
+  const keycloakCitizenConfig = createSamlConfig(
+    config.keycloakCitizen,
+    redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
+  )
+  router.use(
+    '/auth/evaka-customer',
+    createSamlRouter({
+      strategyName: 'evaka-customer',
+      strategy: createKeycloakCitizenSamlStrategy(keycloakCitizenConfig),
+      sessionType: 'enduser'
+    })
+  )
+  router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
+  router.use(requireAuthentication)
+  router.use(csrf)
+  router.use(routes)
+  return router
+}
+
 export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
   trustReverseProxy(app)
@@ -69,51 +116,7 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   app.use(refreshLogoutToken())
   setupLoggingMiddleware(app)
 
-  function apiRouter() {
-    const router = Router()
-
-    router.use(publicRoutes)
-    router.use(mapRoutes)
-
-    if (config.sfi.type === 'mock') {
-      router.use('/auth/saml', createDevSfiRouter())
-    } else if (config.sfi.type === 'saml') {
-      const suomifiSamlConfig = createSamlConfig(
-        config.sfi.saml,
-        redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
-      )
-      router.use(
-        '/auth/saml',
-        createSamlRouter({
-          strategyName: 'suomifi',
-          strategy: createSuomiFiStrategy(suomifiSamlConfig),
-          sessionType: 'enduser'
-        })
-      )
-    }
-
-    if (!config.keycloakCitizen)
-      throw new Error('Missing Keycloak SAML configuration (citizen)')
-    const keycloakCitizenConfig = createSamlConfig(
-      config.keycloakCitizen,
-      redisCacheProvider(redisClient, { keyPrefix: 'customer-saml-resp:' })
-    )
-    router.use(
-      '/auth/evaka-customer',
-      createSamlRouter({
-        strategyName: 'evaka-customer',
-        strategy: createKeycloakCitizenSamlStrategy(keycloakCitizenConfig),
-        sessionType: 'enduser'
-      })
-    )
-    router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
-    router.use(requireAuthentication)
-    router.use(csrf)
-    router.use(routes)
-    return router
-  }
-
-  app.use('/api/application', apiRouter())
+  app.use('/api/application', enduserGwRouter(config, redisClient))
   app.use(errorHandler(false))
 
   return app
