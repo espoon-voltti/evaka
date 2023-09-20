@@ -111,7 +111,7 @@ const checkAbsenceTypeSelectionButtonsExistence = async (
   departureTime = '16:00'
 ) => {
   await listPage.selectChild(fixtures.familyWithTwoGuardians.children[0].id)
-  await childPage.selectMarkPresentView()
+  await childPage.markPresentLink.click()
   await childAttendancePage.setTime(arrivalTime)
   await childAttendancePage.selectMarkPresent()
   await childAttendancePage.selectPresentTab()
@@ -223,7 +223,7 @@ describe('Child mobile attendance list', () => {
     await assertAttendanceCounts(3, 0, 0, 0, 3)
     await listPage.selectComingChildren()
     await listPage.selectChild(child1)
-    await childPage.selectMarkPresentView()
+    await childPage.markPresentLink.click()
     await childAttendancePage.setTime('08:00')
     await childAttendancePage.selectMarkPresent()
 
@@ -231,7 +231,7 @@ describe('Child mobile attendance list', () => {
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child1)
-    await childPage.selectMarkDepartedView()
+    await childPage.markDepartedLink.click()
     await childAttendancePage.setTime('14:00')
     await childAttendancePage.selectMarkDepartedButton()
 
@@ -249,10 +249,10 @@ describe('Child mobile attendance list', () => {
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
-    await childPage.selectMarkAbsentView()
+    await childPage.markAbsentLink.click()
     await childAttendancePage.selectMarkAbsentByType('OTHER_ABSENCE')
     await childAttendancePage.selectMarkAbsentButton()
-    await childPage.goBack()
+    await childPage.goBack.click()
     await listPage.selectAbsentChildren()
     await listPage.assertChildExists(child)
   })
@@ -265,13 +265,14 @@ describe('Child mobile attendance list', () => {
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
-    await childPage.selectMarkPresentView()
+    await childPage.markPresentLink.click()
     await childAttendancePage.setTime('08:00')
     await childAttendancePage.selectMarkPresent()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child)
-    await childPage.returnToComing()
+    await childPage.cancelArrivalButton.click()
+    await childPage.modalOkButton.click()
 
     await listPage.selectComingChildren()
     await listPage.assertChildExists(child)
@@ -285,24 +286,25 @@ describe('Child mobile attendance list', () => {
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
-    await childPage.selectMarkPresentView()
+    await childPage.markPresentLink.click()
     await childAttendancePage.setTime('08:30')
     await childAttendancePage.selectMarkPresent()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child)
-    await childPage.selectMarkDepartedView()
+    await childPage.markDepartedLink.click()
     await childAttendancePage.setTime('16:00')
     await childAttendancePage.selectMarkDepartedButton()
 
     await listPage.selectDepartedChildren()
     await listPage.selectChild(child)
-    await childPage.returnToPresent()
-    await childPage.returnToPresent()
+    await childPage.returnToPresentButton.click()
+    await childPage.returnToPresentButton.click()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child)
-    await childPage.returnToComing()
+    await childPage.cancelArrivalButton.click()
+    await childPage.modalOkButton.click()
 
     await listPage.selectComingChildren()
     await listPage.assertChildExists(child)
@@ -316,19 +318,19 @@ describe('Child mobile attendance list', () => {
     await page.goto(mobileSignupUrl)
 
     await listPage.selectChild(child)
-    await childPage.selectMarkPresentView()
+    await childPage.markPresentLink.click()
     await childAttendancePage.setTime('08:30')
     await childAttendancePage.selectMarkPresent()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child)
-    await childPage.selectMarkDepartedView()
+    await childPage.markDepartedLink.click()
     await childAttendancePage.setTime('15:00')
     await childAttendancePage.selectMarkDepartedButton()
 
     await listPage.selectDepartedChildren()
     await listPage.selectChild(child)
-    await childPage.returnToPresent()
+    await childPage.returnToPresentButton.click()
 
     // Cannot overlap previous departure
     await childAttendancePage.setTime('15:00')
@@ -343,7 +345,7 @@ describe('Child mobile attendance list', () => {
       'Saapumisaika08:30,Saapumisaika15:15'
     )
     await childPage.assertDepartureTimeInfoIsShown('Lähtöaika15:00')
-    await childPage.selectMarkDepartedView()
+    await childPage.markDepartedLink.click()
 
     await childAttendancePage.setTime('15:15')
     await childAttendancePage.setTimeInfo.assertTextEquals('Saapui 15:15')
@@ -363,7 +365,7 @@ describe('Child mobile attendance list', () => {
     await assertAttendanceCounts(3, 0, 0, 0, 3)
 
     await listPage.selectChild(child1)
-    await childPage.selectMarkPresentView()
+    await childPage.markPresentLink.click()
     await childAttendancePage.setTime('08:00')
     await childAttendancePage.selectMarkPresent()
 
@@ -486,13 +488,13 @@ describe('Notes on child departure page', () => {
     await page.goto(mobileSignupUrl)
     await listPage.selectComingChildren()
     await listPage.selectChild(child1)
-    await childPage.selectMarkPresentView()
+    await childPage.markPresentLink.click()
     await childAttendancePage.setTime('08:00')
     await childAttendancePage.selectMarkPresent()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child1)
-    await childPage.selectMarkDepartedView()
+    await childPage.markDepartedLink.click()
     await waitUntilEqual(() => childAttendancePage.groupNote.count(), 2)
   })
 })
