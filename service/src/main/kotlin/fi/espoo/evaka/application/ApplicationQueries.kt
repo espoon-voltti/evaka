@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
@@ -958,7 +959,8 @@ fun Database.Transaction.updateForm(
     form: ApplicationForm,
     formType: ApplicationType,
     childRestricted: Boolean,
-    guardianRestricted: Boolean
+    guardianRestricted: Boolean,
+    now: HelsinkiDateTime
 ) {
     check(getApplicationType(id) == formType) { "Invalid form type for the application" }
     val transformedForm =
@@ -970,9 +972,13 @@ fun Database.Transaction.updateForm(
 
     // language=SQL
     val sql =
-        "UPDATE application SET document = :document, form_modified = now() WHERE id = :applicationId;"
+        "UPDATE application SET document = :document, form_modified = :now WHERE id = :applicationId;"
 
-    createUpdate(sql).bind("applicationId", id).bindJson("document", transformedForm).execute()
+    createUpdate(sql)
+        .bind("applicationId", id)
+        .bindJson("document", transformedForm)
+        .bind("now", now)
+        .execute()
 }
 
 fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {

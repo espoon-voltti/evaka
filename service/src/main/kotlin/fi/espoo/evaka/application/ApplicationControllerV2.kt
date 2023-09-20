@@ -188,6 +188,7 @@ class ApplicationControllerV2(
                         tx,
                         user,
                         clock.today(),
+                        clock.now(),
                         id,
                         body.type,
                         guardian,
@@ -440,7 +441,8 @@ class ApplicationControllerV2(
                     applicationId,
                     application,
                     user.evakaUserId,
-                    clock.today()
+                    clock.today(),
+                    clock.now()
                 )
             }
         }

@@ -207,6 +207,7 @@ class ApplicationControllerCitizen(
                                 tx,
                                 user,
                                 clock.today(),
+                                clock.now(),
                                 it,
                                 body.type,
                                 guardian,
@@ -309,7 +310,8 @@ class ApplicationControllerCitizen(
                     user,
                     applicationId,
                     update,
-                    clock.today()
+                    clock.today(),
+                    now = clock.now()
                 )
             }
         }
@@ -339,7 +341,8 @@ class ApplicationControllerCitizen(
                     applicationId,
                     CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
                     clock.today(),
-                    asDraft = true
+                    asDraft = true,
+                    now = clock.now()
                 )
             }
         }
