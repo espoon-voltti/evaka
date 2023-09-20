@@ -32,31 +32,21 @@ redisClient.connect().catch((err) => {
 // Don't prevent the app from exiting if a redis connection is alive.
 redisClient.unref()
 
+const app = express()
+configureApp(redisClient, app)
+
 if (!gatewayRole || gatewayRole === 'enduser') {
-  const app = express()
-
-  configureApp(redisClient, app)
   app.use('/api/application', enduserGwRouter(config, redisClient))
-  app.use(fallbackErrorHandler)
-
-  app.listen(httpPort.enduser, () =>
-    logInfo(
-      `Evaka Application API Gateway listening on port ${httpPort.enduser}`
-    )
-  )
 }
 if (!gatewayRole || gatewayRole === 'internal') {
-  const app = express()
-
-  configureApp(redisClient, app)
   app.use('/api/csp', csp)
   app.use('/api/internal', internalGwRouter(config, redisClient))
-  app.use(fallbackErrorHandler)
-
-  const server = app.listen(httpPort.internal, () =>
-    logInfo(`Evaka Internal API Gateway listening on port ${httpPort.internal}`)
-  )
-
-  server.keepAliveTimeout = 70 * 1000
-  server.headersTimeout = 75 * 1000
 }
+app.use(fallbackErrorHandler)
+const server = app.listen(httpPort, () =>
+  logInfo(
+    `Evaka API Gateway (role ${gatewayRole}) listening on port ${httpPort}`
+  )
+)
+server.keepAliveTimeout = 70 * 1000
+server.headersTimeout = 75 * 1000

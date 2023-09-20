@@ -332,10 +332,8 @@ export const prettyLogs =
 
 export const volttiEnv = process.env.VOLTTI_ENV ?? ifNodeEnv(['local'], 'local')
 
-export const httpPort = {
-  enduser: env('HTTP_PORT', parseInteger) ?? 3010,
-  internal: env('HTTP_PORT', parseInteger) ?? 3020
-}
+export const httpPort = env('HTTP_PORT', parseInteger) ?? 3000
+
 export const sessionTimeoutMinutes =
   env('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
 

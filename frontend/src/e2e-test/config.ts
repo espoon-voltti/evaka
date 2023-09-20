@@ -64,7 +64,7 @@ const config = {
   adminUrl: `${browserUrl}/employee/applications`,
   employeeUrl: `${browserUrl}/employee`,
   employeeLoginUrl: `${browserUrl}/employee/login`,
-  devApiGwUrl: `${baseUrl ?? 'http://localhost:3020'}/api/internal/dev-api`,
+  devApiGwUrl: `${baseUrl ?? 'http://localhost:3000'}/api/internal/dev-api`,
   enduserUrl: browserUrl,
   mobileBaseUrl: browserUrl,
   mobileUrl: `${browserUrl}/employee/mobile`,

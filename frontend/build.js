@@ -239,14 +239,14 @@ function serve(projects) {
   const app = express()
   app.use(
     '/api/internal',
-    proxy(process.env.API_PROXY_URL ?? 'http://localhost:3020', {
+    proxy(process.env.API_PROXY_URL ?? 'http://localhost:3000', {
       parseReqBody: false,
       proxyReqPathResolver: ({ originalUrl }) => originalUrl
     })
   )
   app.use(
     '/api/application',
-    proxy(process.env.API_PROXY_URL ?? 'http://localhost:3010', {
+    proxy(process.env.API_PROXY_URL ?? 'http://localhost:3000', {
       parseReqBody: false,
       proxyReqPathResolver: ({ originalUrl }) => originalUrl
     })
