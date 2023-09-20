@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
@@ -654,7 +655,11 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfChildOfChildDocument() =
+    fun inPlacementUnitOfChildOfChildDocument(
+        editable: Boolean = false,
+        deletable: Boolean = false,
+        publishable: Boolean = false
+    ) =
         rule<ChildDocumentId> { user, now ->
             sql(
                 """
@@ -663,6 +668,9 @@ FROM child_document
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+${if(editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.editable })}::child_document_status[])" else ""}
+${if(deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
+${if(publishable) "AND status <> 'COMPLETED'" else ""}
             """
                     .trimIndent()
             )

@@ -15,7 +15,8 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import {
   ChildDocumentCreateRequest,
-  DocumentContent
+  DocumentContent,
+  DocumentStatus
 } from 'lib-common/generated/api-types/document'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -46,8 +47,9 @@ import {
   getChildDocuments,
   postChildDocument,
   putChildDocumentContent,
-  putChildDocumentPublish,
-  putChildDocumentUnpublish
+  putChildDocumentNextStatus,
+  putChildDocumentPrevStatus,
+  putChildDocumentPublish
 } from '../../api/child/child-documents'
 import { getUnitsRaw } from '../../api/daycare'
 import { createQueryKeys } from '../../query'
@@ -116,9 +118,18 @@ export const publishChildDocumentMutation = mutation({
   ]
 })
 
-export const unpublishChildDocumentMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID }) =>
-    putChildDocumentUnpublish(arg.documentId),
+export const childDocumentNextStatusMutation = mutation({
+  api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
+    putChildDocumentNextStatus(arg.documentId, arg.newStatus),
+  invalidateQueryKeys: ({ childId, documentId }) => [
+    queryKeys.childDocuments(childId),
+    queryKeys.childDocument(documentId)
+  ]
+})
+
+export const childDocumentPrevStatusMutation = mutation({
+  api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
+    putChildDocumentPrevStatus(arg.documentId, arg.newStatus),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)

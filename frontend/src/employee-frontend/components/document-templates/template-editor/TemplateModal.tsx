@@ -15,7 +15,8 @@ import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonEmpty } from 'lib-common/form/validators'
 import {
   DocumentLanguage,
-  DocumentType
+  DocumentType,
+  documentTypes
 } from 'lib-common/generated/api-types/document'
 import { useMutationResult } from 'lib-common/query'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -62,13 +63,11 @@ export default React.memo(function TemplateModal({
 
   const typeOptions = useMemo(
     () =>
-      ['PEDAGOGICAL_REPORT' as const, 'PEDAGOGICAL_ASSESSMENT' as const].map(
-        (option) => ({
-          domValue: option,
-          value: option,
-          label: i18n.documentTemplates.documentTypes[option]
-        })
-      ),
+      documentTypes.map((option) => ({
+        domValue: option,
+        value: option,
+        label: i18n.documentTemplates.documentTypes[option]
+      })),
     [i18n.documentTemplates]
   )
 

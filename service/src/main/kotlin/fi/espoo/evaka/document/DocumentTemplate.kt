@@ -6,6 +6,8 @@ package fi.espoo.evaka.document
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.json.Json
@@ -74,9 +76,12 @@ data class Section(
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 
-enum class DocumentType {
-    PEDAGOGICAL_REPORT,
-    PEDAGOGICAL_ASSESSMENT
+/** statuses is an ordered list which defines a linear state machine */
+@ConstList("documentTypes")
+enum class DocumentType(val statuses: List<DocumentStatus>) {
+    PEDAGOGICAL_REPORT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
+    PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
+    HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED))
 }
 
 enum class DocumentLanguage {

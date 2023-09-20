@@ -88,6 +88,7 @@ export interface ChildBasics {
 export interface ChildDocumentCitizenSummary {
   id: UUID
   publishedAt: HelsinkiDateTime
+  status: DocumentStatus
   templateName: string
   type: DocumentType
   unread: boolean
@@ -109,6 +110,7 @@ export interface ChildDocumentDetails {
   content: DocumentContent
   id: UUID
   publishedAt: HelsinkiDateTime | null
+  status: DocumentStatus
   template: DocumentTemplate
 }
 
@@ -118,6 +120,7 @@ export interface ChildDocumentDetails {
 export interface ChildDocumentSummary {
   id: UUID
   publishedAt: HelsinkiDateTime | null
+  status: DocumentStatus
   templateName: string
   type: DocumentType
 }
@@ -143,6 +146,14 @@ export interface DocumentContent {
 export type DocumentLanguage =
   | 'FI'
   | 'SV'
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.DocumentStatus
+*/
+export type DocumentStatus =
+  | 'DRAFT'
+  | 'PREPARED'
+  | 'COMPLETED'
 
 /**
 * Generated from fi.espoo.evaka.document.DocumentTemplate
@@ -193,9 +204,13 @@ export interface DocumentTemplateSummary {
 /**
 * Generated from fi.espoo.evaka.document.DocumentType
 */
-export type DocumentType =
-  | 'PEDAGOGICAL_REPORT'
-  | 'PEDAGOGICAL_ASSESSMENT'
+export const documentTypes = [
+  'PEDAGOGICAL_REPORT',
+  'PEDAGOGICAL_ASSESSMENT',
+  'HOJKS'
+] as const
+
+export type DocumentType = typeof documentTypes[number]
 
 export namespace Question {
   /**
@@ -264,4 +279,11 @@ export interface Section {
   infoText: string
   label: string
   questions: Question[]
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.StatusChangeRequest
+*/
+export interface StatusChangeRequest {
+  newStatus: DocumentStatus
 }

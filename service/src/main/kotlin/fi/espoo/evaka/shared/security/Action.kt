@@ -2069,22 +2069,21 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfChildDocument(),
+                .inPlacementUnitOfChildOfChildDocument(editable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument()
+                .inPlacementGroupOfChildOfChildDocument(editable = true)
         ),
         PUBLISH(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfChildDocument(),
+                .inPlacementUnitOfChildOfChildDocument(publishable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument()
+                .inPlacementGroupOfChildOfChildDocument(publishable = true)
         ),
-        UNPUBLISH(HasGlobalRole(ADMIN)),
-        DELETE(
+        NEXT_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
@@ -2092,6 +2091,16 @@ sealed interface Action {
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfChildDocument()
+        ),
+        PREV_STATUS(HasGlobalRole(ADMIN)),
+        DELETE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(deletable = true),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChildOfChildDocument(deletable = true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

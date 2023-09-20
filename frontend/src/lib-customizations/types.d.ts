@@ -246,6 +246,11 @@ interface BaseFeatureFlags {
      * Allows marking fee decision drafts as ignored
      */
     feeDecisionIgnoredStatus?: boolean
+
+    /**
+     * Allows creating and displaying HOJKS documents
+     */
+    hojks?: boolean
   }
 }
 

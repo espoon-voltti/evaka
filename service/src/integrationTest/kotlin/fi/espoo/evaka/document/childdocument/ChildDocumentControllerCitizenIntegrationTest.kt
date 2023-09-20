@@ -12,9 +12,11 @@ import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
@@ -24,6 +26,7 @@ import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestChildDocument
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDocumentTemplate
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -34,6 +37,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -45,10 +49,12 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildDocumentControllerCitizenIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: ChildDocumentControllerCitizen
+    @Autowired lateinit var employeeController: ChildDocumentController
 
     val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
     val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+    val employeeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
     val templateId = DocumentTemplateId(UUID.randomUUID())
 
@@ -77,6 +83,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
+            tx.insertTestEmployee(testDecisionMaker_1)
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(testDaycare.copy(language = Language.sv))
             tx.insertTestPerson(testChild_1)
@@ -101,9 +108,11 @@ class ChildDocumentControllerCitizenIntegrationTest :
             tx.insertTestChildDocument(
                 DevChildDocument(
                     id = documentId,
+                    status = DocumentStatus.DRAFT,
                     childId = testChild_1.id,
                     templateId = templateId,
                     content = documentContent,
+                    publishedContent = null,
                     publishedAt = null
                 )
             )
@@ -112,15 +121,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     @Test
     fun `Unpublished document is not shown`() {
-        assertEquals(
-            mapOf(testChild_1.id to 0),
-            controller.getUnreadCount(dbInstance(), citizen, clock)
-        )
-        assertEquals(
-            emptyList(),
-            controller.getDocuments(dbInstance(), citizen, clock, testChild_1.id)
-        )
-        assertThrows<Forbidden> { controller.getDocument(dbInstance(), citizen, clock, documentId) }
+        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
+        assertEquals(emptyList(), getDocumentsByChild(testChild_1.id))
+        assertThrows<Forbidden> { getDocument(documentId) }
     }
 
     @Test
@@ -128,10 +131,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         db.transaction { tx -> tx.publishChildDocument(documentId, clock.now()) }
         val template = db.read { it.getTemplate(templateId)!! }
 
-        assertEquals(
-            mapOf(testChild_1.id to 1),
-            controller.getUnreadCount(dbInstance(), citizen, clock)
-        )
+        assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
         assertEquals(
             listOf(
                 ChildDocumentCitizenSummary(
@@ -139,14 +139,16 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     type = DocumentType.PEDAGOGICAL_ASSESSMENT,
                     publishedAt = clock.now(),
                     templateName = "Pedagoginen arvio 2023",
+                    status = DocumentStatus.DRAFT,
                     unread = true
                 )
             ),
-            controller.getDocuments(dbInstance(), citizen, clock, testChild_1.id)
+            getDocumentsByChild(testChild_1.id)
         )
         assertEquals(
             ChildDocumentDetails(
                 id = documentId,
+                status = DocumentStatus.DRAFT,
                 publishedAt = clock.now(),
                 content = documentContent,
                 child =
@@ -158,16 +160,48 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     ),
                 template = template
             ),
-            controller.getDocument(dbInstance(), citizen, clock, documentId)
+            getDocument(documentId)
         )
 
-        controller.putDocumentRead(dbInstance(), citizen, clock, documentId)
-        assertEquals(
-            mapOf(testChild_1.id to 0),
-            controller.getUnreadCount(dbInstance(), citizen, clock)
-        )
-        assertFalse(
-            controller.getDocuments(dbInstance(), citizen, clock, testChild_1.id).first().unread
-        )
+        putDocumentRead(documentId)
+        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
+        assertFalse(getDocumentsByChild(testChild_1.id).first().unread)
     }
+
+    @Test
+    fun `Updates after publish are shown only after republish`() {
+        publishDocument(documentId)
+
+        assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
+        assertEquals(documentContent, getDocument(documentId).content)
+        putDocumentRead(documentId)
+        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
+
+        val updatedContent =
+            DocumentContent(
+                answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "updated"))
+            )
+        updateDocumentContent(documentId, updatedContent)
+
+        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
+        assertEquals(documentContent, getDocument(documentId).content)
+
+        publishDocument(documentId)
+
+        assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
+        assertEquals(updatedContent, getDocument(documentId).content)
+    }
+
+    private fun getUnreadCount() = controller.getUnreadCount(dbInstance(), citizen, clock)
+    private fun getDocumentsByChild(childId: ChildId) =
+        controller.getDocuments(dbInstance(), citizen, clock, childId)
+    private fun getDocument(id: ChildDocumentId) =
+        controller.getDocument(dbInstance(), citizen, clock, id)
+    private fun putDocumentRead(id: ChildDocumentId) =
+        controller.putDocumentRead(dbInstance(), citizen, clock, id)
+
+    private fun publishDocument(id: ChildDocumentId) =
+        employeeController.publishDocument(dbInstance(), employeeUser, clock, id)
+    private fun updateDocumentContent(id: ChildDocumentId, content: DocumentContent) =
+        employeeController.updateDocumentContent(dbInstance(), employeeUser, clock, id, content)
 }

@@ -350,3 +350,4 @@ V350__create_table_child_document_read.sql
 V351__preshool_and_club_term_breaks.sql
 V352__fee_alteration_attachment.sql
 V353__koski_only_new_assistance_model.sql
+V354__child_document_extensions.sql

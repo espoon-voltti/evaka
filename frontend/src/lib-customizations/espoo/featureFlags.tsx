@@ -41,7 +41,8 @@ const features: Features = {
       serviceWorkerMessaging: true,
       childDocuments: true,
       assistanceNeedPreschoolDecisions: true,
-      feeDecisionIgnoredStatus: true
+      feeDecisionIgnoredStatus: true,
+      hojks: true
     }
   },
   staging: {
@@ -71,7 +72,8 @@ const features: Features = {
       serviceWorkerMessaging: true,
       childDocuments: true,
       assistanceNeedPreschoolDecisions: true,
-      feeDecisionIgnoredStatus: true
+      feeDecisionIgnoredStatus: true,
+      hojks: true
     }
   },
   prod: {
@@ -100,7 +102,8 @@ const features: Features = {
       fosterParents: true,
       serviceWorkerMessaging: true,
       childDocuments: false,
-      feeDecisionIgnoredStatus: true
+      feeDecisionIgnoredStatus: true,
+      hojks: false
     }
   }
 }

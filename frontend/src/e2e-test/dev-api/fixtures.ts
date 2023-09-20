@@ -24,6 +24,10 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import {
+  DocumentContent,
+  DocumentStatus
+} from 'lib-common/generated/api-types/document'
+import {
   FixedPeriodQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
@@ -2136,6 +2140,7 @@ export class Fixture {
       id: uuidv4(),
       childId: 'not_set',
       templateId: 'not_set',
+      status: 'DRAFT',
       publishedAt: null,
       content: {
         answers: [
@@ -2145,7 +2150,8 @@ export class Fixture {
             answer: 'test'
           }
         ]
-      }
+      },
+      publishedContent: null
     })
   }
 }
@@ -2889,8 +2895,18 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
     return this
   }
 
+  withStatus(status: DocumentStatus) {
+    this.data.status = status
+    return this
+  }
+
   withPublishedAt(publishedAt: HelsinkiDateTime | null) {
     this.data.publishedAt = publishedAt
+    return this
+  }
+
+  withPublishedContent(publishedContent: DocumentContent | null) {
+    this.data.publishedContent = publishedContent
     return this
   }
 

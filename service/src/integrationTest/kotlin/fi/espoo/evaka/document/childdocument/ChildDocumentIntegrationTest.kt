@@ -9,9 +9,11 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -26,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -35,6 +38,8 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -45,11 +50,12 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     lateinit var employeeUser: AuthenticatedUser
 
-    val now = MockEvakaClock(2022, 1, 1, 15, 0)
+    final val now = MockEvakaClock(2022, 1, 1, 15, 0)
 
-    val templateId = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdPed = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdHojks = DocumentTemplateId(UUID.randomUUID())
 
-    val templateContent =
+    final val templateContent =
         DocumentTemplateContent(
             sections =
                 listOf(
@@ -85,9 +91,20 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 )
         )
 
-    val devTemplate =
+    val devTemplatePed =
         DevDocumentTemplate(
-            id = templateId,
+            id = templateIdPed,
+            type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+            name = "Pedagoginen arvio 2023",
+            validity = DateRange(now.today(), now.today()),
+            content = templateContent
+        )
+
+    val devTemplateHojks =
+        DevDocumentTemplate(
+            id = templateIdHojks,
+            type = DocumentType.HOJKS,
+            name = "HOJKS 2023",
             validity = DateRange(now.today(), now.today()),
             content = templateContent
         )
@@ -109,7 +126,8 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 startDate = now.today(),
                 endDate = now.today().plusDays(5)
             )
-            tx.insertTestDocumentTemplate(devTemplate)
+            tx.insertTestDocumentTemplate(devTemplatePed)
+            tx.insertTestDocumentTemplate(devTemplateHojks)
         }
     }
 
@@ -120,7 +138,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateId)
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdPed)
             )
 
         val document = controller.getDocument(dbInstance(), employeeUser, now, documentId)
@@ -129,6 +147,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 data =
                     ChildDocumentDetails(
                         id = documentId,
+                        status = DocumentStatus.DRAFT,
                         publishedAt = null,
                         content = DocumentContent(answers = emptyList()),
                         child =
@@ -140,14 +159,14 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                             ),
                         template =
                             DocumentTemplate(
-                                id = templateId,
-                                name = devTemplate.name,
-                                type = devTemplate.type,
-                                language = devTemplate.language,
-                                confidential = devTemplate.confidential,
-                                legalBasis = devTemplate.legalBasis,
-                                validity = devTemplate.validity,
-                                published = devTemplate.published,
+                                id = templateIdPed,
+                                name = devTemplatePed.name,
+                                type = devTemplatePed.type,
+                                language = devTemplatePed.language,
+                                confidential = devTemplatePed.confidential,
+                                legalBasis = devTemplatePed.legalBasis,
+                                validity = devTemplatePed.validity,
+                                published = devTemplatePed.published,
                                 content = templateContent
                             )
                     ),
@@ -157,7 +176,8 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         Action.ChildDocument.PUBLISH,
                         Action.ChildDocument.READ,
                         Action.ChildDocument.UPDATE,
-                        Action.ChildDocument.UNPUBLISH
+                        Action.ChildDocument.NEXT_STATUS,
+                        Action.ChildDocument.PREV_STATUS
                     )
             ),
             document
@@ -168,8 +188,9 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             listOf(
                 ChildDocumentSummary(
                     id = documentId,
-                    type = devTemplate.type,
-                    templateName = devTemplate.name,
+                    status = DocumentStatus.DRAFT,
+                    type = devTemplatePed.type,
+                    templateName = devTemplatePed.name,
                     publishedAt = null
                 )
             ),
@@ -221,22 +242,17 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `publishing and unpublishing document`() {
+    fun `publishing document`() {
         val documentId =
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         controller.publishDocument(dbInstance(), employeeUser, now, documentId)
         assertEquals(
             now.now(),
-            controller.getDocument(dbInstance(), employeeUser, now, documentId).data.publishedAt
-        )
-        controller.unpublishDocument(dbInstance(), employeeUser, now, documentId)
-        assertEquals(
-            null,
             controller.getDocument(dbInstance(), employeeUser, now, documentId).data.publishedAt
         )
     }
@@ -248,26 +264,11 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         controller.deleteDraftDocument(dbInstance(), employeeUser, now, documentId)
         assertThrows<NotFound> {
             controller.getDocument(dbInstance(), employeeUser, now, documentId)
-        }
-    }
-
-    @Test
-    fun `deleting published document fails`() {
-        val documentId =
-            controller.createDocument(
-                dbInstance(),
-                employeeUser,
-                now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
-            )
-        controller.publishDocument(dbInstance(), employeeUser, now, documentId)
-        assertThrows<BadRequest> {
-            controller.deleteDraftDocument(dbInstance(), employeeUser, now, documentId)
         }
     }
 
@@ -278,7 +279,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
             DocumentContent(
@@ -293,7 +294,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         AnsweredQuestion.RadioButtonGroupAnswer("q4", "b")
                     )
             )
-        controller.updateDraftDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+        controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         assertEquals(
             content,
             controller.getDocument(dbInstance(), employeeUser, now, documentId).data.content
@@ -307,10 +308,10 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
-        controller.updateDraftDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+        controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         assertEquals(
             content,
             controller.getDocument(dbInstance(), employeeUser, now, documentId).data.content
@@ -318,24 +319,24 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `updating content of published document fails`() {
+    fun `updating content of completed document fails`() {
         val documentId =
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
-        controller.publishDocument(dbInstance(), employeeUser, now, documentId)
+        controller.nextStatus(
+            dbInstance(),
+            employeeUser,
+            now,
+            documentId,
+            ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED)
+        )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
         assertThrows<BadRequest> {
-            controller.updateDraftDocumentContent(
-                dbInstance(),
-                employeeUser,
-                now,
-                documentId,
-                content
-            )
+            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         }
     }
 
@@ -346,18 +347,12 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q999", "hello")))
         assertThrows<BadRequest> {
-            controller.updateDraftDocumentContent(
-                dbInstance(),
-                employeeUser,
-                now,
-                documentId,
-                content
-            )
+            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         }
     }
 
@@ -368,17 +363,11 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.CheckboxAnswer("q1", true)))
         assertThrows<BadRequest> {
-            controller.updateDraftDocumentContent(
-                dbInstance(),
-                employeeUser,
-                now,
-                documentId,
-                content
-            )
+            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         }
     }
 
@@ -389,7 +378,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
             DocumentContent(
@@ -402,13 +391,7 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                     )
             )
         assertThrows<BadRequest> {
-            controller.updateDraftDocumentContent(
-                dbInstance(),
-                employeeUser,
-                now,
-                documentId,
-                content
-            )
+            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
         }
     }
 
@@ -419,18 +402,83 @@ class ChildDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 dbInstance(),
                 employeeUser,
                 now,
-                ChildDocumentCreateRequest(testChild_1.id, templateId)
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
             DocumentContent(answers = listOf(AnsweredQuestion.RadioButtonGroupAnswer("q3", "d")))
         assertThrows<BadRequest> {
-            controller.updateDraftDocumentContent(
+            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+        }
+    }
+
+    @Test
+    fun `hojks status flow`() {
+        val documentId =
+            controller.createDocument(
                 dbInstance(),
                 employeeUser,
                 now,
-                documentId,
-                content
+                ChildDocumentCreateRequest(testChild_1.id, templateIdHojks)
             )
-        }
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+
+        // cannot skip states
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.COMPLETED) }
+
+        nextState(documentId, DocumentStatus.PREPARED)
+        assertEquals(DocumentStatus.PREPARED, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+        nextState(documentId, DocumentStatus.COMPLETED)
+        assertEquals(DocumentStatus.COMPLETED, getDocument(documentId).status)
+        prevState(documentId, DocumentStatus.PREPARED)
+        assertEquals(DocumentStatus.PREPARED, getDocument(documentId).status)
+        prevState(documentId, DocumentStatus.DRAFT)
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
     }
+
+    @Test
+    fun `pedagogical doc status flow`() {
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                now,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
+            )
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.PREPARED) }
+
+        nextState(documentId, DocumentStatus.COMPLETED)
+        assertEquals(DocumentStatus.COMPLETED, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+
+        assertThrows<Conflict> { prevState(documentId, DocumentStatus.PREPARED) }
+
+        prevState(documentId, DocumentStatus.DRAFT)
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+    }
+
+    private fun getDocument(id: ChildDocumentId) =
+        controller.getDocument(dbInstance(), employeeUser, now, id).data
+    private fun nextState(id: ChildDocumentId, status: DocumentStatus) =
+        controller.nextStatus(
+            dbInstance(),
+            employeeUser,
+            now,
+            id,
+            ChildDocumentController.StatusChangeRequest(status)
+        )
+    private fun prevState(id: ChildDocumentId, status: DocumentStatus) =
+        controller.prevStatus(
+            dbInstance(),
+            employeeUser,
+            now,
+            id,
+            ChildDocumentController.StatusChangeRequest(status)
+        )
 }

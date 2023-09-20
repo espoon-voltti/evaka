@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const components = {
+import { Translations } from 'lib-components/i18n'
+
+const components: Translations = {
   asyncButton: {
     inProgress: 'Loading',
     failure: 'Failed to load',
@@ -10,7 +12,9 @@ const components = {
   },
   common: {
     add: 'Add',
+    cancel: 'Cancel',
     close: 'Close',
+    confirm: 'Confirm',
     no: 'No',
     remove: 'Remove',
     yes: 'Yes'
@@ -34,7 +38,12 @@ const components = {
       multiline: 'Allow multiline answer',
       withText: 'With extra info'
     },
-    noSelection: 'No selection'
+    noSelection: 'No selection',
+    documentStates: {
+      DRAFT: 'Draft',
+      PREPARED: 'Ready',
+      COMPLETED: 'Completed'
+    }
   },
   loginErrorModal: {
     header: 'Login failed',

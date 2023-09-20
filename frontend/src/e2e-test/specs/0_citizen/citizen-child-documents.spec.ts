@@ -57,6 +57,15 @@ beforeEach(async () => {
       .withTemplate(templateId)
       .withChild(child.id)
       .withPublishedAt(mockedNow)
+      .withPublishedContent({
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      })
       .save()
   ).data.id
 

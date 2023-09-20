@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const components = {
+import { Translations } from 'lib-components/i18n'
+
+const components: Translations = {
   asyncButton: {
     inProgress: 'Laddar',
     failure: 'Något gick fel',
@@ -10,7 +12,9 @@ const components = {
   },
   common: {
     add: 'Lägg till',
+    cancel: 'Gå tillbaka',
     close: 'Stäng',
+    confirm: 'Bekräfta',
     no: 'Nej',
     remove: 'Ta bort',
     yes: 'Ja'
@@ -34,7 +38,12 @@ const components = {
       multiline: 'Tillåt flerradssvar',
       withText: 'Med extra info'
     },
-    noSelection: 'inget val'
+    noSelection: 'inget val',
+    documentStates: {
+      DRAFT: 'Utkast',
+      PREPARED: 'Behandlad',
+      COMPLETED: 'Färdig'
+    }
   },
   loginErrorModal: {
     header: 'Inloggningen misslyckades',
