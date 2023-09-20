@@ -48,6 +48,13 @@ export function internalGwRouter(
   redisClient: RedisClient
 ): Router {
   const router = Router()
+
+  router.use(session('employee', redisClient))
+  router.use(touchSessionMaxAge)
+  router.use(passport.session())
+  router.use(cookieParser(cookieSecret))
+  router.use(refreshLogoutToken())
+
   router.use(
     cacheControl((req) =>
       req.path.startsWith('/child-images/') ? 'allow-cache' : 'forbid-cache'
@@ -167,13 +174,8 @@ export default function internalGwApp(
       })
   })
   app.use(tracing)
-  app.use(session('employee', redisClient))
-  app.use(touchSessionMaxAge)
-  app.use(cookieParser(cookieSecret))
-  app.use(passport.session())
   passport.serializeUser<Express.User>((user, done) => done(null, user))
   passport.deserializeUser<Express.User>((user, done) => done(null, user))
-  app.use(refreshLogoutToken())
   setupLoggingMiddleware(app)
 
   app.use('/api/csp', csp)

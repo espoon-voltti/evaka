@@ -36,6 +36,12 @@ export function enduserGwRouter(
 ): Router {
   const router = Router()
 
+  router.use(session('enduser', redisClient))
+  router.use(touchSessionMaxAge)
+  router.use(passport.session())
+  router.use(cookieParser())
+  router.use(refreshLogoutToken())
+
   router.use(
     cacheControl((req) =>
       req.path.startsWith('/citizen/child-images/')
@@ -106,13 +112,8 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
       })
   })
   app.use(tracing)
-  app.use(cookieParser())
-  app.use(session('enduser', redisClient))
-  app.use(touchSessionMaxAge)
-  app.use(passport.session())
   passport.serializeUser<Express.User>((user, done) => done(null, user))
   passport.deserializeUser<Express.User>((user, done) => done(null, user))
-  app.use(refreshLogoutToken())
   setupLoggingMiddleware(app)
 
   app.use('/api/application', enduserGwRouter(config, redisClient))
