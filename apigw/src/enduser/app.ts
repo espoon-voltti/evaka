@@ -36,6 +36,14 @@ export function enduserGwRouter(
 ): Router {
   const router = Router()
 
+  router.use(
+    cacheControl((req) =>
+      req.path.startsWith('/citizen/child-images/')
+        ? 'allow-cache'
+        : 'forbid-cache'
+    )
+  )
+
   router.use(publicRoutes)
   router.use(mapRoutes)
 
@@ -81,14 +89,6 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
   trustReverseProxy(app)
   app.set('etag', false)
-
-  app.use(
-    cacheControl((req) =>
-      req.path.startsWith('/api/application/citizen/child-images/')
-        ? 'allow-cache'
-        : 'forbid-cache'
-    )
-  )
 
   app.use(
     helmet({

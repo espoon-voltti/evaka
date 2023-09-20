@@ -48,6 +48,12 @@ export function internalGwRouter(
   redisClient: RedisClient
 ): Router {
   const router = Router()
+  router.use(
+    cacheControl((req) =>
+      req.path.startsWith('/child-images/') ? 'allow-cache' : 'forbid-cache'
+    )
+  )
+
   router.all('/system/*', (_, res) => res.sendStatus(404))
 
   const integrationUsers = {
@@ -144,14 +150,6 @@ export default function internalGwApp(
   const app = express()
   trustReverseProxy(app)
   app.set('etag', false)
-
-  app.use(
-    cacheControl((req) =>
-      req.path.startsWith('/api/internal/child-images/')
-        ? 'allow-cache'
-        : 'forbid-cache'
-    )
-  )
 
   app.use(
     helmet({
