@@ -110,7 +110,9 @@ const DateRangePicker = React.memo(function DateRangePicker({
   }
 
   const handleChange = useCallback(
-    (startStr: string, endStr: string) => {
+    ([startStr, endStr]: [string, string]) => {
+      setInternalStart(startStr)
+      setInternalEnd(endStr)
       const newStart = LocalDate.parseFiOrNull(startStr)
       const newEnd = LocalDate.parseFiOrNull(endStr)
       const isValid = validate(newStart, newEnd)
@@ -125,28 +127,10 @@ const DateRangePicker = React.memo(function DateRangePicker({
     [end, onChange, start, validate]
   )
 
-  const handleChangeStart = useCallback(
-    (newStart: string) => {
-      setInternalStart(newStart)
-      handleChange(newStart, internalEnd)
-    },
-    [handleChange, internalEnd]
-  )
-
-  const handleChangeEnd = useCallback(
-    (newEnd: string) => {
-      setInternalEnd(newEnd)
-      handleChange(internalStart, newEnd)
-    },
-    [handleChange, internalStart]
-  )
-
   return (
     <DateRangePickerLowLevel
-      start={internalStart}
-      end={internalEnd}
-      onChangeStart={handleChangeStart}
-      onChangeEnd={handleChangeEnd}
+      value={[internalStart, internalEnd]}
+      onChange={handleChange}
       startInfo={internalStartError ?? datePickerProps.startInfo}
       endInfo={internalEndError ?? datePickerProps.endInfo}
       minDate={minDate}
@@ -169,14 +153,7 @@ const DateInputSpacer = styled.div`
 export interface DateRangePickerFProps
   extends Omit<
     DateRangePickerLowLevelProps,
-    | 'start'
-    | 'end'
-    | 'onChangeStart'
-    | 'onChangeEnd'
-    | 'startInfo'
-    | 'endInfo'
-    | 'minDate'
-    | 'maxDate'
+    'value' | 'onChange' | 'startInfo' | 'endInfo' | 'minDate' | 'maxDate'
   > {
   bind: BoundForm<LocalDateRangeField>
   info?: InputInfo | undefined
@@ -188,14 +165,25 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
   ...props
 }: DateRangePickerFProps) {
   const { start, end, config } = useFormFields(bind)
+  const { update } = bind
+
+  const handleChange = useCallback(
+    ([newStart, newEnd]: [string, string]) => {
+      update((prev) => ({
+        ...prev,
+        start: newStart,
+        end: newEnd
+      }))
+    },
+    [update]
+  )
   const info = infoOverride ?? bind.inputInfo()
+
   return (
     <div>
       <DateRangePickerLowLevel
-        start={start.state}
-        end={end.state}
-        onChangeStart={start.set}
-        onChangeEnd={end.set}
+        value={[start.state, end.state]}
+        onChange={handleChange}
         startInfo={start.inputInfo()}
         endInfo={end.inputInfo()}
         minDate={config.state?.minDate}
