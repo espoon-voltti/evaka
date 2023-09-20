@@ -353,3 +353,4 @@ V353__koski_only_new_assistance_model.sql
 V354__child_document_extensions.sql
 V355__mobile_device_tracking.sql
 V356__application_document_refactoring.sql
+V357__create_application_document_index.sql
