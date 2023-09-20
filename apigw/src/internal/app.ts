@@ -170,7 +170,6 @@ export default function internalGwApp(
   app.use(session('employee', redisClient))
   app.use(touchSessionMaxAge)
   app.use(cookieParser(cookieSecret))
-  app.use(passport.initialize())
   app.use(passport.session())
   passport.serializeUser<Express.User>((user, done) => done(null, user))
   passport.deserializeUser<Express.User>((user, done) => done(null, user))

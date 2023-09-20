@@ -109,7 +109,6 @@ export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   app.use(cookieParser())
   app.use(session('enduser', redisClient))
   app.use(touchSessionMaxAge)
-  app.use(passport.initialize())
   app.use(passport.session())
   passport.serializeUser<Express.User>((user, done) => done(null, user))
   passport.deserializeUser<Express.User>((user, done) => done(null, user))
