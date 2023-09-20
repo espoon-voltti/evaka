@@ -10,34 +10,22 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../common/i18n'
 
-const allSelectableAbsenceTypes: AbsenceType[] = [
-  'OTHER_ABSENCE',
-  'SICKLEAVE',
-  'UNKNOWN_ABSENCE',
-  'PLANNED_ABSENCE'
-]
-const selectableAbsenceTypesWithoutUnknown = allSelectableAbsenceTypes.filter(
-  (type) => type !== 'UNKNOWN_ABSENCE'
-)
+export type AbsenceTypeWithNoAbsence = AbsenceType | 'NO_ABSENCE'
 
 interface Props {
-  selectedAbsenceType: AbsenceType | undefined
+  absenceTypes: AbsenceTypeWithNoAbsence[]
+  selectedAbsenceType: AbsenceTypeWithNoAbsence | undefined
   setSelectedAbsenceType: React.Dispatch<
-    React.SetStateAction<AbsenceType | undefined>
+    React.SetStateAction<AbsenceTypeWithNoAbsence | undefined>
   >
-  noUnknownAbsences?: boolean
 }
 
 export default function AbsenceSelector({
+  absenceTypes,
   selectedAbsenceType,
-  setSelectedAbsenceType,
-  noUnknownAbsences = false
+  setSelectedAbsenceType
 }: Props) {
   const { i18n } = useTranslation()
-
-  const absenceTypes = noUnknownAbsences
-    ? selectableAbsenceTypesWithoutUnknown
-    : allSelectableAbsenceTypes
 
   return (
     <Fragment>

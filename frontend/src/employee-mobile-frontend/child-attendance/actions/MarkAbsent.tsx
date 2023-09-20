@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -32,7 +31,7 @@ import DailyNote from '../DailyNote'
 import { childrenQuery, createFullDayAbsenceMutation } from '../queries'
 import { useChild } from '../utils'
 
-import AbsenceSelector from './AbsenceSelector'
+import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 
 export default React.memo(function MarkAbsent() {
   const navigate = useNavigate()
@@ -46,7 +45,7 @@ export default React.memo(function MarkAbsent() {
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
+    AbsenceTypeWithNoAbsence | undefined
   >(undefined)
 
   const { mutateAsync: createAbsence } = useMutationResult(
@@ -75,6 +74,12 @@ export default React.memo(function MarkAbsent() {
               <Gap size="m" />
               <FixedSpaceColumn spacing="s">
                 <AbsenceSelector
+                  absenceTypes={[
+                    'OTHER_ABSENCE',
+                    'SICKLEAVE',
+                    'UNKNOWN_ABSENCE',
+                    'PLANNED_ABSENCE'
+                  ]}
                   selectedAbsenceType={selectedAbsenceType}
                   setSelectedAbsenceType={setSelectedAbsenceType}
                 />
@@ -87,7 +92,8 @@ export default React.memo(function MarkAbsent() {
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
-                {selectedAbsenceType ? (
+                {selectedAbsenceType !== undefined &&
+                selectedAbsenceType !== 'NO_ABSENCE' ? (
                   <AsyncButton
                     primary
                     text={i18n.common.confirm}

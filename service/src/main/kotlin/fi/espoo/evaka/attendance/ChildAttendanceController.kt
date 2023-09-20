@@ -362,12 +362,7 @@ class ChildAttendanceController(
                         body.departed <= it.time
                     }
                 tx.deleteAbsencesByDate(childId, today)
-                if (absentFrom.isNotEmpty()) {
-                    if (body.absenceType == null) {
-                        throw BadRequest(
-                            "Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}."
-                        )
-                    }
+                if (absentFrom.isNotEmpty() && body.absenceType != null) {
                     val absences =
                         absentFrom.map { (careType, _) ->
                             AbsenceUpsert(childId, today, careType, body.absenceType)
