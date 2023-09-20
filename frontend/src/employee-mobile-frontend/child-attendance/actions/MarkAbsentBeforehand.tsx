@@ -44,7 +44,7 @@ import {
 import { childrenQuery } from '../queries'
 import { useChild } from '../utils'
 
-import AbsenceSelector from './AbsenceSelector'
+import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 
 export default React.memo(function MarkAbsentBeforehand() {
   const navigate = useNavigate()
@@ -57,7 +57,7 @@ export default React.memo(function MarkAbsentBeforehand() {
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
+    AbsenceTypeWithNoAbsence | undefined
   >(undefined)
   const [uiMode, setUiMode] = useState<
     'default' | 'confirmDelete' | 'confirmExit'
@@ -94,7 +94,10 @@ export default React.memo(function MarkAbsentBeforehand() {
   )
 
   const createAbsence = useCallback(async () => {
-    if (selectedAbsenceType) {
+    if (
+      selectedAbsenceType !== undefined &&
+      selectedAbsenceType !== 'NO_ABSENCE'
+    ) {
       await postAbsence(selectedAbsenceType)
       navigate(-1)
     }
@@ -190,9 +193,13 @@ export default React.memo(function MarkAbsentBeforehand() {
                 <FixedSpaceColumn spacing="s">
                   <Label>{i18n.absences.reason}</Label>
                   <AbsenceSelector
+                    absenceTypes={[
+                      'OTHER_ABSENCE',
+                      'SICKLEAVE',
+                      'PLANNED_ABSENCE'
+                    ]}
                     selectedAbsenceType={selectedAbsenceType}
                     setSelectedAbsenceType={setSelectedAbsenceType}
-                    noUnknownAbsences
                   />
                 </FixedSpaceColumn>
               </AbsenceWrapper>
@@ -200,7 +207,9 @@ export default React.memo(function MarkAbsentBeforehand() {
               <Actions>
                 <FixedSpaceRow fullWidth>
                   <Button text={i18n.common.cancel} onClick={goBack} />
-                  {selectedAbsenceType && canSave ? (
+                  {selectedAbsenceType !== undefined &&
+                  selectedAbsenceType !== 'NO_ABSENCE' &&
+                  canSave ? (
                     <AsyncButton
                       primary
                       text={i18n.common.confirm}

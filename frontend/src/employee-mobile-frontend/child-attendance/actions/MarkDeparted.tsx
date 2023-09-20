@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
@@ -25,6 +24,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
@@ -47,7 +47,7 @@ import {
 } from '../queries'
 import { childAttendanceStatus, useChild } from '../utils'
 
-import AbsenceSelector from './AbsenceSelector'
+import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 import { AbsentFrom } from './AbsentFrom'
 
 function validateTime(
@@ -98,7 +98,7 @@ export default React.memo(function MarkDeparted() {
   )
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
+    AbsenceTypeWithNoAbsence | undefined
   >(undefined)
 
   const groupNotes = useQueryResult(groupNotesQuery(groupId))
@@ -176,6 +176,15 @@ export default React.memo(function MarkDeparted() {
                     absentFrom={absentFrom}
                   />
                   <AbsenceSelector
+                    absenceTypes={[
+                      'OTHER_ABSENCE',
+                      'SICKLEAVE',
+                      'UNKNOWN_ABSENCE',
+                      'PLANNED_ABSENCE',
+                      ...(featureFlags.experimental?.noAbsenceType
+                        ? (['NO_ABSENCE'] as const)
+                        : ([] as const))
+                    ]}
                     selectedAbsenceType={selectedAbsenceType}
                     setSelectedAbsenceType={setSelectedAbsenceType}
                   />
@@ -185,7 +194,7 @@ export default React.memo(function MarkDeparted() {
                         text={i18n.common.cancel}
                         onClick={() => navigate(-1)}
                       />
-                      {selectedAbsenceType && !timeError ? (
+                      {selectedAbsenceType !== undefined && !timeError ? (
                         <AsyncButton
                           primary
                           text={i18n.common.confirm}
@@ -193,7 +202,10 @@ export default React.memo(function MarkDeparted() {
                             createDeparture({
                               unitId,
                               childId,
-                              absenceType: selectedAbsenceType,
+                              absenceType:
+                                selectedAbsenceType === 'NO_ABSENCE'
+                                  ? null
+                                  : selectedAbsenceType,
                               departed: time
                             })
                           }
