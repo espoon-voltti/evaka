@@ -4,7 +4,7 @@
 
 ARG NGINX_VERSION=1.25.1
 
-FROM node:18-buster-slim AS builder
+FROM node:18.17-buster-slim AS builder
 
 USER root
 
