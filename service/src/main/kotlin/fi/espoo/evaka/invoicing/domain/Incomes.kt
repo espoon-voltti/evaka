@@ -69,14 +69,12 @@ data class DecisionIncome(
     val total: Int,
     val worksAtECHA: Boolean
 ) {
-    fun effectiveComparable(): DecisionIncome {
-        return this.copy(
-            effect =
-                when (this.effect) {
-                    IncomeEffect.NOT_AVAILABLE -> IncomeEffect.INCOMPLETE
-                    else -> this.effect
-                }
-        )
+    fun effectiveComparable(): DecisionIncome? {
+        return when (this.effect) {
+            IncomeEffect.NOT_AVAILABLE,
+            IncomeEffect.INCOMPLETE -> null
+            else -> this
+        }
     }
 }
 

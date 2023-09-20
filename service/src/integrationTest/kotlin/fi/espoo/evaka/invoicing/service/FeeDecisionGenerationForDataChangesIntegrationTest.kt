@@ -10,14 +10,18 @@ import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.placement.cancelPlacement
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -35,7 +39,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class FeeDecisionGenerationForPlacementChangesIntegrationTest :
+class FeeDecisionGenerationForDataChangesIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
@@ -301,6 +305,30 @@ class FeeDecisionGenerationForPlacementChangesIntegrationTest :
 
         unignoreIgnoredDrafts()
         assertDrafts(listOf(dateRange(21, 25) to 1))
+    }
+
+    @Test
+    fun `Incomplete income is equal to non-existing and does not cause new draft`() {
+        db.transaction { tx ->
+            tx.insertTestIncome(
+                DevIncome(
+                    personId = testAdult_1.id,
+                    validFrom = originalRange.start,
+                    validTo = originalRange.end,
+                    data = emptyMap(),
+                    effect = IncomeEffect.INCOMPLETE,
+                    updatedBy = EvakaUserId(testDecisionMaker_2.id.raw)
+                )
+            )
+        }
+        generate()
+
+        assertDrafts(emptyList())
+
+        sendAllFeeDecisions()
+
+        val feeDecisions = getAllFeeDecisions()
+        assertEquals(listOf(sentDecision), feeDecisions)
     }
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
