@@ -5,9 +5,11 @@
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
 import { csrfCookieName } from '../../shared/middleware/csrf.js'
 import { EmployeeUser } from '../../shared/service-client.js'
-import internalGwApp from '../app.js'
+import { internalGwRouter } from '../app.js'
 import { configFromEnv } from '../../shared/config.js'
 import { MockRedisClient } from '../../shared/test/mock-redis-client.js'
+import { configureApp } from '../../shared/app.js'
+import express from 'express'
 
 const mockUser: EmployeeUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
@@ -21,7 +23,10 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
   let tester: GatewayTester
   beforeAll(async () => {
     const config = configFromEnv()
-    const app = internalGwApp(config, new MockRedisClient())
+    const redisClient = new MockRedisClient()
+    const app = express()
+    configureApp(redisClient, app)
+    app.use('/api/internal', internalGwRouter(config, redisClient))
     tester = await GatewayTester.start(app, 'employee')
   })
   beforeEach(async () => tester.login(mockUser))

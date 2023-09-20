@@ -8,8 +8,10 @@ import { sessionCookie } from '../../shared/session.js'
 import { v4 as uuid } from 'uuid'
 import { UUID } from '../../shared/service-client.js'
 import { appCommit, configFromEnv } from '../../shared/config.js'
-import internalGwApp from '../app.js'
+import { internalGwRouter } from '../app.js'
 import { MockRedisClient } from '../../shared/test/mock-redis-client.js'
+import express from 'express'
+import { configureApp } from '../../shared/app.js'
 
 const pairingId = '009da566-19ca-432e-ad2d-3041481b5bae'
 const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
@@ -18,7 +20,10 @@ describe('Mobile device pairing process', () => {
   let tester: GatewayTester
   beforeAll(async () => {
     const config = configFromEnv()
-    const app = internalGwApp(config, new MockRedisClient())
+    const redisClient = new MockRedisClient()
+    const app = express()
+    configureApp(redisClient, app)
+    app.use('/api/internal', internalGwRouter(config, redisClient))
     tester = await GatewayTester.start(app, 'employee')
   })
   afterEach(async () => tester.afterEach())

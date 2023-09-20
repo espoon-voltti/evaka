@@ -4,7 +4,6 @@
 
 import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
-import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth/index.js'
 import { createAdSamlStrategy } from './ad-saml.js'
@@ -16,14 +15,10 @@ import {
   enableDevApi,
   titaniaConfig
 } from '../shared/config.js'
-import setupLoggingMiddleware from '../shared/logging.js'
 import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
-import tracing from '../shared/middleware/tracing.js'
 import { createProxy } from '../shared/proxy-utils.js'
-import { trustReverseProxy } from '../shared/reverse-proxy.js'
 import createSamlRouter from '../shared/routes/saml.js'
-import csp from '../shared/routes/csp.js'
 import session, {
   refreshLogoutToken,
   touchSessionMaxAge
@@ -41,7 +36,7 @@ import { cacheControl } from '../shared/middleware/cache-control.js'
 import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
-import { assertRedisConnection, RedisClient } from '../shared/redis-client.js'
+import { RedisClient } from '../shared/redis-client.js'
 
 export function internalGwRouter(
   config: Config,
@@ -147,40 +142,6 @@ export function internalGwRouter(
   )
 
   router.use(createProxy())
+  router.use(errorHandler(true))
   return router
-}
-
-export default function internalGwApp(
-  config: Config,
-  redisClient: RedisClient
-) {
-  const app = express()
-  trustReverseProxy(app)
-  app.set('etag', false)
-
-  app.use(
-    helmet({
-      // Content-Security-Policy is set by the nginx proxy
-      contentSecurityPolicy: false
-    })
-  )
-  app.get('/health', (_, res) => {
-    assertRedisConnection(redisClient)
-      .then(() => {
-        res.status(200).json({ status: 'UP' })
-      })
-      .catch(() => {
-        res.status(503).json({ status: 'DOWN' })
-      })
-  })
-  app.use(tracing)
-  passport.serializeUser<Express.User>((user, done) => done(null, user))
-  passport.deserializeUser<Express.User>((user, done) => done(null, user))
-  setupLoggingMiddleware(app)
-
-  app.use('/api/csp', csp)
-
-  app.use('/api/internal', internalGwRouter(config, redisClient))
-  app.use(errorHandler(true))
-  return app
 }

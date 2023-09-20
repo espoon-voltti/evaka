@@ -3,16 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import cookieParser from 'cookie-parser'
-import express, { Router } from 'express'
-import helmet from 'helmet'
+import { Router } from 'express'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth/index.js'
 import { createSuomiFiStrategy } from './suomi-fi-saml.js'
-import setupLoggingMiddleware from '../shared/logging.js'
 import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
-import tracing from '../shared/middleware/tracing.js'
-import { trustReverseProxy } from '../shared/reverse-proxy.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import session, {
   refreshLogoutToken,
@@ -28,7 +24,7 @@ import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml.js'
-import { assertRedisConnection, RedisClient } from '../shared/redis-client.js'
+import { RedisClient } from '../shared/redis-client.js'
 
 export function enduserGwRouter(
   config: Config,
@@ -88,36 +84,6 @@ export function enduserGwRouter(
   router.use(requireAuthentication)
   router.use(csrf)
   router.use(routes)
+  router.use(errorHandler(false))
   return router
-}
-
-export default function enduserGwApp(config: Config, redisClient: RedisClient) {
-  const app = express()
-  trustReverseProxy(app)
-  app.set('etag', false)
-
-  app.use(
-    helmet({
-      // Content-Security-Policy is set by the nginx proxy
-      contentSecurityPolicy: false
-    })
-  )
-  app.get('/health', (_, res) => {
-    assertRedisConnection(redisClient)
-      .then(() => {
-        res.status(200).json({ status: 'UP' })
-      })
-      .catch(() => {
-        res.status(503).json({ status: 'DOWN' })
-      })
-  })
-  app.use(tracing)
-  passport.serializeUser<Express.User>((user, done) => done(null, user))
-  passport.deserializeUser<Express.User>((user, done) => done(null, user))
-  setupLoggingMiddleware(app)
-
-  app.use('/api/application', enduserGwRouter(config, redisClient))
-  app.use(errorHandler(false))
-
-  return app
 }

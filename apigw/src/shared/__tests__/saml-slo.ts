@@ -19,7 +19,9 @@ import { ValidateInResponseTo } from '@node-saml/node-saml'
 import { MockRedisClient } from '../test/mock-redis-client.js'
 import { fileURLToPath } from 'node:url'
 
-import enduserGwApp from '../../enduser/app.js'
+import { enduserGwRouter } from '../../enduser/app.js'
+import express from 'express'
+import { configureApp } from '../app.js'
 
 const mockUser: DevCitizen & CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
@@ -82,7 +84,10 @@ describe('SAML Single Logout', () => {
         }
       }
     }
-    const app = enduserGwApp(config, new MockRedisClient())
+    const redisClient = new MockRedisClient()
+    const app = express()
+    configureApp(redisClient, app)
+    app.use('/api/application', enduserGwRouter(config, redisClient))
     tester = await GatewayTester.start(app, 'enduser')
   })
   afterEach(async () => {

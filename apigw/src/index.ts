@@ -11,9 +11,13 @@ import {
 } from './shared/config.js'
 import './tracer.js'
 import { logError, logInfo } from './shared/logging.js'
-import enduserGwApp from './enduser/app.js'
-import internalGwApp from './internal/app.js'
+import { enduserGwRouter } from './enduser/app.js'
+import { internalGwRouter } from './internal/app.js'
 import * as redis from 'redis'
+import { configureApp } from './shared/app.js'
+import csp from './shared/routes/csp.js'
+import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
+import express from 'express'
 
 sourceMapSupport.install()
 const config = configFromEnv()
@@ -29,7 +33,12 @@ redisClient.connect().catch((err) => {
 redisClient.unref()
 
 if (!gatewayRole || gatewayRole === 'enduser') {
-  const app = enduserGwApp(config, redisClient)
+  const app = express()
+
+  configureApp(redisClient, app)
+  app.use('/api/application', enduserGwRouter(config, redisClient))
+  app.use(fallbackErrorHandler)
+
   app.listen(httpPort.enduser, () =>
     logInfo(
       `Evaka Application API Gateway listening on port ${httpPort.enduser}`
@@ -37,7 +46,13 @@ if (!gatewayRole || gatewayRole === 'enduser') {
   )
 }
 if (!gatewayRole || gatewayRole === 'internal') {
-  const app = internalGwApp(config, redisClient)
+  const app = express()
+
+  configureApp(redisClient, app)
+  app.use('/api/csp', csp)
+  app.use('/api/internal', internalGwRouter(config, redisClient))
+  app.use(fallbackErrorHandler)
+
   const server = app.listen(httpPort.internal, () =>
     logInfo(`Evaka Internal API Gateway listening on port ${httpPort.internal}`)
   )

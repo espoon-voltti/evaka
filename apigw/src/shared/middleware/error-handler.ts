@@ -57,3 +57,20 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
       .status(500)
       .json({ message: 'Internal server error' } as LogResponse)
   }
+
+export const fallbackErrorHandler: ErrorRequestHandler = (
+  error,
+  req,
+  res,
+  _next
+) => {
+  logError(
+    `Internal server error: ${error.message || error || 'No error object'}`,
+    req,
+    undefined,
+    error
+  )
+  return res
+    .status(500)
+    .json({ message: 'Internal server error' } as LogResponse)
+}
