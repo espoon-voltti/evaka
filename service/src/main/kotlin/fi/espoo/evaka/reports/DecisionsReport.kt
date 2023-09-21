@@ -69,14 +69,13 @@ SELECT
     a.id AS application_id,
     (
         SELECT array_agg(e::UUID)
-        FROM jsonb_array_elements_text(af.document -> 'apply' -> 'preferredUnits') e
+        FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') e
     ) AS preferred_units,
     date_part('year', age(de.sent_date, ch.date_of_birth)) AS age
 FROM application a
 JOIN decision de ON de.application_id = a.id
 JOIN daycare u ON u.id = de.unit_id
 JOIN care_area ca ON ca.id = u.care_area_id
-JOIN application_form af ON af.application_id = a.id AND af.latest IS TRUE
 JOIN person ch ON ch.id = a.child_id
 WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
 """

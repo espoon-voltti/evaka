@@ -70,10 +70,9 @@ TABLE (
 
     UNION ALL
 
-    SELECT a.child_id, pp.unit_id AS daycare_id, FALSE AS is_backup_care, TRUE as from_application, COALESCE((form.document -> 'careDetails' ->> 'assistanceNeeded') :: BOOLEAN, FALSE) AS is_assistance_needed
+    SELECT a.child_id, pp.unit_id AS daycare_id, FALSE AS is_backup_care, TRUE as from_application, COALESCE((a.document -> 'careDetails' ->> 'assistanceNeeded') :: BOOLEAN, FALSE) AS is_assistance_needed
     FROM placement_plan pp
     JOIN application a ON pp.application_id = a.id
-    JOIN application_form form ON form.application_id = a.id AND latest IS TRUE
     WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
 
     UNION ALL

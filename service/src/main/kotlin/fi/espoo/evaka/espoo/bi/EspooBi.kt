@@ -109,7 +109,7 @@ FROM daycare_caretaker
             sql(
                 """
 SELECT
-    a.id, a.created, a.updated, a.type, a.transferapplication, a.origin, a.status, a.additionaldaycareapplication, a.sentdate,
+    id, created, updated, type, transferapplication, origin, status, additionaldaycareapplication, sentdate,
     (
       SELECT array_agg(e::UUID)
       FROM jsonb_array_elements_text(document -> 'apply' -> 'preferredUnits') e
@@ -119,7 +119,6 @@ SELECT
     (document -> 'careDetails' ->> 'assistanceNeeded') :: boolean AS assistanceNeeded,
     (document ->> 'extendedCare') :: boolean AS shift_care
 FROM application a
-JOIN application_form af ON a.id = af.application_id AND latest IS TRUE
 WHERE status != 'CREATED'
 """
             )

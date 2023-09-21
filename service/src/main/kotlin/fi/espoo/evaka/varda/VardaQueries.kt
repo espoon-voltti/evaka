@@ -352,7 +352,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             sn.start_date,
             sn.end_date,
             LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date - interval '15 days') AS application_date,
-            COALESCE((af.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
+            COALESCE((application_match.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
             sno.daycare_hours_per_week AS hours_per_week,
             CASE 
                 WHEN sno.valid_placement_type = ANY(:vardaTemporaryPlacementTypes::placement_type[]) THEN true
@@ -369,7 +369,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
         JOIN placement p ON p.id = sn.placement_id
         JOIN daycare d ON p.unit_id = d.id
         LEFT JOIN LATERAL (
-            SELECT a.id, a.sentdate, a.created
+            SELECT a.id, a.sentdate, a.created, a.document
             FROM application a
             WHERE child_id = p.child_id
               AND a.status IN ('ACTIVE')
@@ -382,7 +382,6 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             ORDER BY a.sentdate, a.id
             LIMIT 1
             ) application_match ON true
-        LEFT JOIN application_form af ON af.application_id = application_match.id AND af.latest IS TRUE        
         WHERE sn.id = :id
     """
             .trimIndent()

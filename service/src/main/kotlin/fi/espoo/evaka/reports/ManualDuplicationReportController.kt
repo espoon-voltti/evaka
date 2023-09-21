@@ -70,17 +70,17 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
 
         val sql =
             """
-select conn_app.id                                     as application_id,
-       p.id                                            as child_id,
-       p.first_name                                    as child_first_name,
-       p.last_name                                     as child_last_name,
+select conn_app.id                                           as application_id,
+       p.id                                                  as child_id,
+       p.first_name                                          as child_first_name,
+       p.last_name                                           as child_last_name,
        p.date_of_birth,
-       connected_decision.type                         as connected_decision_type,
-       d.id                                            as connected_daycare_id,
-       d.name                                          as connected_daycare_name,
-       connected_decision.start_date                   as connected_start_date,
-       connected_decision.end_date                     as connected_end_date,
-       af.document -> 'serviceNeedOption' ->> 'nameFi' as connected_sno_name,
+       connected_decision.type                               as connected_decision_type,
+       d.id                                                  as connected_daycare_id,
+       d.name                                                as connected_daycare_name,
+       connected_decision.start_date                         as connected_start_date,
+       connected_decision.end_date                           as connected_end_date,
+       conn_app.document -> 'serviceNeedOption' ->> 'nameFi' as connected_sno_name,
        preschool_decision.preschool_daycare_id,
        preschool_decision.preschool_daycare_name,
        preschool_decision.preschool_decision_type,
@@ -88,7 +88,6 @@ select conn_app.id                                     as application_id,
        preschool_decision.preschool_end_date
 from decision connected_decision
          join application conn_app on connected_decision.application_id = conn_app.id
-         join application_form af on conn_app.id = af.application_id and af.latest IS TRUE
          join daycare d on connected_decision.unit_id = d.id
          join person p on conn_app.child_id = p.id
          join lateral (

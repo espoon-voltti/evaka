@@ -2,7 +2,6 @@ DROP VIEW IF EXISTS application_view;
 
 CREATE OR REPLACE VIEW application_view (
   id,
-  revision,
   document,
   docVersion,
   created,
@@ -50,7 +49,6 @@ CREATE OR REPLACE VIEW application_view (
   ) AS
 SELECT
   id,
-  revision,
   document,
   docVersion,
   created,
@@ -124,10 +122,9 @@ WITH dup_appl AS (
 )
 SELECT
   appl.id,
-  data.revision,
-  data.document,
-  data.document -> 'docVersion'                                                               AS docVersion,
-  data.created                                                                                AS formModified,
+  appl.document,
+  appl.document -> 'docVersion'                                                               AS docVersion,
+  appl.form_modified                                                                          AS formModified,
   appl.created,
   appl.sentDate,
   appl.dueDate,
@@ -137,38 +134,38 @@ SELECT
   appl.guardian_id                                                                            AS guardianId,
   appl.other_guardian_id                                                                      AS otherGuardianId,
   appl.type                                                                                   AS type,
-  (data.document ->> 'urgent') :: BOOLEAN                                                     AS urgent,
-  (data.document ->> 'preferredStartDate')::DATE                                              AS preferredStartDate,
+  (appl.document ->> 'urgent') :: BOOLEAN                                                     AS urgent,
+  (appl.document ->> 'preferredStartDate')::DATE                                              AS preferredStartDate,
   COALESCE(
       (SELECT min(coalesce(d.requested_start_date, d.start_date)) FROM decision d WHERE d.application_id = appl.id AND d.status != 'REJECTED'),
       placement_plan.start_date,
-      (data.document ->> 'preferredStartDate')::DATE
+      (appl.document ->> 'preferredStartDate')::DATE
   )                                                                                           AS startDate,
-  data.document -> 'apply' -> 'preferredUnits' ->> 0                                          AS preferredUnit,
+  appl.document -> 'apply' -> 'preferredUnits' ->> 0                                          AS preferredUnit,
   (
       SELECT array_agg(e::UUID)
-      FROM jsonb_array_elements_text(data.document -> 'apply' -> 'preferredUnits') e
+      FROM jsonb_array_elements_text(appl.document -> 'apply' -> 'preferredUnits') e
   )                                                                                           AS preferredUnits,
-  data.document -> 'child' ->> 'firstName'                                                    AS childFirstName,
-  data.document -> 'child' ->> 'lastName'                                                     AS childLastName,
-  data.document -> 'child' ->> 'socialSecurityNumber'                                         AS childSSN,
-  data.document -> 'child' -> 'address' ->> 'street'                                          AS childStreetAddr,
-  data.document -> 'child' -> 'address' ->> 'postalCode'                                      AS childPostalCode,
-  data.document -> 'guardian' ->> 'phoneNumber'                                               AS guardianPhoneNumber,
-  data.document -> 'additionalDetails' ->> 'allergyType'                                      AS allergyType,
-  data.document -> 'additionalDetails' ->> 'dietType'                                         AS dietType,
-  data.document -> 'additionalDetails' ->> 'otherInfo'                                        AS otherInfo,
-  (data.document -> 'apply' ->> 'siblingBasis') :: BOOLEAN                                    AS siblingBasis,
-  data.document ->> 'term'                                                                    AS term,
-  (data.document ->> 'wasOnDaycare') :: BOOLEAN                                               AS wasOnDaycare,
-  (data.document ->> 'wasOnClubCare') :: BOOLEAN                                              AS wasOnClubCare,
-  (data.document -> 'clubCare' ->> 'assistanceNeeded') :: BOOLEAN                             AS clubCareAssistanceNeeded,
-  (data.document -> 'careDetails' ->> 'assistanceNeeded') :: BOOLEAN                          AS daycareAssistanceNeeded,
-  (data.document ->> 'extendedCare') :: BOOLEAN                                               AS extendedCare,
+  appl.document -> 'child' ->> 'firstName'                                                    AS childFirstName,
+  appl.document -> 'child' ->> 'lastName'                                                     AS childLastName,
+  appl.document -> 'child' ->> 'socialSecurityNumber'                                         AS childSSN,
+  appl.document -> 'child' -> 'address' ->> 'street'                                          AS childStreetAddr,
+  appl.document -> 'child' -> 'address' ->> 'postalCode'                                      AS childPostalCode,
+  appl.document -> 'guardian' ->> 'phoneNumber'                                               AS guardianPhoneNumber,
+  appl.document -> 'additionalDetails' ->> 'allergyType'                                      AS allergyType,
+  appl.document -> 'additionalDetails' ->> 'dietType'                                         AS dietType,
+  appl.document -> 'additionalDetails' ->> 'otherInfo'                                        AS otherInfo,
+  (appl.document -> 'apply' ->> 'siblingBasis') :: BOOLEAN                                    AS siblingBasis,
+  appl.document ->> 'term'                                                                    AS term,
+  (appl.document ->> 'wasOnDaycare') :: BOOLEAN                                               AS wasOnDaycare,
+  (appl.document ->> 'wasOnClubCare') :: BOOLEAN                                              AS wasOnClubCare,
+  (appl.document -> 'clubCare' ->> 'assistanceNeeded') :: BOOLEAN                             AS clubCareAssistanceNeeded,
+  (appl.document -> 'careDetails' ->> 'assistanceNeeded') :: BOOLEAN                          AS daycareAssistanceNeeded,
+  (appl.document ->> 'extendedCare') :: BOOLEAN                                               AS extendedCare,
   placement_plan.unit_id                                                                      AS placementDaycareUnit,
-  (data.document ->> 'connectedDaycare') :: BOOLEAN                                           AS connectedDaycare,
-  data.document ->> 'serviceNeedOption'                                                       AS serviceNeedOption,
-  (data.document -> 'careDetails' ->> 'preparatory') :: BOOLEAN                               AS preparatoryEducation,
+  (appl.document ->> 'connectedDaycare') :: BOOLEAN                                           AS connectedDaycare,
+  appl.document ->> 'serviceNeedOption'                                                       AS serviceNeedOption,
+  (appl.document -> 'careDetails' ->> 'preparatory') :: BOOLEAN                               AS preparatoryEducation,
   appl.checkedByAdmin,
   appl.hideFromGuardian,
   appl.transferApplication,
@@ -178,19 +175,16 @@ SELECT
        THEN true
        ELSE false
   END                                                                                         AS hasActiveAssistanceNeed,
-  (data.document ->> 'otherGuardianAgreementStatus')                                          AS otherGuardianAgreementStatus
+  (appl.document ->> 'otherGuardianAgreementStatus')                                          AS otherGuardianAgreementStatus
 FROM
   application appl
-  INNER JOIN application_form data
-    ON (appl.id = data.application_id)
     LEFT JOIN placement_plan
     ON (placement_plan.application_id = appl.id)
     LEFT JOIN dup_appl
     ON dup_appl.id = appl.id
     LEFT JOIN active_assistance_need
     ON (active_assistance_need.child_id = appl.child_id)
-WHERE data.latest IS TRUE
-AND document @> '{
+WHERE document @> '{
 "docVersion": 0
 }' :: JSONB
 ) jsonV0;

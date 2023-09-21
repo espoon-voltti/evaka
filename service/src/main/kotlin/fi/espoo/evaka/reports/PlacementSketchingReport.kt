@@ -132,12 +132,15 @@ SELECT
     application.startDate AS preferred_start_date,
     application.sentdate,
     application.guardianphonenumber,
-    form.document->'guardian'->>'email' AS guardian_email,
+    application.document->'guardian'->>'email' AS guardian_email,
     (SELECT array_agg(name) as other_preferred_units
-     FROM daycare JOIN (SELECT unnest(preferredUnits) FROM application WHERE application.id = application_id) pu ON daycare.id = pu.unnest) AS other_preferred_units,
-    (form.document -> 'additionalDetails' ->> 'otherInfo' <> ''
-        OR form.document -> 'additionalDetails' ->> 'dietType' <> ''
-        OR form.document -> 'additionalDetails' ->> 'allergyType' <> '') as hasAdditionalInfo,
+     FROM daycare 
+     JOIN (SELECT unnest(preferredUnits) 
+           FROM application_view view 
+           WHERE view.id = application.id) pu ON daycare.id = pu.unnest) AS other_preferred_units,
+    (application.document -> 'additionalDetails' ->> 'otherInfo' <> ''
+        OR application.document -> 'additionalDetails' ->> 'dietType' <> ''
+        OR application.document -> 'additionalDetails' ->> 'allergyType' <> '') as hasAdditionalInfo,
     unrestricted_corrected_child_address_details.childMovingDate,
     COALESCE(unrestricted_corrected_child_address_details.childCorrectedStreetAddress,'') as childCorrectedStreetAddress,
     COALESCE(unrestricted_corrected_child_address_details.childCorrectedPostalCode,'') as childCorrectedPostalCode,
@@ -152,12 +155,10 @@ LEFT JOIN
     active_placements ON application.childid = active_placements.child_id
 LEFT JOIN
     person AS child ON application.childid = child.id
-LEFT JOIN
-    application_form AS form ON application.id = form.application_id AND form.latest is TRUE
-LEFT JOIN LATERAL (select (form.document -> 'child' ->> 'childMovingDate')::date            as childMovingDate,
-                           form.document -> 'child' -> 'correctingAddress' ->> 'street'     as childCorrectedStreetAddress,
-                           form.document -> 'child' -> 'correctingAddress' ->> 'postalCode' as childCorrectedPostalCode,
-                           form.document -> 'child' -> 'correctingAddress' ->> 'city'       as childCorrectedCity
+LEFT JOIN LATERAL (select (application.document -> 'child' ->> 'childMovingDate')::date            as childMovingDate,
+                           application.document -> 'child' -> 'correctingAddress' ->> 'street'     as childCorrectedStreetAddress,
+                           application.document -> 'child' -> 'correctingAddress' ->> 'postalCode' as childCorrectedPostalCode,
+                           application.document -> 'child' -> 'correctingAddress' ->> 'city'       as childCorrectedCity
 ) as unrestricted_corrected_child_address_details on child.restricted_details_enabled IS FALSE
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)

@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
@@ -218,24 +219,24 @@ fun Database.Read.fetchApplicationSummaries(
                     when (applicationBasis) {
                         ApplicationBasis.ADDITIONAL_INFO ->
                             """(
-                            (f.document -> 'additionalDetails' ->> 'dietType') != '' OR 
-                            (f.document -> 'additionalDetails' ->> 'otherInfo') != '' OR 
-                            (f.document -> 'additionalDetails' ->> 'allergyType') != '')
+                            (a.document -> 'additionalDetails' ->> 'dietType') != '' OR 
+                            (a.document -> 'additionalDetails' ->> 'otherInfo') != '' OR 
+                            (a.document -> 'additionalDetails' ->> 'allergyType') != '')
                     """
                                 .trimIndent()
                         ApplicationBasis.SIBLING_BASIS ->
-                            "(f.document -> 'apply' ->> 'siblingBasis')::boolean = true"
+                            "(a.document -> 'apply' ->> 'siblingBasis')::boolean = true"
                         ApplicationBasis.ASSISTANCE_NEED ->
-                            "(f.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
+                            "(a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
                         ApplicationBasis.CLUB_CARE -> "was_on_club_care"
                         ApplicationBasis.DAYCARE ->
-                            "(f.document ->> 'wasOnDaycare')::boolean = true"
+                            "(a.document ->> 'wasOnDaycare')::boolean = true"
                         ApplicationBasis.EXTENDED_CARE ->
-                            "(f.document ->> 'extendedCare')::boolean = true"
+                            "(a.document ->> 'extendedCare')::boolean = true"
                         ApplicationBasis.DUPLICATE_APPLICATION -> "has_duplicates"
-                        ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
+                        ApplicationBasis.URGENT -> "(a.document ->> 'urgent')::boolean = true"
                         ApplicationBasis.HAS_ATTACHMENTS ->
-                            "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
+                            "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
                     }
                 }
             } else {
@@ -299,16 +300,16 @@ fun Database.Read.fetchApplicationSummaries(
                             }.run {
                                 listOfNotNull(
                                         preparatory?.let {
-                                            "(f.document->'careDetails'->>'preparatory')::boolean = $preparatory"
+                                            "(a.document->'careDetails'->>'preparatory')::boolean = $preparatory"
                                         },
-                                        "(f.document->>'connectedDaycare')::boolean = $connectedDaycare",
+                                        "(a.document->>'connectedDaycare')::boolean = $connectedDaycare",
                                         "a.additionalDaycareApplication = $additionalDaycareApplication",
                                         serviceNeedOptionType?.let { pt ->
                                             when (pt) {
                                                 PlacementType.PRESCHOOL_DAYCARE ->
-                                                    "(f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR f.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
+                                                    "(a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR a.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
                                                 PlacementType.PRESCHOOL_CLUB ->
-                                                    "f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
+                                                    "a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
                                                 else ->
                                                     throw Error(
                                                         "Unsupported preschool type: $serviceNeedOptionType"
@@ -324,13 +325,13 @@ fun Database.Read.fetchApplicationSummaries(
                 null
             },
             if (distinctions.contains(ApplicationDistinctions.SECONDARY))
-                "f.preferredUnits && :units"
+                "pu.preferredUnits && :units"
             else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
             if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All)
-                "((f.document->'careDetails'->>'assistanceNeeded')::boolean = true OR f.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)"
+                "((a.document->'careDetails'->>'assistanceNeeded')::boolean = true OR pu.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)"
             else null,
             if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All)
-                "((f.document->'careDetails'->>'assistanceNeeded')::boolean = false OR f.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)"
+                "((a.document->'careDetails'->>'assistanceNeeded')::boolean = false OR pu.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)"
             else null,
             if (
                 (periodStart != null || periodEnd != null) &&
@@ -342,7 +343,7 @@ fun Database.Read.fetchApplicationSummaries(
                 (periodStart != null || periodEnd != null) &&
                     dateType.contains(ApplicationDateType.START)
             )
-                "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), (f.document ->> 'preferredStartDate')::date)"
+                "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), (a.document ->> 'preferredStartDate')::date)"
             else null,
             if (
                 (periodStart != null || periodEnd != null) &&
@@ -360,9 +361,9 @@ fun Database.Read.fetchApplicationSummaries(
                 VoucherApplicationFilter.VOUCHER_FIRST_CHOICE ->
                     "d.provider_type = 'PRIVATE_SERVICE_VOUCHER'"
                 VoucherApplicationFilter.VOUCHER_ONLY ->
-                    "f.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                    "pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
                 VoucherApplicationFilter.NO_VOUCHER ->
-                    "NOT f.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                    "NOT pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
                 null -> null
             }
         )
@@ -378,15 +379,15 @@ fun Database.Read.fetchApplicationSummaries(
             child.last_name,
             child.date_of_birth,
             child.social_security_number,
-            f.document,
-            (f.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
-            f.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
-            f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
-            f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
-            f.document -> 'serviceNeedOption' ->> 'validPlacementType' as serviceNeedValidPlacementType,
+            a.document,
+            (a.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
+            a.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
+            a.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
+            a.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
+            a.document -> 'serviceNeedOption' ->> 'validPlacementType' as serviceNeedValidPlacementType,
             a.duedate,
-            (f.document ->> 'preferredStartDate')::date as preferredStartDate,
-            f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
+            (a.document ->> 'preferredStartDate')::date as preferredStartDate,
+            a.document -> 'apply' -> 'preferredUnits' as preferredUnits,
             a.type,
             a.status AS application_status,
             a.origin,
@@ -395,17 +396,17 @@ fun Database.Read.fetchApplicationSummaries(
             a.checkedbyadmin,
             a.service_worker_note,
             (
-                COALESCE((f.document -> 'additionalDetails' ->> 'dietType'), '') != '' OR
-                COALESCE((f.document -> 'additionalDetails' ->> 'otherInfo'), '') != '' OR
-                COALESCE((f.document -> 'additionalDetails' ->> 'allergyType'), '') != ''
+                COALESCE((a.document -> 'additionalDetails' ->> 'dietType'), '') != '' OR
+                COALESCE((a.document -> 'additionalDetails' ->> 'otherInfo'), '') != '' OR
+                COALESCE((a.document -> 'additionalDetails' ->> 'allergyType'), '') != ''
             ) as additionalInfo,
-            (f.document -> 'apply' ->> 'siblingBasis')::boolean as siblingBasis,
-            COALESCE(f.document -> 'careDetails' ->> 'assistanceNeeded', f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
+            (a.document -> 'apply' ->> 'siblingBasis')::boolean as siblingBasis,
+            COALESCE(a.document -> 'careDetails' ->> 'assistanceNeeded', a.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
             club_care.was_on_club_care AS was_on_club_care,
-            (f.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
-            COALESCE((f.document ->> 'urgent')::boolean, false) as urgent,
+            (a.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
+            COALESCE((a.document ->> 'urgent')::boolean, false) as urgent,
             (SELECT COALESCE(array_length(attachments.attachment_ids, 1), 0)) AS attachmentCount,
-            COALESCE((f.document ->> 'extendedCare')::boolean, false) as extendedCare,
+            COALESCE((a.document ->> 'extendedCare')::boolean, false) as extendedCare,
             has_duplicates,
             pp.unit_confirmation_status,
             pp.unit_reject_reason,
@@ -413,26 +414,12 @@ fun Database.Read.fetchApplicationSummaries(
             (CASE WHEN pp.unit_id IS NOT NULL THEN d.name END) AS placement_plan_unit_name,
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
-            count(*) OVER () AS total
+            count(*) OVER () AS total,
+            pu.preferredUnits
         FROM application a
-        JOIN (
-            SELECT
-                id,
-                application_id,
-                created,
-                revision,
-                document,
-                updated,
-                latest,
-            (
-                SELECT COALESCE(array_agg(e::UUID) FILTER (WHERE e IS NOT NULL), '{}'::UUID[])
-                FROM jsonb_array_elements_text(af.document -> 'apply' -> 'preferredUnits') e
-            ) AS preferredUnits
-            FROM application_form af
-        ) f ON f.application_id = a.id AND f.latest IS TRUE
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
-        JOIN daycare d ON COALESCE(pp.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
+        JOIN daycare d ON COALESCE(pp.unit_id, (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (
             SELECT l.id, EXISTS(
@@ -465,6 +452,10 @@ fun Database.Read.fetchApplicationSummaries(
             ORDER BY start_date
             LIMIT 1
         ) cpu ON true
+        LEFT JOIN LATERAL ( 
+            SELECT COALESCE(array_agg(e::UUID) FILTER (WHERE e IS NOT NULL), '{}'::UUID[]) AS preferredUnits
+            FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') e
+        ) pu ON true
         WHERE a.status != 'CREATED'::application_status_type $andWhere
         """
             .trimIndent()
@@ -727,7 +718,7 @@ fun Database.Read.fetchApplicationDetails(
         SELECT 
             a.id,
             a.type,
-            f.document,
+            a.document,
             a.status,
             a.origin,
             a.child_id,
@@ -741,7 +732,7 @@ fun Database.Read.fetchApplicationDetails(
             a.additionaldaycareapplication,
             a.hidefromguardian,
             a.created,
-            f.updated,
+            a.updated,
             a.sentdate,
             a.duedate,
             a.duedate_set_manually_at,
@@ -749,7 +740,6 @@ fun Database.Read.fetchApplicationDetails(
             a.allow_other_guardian_access,
             coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
-        JOIN application_form f ON f.application_id = a.id
         LEFT JOIN person c ON c.id = a.child_id
         LEFT JOIN person g1 ON g1.id = a.guardian_id
         LEFT JOIN (
@@ -769,7 +759,6 @@ fun Database.Read.fetchApplicationDetails(
             GROUP BY application_id
         ) att ON a.id = att.application_id
         WHERE a.id = :id
-        AND f.latest IS TRUE
         """
             .trimIndent()
 
@@ -860,16 +849,16 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
         SELECT
             a.id,
             a.type,
-            (f.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
-            f.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
-            f.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
-            f.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
-            f.document -> 'serviceNeedOption' ->> 'validPlacementType' AS serviceNeedValidPlacementType,
-            f.document,
-            (f.document ->> 'preferredStartDate')::date as preferred_start_date,
+            (a.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
+            a.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
+            a.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
+            a.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
+            a.document -> 'serviceNeedOption' ->> 'validPlacementType' AS serviceNeedValidPlacementType,
+            a.document,
+            (a.document ->> 'preferredStartDate')::date as preferred_start_date,
             (array_position((
                 SELECT array_agg(e)
-                FROM jsonb_array_elements_text(f.document -> 'apply' -> 'preferredUnits') e
+                FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') e
             ), :unitId::text)) as preference_order,
             a.status,
             c.first_name,
@@ -880,12 +869,11 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
             g.phone AS guardian_phone,
             g.email AS guardian_email
         FROM application a
-        JOIN application_form f ON f.application_id = a.id AND f.latest IS TRUE
         JOIN person c ON c.id = a.child_id
         JOIN person g ON g.id = a.guardian_id
         WHERE EXISTS (
             SELECT 1
-            FROM jsonb_array_elements_text(f.document -> 'apply' -> 'preferredUnits') e
+            FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') e
             WHERE e = :unitId::text
         ) AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
         ORDER BY c.last_name, c.first_name
@@ -971,7 +959,8 @@ fun Database.Transaction.updateForm(
     form: ApplicationForm,
     formType: ApplicationType,
     childRestricted: Boolean,
-    guardianRestricted: Boolean
+    guardianRestricted: Boolean,
+    now: HelsinkiDateTime
 ) {
     check(getApplicationType(id) == formType) { "Invalid form type for the application" }
     val transformedForm =
@@ -983,18 +972,13 @@ fun Database.Transaction.updateForm(
 
     // language=SQL
     val sql =
-        """
-WITH old_revisions AS (
-    UPDATE application_form SET latest = FALSE
-    WHERE application_id = :applicationId
-    RETURNING revision
-)
-INSERT INTO application_form (application_id, document, revision, latest)
-VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM old_revisions), TRUE)
-        """
-            .trimIndent()
+        "UPDATE application SET document = :document, form_modified = :now WHERE id = :applicationId;"
 
-    createUpdate(sql).bind("applicationId", id).bindJson("document", transformedForm).execute()
+    createUpdate(sql)
+        .bind("applicationId", id)
+        .bindJson("document", transformedForm)
+        .bind("now", now)
+        .execute()
 }
 
 fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
@@ -1127,7 +1111,6 @@ fun Database.Transaction.deleteApplication(id: ApplicationId) {
     val sql =
         """
         DELETE FROM attachment WHERE application_id = :id;
-        DELETE FROM application_form WHERE application_id = :id;
         DELETE FROM application WHERE id = :id;
         """
             .trimIndent()
@@ -1156,13 +1139,6 @@ fun Database.Transaction.removeOldDrafts(
         logger.info(
             "Cleaning up ${applicationIds.size} draft applications older than $thresholdDays days"
         )
-
-        // language=SQL
-        createUpdate(
-                """DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])"""
-            )
-            .bind("applicationIds", applicationIds)
-            .execute()
 
         // language=SQL
         createUpdate(
@@ -1204,17 +1180,13 @@ AND status = ANY('{SENT}')
 AND NOT EXISTS (
     SELECT 1
     FROM placement p
-    JOIN application_form f
-        ON application.child_id = p.child_id
-        AND f.application_id = application.id
-        AND f.latest
-        AND (CASE
-            WHEN application.type = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
-            WHEN application.type = 'PRESCHOOL' THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
-            WHEN application.type = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
-        END)
-        AND daterange((f.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
-        AND p.end_date >= :yesterday
+    WHERE (CASE
+        WHEN application.type = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
+        WHEN application.type = 'PRESCHOOL' THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
+        WHEN application.type = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
+    END)
+    AND daterange((application.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
+    AND p.end_date >= :yesterday
 )
 RETURNING id
 """
@@ -1299,14 +1271,7 @@ SET status = 'CANCELLED'
 WHERE transferapplication
 AND child_id = :childId
 AND status = ANY(:activeApplicationStatus::application_status_type[])
-AND EXISTS (
-    SELECT 1
-    FROM application_form f
-    WHERE 
-        f.application_id = application.id
-        AND f.latest
-        AND daterange(:preferredStartDateMinDate::date, null, '[]') @> (f.document->>'preferredStartDate')::date
-)
+AND daterange(:preferredStartDateMinDate::date, null, '[]') @> (document->>'preferredStartDate')::date
 RETURNING id
     """
                 .trimIndent()

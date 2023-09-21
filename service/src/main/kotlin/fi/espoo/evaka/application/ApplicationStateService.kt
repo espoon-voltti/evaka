@@ -90,6 +90,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         today: LocalDate,
+        now: HelsinkiDateTime,
         applicationId: ApplicationId,
         type: ApplicationType,
         guardian: PersonDTO,
@@ -106,7 +107,8 @@ class ApplicationStateService(
             form,
             type,
             child.restrictedDetailsEnabled,
-            guardian.restrictedDetailsEnabled
+            guardian.restrictedDetailsEnabled,
+            now
         )
     }
 
@@ -810,7 +812,8 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         update: CitizenApplicationUpdate,
         currentDate: LocalDate,
-        asDraft: Boolean = false
+        asDraft: Boolean = false,
+        now: HelsinkiDateTime
     ): ApplicationDetails {
         val original =
             tx.fetchApplicationDetails(applicationId)?.takeIf { it.guardianId == user.id }
@@ -859,7 +862,7 @@ class ApplicationStateService(
         }
 
         tx.updateApplicationAllowOtherGuardianAccess(applicationId, update.allowOtherGuardianAccess)
-        tx.updateApplicationContents(currentDate, original, updatedForm)
+        tx.updateApplicationContents(currentDate, now, original, updatedForm)
         return getApplication(tx, applicationId)
     }
 
@@ -869,7 +872,8 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         update: ApplicationUpdate,
         userId: EvakaUserId,
-        currentDate: LocalDate
+        currentDate: LocalDate,
+        now: HelsinkiDateTime
     ) {
         val original =
             tx.fetchApplicationDetails(applicationId)
@@ -900,6 +904,7 @@ class ApplicationStateService(
 
         tx.updateApplicationContents(
             currentDate,
+            now,
             original,
             updatedForm,
             manuallySetDueDate = update.dueDate
@@ -917,6 +922,7 @@ class ApplicationStateService(
 
     private fun Database.Transaction.updateApplicationContents(
         today: LocalDate,
+        now: HelsinkiDateTime,
         original: ApplicationDetails,
         updatedForm: ApplicationForm,
         manuallySetDueDate: LocalDate? = null
@@ -930,7 +936,8 @@ class ApplicationStateService(
             updatedForm,
             original.type,
             original.childRestricted,
-            original.guardianRestricted
+            original.guardianRestricted,
+            now
         )
         setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
