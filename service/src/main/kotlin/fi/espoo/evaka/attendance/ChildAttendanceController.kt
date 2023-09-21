@@ -6,6 +6,8 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ForceCodeGenType
+import fi.espoo.evaka.daycare.getClubTerms
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
@@ -69,7 +71,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): List<Child> {
+    ): List<AttendanceChild> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -82,6 +84,9 @@ class ChildAttendanceController(
                     val now = clock.now()
                     val today = now.toLocalDate()
 
+                    val clubTerms = tx.getClubTerms()
+                    val preschoolTerms = tx.getPreschoolTerms()
+
                     val childrenBasics = tx.fetchChildrenBasics(unitId, now)
                     val dailyNotesForChildrenInUnit = tx.getChildDailyNotesInUnit(unitId, today)
                     val stickyNotesForChildrenInUnit = tx.getChildStickyNotesForUnit(unitId, today)
@@ -93,13 +98,15 @@ class ChildAttendanceController(
                         val stickyNotes =
                             stickyNotesForChildrenInUnit.filter { it.childId == child.id }
 
-                        Child(
+                        AttendanceChild(
                             id = child.id,
                             firstName = child.firstName,
                             lastName = child.lastName,
                             preferredName = child.preferredName,
                             dateOfBirth = child.dateOfBirth,
                             placementType = child.placementType,
+                            scheduleType =
+                                child.placementType.scheduleType(today, clubTerms, preschoolTerms),
                             groupId = child.groupId,
                             backup = child.backup,
                             dailyServiceTimes = child.dailyServiceTimes?.times,

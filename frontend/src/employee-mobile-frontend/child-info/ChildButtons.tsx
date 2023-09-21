@@ -6,7 +6,7 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -21,7 +21,7 @@ import { UnitContext } from '../common/unit'
 interface Props {
   unitId: UUID
   groupId: UUID
-  child: Child
+  child: AttendanceChild
 }
 
 export default React.memo(function ChildButtons({

@@ -9,7 +9,7 @@ import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
-  Child,
+  AttendanceChild,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
@@ -21,9 +21,11 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export async function getUnitChildren(unitId: string): Promise<Child[]> {
+export async function getUnitChildren(
+  unitId: string
+): Promise<AttendanceChild[]> {
   return client
-    .get<JsonOf<Child[]>>(`/attendances/units/${unitId}/children`)
+    .get<JsonOf<AttendanceChild[]>>(`/attendances/units/${unitId}/children`)
     .then((res) => deserializeChildren(res.data))
 }
 
@@ -180,8 +182,8 @@ export async function deleteAbsenceRange(
 }
 
 function compareByProperty(
-  a: Child,
-  b: Child,
+  a: AttendanceChild,
+  b: AttendanceChild,
   property: 'firstName' | 'lastName'
 ) {
   if (a[property] < b[property]) {
@@ -193,7 +195,9 @@ function compareByProperty(
   return 0
 }
 
-function deserializeChildren(data: JsonOf<Child[]>): Child[] {
+function deserializeChildren(
+  data: JsonOf<AttendanceChild[]>
+): AttendanceChild[] {
   return data
     .map((child) => ({
       ...child,

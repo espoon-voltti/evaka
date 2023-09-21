@@ -205,7 +205,7 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
 describe('Message editor in child page', () => {
   test('Employee can open editor and send message', async () => {
     await listPage.selectChild(child.id)
-    await childPage.openMessageEditor()
+    await childPage.messageEditorLink.click()
     await pinLoginPage.login(employeeName, pin)
     await messageEditorPage.draftNewMessage({ title: 'Foo', content: 'Bar' })
     await messageEditorPage.sendEditedMessage()
@@ -214,7 +214,7 @@ describe('Message editor in child page', () => {
   test('Employee can open editor and send an urgent message', async () => {
     const message = { title: 'Foo', content: 'Bar', urgent: true }
     await listPage.selectChild(child.id)
-    await childPage.openMessageEditor()
+    await childPage.messageEditorLink.click()
     await pinLoginPage.login(employeeName, pin)
     await messageEditorPage.draftNewMessage(message)
     await messageEditorPage.sendEditedMessage()
@@ -354,7 +354,7 @@ describe('Child message thread', () => {
     )
 
     await listPage.selectChild(child.id)
-    await childPage.openMessageEditor()
+    await childPage.messageEditorLink.click()
     await pinLoginPage.login(employeeName, pin)
     await messageEditorPage.noReceiversInfo.waitUntilVisible()
   })

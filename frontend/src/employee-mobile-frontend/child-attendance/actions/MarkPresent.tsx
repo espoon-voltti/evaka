@@ -60,13 +60,13 @@ export default React.memo(function MarkPresent() {
 
   const { data: attendanceStatuses } = useQuery(attendanceStatusesQuery(unitId))
   const childLatestDeparture = useMemo(() => {
-    if (!attendanceStatuses) return null
+    if (!attendanceStatuses || !child.isSuccess) return null
     const attendances = childAttendanceStatus(
-      attendanceStatuses,
-      childId
+      child.value,
+      attendanceStatuses
     ).attendances
     return attendances.length > 0 ? attendances[0].departed : null
-  }, [attendanceStatuses, childId])
+  }, [attendanceStatuses, child])
 
   const isValidTime = useCallback(() => {
     const parsedTime = LocalTime.tryParse(time)

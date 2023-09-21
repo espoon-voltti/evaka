@@ -17,6 +17,7 @@ import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
 import { Reservation } from './reservations'
+import { ScheduleType } from './placement'
 import { UUID } from '../../types'
 
 /**
@@ -56,6 +57,26 @@ export interface Attendance {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.AttendanceChild
+*/
+export interface AttendanceChild {
+  backup: boolean
+  dailyNote: ChildDailyNote | null
+  dailyServiceTimes: DailyServiceTimesValue | null
+  dateOfBirth: LocalDate
+  firstName: string
+  groupId: UUID | null
+  id: UUID
+  imageUrl: string | null
+  lastName: string
+  placementType: PlacementType
+  preferredName: string
+  reservations: Reservation[]
+  scheduleType: ScheduleType
+  stickyNotes: ChildStickyNote[]
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.AttendanceStatus
 */
 export type AttendanceStatus =
@@ -86,25 +107,6 @@ export interface AttendanceTimes {
 export interface AttendancesRequest {
   attendances: AttendanceTimeRange[]
   date: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.Child
-*/
-export interface Child {
-  backup: boolean
-  dailyNote: ChildDailyNote | null
-  dailyServiceTimes: DailyServiceTimesValue | null
-  dateOfBirth: LocalDate
-  firstName: string
-  groupId: UUID | null
-  id: UUID
-  imageUrl: string | null
-  lastName: string
-  placementType: PlacementType
-  preferredName: string
-  reservations: Reservation[]
-  stickyNotes: ChildStickyNote[]
 }
 
 /**

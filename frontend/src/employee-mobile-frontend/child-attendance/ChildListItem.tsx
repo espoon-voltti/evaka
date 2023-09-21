@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import {
   AttendanceStatus,
-  Child
+  AttendanceChild
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
@@ -209,7 +209,7 @@ export default React.memo(function ChildListItem({
   )
 })
 
-function ChildReservationInfo(props: { child: Child }) {
+function ChildReservationInfo(props: { child: AttendanceChild }) {
   const { reservations, dailyServiceTimes } = props.child
   const { i18n } = useTranslation()
 

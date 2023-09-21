@@ -4,7 +4,7 @@
 
 import React, { Fragment } from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 
@@ -13,7 +13,7 @@ import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
   unitId: string
-  child: Child
+  child: AttendanceChild
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   groupIdOrAll: string | 'all'
 }

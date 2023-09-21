@@ -116,19 +116,17 @@ export default React.memo(function MarkDeparted() {
   const { data: attendanceStatuses, isError } = useQuery(
     attendanceStatusesQuery(unitId)
   )
-  const timeError = useMemo(
-    () =>
-      attendanceStatuses
-        ? validateTime(
-            i18n,
-            time,
-            childAttendanceStatus(attendanceStatuses, childId).attendances
-          )
-        : isError
-        ? i18n.common.loadingFailed
-        : undefined,
-    [attendanceStatuses, childId, i18n, isError, time]
-  )
+  const timeError = useMemo(() => {
+    if (attendanceStatuses && child.isSuccess) {
+      return validateTime(
+        i18n,
+        time,
+        childAttendanceStatus(child.value, attendanceStatuses).attendances
+      )
+    }
+    if (isError) return i18n.common.loadingFailed
+    return undefined
+  }, [attendanceStatuses, child, i18n, isError, time])
 
   const { mutateAsync: createDeparture } = useMutationResult(
     createDepartureMutation

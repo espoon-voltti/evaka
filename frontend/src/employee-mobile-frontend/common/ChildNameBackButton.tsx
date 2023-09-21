@@ -4,13 +4,13 @@
 
 import React from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { faArrowLeft } from 'lib-icons'
 
 import { BackButtonInline } from './components'
 
 interface Props {
-  child: Child
+  child: AttendanceChild
   onClick: () => void
 }
 

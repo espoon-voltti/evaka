@@ -74,7 +74,7 @@ describe('Child and group notes', () => {
 
     await notePage.fillNote(childDailyNote)
     await notePage.saveChildDailyNote()
-    await childPage.assertNotesExist()
+    await childPage.notesExistsBubble.waitUntilVisible()
     await childPage.openNotes()
     await notePage.assertNote(childDailyNote)
 
@@ -177,7 +177,7 @@ describe('Child and group notes (backup care)', () => {
 
     await notePage.fillNote(childDailyNote)
     await notePage.saveChildDailyNote()
-    await childPage.assertNotesExist()
+    await childPage.notesExistsBubble.waitUntilVisible()
     await childPage.openNotes()
     await notePage.assertNote(childDailyNote)
 

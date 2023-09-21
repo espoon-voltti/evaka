@@ -160,7 +160,7 @@ describe('Mobile PIN login', () => {
 
     await listPage.selectChild(child.id)
 
-    await childPage.openSensitiveInfo()
+    await childPage.sensitiveInfoLink.click()
     await pinLoginPage.login(employeeName, pin)
     await childPage.assertSensitiveInfoIsShown(childName)
     await childPage.assertSensitiveInfo(
@@ -172,7 +172,7 @@ describe('Mobile PIN login', () => {
 
   test('Wrong pin shows error, and user can log in with correct pin after that', async () => {
     await listPage.selectChild(child.id)
-    await childPage.openSensitiveInfo()
+    await childPage.sensitiveInfoLink.click()
     await pinLoginPage.login(employeeName, '9999')
     await pinLoginPage.assertWrongPinError()
     await pinLoginPage.submitPin(pin)
@@ -182,20 +182,20 @@ describe('Mobile PIN login', () => {
   test('PIN login is persistent', async () => {
     await listPage.selectChild(child.id)
 
-    await childPage.openSensitiveInfo()
+    await childPage.sensitiveInfoLink.click()
     // when user logs in
     await pinLoginPage.login(employeeName, pin)
 
     // then
     await childPage.assertSensitiveInfoIsShown(childName)
-    await childPage.goBackFromSensitivePage()
+    await childPage.goBackFromSensitivePage.click()
 
     // when opened again, no login is required
-    await childPage.openSensitiveInfo()
+    await childPage.sensitiveInfoLink.click()
     await childPage.assertSensitiveInfoIsShown(childName)
 
-    await childPage.goBackFromSensitivePage()
-    await childPage.goBack()
+    await childPage.goBackFromSensitivePage.click()
+    await childPage.goBack.click()
 
     expect(await topNav.getUserInitials()).toEqual('YY')
 
@@ -207,7 +207,7 @@ describe('Mobile PIN login', () => {
     await waitUntilEqual(() => topNav.getUserInitials(), '')
 
     await listPage.selectChild(child.id)
-    await childPage.openSensitiveInfo()
+    await childPage.sensitiveInfoLink.click()
 
     // then new login is required
     await pinLoginPage.login(employeeName, pin)

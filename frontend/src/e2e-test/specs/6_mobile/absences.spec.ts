@@ -53,7 +53,7 @@ beforeEach(async () => {
 describe('Future absences', () => {
   test('User can set and delete future absence periods', async () => {
     await listPage.selectChild(fixtures.familyWithTwoGuardians.children[0].id)
-    await childPage.markFutureAbsences()
+    await childPage.markAbsentBeforehandLink.click()
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 0)
 
     await absencesPage.markNewAbsencePeriod(
@@ -61,7 +61,7 @@ describe('Future absences', () => {
       LocalDate.todayInSystemTz().addWeeks(2),
       'SICKLEAVE'
     )
-    await childPage.markFutureAbsences()
+    await childPage.markAbsentBeforehandLink.click()
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 1)
 
     await absencesPage.markNewAbsencePeriod(
@@ -69,7 +69,7 @@ describe('Future absences', () => {
       LocalDate.todayInSystemTz().addWeeks(5),
       'SICKLEAVE'
     )
-    await childPage.markFutureAbsences()
+    await childPage.markAbsentBeforehandLink.click()
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 2)
 
     await absencesPage.deleteFirstAbsencePeriod()

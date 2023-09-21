@@ -9,100 +9,58 @@ import { Page } from '../../utils/page'
 export default class MobileChildPage {
   constructor(private readonly page: Page) {}
 
-  #childName = this.page.find('[data-qa="child-name"]')
-  #markPresentLink = this.page.find('[data-qa="mark-present-link"]')
-  #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
-  #markAbsentLink = this.page.find('[data-qa="mark-absent-link"]')
-  #cancelArrivalButton = this.page.find('[data-qa="cancel-arrival-button"]')
-  #returnToPresentButton = this.page.find('[data-qa="return-to-present-btn"]')
+  childName = this.page.findByDataQa('child-name')
+  termBreak = this.page.findByDataQa('term-break')
+  markPresentLink = this.page.findByDataQa('mark-present-link')
+  markDepartedLink = this.page.findByDataQa('mark-departed-link')
+  markAbsentLink = this.page.findByDataQa('mark-absent-link')
+  cancelArrivalButton = this.page.findByDataQa('cancel-arrival-button')
+  returnToPresentButton = this.page.findByDataQa('return-to-present-btn')
 
-  #modalOkButton = this.page.findByDataQa('modal-okBtn')
+  modalOkButton = this.page.findByDataQa('modal-okBtn')
 
-  #markAbsentBeforehandLink = this.page.find(
-    '[data-qa="mark-absent-beforehand"]'
-  )
-  #sensitiveInfoLink = this.page.find('[data-qa="link-child-sensitive-info"]')
+  markAbsentBeforehandLink = this.page.findByDataQa('mark-absent-beforehand')
+  sensitiveInfoLink = this.page.findByDataQa('link-child-sensitive-info')
 
-  #messageEditorLink = this.page.find('[data-qa="link-new-message"]')
+  messageEditorLink = this.page.findByDataQa('link-new-message')
 
-  #notesLink = this.page.find('[data-qa="link-child-daycare-daily-note"]')
+  notesLink = this.page.findByDataQa('link-child-daycare-daily-note')
 
-  #notesExistsBubble = this.page.find('[data-qa="daily-note-icon-bubble"]')
+  notesExistsBubble = this.page.findByDataQa('daily-note-icon-bubble')
 
-  #saveNoteButton = this.page.find('[data-qa="create-daily-note-btn"]')
+  saveNoteButton = this.page.findByDataQa('create-daily-note-btn')
 
-  #goBack = this.page.find('[data-qa="back-btn"]')
-  #goBackFromSensitivePage = this.page.find('[data-qa="go-back"]')
+  goBack = this.page.findByDataQa('back-btn')
+  goBackFromSensitivePage = this.page.findByDataQa('go-back')
 
-  #sensitiveInfo = {
-    name: this.page.find('[data-qa="child-info-name"]'),
-    allergies: this.page.find('[data-qa="child-info-allergies"]'),
-    diet: this.page.find('[data-qa="child-info-diet"]'),
-    medication: this.page.find('[data-qa="child-info-medication"]'),
+  sensitiveInfo = {
+    name: this.page.findByDataQa('child-info-name'),
+    allergies: this.page.findByDataQa('child-info-allergies'),
+    diet: this.page.findByDataQa('child-info-diet'),
+    medication: this.page.findByDataQa('child-info-medication'),
     contactName: (n: number) =>
-      this.page.find(`[data-qa="child-info-contact${n + 1}-name"]`),
+      this.page.findByDataQa(`child-info-contact${n + 1}-name`),
     contactPhone: (n: number) =>
-      this.page.find(`[data-qa="child-info-contact${n + 1}-phone"]`),
+      this.page.findByDataQa(`child-info-contact${n + 1}-phone`),
     contactEmail: (n: number) =>
-      this.page.find(`[data-qa="child-info-contact${n + 1}-email"]`),
+      this.page.findByDataQa(`child-info-contact${n + 1}-email`),
     backupPickupName: (n: number) =>
-      this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-name"]`),
+      this.page.findByDataQa(`child-info-backup-pickup${n + 1}-name`),
     backupPickupPhone: (n: number) =>
-      this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-phone"]`)
+      this.page.findByDataQa(`child-info-backup-pickup${n + 1}-phone`)
   }
 
-  #attendance = {
+  attendance = {
     arrivalTimes: this.page.findAllByDataQa('arrival-time'),
     departureTimes: this.page.findAllByDataQa('departure-time')
   }
 
   async waitUntilLoaded() {
-    await this.#childName.waitUntilVisible()
-  }
-
-  async markFutureAbsences() {
-    await this.#markAbsentBeforehandLink.click()
-  }
-
-  async selectMarkPresentView() {
-    await this.#markPresentLink.click()
-  }
-
-  async selectMarkDepartedView() {
-    await this.#markDepartedLink.click()
-  }
-
-  async selectMarkAbsentView() {
-    await this.#markAbsentLink.click()
-  }
-
-  async returnToComing() {
-    await this.#cancelArrivalButton.click()
-    await this.#modalOkButton.click()
-  }
-
-  async returnToPresent() {
-    await this.#returnToPresentButton.click()
-  }
-
-  async goBack() {
-    await this.#goBack.click()
-  }
-
-  async goBackFromSensitivePage() {
-    await this.#goBackFromSensitivePage.click()
-  }
-
-  async openSensitiveInfo() {
-    await this.#sensitiveInfoLink.click()
-  }
-
-  async openMessageEditor() {
-    await this.#messageEditorLink.click()
+    await this.childName.waitUntilVisible()
   }
 
   async assertSensitiveInfoIsShown(name: string) {
-    await this.#sensitiveInfo.name.assertTextEquals(name)
+    await this.sensitiveInfo.name.assertTextEquals(name)
   }
 
   async assertSensitiveInfo(
@@ -118,57 +76,49 @@ export default class MobileChildPage {
       phone: string
     }[]
   ) {
-    await this.#sensitiveInfo.allergies.assertTextEquals(
+    await this.sensitiveInfo.allergies.assertTextEquals(
       additionalInfo.allergies ?? 'should be defined'
     )
-    await this.#sensitiveInfo.diet.assertTextEquals(
+    await this.sensitiveInfo.diet.assertTextEquals(
       additionalInfo.diet ?? 'should be defined'
     )
-    await this.#sensitiveInfo.medication.assertTextEquals(
+    await this.sensitiveInfo.medication.assertTextEquals(
       additionalInfo.medication ?? 'should be defined'
     )
 
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
-      await this.#sensitiveInfo
+      await this.sensitiveInfo
         .contactName(i)
         .assertTextEquals(`${contact.firstName} ${contact.lastName}`)
       if (contact.phone) {
-        await this.#sensitiveInfo
-          .contactPhone(i)
-          .assertTextEquals(contact.phone)
+        await this.sensitiveInfo.contactPhone(i).assertTextEquals(contact.phone)
       }
       if (contact.email) {
-        await this.#sensitiveInfo
-          .contactEmail(i)
-          .assertTextEquals(contact.email)
+        await this.sensitiveInfo.contactEmail(i).assertTextEquals(contact.email)
       }
     }
 
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
-      await this.#sensitiveInfo
+      await this.sensitiveInfo
         .backupPickupName(i)
         .assertTextEquals(backupPickup.name)
-      await this.#sensitiveInfo
+      await this.sensitiveInfo
         .backupPickupPhone(i)
         .assertTextEquals(backupPickup.phone)
     }
   }
 
   async openNotes() {
-    await this.#notesLink.click()
-    await this.#saveNoteButton.waitUntilVisible()
-  }
-
-  async assertNotesExist() {
-    await this.#notesExistsBubble.waitUntilVisible()
+    await this.notesLink.click()
+    await this.saveNoteButton.waitUntilVisible()
   }
 
   async assertArrivalTimeInfoIsShown(arrivalTimeText: string) {
     await waitUntilEqual(
       () =>
-        this.#attendance.arrivalTimes
+        this.attendance.arrivalTimes
           .allInnerTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
@@ -180,7 +130,7 @@ export default class MobileChildPage {
   async assertDepartureTimeInfoIsShown(departureTimeText: string) {
     await waitUntilEqual(
       () =>
-        this.#attendance.departureTimes
+        this.attendance.departureTimes
           .allInnerTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')

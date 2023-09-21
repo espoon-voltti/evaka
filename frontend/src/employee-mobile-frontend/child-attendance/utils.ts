@@ -6,15 +6,15 @@ import { useMemo } from 'react'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
-  Child,
+  AttendanceChild,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 
 export function useChild(
-  children: Result<Child[]>,
+  children: Result<AttendanceChild[]>,
   childId: UUID
-): Result<Child> {
+): Result<AttendanceChild> {
   return useMemo(
     () =>
       children
@@ -32,14 +32,27 @@ export type AttendanceStatuses = Record<
 >
 
 export function childAttendanceStatus(
-  attendanceStatuses: Record<UUID, ChildAttendanceStatusResponse | undefined>,
-  childId: UUID
+  child: AttendanceChild,
+  attendanceStatuses: Record<UUID, ChildAttendanceStatusResponse | undefined>
 ): ChildAttendanceStatusResponse {
-  return attendanceStatuses[childId] ?? defaultChildAttendanceStatus
+  const status = attendanceStatuses[child.id]
+  if (status) return status
+
+  if (child.scheduleType === 'TERM_BREAK') {
+    return defaultChildAttendanceStatusTermBreak
+  }
+
+  return defaultChildAttendanceStatus
 }
 
 const defaultChildAttendanceStatus: ChildAttendanceStatusResponse = {
   status: 'COMING',
+  attendances: [],
+  absences: []
+}
+
+const defaultChildAttendanceStatusTermBreak: ChildAttendanceStatusResponse = {
+  status: 'ABSENT',
   attendances: [],
   absences: []
 }

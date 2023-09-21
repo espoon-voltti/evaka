@@ -4,14 +4,14 @@
 
 import React from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import { useTranslation } from '../../common/i18n'
 import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
-  child: Child
+  child: AttendanceChild
   unitId: string
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   groupIdOrAll: string | 'all'

@@ -8,7 +8,10 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
+import {
+  AttendanceChild,
+  GroupInfo
+} from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -77,7 +80,7 @@ export default React.memo(function AttendancePageWrapper() {
           getPresentCount: (groupId: string | undefined) => {
             const presentChildren = children.filter(
               (child) =>
-                childAttendanceStatus(attendanceStatuses, child.id).status ===
+                childAttendanceStatus(child, attendanceStatuses).status ===
                 'PRESENT'
             )
             return groupId === undefined
@@ -136,7 +139,7 @@ const ChildSearch = React.memo(function Search({
   unitId: string
   show: boolean
   toggleShow: () => void
-  unitChildren: Child[]
+  unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }) {
   const { i18n } = useTranslation()
@@ -155,7 +158,7 @@ const ChildSearch = React.memo(function Search({
             )
             .map((child) => ({
               ...child,
-              status: childAttendanceStatus(attendanceStatuses, child.id).status
+              status: childAttendanceStatus(child, attendanceStatuses).status
             })),
     [attendanceStatuses, freeText, unitChildren]
   )
