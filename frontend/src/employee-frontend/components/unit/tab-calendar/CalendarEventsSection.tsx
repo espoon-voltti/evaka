@@ -582,6 +582,27 @@ const CreateEventModal = React.memo(function CreateEventModal({
       .getOrElse([])
   }, [form.attendees, form.period, groupData])
 
+  const anyTreeNodeChecked = useMemo(() => {
+    const stack: TreeNode[] = [...form.attendees]
+
+    while (stack.length > 0) {
+      const node = stack.pop()!
+      if (node.checked) {
+        return true
+      }
+      if (node.children && node.children.length > 0) {
+        stack.push(...node.children)
+      }
+    }
+
+    return false
+  }, [form.attendees])
+
+  const formIsValid = useMemo(
+    () => !!form.title && anyTreeNodeChecked,
+    [form, anyTreeNodeChecked]
+  )
+
   return (
     <AsyncFormModal
       title={i18n.unit.calendar.events.create.title}
@@ -601,6 +622,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
       onSuccess={() => onClose(true)}
       rejectAction={() => onClose(false)}
       rejectLabel={i18n.common.cancel}
+      resolveDisabled={!formIsValid}
     >
       <Label>{i18n.unit.calendar.events.create.attendees}</Label>
       <Gap size="xs" />
