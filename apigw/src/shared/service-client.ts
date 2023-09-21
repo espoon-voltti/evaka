@@ -197,13 +197,16 @@ export async function identifyMobileDevice(
   }
 }
 
-export async function getMobileDevice(
+export async function authenticateMobileDevice(
   req: express.Request,
   id: UUID
 ): Promise<MobileDevice | undefined> {
   try {
-    const { data } = await client.get(
+    const { data } = await client.post(
       `/system/mobile-devices/${encodeURIComponent(id)}`,
+      {
+        userAgent: req.headers['user-agent'] ?? ''
+      },
       {
         headers: createServiceRequestHeaders(req, machineUser)
       }

@@ -277,6 +277,13 @@ export interface MergeRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.SystemController.MobileDeviceTracking
+*/
+export interface MobileDeviceTracking {
+  userAgent: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.NewEmployee
 */
 export interface NewEmployee {

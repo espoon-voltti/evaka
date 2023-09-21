@@ -156,7 +156,12 @@ class PairingsController(
                 dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
 
                 dbc.transaction {
-                    it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+                    it.respondPairingChallengeCreateDevice(
+                        clock,
+                        id,
+                        body.challengeKey,
+                        body.responseKey
+                    )
                 }
             }
             .also {
@@ -183,13 +188,15 @@ class PairingsController(
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
         db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
     ): MobileDeviceIdentity {
         return db.connect { dbc ->
                 dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
                 dbc.transaction { tx ->
-                    tx.validatePairing(id, body.challengeKey, body.responseKey).also {
+                    tx.validatePairing(clock, id, body.challengeKey, body.responseKey).also {
                         tx.upsertMobileDeviceUser(it.id)
                     }
                 }
@@ -216,9 +223,13 @@ class PairingsController(
     data class PairingStatusRes(val status: PairingStatus)
 
     @GetMapping("/public/pairings/{id}/status")
-    fun getPairingStatus(db: Database, @PathVariable id: PairingId): PairingStatusRes {
+    fun getPairingStatus(
+        db: Database,
+        clock: EvakaClock,
+        @PathVariable id: PairingId
+    ): PairingStatusRes {
         return PairingStatusRes(
-            db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } }
+            db.connect { dbc -> dbc.read { it.fetchPairingStatus(clock, id) } }
                 .also { Audit.PairingStatusRead.log(targetId = id, meta = mapOf("status" to it)) }
         )
     }

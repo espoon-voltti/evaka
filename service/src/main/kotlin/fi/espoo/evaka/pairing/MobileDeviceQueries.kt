@@ -4,10 +4,12 @@
 
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.util.UUID
 
@@ -53,6 +55,22 @@ fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice
         .mapTo<MobileDevice>()
         .toList()
 }
+
+fun Database.Transaction.updateDeviceTracking(
+    id: MobileDeviceId,
+    lastSeen: HelsinkiDateTime,
+    tracking: SystemController.MobileDeviceTracking
+) =
+    createUpdate<Any> {
+            sql(
+                """
+UPDATE mobile_device
+SET last_seen = ${bind(lastSeen)}, user_agent = ${bind(tracking.userAgent)}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .execute()
 
 fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
     // language=sql
