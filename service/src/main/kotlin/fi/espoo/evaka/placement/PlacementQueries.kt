@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.placement
 
-import fi.espoo.evaka.backupcare.deleteOrMoveConflictingBackupCares
+import fi.espoo.evaka.backupcare.recreateBackupCares
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -174,11 +174,6 @@ fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
 
 fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
     val placement = getPlacementChildAndRange(placementId)
-    deleteOrMoveConflictingBackupCares(
-        placement.childId,
-        FiniteDateRange(placement.startDate, placement.endDate),
-        FiniteDateRange(date, placement.endDate)
-    )
 
     createUpdate(
             // language=SQL
@@ -190,16 +185,12 @@ fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date
         .bind("id", placementId)
         .bind("date", date)
         .execute()
+
+    recreateBackupCares(placement.childId)
 }
 
 fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: LocalDate) {
     val placement = getPlacementChildAndRange(placementId)
-    deleteOrMoveConflictingBackupCares(
-        placement.childId,
-        FiniteDateRange(placement.startDate, placement.endDate),
-        FiniteDateRange(placement.startDate, date)
-    )
-
     createUpdate(
             // language=SQL
             """
@@ -210,6 +201,10 @@ fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: 
         .bind("id", placementId)
         .bind("date", date)
         .execute()
+
+    recreateBackupCares(
+        placement.childId,
+    )
 }
 
 fun Database.Transaction.updatePlacementStartAndEndDate(
@@ -218,17 +213,15 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
     endDate: LocalDate
 ) {
     val placement = getPlacementChildAndRange(placementId)
-    deleteOrMoveConflictingBackupCares(
-        placement.childId,
-        FiniteDateRange(placement.startDate, placement.endDate),
-        FiniteDateRange(startDate, endDate)
-    )
-
     createUpdate("UPDATE placement SET start_date = :start, end_date = :end WHERE id = :id")
         .bind("id", placementId)
         .bind("start", startDate)
         .bind("end", endDate)
         .execute()
+
+    recreateBackupCares(
+        placement.childId,
+    )
 }
 
 fun Database.Transaction.updatePlacementType(placementId: PlacementId, type: PlacementType) {
@@ -265,13 +258,11 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult
 
     deleteServiceNeedsFromPlacement(id)
 
-    deleteOrMoveConflictingBackupCares(
-        placement.childId,
-        FiniteDateRange(placement.startDate, placement.endDate),
-        null
-    )
-
     createUpdate("DELETE FROM placement WHERE id = :id").bind("id", id).execute()
+
+    recreateBackupCares(
+        placement.childId,
+    )
 
     return CancelPlacementResult(
         placement.childId,
@@ -868,11 +859,6 @@ fun Database.Transaction.terminatePlacementFrom(
     deleteServiceNeedsFromPlacementAfter(placementId, terminationDate)
 
     val placement = getPlacementChildAndRange(placementId)
-    deleteOrMoveConflictingBackupCares(
-        placement.childId,
-        FiniteDateRange(placement.startDate, placement.endDate),
-        FiniteDateRange(placement.startDate, terminationDate)
-    )
 
     createUpdate(
             """
@@ -892,6 +878,10 @@ WHERE id = :placementId
         .bind("placementTerminationDate", terminationDate)
         .bind("placementId", placementId)
         .execute()
+
+    recreateBackupCares(
+        placement.childId,
+    )
 }
 
 fun Database.Transaction.updatePlacementTermination(

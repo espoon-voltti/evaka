@@ -154,6 +154,10 @@ abstract class RangeBasedMap<
     /** Returns a new map with all the given ranges removed from the current contained ranges. */
     fun removeAll(ranges: Sequence<Range>): This = ranges.fold(this.entries, ::remove).toThis()
 
+    operator fun minus(range: Range): This = remove(range)
+    operator fun minus(ranges: Iterable<Range>): This = removeAll(ranges)
+    operator fun minus(ranges: Sequence<Range>): This = removeAll(ranges)
+
     /**
      * Returns true if the given range is fully contained by the map.
      *
