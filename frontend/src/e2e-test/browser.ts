@@ -118,17 +118,22 @@ async function forEachPage(
 
 async function captureScreenshots(namePrefix: string): Promise<void> {
   await forEachPage(async ({ ctxIndex, pageIndex, page }) => {
-    await page.screenshot({
-      type: 'png',
-      path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`,
-      timeout: 30_000
-    })
-    await page.screenshot({
-      type: 'png',
-      path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
-      fullPage: true,
-      timeout: 30_000
-    })
+    if (!page.isClosed()) {
+      await page.screenshot({
+        type: 'png',
+        path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`,
+        timeout: 30_000
+      })
+    }
+    // check again in case the previous screenshot operation crashed/closed something
+    if (!page.isClosed()) {
+      await page.screenshot({
+        type: 'png',
+        path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
+        fullPage: true,
+        timeout: 30_000
+      })
+    }
   })
 }
 
