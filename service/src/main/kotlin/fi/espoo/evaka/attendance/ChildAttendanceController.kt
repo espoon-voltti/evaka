@@ -719,6 +719,7 @@ private fun preschoolDaycareAbsenceThreshold(
 ): AbsenceThreshold? {
     if (placementType == PRESCHOOL_DAYCARE || placementType == PRESCHOOL_CLUB) {
         if (Duration.between(arrived, preschoolStart) > connectedDaycareBuffer) return null
+        if (Duration.between(arrived, preschoolEnd) < connectedDaycareBuffer) return null
 
         val threshold = preschoolEnd.plus(connectedDaycareBuffer)
         return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
