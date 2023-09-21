@@ -111,14 +111,6 @@ describe('Income', () => {
     // too many decimals
     await incomesSection.fillIncome('MAIN_INCOME', '123,123')
     await waitUntilTrue(() => incomesSection.saveIsDisabled())
-
-    await incomesSection.fillIncome('MAIN_INCOME', '100')
-    await waitUntilFalse(() => incomesSection.saveIsDisabled())
-
-    // inverted date range
-    await incomesSection.fillIncomeStartDate('31.1.2020')
-    await incomesSection.fillIncomeEndDate('1.1.2020')
-    await waitUntilTrue(() => incomesSection.saveIsDisabled())
   })
 
   it('Existing income item can have its values updated.', async () => {

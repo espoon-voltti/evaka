@@ -221,4 +221,69 @@ describe('DateRangePicker', () => {
     expect(onChange.mock.calls).toEqual([])
     onChange.mockClear()
   })
+
+  it('if start passes end, sets end to start', async () => {
+    const dateBefore = LocalDate.of(2023, 9, 1)
+    const dateAfter = dateBefore.addDays(5)
+    const onChange = jest.fn()
+
+    render(
+      <TestContextProvider translations={translations}>
+        <DateRangePicker
+          start={null}
+          end={dateBefore}
+          onChange={onChange}
+          locale="fi"
+        />
+      </TestContextProvider>
+    )
+
+    const [start] = screen.getAllByRole('textbox')
+    await userEvent.type(start, dateAfter.format())
+    expect(onChange.mock.calls).toEqual([[dateAfter, dateAfter]])
+    onChange.mockClear()
+  })
+
+  it('if end precedes start, sets start to end', async () => {
+    const dateBefore = LocalDate.of(2023, 9, 1)
+    const dateAfter = dateBefore.addDays(5)
+    const onChange = jest.fn()
+
+    render(
+      <TestContextProvider translations={translations}>
+        <DateRangePicker
+          start={dateAfter}
+          end={null}
+          onChange={onChange}
+          locale="fi"
+        />
+      </TestContextProvider>
+    )
+
+    const [_, end] = screen.getAllByRole('textbox')
+    await userEvent.type(end, dateBefore.format())
+    expect(onChange.mock.calls).toEqual([[dateBefore, dateBefore]])
+    onChange.mockClear()
+  })
+
+  it('start and end can be set to invalid order using props', () => {
+    const dateBefore = LocalDate.of(2023, 9, 1)
+    const dateAfter = dateBefore.addDays(5)
+    const onChange = jest.fn()
+
+    render(
+      <TestContextProvider translations={translations}>
+        <DateRangePicker
+          start={dateAfter}
+          end={dateBefore}
+          onChange={onChange}
+          locale="fi"
+        />
+      </TestContextProvider>
+    )
+
+    const [start, end] = screen.getAllByRole('textbox')
+    expect(start).toHaveValue(dateAfter.format())
+    expect(end).toHaveValue(dateBefore.format())
+  })
 })
