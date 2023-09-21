@@ -171,6 +171,10 @@ function configurePage(page: Page) {
     // eslint-disable-next-line no-console
     console.log(`Page ${page.url()}`, err)
   })
+  page.on('crash', () => {
+    // eslint-disable-next-line no-console
+    console.log(`Page ${page.url()} crashed`)
+  })
 }
 
 export interface EvakaBrowserContextOptions {
