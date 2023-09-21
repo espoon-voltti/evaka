@@ -46,6 +46,7 @@ export interface Translations {
     message: string
     returnMessage: string
   }
+  messages: { staffAnnotation: string }
   notifications: {
     close: string
   }

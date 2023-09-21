@@ -51,6 +51,9 @@ const components: Translations = {
       'The identification process failed or was stopped. To log in, go back and try again.',
     returnMessage: 'Go back'
   },
+  messages: {
+    staffAnnotation: 'Staff'
+  },
   notifications: {
     close: 'Close'
   },

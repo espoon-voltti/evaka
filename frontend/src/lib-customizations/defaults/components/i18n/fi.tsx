@@ -50,6 +50,9 @@ const components: Translations = {
       'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
     returnMessage: 'Palaa takaisin'
   },
+  messages: {
+    staffAnnotation: 'Henkilökunta'
+  },
   notifications: {
     close: 'Sulje'
   },

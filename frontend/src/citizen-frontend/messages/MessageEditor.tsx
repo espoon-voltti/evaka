@@ -213,7 +213,11 @@ export default React.memo(function MessageEditor({
                 }
                 noOptionsMessage={i18n.messages.messageEditor.noResults}
                 getOptionId={({ id }) => id}
-                getOptionLabel={({ name }) => name}
+                getOptionLabel={({ name, type }) =>
+                  type === 'GROUP'
+                    ? `${name} (${i18n.messages.staffAnnotation})`
+                    : name
+                }
                 autoFocus={true}
                 data-qa="select-receiver"
               />

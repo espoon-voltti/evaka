@@ -51,6 +51,9 @@ const components: Translations = {
       'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
     returnMessage: 'Gå tillbaka till inloggningen'
   },
+  messages: {
+    staffAnnotation: 'Personal'
+  },
   notifications: {
     close: 'Stäng'
   },

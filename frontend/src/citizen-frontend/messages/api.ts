@@ -6,7 +6,6 @@ import sortBy from 'lodash/sortBy'
 
 import { Paged } from 'lib-common/api'
 import {
-  deserializeMessageAccount,
   deserializeMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging'
@@ -23,7 +22,6 @@ import { UUID } from 'lib-common/types'
 import { client } from '../api-client'
 
 export async function getReceivedMessages(
-  staffAnnotation: string,
   page: number,
   pageSize: number
 ): Promise<Paged<MessageThread>> {
@@ -33,25 +31,16 @@ export async function getReceivedMessages(
     })
     .then((res) => ({
       ...res.data,
-      data: res.data.data.map((d) =>
-        deserializeMessageThread(d, staffAnnotation)
-      )
+      data: res.data.data.map((d) => deserializeMessageThread(d))
     }))
 }
 
-export async function getReceivers(
-  staffAnnotation: string
-): Promise<GetReceiversResponse> {
+export async function getReceivers(): Promise<GetReceiversResponse> {
   return client
     .get<GetReceiversResponse>(`/citizen/messages/receivers`)
     .then((res) => ({
       ...res.data,
-      messageAccounts: sortBy(
-        res.data.messageAccounts.map((d) =>
-          deserializeMessageAccount(d, staffAnnotation)
-        ),
-        'name'
-      )
+      messageAccounts: sortBy(res.data.messageAccounts, 'name')
     }))
 }
 
@@ -81,21 +70,19 @@ export async function sendMessage(message: CitizenMessageBody): Promise<UUID> {
 
 export type ReplyToThreadParams = ReplyToMessageBody & {
   messageId: UUID
-  staffAnnotation: string
 }
 
 export async function replyToThread({
   messageId,
   content,
-  recipientAccountIds,
-  staffAnnotation
+  recipientAccountIds
 }: ReplyToThreadParams): Promise<ThreadReply> {
   return client
     .post<JsonOf<ThreadReply>>(`/citizen/messages/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
-    .then(({ data }) => deserializeReplyResponse(data, staffAnnotation))
+    .then(({ data }) => deserializeReplyResponse(data))
 }
 
 export async function archiveThread(id: UUID): Promise<void> {

@@ -19,19 +19,15 @@ import {
 
 const queryKeys = createQueryKeys('messages', {
   allReceivedMessages: () => ['receivedMessages'],
-  receivedMessages: (staffAnnotation: string, pageSize: number) => [
-    'receivedMessages',
-    staffAnnotation,
-    pageSize
-  ],
-  receivers: (staffAnnotation: string) => ['receivers', staffAnnotation],
+  receivedMessages: (pageSize: number) => ['receivedMessages', pageSize],
+  receivers: () => ['receivers'],
   unreadMessagesCount: () => ['unreadMessagesCount'],
   messageAccount: () => ['messageAccount']
 })
 
 export const receivedMessagesQuery = infiniteQuery({
-  api: (staffAnnotation: string, pageSize: number) => (page: number) =>
-    getReceivedMessages(staffAnnotation, page, pageSize),
+  api: (pageSize: number) => (page: number) =>
+    getReceivedMessages(page, pageSize),
   queryKey: queryKeys.receivedMessages,
   firstPageParam: 1,
   getNextPageParam: (lastPage, pages) => {

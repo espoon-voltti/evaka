@@ -18,8 +18,6 @@ import Container from 'lib-components/layout/Container'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../localization'
-
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import ThreadList from './ThreadList'
@@ -47,8 +45,7 @@ export default React.memo(function MessagesPage() {
     useContext(MessageContext)
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
-  const t = useTranslation()
-  const receivers = useQueryResult(receiversQuery(t.messages.staffAnnotation))
+  const receivers = useQueryResult(receiversQuery)
 
   const user = useUser()
 

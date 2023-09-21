@@ -53,6 +53,7 @@ export const testTranslations: Translations = {
     message: '',
     returnMessage: ''
   },
+  messages: { staffAnnotation: '' },
   notifications: {
     close: ''
   },
