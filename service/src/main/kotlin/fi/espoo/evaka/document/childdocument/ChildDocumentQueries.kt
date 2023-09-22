@@ -163,6 +163,20 @@ fun Database.Transaction.markChildDocumentAsRead(
         .execute()
 }
 
+fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boolean {
+    return createQuery(
+            """
+        SELECT (published_content IS NOT NULL AND content = published_content) AS up_to_date 
+        FROM child_document 
+        WHERE id = :id
+    """
+        )
+        .bind("id", id)
+        .mapTo<Boolean>()
+        .firstOrNull()
+        ?: throw NotFound("Document $id not found")
+}
+
 fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {
     createUpdate(
             """
@@ -236,6 +250,22 @@ fun Database.Transaction.changeStatusAndPublish(
             )
         }
         .updateExactlyOne()
+}
+
+fun Database.Transaction.markCompletedAndPublish(
+    ids: List<ChildDocumentId>,
+    now: HelsinkiDateTime
+) {
+    createUpdate<Any> {
+            sql(
+                """
+                UPDATE child_document
+                SET status = 'COMPLETED', published_at = ${bind(now)}, published_content = content
+                WHERE id = ANY(${bind(ids)})
+            """
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {

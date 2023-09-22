@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/child-documents")
 class ChildDocumentController(
     private val accessControl: AccessControl,
-    private val emailNotificationService: ChildDocumentNotificationService
+    private val emailNotificationService: ChildDocumentService
 ) {
     @PostMapping
     fun createDocument(
@@ -198,8 +198,15 @@ class ChildDocumentController(
                         Action.ChildDocument.PUBLISH,
                         documentId
                     )
+                    val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.publishChildDocument(documentId, clock.now())
-                    emailNotificationService.scheduleEmailNotification(tx, documentId, clock.now())
+                    if (!wasUpToDate) {
+                        emailNotificationService.scheduleEmailNotification(
+                            tx,
+                            documentId,
+                            clock.now()
+                        )
+                    }
                 }
             }
             .also { Audit.ChildDocumentPublish.log(targetId = documentId) }
@@ -235,8 +242,15 @@ class ChildDocumentController(
                             goingForward = true
                         )
 
+                    val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.changeStatusAndPublish(documentId, statusTransition, clock.now())
-                    emailNotificationService.scheduleEmailNotification(tx, documentId, clock.now())
+                    if (!wasUpToDate) {
+                        emailNotificationService.scheduleEmailNotification(
+                            tx,
+                            documentId,
+                            clock.now()
+                        )
+                    }
                 }
             }
             .also {
