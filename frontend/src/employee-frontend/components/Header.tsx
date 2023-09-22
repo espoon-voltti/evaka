@@ -302,15 +302,14 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.reports}</NavLinkText>
-                  {featureFlags.assistanceNeedDecisions &&
-                    assistanceNeedDecisionCounts
-                      .map(
-                        (unread) =>
-                          unread > 0 && (
-                            <UnreadCount key="unread">{unread}</UnreadCount>
-                          )
-                      )
-                      .getOrElse(null)}
+                  {assistanceNeedDecisionCounts
+                    .map(
+                      (unread) =>
+                        unread > 0 && (
+                          <UnreadCount key="unread">{unread}</UnreadCount>
+                        )
+                    )
+                    .getOrElse(null)}
                 </NavLinkWrapper>
               </NavbarLink>
             )}

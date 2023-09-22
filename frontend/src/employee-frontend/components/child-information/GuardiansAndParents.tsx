@@ -9,7 +9,6 @@ import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
@@ -47,13 +46,12 @@ export default React.memo(function GuardiansAndParents({
         <Guardians />
         <Gap size="XL" />
         <FridgeParents />
-        {featureFlags.fosterParents &&
-          permittedActions.has('READ_FOSTER_PARENTS') && (
-            <>
-              <Gap size="XL" />
-              <FosterParents id={id} />
-            </>
-          )}
+        {permittedActions.has('READ_FOSTER_PARENTS') && (
+          <>
+            <Gap size="XL" />
+            <FosterParents id={id} />
+          </>
+        )}
       </CollapsibleContentArea>
     </div>
   )

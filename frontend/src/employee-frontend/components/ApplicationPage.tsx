@@ -270,23 +270,16 @@ export default React.memo(function ApplicationPage() {
                       'CREATE_NOTE'
                     )}
                   />
-                  {featureFlags.serviceWorkerMessaging && (
-                    <>
-                      <Gap size="m" />
-                      <AddButton
-                        onClick={() =>
-                          window.open(
-                            getSendMessageUrl(applicationData),
-                            '_blank'
-                          )
-                        }
-                        text={i18n.application.messaging.sendMessage}
-                        darker
-                        icon={faEnvelope}
-                        data-qa="send-message-button"
-                      />
-                    </>
-                  )}
+                  <Gap size="m" />
+                  <AddButton
+                    onClick={() =>
+                      window.open(getSendMessageUrl(applicationData), '_blank')
+                    }
+                    text={i18n.application.messaging.sendMessage}
+                    darker
+                    icon={faEnvelope}
+                    data-qa="send-message-button"
+                  />
                 </SidebarArea>
               )}
             </FixedSpaceRow>

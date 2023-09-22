@@ -8,7 +8,6 @@ import { getAssistanceNeedDecisionUnreadCount } from 'employee-frontend/api/repo
 import { UserContext } from 'employee-frontend/state/user'
 import { Loading, Result, Success } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { featureFlags } from 'lib-customizations/employee'
 
 export interface AssistanceNeedDecisionReportState {
   assistanceNeedDecisionCounts: Result<number>
@@ -34,7 +33,6 @@ export const AssistanceNeedDecisionReportContextProvider = React.memo(
     const [assistanceNeedDecisionCounts, refreshAssistanceNeedDecisionCounts] =
       useApiState(
         () =>
-          featureFlags.assistanceNeedDecisions &&
           user?.accessibleFeatures.assistanceNeedDecisionsReport
             ? getAssistanceNeedDecisionUnreadCount()
             : Promise.resolve(Success.of(0)),

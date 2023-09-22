@@ -297,24 +297,23 @@ export default React.memo(function Reports() {
                 i18n={i18n.reports.raw}
               />
             )}
-            {featureFlags.assistanceNeedDecisions &&
-              reports.has('ASSISTANCE_NEED_DECISIONS') && (
-                <Report
-                  path="/reports/assistance-need-decisions"
-                  color={colors.main.m2}
-                  icon={faHandHolding}
-                  i18n={i18n.reports.assistanceNeedDecisions}
-                >
-                  {assistanceNeedDecisionCounts
-                    .map(
-                      (unread) =>
-                        unread > 0 && (
-                          <UnreadCount key="unread">{unread}</UnreadCount>
-                        )
-                    )
-                    .getOrElse(null)}
-                </Report>
-              )}
+            {reports.has('ASSISTANCE_NEED_DECISIONS') && (
+              <Report
+                path="/reports/assistance-need-decisions"
+                color={colors.main.m2}
+                icon={faHandHolding}
+                i18n={i18n.reports.assistanceNeedDecisions}
+              >
+                {assistanceNeedDecisionCounts
+                  .map(
+                    (unread) =>
+                      unread > 0 && (
+                        <UnreadCount key="unread">{unread}</UnreadCount>
+                      )
+                  )
+                  .getOrElse(null)}
+              </Report>
+            )}
             {reports.has('MANUAL_DUPLICATION') && (
               <Report
                 path="/reports/manual-duplication"

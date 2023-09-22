@@ -19,7 +19,6 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -122,24 +121,22 @@ export default React.memo(function CreateOrEditTemplateModal({
           )}
         </FixedSpaceColumn>
 
-        {featureFlags.leops && (
-          <FixedSpaceColumn spacing="xxs">
-            <Label>{t.type}</Label>
-            {isEditableTypeAndLang ? (
-              <Select
-                items={[...curriculumTypes]}
-                selectedItem={type}
-                onChange={(value) => {
-                  if (value) setType(value)
-                }}
-                getItemLabel={(option) => t.types[option]}
-                data-qa="select-type"
-              />
-            ) : (
-              <span>{t.types[type]}</span>
-            )}
-          </FixedSpaceColumn>
-        )}
+        <FixedSpaceColumn spacing="xxs">
+          <Label>{t.type}</Label>
+          {isEditableTypeAndLang ? (
+            <Select
+              items={[...curriculumTypes]}
+              selectedItem={type}
+              onChange={(value) => {
+                if (value) setType(value)
+              }}
+              getItemLabel={(option) => t.types[option]}
+              data-qa="select-type"
+            />
+          ) : (
+            <span>{t.types[type]}</span>
+          )}
+        </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.language}</Label>

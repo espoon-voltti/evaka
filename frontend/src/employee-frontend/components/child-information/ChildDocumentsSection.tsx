@@ -59,9 +59,7 @@ export default React.memo(function ChildDocumentsSection({
   )
 
   const hasChildDocumentsPermission = useMemo(
-    () =>
-      permittedActions.has('READ_CHILD_DOCUMENT') &&
-      featureFlags.assistanceNeedDecisions,
+    () => permittedActions.has('READ_CHILD_DOCUMENT'),
     [permittedActions]
   )
 

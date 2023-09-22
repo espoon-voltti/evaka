@@ -186,19 +186,9 @@ interface BaseFeatureFlags {
    */
 
   /**
-   * EXPERIMENTAL: Enable support for LEOPS (lapsen esiopetussuunnitelma)
-   */
-  leops?: boolean
-
-  /**
    * EXPERIMENTAL: Enable payments for voucher units (palvelusetelimaksatus)
    */
   voucherUnitPayments?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable assistance need decisions (tuen päätös)
-   */
-  assistanceNeedDecisions?: boolean
 
   /**
    * EXPERIMENTAL: Enable assistance need preschool decisions (esiopetuksen tuen päätös)
@@ -214,16 +204,6 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable attendance types for realtime staff attendances, instead of just present/absent
    */
   staffAttendanceTypes?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable support for foster parents
-   */
-  fosterParents?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable support for messaging to application guardian for service workers (palveluohjauksen viestintä)
-   */
-  serviceWorkerMessaging?: boolean
 
   /**
    * EXPERIMENTAL: Enable support for duplicating a child as a new SSN-less person

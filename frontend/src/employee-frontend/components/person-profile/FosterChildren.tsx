@@ -16,7 +16,6 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, Label, P } from 'lib-components/typography'
-import { featureFlags } from 'lib-customizations/employee'
 
 import {
   createFosterChildRelationship,
@@ -77,10 +76,6 @@ export default React.memo(function FosterChildren({
     clearUiMode()
     setDeleting(undefined)
   }, [clearUiMode])
-
-  if (!featureFlags.fosterParents) {
-    return null
-  }
 
   return (
     <>
