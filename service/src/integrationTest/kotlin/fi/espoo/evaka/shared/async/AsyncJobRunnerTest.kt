@@ -118,7 +118,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
-        asyncJobRunner.startBackgroundPolling(Duration.ofSeconds(1))
+        asyncJobRunner.startBackgroundPolling(RealEvakaClock(), Duration.ofSeconds(1))
         future.get(10, TimeUnit.SECONDS)
     }
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.dev
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
@@ -159,7 +160,6 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
-import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -228,11 +228,12 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/dev-api")
 class DevApi(
     private val personService: PersonService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val asyncJobRunners: List<AsyncJobRunner<*>>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
+    private val env: EvakaEnv,
     private val bucketEnv: BucketEnv,
     private val emailMessageProvider: IEmailMessageProvider
 ) {
@@ -240,7 +241,7 @@ class DevApi(
     private val digitransit = MockDigitransit()
 
     private fun runAllAsyncJobs(clock: EvakaClock) {
-        listOf(asyncJobRunner).forEach {
+        asyncJobRunners.forEach {
             it.runPendingJobsSync(clock)
             it.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
         }
@@ -249,6 +250,19 @@ class DevApi(
     @GetMapping("/")
     fun healthCheck() {
         // HTTP 200
+    }
+
+    @PostMapping("/test-mode")
+    fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
+        asyncJobRunners.forEach {
+            if (enabled) {
+                it.stopBackgroundPolling()
+                it.disableAfterCommitHooks()
+            } else if (!env.asyncJobRunnerDisabled) {
+                it.startBackgroundPolling()
+                it.enableAfterCommitHooks()
+            }
+        }
     }
 
     @PostMapping("/reset-db")

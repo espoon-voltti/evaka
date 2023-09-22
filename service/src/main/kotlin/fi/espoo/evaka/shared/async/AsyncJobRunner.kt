@@ -132,24 +132,33 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             }
         }
 
-    fun startBackgroundPolling(pollingInterval: Duration) {
+    fun startBackgroundPolling(
+        clock: EvakaClock = RealEvakaClock(),
+        pollingInterval: Duration = Duration.ofMinutes(1)
+    ) {
         val newTimer =
             fixedRateTimer("$name.timer", period = pollingInterval.toMillis()) {
-                pools.forEach { it.runPendingJobs(RealEvakaClock(), maxCount = 1_000) }
+                pools.forEach { it.runPendingJobs(clock, maxCount = 1_000) }
             }
         backgroundTimer.getAndSet(newTimer)?.cancel()
     }
 
-    fun enableAfterCommitHooks() =
+    fun stopBackgroundPolling() {
+        backgroundTimer.getAndSet(null)?.cancel()
+    }
+
+    fun enableAfterCommitHooks(clock: EvakaClock = RealEvakaClock()) =
         stateLock.write {
             afterCommitHooks =
                 pools
                     .flatMap { pool ->
-                        val hook = { pool.runPendingJobs(RealEvakaClock(), maxCount = 1_000) }
+                        val hook = { pool.runPendingJobs(clock, maxCount = 1_000) }
                         (jobsPerPool[pool.id] ?: emptySet()).map { jobType -> jobType to hook }
                     }
                     .toMap()
         }
+
+    fun disableAfterCommitHooks() = stateLock.write { afterCommitHooks = emptyMap() }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int {
         var totalCount = 0
@@ -176,7 +185,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     }
 
     override fun close() {
-        backgroundTimer.getAndSet(null)?.cancel()
+        stopBackgroundPolling()
         pools.forEach { it.close() }
     }
 }

@@ -51,7 +51,7 @@ class AsyncJobConfig {
                 asyncJobRunners.forEach {
                     it.registerMeters(meterRegistry)
                     it.enableAfterCommitHooks()
-                    it.startBackgroundPolling(Duration.ofMinutes(1))
+                    it.startBackgroundPolling()
                     logger.info("Async job runner ${it.name} started")
                 }
             }

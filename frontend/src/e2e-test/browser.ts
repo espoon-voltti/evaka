@@ -22,6 +22,7 @@ import {
 } from 'lib-customizations/types'
 
 import config from './config'
+import { setTestMode } from './dev-api'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -40,6 +41,7 @@ const DISABLE_JEST_TIMEOUT = 1_000_000_000 // 0 or Infinity unfortunately don't 
 jest.setTimeout(config.playwright.headless ? 60_000 : DISABLE_JEST_TIMEOUT)
 
 beforeAll(async () => {
+  await setTestMode(true)
   browser = await playwright[config.playwright.browser].launch({
     headless: config.playwright.headless,
     tracesDir: '/tmp/playwright-traces'
@@ -64,6 +66,7 @@ afterEach(async () => {
 afterAll(async () => {
   await browser?.close()
   delete global.evaka
+  await setTestMode(false)
 })
 
 const initScript = (options: EvakaBrowserContextOptions) => {
