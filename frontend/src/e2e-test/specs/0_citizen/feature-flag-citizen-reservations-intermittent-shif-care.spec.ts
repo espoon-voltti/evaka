@@ -14,7 +14,6 @@ import { Fixture, careAreaFixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage, {
   FormatterReservation,
-  StartAndEndTimeReservation,
   TwoPartReservation
 } from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
@@ -55,11 +54,9 @@ describe.each(e)(
         reservation.endTime
       )
 
-      await calendarPage.assertReservations(
-        firstReservationDay,
-        [reservation],
-        getReservationOverdraftOutput
-      )
+      await calendarPage.assertReservations(firstReservationDay, [
+        { ...reservation, specifier: 'Ilta-/vuorohoito' }
+      ])
     })
 
     test('Citizen creates a repeating reservation on a bank holiday', async () => {
@@ -89,11 +86,9 @@ describe.each(e)(
         reservation.endTime
       )
 
-      await calendarPage.assertReservations(
-        firstReservationDay,
-        [reservation],
-        getReservationOverdraftOutput
-      )
+      await calendarPage.assertReservations(firstReservationDay, [
+        { ...reservation, specifier: 'Ilta-/vuorohoito' }
+      ])
     })
 
     test('Citizen creates a repeating reservation for a weekend', async () => {
@@ -119,11 +114,9 @@ describe.each(e)(
         reservation.endTime
       )
 
-      await calendarPage.assertReservations(
-        firstReservationDay,
-        [reservation],
-        getReservationOverdraftOutput
-      )
+      await calendarPage.assertReservations(firstReservationDay, [
+        { ...reservation, specifier: 'Ilta-/vuorohoito' }
+      ])
     })
 
     test('Citizen creates a repeating 2-part reservation outside placement unit times', async () => {
@@ -321,9 +314,6 @@ const addTestData = async (date: LocalDate) => {
     child
   }
 }
-
-const getReservationOverdraftOutput = (res: StartAndEndTimeReservation) =>
-  `${res.startTime}–${res.endTime} Ilta-/vuorohoito`
 
 const getFormatterReservationOutput = (res: FormatterReservation) =>
   res.isOverdraft

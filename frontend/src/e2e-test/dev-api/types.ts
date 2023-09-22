@@ -17,7 +17,11 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
-import { Language } from 'lib-common/generated/api-types/daycare'
+import {
+  AbsenceCategory,
+  AbsenceType,
+  Language
+} from 'lib-common/generated/api-types/daycare'
 import {
   DecisionStatus,
   DecisionType
@@ -96,7 +100,7 @@ export interface ChildAttendance {
   childId: UUID
   unitId: UUID
   arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
 }
 
 export interface DaycareGroup {
@@ -652,6 +656,17 @@ export interface DevStaffAttendancePlan {
   startTime: HelsinkiDateTime
   endTime: HelsinkiDateTime
   description: string | null
+}
+
+export interface DevAbsence {
+  id: UUID
+  childId: UUID
+  date: LocalDate
+  absenceType: AbsenceType
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
+  absenceCategory: AbsenceCategory
+  questionnaireId: UUID | null
 }
 
 export interface DevHoliday {

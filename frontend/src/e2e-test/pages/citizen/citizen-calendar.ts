@@ -6,7 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 
 export type FormatterReservation = {
@@ -28,20 +28,41 @@ interface FreeAbsenceReservation extends BaseReservation {
   freeAbsence: true
 }
 
-export interface StartAndEndTimeReservation extends BaseReservation {
+export interface SingleReservation extends BaseReservation {
   startTime: string
   endTime: string
+  specifier?: string
+}
+
+export interface DoubleReservation extends BaseReservation {
+  startTime1: string
+  endTime1: string
+  specifier1?: string
+  startTime2: string
+  endTime2: string
+  specifier2?: string
 }
 
 interface MissingReservation extends BaseReservation {
   missing: true
 }
 
+interface PresentReservation extends BaseReservation {
+  present: true
+}
+
+interface TextReservation extends BaseReservation {
+  text: string
+}
+
 type Reservation =
   | AbsenceReservation
   | FreeAbsenceReservation
-  | StartAndEndTimeReservation
+  | SingleReservation
+  | DoubleReservation
   | MissingReservation
+  | PresentReservation
+  | TextReservation
 
 export default class CitizenCalendarPage {
   constructor(
@@ -127,14 +148,56 @@ export default class CitizenCalendarPage {
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
 
-  async assertReservations(
+  async assertHoliday(date: LocalDate) {
+    await this.dayCell(date)
+      .findByDataQa('reservations')
+      .findByDataQa('holiday')
+      .waitUntilVisible()
+  }
+
+  readonly holidayPeriodBackground = 'rgb(253, 230, 219)'
+  readonly nonEditableAbsenceBackground = 'rgb(218, 221, 226)'
+
+  private async getDayBackgroundColor(date: LocalDate) {
+    return await this.dayCell(date).evaluate(
+      (el) => getComputedStyle(el).backgroundColor
+    )
+  }
+
+  async assertDayHighlight(
     date: LocalDate,
-    reservations: Reservation[],
-    formatter?: (res: StartAndEndTimeReservation) => string
+    state: 'none' | 'holidayPeriod' | 'nonEditableAbsence'
   ) {
-    const reservationRows = this.dayCell(date)
+    const expectedBackground =
+      state === 'holidayPeriod'
+        ? this.holidayPeriodBackground
+        : state === 'nonEditableAbsence'
+        ? this.nonEditableAbsenceBackground
+        : null
+    if (expectedBackground !== null) {
+      await waitUntilEqual(
+        () => this.getDayBackgroundColor(date),
+        expectedBackground
+      )
+    } else {
+      await waitUntilTrue(async () => {
+        const bg = await this.getDayBackgroundColor(date)
+        // White or transparent
+        return bg === 'rgb(255, 255, 255)' || bg === 'rgba(0, 0, 0, 0)'
+      })
+    }
+  }
+
+  async assertReservations(date: LocalDate, reservations: Reservation[]) {
+    const day = this.dayCell(date)
+    const reservationRows = day
       .findByDataQa('reservations')
       .findAllByDataQa('reservation-group')
+
+    if (reservations.length === 0) {
+      await day.waitUntilVisible()
+    }
+    await reservationRows.assertCount(reservations.length)
 
     for (const [i, reservation] of reservations.entries()) {
       const row = reservationRows.nth(i)
@@ -153,9 +216,19 @@ export default class CitizenCalendarPage {
             ? 'Maksuton poissaolo'
             : 'missing' in reservation
             ? 'Ilmoitus puuttuu'
-            : formatter
-            ? formatter(reservation)
-            : `${reservation.startTime}–${reservation.endTime}`
+            : 'present' in reservation
+            ? 'Läsnä'
+            : 'text' in reservation
+            ? reservation.text
+            : 'startTime1' in reservation
+            ? `${reservation.startTime1}–${reservation.endTime1}${
+                reservation.specifier1 ? ` ${reservation.specifier1}` : ''
+              }, ${reservation.startTime2}–${reservation.endTime2}${
+                reservation.specifier2 ? ` ${reservation.specifier2}` : ''
+              }`
+            : `${reservation.startTime}–${reservation.endTime}${
+                reservation.specifier ? ` ${reservation.specifier}` : ''
+              }`
         )
     }
   }
