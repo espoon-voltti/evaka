@@ -176,6 +176,41 @@ interface BaseFeatureFlags {
   placementGuarantee: boolean
 
   /**
+   * Enable support for duplicating a child as a new SSN-less person
+   */
+  personDuplicate: boolean
+
+  /**
+   * Enable support for intermittent shift care
+   */
+  intermittentShiftCare: boolean
+
+  /**
+   * Show attendance summary for contract days children
+   */
+  citizenAttendanceSummary: boolean
+
+  /**
+   * Enables no absence type in mobile
+   */
+  noAbsenceType: boolean
+
+  /**
+   * Enable payments for voucher units (palvelusetelimaksatus)
+   */
+  voucherUnitPayments: boolean
+
+  /**
+   * Enable language selection for assistance need decisions
+   */
+  assistanceNeedDecisionsLanguageSelect: boolean
+
+  /**
+   * Enable attendance types for realtime staff attendances, instead of just present/absent
+   */
+  staffAttendanceTypes: boolean
+
+  /**
    * Experimental flags are features in development: features that aren't yet
    * recommended/tested for production usage but can be enabled for testing
    * in eVaka implementations. They are optional (have `?` after the property name)
@@ -186,44 +221,14 @@ interface BaseFeatureFlags {
    */
 
   /**
-   * EXPERIMENTAL: Enable payments for voucher units (palvelusetelimaksatus)
-   */
-  voucherUnitPayments?: boolean
-
-  /**
    * EXPERIMENTAL: Enable assistance need preschool decisions (esiopetuksen tuen päätös)
    */
   assistanceNeedPreschoolDecisions?: boolean
 
   /**
-   * EXPERIMENTAL: Enable language selection for assistance need decisions
-   */
-  assistanceNeedDecisionsLanguageSelect?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable attendance types for realtime staff attendances, instead of just present/absent
-   */
-  staffAttendanceTypes?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable support for duplicating a child as a new SSN-less person
-   */
-  personDuplicate?: boolean
-
-  /**
    * EXPERIMENTAL: Enable support for new template editor and child documents
    */
   childDocuments?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable support for intermittent shift care
-   */
-  intermittentShiftCare?: boolean
-
-  /**
-   * EXPERIMENTAL: Show attendance summary for contract days children
-   */
-  citizenAttendanceSummary?: boolean
 
   /**
    * EXPERIMENTAL: Allows marking fee decision drafts as ignored
@@ -234,11 +239,6 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Allows creating and displaying HOJKS documents
    */
   hojks?: boolean
-
-  /**
-   * EXPERIMENTAL: Enables no absence type in mobile
-   */
-  noAbsenceType?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
