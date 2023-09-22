@@ -31,10 +31,7 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import CitizenCalendarPage, {
-  AbsenceReservation,
-  SingleReservation
-} from '../../pages/citizen/citizen-calendar'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -113,20 +110,20 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const calendarPage = await openCalendarPage(env)
 
     const firstReservationDay = today.addDays(14)
-    const reservation = {
-      startTime: '08:00',
-      endTime: '16:00',
-      childIds: children.map(({ id }) => id)
-    }
 
     const reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      reservation.startTime,
-      reservation.endTime
+      '08:00',
+      '16:00'
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [reservation])
+    await calendarPage.assertDay(firstReservationDay, [
+      {
+        childIds: children.map(({ id }) => id),
+        text: '08:00–16:00'
+      }
+    ])
   })
 
   test('Citizen creates a repeating weekly reservation for all children', async () => {
@@ -150,10 +147,12 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     )
 
     for (const index of weekdays) {
-      await calendarPage.assertReservations(
-        firstReservationDay.addDays(index),
-        [reservations[index]]
-      )
+      await calendarPage.assertDay(firstReservationDay.addDays(index), [
+        {
+          childIds: children.map(({ id }) => id),
+          text: `08:0${index}–16:0${index}`
+        }
+      ])
     }
   })
 
@@ -214,13 +213,9 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       'SICKLEAVE'
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [
-      {
-        startTime: '08:00',
-        endTime: '16:00',
-        childIds: [children[1].id, children[2].id]
-      },
-      { absence: true, childIds: [children[0].id] }
+    await calendarPage.assertDay(firstReservationDay, [
+      { childIds: [children[1].id, children[2].id], text: '08:00–16:00' },
+      { childIds: [children[0].id], text: 'Poissa' }
     ])
   })
 
@@ -228,37 +223,28 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const calendarPage = await openCalendarPage(env)
 
     const firstReservationDay = today.addDays(14)
-    const initialReservation = {
-      startTime: '08:00',
-      endTime: '16:00',
-      childIds: children.map(({ id }) => id)
-    }
 
     let reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      initialReservation.startTime,
-      initialReservation.endTime
+      '08:00',
+      '16:00'
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [
-      initialReservation
+    await calendarPage.assertDay(firstReservationDay, [
+      { childIds: children.map(({ id }) => id), text: '08:00–16:00' }
     ])
-
-    const newReservation = {
-      startTime: '09:00',
-      endTime: '17:00',
-      childIds: children.map(({ id }) => id)
-    }
 
     reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      newReservation.startTime,
-      newReservation.endTime
+      '09:00',
+      '17:00'
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [newReservation])
+    await calendarPage.assertDay(firstReservationDay, [
+      { childIds: children.map(({ id }) => id), text: '09:00–17:00' }
+    ])
   })
 
   test('Citizen creates a reservation from day view', async () => {
@@ -307,39 +293,28 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const calendarPage = await openCalendarPage(env)
 
     const firstReservationDay = today.addDays(14)
-    const reservation1 = {
-      startTime: '08:00',
-      endTime: '16:00',
-      childIds: [children[0].id]
-    }
-
-    const reservation2 = {
-      startTime: '09:00',
-      endTime: '17:30',
-      childIds: [children[1].id, children[2].id]
-    }
 
     const reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      reservation1.startTime,
-      reservation1.endTime,
-      reservation1.childIds,
+      '08:00',
+      '16:00',
+      [children[0].id],
       3
     )
 
     const reservationsModal2 = await calendarPage.openReservationsModal()
     await reservationsModal2.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      reservation2.startTime,
-      reservation2.endTime,
-      reservation2.childIds,
+      '09:00',
+      '17:30',
+      [children[1].id, children[2].id],
       3
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [
-      reservation2,
-      reservation1
+    await calendarPage.assertDay(firstReservationDay, [
+      { childIds: [children[1].id, children[2].id], text: '09:00–17:30' },
+      { childIds: [children[0].id], text: '08:00–16:00' }
     ])
   })
 
@@ -351,20 +326,15 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       .addDays(14)
       .subDays(today.getIsoDayOfWeek() - 1)
     const weekdays = [0, 1, 2, 3, 4]
-    const childIds = children.map(({ id }) => id)
-    const reservations = weekdays.map<AbsenceReservation | SingleReservation>(
-      (index) =>
-        index === 1
-          ? {
-              absence: true,
-              childIds
-            }
-          : {
-              startTime: `08:0${index}`,
-              endTime: `16:0${index}`,
-              childIds
-            }
-    )
+
+    const reservations: (
+      | { startTime: string; endTime: string }
+      | { absence: true }
+    )[] = weekdays.map((index) => ({
+      startTime: `08:0${index}`,
+      endTime: `16:0${index}`
+    }))
+    reservations[1] = { absence: true }
 
     const reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingWeeklyReservation(
@@ -373,10 +343,12 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     )
 
     for (const index of weekdays) {
-      await calendarPage.assertReservations(
-        firstReservationDay.addDays(index),
-        [reservations[index]]
-      )
+      await calendarPage.assertDay(firstReservationDay.addDays(index), [
+        {
+          childIds: children.map(({ id }) => id),
+          text: index === 1 ? 'Poissa' : `08:0${index}–16:0${index}`
+        }
+      ])
     }
   })
 
@@ -573,15 +545,14 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     for (const date of reservationRange.dates()) {
       if (date.isWeekend()) continue
       if (date.isEqual(holiday)) continue
-      await calendarPage.assertReservations(date, [
+      await calendarPage.assertDay(date, [
         {
           childIds: [
             fixtures.enduserChildFixtureJari.id,
             fixtures.enduserChildFixtureKaarina.id,
             fixtures.enduserChildFixturePorriHatterRestricted.id
           ],
-          endTime: '16:00',
-          startTime: '08:00'
+          text: '08:00–16:00'
         }
       ])
     }
@@ -613,7 +584,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('No placements', async () => {
     await init()
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today.subDays(1), [])
+    await calendarPage.assertDay(today.subDays(1), [])
   })
 
   it('Holiday', async () => {
@@ -622,14 +593,14 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertHoliday(today)
-    await calendarPage.assertReservations(today, [])
+    await calendarPage.assertDay(today, [])
   })
 
   it('Missing reservation', async () => {
     await init()
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
-      { childIds: [enduserChildFixtureKaarina.id], missing: true }
+    await calendarPage.assertDay(today, [
+      { childIds: [enduserChildFixtureKaarina.id], text: 'Ilmoitus puuttuu' }
     ])
   })
 
@@ -647,11 +618,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     }).save()
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        startTime: '08:00',
-        endTime: '16:00'
+        text: '08:00–16:00'
       }
     ])
   })
@@ -673,13 +643,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     }).save()
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        startTime1: '08:00',
-        endTime1: '12:00',
-        startTime2: '18:00',
-        endTime2: '23:59'
+        text: '08:00–12:00, 18:00–23:59'
       }
     ])
   })
@@ -707,8 +674,8 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     }).save()
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
-      { childIds: [enduserChildFixtureKaarina.id], present: true }
+    await calendarPage.assertDay(today, [
+      { childIds: [enduserChildFixtureKaarina.id], text: 'Läsnä' }
     ])
   })
 
@@ -716,8 +683,8 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await init({ placementType: 'PRESCHOOL' })
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
-      { childIds: [enduserChildFixtureKaarina.id], present: true }
+    await calendarPage.assertDay(today, [
+      { childIds: [enduserChildFixtureKaarina.id], text: 'Läsnä' }
     ])
   })
 
@@ -734,11 +701,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       .save()
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        startTime: '08:00',
-        endTime: ''
+        text: '08:00–'
       }
     ])
   })
@@ -756,11 +722,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       .save()
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        startTime: '08:00',
-        endTime: '15:30'
+        text: '08:00–15:30'
       }
     ])
   })
@@ -785,7 +750,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     }
 
     const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
         text: '08:00–12:00, 14:00–18:00, 20:00–23:00'
@@ -806,10 +771,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'none')
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        absence: true
+        text: 'Poissa'
       }
     ])
   })
@@ -827,10 +792,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        absence: true
+        text: 'Poissa'
       }
     ])
   })
@@ -849,10 +814,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
-        freeAbsence: true
+        text: 'Maksuton poissaolo'
       }
     ])
   })
@@ -876,7 +841,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         }
       }
     })
-    await calendarPage.assertReservations(today, [
+    await calendarPage.assertDay(today, [
       {
         childIds: [enduserChildFixtureKaarina.id],
         text: 'Vuorotyöpoissaolo'
@@ -1014,12 +979,6 @@ describe('Citizen calendar child visibility', () => {
     const calendarPage = await openCalendarPage('desktop')
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
 
-    const reservation = {
-      startTime: '08:00',
-      endTime: '16:00',
-      childIds: [child.id]
-    }
-
     const holidayDayModal = await calendarPage.openDayModal(firstReservationDay)
     await holidayDayModal.childName.assertCount(1)
     await holidayDayModal.closeModal.click()
@@ -1030,8 +989,8 @@ describe('Citizen calendar child visibility', () => {
       [
         {
           date: firstReservationDay,
-          startTime: reservation.startTime,
-          endTime: reservation.endTime
+          startTime: '08:00',
+          endTime: '16:00'
         },
         {
           date: firstReservationDay.addDays(1),
@@ -1041,7 +1000,9 @@ describe('Citizen calendar child visibility', () => {
       ]
     )
 
-    await calendarPage.assertReservations(firstReservationDay, [reservation])
+    await calendarPage.assertDay(firstReservationDay, [
+      { childIds: [child.id], text: '08:00–16:00' }
+    ])
   })
 })
 

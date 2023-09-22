@@ -61,32 +61,17 @@ const holidayQuestionnaireFixture = () =>
     ]
   })
 
-async function assertReservationState(
-  childIds: UUID[],
+async function assertCalendarDayRange(
   calendar: CitizenCalendarPage,
   startDate: LocalDate,
   endDate: LocalDate,
-  hasFreeAbsence: boolean
+  groups: { childIds: UUID[]; text: string }[]
 ) {
   await calendar.waitUntilLoaded()
 
   let today = startDate
   while (today.isEqualOrBefore(endDate)) {
-    if (hasFreeAbsence) {
-      await calendar.assertReservations(today, [
-        {
-          childIds,
-          freeAbsence: true
-        }
-      ])
-    } else {
-      await calendar.assertReservations(today, [
-        {
-          childIds,
-          missing: true
-        }
-      ])
-    }
+    await calendar.assertDay(today, groups)
     today = today.addBusinessDays(1)
   }
 }
@@ -187,12 +172,16 @@ describe('Holiday periods', () => {
 
     test('Holidays can be reported and cleared', async () => {
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
-        assertReservationState(
-          [child.id],
+        assertCalendarDayRange(
           calendar,
           LocalDate.of(2035, 12, 26),
           LocalDate.of(2036, 1, 1),
-          hasFreeAbsences
+          [
+            {
+              childIds: [child.id],
+              text: hasFreeAbsences ? 'Maksuton poissaolo' : 'Ilmoitus puuttuu'
+            }
+          ]
         )
 
       await enduserLogin(page)
@@ -214,12 +203,16 @@ describe('Holiday periods', () => {
 
     test('Holidays can be marked an cleared for two children', async () => {
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
-        assertReservationState(
-          [child.id, child2.id],
+        assertCalendarDayRange(
           calendar,
           LocalDate.of(2035, 12, 26),
           LocalDate.of(2036, 1, 1),
-          hasFreeAbsences
+          [
+            {
+              childIds: [child.id, child2.id],
+              text: hasFreeAbsences ? 'Maksuton poissaolo' : 'Ilmoitus puuttuu'
+            }
+          ]
         )
 
       const child2 = await setupAnotherChild()
@@ -331,13 +324,14 @@ describe('Holiday periods', () => {
       await holidayModal.assertNotEligible(child2)
       await holidayModal.markHoliday(child, '26.12.2035 - 01.01.2036')
 
-      await assertReservationState(
-        [child.id],
-        calendar,
-        LocalDate.of(2035, 12, 26),
-        LocalDate.of(2036, 1, 1),
-        true
-      )
+      let today = LocalDate.of(2035, 12, 26)
+      while (today.isEqualOrBefore(LocalDate.of(2036, 1, 1))) {
+        await calendar.assertDay(today, [
+          { childIds: [child.id], text: 'Maksuton poissaolo' },
+          { childIds: [child2.id], text: 'Ilmoitus puuttuu' }
+        ])
+        today = today.addBusinessDays(1)
+      }
 
       const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 26))
       await dayView.assertAbsence(

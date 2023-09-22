@@ -16,54 +16,6 @@ export type FormatterReservation = {
 }
 export type TwoPartReservation = [FormatterReservation, FormatterReservation]
 
-interface BaseReservation {
-  childIds: UUID[]
-}
-
-export interface AbsenceReservation extends BaseReservation {
-  absence: true
-}
-
-interface FreeAbsenceReservation extends BaseReservation {
-  freeAbsence: true
-}
-
-export interface SingleReservation extends BaseReservation {
-  startTime: string
-  endTime: string
-  specifier?: string
-}
-
-export interface DoubleReservation extends BaseReservation {
-  startTime1: string
-  endTime1: string
-  specifier1?: string
-  startTime2: string
-  endTime2: string
-  specifier2?: string
-}
-
-interface MissingReservation extends BaseReservation {
-  missing: true
-}
-
-interface PresentReservation extends BaseReservation {
-  present: true
-}
-
-interface TextReservation extends BaseReservation {
-  text: string
-}
-
-type Reservation =
-  | AbsenceReservation
-  | FreeAbsenceReservation
-  | SingleReservation
-  | DoubleReservation
-  | MissingReservation
-  | PresentReservation
-  | TextReservation
-
 export default class CitizenCalendarPage {
   constructor(
     private readonly page: Page,
@@ -188,48 +140,29 @@ export default class CitizenCalendarPage {
     }
   }
 
-  async assertReservations(date: LocalDate, reservations: Reservation[]) {
+  async assertDay(
+    date: LocalDate,
+    groups: { childIds: UUID[]; text: string }[]
+  ) {
     const day = this.dayCell(date)
-    const reservationRows = day
+    const rows = day
       .findByDataQa('reservations')
       .findAllByDataQa('reservation-group')
 
-    if (reservations.length === 0) {
+    if (groups.length === 0) {
       await day.waitUntilVisible()
     }
-    await reservationRows.assertCount(reservations.length)
+    await rows.assertCount(groups.length)
 
-    for (const [i, reservation] of reservations.entries()) {
-      const row = reservationRows.nth(i)
+    for (const [i, { childIds, text }] of groups.entries()) {
+      const row = rows.nth(i)
 
-      for (const childId of reservation.childIds) {
+      for (const childId of childIds) {
         await row
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
           .waitUntilVisible()
       }
-      await row
-        .findByDataQa('reservation-text')
-        .assertTextEquals(
-          'absence' in reservation
-            ? 'Poissa'
-            : 'freeAbsence' in reservation
-            ? 'Maksuton poissaolo'
-            : 'missing' in reservation
-            ? 'Ilmoitus puuttuu'
-            : 'present' in reservation
-            ? 'Läsnä'
-            : 'text' in reservation
-            ? reservation.text
-            : 'startTime1' in reservation
-            ? `${reservation.startTime1}–${reservation.endTime1}${
-                reservation.specifier1 ? ` ${reservation.specifier1}` : ''
-              }, ${reservation.startTime2}–${reservation.endTime2}${
-                reservation.specifier2 ? ` ${reservation.specifier2}` : ''
-              }`
-            : `${reservation.startTime}–${reservation.endTime}${
-                reservation.specifier ? ` ${reservation.specifier}` : ''
-              }`
-        )
+      await row.findByDataQa('reservation-text').assertTextEquals(text)
     }
   }
 
@@ -305,9 +238,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
-    const childImages = this.page
-      .findByDataQa(`desktop-calendar-day-${date.formatIso()}`)
-      .findAllByDataQa('child-image')
+    const childImages = this.dayCell(date).findAllByDataQa('child-image')
     await childImages.assertCount(expectedCount)
   }
 }
