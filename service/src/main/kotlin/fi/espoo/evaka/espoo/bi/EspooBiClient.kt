@@ -16,6 +16,7 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import mu.KotlinLogging
+import java.time.Duration
 
 class EspooBiClient(
     private val fuel: FuelManager,
@@ -34,6 +35,7 @@ class EspooBiClient(
         val timestamp = clock.now().toInstant().toEpochMilli()
         val fileName = "evaka_${tableName}_$timestamp.csv"
         db.read { tx ->
+            tx.setStatementTimeout(Duration.ofMinutes(5))
             val stream = CsvInputStream(CSV_CHARSET, query(tx))
             logger.info("Sending $fileName")
             val (_, _, result) =
