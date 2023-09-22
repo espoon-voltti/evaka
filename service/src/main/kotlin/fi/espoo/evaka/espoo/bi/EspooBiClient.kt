@@ -15,8 +15,8 @@ import fi.espoo.voltti.logging.loggers.error
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
-import mu.KotlinLogging
 import java.time.Duration
+import mu.KotlinLogging
 
 class EspooBiClient(
     private val fuel: FuelManager,
@@ -37,7 +37,7 @@ class EspooBiClient(
         db.read { tx ->
             tx.setStatementTimeout(Duration.ofMinutes(5))
             val stream = CsvInputStream(CSV_CHARSET, query(tx))
-            logger.info("Sending $fileName")
+            logger.info("Sending BI CSV file $fileName")
             val (_, _, result) =
                 fuel
                     .put("${env.url}/report", listOf("filename" to fileName))
@@ -47,11 +47,15 @@ class EspooBiClient(
                     .body(DefaultBody({ stream }))
                     .responseString()
             result.fold(
-                { logger.info("Sent ${stream.totalBytes} successfully") },
+                {
+                    logger.info(
+                        "Sent BI CSV file $fileName successfully (${stream.totalBytes} bytes)"
+                    )
+                },
                 { error ->
                     val meta = mapOf("errorMessage" to error.errorData.decodeToString())
                     logger.error(error, meta) {
-                        "Failed to send BI CSV file (${stream.totalBytes} sent)"
+                        "Failed to send BI CSV file $fileName (${stream.totalBytes} bytes sent before failure)"
                     }
                     throw error
                 }
