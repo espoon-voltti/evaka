@@ -355,10 +355,6 @@ export const titaniaConfig = titaniaUsername
     }
   : undefined
 
-export const espooBiPocPassword =
-  process.env.ESPOO_BI_POC_PASSWORD ??
-  ifNodeEnv(['local', 'test'], 'espoo-bi-poc')
-
 export const digitransitApiEnabled = ifNodeEnv(['local', 'test'], false) ?? true
 export const digitransitApiUrl =
   process.env.DIGITRANSIT_API_URL ?? 'https://api.digitransit.fi'

@@ -73,8 +73,6 @@ evaka:
   use_new_assistance_model: true
 espoo:
   integration:
-    bi_poc:
-      enabled: true
     invoice:
       enabled: false
 

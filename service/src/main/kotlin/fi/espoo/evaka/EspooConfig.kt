@@ -13,10 +13,7 @@ import fi.espoo.evaka.espoo.EspooAsyncJob
 import fi.espoo.evaka.espoo.EspooAsyncJobRegistration
 import fi.espoo.evaka.espoo.EspooScheduledJob
 import fi.espoo.evaka.espoo.EspooScheduledJobs
-import fi.espoo.evaka.espoo.bi.CsvQuery
-import fi.espoo.evaka.espoo.bi.EspooBi
 import fi.espoo.evaka.espoo.bi.EspooBiClient
-import fi.espoo.evaka.espoo.bi.streamingCsvRoute
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -34,14 +31,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.config.getAuthenticatedUser
-import fi.espoo.evaka.shared.controllers.ErrorResponse
-import fi.espoo.evaka.shared.controllers.ExceptionHandler
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DevDataInitializer
-import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -49,7 +39,6 @@ import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import io.opentracing.Tracer
-import java.io.IOException
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
@@ -60,11 +49,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.web.servlet.function.ServerRequest
-import org.springframework.web.servlet.function.ServerResponse
-import org.springframework.web.servlet.function.router
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
@@ -175,63 +159,6 @@ class EspooConfig {
         }
 
     @Bean
-    fun espooBiPocRouter(
-        env: EspooEnv,
-        jdbi: Jdbi,
-        tracer: Tracer,
-        exceptionHandler: ExceptionHandler
-    ) =
-        if (env.espooBiPocEnabled) {
-            fun error(entity: ResponseEntity<ErrorResponse>?): ServerResponse =
-                entity?.body?.let { ServerResponse.status(entity.statusCode).body(it) }
-                    ?: ServerResponse.status(entity?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR)
-                        .build()
-
-            fun route(
-                query: CsvQuery,
-            ): (ServerRequest) -> ServerResponse = { req ->
-                try {
-                    streamingCsvRoute(query)(Database(jdbi, tracer), req.getAuthenticatedUser())
-                } catch (e: BadRequest) {
-                    error(exceptionHandler.badRequest(req.servletRequest(), e))
-                } catch (e: NotFound) {
-                    error(exceptionHandler.notFound(req.servletRequest(), e))
-                } catch (e: Unauthorized) {
-                    error(exceptionHandler.unauthorized(req.servletRequest(), e))
-                } catch (e: IOException) {
-                    error(exceptionHandler.IOExceptions(req.servletRequest(), e))
-                } catch (e: Throwable) {
-                    error(exceptionHandler.unexpectedError(req.servletRequest(), e))
-                }
-            }
-
-            router {
-                path("/integration/espoo-bi-poc").nest {
-                    GET("/areas", route(EspooBi.getAreas))
-                    GET("/units", route(EspooBi.getUnits))
-                    GET("/groups", route(EspooBi.getGroups))
-                    GET("/children", route(EspooBi.getChildren))
-                    GET("/placements", route(EspooBi.getPlacements))
-                    GET("/group-placements", route(EspooBi.getGroupPlacements))
-                    GET("/absences", route(EspooBi.getAbsences))
-                    GET("/group-caretaker-allocations", route(EspooBi.getGroupCaretakerAllocations))
-                    GET("/applications", route(EspooBi.getApplications))
-                    GET("/decisions", route(EspooBi.getDecisions))
-                    GET("/service-need-options", route(EspooBi.getServiceNeedOptions))
-                    GET("/service-needs", route(EspooBi.getServiceNeeds))
-                    GET("/fee-decisions", route(EspooBi.getFeeDecisions))
-                    GET("/fee-decision-children", route(EspooBi.getFeeDecisionChildren))
-                    GET("/voucher-value-decisions", route(EspooBi.getVoucherValueDecisions))
-                    GET("/curriculum-templates", route(EspooBi.getCurriculumTemplates))
-                    GET("/curriculum-documents", route(EspooBi.getCurriculumDocuments))
-                    GET("/pedagogical-documents", route(EspooBi.getPedagogicalDocuments))
-                }
-            }
-        } else {
-            null
-        }
-
-    @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
             valueDecisionCapacityFactorEnabled = false,
@@ -279,7 +206,6 @@ class EspooConfig {
 data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
-    val espooBiPocEnabled: Boolean,
     val espooBiEnabled: Boolean
 ) {
     companion object {
@@ -292,7 +218,6 @@ data class EspooEnv(
                     )
                         ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
-                espooBiPocEnabled = env.lookup("espoo.integration.bi_poc.enabled") ?: false,
                 espooBiEnabled = env.lookup("espoo.integration.bi.enabled") ?: false
             )
     }
