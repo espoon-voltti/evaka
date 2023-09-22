@@ -120,7 +120,7 @@ export default React.memo(function MessageEditor({
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
-        <Container>
+        <Container data-qa="message-editor">
           <TopBar>
             <Title>{title}</Title>
             <IconButton

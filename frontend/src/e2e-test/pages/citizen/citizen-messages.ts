@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilTrue } from '../../utils'
-import { Page, TextInput } from '../../utils/page'
+import { Element, Page, TextInput, TreeDropdown } from '../../utils/page'
 
 export default class CitizenMessagesPage {
   constructor(private readonly page: Page) {}
@@ -21,12 +21,17 @@ export default class CitizenMessagesPage {
   #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
   #sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
   newMessageButton = this.page.findAllByDataQa('new-message-btn').first()
-  #sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
-  #receiverSelection = this.page.find('[data-qa="select-receiver"]')
-  #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
-  #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
+  #messageEditor = this.page.findByDataQa('message-editor')
 
   discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
+
+  async createNewMessage(): Promise<CitizenMessageEditor> {
+    await this.newMessageButton.click()
+    const editor = new CitizenMessageEditor(this.#messageEditor)
+    await this.page.pause()
+    await editor.waitUntilVisible()
+    return editor
+  }
 
   async getMessageCount() {
     return this.#threadContent.count()
@@ -53,14 +58,6 @@ export default class CitizenMessagesPage {
 
   getThreadAttachmentCount(): Promise<number> {
     return this.page.findAll('[data-qa="attachment"]').count()
-  }
-
-  async getThreadCount() {
-    return this.page.findAll('[data-qa="thread-list-item"]').count()
-  }
-
-  async isEditorVisible() {
-    return this.page.find('[data-qa="input-content"]').visible
   }
 
   async openFirstThread() {
@@ -101,61 +98,62 @@ export default class CitizenMessagesPage {
     await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
   }
 
-  async clickNewMessage() {
-    await this.newMessageButton.click()
-    await waitUntilTrue(() => this.isEditorVisible())
-  }
-
-  async selectNewMessageRecipients(recipients: string[]) {
-    await this.#receiverSelection.click()
-    for (const recipient of recipients) {
-      await this.page.findTextExact(recipient).click()
-    }
-    await this.#receiverSelection.click()
-  }
-
-  async typeMessage(title: string, content: string) {
-    await this.#inputTitle.fill(title)
-    await this.#inputContent.fill(content)
-  }
-
-  async clickSendMessage() {
-    await this.#sendMessageButton.click()
-  }
-
-  async selectMessageChildren(childIds: string[]) {
-    for (const childId of childIds) {
-      await this.page.findByDataQa(`child-${childId}`).click()
-    }
-  }
-
-  async assertChildrenSelectable(childIds: string[]) {
-    for (const childId of childIds) {
-      await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
-    }
-
-    await this.page
-      .findAllByDataQa('relevant-child')
-      .assertCount(childIds.length)
-  }
-
   async sendNewMessage(
     title: string,
     content: string,
     childIds: string[],
     recipients: string[]
   ) {
-    await this.clickNewMessage()
+    const editor = await this.createNewMessage()
     if (childIds.length > 0) {
-      await this.selectMessageChildren(childIds)
+      await editor.selectChildren(childIds)
     }
-    await this.selectNewMessageRecipients(recipients)
-    await this.typeMessage(title, content)
-    await this.clickSendMessage()
-    await waitUntilTrue(() => this.getThreadCount().then((count) => count > 0))
+    await editor.selectRecipients(recipients)
+    await editor.fillMessage(title, content)
+    await editor.sendMessage()
   }
+}
+
+export class CitizenMessageEditor extends Element {
+  readonly #receiverSelection = new TreeDropdown(
+    this.find('[data-qa="select-receiver"]')
+  )
+  readonly title = new TextInput(this.findByDataQa('input-title'))
+  readonly content = new TextInput(this.findByDataQa('input-content'))
+  readonly #sendMessage = this.findByDataQa('send-message-btn')
 
   secondaryRecipient(name: string) {
-    return this.page.find(`[data-qa="secondary-recipient"]`, { hasText: name })
+    return this.find(`[data-qa="secondary-recipient"]`, { hasText: name })
+  }
+
+  async selectChildren(childIds: string[]) {
+    for (const childId of childIds) {
+      await this.findByDataQa(`child-${childId}`).click()
+    }
+  }
+  async assertChildrenSelectable(childIds: string[]) {
+    for (const childId of childIds) {
+      await this.findByDataQa(`child-${childId}`).waitUntilVisible()
+    }
+
+    await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
+  }
+
+  async selectRecipients(recipients: string[]) {
+    await this.#receiverSelection.click()
+    for (const recipient of recipients) {
+      await this.#receiverSelection.findTextExact(recipient).click()
+    }
+    await this.#receiverSelection.click()
+  }
+
+  async fillMessage(title: string, content: string) {
+    await this.title.fill(title)
+    await this.content.fill(content)
+  }
+
+  async sendMessage() {
+    await this.#sendMessage.click()
+    await this.waitUntilHidden()
   }
 }
