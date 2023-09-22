@@ -55,8 +55,11 @@ class ChildDocumentService(
                 .list()
 
         if (documentIds.isNotEmpty()) {
+            documentIds
+                .filter { !tx.isDocumentPublishedContentUpToDate(it) }
+                .forEach { scheduleEmailNotification(tx, it, now) }
+
             tx.markCompletedAndPublish(documentIds, now)
-            documentIds.forEach { scheduleEmailNotification(tx, it, now) }
         }
     }
 

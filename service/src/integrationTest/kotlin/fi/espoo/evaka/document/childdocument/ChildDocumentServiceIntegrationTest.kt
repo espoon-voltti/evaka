@@ -8,6 +8,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -53,6 +55,27 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     final val expiredDocumentId = ChildDocumentId(UUID.randomUUID())
     final val alreadyCompletedDocumentId = ChildDocumentId(UUID.randomUUID())
 
+    val templateContent =
+        DocumentTemplateContent(
+            listOf(
+                Section(
+                    id = "s1",
+                    label = "s1",
+                    questions = listOf(Question.TextQuestion(id = "q1", label = "q1"))
+                )
+            )
+        )
+
+    val content =
+        DocumentContent(
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer"))
+        )
+
+    val updatedContent =
+        DocumentContent(
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "updated"))
+        )
+
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
@@ -76,7 +99,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     type = DocumentType.PEDAGOGICAL_ASSESSMENT,
                     name = "Arvio",
                     validity = DateRange(clock.today().minusYears(1), clock.today()),
-                    content = DocumentTemplateContent(emptyList())
+                    content = templateContent
                 )
             )
             tx.insertTestDocumentTemplate(
@@ -85,14 +108,14 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     type = DocumentType.HOJKS,
                     name = "HOJKS",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
-                    content = DocumentTemplateContent(emptyList())
+                    content = templateContent
                 )
             )
         }
     }
 
     @Test
-    fun `creating new document and fetching it`() {
+    fun `expired documents are completed and published`() {
         // given
         db.transaction { tx ->
             tx.insertTestChildDocument(
@@ -101,7 +124,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     status = DocumentStatus.DRAFT,
                     childId = testChild_1.id,
                     templateId = activeTemplateId,
-                    content = DocumentContent(emptyList()),
+                    content = content,
                     publishedContent = null,
                     publishedAt = null
                 )
@@ -112,8 +135,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     status = DocumentStatus.DRAFT,
                     childId = testChild_1.id,
                     templateId = expiredTemplateId,
-                    content = DocumentContent(emptyList()),
-                    publishedContent = DocumentContent(emptyList()),
+                    content = content,
+                    publishedContent = updatedContent,
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),
@@ -127,8 +150,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     status = DocumentStatus.COMPLETED,
                     childId = testChild_1.id,
                     templateId = expiredTemplateId,
-                    content = DocumentContent(emptyList()),
-                    publishedContent = DocumentContent(emptyList()),
+                    content = content,
+                    publishedContent = updatedContent,
                     publishedAt = clock.now().minusMonths(1)
                 )
             )
@@ -157,5 +180,39 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
         assertEquals(1, MockEmailClient.emails.size)
         assertEquals(testAdult_2.email, MockEmailClient.emails.first().toAddress)
+    }
+
+    @Test
+    fun `email is not sent on publish if content was already up to date`() {
+        // given
+        db.transaction { tx ->
+            tx.insertTestChildDocument(
+                DevChildDocument(
+                    id = expiredDocumentId,
+                    status = DocumentStatus.DRAFT,
+                    childId = testChild_1.id,
+                    templateId = expiredTemplateId,
+                    content = content,
+                    publishedContent = content,
+                    publishedAt =
+                        HelsinkiDateTime.Companion.of(
+                            clock.today().minusMonths(1),
+                            LocalTime.of(8, 0)
+                        )
+                )
+            )
+        }
+
+        // when
+        db.transaction { service.completeAndPublishChildDocumentsAtEndOfTerm(it, clock.now()) }
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // then
+        db.read { tx ->
+            with(tx.getChildDocument(expiredDocumentId)!!) {
+                assertEquals(DocumentStatus.COMPLETED, status)
+            }
+        }
+        assertEquals(0, MockEmailClient.emails.size)
     }
 }
