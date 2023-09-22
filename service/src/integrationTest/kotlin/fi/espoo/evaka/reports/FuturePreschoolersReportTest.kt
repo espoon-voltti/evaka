@@ -7,12 +7,14 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PreschoolPickupAreaId
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolPickupArea
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -21,6 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestPreschoolPickupArea
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -134,6 +137,59 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `private groups are found in report`() {
         val report = getGroupReport(false)
         assertEquals(1, report.size)
+    }
+
+    @Test
+    fun `child in report should have correct pickup area`() {
+        db.transaction { tx ->
+            val child =
+                DevPerson(
+                    id = ChildId(UUID.randomUUID()),
+                    dateOfBirth = LocalDate.of(LocalDate.now().year - 5, 6, 1),
+                    ssn = "111111-999X",
+                    firstName = "Just",
+                    lastName = "Sopiva",
+                    streetAddress = "Testitie 1 a 3",
+                    postalCode = "02770",
+                    postOffice = "Espoo",
+                    restrictedDetailsEnabled = false
+                )
+            tx.insertTestPerson(child)
+            tx.insertTestChild(DevChild(id = child.id))
+            tx.insertTestPerson(testAdult_1)
+            tx.insertTestPlacement(
+                DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now())
+            )
+            tx.insertTestGuardian(DevGuardian(guardianId = testAdult_1.id, childId = child.id))
+            tx.insertTestPreschoolPickupArea(
+                DevPreschoolPickupArea(
+                    id = PreschoolPickupAreaId(UUID.randomUUID()),
+                    streetNameFi = "Testitie",
+                    houseNumber = "1b",
+                    areaNameFi = "Väärä testialue"
+                )
+            )
+            tx.insertTestPreschoolPickupArea(
+                DevPreschoolPickupArea(
+                    id = PreschoolPickupAreaId(UUID.randomUUID()),
+                    streetNameFi = "Testitie",
+                    houseNumber = "11",
+                    areaNameFi = "Väärä testialue"
+                )
+            )
+            tx.insertTestPreschoolPickupArea(
+                DevPreschoolPickupArea(
+                    id = PreschoolPickupAreaId(UUID.randomUUID()),
+                    streetNameFi = "Testitie",
+                    houseNumber = "1",
+                    areaNameFi = "Oikea testialue"
+                )
+            )
+        }
+
+        val report = getChildrenReport()
+        assertEquals(1, report.size)
+        assertEquals("Oikea testialue", report[0].unitArea)
     }
 
     private fun getChildrenReport(): List<FuturePreschoolersReportRow> {

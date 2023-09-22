@@ -154,6 +154,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.PreschoolPickupAreaId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
@@ -2336,4 +2337,14 @@ data class DevOtherAssistanceMeasure(
     val type: OtherAssistanceMeasureType,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+)
+
+data class DevPreschoolPickupArea(
+    val id: PreschoolPickupAreaId = PreschoolPickupAreaId(UUID.randomUUID()),
+    val municipalityCode: Int = 1,
+    val streetNameFi: String = "",
+    val streetNameSv: String = "",
+    val houseNumber: String = "",
+    val areaNameFi: String = "",
+    val areaNameSv: String = ""
 )

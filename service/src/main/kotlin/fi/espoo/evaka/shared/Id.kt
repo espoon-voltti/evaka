@@ -80,6 +80,7 @@ sealed interface DatabaseTable {
     sealed class Placement : DatabaseTable
     sealed class PlacementPlan : DatabaseTable
     sealed class PreschoolAssistance : DatabaseTable
+    sealed class PreschoolPickupArea : DatabaseTable
     sealed class ServiceNeed : DatabaseTable
     sealed class ServiceNeedOption : DatabaseTable
     sealed class ServiceNeedOptionVoucherValue : DatabaseTable
@@ -230,6 +231,8 @@ typealias PlacementId = Id<DatabaseTable.Placement>
 typealias PlacementPlanId = Id<DatabaseTable.PlacementPlan>
 
 typealias PreschoolAssistanceId = Id<DatabaseTable.PreschoolAssistance>
+
+typealias PreschoolPickupAreaId = Id<DatabaseTable.PreschoolPickupArea>
 
 typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 

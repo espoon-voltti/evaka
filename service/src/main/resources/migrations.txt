@@ -356,3 +356,4 @@ V356__application_document_refactoring.sql
 V357__create_application_document_index.sql
 V358__rename_old_application_document_index.sql
 V359__really_create_application_document_index.sql
+V360__add_preschool_pickup_area_table.sql

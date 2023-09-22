@@ -81,7 +81,7 @@ SELECT p.id,
     d.street_address AS unit_address,
     d.postal_code AS unit_postal_code,
     upper(d.post_office) AS unit_post_office,
-    NULL as unit_area, -- cannot be obtained from current evaka dataset, care area is not precise enough
+    ppa.unit_area,
     g1.last_name AS guardian_1_last_name,
     g1.first_name AS guardian_1_first_name,
     g1.street_address AS guardian_1_address,
@@ -123,6 +123,12 @@ LEFT JOIN (
     )
 LEFT JOIN service_need sn ON sn.placement_id = p.id and sn.start_date < :today AND sn.end_date >= :today
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
+LEFT JOIN LATERAL (
+    SELECT DISTINCT area_name_fi AS unit_area
+    FROM preschool_pickup_area
+    WHERE p.street_address ~ (street_name_fi || '\s+' || house_number || '($|\s)') OR
+        p.street_address ~ (street_name_sv || '\s+' || house_number || '($|\s)') 
+) ppa ON TRUE
 WHERE CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN
     extract(year from :today) -  extract(year from p.date_of_birth) = $preschoolSelectionAge - 1
 ELSE

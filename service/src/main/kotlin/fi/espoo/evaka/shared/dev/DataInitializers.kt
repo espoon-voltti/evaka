@@ -64,6 +64,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.PreschoolPickupAreaId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
@@ -1561,3 +1562,15 @@ VALUES (:id, :childId, :validDuring, :type, :modified, :modifiedBy)
 """
         )
         .let(::OtherAssistanceMeasureId)
+
+fun Database.Transaction.insertTestPreschoolPickupArea(
+    preschoolPickupArea: DevPreschoolPickupArea
+) =
+    insertTestDataRow(
+            preschoolPickupArea,
+            """
+INSERT INTO preschool_pickup_area (id, municipality_code, street_name_fi, street_name_sv, house_number, area_name_fi, area_name_sv)
+VALUES (:id, :municipalityCode, :streetNameFi, :streetNameSv, :houseNumber, :areaNameFi, :areaNameSv)
+"""
+        )
+        .let(::PreschoolPickupAreaId)
