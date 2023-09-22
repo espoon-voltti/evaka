@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Checkbox, Element, Page, TextInput } from '../../../utils/page'
+import { Checkbox, Element, Page, Select, TextInput } from '../../../utils/page'
 
 export class DocumentTemplatesListPage {
   constructor(private readonly page: Page) {}
@@ -10,6 +10,7 @@ export class DocumentTemplatesListPage {
   readonly createNewButton = this.page.findByDataQa('create-template-button')
 
   readonly nameInput = new TextInput(this.page.findByDataQa('name-input'))
+  readonly typeSelect = new Select(this.page.findByDataQa('type-select'))
   readonly validityStartInput = new TextInput(
     this.page.findByDataQa('start-date')
   )

@@ -379,6 +379,9 @@ export class ChildDocumentsSection extends Section {
   }
 
   readonly createDocumentButton = this.page.findByDataQa('create-document')
+  readonly createModalTemplateSelect = new Select(
+    this.page.findByDataQa('template-select')
+  )
   readonly modalOk = this.page.findByDataQa('modal-okBtn')
 
   readonly childDocumentsCount = () =>
@@ -395,7 +398,8 @@ export class ChildDocumentsSection extends Section {
 
     return {
       openLink: row.findByDataQa('open-document'),
-      status: row.findByDataQa('document-status')
+      status: row.findByDataQa('document-status'),
+      published: row.findByDataQa('document-published-at')
     }
   }
 

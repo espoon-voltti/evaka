@@ -7,6 +7,7 @@ import { Page, TextInput } from '../../../utils/page'
 export class ChildDocumentPage {
   constructor(private readonly page: Page) {}
 
+  readonly status = this.page.findByDataQa('document-state-chip')
   readonly savingIndicator = this.page.findByDataQa('saving-spinner')
   readonly previewButton = this.page.findByDataQa('preview-button')
   readonly returnButton = this.page.findByDataQa('return-button')
@@ -19,5 +20,15 @@ export class ChildDocumentPage {
       hasText: questionName
     })
     return new TextInput(question.findByDataQa('answer-input'))
+  }
+
+  async publish() {
+    await this.page.findByDataQa('publish-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async goToNextStatus() {
+    await this.page.findByDataQa('next-status-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
   }
 }
