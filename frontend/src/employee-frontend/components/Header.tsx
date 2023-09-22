@@ -302,7 +302,7 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.reports}</NavLinkText>
-                  {featureFlags.experimental?.assistanceNeedDecisions &&
+                  {featureFlags.assistanceNeedDecisions &&
                     assistanceNeedDecisionCounts
                       .map(
                         (unread) =>
@@ -361,7 +361,7 @@ export default React.memo(function Header() {
                   {i18n.titles.financeBasics}
                 </Link>
               )}
-              {featureFlags.experimental?.childDocuments &&
+              {featureFlags.childDocuments &&
                 user?.accessibleFeatures.documentTemplates && (
                   <Link
                     to="/document-templates"

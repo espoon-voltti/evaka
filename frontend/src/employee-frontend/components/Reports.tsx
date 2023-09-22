@@ -297,7 +297,7 @@ export default React.memo(function Reports() {
                 i18n={i18n.reports.raw}
               />
             )}
-            {featureFlags.experimental?.assistanceNeedDecisions &&
+            {featureFlags.assistanceNeedDecisions &&
               reports.has('ASSISTANCE_NEED_DECISIONS') && (
                 <Report
                   path="/reports/assistance-need-decisions"

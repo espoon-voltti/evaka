@@ -235,7 +235,7 @@ export default React.memo(function PersonDetails({
         <AddSsnModal personId={person.id} onUpdateComplete={onUpdateComplete} />
       )}
       <RightAlignedRow>
-        {featureFlags.experimental?.personDuplicate &&
+        {featureFlags.personDuplicate &&
         permittedActions.has('DUPLICATE') &&
         isChild &&
         uiMode !== 'person-details-editing' ? (

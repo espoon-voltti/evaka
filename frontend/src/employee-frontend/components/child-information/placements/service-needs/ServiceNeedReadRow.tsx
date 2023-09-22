@@ -36,7 +36,7 @@ function ServiceNeedReadRow({
       </Td>
       <Td data-qa="service-need-name">{serviceNeed.option.nameFi}</Td>
       <Td data-qa={`shift-care-${serviceNeed.shiftCare}`}>
-        {featureFlags.experimental?.intermittentShiftCare
+        {featureFlags.intermittentShiftCare
           ? i18n.childInformation.placements.serviceNeeds.shiftCareTypes[
               serviceNeed.shiftCare
             ]

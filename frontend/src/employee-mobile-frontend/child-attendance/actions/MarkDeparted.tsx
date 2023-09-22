@@ -179,7 +179,7 @@ export default React.memo(function MarkDeparted() {
                       'SICKLEAVE',
                       'UNKNOWN_ABSENCE',
                       'PLANNED_ABSENCE',
-                      ...(featureFlags.experimental?.noAbsenceType
+                      ...(featureFlags.noAbsenceType
                         ? (['NO_ABSENCE'] as const)
                         : ([] as const))
                     ]}

@@ -255,7 +255,7 @@ export default React.memo(function PedagogicalDocumentsSection({
             </ExpandingInfo>
             <H3>{i18n.children.vasu.plansTitle}</H3>
             <VasuAndLeopsContent childId={childId} />
-            {featureFlags.experimental?.hojks && (
+            {featureFlags.hojks && (
               <>
                 <H3>{i18n.children.vasu.hojksTitle}</H3>
                 <ChildDocumentsContent childId={childId} types={['HOJKS']} />

@@ -62,7 +62,7 @@ export default React.memo(function StaffMemberPage() {
           <>
             <EmployeeCardBackground staff={toStaff(staffMember)} />
             <FixedSpaceColumn>
-              {featureFlags.experimental?.staffAttendanceTypes ? (
+              {featureFlags.staffAttendanceTypes ? (
                 <>
                   {staffMember.spanningPlan && (
                     <TimeInfo data-qa="shift-time">

@@ -58,7 +58,7 @@ export default React.memo(function MissingHeadOfFamily() {
           <DateRangePickerF bind={range} locale={lang} />
         </FilterRow>
 
-        {featureFlags.experimental?.personDuplicate && (
+        {featureFlags.personDuplicate && (
           <FilterRow>
             <FilterLabel />
             <CheckboxF

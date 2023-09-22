@@ -270,7 +270,7 @@ export default React.memo(function ApplicationPage() {
                       'CREATE_NOTE'
                     )}
                   />
-                  {featureFlags.experimental?.serviceWorkerMessaging && (
+                  {featureFlags.serviceWorkerMessaging && (
                     <>
                       <Gap size="m" />
                       <AddButton

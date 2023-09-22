@@ -259,11 +259,7 @@ const openPage = (time: HelsinkiDateTime) =>
   Page.open({
     mockedTime: time.toSystemTzDate(),
     employeeCustomizations: {
-      featureFlags: {
-        experimental: {
-          intermittentShiftCare: true
-        }
-      }
+      featureFlags: { intermittentShiftCare: true }
     }
   })
 

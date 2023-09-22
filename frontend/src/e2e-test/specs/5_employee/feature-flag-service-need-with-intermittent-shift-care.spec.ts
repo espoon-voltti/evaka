@@ -45,11 +45,7 @@ beforeEach(async () => {
 
   page = await Page.open({
     employeeCustomizations: {
-      featureFlags: {
-        experimental: {
-          intermittentShiftCare: true
-        }
-      }
+      featureFlags: { intermittentShiftCare: true }
     }
   })
   await employeeLogin(page, admin.data)

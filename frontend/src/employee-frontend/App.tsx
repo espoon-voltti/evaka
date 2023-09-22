@@ -401,7 +401,7 @@ export default createBrowserRouter(
             },
             {
               path: 'payments',
-              element: featureFlags.experimental?.voucherUnitPayments ? (
+              element: featureFlags.voucherUnitPayments ? (
                 <EmployeeRoute title="payments">
                   <PaymentsPage />
                 </EmployeeRoute>

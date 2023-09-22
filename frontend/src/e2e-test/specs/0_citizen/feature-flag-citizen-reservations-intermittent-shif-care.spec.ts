@@ -231,11 +231,7 @@ async function openCalendarPage(
     screen: viewport,
     mockedTime: time.toSystemTzDate(),
     citizenCustomizations: {
-      featureFlags: {
-        experimental: {
-          intermittentShiftCare: true
-        }
-      }
+      featureFlags: { intermittentShiftCare: true }
     }
   })
   await enduserLogin(page, endUser?.ssn)

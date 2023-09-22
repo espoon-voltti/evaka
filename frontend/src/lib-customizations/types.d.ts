@@ -178,85 +178,87 @@ interface BaseFeatureFlags {
   /**
    * Experimental flags are features in development: features that aren't yet
    * recommended/tested for production usage but can be enabled for testing
-   * in eVaka implementations. These flags will either be dropped when features
-   * are deemed ready or promoted to top-level flags.
+   * in eVaka implementations. They are optional (have `?` after the property name)
+   * so that they can be enabled without breaking the build for other environments.
+   *
+   * These flags will either be dropped when features are deemed ready or promoted
+   * to top-level flags (moved up, `?` removed).
    */
-  experimental?: {
-    /**
-     * Enable support for LEOPS (lapsen esiopetussuunnitelma)
-     */
-    leops?: boolean
 
-    /**
-     * Enable payments for voucher units (palvelusetelimaksatus)
-     */
-    voucherUnitPayments?: boolean
+  /**
+   * EXPERIMENTAL: Enable support for LEOPS (lapsen esiopetussuunnitelma)
+   */
+  leops?: boolean
 
-    /**
-     * Enable assistance need decisions (tuen päätös)
-     */
-    assistanceNeedDecisions?: boolean
+  /**
+   * EXPERIMENTAL: Enable payments for voucher units (palvelusetelimaksatus)
+   */
+  voucherUnitPayments?: boolean
 
-    /**
-     * Enable assistance need preschool decisions (esiopetuksen tuen päätös)
-     */
-    assistanceNeedPreschoolDecisions?: boolean
+  /**
+   * EXPERIMENTAL: Enable assistance need decisions (tuen päätös)
+   */
+  assistanceNeedDecisions?: boolean
 
-    /**
-     * Enable language selection for assistance need decisions
-     */
-    assistanceNeedDecisionsLanguageSelect?: boolean
+  /**
+   * EXPERIMENTAL: Enable assistance need preschool decisions (esiopetuksen tuen päätös)
+   */
+  assistanceNeedPreschoolDecisions?: boolean
 
-    /**
-     * Enable attendance types for realtime staff attendances, instead of just present/absent
-     */
-    staffAttendanceTypes?: boolean
+  /**
+   * EXPERIMENTAL: Enable language selection for assistance need decisions
+   */
+  assistanceNeedDecisionsLanguageSelect?: boolean
 
-    /**
-     * Enable support for foster parents
-     */
-    fosterParents?: boolean
+  /**
+   * EXPERIMENTAL: Enable attendance types for realtime staff attendances, instead of just present/absent
+   */
+  staffAttendanceTypes?: boolean
 
-    /**
-     * Enable support for messaging to application guardian for service workers (palveluohjauksen viestintä)
-     */
-    serviceWorkerMessaging?: boolean
+  /**
+   * EXPERIMENTAL: Enable support for foster parents
+   */
+  fosterParents?: boolean
 
-    /**
-     * Enable support for duplicating a child as a new SSN-less person
-     */
-    personDuplicate?: boolean
+  /**
+   * EXPERIMENTAL: Enable support for messaging to application guardian for service workers (palveluohjauksen viestintä)
+   */
+  serviceWorkerMessaging?: boolean
 
-    /**
-     * Enable support for new template editor and child documents
-     */
-    childDocuments?: boolean
+  /**
+   * EXPERIMENTAL: Enable support for duplicating a child as a new SSN-less person
+   */
+  personDuplicate?: boolean
 
-    /**
-     * Enable support for intermittent shift care
-     */
-    intermittentShiftCare?: boolean
+  /**
+   * EXPERIMENTAL: Enable support for new template editor and child documents
+   */
+  childDocuments?: boolean
 
-    /**
-     * Show attendance summary for contract days children
-     */
-    citizenAttendanceSummary?: boolean
+  /**
+   * EXPERIMENTAL: Enable support for intermittent shift care
+   */
+  intermittentShiftCare?: boolean
 
-    /**
-     * Allows marking fee decision drafts as ignored
-     */
-    feeDecisionIgnoredStatus?: boolean
+  /**
+   * EXPERIMENTAL: Show attendance summary for contract days children
+   */
+  citizenAttendanceSummary?: boolean
 
-    /**
-     * Allows creating and displaying HOJKS documents
-     */
-    hojks?: boolean
+  /**
+   * EXPERIMENTAL: Allows marking fee decision drafts as ignored
+   */
+  feeDecisionIgnoredStatus?: boolean
 
-    /**
-     * Enables no absence type in mobile
-     */
-    noAbsenceType?: boolean
-  }
+  /**
+   * EXPERIMENTAL: Allows creating and displaying HOJKS documents
+   */
+  hojks?: boolean
+
+  /**
+   * EXPERIMENTAL: Enables no absence type in mobile
+   */
+  noAbsenceType?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

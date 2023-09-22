@@ -47,7 +47,7 @@ export default React.memo(function GuardiansAndParents({
         <Guardians />
         <Gap size="XL" />
         <FridgeParents />
-        {featureFlags.experimental?.fosterParents &&
+        {featureFlags.fosterParents &&
           permittedActions.has('READ_FOSTER_PARENTS') && (
             <>
               <Gap size="XL" />

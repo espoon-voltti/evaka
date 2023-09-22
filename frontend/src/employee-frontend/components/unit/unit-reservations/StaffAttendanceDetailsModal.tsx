@@ -456,8 +456,7 @@ function StaffAttendanceDetailsModal<
                     />
                   )}
                 </GroupIndicator>
-                {featureFlags.experimental?.staffAttendanceTypes &&
-                !isExternal ? (
+                {featureFlags.staffAttendanceTypes && !isExternal ? (
                   <Select
                     items={[...staffAttendanceTypes]}
                     selectedItem={type}

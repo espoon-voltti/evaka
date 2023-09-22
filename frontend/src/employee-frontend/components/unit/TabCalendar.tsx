@@ -74,9 +74,7 @@ const getWeekDateRange = (date: LocalDate, operationalDays: DayOfWeek[]) => {
   return new FiniteDateRange(
     start,
     start.addDays(
-      featureFlags.experimental?.intermittentShiftCare
-        ? 6
-        : Math.max(...operationalDays) - 1
+      featureFlags.intermittentShiftCare ? 6 : Math.max(...operationalDays) - 1
     )
   )
 }

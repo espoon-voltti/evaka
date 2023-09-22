@@ -203,8 +203,7 @@ const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
       <AbsenceTr>
         <th />
         {days.map(({ date, children }) =>
-          children !== null ||
-          featureFlags.experimental?.intermittentShiftCare ? (
+          children !== null || featureFlags.intermittentShiftCare ? (
             // Operation day
             <AbsenceTh
               key={date.getDate()}

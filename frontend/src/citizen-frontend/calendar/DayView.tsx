@@ -665,7 +665,7 @@ const Absence = React.memo(function Absence({
       <span data-qa="absence">
         {absence.type === 'SICKLEAVE'
           ? i18n.calendar.absences.SICKLEAVE
-          : featureFlags.experimental?.citizenAttendanceSummary &&
+          : featureFlags.citizenAttendanceSummary &&
             absence.type === 'PLANNED_ABSENCE'
           ? i18n.calendar.absences.PLANNED_ABSENCE
           : i18n.calendar.absent}

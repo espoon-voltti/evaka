@@ -65,7 +65,7 @@ export default React.memo(function GroupMonthCalendarWrapper({
           year: selectedYear,
           month: selectedMonth
         },
-        featureFlags.experimental?.intermittentShiftCare ?? false
+        featureFlags.intermittentShiftCare ?? false
       ),
     [groupId, selectedYear, selectedMonth]
   )

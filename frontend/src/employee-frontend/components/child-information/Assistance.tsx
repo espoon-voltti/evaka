@@ -51,14 +51,14 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         {permittedActions.has('READ_ASSISTANCE') && (
           <AssistanceContent id={id} permittedActions={permittedActions} />
         )}
-        {featureFlags.experimental?.assistanceNeedDecisions &&
+        {featureFlags.assistanceNeedDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
             <>
               <HorizontalLine dashed slim />
               <AssistanceNeedDecisionSection id={id} />
             </>
           )}
-        {featureFlags.experimental?.assistanceNeedPreschoolDecisions &&
+        {featureFlags.assistanceNeedPreschoolDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
             <>
               <HorizontalLine dashed slim />

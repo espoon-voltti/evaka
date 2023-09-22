@@ -122,7 +122,7 @@ export default React.memo(function CreateOrEditTemplateModal({
           )}
         </FixedSpaceColumn>
 
-        {featureFlags.experimental?.leops && (
+        {featureFlags.leops && (
           <FixedSpaceColumn spacing="xxs">
             <Label>{t.type}</Label>
             {isEditableTypeAndLang ? (

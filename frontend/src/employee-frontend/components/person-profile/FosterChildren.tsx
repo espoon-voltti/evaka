@@ -78,7 +78,7 @@ export default React.memo(function FosterChildren({
     setDeleting(undefined)
   }, [clearUiMode])
 
-  if (!featureFlags.experimental?.fosterParents) {
+  if (!featureFlags.fosterParents) {
     return null
   }
 
