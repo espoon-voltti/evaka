@@ -6,7 +6,6 @@ import { UUID } from 'lib-common/types'
 
 import {
   Message,
-  MessageAccount,
   MessageCopy,
   MessageRecipientType,
   MessageThread,
@@ -41,44 +40,24 @@ interface MessageReceiverGroup extends MessageReceiverBase {
   receivers: MessageReceiverBase[]
 }
 
-export const deserializeMessageAccount = (
-  account: JsonOf<MessageAccount>,
-  staffAnnotation?: string
-): MessageAccount => ({
-  ...account,
-  name:
-    account.type === 'GROUP' && staffAnnotation
-      ? `${account.name} (${staffAnnotation})`
-      : account.name
-})
-
-export const deserializeMessage = (
-  message: JsonOf<Message>,
-  staffAnnotation?: string
-): Message => ({
+export const deserializeMessage = (message: JsonOf<Message>): Message => ({
   ...message,
-  sender: deserializeMessageAccount(message.sender, staffAnnotation),
-  recipients: message.recipients.map((a) =>
-    deserializeMessageAccount(a, staffAnnotation)
-  ),
   sentAt: HelsinkiDateTime.parseIso(message.sentAt),
   readAt: message.readAt ? HelsinkiDateTime.parseIso(message.readAt) : null
 })
 
 export const deserializeMessageThread = (
-  json: JsonOf<MessageThread>,
-  staffAnnotation?: string
+  json: JsonOf<MessageThread>
 ): MessageThread => ({
   ...json,
-  messages: json.messages.map((m) => deserializeMessage(m, staffAnnotation))
+  messages: json.messages.map(deserializeMessage)
 })
 
 export const deserializeReplyResponse = (
-  responseData: JsonOf<ThreadReply>,
-  staffAnnotation?: string
+  responseData: JsonOf<ThreadReply>
 ): ThreadReply => ({
   threadId: responseData.threadId,
-  message: deserializeMessage(responseData.message, staffAnnotation)
+  message: deserializeMessage(responseData.message)
 })
 
 export const deserializeMessageCopy = (

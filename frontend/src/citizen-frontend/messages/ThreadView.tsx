@@ -15,6 +15,7 @@ import styled from 'styled-components'
 
 import {
   Message,
+  MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
@@ -42,7 +43,7 @@ import colors, { theme } from 'lib-customizations/common'
 import { faTrash } from 'lib-icons'
 
 import { getAttachmentUrl } from '../attachments'
-import { useTranslation } from '../localization'
+import { Translations, useTranslation } from '../localization'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import {
@@ -111,6 +112,14 @@ const ReplyToThreadButton = styled(InlineButton)`
   align-self: flex-start;
 `
 
+const formatMessageAccountName = (
+  account: MessageAccount,
+  i18n: Translations
+) =>
+  account.type === 'GROUP'
+    ? `${account.name} (${i18n.messages.staffAnnotation})`
+    : account.name
+
 // eslint-disable-next-line react/display-name
 const SingleMessage = React.memo(
   React.forwardRef(function SingleMessage(
@@ -127,7 +136,7 @@ const SingleMessage = React.memo(
         <TitleRow>
           <SenderName>
             <ScreenReaderOnly>{i18n.messages.thread.sender}:</ScreenReaderOnly>
-            {message.sender.name}
+            {formatMessageAccountName(message.sender, i18n)}
           </SenderName>
           <InformationText>
             <ScreenReaderOnly>{i18n.messages.thread.sentAt}:</ScreenReaderOnly>
@@ -142,7 +151,7 @@ const SingleMessage = React.memo(
           </ScreenReaderOnly>
           {(message.recipientNames
             ? message.recipientNames
-            : message.recipients.map((r) => r.name)
+            : message.recipients.map((r) => formatMessageAccountName(r, i18n))
           ).join(', ')}
         </InformationText>
         <MessageContent data-qa="thread-reader-content">
@@ -222,10 +231,9 @@ export default React.memo(function ThreadView({
         messageId: messages.slice(-1)[0].id,
         recipientAccountIds: recipients
           .filter((r) => r.selected)
-          .map((r) => r.id),
-        staffAnnotation: i18n.messages.staffAnnotation
+          .map((r) => r.id)
       }),
-    [i18n, messages, recipients, replyContent, sendReply]
+    [messages, recipients, replyContent, sendReply]
   )
 
   const editorLabels = useMemo(

@@ -9,6 +9,7 @@ import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
 
+import { useTranslations } from '../i18n'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
@@ -41,14 +42,14 @@ const Recipient = styled.button<{ selected: boolean; toggleable: boolean }>`
 
 export function ToggleableRecipient({
   'data-qa': dataQa,
-  recipient: { id, name, selected, toggleable },
+  recipient: { id, name, selected, toggleable, type },
   labelAdd,
   onToggleRecipient
 }: ToggleableRecipientProps) {
   const onClick = toggleable
     ? () => onToggleRecipient(id, !selected)
     : undefined
-
+  const i18n = useTranslations()
   return (
     <Recipient
       onClick={onClick}
@@ -59,7 +60,9 @@ export function ToggleableRecipient({
     >
       {selected ? (
         <>
-          {name}
+          {type === 'GROUP'
+            ? `${name} (${i18n.messages.staffAnnotation})`
+            : name}
           {toggleable && <FontAwesomeIcon icon={faTimes} />}
         </>
       ) : (

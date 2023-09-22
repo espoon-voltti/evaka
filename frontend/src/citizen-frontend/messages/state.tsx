@@ -27,7 +27,6 @@ import {
 import { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
-import { useTranslation } from '../localization'
 
 import { ReplyToThreadParams } from './api'
 import {
@@ -81,8 +80,6 @@ const markMatchingThreadRead = (
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
-    const t = useTranslation()
-
     const isLoggedIn = useUser() !== undefined
     const accountId = useQueryResult(messageAccountQuery, {
       enabled: isLoggedIn,
@@ -97,12 +94,9 @@ export const MessageContextProvider = React.memo(
       isFetching,
       isFetchingNextPage,
       hasNextPage
-    } = useInfiniteQuery(
-      receivedMessagesQuery(t.messages.staffAnnotation, 10),
-      {
-        enabled: accountId.isSuccess
-      }
-    )
+    } = useInfiniteQuery(receivedMessagesQuery(10), {
+      enabled: accountId.isSuccess
+    })
 
     const isFetchingFirstPage = isFetching && !isFetchingNextPage
     const threads = useMemo(

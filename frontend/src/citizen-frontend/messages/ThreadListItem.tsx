@@ -43,7 +43,13 @@ export default React.memo(function ThreadListItem({
 }: Props) {
   const i18n = useTranslation()
   const lastMessage = thread.messages[thread.messages.length - 1]
-  const participants = [...new Set(thread.messages.map((t) => t.sender.name))]
+  const participants = [
+    ...new Set(
+      thread.messages.map(({ sender: { name, type } }) =>
+        type === 'GROUP' ? `${name} (${i18n.messages.staffAnnotation})` : name
+      )
+    )
+  ]
 
   const handleDelete = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
