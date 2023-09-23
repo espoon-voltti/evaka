@@ -341,10 +341,16 @@ typealias StreamingCsvRoute = (db: Database, user: AuthenticatedUser.Integration
 
 typealias CsvQuery = (tx: Database.Read) -> Sequence<String>
 
+private const val QUERY_STREAM_CHUNK_SIZE = 10_000
+
 private inline fun <reified T : Any> csvQuery(
     crossinline f: QuerySql.Builder<T>.() -> QuerySql<T>
 ): CsvQuery = { tx ->
-    toCsvRecords(::printEspooBiCsvField, T::class, tx.createQuery { f() }.mapTo<T>().asSequence())
+    toCsvRecords(
+        ::printEspooBiCsvField,
+        T::class,
+        tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>().asSequence()
+    )
 }
 
 fun streamingCsvRoute(query: CsvQuery): StreamingCsvRoute = { db, _ ->
