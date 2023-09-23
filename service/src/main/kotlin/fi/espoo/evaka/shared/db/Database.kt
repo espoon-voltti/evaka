@@ -293,6 +293,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         SqlStatement<Query>(), ResultBearing {
         override fun self(): Query = this
 
+        fun setFetchSize(fetchSize: Int): Query = this.also { raw.setFetchSize(fetchSize) }
+
         inline fun <reified T> mapTo(
             qualifiers: Array<KClass<out Annotation>> = defaultQualifiers<T>()
         ): ResultIterable<T> = mapTo(createQualifiedType(*qualifiers))
