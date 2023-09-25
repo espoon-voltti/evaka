@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -13,12 +12,12 @@ import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import { vasuTranslations } from 'lib-customizations/employee'
 
 import { UnwrapResult } from '../../../../async-rendering'
@@ -33,17 +32,6 @@ import { CitizenBasicsSection } from './sections/CitizenBasicsSection'
 import { CitizenDynamicSections } from './sections/CitizenDynamicSections'
 import { CitizenVasuEvents } from './sections/CitizenVasuEvents'
 import { CitizenVasuHeader } from './sections/CitizenVasuHeader'
-
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-`
-
-const MobileDownloadButtonContainer = styled.div`
-  @media (max-width: ${tabletMin}) {
-    margin-right: ${defaultMargins.m};
-  }
-`
 
 export default React.memo(function VasuPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
@@ -71,12 +59,10 @@ export default React.memo(function VasuPage() {
             <VasuContainer gapSize="zero" data-qa="vasu-preview">
               {vasu && (
                 <>
-                  <ButtonContainer>
+                  <FixedSpaceRow justifyContent="space-between" mobileMargin>
                     <ReturnButton label={t.common.return} />
-                    <MobileDownloadButtonContainer>
-                      <DownloadButton label={t.common.download} />
-                    </MobileDownloadButtonContainer>
-                  </ButtonContainer>
+                    <DownloadButton label={t.common.download} />
+                  </FixedSpaceRow>
                   <Main>
                     <CitizenVasuHeader document={vasu} />
                     {!content.hasDynamicFirstSection && (

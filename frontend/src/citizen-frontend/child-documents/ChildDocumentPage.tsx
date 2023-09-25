@@ -12,6 +12,7 @@ import { ChildDocumentDetails } from 'lib-common/generated/api-types/document'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
@@ -42,7 +43,10 @@ export default React.memo(function ChildDocumentPage() {
     <>
       <Content>
         <Gap size="s" />
-        <ReturnButton label={i18n.common.return} />
+        <FixedSpaceRow justifyContent="space-between" mobileMargin>
+          <ReturnButton label={i18n.common.return} />
+          <DownloadButton label={i18n.common.download} />
+        </FixedSpaceRow>
         <Gap size="s" />
 
         {renderResult(decision, (document) => (

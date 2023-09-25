@@ -5,6 +5,7 @@
 import { Property } from 'csstype'
 import styled from 'styled-components'
 
+import { tabletMin } from '../breakpoints'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {
@@ -14,6 +15,7 @@ interface FixedSpaceRowProps {
   alignItems?: Property.AlignItems
   fullWidth?: boolean
   maxWidth?: string
+  mobileMargin?: boolean
   flexWrap?: Property.FlexWrap
 }
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
@@ -23,6 +25,14 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
   ${(p) => (p.fullWidth ? `width: 100%;` : '')}
   ${(p) => (p.flexWrap ? `flex-wrap: ${p.flexWrap};` : '')}
+  ${(p) =>
+    p.mobileMargin
+      ? `
+    @media (max-width: ${tabletMin}) {
+      margin-right: ${defaultMargins.s};
+    }
+  `
+      : ''}
 
   >* {
     margin-right: ${(p) =>
