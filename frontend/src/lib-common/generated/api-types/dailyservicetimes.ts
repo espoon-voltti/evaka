@@ -44,6 +44,14 @@ export interface DailyServiceTimesResponse {
   permittedActions: Action.DailyServiceTime[]
 }
 
+/**
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
+*/
+export type DailyServiceTimesType =
+  | 'REGULAR'
+  | 'IRREGULAR'
+  | 'VARIABLE_TIME'
+
 export namespace DailyServiceTimesValue {
   /**
   * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.IrregularTimes

@@ -264,6 +264,15 @@ export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestio
 
 
 /**
+* Generated from fi.espoo.evaka.document.QuestionType
+*/
+export type QuestionType =
+  | 'TEXT'
+  | 'CHECKBOX'
+  | 'CHECKBOX_GROUP'
+  | 'RADIO_BUTTON_GROUP'
+
+/**
 * Generated from fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 */
 export interface RadioButtonGroupQuestionOption {
