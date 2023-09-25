@@ -484,15 +484,15 @@ export class Collapsible extends Element {
 }
 
 export class Modal extends Element {
-  #closeButton = this.find('[data-qa="modal-close"]')
-  #submitButton = this.find('[data-qa="modal-okBtn"]')
+  closeButton = this.find('[data-qa="modal-close"]')
+  submitButton = this.find('[data-qa="modal-okBtn"]')
 
   async close() {
-    await this.#closeButton.click()
+    await this.closeButton.click()
   }
 
   async submit() {
-    await this.#submitButton.click()
+    await this.submitButton.click()
   }
 }
 
