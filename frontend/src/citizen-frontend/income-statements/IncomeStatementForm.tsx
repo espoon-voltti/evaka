@@ -14,7 +14,7 @@ import {
   validateIf,
   validInt
 } from 'lib-common/form-validation'
-import { OtherIncome } from 'lib-common/generated/enums'
+import { OtherIncome } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'

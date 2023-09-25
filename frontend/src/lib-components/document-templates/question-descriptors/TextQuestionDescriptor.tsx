@@ -12,7 +12,8 @@ import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
 import {
   AnsweredQuestion,
-  Question
+  Question,
+  QuestionType
 } from 'lib-common/generated/api-types/document'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -23,11 +24,7 @@ import { Label } from 'lib-components/typography'
 
 import { useTranslations } from '../../i18n'
 
-import {
-  DocumentQuestionDescriptor,
-  QuestionType,
-  TemplateQuestionDescriptor
-} from './types'
+import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
 
 const questionType: QuestionType = 'TEXT'
 

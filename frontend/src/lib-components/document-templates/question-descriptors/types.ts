@@ -6,9 +6,7 @@ import { ComponentType } from 'react'
 
 import { BoundForm } from 'lib-common/form/hooks'
 import { AnyForm, StateOf } from 'lib-common/form/types'
-import { Question } from 'lib-common/generated/api-types/document'
-
-export type QuestionType = Question['type']
+import { Question, QuestionType } from 'lib-common/generated/api-types/document'
 
 export const questionTypes: QuestionType[] = [
   'TEXT',

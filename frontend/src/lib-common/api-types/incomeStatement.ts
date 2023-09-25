@@ -7,11 +7,11 @@ import {
   EstimatedIncome,
   IncomeStatement,
   IncomeStatementAwaitingHandler,
+  OtherIncome,
   SelfEmployed
 } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 
-import { OtherIncome } from '../generated/enums'
 import HelsinkiDateTime from '../helsinki-date-time'
 import { JsonOf } from '../json'
 

@@ -17,6 +17,7 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
+import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
 import {
   AbsenceCategory,
   AbsenceType,
@@ -45,7 +46,6 @@ import {
   TimeRange,
   UserRole
 } from 'lib-common/generated/api-types/shared'
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
