@@ -17,7 +17,7 @@ import {
 import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitCalendarPage } from '../../pages/employee/units/unit-attendances-page'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -147,15 +147,20 @@ describe('Calendar events', () => {
     await calendarPage.selectMode('week')
     const creationModal =
       await calendarPage.calendarEventsSection.openEventCreationModal()
+    await waitUntilTrue(() => creationModal.submitButton.disabled)
     await creationModal.title.fill('Test event (P)')
     await creationModal.startDateInput.fill(startDate.format())
     await creationModal.endDateInput.fill(endDate.format())
     await creationModal.description.fill('Test event description')
+    await waitUntilFalse(() => creationModal.submitButton.disabled)
     await creationModal.attendees.open()
+    await creationModal.attendees.option(groupId).uncheck()
+    await waitUntilTrue(() => creationModal.submitButton.disabled)
     await creationModal.attendees.expandOption(groupId)
     await creationModal.attendees.option(child1Fixture.id).check()
     await creationModal.attendees.option(child2Fixture.id).uncheck()
     await creationModal.attendees.close()
+    await waitUntilFalse(() => creationModal.submitButton.disabled)
     await creationModal.submit()
 
     await calendarPage.calendarEventsSection

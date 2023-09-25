@@ -836,9 +836,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env, {
       featureFlags: {
-        experimental: {
-          citizenAttendanceSummary: true
-        }
+        citizenAttendanceSummary: true
       }
     })
     await calendarPage.assertDay(today, [
