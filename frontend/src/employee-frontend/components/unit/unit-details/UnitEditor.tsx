@@ -471,7 +471,7 @@ function validateForm(
     })
   }
   if (
-    featureFlags.experimental?.voucherUnitPayments &&
+    featureFlags.voucherUnitPayments &&
     form.providerType === 'PRIVATE_SERVICE_VOUCHER'
   ) {
     if (!form.businessId)
@@ -1017,7 +1017,7 @@ export default function UnitEditor(props: Props) {
                   onChange={() => updateForm({ providerType: value })}
                   data-qa={`provider-type-${value}`}
                 />
-                {featureFlags.experimental?.voucherUnitPayments &&
+                {featureFlags.voucherUnitPayments &&
                   value === 'PRIVATE_SERVICE_VOUCHER' &&
                   form.providerType === value && (
                     <IndentedTable>
@@ -1067,7 +1067,7 @@ export default function UnitEditor(props: Props) {
           <div>{i18n.common.providerType[form.providerType]}</div>
         )}
       </FormPart>
-      {featureFlags.experimental?.voucherUnitPayments &&
+      {featureFlags.voucherUnitPayments &&
         !props.editable &&
         form.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
           <>

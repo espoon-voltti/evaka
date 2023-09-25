@@ -182,7 +182,7 @@ function ServiceNeedEditorRow({
           />
         </Td>
         <Td verticalAlign="top">
-          {featureFlags.experimental?.intermittentShiftCare ? (
+          {featureFlags.intermittentShiftCare ? (
             <FixedSpaceColumn spacing="xs">
               {shiftCareType.map((type) => (
                 <Radio

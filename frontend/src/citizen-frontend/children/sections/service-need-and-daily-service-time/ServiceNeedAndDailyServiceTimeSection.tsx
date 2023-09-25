@@ -62,16 +62,15 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           <ServiceNeedTable serviceNeeds={serviceNeeds} />
         )
       })}
-      {featureFlags.experimental?.citizenAttendanceSummary &&
-        hasContractDays && (
-          <>
-            <Gap size="s" />
-            <AttendanceSummaryTable
-              childId={childId}
-              serviceNeedsResponse={serviceNeedsResponse}
-            />
-          </>
-        )}
+      {featureFlags.citizenAttendanceSummary && hasContractDays && (
+        <>
+          <Gap size="s" />
+          <AttendanceSummaryTable
+            childId={childId}
+            serviceNeedsResponse={serviceNeedsResponse}
+          />
+        </>
+      )}
       <HorizontalLine slim hiddenOnTabletAndDesktop />
       <H3>{t.children.dailyServiceTime.title}</H3>
       {dailyServiceTimesResponse.mapAll({

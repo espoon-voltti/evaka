@@ -42,7 +42,7 @@ export default React.memo(function FinancePage() {
           : null,
         user?.permittedGlobalActions?.includes(
           'SEARCH_VOUCHER_VALUE_DECISIONS'
-        ) && featureFlags.experimental?.voucherUnitPayments
+        ) && featureFlags.voucherUnitPayments
           ? {
               id: 'payments',
               link: '/finance/payments',

@@ -179,7 +179,7 @@ const groupChildren = (
             type:
               child.absence.type === 'FREE_ABSENCE'
                 ? 'absent-free'
-                : featureFlags.experimental?.citizenAttendanceSummary &&
+                : featureFlags.citizenAttendanceSummary &&
                   child.absence.type === 'PLANNED_ABSENCE'
                 ? 'absent-planned'
                 : 'absent'
@@ -258,7 +258,7 @@ export const formatReservation = (
   const { startTime, endTime } = reservationTimes
   const timeOutput = `${startTime.format()}${separator}${endTime.format()}`
 
-  if (!featureFlags.experimental?.intermittentShiftCare) {
+  if (!featureFlags.intermittentShiftCare) {
     return timeOutput
   } else {
     const showIntermittentShiftCareNotice =

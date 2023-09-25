@@ -75,7 +75,7 @@ export default React.memo(function UnitAttendanceReservationsView({
     unitAttendanceReservationsQuery(
       unitId,
       weekRange,
-      featureFlags.experimental?.intermittentShiftCare ?? false
+      featureFlags.intermittentShiftCare ?? false
     )
   )
 

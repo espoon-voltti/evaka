@@ -53,7 +53,7 @@ describe('Missing head of family report', () => {
         .toHelsinkiDateTime(LocalTime.of(8, 0))
         .toSystemTzDate(),
       employeeCustomizations: {
-        featureFlags: { experimental: { personDuplicate: true } }
+        featureFlags: { personDuplicate: true }
       }
     })
     const report = await navigateToReport(page, admin.data)

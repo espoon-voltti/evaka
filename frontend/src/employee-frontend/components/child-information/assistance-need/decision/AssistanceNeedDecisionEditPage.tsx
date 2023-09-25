@@ -232,8 +232,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
         <ContentArea opaque>
           {renderResult(child, (child) => (
             <>
-              {featureFlags.experimental
-                ?.assistanceNeedDecisionsLanguageSelect && (
+              {featureFlags.assistanceNeedDecisionsLanguageSelect && (
                 <>
                   <FixedSpaceRow alignItems="baseline">
                     <Label>

@@ -68,7 +68,7 @@ export default React.memo(function DuplicatePeople() {
   const { setErrorMessage } = useContext(UIContext)
 
   const [filters, setFilters] = useState<DuplicatePeopleFilters>({
-    showIntentionalDuplicates: !featureFlags.experimental?.personDuplicate
+    showIntentionalDuplicates: !featureFlags.personDuplicate
   })
 
   const loadData = useCallback(() => {
@@ -85,7 +85,7 @@ export default React.memo(function DuplicatePeople() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.duplicatePeople.title}</Title>
-        {featureFlags.experimental?.personDuplicate && (
+        {featureFlags.personDuplicate && (
           <FilterRow>
             <Checkbox
               onChange={(checkedValue) =>

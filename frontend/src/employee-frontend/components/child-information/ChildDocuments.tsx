@@ -203,10 +203,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
               (doc) => doc.type === template.type && doc.status !== 'COMPLETED'
             )
         )
-        .filter(
-          (template) =>
-            featureFlags.experimental?.hojks || template.type !== 'HOJKS'
-        )
+        .filter((template) => featureFlags.hojks || template.type !== 'HOJKS')
 
       return (
         <FixedSpaceColumn>

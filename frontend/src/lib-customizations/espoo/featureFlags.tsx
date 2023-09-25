@@ -31,19 +31,17 @@ const features: Features = {
     childDiscussion: false,
     feeDecisionPreschoolClubFilter: false,
     placementGuarantee: true,
-    experimental: {
-      leops: true,
-      voucherUnitPayments: true,
-      assistanceNeedDecisions: true,
-      assistanceNeedDecisionsLanguageSelect: true,
-      staffAttendanceTypes: true,
-      fosterParents: true,
-      serviceWorkerMessaging: true,
-      childDocuments: true,
-      assistanceNeedPreschoolDecisions: true,
-      feeDecisionIgnoredStatus: true,
-      hojks: true
-    }
+    voucherUnitPayments: true,
+    assistanceNeedDecisionsLanguageSelect: true,
+    staffAttendanceTypes: true,
+    personDuplicate: false,
+    citizenAttendanceSummary: false,
+    intermittentShiftCare: false,
+    noAbsenceType: false,
+    childDocuments: true,
+    assistanceNeedPreschoolDecisions: true,
+    feeDecisionIgnoredStatus: true,
+    hojks: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -63,18 +61,17 @@ const features: Features = {
     childDiscussion: false,
     feeDecisionPreschoolClubFilter: false,
     placementGuarantee: true,
-    experimental: {
-      leops: true,
-      assistanceNeedDecisions: true,
-      assistanceNeedDecisionsLanguageSelect: true,
-      staffAttendanceTypes: true,
-      fosterParents: true,
-      serviceWorkerMessaging: true,
-      childDocuments: true,
-      assistanceNeedPreschoolDecisions: true,
-      feeDecisionIgnoredStatus: true,
-      hojks: true
-    }
+    assistanceNeedDecisionsLanguageSelect: true,
+    staffAttendanceTypes: true,
+    personDuplicate: false,
+    citizenAttendanceSummary: false,
+    voucherUnitPayments: false,
+    intermittentShiftCare: false,
+    noAbsenceType: false,
+    childDocuments: true,
+    assistanceNeedPreschoolDecisions: true,
+    feeDecisionIgnoredStatus: true,
+    hojks: true
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -94,17 +91,16 @@ const features: Features = {
     childDiscussion: false,
     feeDecisionPreschoolClubFilter: false,
     placementGuarantee: false,
-    experimental: {
-      leops: true,
-      assistanceNeedDecisions: true,
-      assistanceNeedDecisionsLanguageSelect: true,
-      staffAttendanceTypes: false,
-      fosterParents: true,
-      serviceWorkerMessaging: true,
-      childDocuments: false,
-      feeDecisionIgnoredStatus: true,
-      hojks: false
-    }
+    assistanceNeedDecisionsLanguageSelect: true,
+    staffAttendanceTypes: false,
+    personDuplicate: false,
+    citizenAttendanceSummary: false,
+    voucherUnitPayments: false,
+    intermittentShiftCare: false,
+    noAbsenceType: false,
+    childDocuments: false,
+    feeDecisionIgnoredStatus: true,
+    hojks: false
   }
 }
 

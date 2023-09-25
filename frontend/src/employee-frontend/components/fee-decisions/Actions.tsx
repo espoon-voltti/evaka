@@ -77,7 +77,7 @@ const Actions = React.memo(function Actions({
                 {i18n.feeDecisions.buttons.checked(checkedIds.length)}
               </CheckedRowsInfo>
             ) : null}
-            {featureFlags.experimental?.feeDecisionIgnoredStatus && (
+            {featureFlags.feeDecisionIgnoredStatus && (
               <Button
                 text={i18n.feeDecisions.buttons.ignoreDraft}
                 disabled={checkedIds.length !== 1}
