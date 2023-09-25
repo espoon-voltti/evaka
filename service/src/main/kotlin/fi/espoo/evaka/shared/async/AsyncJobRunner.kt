@@ -21,6 +21,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.math.max
 import kotlin.reflect.KClass
+import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
 private const val defaultRetryCount =
@@ -44,6 +45,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"
 
+    private val logger = KotlinLogging.logger {}
     private val stateLock = ReentrantReadWriteLock()
     private var handlers: Map<AsyncJobType<out T>, AsyncJobPool.Handler<*>> = emptyMap()
     private var afterCommitHooks: Map<AsyncJobType<out T>, () -> Unit> = emptyMap()
@@ -127,29 +129,42 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     fun plan(tx: Database.Transaction, jobs: Sequence<JobParams<out T>>) =
         stateLock.read {
             jobs.forEach { job ->
-                tx.insertJob(job)
-                afterCommitHooks[AsyncJobType.ofPayload(job.payload)]?.let { tx.afterCommit(it) }
+                val jobType = AsyncJobType.ofPayload(job.payload)
+                val id = tx.insertJob(job)
+                logger.debug {
+                    "$name planned job $jobType(id=$id, runAt=${job.runAt}, retryCount=${job.retryCount}, retryInterval=${job.retryInterval})"
+                }
+                afterCommitHooks[jobType]?.let { tx.afterCommit(it) }
             }
         }
 
-    fun startBackgroundPolling(pollingInterval: Duration) {
+    fun startBackgroundPolling(
+        clock: EvakaClock = RealEvakaClock(),
+        pollingInterval: Duration = Duration.ofMinutes(1)
+    ) {
         val newTimer =
             fixedRateTimer("$name.timer", period = pollingInterval.toMillis()) {
-                pools.forEach { it.runPendingJobs(RealEvakaClock(), maxCount = 1_000) }
+                pools.forEach { it.runPendingJobs(clock, maxCount = 1_000) }
             }
         backgroundTimer.getAndSet(newTimer)?.cancel()
     }
 
-    fun enableAfterCommitHooks() =
+    fun stopBackgroundPolling() {
+        backgroundTimer.getAndSet(null)?.cancel()
+    }
+
+    fun enableAfterCommitHooks(clock: EvakaClock = RealEvakaClock()) =
         stateLock.write {
             afterCommitHooks =
                 pools
                     .flatMap { pool ->
-                        val hook = { pool.runPendingJobs(RealEvakaClock(), maxCount = 1_000) }
+                        val hook = { pool.runPendingJobs(clock, maxCount = 1_000) }
                         (jobsPerPool[pool.id] ?: emptySet()).map { jobType -> jobType to hook }
                     }
                     .toMap()
         }
+
+    fun disableAfterCommitHooks() = stateLock.write { afterCommitHooks = emptyMap() }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int {
         var totalCount = 0
@@ -163,6 +178,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             val done = executed == 0
             totalCount += executed
         } while (!done)
+        logger.debug { "$name executed $totalCount jobs synchronously" }
         return totalCount
     }
 
@@ -176,7 +192,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     }
 
     override fun close() {
-        backgroundTimer.getAndSet(null)?.cancel()
+        stopBackgroundPolling()
         pools.forEach { it.close() }
     }
 }

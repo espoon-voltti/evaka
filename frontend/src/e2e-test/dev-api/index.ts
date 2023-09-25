@@ -145,6 +145,14 @@ export const devClient = axios.create({
   baseURL: config.devApiGwUrl
 })
 
+export async function setTestMode(enabled: boolean): Promise<void> {
+  try {
+    await devClient.post('/test-mode', {}, { params: { enabled } })
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function insertApplications(
   fixture: Application[]
 ): Promise<void> {

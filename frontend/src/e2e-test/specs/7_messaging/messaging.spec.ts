@@ -446,21 +446,15 @@ describe('Sending and receiving messages', () => {
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-        await citizenMessagesPage.clickNewMessage()
-
-        await citizenMessagesPage.assertChildrenSelectable([
+        const editor = await citizenMessagesPage.createNewMessage()
+        await editor.assertChildrenSelectable([
           fixtures.enduserChildFixtureJari.id,
           enduserChildFixtureKaarina.id
         ])
-        await citizenMessagesPage.selectMessageChildren([
-          enduserChildFixtureKaarina.id
-        ])
-        await citizenMessagesPage.selectNewMessageRecipients(recipients)
-        await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
-        await citizenMessagesPage.clickSendMessage()
-        await waitUntilTrue(() =>
-          citizenMessagesPage.getThreadCount().then((count) => count > 0)
-        )
+        await editor.selectChildren([enduserChildFixtureKaarina.id])
+        await editor.selectRecipients(recipients)
+        await editor.fillMessage(defaultTitle, defaultContent)
+        await editor.sendMessage()
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
@@ -508,9 +502,9 @@ describe('Sending and receiving messages', () => {
         const citizenMessagesPageAfterPlacement = new CitizenMessagesPage(
           citizenPage
         )
-        await citizenMessagesPageAfterPlacement.clickNewMessage()
-
-        await citizenMessagesPageAfterPlacement.assertChildrenSelectable([])
+        const editor =
+          await citizenMessagesPageAfterPlacement.createNewMessage()
+        await editor.assertChildrenSelectable([])
       })
 
       test('The guardian can select another guardian as an recipient', async () => {
@@ -526,18 +520,15 @@ describe('Sending and receiving messages', () => {
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-        await citizenMessagesPage.clickNewMessage()
-        await citizenMessagesPage.selectNewMessageRecipients(recipients)
-        await citizenMessagesPage
+        const editor = await citizenMessagesPage.createNewMessage()
+        await editor.selectRecipients(recipients)
+        await editor
           .secondaryRecipient(
             `${otherGuardian.lastName} ${otherGuardian.firstName}`
           )
           .click()
-        await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
-        await citizenMessagesPage.clickSendMessage()
-        await waitUntilTrue(() =>
-          citizenMessagesPage.getThreadCount().then((count) => count > 0)
-        )
+        await editor.fillMessage(defaultTitle, defaultContent)
+        await editor.sendMessage()
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openSupervisorPage(mockedDateAt11)
