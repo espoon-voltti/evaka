@@ -432,11 +432,6 @@ test('Foster parent can create a repeating reservation', async () => {
     .save()
   await activeRelationshipPage.reload()
   const firstReservationDay = mockedDate.addDays(14)
-  const reservation = {
-    startTime: '08:00',
-    endTime: '16:00',
-    childIds: [fosterChild.id]
-  }
 
   await activeRelationshipHeader.selectTab('calendar')
   const calendarPage = new CitizenCalendarPage(
@@ -446,11 +441,16 @@ test('Foster parent can create a repeating reservation', async () => {
   const reservationsModal = await calendarPage.openReservationsModal()
   await reservationsModal.createRepeatingDailyReservation(
     new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-    reservation.startTime,
-    reservation.endTime
+    '08:00',
+    '16:00'
   )
 
-  await calendarPage.assertReservations(firstReservationDay, [reservation])
+  await calendarPage.assertDay(firstReservationDay, [
+    {
+      childIds: [fosterChild.id],
+      text: '08:00–16:00'
+    }
+  ])
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
   await endedRelationshipHeader.assertNoTab('calendar')

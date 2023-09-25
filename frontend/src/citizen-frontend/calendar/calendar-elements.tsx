@@ -106,7 +106,7 @@ export const Reservations = React.memo(function Reservations({
 
 export const Holiday = React.memo(function Holiday() {
   const i18n = useTranslation()
-  return <Light>{i18n.calendar.holiday}</Light>
+  return <Light data-qa="holiday">{i18n.calendar.holiday}</Light>
 })
 
 const GroupedElementText = styled.div<{

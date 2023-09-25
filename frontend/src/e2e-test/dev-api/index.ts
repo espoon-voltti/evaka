@@ -72,6 +72,7 @@ import {
   DecisionFixture,
   deserializeDecision,
   deserializeDiscussionData,
+  DevAbsence,
   DevAssistanceNeedPreschoolDecision,
   DevCalendarEvent,
   DevCalendarEventAttendee,
@@ -408,6 +409,14 @@ export function insertReservationFixtures(
 ): Promise<void> {
   try {
     return devClient.post(`/reservations`, fixtures)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export function insertAbsenceFixture(fixture: DevAbsence): Promise<void> {
+  try {
+    return devClient.post(`/absence`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

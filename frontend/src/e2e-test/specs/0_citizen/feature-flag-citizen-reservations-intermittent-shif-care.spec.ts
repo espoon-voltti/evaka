@@ -14,7 +14,6 @@ import { Fixture, careAreaFixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage, {
   FormatterReservation,
-  StartAndEndTimeReservation,
   TwoPartReservation
 } from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
@@ -39,27 +38,19 @@ describe.each(e)(
 
       const firstReservationDay = june7th2023.addDays(14).addDays(1) //Thursday
 
-      const reservation = {
-        startTime: '08:00',
-        endTime: '22:00',
-        childIds: [child.id]
-      }
-
       const reservationsModal = await calendarPage.openReservationsModal()
       await reservationsModal.createRepeatingDailyReservation(
         new FiniteDateRange(
           firstReservationDay,
           firstReservationDay.addDays(6)
         ),
-        reservation.startTime,
-        reservation.endTime
+        '08:00',
+        '22:00'
       )
 
-      await calendarPage.assertReservations(
-        firstReservationDay,
-        [reservation],
-        getReservationOverdraftOutput
-      )
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: [child.id], text: '08:00–22:00 Ilta-/vuorohoito' }
+      ])
     })
 
     test('Citizen creates a repeating reservation on a bank holiday', async () => {
@@ -76,24 +67,16 @@ describe.each(e)(
         parent
       )
 
-      const reservation = {
-        startTime: '08:00',
-        endTime: '16:00',
-        childIds: [child.id]
-      }
-
       const reservationsModal = await calendarPage.openReservationsModal()
       await reservationsModal.createRepeatingDailyReservation(
         new FiniteDateRange(firstReservationDay, firstReservationDay),
-        reservation.startTime,
-        reservation.endTime
+        '08:00',
+        '16:00'
       )
 
-      await calendarPage.assertReservations(
-        firstReservationDay,
-        [reservation],
-        getReservationOverdraftOutput
-      )
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: [child.id], text: '08:00–16:00 Ilta-/vuorohoito' }
+      ])
     })
 
     test('Citizen creates a repeating reservation for a weekend', async () => {
@@ -106,24 +89,16 @@ describe.each(e)(
 
       const firstReservationDay = june7th2023.addDays(14).addDays(3) //Sunday, weekend
 
-      const reservation = {
-        startTime: '08:00',
-        endTime: '16:00',
-        childIds: [child.id]
-      }
-
       const reservationsModal = await calendarPage.openReservationsModal()
       await reservationsModal.createRepeatingDailyReservation(
         new FiniteDateRange(firstReservationDay, firstReservationDay),
-        reservation.startTime,
-        reservation.endTime
+        '08:00',
+        '16:00'
       )
 
-      await calendarPage.assertReservations(
-        firstReservationDay,
-        [reservation],
-        getReservationOverdraftOutput
-      )
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: [child.id], text: '08:00–16:00 Ilta-/vuorohoito' }
+      ])
     })
 
     test('Citizen creates a repeating 2-part reservation outside placement unit times', async () => {
@@ -321,9 +296,6 @@ const addTestData = async (date: LocalDate) => {
     child
   }
 }
-
-const getReservationOverdraftOutput = (res: StartAndEndTimeReservation) =>
-  `${res.startTime}–${res.endTime} Ilta-/vuorohoito`
 
 const getFormatterReservationOutput = (res: FormatterReservation) =>
   res.isOverdraft

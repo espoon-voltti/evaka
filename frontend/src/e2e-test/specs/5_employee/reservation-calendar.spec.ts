@@ -478,7 +478,7 @@ describe('Unit group calendar', () => {
     ]
     await Promise.all(
       attendances.map(async ([arrival, departure]) => {
-        await Fixture.childAttendances()
+        await Fixture.childAttendance()
           .with({
             childId: child1Fixture.id,
             unitId: daycare2Fixture.id,
@@ -546,7 +546,7 @@ describe('Unit group calendar for shift care unit', () => {
     const arrived = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(8, 30))
     const departed = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(13, 30))
 
-    await Fixture.childAttendances()
+    await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
@@ -561,7 +561,7 @@ describe('Unit group calendar for shift care unit', () => {
       LocalTime.of(5, 30)
     )
 
-    await Fixture.childAttendances()
+    await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,

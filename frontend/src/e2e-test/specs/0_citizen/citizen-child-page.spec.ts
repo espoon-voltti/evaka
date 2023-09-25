@@ -32,8 +32,6 @@ import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
-let header: CitizenHeader
-let childPage: CitizenChildPage
 
 const mockedDate = LocalDate.of(2022, 3, 1)
 
@@ -43,36 +41,34 @@ describe('Citizen children page', () => {
     fixtures = await initializeAreaAndPersonData()
 
     page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
-    await enduserLogin(page)
-    header = new CitizenHeader(page)
-    childPage = new CitizenChildPage(page)
   })
 
-  describe('Child page', () => {
-    test('Citizen can see its children and navigate to their page', async () => {
-      await insertDaycarePlacementFixtures(
-        [
-          fixtures.enduserChildFixtureJari,
-          fixtures.enduserChildFixtureKaarina
-        ].map((child) => ({
-          id: uuidv4(),
-          type: 'DAYCARE',
-          childId: child.id,
-          unitId: fixtures.daycareFixture.id,
-          startDate: mockedDate.subMonths(1),
-          endDate: mockedDate,
-          placeGuarantee: false
-        }))
-      )
-      await page.reload()
+  test('Citizen can see its children and navigate to their page', async () => {
+    await insertDaycarePlacementFixtures(
+      [
+        fixtures.enduserChildFixtureJari,
+        fixtures.enduserChildFixtureKaarina
+      ].map((child) => ({
+        id: uuidv4(),
+        type: 'DAYCARE',
+        childId: child.id,
+        unitId: fixtures.daycareFixture.id,
+        startDate: mockedDate.subMonths(1),
+        endDate: mockedDate,
+        placeGuarantee: false
+      }))
+    )
 
-      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
-      await childPage.assertChildNameIsShown(
-        'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
-      )
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
-    })
+    await enduserLogin(page)
+    const header = new CitizenHeader(page)
+    const childPage = new CitizenChildPage(page)
+
+    await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+    await childPage.assertChildNameIsShown(
+      'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
+    )
+    await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
+    await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
   })
 
   async function createDaycarePlacement(
@@ -95,6 +91,8 @@ describe('Citizen children page', () => {
   }
 
   describe('Placement termination', () => {
+    let childPage: CitizenChildPage
+
     const assertToggledPlacements = async (labels: string[]) =>
       waitUntilEqual(() => childPage.getToggledPlacements(), labels)
     const assertTerminatablePlacements = async (labels: string[]) =>
@@ -110,7 +108,10 @@ describe('Citizen children page', () => {
     test('Simple daycare placement can be terminated', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
 
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
@@ -133,7 +134,11 @@ describe('Citizen children page', () => {
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
+
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
@@ -153,7 +158,11 @@ describe('Citizen children page', () => {
         'DAYCARE',
         startDate
       )
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
+
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
@@ -167,7 +176,6 @@ describe('Citizen children page', () => {
     test('Upcoming transfer application is deleted when placement is terminated', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
-      await page.reload()
 
       const application = applicationFixture(
         fixtures.enduserChildFixtureKaarina,
@@ -182,7 +190,10 @@ describe('Citizen children page', () => {
         true
       )
       await insertApplications([application])
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
 
       await header.selectTab('applications')
       await new CitizenApplicationsPage(page).assertApplicationExists(
@@ -262,7 +273,11 @@ describe('Citizen children page', () => {
         }
       ]
       await insertDaycarePlacementFixtures(placements)
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
+
       const labels = {
         daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
         daycare2: `Varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
@@ -309,7 +324,11 @@ describe('Citizen children page', () => {
         }
       ]
       await insertDaycarePlacementFixtures(placements)
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
+
       const labels = {
         daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
         daycare2: `Varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
@@ -373,7 +392,11 @@ describe('Citizen children page', () => {
         }
       ]
       await insertDaycarePlacementFixtures(placements)
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
+
       const labels = {
         preschool: `Esiopetus, Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`,
         daycareAfterPreschool: `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycareAfterPreschoolEnd.format()}`
@@ -430,7 +453,10 @@ describe('Citizen children page', () => {
         fixtures.preschoolFixture.id,
         'PRESCHOOL_DAYCARE'
       )
-      await page.reload()
+
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      childPage = new CitizenChildPage(page)
 
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
@@ -483,18 +509,21 @@ describe('Citizen children page', () => {
           startDate: mockedDate.subDays(10)
         })
         .save()
-
-      await page.reload()
     })
 
     test('can give consent once', async () => {
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      const childPage = new CitizenChildPage(page)
+
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.check()
       await childPage.saveConsent()
       await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
 
-      await page.reload()
+      await header.selectTab('calendar')
+
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.waitUntilChecked(true)
@@ -504,7 +533,10 @@ describe('Citizen children page', () => {
     })
 
     test('shows unconsented count', async () => {
-      await page.reload()
+      await enduserLogin(page)
+      const header = new CitizenHeader(page)
+      const childPage = new CitizenChildPage(page)
+
       await header.assertUnreadChildrenCount(3)
 
       await header.assertChildUnreadCount(
@@ -544,145 +576,143 @@ describe.each(['desktop', 'mobile'] as const)(
         screen: viewport,
         mockedTime: mockedDate.toSystemTzDate()
       })
-      await enduserLoginWeak(page)
-      header = new CitizenHeader(page, env)
-      childPage = new CitizenChildPage(page, env)
     })
 
-    describe('Child page', () => {
-      test('Citizen can see its children and their service needs and daily service times', async () => {
-        const daycareSupervisor = await Fixture.employeeUnitSupervisor(
-          fixtures.daycareFixture.id
-        ).save()
-        const serviceNeedOption = await Fixture.serviceNeedOption()
-          .with({
-            validPlacementType: 'DAYCARE',
-            defaultOption: false,
-            nameFi: 'Kokopäiväinen',
-            nameSv: 'Kokopäiväinen (sv)',
-            nameEn: 'Kokopäiväinen (en)'
-          })
-          .save()
-        await Fixture.serviceNeedOption()
-          .with({
-            validPlacementType: 'PRESCHOOL',
-            defaultOption: true,
-            nameFi: 'Esiopetus',
-            nameSv: 'Esiopetus (sv)',
-            nameEn: 'Esiopetus (en)'
-          })
-          .save()
-        const placement = await Fixture.placement()
-          .with({
-            childId: fixtures.enduserChildFixtureJari.id,
-            unitId: fixtures.daycareFixture.id,
-            type: 'DAYCARE',
-            startDate: mockedDate.subMonths(2),
-            endDate: mockedDate
-          })
-          .save()
-        await Fixture.serviceNeed()
-          .with({
-            placementId: placement.data.id,
-            startDate: mockedDate.subMonths(1),
-            endDate: mockedDate,
-            optionId: serviceNeedOption.data.id,
-            confirmedBy: daycareSupervisor.data.id
-          })
-          .save()
-        await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
-          .with({
-            validityPeriod: new DateRange(
-              mockedDate.subMonths(3),
-              mockedDate.subMonths(2).subDays(1)
-            ),
-            type: 'REGULAR',
-            regularTimes: {
-              start: LocalTime.of(8, 15),
-              end: LocalTime.of(14, 46)
-            }
-          })
-          .save()
-        await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
-          .with({
-            validityPeriod: new DateRange(
-              mockedDate.subMonths(2),
-              mockedDate.subMonths(1).subDays(1)
-            ),
-            type: 'IRREGULAR',
-            regularTimes: null,
-            mondayTimes: {
-              start: LocalTime.of(8, 15),
-              end: LocalTime.of(14, 46)
-            },
-            thursdayTimes: {
-              start: LocalTime.of(7, 46),
-              end: LocalTime.of(16, 32)
-            }
-          })
-          .save()
-        await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
-          .with({
-            validityPeriod: new DateRange(mockedDate.subMonths(1), null),
-            type: 'VARIABLE_TIME',
-            regularTimes: null
-          })
-          .save()
-        await Fixture.placement()
-          .with({
-            childId: fixtures.enduserChildFixtureKaarina.id,
-            unitId: fixtures.preschoolFixture.id,
-            type: 'PRESCHOOL',
-            startDate: mockedDate.subMonths(1),
-            endDate: mockedDate
-          })
-          .save()
+    test('Citizen can see its children and their service needs and daily service times', async () => {
+      const daycareSupervisor = await Fixture.employeeUnitSupervisor(
+        fixtures.daycareFixture.id
+      ).save()
+      const serviceNeedOption = await Fixture.serviceNeedOption()
+        .with({
+          validPlacementType: 'DAYCARE',
+          defaultOption: false,
+          nameFi: 'Kokopäiväinen',
+          nameSv: 'Kokopäiväinen (sv)',
+          nameEn: 'Kokopäiväinen (en)'
+        })
+        .save()
+      await Fixture.serviceNeedOption()
+        .with({
+          validPlacementType: 'PRESCHOOL',
+          defaultOption: true,
+          nameFi: 'Esiopetus',
+          nameSv: 'Esiopetus (sv)',
+          nameEn: 'Esiopetus (en)'
+        })
+        .save()
+      const placement = await Fixture.placement()
+        .with({
+          childId: fixtures.enduserChildFixtureJari.id,
+          unitId: fixtures.daycareFixture.id,
+          type: 'DAYCARE',
+          startDate: mockedDate.subMonths(2),
+          endDate: mockedDate
+        })
+        .save()
+      await Fixture.serviceNeed()
+        .with({
+          placementId: placement.data.id,
+          startDate: mockedDate.subMonths(1),
+          endDate: mockedDate,
+          optionId: serviceNeedOption.data.id,
+          confirmedBy: daycareSupervisor.data.id
+        })
+        .save()
+      await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
+        .with({
+          validityPeriod: new DateRange(
+            mockedDate.subMonths(3),
+            mockedDate.subMonths(2).subDays(1)
+          ),
+          type: 'REGULAR',
+          regularTimes: {
+            start: LocalTime.of(8, 15),
+            end: LocalTime.of(14, 46)
+          }
+        })
+        .save()
+      await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
+        .with({
+          validityPeriod: new DateRange(
+            mockedDate.subMonths(2),
+            mockedDate.subMonths(1).subDays(1)
+          ),
+          type: 'IRREGULAR',
+          regularTimes: null,
+          mondayTimes: {
+            start: LocalTime.of(8, 15),
+            end: LocalTime.of(14, 46)
+          },
+          thursdayTimes: {
+            start: LocalTime.of(7, 46),
+            end: LocalTime.of(16, 32)
+          }
+        })
+        .save()
+      await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
+        .with({
+          validityPeriod: new DateRange(mockedDate.subMonths(1), null),
+          type: 'VARIABLE_TIME',
+          regularTimes: null
+        })
+        .save()
+      await Fixture.placement()
+        .with({
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.preschoolFixture.id,
+          type: 'PRESCHOOL',
+          startDate: mockedDate.subMonths(1),
+          endDate: mockedDate
+        })
+        .save()
 
-        await page.reload()
-        await header.openChildPage(fixtures.enduserChildFixtureJari.id)
-        await childPage.assertChildNameIsShown(
-          'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
-        )
-        await childPage.openCollapsible('service-need-and-daily-service-time')
-        await childPage.assertServiceNeedTable([
-          {
-            dateRange: '01.02.2022 - 01.03.2022',
-            description: 'Kokopäiväinen',
-            unit: 'Alkuräjähdyksen päiväkoti'
-          },
-          {
-            dateRange: '01.01.2022 - 31.01.2022',
-            description: '',
-            unit: 'Alkuräjähdyksen päiväkoti'
-          }
-        ])
-        await childPage.assertDailyServiceTimeTable([
-          {
-            dateRange: '01.02.2022 -',
-            description: 'Päivittäinen aika vaihtelee'
-          },
-          {
-            dateRange: '01.01.2022 - 31.01.2022',
-            description: 'Ma 08:15 - 14:46, To 07:46 - 16:32'
-          },
-          {
-            dateRange: '01.12.2021 - 31.12.2021',
-            description: '08:15 - 14:46'
-          }
-        ])
-        await childPage.closeCollapsible()
-        await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-        await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
-        await childPage.openCollapsible('service-need-and-daily-service-time')
-        await childPage.assertServiceNeedTable([
-          {
-            dateRange: '01.02.2022 - 01.03.2022',
-            description: 'Esiopetus',
-            unit: 'Alkuräjähdyksen eskari'
-          }
-        ])
-        await childPage.assertDailyServiceTimeTable([])
-      })
+      await enduserLoginWeak(page)
+      const header = new CitizenHeader(page, env)
+      const childPage = new CitizenChildPage(page, env)
+
+      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+      await childPage.assertChildNameIsShown(
+        'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
+      )
+      await childPage.openCollapsible('service-need-and-daily-service-time')
+      await childPage.assertServiceNeedTable([
+        {
+          dateRange: '01.02.2022 - 01.03.2022',
+          description: 'Kokopäiväinen',
+          unit: 'Alkuräjähdyksen päiväkoti'
+        },
+        {
+          dateRange: '01.01.2022 - 31.01.2022',
+          description: '',
+          unit: 'Alkuräjähdyksen päiväkoti'
+        }
+      ])
+      await childPage.assertDailyServiceTimeTable([
+        {
+          dateRange: '01.02.2022 -',
+          description: 'Päivittäinen aika vaihtelee'
+        },
+        {
+          dateRange: '01.01.2022 - 31.01.2022',
+          description: 'Ma 08:15 - 14:46, To 07:46 - 16:32'
+        },
+        {
+          dateRange: '01.12.2021 - 31.12.2021',
+          description: '08:15 - 14:46'
+        }
+      ])
+      await childPage.closeCollapsible()
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
+      await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
+      await childPage.openCollapsible('service-need-and-daily-service-time')
+      await childPage.assertServiceNeedTable([
+        {
+          dateRange: '01.02.2022 - 01.03.2022',
+          description: 'Esiopetus',
+          unit: 'Alkuräjähdyksen eskari'
+        }
+      ])
+      await childPage.assertDailyServiceTimeTable([])
     })
   }
 )

@@ -61,6 +61,7 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement,
   DecisionFixture,
+  DevAbsence,
   DevAssistanceNeedPreschoolDecision,
   DevCalendarEvent,
   DevCalendarEventAttendee,
@@ -137,7 +138,8 @@ import {
   insertDocumentTemplateFixture,
   insertChildDocumentFixture,
   insertPreschoolTerm,
-  insertClubTerm
+  insertClubTerm,
+  insertAbsenceFixture
 } from './index'
 
 export const fullDayTimeRange: TimeRange = {
@@ -1828,10 +1830,10 @@ export class Fixture {
     })
   }
 
-  static childAttendances(): ChildAttendanceBuilder {
+  static childAttendance(): ChildAttendanceBuilder {
     return new ChildAttendanceBuilder({
-      childId: '',
-      unitId: '',
+      childId: 'not set',
+      unitId: 'not set',
       arrived: HelsinkiDateTime.now(),
       departed: HelsinkiDateTime.now()
     })
@@ -2104,6 +2106,19 @@ export class Fixture {
     return new AttendanceReservationBuilder(data)
   }
 
+  static absence(): AbsenceBuilder {
+    return new AbsenceBuilder({
+      id: uuidv4(),
+      childId: 'not set',
+      date: LocalDate.todayInHelsinkiTz(),
+      absenceType: 'OTHER_ABSENCE',
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser,
+      absenceCategory: 'BILLABLE',
+      questionnaireId: null
+    })
+  }
+
   static documentTemplate(): DocumentTemplateBuilder {
     return new DocumentTemplateBuilder({
       id: uuidv4(),
@@ -2358,6 +2373,7 @@ export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
   dateRange(): FiniteDateRange {
     return new FiniteDateRange(this.data.startDate, this.data.endDate)
   }
+
   async save() {
     await insertDaycarePlacementFixtures([this.data])
     return this
@@ -2860,6 +2876,17 @@ export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservatio
 
   copy() {
     return new AttendanceReservationBuilder({ ...this.data })
+  }
+}
+
+export class AbsenceBuilder extends FixtureBuilder<DevAbsence> {
+  async save() {
+    await insertAbsenceFixture(this.data)
+    return this
+  }
+
+  copy() {
+    return new AbsenceBuilder({ ...this.data })
   }
 }
 

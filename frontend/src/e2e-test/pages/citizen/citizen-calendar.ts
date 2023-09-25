@@ -6,7 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 
 export type FormatterReservation = {
@@ -15,33 +15,6 @@ export type FormatterReservation = {
   isOverdraft?: boolean
 }
 export type TwoPartReservation = [FormatterReservation, FormatterReservation]
-
-interface BaseReservation {
-  childIds: UUID[]
-}
-
-export interface AbsenceReservation extends BaseReservation {
-  absence: true
-}
-
-interface FreeAbsenceReservation extends BaseReservation {
-  freeAbsence: true
-}
-
-export interface StartAndEndTimeReservation extends BaseReservation {
-  startTime: string
-  endTime: string
-}
-
-interface MissingReservation extends BaseReservation {
-  missing: true
-}
-
-type Reservation =
-  | AbsenceReservation
-  | FreeAbsenceReservation
-  | StartAndEndTimeReservation
-  | MissingReservation
 
 export default class CitizenCalendarPage {
   constructor(
@@ -127,36 +100,69 @@ export default class CitizenCalendarPage {
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
 
-  async assertReservations(
+  async assertHoliday(date: LocalDate) {
+    await this.dayCell(date)
+      .findByDataQa('reservations')
+      .findByDataQa('holiday')
+      .waitUntilVisible()
+  }
+
+  readonly holidayPeriodBackground = 'rgb(253, 230, 219)'
+  readonly nonEditableAbsenceBackground = 'rgb(218, 221, 226)'
+
+  private async getDayBackgroundColor(date: LocalDate) {
+    return await this.dayCell(date).evaluate(
+      (el) => getComputedStyle(el).backgroundColor
+    )
+  }
+
+  async assertDayHighlight(
     date: LocalDate,
-    reservations: Reservation[],
-    formatter?: (res: StartAndEndTimeReservation) => string
+    state: 'none' | 'holidayPeriod' | 'nonEditableAbsence'
   ) {
-    const reservationRows = this.dayCell(date)
+    const expectedBackground =
+      state === 'holidayPeriod'
+        ? this.holidayPeriodBackground
+        : state === 'nonEditableAbsence'
+        ? this.nonEditableAbsenceBackground
+        : null
+    if (expectedBackground !== null) {
+      await waitUntilEqual(
+        () => this.getDayBackgroundColor(date),
+        expectedBackground
+      )
+    } else {
+      await waitUntilTrue(async () => {
+        const bg = await this.getDayBackgroundColor(date)
+        // White or transparent
+        return bg === 'rgb(255, 255, 255)' || bg === 'rgba(0, 0, 0, 0)'
+      })
+    }
+  }
+
+  async assertDay(
+    date: LocalDate,
+    groups: { childIds: UUID[]; text: string }[]
+  ) {
+    const day = this.dayCell(date)
+    const rows = day
       .findByDataQa('reservations')
       .findAllByDataQa('reservation-group')
 
-    for (const [i, reservation] of reservations.entries()) {
-      const row = reservationRows.nth(i)
+    if (groups.length === 0) {
+      await day.waitUntilVisible()
+    }
+    await rows.assertCount(groups.length)
 
-      for (const childId of reservation.childIds) {
+    for (const [i, { childIds, text }] of groups.entries()) {
+      const row = rows.nth(i)
+
+      for (const childId of childIds) {
         await row
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
           .waitUntilVisible()
       }
-      await row
-        .findByDataQa('reservation-text')
-        .assertTextEquals(
-          'absence' in reservation
-            ? 'Poissa'
-            : 'freeAbsence' in reservation
-            ? 'Maksuton poissaolo'
-            : 'missing' in reservation
-            ? 'Ilmoitus puuttuu'
-            : formatter
-            ? formatter(reservation)
-            : `${reservation.startTime}–${reservation.endTime}`
-        )
+      await row.findByDataQa('reservation-text').assertTextEquals(text)
     }
   }
 
@@ -232,9 +238,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
-    const childImages = this.page
-      .findByDataQa(`desktop-calendar-day-${date.formatIso()}`)
-      .findAllByDataQa('child-image')
+    const childImages = this.dayCell(date).findAllByDataQa('child-image')
     await childImages.assertCount(expectedCount)
   }
 }
