@@ -8,6 +8,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -20,7 +21,7 @@ import org.jdbi.v3.json.Json
 data class FeeAlteration(
     val id: FeeAlterationId? = null,
     val personId: ChildId,
-    val type: Type,
+    val type: FeeAlterationType,
     val amount: Int,
     @get:JsonProperty("isAbsolute") val isAbsolute: Boolean,
     val validFrom: LocalDate,
@@ -29,12 +30,13 @@ data class FeeAlteration(
     val updatedAt: HelsinkiDateTime? = null,
     val updatedBy: EvakaUserId? = null,
     @Json val attachments: List<FeeAlterationAttachment> = listOf()
-) {
-    enum class Type {
-        DISCOUNT,
-        INCREASE,
-        RELIEF
-    }
+)
+
+@ConstList("feeAlterationTypes")
+enum class FeeAlterationType {
+    DISCOUNT,
+    INCREASE,
+    RELIEF
 }
 
 data class FeeAlterationAttachment(val id: AttachmentId, val name: String, val contentType: String)

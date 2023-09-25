@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.placement.PlacementType
 
 interface InvoiceProductProvider {
@@ -21,7 +21,7 @@ interface InvoiceProductProvider {
     fun mapToProduct(placementType: PlacementType): ProductKey
     fun mapToFeeAlterationProduct(
         productKey: ProductKey,
-        feeAlterationType: FeeAlteration.Type
+        feeAlterationType: FeeAlterationType
     ): ProductKey
 }
 

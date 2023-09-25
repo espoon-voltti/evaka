@@ -6,7 +6,7 @@ package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -341,7 +341,7 @@ ORDER BY pl.start_date
 data class TimelineFeeAlteration(
     val id: FeeAlterationId,
     override val range: DateRange,
-    val type: FeeAlteration.Type,
+    val type: FeeAlterationType,
     val amount: Int,
     val absolute: Boolean,
     val notes: String

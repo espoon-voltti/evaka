@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -105,7 +105,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             feeAlterations =
                 listOf(
                     FeeAlterationWithEffect(
-                        type = FeeAlteration.Type.DISCOUNT,
+                        type = FeeAlterationType.DISCOUNT,
                         amount = 50,
                         isAbsolute = false,
                         effect = -14400

@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka
 
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.invoicing.service.ProductWithName
@@ -21,7 +21,7 @@ class TestInvoiceProductProvider : InvoiceProductProvider {
         PlacementType.values()
             .flatMap { placementType ->
                 val placementTypeProduct = mapToProduct(placementType)
-                FeeAlteration.Type.values()
+                FeeAlterationType.values()
                     .map { feeAlterationType ->
                         mapToFeeAlterationProduct(placementTypeProduct, feeAlterationType)
                     }
@@ -37,6 +37,6 @@ class TestInvoiceProductProvider : InvoiceProductProvider {
 
     override fun mapToFeeAlterationProduct(
         productKey: ProductKey,
-        feeAlterationType: FeeAlteration.Type
+        feeAlterationType: FeeAlterationType
     ) = ProductKey("${productKey.value}_${feeAlterationType.name}")
 }

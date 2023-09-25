@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
@@ -132,7 +132,7 @@ val testDecisionChild1 =
         siblingDiscount = 0,
         fee = 28900,
         feeAlterations =
-            listOf(FeeAlterationWithEffect(FeeAlteration.Type.RELIEF, 50, false, -10800)),
+            listOf(FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)),
         finalFee = 28900,
         childIncome = null
     )
@@ -153,7 +153,7 @@ val testDecisionChild2 =
         siblingDiscount = 0,
         fee = 28900,
         feeAlterations =
-            listOf(FeeAlterationWithEffect(FeeAlteration.Type.RELIEF, 50, false, -10800)),
+            listOf(FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)),
         finalFee = 28900,
         childIncome = null
     )
@@ -202,7 +202,7 @@ val testDecisionIncome =
     )
 
 fun createFeeDecisionAlterationFixture(
-    type: FeeAlteration.Type = FeeAlteration.Type.DISCOUNT,
+    type: FeeAlterationType = FeeAlterationType.DISCOUNT,
     amount: Int = 100,
     isAbsolute: Boolean = false,
     effect: Int = 10000

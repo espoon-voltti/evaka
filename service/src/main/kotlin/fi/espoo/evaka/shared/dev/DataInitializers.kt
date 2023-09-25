@@ -17,7 +17,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.incomestatement.IncomeStatementType
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
@@ -581,7 +581,7 @@ VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome, :handle
 data class DevFeeAlteration(
     val id: FeeAlterationId,
     val personId: PersonId,
-    val type: FeeAlteration.Type,
+    val type: FeeAlterationType,
     val amount: Double,
     val isAbsolute: Boolean,
     val validFrom: LocalDate,
