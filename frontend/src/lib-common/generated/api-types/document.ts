@@ -266,11 +266,14 @@ export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestio
 /**
 * Generated from fi.espoo.evaka.document.QuestionType
 */
-export type QuestionType =
-  | 'TEXT'
-  | 'CHECKBOX'
-  | 'CHECKBOX_GROUP'
-  | 'RADIO_BUTTON_GROUP'
+export const questionTypes = [
+  'TEXT',
+  'CHECKBOX',
+  'CHECKBOX_GROUP',
+  'RADIO_BUTTON_GROUP'
+] as const
+
+export type QuestionType = typeof questionTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.document.RadioButtonGroupQuestionOption

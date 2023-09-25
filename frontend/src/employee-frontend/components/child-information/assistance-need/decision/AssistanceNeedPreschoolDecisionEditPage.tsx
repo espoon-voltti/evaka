@@ -220,7 +220,7 @@ const formatEmployeeName = (employee: Employee) =>
     employee.preferredFirstName ?? employee.firstName ?? ''
   } (${employee.email ?? ''})`
 
-const filterEmployees = (inputValue: string, items: Employee[]) =>
+const filterEmployees = (inputValue: string, items: readonly Employee[]) =>
   items.filter(
     (emp) =>
       (emp.preferredFirstName ?? emp.firstName)

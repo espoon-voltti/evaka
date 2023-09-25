@@ -7,40 +7,12 @@ import {
   EstimatedIncome,
   IncomeStatement,
   IncomeStatementAwaitingHandler,
-  OtherIncome,
   SelfEmployed
 } from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 
 import HelsinkiDateTime from '../helsinki-date-time'
 import { JsonOf } from '../json'
-
-export const otherIncome: OtherIncome[] = [
-  'PENSION',
-  'ADULT_EDUCATION_ALLOWANCE',
-  'SICKNESS_ALLOWANCE',
-  'PARENTAL_ALLOWANCE',
-  'HOME_CARE_ALLOWANCE',
-  'FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE',
-  'ALIMONY',
-  'INTEREST_AND_INVESTMENT_INCOME',
-  'RENTAL_INCOME',
-  'UNEMPLOYMENT_ALLOWANCE',
-  'LABOUR_MARKET_SUBSIDY',
-  'ADJUSTED_DAILY_ALLOWANCE',
-  'JOB_ALTERNATION_COMPENSATION',
-  'REWARD_OR_BONUS',
-  'RELATIVE_CARE_SUPPORT',
-  'BASIC_INCOME',
-  'FOREST_INCOME',
-  'FAMILY_CARE_COMPENSATION',
-  'REHABILITATION',
-  'EDUCATION_ALLOWANCE',
-  'GRANT',
-  'APPRENTICESHIP_SALARY',
-  'ACCIDENT_INSURANCE_COMPENSATION',
-  'OTHER_INCOME'
-]
 
 export function deserializeIncomeStatement(
   data: JsonOf<IncomeStatement>

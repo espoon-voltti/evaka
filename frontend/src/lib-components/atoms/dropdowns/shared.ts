@@ -7,7 +7,7 @@ import styled, { css } from 'styled-components'
 
 export interface DropdownProps<T, E extends HTMLElement> {
   id?: string
-  items: T[]
+  items: readonly T[]
   selectedItem: T | null
   onChange: (item: T | null) => void
   disabled?: boolean

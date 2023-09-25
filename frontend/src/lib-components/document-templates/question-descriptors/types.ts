@@ -8,13 +8,6 @@ import { BoundForm } from 'lib-common/form/hooks'
 import { AnyForm, StateOf } from 'lib-common/form/types'
 import { Question, QuestionType } from 'lib-common/generated/api-types/document'
 
-export const questionTypes: QuestionType[] = [
-  'TEXT',
-  'CHECKBOX',
-  'CHECKBOX_GROUP',
-  'RADIO_BUTTON_GROUP'
-]
-
 export interface TemplateQuestionDescriptor<
   Key extends QuestionType,
   TemplateForm extends AnyForm,
