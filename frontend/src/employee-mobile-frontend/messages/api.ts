@@ -24,13 +24,12 @@ import { API_URL, client } from '../client'
 
 export async function getMessagingAccounts(
   unitId: UUID
-): Promise<Result<AuthorizedMessageAccount[]>> {
+): Promise<AuthorizedMessageAccount[]> {
   return client
     .get<JsonOf<AuthorizedMessageAccount[]>>(
       `/messages/mobile/my-accounts/${unitId}`
     )
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function getUnreadCountsByUnit(

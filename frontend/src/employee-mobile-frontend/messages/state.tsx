@@ -18,21 +18,21 @@ import {
   AuthorizedMessageAccount,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import { UserContext } from '../auth/state'
 import { UnitContext } from '../common/unit'
 
 import {
-  getMessagingAccounts,
   getReceivedMessages,
   markThreadRead,
   replyToThread,
   ReplyToThreadParams
 } from './api'
+import { messagingAccountsQuery } from './queries'
 
 const PAGE_SIZE = 20
 
@@ -52,7 +52,6 @@ const appendMessageAndMoveThreadToTopOfList =
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
-  loadAccounts: (unitId: UUID) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -69,7 +68,6 @@ export interface MessagesState {
 
 const defaultState: MessagesState = {
   accounts: Loading.of(),
-  loadAccounts: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -94,23 +92,16 @@ export const MessageContextProvider = React.memo(
     const { user } = useContext(UserContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
-    const [accounts, setAccounts] = useState<
-      Result<AuthorizedMessageAccount[]>
-    >(Loading.of())
-
-    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
-
-    const [loadAccounts] = useDebouncedCallback(getAccounts, 100)
-
     const { groupId } = useNonNullableParams<{
       // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
       groupId: UUID | 'all'
     }>()
 
-    useEffect(() => {
-      const hasPinLogin = user.map((u) => u?.pinLoginActive).getOrElse(false)
-      if (unitId && hasPinLogin) loadAccounts(unitId)
-    }, [loadAccounts, unitId, user])
+    const accounts = useQueryResult(messagingAccountsQuery(unitId ?? ''), {
+      enabled:
+        unitId !== undefined &&
+        user.map((u) => u?.pinLoginActive).getOrElse(false)
+    })
 
     const groupAccounts: AuthorizedMessageAccount[] = useMemo(
       () =>
@@ -208,7 +199,6 @@ export const MessageContextProvider = React.memo(
     const value = useMemo(
       () => ({
         accounts,
-        loadAccounts,
         selectedAccount,
         groupAccounts,
         page,
@@ -224,7 +214,6 @@ export const MessageContextProvider = React.memo(
       }),
       [
         accounts,
-        loadAccounts,
         groupAccounts,
         selectedAccount,
         page,
