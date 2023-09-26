@@ -11,7 +11,6 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { CareType } from './daycare'
-import { DecisionIncome } from '../../api-types/income'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -28,6 +27,18 @@ export interface ChildWithDateOfBirth {
 */
 export interface CreateRetroactiveFeeDecisionsBody {
   from: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.DecisionIncome
+*/
+export interface DecisionIncome {
+  data: Record<string, number>
+  effect: IncomeEffect
+  total: number
+  totalExpenses: number
+  totalIncome: number
+  worksAtECHA: boolean
 }
 
 /**
@@ -353,6 +364,21 @@ export interface GenerateDecisionsBody {
   starting: string
   targetHeads: (UUID | null)[]
 }
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.IncomeCoefficient
+*/
+export const incomeCoefficients = [
+  'MONTHLY_WITH_HOLIDAY_BONUS',
+  'MONTHLY_NO_HOLIDAY_BONUS',
+  'BI_WEEKLY_WITH_HOLIDAY_BONUS',
+  'BI_WEEKLY_NO_HOLIDAY_BONUS',
+  'DAILY_ALLOWANCE_21_5',
+  'DAILY_ALLOWANCE_25',
+  'YEARLY'
+] as const
+
+export type IncomeCoefficient = typeof incomeCoefficients[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeEffect

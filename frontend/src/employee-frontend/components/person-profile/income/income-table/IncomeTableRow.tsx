@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { incomeCoefficients } from 'lib-common/api-types/income'
+import { incomeCoefficients } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -51,7 +51,7 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
           onChange !== undefined ? (
             <Select
               selectedItem={state.coefficient}
-              items={[...incomeCoefficients]}
+              items={incomeCoefficients}
               getItemLabel={(item) =>
                 i18n.personProfile.income.details.incomeCoefficients[item]
               }

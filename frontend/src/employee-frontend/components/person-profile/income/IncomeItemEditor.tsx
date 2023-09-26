@@ -10,12 +10,12 @@ import styled from 'styled-components'
 import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
-  IncomeCoefficient,
   IncomeEffect,
   incomeEffects,
   IncomeValue
 } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
+import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'

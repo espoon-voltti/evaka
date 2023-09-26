@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { IncomeCoefficient } from 'lib-common/api-types/income'
+import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { Table, Tbody } from 'lib-components/layout/Table'
 

@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attachment.IncomeAttachment
 import fi.espoo.evaka.shared.ApplicationId
@@ -102,6 +103,7 @@ data class IncomeType(
     val isSubType: Boolean
 )
 
+@ConstList("incomeCoefficients")
 enum class IncomeCoefficient {
     MONTHLY_WITH_HOLIDAY_BONUS,
     MONTHLY_NO_HOLIDAY_BONUS,

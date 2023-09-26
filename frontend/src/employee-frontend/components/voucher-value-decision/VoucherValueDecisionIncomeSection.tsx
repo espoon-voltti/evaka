@@ -6,8 +6,10 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useIncomeTypeOptions } from 'employee-frontend/utils/income'
-import { DecisionIncome } from 'lib-common/api-types/income'
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import {
+  DecisionIncome,
+  VoucherValueDecisionDetailed
+} from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
