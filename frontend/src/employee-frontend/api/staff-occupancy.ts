@@ -12,6 +12,8 @@ import { UUID } from 'lib-common/types'
 
 import { client } from './client'
 
+// FIXME: These are not used currently. Should they be used or can the whole controller be removed?
+
 export function getOccupancyCoefficients(
   unitId: UUID
 ): Promise<Result<StaffOccupancyCoefficient[]>> {

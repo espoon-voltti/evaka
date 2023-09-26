@@ -9,7 +9,7 @@ import { faExclamation } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-export interface Props {
+interface Props {
   onClose: () => void
 }
 
