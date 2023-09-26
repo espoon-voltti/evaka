@@ -16,6 +16,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -34,14 +35,9 @@ import { CitizenDynamicSections } from './sections/CitizenDynamicSections'
 import { CitizenVasuEvents } from './sections/CitizenVasuEvents'
 import { CitizenVasuHeader } from './sections/CitizenVasuHeader'
 
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-`
-
-const MobileDownloadButtonContainer = styled.div`
+const TopButtonRow = styled(FixedSpaceRow)`
   @media (max-width: ${tabletMin}) {
-    margin-right: ${defaultMargins.m};
+    margin-right: ${defaultMargins.s};
   }
 `
 
@@ -71,12 +67,10 @@ export default React.memo(function VasuPage() {
             <VasuContainer gapSize="zero" data-qa="vasu-preview">
               {vasu && (
                 <>
-                  <ButtonContainer>
+                  <TopButtonRow justifyContent="space-between">
                     <ReturnButton label={t.common.return} />
-                    <MobileDownloadButtonContainer>
-                      <DownloadButton label={t.common.download} />
-                    </MobileDownloadButtonContainer>
-                  </ButtonContainer>
+                    <DownloadButton label={t.common.download} />
+                  </TopButtonRow>
                   <Main>
                     <CitizenVasuHeader document={vasu} />
                     {!content.hasDynamicFirstSection && (

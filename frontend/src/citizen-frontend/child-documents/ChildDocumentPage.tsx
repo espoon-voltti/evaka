@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
+import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -12,7 +13,9 @@ import { ChildDocumentDetails } from 'lib-common/generated/api-types/document'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
@@ -28,9 +31,15 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
+
+const TopButtonRow = styled(FixedSpaceRow)`
+  @media (max-width: ${tabletMin}) {
+    margin-right: ${defaultMargins.s};
+  }
+`
 
 export default React.memo(function ChildDocumentPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
@@ -42,7 +51,10 @@ export default React.memo(function ChildDocumentPage() {
     <>
       <Content>
         <Gap size="s" />
-        <ReturnButton label={i18n.common.return} />
+        <TopButtonRow justifyContent="space-between">
+          <ReturnButton label={i18n.common.return} />
+          <DownloadButton label={i18n.common.download} />
+        </TopButtonRow>
         <Gap size="s" />
 
         {renderResult(decision, (document) => (
