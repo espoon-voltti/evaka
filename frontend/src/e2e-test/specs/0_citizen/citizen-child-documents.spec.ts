@@ -26,8 +26,10 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let child: PersonDetail
-let templateId: UUID
-let documentId: UUID
+let templateIdHojks: UUID
+let documentIdHojks: UUID
+let templateIdPed: UUID
+let documentIdPed: UUID
 let header: CitizenHeader
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
@@ -50,11 +52,45 @@ beforeEach(async () => {
   await insertDaycarePlacementFixtures([
     createDaycarePlacementFixture(uuidv4(), child.id, unitId)
   ])
-  templateId = (await Fixture.documentTemplate().withPublished(true).save())
-    .data.id
-  documentId = (
+
+  templateIdHojks = (
+    await Fixture.documentTemplate()
+      .with({
+        type: 'HOJKS',
+        name: 'HOJKS 2023-2024'
+      })
+      .withPublished(true)
+      .save()
+  ).data.id
+  documentIdHojks = (
     await Fixture.childDocument()
-      .withTemplate(templateId)
+      .withTemplate(templateIdHojks)
+      .withChild(child.id)
+      .withPublishedAt(mockedNow)
+      .withPublishedContent({
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      })
+      .save()
+  ).data.id
+
+  templateIdPed = (
+    await Fixture.documentTemplate()
+      .with({
+        type: 'PEDAGOGICAL_REPORT',
+        name: 'Pedagoginen selvitys'
+      })
+      .withPublished(true)
+      .save()
+  ).data.id
+  documentIdPed = (
+    await Fixture.childDocument()
+      .withTemplate(templateIdPed)
       .withChild(child.id)
       .withPublishedAt(mockedNow)
       .withPublishedContent({
@@ -75,13 +111,23 @@ beforeEach(async () => {
 })
 
 describe('Citizen child documents listing page', () => {
-  test('Published document is in the list', async () => {
-    await page.reload()
+  test('Published hojks is in the list', async () => {
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('vasu')
-    await childPage.childDocumentLink(documentId).click()
-    expect(page.url.endsWith(`/child-documents/${documentId}`)).toBeTruthy()
-    await page.find('h1').assertTextEquals(Fixture.documentTemplate().data.name)
+    await childPage.childDocumentLink(documentIdHojks).click()
+    expect(
+      page.url.endsWith(`/child-documents/${documentIdHojks}`)
+    ).toBeTruthy()
+    await page.find('h1').assertTextEquals('HOJKS 2023-2024')
+  })
+
+  test('Published pedagogical report is in the list', async () => {
+    await header.openChildPage(child.id)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('vasu')
+    await childPage.childDocumentLink(documentIdPed).click()
+    expect(page.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
+    await page.find('h1').assertTextEquals('Pedagoginen selvitys')
   })
 })

@@ -101,7 +101,9 @@ const ChildDocuments = React.memo(function ChildDocuments({
                   data-qa="open-document"
                 />
               </Td>
-              <Td>{document.publishedAt?.format() ?? '-'}</Td>
+              <Td data-qa="document-published-at">
+                {document.publishedAt?.format() ?? '-'}
+              </Td>
               <Td>{document.templateName}</Td>
               <Td data-qa="document-status">
                 <ChildDocumentStateChip status={document.status} />
@@ -175,7 +177,7 @@ const CreationModal = React.memo(function CreationModal({
     >
       <FixedSpaceColumn>
         <Label>{i18n.childInformation.childDocuments.select}</Label>
-        <SelectF bind={bind} />
+        <SelectF bind={bind} data-qa="template-select" />
       </FixedSpaceColumn>
     </AsyncFormModal>
   )

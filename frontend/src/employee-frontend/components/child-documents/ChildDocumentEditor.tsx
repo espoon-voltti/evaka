@@ -277,6 +277,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                       i18n.childInformation.childDocuments.editor
                         .publishConfirmText
                     }
+                    data-qa="publish-button"
                   />
                 )}
               {preview &&
@@ -302,6 +303,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                       i18n.childInformation.childDocuments.editor
                         .publishConfirmText
                     }
+                    data-qa="next-status-button"
                   />
                 )}
             </FixedSpaceRow>

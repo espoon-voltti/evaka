@@ -126,7 +126,7 @@ export default React.memo(function TemplateModal({
       <DateRangePickerF bind={validity} locale={lang} />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.type}</Label>
-      <SelectF bind={type} />
+      <SelectF bind={type} data-qa="type-select" />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.language}</Label>
       <SelectF bind={language} />

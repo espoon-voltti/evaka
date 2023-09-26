@@ -324,6 +324,10 @@ export class AsyncButton extends Element {
   async waitUntilIdle() {
     await waitUntilEqual(() => this.status(), '')
   }
+
+  async waitUntilSuccess() {
+    await waitUntilEqual(() => this.status(), 'success')
+  }
 }
 
 export class Checkable extends Element {

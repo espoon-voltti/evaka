@@ -52,7 +52,7 @@ beforeEach(async () => {
 })
 
 describe('Employee - Child documents', () => {
-  test('Full basic workflow smoke test', async () => {
+  test('Full basic workflow for hojks', async () => {
     // Admin creates a template
 
     page = await Page.open({ mockedTime: now.toSystemTzDate() })
@@ -63,8 +63,9 @@ describe('Employee - Child documents', () => {
 
     const documentTemplatesPage = new DocumentTemplatesListPage(page)
     await documentTemplatesPage.createNewButton.click()
-    const documentName = 'Pedagoginen arvio 2022-2023'
+    const documentName = 'HOJKS 2022-2023'
     await documentTemplatesPage.nameInput.fill(documentName)
+    await documentTemplatesPage.typeSelect.selectOption('HOJKS')
     await documentTemplatesPage.validityStartInput.fill('01.08.2022')
     await documentTemplatesPage.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
@@ -89,20 +90,24 @@ describe('Employee - Child documents', () => {
     // End of admin creates a template
 
     // Unit supervisor creates a child document
-
     page = await Page.open({ mockedTime: now.toSystemTzDate() })
     await employeeLogin(page, unitSupervisor)
     await page.goto(
       `${config.employeeUrl}/child-information/${childFixture.id}`
     )
-    const childInformationPage = new ChildInformationPage(page)
+    let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection = await childInformationPage.openCollapsible(
       'childDocuments'
     )
     await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      'HOJKS 2022-2023'
+    )
     await childDocumentsSection.modalOk.click()
 
-    const childDocument = new ChildDocumentPage(page)
+    // Fill an answer and return
+    let childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
     const answer = 'Jonkin sortin vastaus'
     let question = childDocument.getTextQuestion(sectionName, questionName)
     await question.fill(answer)
@@ -110,15 +115,85 @@ describe('Employee - Child documents', () => {
     await childDocument.previewButton.click()
     await childDocument.returnButton.click()
 
+    // Assert status draft and unpublished, open the document again
     childDocumentsSection = await childInformationPage.openCollapsible(
       'childDocuments'
     )
     await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
-    const row = childDocumentsSection.childDocuments(0)
+    let row = childDocumentsSection.childDocuments(0)
     await row.status.assertTextEquals('Luonnos')
+    await row.published.assertTextEquals('-')
     await row.openLink.click()
+    const documentUrl = page.url
 
+    // Assert answer was saved
     question = childDocument.getTextQuestion(sectionName, questionName)
     await question.assertValueEquals(answer)
+
+    // Publish without changing status
+    await childDocument.previewButton.click()
+    await childDocument.publish()
+
+    // Assert status and publish time
+    await childDocument.returnButton.click()
+    childDocumentsSection = await childInformationPage.openCollapsible(
+      'childDocuments'
+    )
+    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
+    row = childDocumentsSection.childDocuments(0)
+    await row.status.assertTextEquals('Luonnos')
+    await row.published.assertTextEquals(now.format())
+    await page.close()
+
+    // go to next status twice
+    const later = now.addHours(1)
+    page = await Page.open({ mockedTime: later.toSystemTzDate() })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(documentUrl)
+    childDocument = new ChildDocumentPage(page)
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Laadittu')
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Valmis')
+
+    // Assert status and new publish time
+    await childDocument.returnButton.click()
+    childInformationPage = new ChildInformationPage(page)
+    childDocumentsSection = await childInformationPage.openCollapsible(
+      'childDocuments'
+    )
+    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
+    row = childDocumentsSection.childDocuments(0)
+    await row.status.assertTextEquals('Valmis')
+    await row.published.assertTextEquals(later.format())
+  })
+
+  test('Pedagogical report only has two states', async () => {
+    await Fixture.documentTemplate()
+      .with({
+        type: 'PEDAGOGICAL_REPORT',
+        published: true
+      })
+      .save()
+
+    // Unit supervisor creates a child document
+    page = await Page.open({ mockedTime: now.toSystemTzDate() })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${childFixture.id}`
+    )
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection = await childInformationPage.openCollapsible(
+      'childDocuments'
+    )
+    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
+
+    // go to next status
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+    await childDocument.previewButton.click()
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Valmis')
   })
 })
