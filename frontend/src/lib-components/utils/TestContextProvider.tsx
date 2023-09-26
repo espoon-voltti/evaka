@@ -39,7 +39,8 @@ export const testTranslations: Translations = {
       infoText: '',
       withText: '',
       options: '',
-      multiline: ''
+      multiline: '',
+      text: ''
     },
     noSelection: '',
     documentStates: {

@@ -40,6 +40,15 @@ export namespace AnsweredQuestion {
   }
   
   /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.StaticTextDisplayAnswer
+  */
+  export interface StaticTextDisplayAnswer {
+    type: 'STATIC_TEXT_DISPLAY'
+    answer: string | null
+    questionId: string
+  }
+  
+  /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.TextAnswer
   */
   export interface TextAnswer {
@@ -52,7 +61,7 @@ export namespace AnsweredQuestion {
 /**
 * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
 */
-export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.TextAnswer
+export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.StaticTextDisplayAnswer | AnsweredQuestion.TextAnswer
 
 
 /**
@@ -246,6 +255,17 @@ export namespace Question {
   }
   
   /**
+  * Generated from fi.espoo.evaka.document.Question.StaticTextDisplayQuestion
+  */
+  export interface StaticTextDisplayQuestion {
+    type: 'STATIC_TEXT_DISPLAY'
+    id: string
+    infoText: string
+    label: string
+    text: string
+  }
+  
+  /**
   * Generated from fi.espoo.evaka.document.Question.TextQuestion
   */
   export interface TextQuestion {
@@ -260,7 +280,7 @@ export namespace Question {
 /**
 * Generated from fi.espoo.evaka.document.Question
 */
-export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.RadioButtonGroupQuestion | Question.TextQuestion
+export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.RadioButtonGroupQuestion | Question.StaticTextDisplayQuestion | Question.TextQuestion
 
 
 /**
@@ -270,7 +290,8 @@ export const questionTypes = [
   'TEXT',
   'CHECKBOX',
   'CHECKBOX_GROUP',
-  'RADIO_BUTTON_GROUP'
+  'RADIO_BUTTON_GROUP',
+  'STATIC_TEXT_DISPLAY'
 ] as const
 
 export type QuestionType = typeof questionTypes[number]

@@ -36,7 +36,8 @@ const components: Translations = {
       options: 'alternativ',
       infoText: 'info text',
       multiline: 'Tillåt flerradssvar',
-      withText: 'Med extra info'
+      withText: 'Med extra info',
+      text: 'Textinnehåll'
     },
     noSelection: 'inget val',
     documentStates: {

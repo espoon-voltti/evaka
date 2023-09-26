@@ -17,6 +17,7 @@ import {
 import CheckboxGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxQuestionDescriptor'
 import RadioButtonGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/RadioButtonGroupQuestionDescriptor'
+import StaticTextDisplayQuestionDescriptor from 'lib-components/document-templates/question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'
 
 export const templateQuestionForm = mapped(
@@ -24,7 +25,8 @@ export const templateQuestionForm = mapped(
     TEXT: TextQuestionDescriptor.template.form,
     CHECKBOX: CheckboxQuestionDescriptor.template.form,
     CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.template.form,
-    RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.template.form
+    RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.template.form,
+    STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.template.form
   }),
   (output): Question => {
     switch (output.branch) {
@@ -44,6 +46,11 @@ export const templateQuestionForm = mapped(
           ...output.value
         }
       case 'RADIO_BUTTON_GROUP':
+        return {
+          type: output.branch,
+          ...output.value
+        }
+      case 'STATIC_TEXT_DISPLAY':
         return {
           type: output.branch,
           ...output.value
@@ -84,6 +91,10 @@ export const TemplateQuestionConfigView = React.memo(
         return (
           <RadioButtonGroupQuestionDescriptor.template.Component bind={form} />
         )
+      case 'STATIC_TEXT_DISPLAY':
+        return (
+          <StaticTextDisplayQuestionDescriptor.template.Component bind={form} />
+        )
     }
   }
 )
@@ -115,6 +126,12 @@ export const TemplateQuestionPreview = React.memo(
             bind={form}
           />
         )
+      case 'STATIC_TEXT_DISPLAY':
+        return (
+          <StaticTextDisplayQuestionDescriptor.template.PreviewComponent
+            bind={form}
+          />
+        )
     }
   }
 )
@@ -131,6 +148,10 @@ export const getTemplateQuestionInitialState = (question: Question) => {
       return RadioButtonGroupQuestionDescriptor.template.getInitialState(
         question
       )
+    case 'STATIC_TEXT_DISPLAY':
+      return StaticTextDisplayQuestionDescriptor.template.getInitialState(
+        question
+      )
   }
 }
 
@@ -144,6 +165,8 @@ export const getTemplateQuestionInitialStateByType = (type: QuestionType) => {
       return CheckboxGroupQuestionDescriptor.template.getInitialState()
     case 'RADIO_BUTTON_GROUP':
       return RadioButtonGroupQuestionDescriptor.template.getInitialState()
+    case 'STATIC_TEXT_DISPLAY':
+      return StaticTextDisplayQuestionDescriptor.template.getInitialState()
   }
 }
 

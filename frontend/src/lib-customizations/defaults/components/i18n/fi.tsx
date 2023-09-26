@@ -35,7 +35,8 @@ const components: Translations = {
       options: 'Vaihtoehdot',
       infoText: 'Ohjeteksti',
       multiline: 'Salli monirivinen vastaus',
-      withText: 'Pyydetään lisätietoja'
+      withText: 'Pyydetään lisätietoja',
+      text: 'Tekstisisältö'
     },
     noSelection: 'Ei valintaa',
     documentStates: {
