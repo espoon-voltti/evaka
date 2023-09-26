@@ -54,6 +54,8 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschoolDaycare
+import fi.espoo.evaka.snPreschoolClub45
+import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -5621,6 +5623,310 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(14500, invoiceRow.price)
             }
         }
+    }
+
+    @Test
+    fun `when sibling discount is added preschool club is invoiced only once without sibling discount`() {
+        val period = DateRange(LocalDate.of(2023, 8, 9), LocalDate.of(2024, 5, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
+        val decision1 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = LocalDate.of(2023, 8, 13)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        val decision2 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = LocalDate.of(2023, 8, 14)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        siblingDiscount = 40,
+                        fee = 6000
+                    ),
+                    createFeeDecisionChildFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 29500,
+                        fee = 29500
+                    )
+                )
+            )
+        insertDecisionsAndPlacements(listOf(decision1, decision2))
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2023, Month.AUGUST))
+        }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
+            .containsExactlyInAnyOrder(
+                Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")),
+                Tuple(14, 1283, 17962, ProductKey("DAYCARE")),
+            )
+    }
+
+    @Test
+    fun `when sibling discount is removed preschool club is invoiced only once with sibling discount`() {
+        val period = DateRange(LocalDate.of(2023, 8, 9), LocalDate.of(2024, 5, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
+        val decision1 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = LocalDate.of(2023, 8, 13)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        siblingDiscount = 40,
+                        fee = 6000
+                    ),
+                    createFeeDecisionChildFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 29500,
+                        fee = 29500
+                    )
+                )
+            )
+        val decision2 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = LocalDate.of(2023, 8, 14)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        insertDecisionsAndPlacements(listOf(decision1, decision2))
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2023, Month.AUGUST))
+        }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
+            .containsExactlyInAnyOrder(
+                Tuple(1, 3000, 3000, ProductKey("PRESCHOOL_CLUB")),
+                Tuple(3, 1283, 3849, ProductKey("DAYCARE")),
+            )
+    }
+
+    @Test
+    fun `when unit is changed preschool club is invoiced only once`() {
+        val period = DateRange(LocalDate.of(2023, 8, 9), LocalDate.of(2024, 5, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision1 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = LocalDate.of(2023, 8, 13)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        val decision2 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = LocalDate.of(2023, 8, 14)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare2.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        insertDecisionsAndPlacements(listOf(decision1, decision2))
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2023, Month.AUGUST))
+        }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
+            .containsExactly(Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")))
+    }
+
+    @Test
+    fun `when placement type is changed from preschool club it is invoiced only once`() {
+        val period = DateRange(LocalDate.of(2023, 8, 9), LocalDate.of(2024, 5, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision1 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = LocalDate.of(2023, 8, 13)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        val decision2 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = LocalDate.of(2023, 8, 14)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_DAYCARE,
+                        serviceNeed = snPreschoolDaycare45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        insertDecisionsAndPlacements(listOf(decision1, decision2))
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2023, Month.AUGUST))
+        }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
+            .containsExactlyInAnyOrder(
+                Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")),
+                Tuple(14, 435, 6090, ProductKey("PRESCHOOL_DAYCARE")),
+            )
+    }
+
+    @Test
+    fun `when placement type is changed to preschool club it is invoiced only once`() {
+        val period = DateRange(LocalDate.of(2023, 8, 9), LocalDate.of(2024, 5, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision1 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = LocalDate.of(2023, 8, 13)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_DAYCARE,
+                        serviceNeed = snPreschoolDaycare45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        val decision2 =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = LocalDate.of(2023, 8, 14)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_CLUB,
+                        serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
+                        baseFee = 10000,
+                        fee = 10000
+                    )
+                )
+            )
+        insertDecisionsAndPlacements(listOf(decision1, decision2))
+
+        db.transaction {
+            generator.createAndStoreAllDraftInvoices(it, DateRange.ofMonth(2023, Month.AUGUST))
+        }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        assertThat(result[0].rows)
+            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
+            .containsExactlyInAnyOrder(
+                Tuple(3, 435, 1305, ProductKey("PRESCHOOL_DAYCARE")),
+                Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")),
+            )
     }
 
     @Test

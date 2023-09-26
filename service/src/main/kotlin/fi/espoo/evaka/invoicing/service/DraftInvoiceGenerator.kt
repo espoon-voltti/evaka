@@ -336,7 +336,15 @@ class DraftInvoiceGenerator(
             rowStubs
                 .groupBy { (_, stub) -> stub.child }
                 .flatMap { (child, childStubs) ->
-                    val separatePeriods = mergePeriods(childStubs)
+                    val separatePeriods =
+                        mergePeriods(
+                            childStubs,
+                            { olderValue, newerValue ->
+                                if (isPreschoolClub(olderValue) && isPreschoolClub(newerValue)) true
+                                else olderValue == newerValue
+                            },
+                            ::isPreschoolClub
+                        )
 
                     val logic =
                         invoiceGenerationLogicChooser.logicForMonth(
@@ -519,6 +527,9 @@ class DraftInvoiceGenerator(
                 operationalDaysList.flatMap { (_, operationalDays) -> operationalDays }.toSet()
             }
     }
+
+    private fun isPreschoolClub(row: InvoiceRowStub): Boolean =
+        row.placement.type == PlacementType.PRESCHOOL_CLUB
 
     private fun getAttendanceDates(
         child: ChildWithDateOfBirth,
