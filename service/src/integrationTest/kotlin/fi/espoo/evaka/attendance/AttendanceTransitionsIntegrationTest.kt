@@ -125,6 +125,19 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
+    fun `get child departure info - preschool daycare placement and present from preschool end`() {
+        val arrived = LocalTime.of(13, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
+            info
+        )
+    }
+
+    @Test
     fun `get child departure info - preschool daycare placement and present hour before preschool start`() {
         val arrived = LocalTime.of(8, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
@@ -165,6 +178,138 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
                 AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
             ),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1159`() {
+        val arrived = LocalTime.of(11, 59)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(12, 59)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
+            ),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1200`() {
+        val arrived = LocalTime.of(12, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(13, 0)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
+            ),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1201`() {
+        val arrived = LocalTime.of(12, 1)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
+            ),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1244`() {
+        val arrived = LocalTime.of(12, 44)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
+            ),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1245`() {
+        val arrived = LocalTime.of(12, 45)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(
+                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
+                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
+            ),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1246`() {
+        val arrived = LocalTime.of(12, 46)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1314`() {
+        val arrived = LocalTime.of(13, 14)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1315`() {
+        val arrived = LocalTime.of(13, 15)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
+            info
+        )
+    }
+
+    @Test
+    fun `get child departure info - preschool daycare placement and present from 1316`() {
+        val arrived = LocalTime.of(13, 16)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfo()
+        assertEquals(
+            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
             info
         )
     }
