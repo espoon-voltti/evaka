@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router-dom'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -393,18 +392,6 @@ export default {
     },
     absentEnable: 'Merkitse poissaolevaksi',
     absentDisable: 'Merkitse läsnä olevaksi',
-    nonReservableDaysWarningModal: {
-      title: 'Kaikkia muutoksia ei voitu tallentaa',
-      text: (
-        <>
-          Valitsemasi aikaväli sisälsi päiviä, joille ei voinut tehdä kaikkia
-          haluamiasi varauksia. Tarkista merkitsemäsi varaukset ja ilmoita
-          puuttuvat muutokset henkilökunnalle{' '}
-          <Link to="/messages">viestitoiminnolla</Link>.
-        </>
-      ),
-      ok: 'Selvä!'
-    },
     validationErrors: {
       range: 'Yksikön aukiolo ylittyy'
     }

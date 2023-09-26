@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router-dom'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -396,18 +395,6 @@ const en: Translations = {
     },
     absentEnable: 'Mark as absent',
     absentDisable: 'Mark as present',
-    nonReservableDaysWarningModal: {
-      title: 'All changes could not be saved',
-      text: (
-        <>
-          The range you selected contained days for which you could not make all
-          the reservations you wanted. Check the reservations you have marked
-          and notify the staff of missing changes using the{' '}
-          <Link to="/messages">messages function</Link>.
-        </>
-      ),
-      ok: 'OK'
-    },
     validationErrors: {
       range: 'Outside opening hours'
     }
