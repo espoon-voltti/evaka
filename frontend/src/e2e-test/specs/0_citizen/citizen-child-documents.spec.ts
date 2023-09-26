@@ -112,7 +112,6 @@ beforeEach(async () => {
 
 describe('Citizen child documents listing page', () => {
   test('Published hojks is in the list', async () => {
-    await page.reload()
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('vasu')
@@ -124,7 +123,6 @@ describe('Citizen child documents listing page', () => {
   })
 
   test('Published pedagogical report is in the list', async () => {
-    await page.reload()
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('vasu')
