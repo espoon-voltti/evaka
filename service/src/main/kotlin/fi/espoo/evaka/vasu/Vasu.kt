@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
@@ -29,6 +30,7 @@ import java.time.LocalDate
 import java.util.UUID
 import org.jdbi.v3.json.Json
 
+@ConstList("curriculumTypes")
 enum class CurriculumType {
     DAYCARE,
     PRESCHOOL
@@ -70,6 +72,7 @@ private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentSta
     }
 }
 
+@ConstList("curriculumLanguages")
 enum class VasuLanguage {
     FI,
     SV

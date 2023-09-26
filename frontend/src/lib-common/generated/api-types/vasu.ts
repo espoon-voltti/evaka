@@ -70,11 +70,25 @@ export interface CreateTemplateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.CurriculumTemplateError
+*/
+export type CurriculumTemplateError =
+  | 'EXPIRED_START'
+  | 'EXPIRED_END'
+  | 'FUTURE_START'
+  | 'CURRENT_START'
+  | 'CURRENT_END'
+  | 'TEMPLATE_NAME'
+
+/**
 * Generated from fi.espoo.evaka.vasu.CurriculumType
 */
-export type CurriculumType =
-  | 'DAYCARE'
-  | 'PRESCHOOL'
+export const curriculumTypes = [
+  'DAYCARE',
+  'PRESCHOOL'
+] as const
+
+export type CurriculumType = typeof curriculumTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
@@ -203,9 +217,12 @@ export interface VasuGuardian {
 /**
 * Generated from fi.espoo.evaka.vasu.VasuLanguage
 */
-export type VasuLanguage =
-  | 'FI'
-  | 'SV'
+export const curriculumLanguages = [
+  'FI',
+  'SV'
+] as const
+
+export type VasuLanguage = typeof curriculumLanguages[number]
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuPlacement

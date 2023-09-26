@@ -4,12 +4,18 @@
 
 package evaka.codegen.apitypes
 
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.vasu.CurriculumTemplateError
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.reflect.KClass
 
 const val basePackage = "fi.espoo.evaka"
+
+val forceIncludes: Set<KClass<*>> =
+    setOf(VoucherValueDecision::class, CurriculumTemplateError::class)
 
 private val standardTsMapping: Map<String, String> =
     mapOf(

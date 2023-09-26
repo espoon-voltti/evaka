@@ -4271,8 +4271,7 @@ export const fi = {
       CURRENT_START: 'Voimassa olevan pohjan alkupäivää ei voi vaihtaa',
       CURRENT_END:
         'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen',
-      TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa',
-      TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
+      TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa'
     },
     moveUp: 'Siirrä ylemmäs',
     moveDown: 'Siirrä alemmas'
