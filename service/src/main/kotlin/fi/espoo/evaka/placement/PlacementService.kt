@@ -63,9 +63,17 @@ fun createPlacements(
             }
         }
 
+    val firstPlacementTypePeriod = placementTypePeriods.minOfOrNull { it.first.start }
     return placementTypePeriods.map { (period, type) ->
         val placement =
-            tx.insertPlacement(type, childId, unitId, period.start, period.end, placeGuarantee)
+            tx.insertPlacement(
+                type,
+                childId,
+                unitId,
+                period.start,
+                period.end,
+                placeGuarantee && firstPlacementTypePeriod == period.start
+            )
         if (serviceNeed?.placementType == type) {
             tx.insertServiceNeed(
                 placement.id,

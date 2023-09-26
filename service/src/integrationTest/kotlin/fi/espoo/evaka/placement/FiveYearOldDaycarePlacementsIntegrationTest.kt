@@ -11,6 +11,8 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -38,7 +40,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     FiniteDateRange(startDate, endDate),
                     PlacementType.DAYCARE,
                     useFiveYearsOldDaycare = true,
-                    placeGuarantee = false
+                    placeGuarantee = true
                 )
             }
 
@@ -47,16 +49,19 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(PlacementType.DAYCARE, placement.type)
             assertEquals(startDate, placement.startDate)
             assertEquals(LocalDate.of(yearChildTurnsFive, 7, 31), placement.endDate)
+            assertTrue(placement.placeGuarantee)
         }
         newPlacements[1].let { placement ->
             assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, placement.type)
             assertEquals(LocalDate.of(yearChildTurnsFive, 8, 1), placement.startDate)
             assertEquals(LocalDate.of(yearChildTurnsFive + 1, 7, 31), placement.endDate)
+            assertFalse(placement.placeGuarantee)
         }
         newPlacements[2].let { placement ->
             assertEquals(PlacementType.DAYCARE, placement.type)
             assertEquals(LocalDate.of(yearChildTurnsFive + 1, 8, 1), placement.startDate)
             assertEquals(endDate, placement.endDate)
+            assertFalse(placement.placeGuarantee)
         }
     }
 
