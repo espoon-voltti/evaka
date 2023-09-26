@@ -232,15 +232,6 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           locale={lang}
         />
       </div>
-      {retroactive && (
-        <>
-          <Gap size="m" />
-          <RetroactiveConfirmation
-            confirmed={confirmedRetroactive}
-            setConfirmed={setConfirmedRetroactive}
-          />
-        </>
-      )}
       <Gap size="L" />
 
       <Label>{i18n.personProfile.income.details.effect}</Label>
@@ -345,6 +336,15 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           }))
         }}
       />
+      {retroactive && (
+        <>
+          <Gap size="m" />
+          <RetroactiveConfirmation
+            confirmed={confirmedRetroactive}
+            setConfirmed={setConfirmedRetroactive}
+          />
+        </>
+      )}
       <ButtonsContainer>
         <Button
           onClick={cancel}
