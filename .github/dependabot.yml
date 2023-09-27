@@ -87,3 +87,7 @@ updates:
       node-saml:
         patterns:
           - "@node-saml/*"
+  - package-ecosystem: gradle
+    directory: "/service"
+    schedule:
+      interval: weekly
