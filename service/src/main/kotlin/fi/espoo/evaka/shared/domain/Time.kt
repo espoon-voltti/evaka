@@ -239,7 +239,8 @@ private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
 
 fun <T> mergePeriods(
     values: List<Pair<DateRange, T>>,
-    equals: (T, T) -> Boolean = ::simpleEquals
+    equals: (T, T) -> Boolean = ::simpleEquals,
+    useOlderValue: (T) -> Boolean = { _ -> false }
 ): List<Pair<DateRange, T>> {
     return values
         .sortedBy { (period, _) -> period.start }
@@ -250,7 +251,9 @@ fun <T> mergePeriods(
                     periods.last().let { (lastPeriod, lastValue) ->
                         when {
                             equals(lastValue, value) && periodsCanMerge(lastPeriod, period) ->
-                                periods.dropLast(1) + (minimalCover(lastPeriod, period) to value)
+                                periods.dropLast(1) +
+                                    (minimalCover(lastPeriod, period) to
+                                        if (useOlderValue(lastValue)) lastValue else value)
                             else -> periods + (period to value)
                         }
                     }
