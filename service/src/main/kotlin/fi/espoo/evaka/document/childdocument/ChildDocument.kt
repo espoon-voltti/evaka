@@ -75,10 +75,10 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     @JsonTypeName("STATIC_TEXT_DISPLAY")
     data class StaticTextDisplayAnswer(
         override val questionId: String,
-        override val answer: String?
-    ) : AnsweredQuestion<String?>(QuestionType.STATIC_TEXT_DISPLAY) {
+        override val answer: Nothing?
+    ) : AnsweredQuestion<Nothing?>(QuestionType.STATIC_TEXT_DISPLAY) {
         override fun isStructurallyValid(question: Question): Boolean {
-            return question is Question.StaticTextDisplayQuestion && answer.isNullOrBlank()
+            return question is Question.StaticTextDisplayQuestion
         }
     }
 }

@@ -49,7 +49,7 @@ const getTemplateInitialValues = (
   infoText: question?.infoText ?? ''
 })
 
-type Answer = string | null
+type Answer = null
 
 const getAnswerInitialValue = (): Answer => null
 

@@ -85,6 +85,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                             RadioButtonGroupQuestionOption("b", "toka"),
                                             RadioButtonGroupQuestionOption("c", "kolmas"),
                                         )
+                                ),
+                                Question.StaticTextDisplayQuestion(
+                                    id = "q5",
+                                    label = "tekstikappale",
+                                    text = "lorem ipsum"
                                 )
                             )
                     )
@@ -291,7 +296,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                             "q3",
                             listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("c"))
                         ),
-                        AnsweredQuestion.RadioButtonGroupAnswer("q4", "b")
+                        AnsweredQuestion.RadioButtonGroupAnswer("q4", "b"),
+                        AnsweredQuestion.StaticTextDisplayAnswer("q5", null)
                     )
             )
         controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
