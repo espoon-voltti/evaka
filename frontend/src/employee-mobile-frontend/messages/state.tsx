@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import uniqBy from 'lodash/uniqBy'
 import React, {
   createContext,
   useCallback,
@@ -11,51 +12,35 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Paged, Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
-  Message,
   MessageThread,
-  AuthorizedMessageAccount,
-  ThreadReply
+  AuthorizedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { useQueryResult } from 'lib-common/query'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import {
+  queryResult,
+  useInfiniteQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import { UserContext } from '../auth/state'
 import { UnitContext } from '../common/unit'
 
+import { markThreadRead, ReplyToThreadParams } from './api'
 import {
-  getReceivedMessages,
-  markThreadRead,
-  replyToThread,
-  ReplyToThreadParams
-} from './api'
-import { messagingAccountsQuery } from './queries'
+  messagingAccountsQuery,
+  receivedMessagesQuery,
+  replyToThreadMutation
+} from './queries'
 
 const PAGE_SIZE = 20
 
-const addMessageToThread = (message: Message, thread: MessageThread) => ({
-  ...thread,
-  messages: [...thread.messages, message]
-})
-
-const appendMessageAndMoveThreadToTopOfList =
-  (threadId: UUID, message: Message) => (state: Result<MessageThread[]>) =>
-    state.map((threads) => {
-      const thread = threads.find((t) => t.id === threadId)
-      if (!thread) return threads
-      const otherThreads = threads.filter((t) => t.id !== threadId)
-      return [addMessageToThread(message, thread), ...otherThreads]
-    })
-
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
-  page: number
-  setPage: (page: number) => void
-  pages: number | undefined
-  setPages: (pages: number) => void
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
   receivedMessages: Result<MessageThread[]>
@@ -68,10 +53,6 @@ export interface MessagesState {
 
 const defaultState: MessagesState = {
   accounts: Loading.of(),
-  page: 1,
-  setPage: () => undefined,
-  pages: undefined,
-  setPages: () => undefined,
   selectedAccount: undefined,
   groupAccounts: [],
   receivedMessages: Loading.of(),
@@ -84,10 +65,24 @@ const defaultState: MessagesState = {
 
 export const MessageContext = createContext<MessagesState>(defaultState)
 
+const markMatchingThreadRead = (
+  threads: MessageThread[],
+  id: UUID
+): MessageThread[] =>
+  threads.map((t) =>
+    t.id === id
+      ? {
+          ...t,
+          messages: t.messages.map((m) => ({
+            ...m,
+            readAt: m.readAt ?? HelsinkiDateTime.now()
+          }))
+        }
+      : t
+  )
+
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
-    const [page, setPage] = useState<number>(1)
-    const [pages, setPages] = useState<number>()
     const { unitInfoResponse, reloadUnreadCounts } = useContext(UnitContext)
     const { user } = useContext(UserContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
@@ -116,7 +111,7 @@ export const MessageContextProvider = React.memo(
       [accounts, unitId]
     )
 
-    const selectedAccount: AuthorizedMessageAccount = useMemo(
+    const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
       () =>
         groupAccounts.find(
           ({ daycareGroup }) => daycareGroup?.id === groupId
@@ -124,49 +119,62 @@ export const MessageContextProvider = React.memo(
       [groupAccounts, groupId]
     )
 
-    const [receivedMessages, setReceivedMessages] = useState<
-      Result<MessageThread[]>
-    >(Loading.of())
-
-    const setReceivedMessagesResult = useCallback(
-      (result: Result<Paged<MessageThread>>) => {
-        setReceivedMessages(result.map((r) => r.data))
-        if (result.isSuccess) {
-          setPages(result.value.pages)
+    const { data, transformPages, error, isFetching, isFetchingNextPage } =
+      useInfiniteQuery(
+        receivedMessagesQuery(selectedAccount?.account.id ?? '', PAGE_SIZE),
+        {
+          enabled: selectedAccount !== undefined
         }
-      },
-      []
+      )
+
+    const isFetchingFirstPage = isFetching && !isFetchingNextPage
+    const threads = useMemo(
+      () =>
+        // Use .map() to only call uniqBy/flatMap when it's a Success
+        queryResult(null, error, isFetchingFirstPage).map(() =>
+          data
+            ? uniqBy(
+                data.pages.flatMap((p) => p.data),
+                'id'
+              )
+            : []
+        ),
+      [data, error, isFetchingFirstPage]
     )
 
-    const loadReceivedMessages = useRestApi(
-      getReceivedMessages,
-      setReceivedMessagesResult
-    )
+    const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
 
-    const [selectedThread, setSelectedThread] = useState<MessageThread>()
+    const selectedThread = threads
+      .map((threads) => threads.find((t) => t.id === selectedThreadId))
+      .getOrElse(undefined)
 
     useEffect(() => {
       if (selectedAccount && !selectedThread) {
-        void loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
         reloadUnreadCounts()
       }
-    }, [
-      loadReceivedMessages,
-      reloadUnreadCounts,
-      page,
-      selectedAccount,
-      selectedThread
-    ])
+    }, [reloadUnreadCounts, selectedAccount, selectedThread])
 
     const selectThread = useCallback(
       (thread: MessageThread | undefined) => {
-        setSelectedThread(thread)
+        setSelectedThreadId(thread?.id)
+
         if (!thread) return
         if (!selectedAccount) throw new Error('Should never happen')
         const { id: accountId } = selectedAccount.account
-        void markThreadRead(accountId, thread.id)
+
+        const hasUnreadMessages = thread.messages.some(
+          (m) => !m.readAt && m.sender.id !== accountId
+        )
+
+        if (hasUnreadMessages) {
+          void markThreadRead(accountId, thread.id)
+          transformPages((page) => ({
+            ...page,
+            data: markMatchingThreadRead(page.data, thread.id)
+          }))
+        }
       },
-      [selectedAccount]
+      [selectedAccount, transformPages]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
@@ -179,50 +187,38 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const setReplyResponse = useCallback((res: Result<ThreadReply>) => {
-      if (res.isSuccess) {
-        const {
-          value: { message, threadId }
-        } = res
-        setReceivedMessages(
-          appendMessageAndMoveThreadToTopOfList(threadId, message)
-        )
-        setSelectedThread((thread) =>
-          thread?.id === threadId ? addMessageToThread(message, thread) : thread
-        )
-        setReplyContents((state) => ({ ...state, [threadId]: '' }))
-      }
-    }, [])
-    const reply = useRestApi(replyToThread, setReplyResponse)
-    const sendReply = useCallback(reply, [reply])
+    const { mutateAsync: sendReply } = useMutationResult(replyToThreadMutation)
+    const sendReplyAndClear = useCallback(
+      async (arg: ReplyToThreadParams) => {
+        const result = await sendReply(arg)
+        if (result.isSuccess) {
+          setReplyContent(result.value.threadId, '')
+        }
+      },
+      [sendReply, setReplyContent]
+    )
 
     const value = useMemo(
       () => ({
         accounts,
         selectedAccount,
         groupAccounts,
-        page,
-        setPage,
-        pages,
-        setPages,
-        receivedMessages,
+        receivedMessages: threads,
         selectThread,
         selectedThread,
         getReplyContent,
-        sendReply,
+        sendReply: sendReplyAndClear,
         setReplyContent
       }),
       [
         accounts,
         groupAccounts,
         selectedAccount,
-        page,
-        pages,
-        receivedMessages,
+        threads,
         selectedThread,
         selectThread,
         getReplyContent,
-        sendReply,
+        sendReplyAndClear,
         setReplyContent
       ]
     )

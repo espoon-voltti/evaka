@@ -45,18 +45,15 @@ export async function getReceivedMessages(
   accountId: UUID,
   page: number,
   pageSize: number
-): Promise<Result<Paged<MessageThread>>> {
+): Promise<Paged<MessageThread>> {
   return client
     .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/received`, {
       params: { page, pageSize }
     })
-    .then(({ data }) =>
-      Success.of({
-        ...data,
-        data: data.data.map((d) => deserializeMessageThread(d))
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => ({
+      ...data,
+      data: data.data.map((d) => deserializeMessageThread(d))
+    }))
 }
 
 export type ReplyToThreadParams = ReplyToMessageBody & {
@@ -69,14 +66,13 @@ export async function replyToThread({
   content,
   accountId,
   recipientAccountIds
-}: ReplyToThreadParams): Promise<Result<ThreadReply>> {
+}: ReplyToThreadParams): Promise<ThreadReply> {
   return client
     .post<JsonOf<ThreadReply>>(`/messages/${accountId}/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
-    .then(({ data }) => Success.of(deserializeReplyResponse(data)))
-    .catch((e) => Failure.fromError(e))
+    .then(({ data }) => deserializeReplyResponse(data))
 }
 
 export async function markThreadRead(
