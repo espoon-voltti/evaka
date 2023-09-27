@@ -30,7 +30,7 @@ dependencies {
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.6.2")
         // Fixes CVE-2023-34468
-        api("io.netty:netty-handler:4.1.94.Final")
+        api("io.netty:netty-handler:4.1.98.Final")
         api("io.opentracing:opentracing-api:${Version.openTracing}")
         api("io.opentracing:opentracing-util:${Version.openTracing}")
         api("jakarta.annotation:jakarta.annotation-api:2.1.1")
