@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { incomeCoefficients } from 'lib-common/generated/api-types/invoicing'
+import { incomeCoefficients } from 'lib-common/api-types/income'
 import { formatCents } from 'lib-common/money'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
