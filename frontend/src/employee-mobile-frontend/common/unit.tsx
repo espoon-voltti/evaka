@@ -17,14 +17,14 @@ import { getMobileUnitInfo } from '../pairing/api'
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>
   reloadUnitInfo: () => void
-  unreadCountsResponse: Result<UnreadCountByAccountAndGroup[]>
+  unreadCounts: UnreadCountByAccountAndGroup[]
   reloadUnreadCounts: () => void
 }
 
 const defaultState: UnitState = {
   unitInfoResponse: Loading.of(),
   reloadUnitInfo: () => undefined,
-  unreadCountsResponse: Loading.of(),
+  unreadCounts: [],
   reloadUnreadCounts: () => undefined
 }
 
@@ -47,6 +47,11 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     [unitId]
   )
 
+  const unreadCounts = useMemo(
+    () => unreadCountsResponse.getOrElse([]),
+    [unreadCountsResponse]
+  )
+
   useEffect(
     () => idleTracker(client, reloadUnitInfo, { thresholdInMinutes: 5 }),
     [reloadUnitInfo]
@@ -56,10 +61,10 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     () => ({
       unitInfoResponse,
       reloadUnitInfo,
-      unreadCountsResponse,
+      unreadCounts,
       reloadUnreadCounts
     }),
-    [unitInfoResponse, reloadUnitInfo, unreadCountsResponse, reloadUnreadCounts]
+    [unitInfoResponse, reloadUnitInfo, unreadCounts, reloadUnreadCounts]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

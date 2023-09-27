@@ -104,86 +104,83 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
     groupId: UUID | 'all'
   }>()
 
-  const { unitInfoResponse, unreadCountsResponse } = useContext(UnitContext)
+  const { unitInfoResponse, unreadCounts } = useContext(UnitContext)
   const { user } = useContext(UserContext)
   const { groupAccounts } = useContext(MessageContext)
 
   const groupAccountIds = groupAccounts.map(({ account }) => account.id)
 
-  return renderResult(
-    combine(unitInfoResponse, unreadCountsResponse, user),
-    ([unit, unreadCounts, user]) => (
-      <>
-        {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
-        <ReserveSpace />
-        <Root>
-          <Button data-qa="bottomnav-children">
-            <BottomText
-              text={i18n.common.children}
+  return renderResult(combine(unitInfoResponse, user), ([unit, user]) => (
+    <>
+      {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
+      <ReserveSpace />
+      <Root>
+        <Button data-qa="bottomnav-children">
+          <BottomText
+            text={i18n.common.children}
+            selected={selected === 'child'}
+            onClick={() =>
+              selected !== 'child' &&
+              navigate(`/units/${unitId}/groups/${groupId}/child-attendance`)
+            }
+          >
+            <CustomIcon
+              icon={selected === 'child' ? fasChild : faChild}
               selected={selected === 'child'}
-              onClick={() =>
-                selected !== 'child' &&
-                navigate(`/units/${unitId}/groups/${groupId}/child-attendance`)
-              }
-            >
-              <CustomIcon
-                icon={selected === 'child' ? fasChild : faChild}
-                selected={selected === 'child'}
-              />
-            </BottomText>
-          </Button>
-          <Button data-qa="bottomnav-staff">
-            <BottomText
-              text={i18n.common.staff}
+            />
+          </BottomText>
+        </Button>
+        <Button data-qa="bottomnav-staff">
+          <BottomText
+            text={i18n.common.staff}
+            selected={selected === 'staff'}
+            onClick={() =>
+              selected !== 'staff' &&
+              navigate(
+                unit.features.includes('REALTIME_STAFF_ATTENDANCE')
+                  ? `/units/${unitId}/groups/${groupId}/staff-attendance`
+                  : `/units/${unitId}/groups/${groupId}/staff`
+              )
+            }
+          >
+            <CustomIcon
+              icon={selected === 'staff' ? fasUser : faUser}
               selected={selected === 'staff'}
+            />
+          </BottomText>
+        </Button>
+        {unit.features.includes('MOBILE_MESSAGING') ? (
+          <Button data-qa="bottomnav-messages">
+            <BottomText
+              text={i18n.common.messages}
+              selected={selected === 'messages'}
               onClick={() =>
-                selected !== 'staff' &&
+                selected !== 'messages' &&
                 navigate(
-                  unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                    ? `/units/${unitId}/groups/${groupId}/staff-attendance`
-                    : `/units/${unitId}/groups/${groupId}/staff`
+                  user?.pinLoginActive
+                    ? `/units/${unitId}/groups/${unit.groups[0].id}/messages`
+                    : `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`
                 )
               }
             >
               <CustomIcon
-                icon={selected === 'staff' ? fasUser : faUser}
-                selected={selected === 'staff'}
+                icon={selected === 'messages' ? fasEnvelope : faEnvelope}
+                selected={selected === 'messages'}
               />
+              {(user?.pinLoginActive && groupAccountIds.length > 0
+                ? unreadCounts.filter(({ accountId }) =>
+                    groupAccountIds.includes(accountId)
+                  )
+                : unreadCounts
+              ).some(({ unreadCount }) => unreadCount > 0) && (
+                <UnreadMessagesIndicator data-qa="unread-messages-indicator" />
+              )}
             </BottomText>
           </Button>
-          {unit.features.includes('MOBILE_MESSAGING') ? (
-            <Button data-qa="bottomnav-messages">
-              <BottomText
-                text={i18n.common.messages}
-                selected={selected === 'messages'}
-                onClick={() =>
-                  selected !== 'messages' &&
-                  navigate(
-                    user?.pinLoginActive
-                      ? `/units/${unitId}/groups/${unit.groups[0].id}/messages`
-                      : `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`
-                  )
-                }
-              >
-                <CustomIcon
-                  icon={selected === 'messages' ? fasEnvelope : faEnvelope}
-                  selected={selected === 'messages'}
-                />
-                {(user?.pinLoginActive && groupAccountIds.length > 0
-                  ? unreadCounts.filter(({ accountId }) =>
-                      groupAccountIds.includes(accountId)
-                    )
-                  : unreadCounts
-                ).some(({ unreadCount }) => unreadCount > 0) && (
-                  <UnreadMessagesIndicator data-qa="unread-messages-indicator" />
-                )}
-              </BottomText>
-            </Button>
-          ) : null}
-        </Root>
-      </>
-    )
-  )
+        ) : null}
+      </Root>
+    </>
+  ))
 }
 
 const UnreadMessagesIndicator = styled.div`

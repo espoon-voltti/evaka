@@ -35,62 +35,59 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
     groupId: UUID
   }>()
   const { i18n } = useTranslation()
-  const { unitInfoResponse, unreadCountsResponse } = useContext(UnitContext)
+  const { unitInfoResponse, unreadCounts } = useContext(UnitContext)
   const { user } = useContext(UserContext)
   const { pushNotifications } = useContext(ServiceWorkerContext)
 
-  return renderResult(
-    combine(unitInfoResponse, unreadCountsResponse, user),
-    ([unit, counts, user]) => (
-      <ContentArea
-        opaque
-        fullHeight
-        paddingHorizontal="zero"
-        paddingVertical="zero"
-      >
-        <TopBar title={unit.name} />
-        <HeaderContainer>
-          <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
-        </HeaderContainer>
-        <UnreadCounts>
-          {unit.groups.map((group) => (
-            <UnreadCountByGroupRow key={group.id}>
-              <LinkToGroupMessages
-                data-qa={`link-to-group-messages-${group.id}`}
-                to={`/units/${unitId}/groups/${group.id}/messages`}
-              >
-                {group.name}
-              </LinkToGroupMessages>
-              <UnreadCountNumber
-                dataQa={`unread-count-by-group-${group.id}`}
-                maybeNumber={
-                  counts.find((c) => c.groupId === group.id)?.unreadCount
-                }
-              />
-            </UnreadCountByGroupRow>
-          ))}
-        </UnreadCounts>
-        {!user?.pinLoginActive && (
-          <ButtonContainer>
-            <P noMargin={true} centered={true}>
-              {i18n.messages.pinLockInfo}
-            </P>
-            <WideLinkButton
-              $primary
-              data-qa="pin-login-button"
-              to={`/units/${unitId}/groups/${groupId}/messages`}
+  return renderResult(combine(unitInfoResponse, user), ([unit, user]) => (
+    <ContentArea
+      opaque
+      fullHeight
+      paddingHorizontal="zero"
+      paddingVertical="zero"
+    >
+      <TopBar title={unit.name} />
+      <HeaderContainer>
+        <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
+      </HeaderContainer>
+      <UnreadCounts>
+        {unit.groups.map((group) => (
+          <UnreadCountByGroupRow key={group.id}>
+            <LinkToGroupMessages
+              data-qa={`link-to-group-messages-${group.id}`}
+              to={`/units/${unitId}/groups/${group.id}/messages`}
             >
-              {i18n.messages.openPinLock}
-            </WideLinkButton>
-          </ButtonContainer>
-        )}
-        {pushNotifications && (
-          <NotificationSettings pushNotifications={pushNotifications} />
-        )}
-        <BottomNavBar selected="messages" />
-      </ContentArea>
-    )
-  )
+              {group.name}
+            </LinkToGroupMessages>
+            <UnreadCountNumber
+              dataQa={`unread-count-by-group-${group.id}`}
+              maybeNumber={
+                unreadCounts.find((c) => c.groupId === group.id)?.unreadCount
+              }
+            />
+          </UnreadCountByGroupRow>
+        ))}
+      </UnreadCounts>
+      {!user?.pinLoginActive && (
+        <ButtonContainer>
+          <P noMargin={true} centered={true}>
+            {i18n.messages.pinLockInfo}
+          </P>
+          <WideLinkButton
+            $primary
+            data-qa="pin-login-button"
+            to={`/units/${unitId}/groups/${groupId}/messages`}
+          >
+            {i18n.messages.openPinLock}
+          </WideLinkButton>
+        </ButtonContainer>
+      )}
+      {pushNotifications && (
+        <NotificationSettings pushNotifications={pushNotifications} />
+      )}
+      <BottomNavBar selected="messages" />
+    </ContentArea>
+  ))
 })
 
 const NotificationSettings = React.memo(function NotificationSettings({
