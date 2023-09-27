@@ -210,6 +210,11 @@ export const fi = {
       expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
       collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
       placeholder: 'Valitse...'
+    },
+    retroactiveConfirmation: {
+      title:
+        'Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin.',
+      checkboxLabel: 'Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*'
     }
   },
   header: {

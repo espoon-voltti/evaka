@@ -10,6 +10,8 @@ import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
+import { useTranslation } from '../../state/i18n'
+
 export const isChangeRetroactive = (
   newRange: DateRange | FiniteDateRange | null,
   prevRange: DateRange | FiniteDateRange | null,
@@ -75,14 +77,15 @@ const RetroactiveConfirmation = React.memo(function RetroactiveConfirmation({
   confirmed: boolean
   setConfirmed: (confirmed: boolean) => void
 }) {
+  const { i18n } = useTranslation()
   return (
     <AlertBox
       noMargin
       wide
-      title="Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin."
+      title={i18n.common.retroactiveConfirmation.title}
       message={
         <Checkbox
-          label="Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*"
+          label={i18n.common.retroactiveConfirmation.checkboxLabel}
           checked={confirmed}
           onChange={setConfirmed}
           data-qa="confirm-retroactive"
