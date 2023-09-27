@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -33,7 +34,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         FeeAlteration(
             id = FeeAlterationId(UUID.randomUUID()),
             personId = personId,
-            type = FeeAlteration.Type.DISCOUNT,
+            type = FeeAlterationType.DISCOUNT,
             amount = 50,
             isAbsolute = false,
             validFrom = LocalDate.of(2019, 1, 1),

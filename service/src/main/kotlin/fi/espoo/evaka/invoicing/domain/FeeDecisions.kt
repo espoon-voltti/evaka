@@ -98,7 +98,7 @@ data class FeeDecisionServiceNeed(
 )
 
 data class FeeAlterationWithEffect(
-    val type: FeeAlteration.Type,
+    val type: FeeAlterationType,
     val amount: Int,
     @get:JsonProperty("isAbsolute") val isAbsolute: Boolean,
     val effect: Int
@@ -401,12 +401,12 @@ fun toFeeAlterationsWithEffects(
     return alterations
 }
 
-fun feeAlterationEffect(fee: Int, type: FeeAlteration.Type, amount: Int, absolute: Boolean): Int {
+fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute: Boolean): Int {
     val multiplier =
         when (type) {
-            FeeAlteration.Type.RELIEF,
-            FeeAlteration.Type.DISCOUNT -> -1
-            FeeAlteration.Type.INCREASE -> 1
+            FeeAlterationType.RELIEF,
+            FeeAlterationType.DISCOUNT -> -1
+            FeeAlterationType.INCREASE -> 1
         }
 
     val effect =
@@ -431,7 +431,7 @@ const val ECHAIncrease = 93
 fun getECHAIncrease(childId: ChildId, period: DateRange) =
     FeeAlteration(
         personId = childId,
-        type = FeeAlteration.Type.INCREASE,
+        type = FeeAlterationType.INCREASE,
         amount = ECHAIncrease,
         isAbsolute = true,
         notes = "ECHA",

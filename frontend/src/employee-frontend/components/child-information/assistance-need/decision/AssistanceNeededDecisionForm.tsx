@@ -132,7 +132,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
               employee.preferredFirstName ?? employee.firstName ?? ''
             } (${employee.email ?? ''})`
           }
-          filterItems={(inputValue: string, items: Employee[]) =>
+          filterItems={(inputValue: string, items: readonly Employee[]) =>
             items.filter(
               (emp) =>
                 (emp.preferredFirstName ?? emp.firstName)

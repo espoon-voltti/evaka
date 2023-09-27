@@ -51,7 +51,7 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
           onChange !== undefined ? (
             <Select
               selectedItem={state.coefficient}
-              items={[...incomeCoefficients]}
+              items={incomeCoefficients}
               getItemLabel={(item) =>
                 i18n.personProfile.income.details.incomeCoefficients[item]
               }

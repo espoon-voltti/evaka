@@ -18,7 +18,7 @@ import fi.espoo.evaka.invoicing.data.flatten
 import fi.espoo.evaka.invoicing.data.invoiceQueryBase
 import fi.espoo.evaka.invoicing.data.toInvoice
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -543,7 +543,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations =
                             listOf(
                                 createFeeDecisionAlterationFixture(
-                                    type = FeeAlteration.Type.DISCOUNT,
+                                    type = FeeAlterationType.DISCOUNT,
                                     amount = 20,
                                     isAbsolute = false,
                                     effect = -5780
@@ -588,7 +588,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -1041,7 +1041,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations =
                             listOf(
                                 createFeeDecisionAlterationFixture(
-                                    type = FeeAlteration.Type.DISCOUNT,
+                                    type = FeeAlterationType.DISCOUNT,
                                     amount = 20,
                                     isAbsolute = false,
                                     effect = -5780
@@ -1076,7 +1076,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -1109,13 +1109,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations =
                             listOf(
                                 createFeeDecisionAlterationFixture(
-                                    type = FeeAlteration.Type.DISCOUNT,
+                                    type = FeeAlterationType.DISCOUNT,
                                     amount = 20,
                                     isAbsolute = false,
                                     effect = -5780
                                 ),
                                 createFeeDecisionAlterationFixture(
-                                    type = FeeAlteration.Type.INCREASE,
+                                    type = FeeAlterationType.INCREASE,
                                     amount = 93,
                                     isAbsolute = false,
                                     effect = 9300
@@ -1150,7 +1150,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -1164,7 +1164,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.INCREASE
+                        FeeAlterationType.INCREASE
                     ),
                     invoiceRow.product
                 )
@@ -1197,7 +1197,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations =
                             listOf(
                                 createFeeDecisionAlterationFixture(
-                                    type = FeeAlteration.Type.DISCOUNT,
+                                    type = FeeAlterationType.DISCOUNT,
                                     amount = 95,
                                     isAbsolute = false,
                                     effect = -27455
@@ -1232,7 +1232,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -1797,7 +1797,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -1867,7 +1867,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -2037,7 +2037,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -2418,7 +2418,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations =
                             listOf(
                                 FeeAlterationWithEffect(
-                                    type = FeeAlteration.Type.RELIEF,
+                                    type = FeeAlterationType.RELIEF,
                                     amount = 100,
                                     isAbsolute = false,
                                     effect = -28900
@@ -4933,7 +4933,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     effect =
                                         feeAlterationEffect(
                                             21700,
-                                            FeeAlteration.Type.DISCOUNT,
+                                            FeeAlterationType.DISCOUNT,
                                             50,
                                             false
                                         )
@@ -4961,7 +4961,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlteration.Type.DISCOUNT
+                        FeeAlterationType.DISCOUNT
                     ),
                     invoiceRow.product
                 )
@@ -6089,7 +6089,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             DateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 3)),
             PlacementType.PRESCHOOL_CLUB,
             snDaycareContractDays10,
-            listOf(FeeAlterationWithEffect(FeeAlteration.Type.DISCOUNT, 50, true, -5000))
+            listOf(FeeAlterationWithEffect(FeeAlterationType.DISCOUNT, 50, true, -5000))
         )
 
         db.transaction {

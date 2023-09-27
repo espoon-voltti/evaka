@@ -7,10 +7,10 @@
 
 import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
+import { FeeAlterationType } from './invoicing'
 import { FeeDecisionStatus } from './invoicing'
 import { IncomeEffect } from './invoicing'
 import { PlacementType } from './placement'
-import { Type } from './invoicing'
 import { UUID } from '../../types'
 import { VoucherValueDecisionStatus } from './invoicing'
 
@@ -53,7 +53,7 @@ export interface TimelineFeeAlteration {
   id: UUID
   notes: string
   range: DateRange
-  type: Type
+  type: FeeAlterationType
 }
 
 /**

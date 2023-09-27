@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
@@ -123,7 +123,7 @@ class DraftInvoiceGenerator(
         val child: ChildWithDateOfBirth,
         val placement: PlacementStub,
         val priceBeforeFeeAlterations: Int,
-        val feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
+        val feeAlterations: List<Pair<FeeAlterationType, Int>>,
         val finalPrice: Int,
         val contractDaysPerMonth: Int?
     )
@@ -698,7 +698,7 @@ class DraftInvoiceGenerator(
         contractDaysPerMonth: Int?,
         numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
-        feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
+        feeAlterations: List<Pair<FeeAlterationType, Int>>,
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int

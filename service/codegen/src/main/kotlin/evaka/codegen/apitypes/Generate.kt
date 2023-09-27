@@ -145,7 +145,9 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                                                 jsonTypeInfo.property,
                                                 it
                                             )
-                                        }
+                                        },
+                                ownProperties =
+                                    clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
                             )
                         }
                         JsonTypeInfo.Id.DEDUCTION ->
@@ -155,7 +157,9 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                                 nestedClasses =
                                     clazz.nestedClasses
                                         .filterNot { it.isCompanion }
-                                        .mapNotNull { analyzeClass(it) }
+                                        .mapNotNull { analyzeClass(it) },
+                                ownProperties =
+                                    clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
                             )
                         else -> null
                     }
@@ -240,9 +244,14 @@ ${values.joinToString("\n") { "  | '$it'" }}"""
         }
     }
 
-    class SealedClass(name: String, val nestedClasses: List<AnalyzedClass>) : AnalyzedClass(name) {
+    class SealedClass(
+        name: String,
+        val nestedClasses: List<AnalyzedClass>,
+        val ownProperties: List<AnalyzedProperty>
+    ) : AnalyzedClass(name) {
         override fun declarableTypes(): List<KClass<*>> {
-            return nestedClasses.flatMap { it.declarableTypes() }
+            return nestedClasses.flatMap { it.declarableTypes() } +
+                ownProperties.flatMap { it.type.declarableTypes }
         }
         override fun toTs(): String {
             return """export namespace $name {

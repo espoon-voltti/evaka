@@ -7,14 +7,16 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
-import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import {
   required,
   validate,
   validateIf,
   validInt
 } from 'lib-common/form-validation'
-import { OtherIncome } from 'lib-common/generated/enums'
+import {
+  OtherIncome,
+  otherIncomes
+} from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -478,7 +480,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         <OtherIncomeWrapper>
           <MultiSelect
             value={formData.otherIncome}
-            options={otherIncome}
+            options={otherIncomes}
             getOptionId={identity}
             getOptionLabel={useCallback(
               (option: OtherIncome) =>

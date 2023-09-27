@@ -4,7 +4,6 @@
 
 package evaka.codegen.apitypes
 
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.controllers.Wrapper
@@ -49,8 +48,7 @@ fun getApiClasses(packageName: String): Set<KClass<*>> {
 
     val endpoints = scanEndpoints(packageName)
     return (endpoints.flatMap { endpoint -> endpoint.types().flatMap { it.collectTypes() } } +
-            sequenceOf(VoucherValueDecision::class) // only used for dev API
-        )
+            forceIncludes)
         .filter { it.qualifiedName?.startsWith("$packageName.") ?: false }
         .toSet()
 }

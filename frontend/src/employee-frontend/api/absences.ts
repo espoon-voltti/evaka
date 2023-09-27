@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
-import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
 import { parseIsoTimeRange } from 'lib-common/api-types/daily-service-times'
 import {
   AbsenceUpsert,
   GroupMonthCalendar,
-  GroupStaffAttendance,
   HolidayReservationsDelete,
   Presence,
+  StaffAttendanceForDates,
   StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -98,9 +97,9 @@ export async function deleteChildAbsences(
 export async function getStaffAttendances(
   groupId: UUID,
   params: SearchParams
-): Promise<Result<GroupStaffAttendanceForDates>> {
+): Promise<Result<StaffAttendanceForDates>> {
   return client
-    .get<JsonOf<Response<GroupStaffAttendanceForDates>>>(
+    .get<JsonOf<Response<StaffAttendanceForDates>>>(
       `/staff-attendances/group/${groupId}`,
       {
         params
@@ -111,17 +110,17 @@ export async function getStaffAttendances(
       ...group,
       startDate: LocalDate.parseIso(group.startDate),
       endDate: LocalDate.parseNullableIso(group.endDate),
-      attendances: Object.entries(group.attendances).reduce(
-        (attendanceMap, [key, attendance]) => {
-          attendanceMap.set(key, {
+      attendances: Object.keys(group.attendances).reduce((acc, key) => {
+        const attendance = group.attendances[key]
+        return {
+          ...acc,
+          [key]: {
             ...attendance,
             date: LocalDate.parseIso(attendance.date),
             updated: HelsinkiDateTime.parseIso(attendance.updated)
-          })
-          return attendanceMap
-        },
-        new Map<string, GroupStaffAttendance>()
-      )
+          }
+        }
+      }, {})
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

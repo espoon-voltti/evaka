@@ -13,8 +13,10 @@ import React, {
 import styled from 'styled-components'
 
 import { isLoading, Result } from 'lib-common/api'
-import { GroupStaffAttendanceForDates } from 'lib-common/api-types/codegen-excluded'
-import { GroupMonthCalendarDay } from 'lib-common/generated/api-types/daycare'
+import {
+  GroupMonthCalendarDay,
+  StaffAttendanceForDates
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
@@ -75,7 +77,7 @@ export default React.memo(function StaffAttendance({
 interface StaffAttendanceRowProps {
   days: GroupMonthCalendarDay[]
   emptyCols: number[]
-  groupAttendances: Result<GroupStaffAttendanceForDates>
+  groupAttendances: Result<StaffAttendanceForDates>
   updateAttendance: (date: LocalDate, count: number) => Promise<unknown>
 }
 
@@ -101,7 +103,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
       <StaffAttendanceTd>{i18n.absences.table.staffRow}</StaffAttendanceTd>
       {days.map(({ date, children }) => {
         const staffCount = groupAttendances
-          .map(({ attendances }) => attendances.get(date.toString()))
+          .map(({ attendances }) => attendances[date.toString()])
           .map((attendance) => attendance?.count)
         return (
           <StaffAttendanceTd key={date.toString()}>

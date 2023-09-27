@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.placement.PlacementType
 
 object EspooInvoiceProducts {
@@ -84,17 +84,17 @@ object EspooInvoiceProducts {
 
         override fun mapToFeeAlterationProduct(
             productKey: ProductKey,
-            feeAlterationType: FeeAlteration.Type
+            feeAlterationType: FeeAlterationType
         ): ProductKey {
             val product =
                 when (findProduct(productKey) to feeAlterationType) {
-                    Product.DAYCARE to FeeAlteration.Type.DISCOUNT,
-                    Product.DAYCARE to FeeAlteration.Type.RELIEF -> Product.DAYCARE_DISCOUNT
-                    Product.DAYCARE to FeeAlteration.Type.INCREASE -> Product.DAYCARE_INCREASE
-                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlteration.Type.DISCOUNT,
-                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlteration.Type.RELIEF ->
+                    Product.DAYCARE to FeeAlterationType.DISCOUNT,
+                    Product.DAYCARE to FeeAlterationType.RELIEF -> Product.DAYCARE_DISCOUNT
+                    Product.DAYCARE to FeeAlterationType.INCREASE -> Product.DAYCARE_INCREASE
+                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.DISCOUNT,
+                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.RELIEF ->
                         Product.PRESCHOOL_WITH_DAYCARE_DISCOUNT
-                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlteration.Type.INCREASE ->
+                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.INCREASE ->
                         Product.PRESCHOOL_WITH_DAYCARE_INCREASE
                     else ->
                         error(

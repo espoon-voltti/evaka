@@ -15,9 +15,11 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import {
+  DailyServiceTimesType,
+  DailyServiceTimesValue
+} from 'lib-common/generated/api-types/dailyservicetimes'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'

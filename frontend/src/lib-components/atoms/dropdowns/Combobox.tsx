@@ -19,7 +19,7 @@ import { borderRadius, borderStyles, DropdownProps, Root } from './shared'
 
 export interface ComboboxProps<T> extends DropdownProps<T, HTMLInputElement> {
   clearable?: boolean
-  filterItems?: (inputValue: string, items: T[]) => T[]
+  filterItems?: (inputValue: string, items: readonly T[]) => T[]
   onInputChange?: (newValue: string) => void
   getMenuItemLabel?: (item: T) => string
   isLoading?: boolean
@@ -182,7 +182,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
     'data-qa': dataQa
   } = props
   const defaultFilterItems = useCallback(
-    (inputValue: string, items: T[]) => {
+    (inputValue: string, items: readonly T[]) => {
       const filter = inputValue.toLowerCase()
       return items.filter((item) =>
         getItemLabel(item).toLowerCase().startsWith(filter)

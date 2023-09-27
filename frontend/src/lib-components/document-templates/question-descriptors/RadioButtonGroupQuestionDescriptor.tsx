@@ -19,7 +19,8 @@ import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
 import {
   AnsweredQuestion,
-  Question
+  Question,
+  QuestionType
 } from 'lib-common/generated/api-types/document'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -34,11 +35,7 @@ import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslations } from '../../i18n'
 
-import {
-  DocumentQuestionDescriptor,
-  QuestionType,
-  TemplateQuestionDescriptor
-} from './types'
+import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
 
 const questionType: QuestionType = 'RADIO_BUTTON_GROUP'
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DecisionIncome } from 'lib-common/api-types/income'
+import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'

@@ -6,6 +6,7 @@ package fi.espoo.evaka.incomestatement
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
+@ConstList("otherIncomes")
 enum class OtherIncome {
     PENSION,
     ADULT_EDUCATION_ALLOWANCE,

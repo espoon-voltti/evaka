@@ -53,7 +53,10 @@ const search = async (q: string): Promise<Result<PersonSummary[]>> => {
 
 interface Props extends BaseProps {
   getItemDataQa: (item: PersonSummary) => string
-  filterItems: (inputValue: string, items: PersonSummary[]) => PersonSummary[]
+  filterItems: (
+    inputValue: string,
+    items: readonly PersonSummary[]
+  ) => PersonSummary[]
   searchFn: (q: string) => Promise<Result<PersonSummary[]>>
   onResult: (result: PersonSummary | undefined) => void
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
@@ -155,7 +158,7 @@ type PersonSearchProps = Omit<
 
 export function DbPersonSearch(props: PersonSearchProps) {
   const filterItems = useCallback(
-    (_: string, items: PersonSummary[]) => items,
+    (_: string, items: readonly PersonSummary[]) => [...items],
     []
   )
   const getItemDataQa = useCallback((p: PersonSummary) => `person-${p.id}`, [])
@@ -172,7 +175,7 @@ export function DbPersonSearch(props: PersonSearchProps) {
 
 export function VtjPersonSearch(props: PersonSearchProps) {
   const filterItems = useCallback(
-    (_: string, items: PersonSummary[]) =>
+    (_: string, items: readonly PersonSummary[]) =>
       items.filter((i) => i.socialSecurityNumber),
     []
   )

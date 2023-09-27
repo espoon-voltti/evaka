@@ -562,15 +562,6 @@ export async function getVardaErrorsReport(): Promise<VardaErrorReportRow[]> {
     )
 }
 
-export async function markChildForVardaReset(
-  childId: string
-): Promise<Result<void>> {
-  return client
-    .post<void>(`/varda/mark-child-for-reset/${childId}`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function startVardaUpdate(): Promise<void> {
   await client.post(`/varda/start-update`)
 }

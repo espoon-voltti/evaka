@@ -11,7 +11,6 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { CareType } from './daycare'
-import { DecisionIncome } from '../../api-types/income'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -28,6 +27,18 @@ export interface ChildWithDateOfBirth {
 */
 export interface CreateRetroactiveFeeDecisionsBody {
   from: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.DecisionIncome
+*/
+export interface DecisionIncome {
+  data: Record<string, number>
+  effect: IncomeEffect
+  total: number
+  totalExpenses: number
+  totalIncome: number
+  worksAtECHA: boolean
 }
 
 /**
@@ -63,7 +74,7 @@ export interface FeeAlteration {
   isAbsolute: boolean
   notes: string
   personId: UUID
-  type: Type
+  type: FeeAlterationType
   updatedAt: HelsinkiDateTime | null
   updatedBy: UUID | null
   validFrom: LocalDate
@@ -80,13 +91,24 @@ export interface FeeAlterationAttachment {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationType
+*/
+export const feeAlterationTypes = [
+  'DISCOUNT',
+  'INCREASE',
+  'RELIEF'
+] as const
+
+export type FeeAlterationType = typeof feeAlterationTypes[number]
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 */
 export interface FeeAlterationWithEffect {
   amount: number
   effect: number
   isAbsolute: boolean
-  type: Type
+  type: FeeAlterationType
 }
 
 /**
@@ -794,14 +816,6 @@ export interface SendPaymentsRequest {
 export type SortDirection =
   | 'ASC'
   | 'DESC'
-
-/**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeAlteration.Type
-*/
-export type Type =
-  | 'DISCOUNT'
-  | 'INCREASE'
-  | 'RELIEF'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.UnitData

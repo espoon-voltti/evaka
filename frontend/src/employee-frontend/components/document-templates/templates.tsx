@@ -11,13 +11,13 @@ import { StateOf } from 'lib-common/form/types'
 import { nonEmpty } from 'lib-common/form/validators'
 import {
   DocumentTemplateContent,
-  Question
+  Question,
+  QuestionType
 } from 'lib-common/generated/api-types/document'
 import CheckboxGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxQuestionDescriptor'
 import RadioButtonGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/RadioButtonGroupQuestionDescriptor'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'
-import { QuestionType } from 'lib-components/document-templates/question-descriptors/types'
 
 export const templateQuestionForm = mapped(
   union({

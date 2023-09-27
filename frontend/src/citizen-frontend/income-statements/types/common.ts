@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { otherIncome } from 'lib-common/api-types/incomeStatement'
+import { otherIncomes } from 'lib-common/generated/api-types/incomestatement'
 
-export const attachmentType = [
-  ...otherIncome,
+const attachmentType = [
+  ...otherIncomes,
   'ALIMONY_PAYOUT',
   'PAYSLIP',
   'STARTUP_GRANT',

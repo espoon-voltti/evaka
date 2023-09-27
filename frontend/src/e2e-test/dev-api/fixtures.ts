@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
-import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -32,6 +31,7 @@ import {
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import {
+  DecisionIncome,
   FeeDecision,
   FeeDecisionStatus,
   FeeThresholds,

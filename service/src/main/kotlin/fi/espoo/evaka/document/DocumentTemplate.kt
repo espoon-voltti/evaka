@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.json.Json
 
+@ConstList("questionTypes")
 enum class QuestionType {
     TEXT,
     CHECKBOX,

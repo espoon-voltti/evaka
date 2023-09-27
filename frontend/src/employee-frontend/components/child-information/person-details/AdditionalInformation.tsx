@@ -45,7 +45,7 @@ const RightAlignedRow = styled.div`
 
 const filterLanguages = (
   input: string,
-  items: IsoLanguage[]
+  items: readonly IsoLanguage[]
 ): IsoLanguage[] => {
   const filter = input.toLowerCase()
   return items.filter((item) => item.nameFi.includes(filter))

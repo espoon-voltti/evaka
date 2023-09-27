@@ -7,7 +7,10 @@ import React, { useContext, useState } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CreateTemplateRequest,
+  curriculumLanguages,
+  CurriculumTemplateError,
   CurriculumType,
+  curriculumTypes,
   VasuLanguage,
   VasuTemplateSummary
 } from 'lib-common/generated/api-types/vasu'
@@ -23,13 +26,7 @@ import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 
-import {
-  createVasuTemplate,
-  curriculumTypes,
-  editVasuTemplate,
-  VasuErrorCode,
-  vasuLanguages
-} from './api'
+import { createVasuTemplate, editVasuTemplate } from './api'
 
 interface Props {
   onSuccess: (templateId: UUID) => void
@@ -90,7 +87,7 @@ export default React.memo(function CreateOrEditTemplateModal({
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               text:
                 (res?.errorCode &&
-                  t.errorCodes[res.errorCode as VasuErrorCode]) ||
+                  t.errorCodes[res.errorCode as CurriculumTemplateError]) ||
                 '',
               title: i18n.common.error.saveFailed,
               type: 'error'
@@ -125,7 +122,7 @@ export default React.memo(function CreateOrEditTemplateModal({
           <Label>{t.type}</Label>
           {isEditableTypeAndLang ? (
             <Select
-              items={[...curriculumTypes]}
+              items={curriculumTypes}
               selectedItem={type}
               onChange={(value) => {
                 if (value) setType(value)
@@ -142,7 +139,7 @@ export default React.memo(function CreateOrEditTemplateModal({
           <Label>{t.language}</Label>
           {isEditableTypeAndLang ? (
             <Select
-              items={[...vasuLanguages]}
+              items={curriculumLanguages}
               selectedItem={language}
               onChange={(value) => {
                 if (value) setLanguage(value)

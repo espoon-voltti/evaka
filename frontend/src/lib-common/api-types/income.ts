@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+// Note: these are currently customized in forks so cannot be generated
 export const incomeCoefficients = [
   'MONTHLY_WITH_HOLIDAY_BONUS',
   'MONTHLY_NO_HOLIDAY_BONUS',
@@ -14,6 +15,7 @@ export const incomeCoefficients = [
 
 export type IncomeCoefficient = (typeof incomeCoefficients)[number]
 
+// todo: use @ConstList once NOT_AVAILABLE has been removed from backend model
 export const incomeEffects = [
   'MAX_FEE_ACCEPTED',
   'INCOMPLETE',
@@ -26,13 +28,4 @@ export type IncomeValue = {
   amount: number
   coefficient: IncomeCoefficient
   monthlyAmount: number
-}
-
-export interface DecisionIncome {
-  effect: IncomeEffect
-  data: Record<string, number>
-  totalIncome: number
-  totalExpenses: number
-  total: number
-  worksAtECHA: boolean
 }

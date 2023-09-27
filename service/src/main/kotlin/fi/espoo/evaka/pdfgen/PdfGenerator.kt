@@ -6,7 +6,7 @@ package fi.espoo.evaka.pdfgen
 
 import com.lowagie.text.pdf.BaseFont
 import fi.espoo.evaka.decision.DecisionSendAddress
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
@@ -88,7 +88,7 @@ class PdfGenerator(
     }
 
     private data class FeeAlterationPdfPart(
-        val type: FeeAlteration.Type,
+        val type: FeeAlterationType,
         val amount: Int,
         val isAbsolute: Boolean,
         val effectFormatted: String

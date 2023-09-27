@@ -355,7 +355,7 @@ const UnitCombobox = React.memo(function UnitCombobox({
     [unitDetails]
   )
   const filterItems = useCallback(
-    (inputValue: string, items: UUID[]) => {
+    (inputValue: string, items: readonly UUID[]) => {
       const filter = inputValue.toLowerCase()
       return items.filter((unitId) => {
         const unit = unitDetails[unitId]

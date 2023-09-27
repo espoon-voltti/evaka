@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlterationAttachment
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
@@ -59,7 +60,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         FeeAlteration(
             id = testFeeAlterationId,
             personId = personId,
-            type = FeeAlteration.Type.DISCOUNT,
+            type = FeeAlterationType.DISCOUNT,
             amount = 50,
             isAbsolute = false,
             validFrom = LocalDate.of(2019, 1, 1),

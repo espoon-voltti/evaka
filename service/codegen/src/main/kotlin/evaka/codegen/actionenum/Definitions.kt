@@ -1,12 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package evaka.codegen.actionenum
 
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
-import fi.espoo.evaka.incomestatement.IncomeSource
-import fi.espoo.evaka.incomestatement.OtherIncome
 import fi.espoo.evaka.shared.security.Action
 import java.nio.file.Path
 import kotlin.io.path.writeText
@@ -55,12 +52,6 @@ val generatedFiles =
                 generateEnum<Action.VasuTemplate>(),
                 generateNamespace("Citizen", generateEnum<Action.Citizen.Application>())
             )
-        ),
-        defineFile(
-            "enums.d.ts",
-            generateEnum<DailyServiceTimesType>(),
-            generateEnum<IncomeSource>(),
-            generateEnum<OtherIncome>()
         )
     )
 

@@ -9,7 +9,7 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoe
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -1534,7 +1534,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 DevFeeAlteration(
                     id = FeeAlterationId(UUID.randomUUID()),
                     personId = personId,
-                    type = FeeAlteration.Type.DISCOUNT,
+                    type = FeeAlterationType.DISCOUNT,
                     amount = amount,
                     isAbsolute = false,
                     validFrom = period.start,

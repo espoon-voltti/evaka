@@ -4,12 +4,19 @@
 
 package evaka.codegen.apitypes
 
+import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.vasu.CurriculumTemplateError
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.reflect.KClass
 
 const val basePackage = "fi.espoo.evaka"
+
+val forceIncludes: Set<KClass<*>> =
+    setOf(CurriculumTemplateError::class, IncomeCoefficient::class, VoucherValueDecision::class)
 
 private val standardTsMapping: Map<String, String> =
     mapOf(
@@ -49,8 +56,6 @@ private val customClassesMapping: Map<String, TSMapping> =
                 "MessageReceiver",
                 "import { MessageReceiver } from '../../api-types/messaging'"
             ),
-        "fi.espoo.evaka.invoicing.domain.DecisionIncome" to
-            TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
         "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string")
     )
 

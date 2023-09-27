@@ -94,6 +94,7 @@ export function upsertExternalAttendances(
     .catch((e) => Failure.fromError(e))
 }
 
+// FIXME: This is not used currently. Should it be used or can the whole endpoint be removed?
 export function deleteStaffAttendance(
   unitId: UUID,
   attendanceId: UUID
@@ -104,6 +105,7 @@ export function deleteStaffAttendance(
     .catch((e) => Failure.fromError(e))
 }
 
+// FIXME: This is not used currently. Should it be used or can the whole endpoint be removed?
 export function deleteExternalStaffAttendance(
   unitId: UUID,
   attendanceId: UUID

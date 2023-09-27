@@ -4,7 +4,10 @@
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
-import { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
+import {
+  IncomeSource,
+  OtherIncome
+} from 'lib-common/generated/api-types/incomestatement'
 import LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {

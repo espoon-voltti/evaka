@@ -8,7 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.attendance.StaffOccupancyCoefficient
+import fi.espoo.evaka.attendance.getOccupancyCoefficientsByUnit
 import fi.espoo.evaka.pis.TemporaryEmployee
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.pis.controllers.PinCode
@@ -543,13 +543,9 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         unitAclController.getTemporaryEmployee(dbInstance(), admin, clock, unitId, employeeId)
 
     private fun getDaycareOccupancyCoefficients(unitId: DaycareId): Map<EmployeeId, BigDecimal> {
-        val (_, res, body) =
-            http
-                .get("/occupancy-coefficient", listOf("unitId" to unitId))
-                .asUser(admin)
-                .responseObject<List<StaffOccupancyCoefficient>>(jsonMapper)
-        assertTrue(res.isSuccessful)
-        return body.get().associate { it.employeeId to it.coefficient }
+        return db.read { tx ->
+            tx.getOccupancyCoefficientsByUnit(unitId).associate { it.employeeId to it.coefficient }
+        }
     }
 
     private fun deleteSupervisor(daycareId: DaycareId) {

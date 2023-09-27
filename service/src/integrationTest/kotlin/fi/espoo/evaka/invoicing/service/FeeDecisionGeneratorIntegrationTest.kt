@@ -12,7 +12,7 @@ import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
-import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -3974,7 +3974,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 DevFeeAlteration(
                     id = FeeAlterationId(UUID.randomUUID()),
                     personId,
-                    type = FeeAlteration.Type.DISCOUNT,
+                    type = FeeAlterationType.DISCOUNT,
                     amount = amount,
                     isAbsolute = false,
                     validFrom = period.start,
