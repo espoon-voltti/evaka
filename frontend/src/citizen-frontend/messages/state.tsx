@@ -12,10 +12,7 @@ import React, {
 } from 'react'
 
 import { Failure, Loading, Result } from 'lib-common/api'
-import {
-  MessageThread,
-  ThreadReply
-} from 'lib-common/generated/api-types/messaging'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   queryResult,
@@ -124,22 +121,19 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const { mutateAsync: sendReply } = useMutationResult(
-      replyToThreadMutation,
-      {
-        onSuccess: ({ message, threadId }: ThreadReply) => {
-          // Append the new message to the thread
-          transformPages((page) => ({
-            ...page,
-            data: page.data.map((thread) =>
-              thread.id === threadId
-                ? { ...thread, messages: [...thread.messages, message] }
-                : thread
-            )
+    const { mutateAsync: sendReply } = useMutationResult(replyToThreadMutation)
+    const sendReplyAndClear = useCallback(
+      async (arg: ReplyToThreadParams) => {
+        const result = await sendReply(arg)
+        if (result.isSuccess) {
+          setReplyContents((state) => ({
+            ...state,
+            [result.value.threadId]: ''
           }))
-          setReplyContents((state) => ({ ...state, [threadId]: '' }))
         }
-      }
+        return result
+      },
+      [sendReply]
     )
 
     const selectedThread = useMemo(
@@ -157,7 +151,7 @@ export const MessageContextProvider = React.memo(
       if (!accountId.isSuccess) return
       if (!selectedThreadId || !selectedThread) return
 
-      const hasUnreadMessages = selectedThread?.messages.some(
+      const hasUnreadMessages = selectedThread.messages.some(
         (m) => !m.readAt && m.sender.id !== accountId.value
       )
 
@@ -190,7 +184,7 @@ export const MessageContextProvider = React.memo(
         hasMoreThreads: hasNextPage !== undefined && hasNextPage,
         selectedThread,
         setSelectedThread: setSelectedThreadId,
-        sendReply
+        sendReply: sendReplyAndClear
       }),
       [
         accountId,
@@ -199,7 +193,7 @@ export const MessageContextProvider = React.memo(
         hasNextPage,
         isFetchingNextPage,
         selectedThread,
-        sendReply,
+        sendReplyAndClear,
         setReplyContent,
         threads
       ]
