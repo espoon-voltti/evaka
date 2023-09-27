@@ -795,6 +795,7 @@ export const fi = {
         document: 'Lomake',
         status: 'Tila',
         open: 'Avaa lomake',
+        modified: 'Muokattu',
         published: 'Julkaistu'
       },
       addNew: 'Luo uusi lomake',

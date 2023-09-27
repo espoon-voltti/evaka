@@ -13,17 +13,19 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
 fun Database.Transaction.insertChildDocument(
-    document: ChildDocumentCreateRequest
+    document: ChildDocumentCreateRequest,
+    now: HelsinkiDateTime
 ): ChildDocumentId {
     return createQuery(
             """
-            INSERT INTO child_document(child_id, template_id, status, content)
-            VALUES (:childId, :templateId, 'DRAFT', :content)
+            INSERT INTO child_document(child_id, template_id, status, content, modified_at)
+            VALUES (:childId, :templateId, 'DRAFT', :content, :now)
             RETURNING id
         """
         )
         .bindKotlin(document)
         .bind("content", DocumentContent(answers = emptyList()))
+        .bind("now", now)
         .mapTo<ChildDocumentId>()
         .one()
 }
@@ -31,7 +33,7 @@ fun Database.Transaction.insertChildDocument(
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
     return createQuery(
             """
-            SELECT cd.id, cd.status, dt.type, cd.published_at, dt.name as template_name
+            SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.name as template_name
             FROM child_document cd
             JOIN document_template dt on cd.template_id = dt.id
             WHERE cd.child_id = :childId
@@ -78,13 +80,14 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
 fun Database.Transaction.updateChildDocumentContent(
     id: ChildDocumentId,
     status: DocumentStatus,
-    content: DocumentContent
+    content: DocumentContent,
+    now: HelsinkiDateTime
 ) {
     createUpdate<Any> {
             sql(
                 """
             UPDATE child_document
-            SET content = ${bind(content)}
+            SET content = ${bind(content)}, modified_at = ${bind(now)}
             WHERE id = ${bind(id)} AND status = ${bind(status)}
         """
             )
@@ -151,12 +154,16 @@ fun validateStatusTransition(
     return StatusTransition(currentStatus = document.status, newStatus = newStatus)
 }
 
-fun Database.Transaction.changeStatus(id: ChildDocumentId, statusTransition: StatusTransition) {
+fun Database.Transaction.changeStatus(
+    id: ChildDocumentId,
+    statusTransition: StatusTransition,
+    now: HelsinkiDateTime
+) {
     createUpdate<Any> {
             sql(
                 """
                 UPDATE child_document
-                SET status = ${bind(statusTransition.newStatus)}
+                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
             """
             )
@@ -173,7 +180,8 @@ fun Database.Transaction.changeStatusAndPublish(
             sql(
                 """
                 UPDATE child_document
-                SET status = ${bind(statusTransition.newStatus)}, published_at = ${bind(now)}, published_content = content
+                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, 
+                    published_at = ${bind(now)}, published_content = content
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
             """
             )
@@ -189,7 +197,7 @@ fun Database.Transaction.markCompletedAndPublish(
             sql(
                 """
                 UPDATE child_document
-                SET status = 'COMPLETED', published_at = ${bind(now)}, published_content = content
+                SET status = 'COMPLETED', modified_at = ${bind(now)}, published_at = ${bind(now)}, published_content = content
                 WHERE id = ANY(${bind(ids)})
             """
             )

@@ -113,6 +113,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     templateId = templateId,
                     content = documentContent,
                     publishedContent = null,
+                    modifiedAt = clock.now(),
                     publishedAt = null
                 )
             )

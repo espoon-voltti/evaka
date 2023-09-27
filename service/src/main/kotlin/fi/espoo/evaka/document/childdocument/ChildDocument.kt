@@ -96,6 +96,7 @@ data class ChildDocumentSummary(
     val status: DocumentStatus,
     val type: DocumentType,
     val templateName: String,
+    val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime?
 )
 

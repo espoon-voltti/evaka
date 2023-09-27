@@ -141,6 +141,7 @@ export interface ChildDocumentDetails {
 */
 export interface ChildDocumentSummary {
   id: UUID
+  modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
   status: DocumentStatus
   templateName: string
