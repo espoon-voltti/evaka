@@ -256,7 +256,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val both = setOf(testDecisions[0].id, testDecisions[1].id)
-        val draft = setOf(testDecisions[0].id)
         val sent = setOf(testDecisions[1].id)
 
         fun find(headOfFamilyId: PersonId, period: DateRange?, status: List<FeeDecisionStatus>?) =

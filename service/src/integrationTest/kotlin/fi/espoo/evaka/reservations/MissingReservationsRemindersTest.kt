@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -27,7 +26,6 @@ import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -54,7 +52,6 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val guardianEmail = "guardian@example.com"
-    private val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5)
     private val operationTimes: List<TimeRange?> =
         listOf(
             TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
@@ -93,7 +90,6 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
                     )
                 )
-            val unitSupervisor = tx.insertTestEmployee(DevEmployee())
             tx.insertServiceNeedOption(snDefaultDaycare)
             child = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardian, childId = child))
