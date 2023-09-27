@@ -5,8 +5,8 @@
 import { client } from 'citizen-frontend/api-client'
 import DateRange from 'lib-common/date-range'
 import {
-  ChildDocumentCitizenSummary,
-  ChildDocumentDetails
+  ChildDocumentCitizenDetails,
+  ChildDocumentCitizenSummary
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -21,8 +21,8 @@ const deserializeChildDocumentSummary = (
 })
 
 const deserializeChildDocumentDetails = (
-  data: JsonOf<ChildDocumentDetails>
-): ChildDocumentDetails => ({
+  data: JsonOf<ChildDocumentCitizenDetails>
+): ChildDocumentCitizenDetails => ({
   ...data,
   child: {
     ...data.child,
@@ -47,9 +47,9 @@ export function getChildDocumentSummaries(
 
 export function getChildDocumentDetails(
   id: UUID
-): Promise<ChildDocumentDetails> {
+): Promise<ChildDocumentCitizenDetails> {
   return client
-    .get<JsonOf<ChildDocumentDetails>>(`/citizen/child-documents/${id}`)
+    .get<JsonOf<ChildDocumentCitizenDetails>>(`/citizen/child-documents/${id}`)
     .then((res) => deserializeChildDocumentDetails(res.data))
 }
 

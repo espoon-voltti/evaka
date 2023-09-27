@@ -155,6 +155,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         status = DocumentStatus.DRAFT,
                         publishedAt = null,
                         content = DocumentContent(answers = emptyList()),
+                        publishedContent = null,
                         child =
                             ChildBasics(
                                 id = testChild_1.id,

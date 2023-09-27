@@ -146,7 +146,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             getDocumentsByChild(testChild_1.id)
         )
         assertEquals(
-            ChildDocumentDetails(
+            ChildDocumentCitizenDetails(
                 id = documentId,
                 status = DocumentStatus.DRAFT,
                 publishedAt = clock.now(),

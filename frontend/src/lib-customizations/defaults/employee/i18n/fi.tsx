@@ -5,6 +5,7 @@
 import React, { ReactNode } from 'react'
 
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/fi'
@@ -831,7 +832,12 @@ export const fi = {
           COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?'
         },
         deleteDraft: 'Poista luonnos',
-        deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?'
+        deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?',
+        fullyPublished: 'Asiakirjan viimeisin versio on julkaistu',
+        notFullyPublished: (publishedAt: HelsinkiDateTime | null) =>
+          `Asiakirjassa on julkaisemattomia muutoksia ${
+            publishedAt ? ` (julkaistu ${publishedAt.format()})` : ''
+          }`
       }
     },
     assistanceNeedPreschoolDecision: {

@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
+import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
+import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -33,6 +36,7 @@ import {
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -130,6 +134,13 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   const prevStatus = useMemo(
     () => getPrevDocumentStatus(document.template.type, document.status),
     [document.template.type, document.status]
+  )
+
+  const publishedUpToDate = useMemo(
+    () =>
+      document.publishedContent !== null &&
+      isEqual(document.publishedContent, lastSavedContent),
+    [document.publishedContent, lastSavedContent]
   )
 
   return (
@@ -308,6 +319,43 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 )}
             </FixedSpaceRow>
           </FixedSpaceRow>
+          {preview && (
+            <>
+              <Gap size="s" />
+              <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+                <FixedSpaceRow alignItems="center" spacing="xs">
+                  {publishedUpToDate ? (
+                    <>
+                      <FontAwesomeIcon
+                        icon={fasCheckCircle}
+                        color={colors.status.success}
+                        size="lg"
+                      />
+                      <span>
+                        {
+                          i18n.childInformation.childDocuments.editor
+                            .fullyPublished
+                        }
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon
+                        icon={fasExclamationTriangle}
+                        color={colors.status.warning}
+                        size="lg"
+                      />
+                      <span>
+                        {i18n.childInformation.childDocuments.editor.notFullyPublished(
+                          document.publishedAt
+                        )}
+                      </span>
+                    </>
+                  )}
+                </FixedSpaceRow>
+              </FixedSpaceRow>
+            </>
+          )}
         </Container>
       </ActionBar>
     </div>
