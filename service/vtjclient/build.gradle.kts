@@ -6,7 +6,7 @@ plugins {
     java
 }
 
-val generatedSources = "$buildDir/generated/sources/java/main"
+val generatedSources = layout.buildDirectory.dir("generated/sources/java/main")
 val wsdl2java: Configuration by configurations.creating
 
 sourceSets {
@@ -36,7 +36,7 @@ val wsdl2javaTask = tasks.register<JavaExec>("wsdl2java") {
     classpath = wsdl2java
     args = arrayListOf(
         "-d",
-        generatedSources,
+        generatedSources.get().toString(),
         "-p",
         "fi.espoo.evaka.vtjclient.soap",
         "-mark-generated",
