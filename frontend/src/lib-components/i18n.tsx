@@ -37,6 +37,7 @@ export interface Translations {
       withText: string
       options: string
       multiline: string
+      text: string
     }
     noSelection: string
     documentStates: Record<DocumentStatus, string>

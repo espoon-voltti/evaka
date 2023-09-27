@@ -4185,7 +4185,8 @@ export const fi = {
       TEXT: 'Tekstikenttä',
       CHECKBOX: 'Rasti',
       CHECKBOX_GROUP: 'Monivalinta',
-      RADIO_BUTTON_GROUP: 'Monivalinta (valitse yksi)'
+      RADIO_BUTTON_GROUP: 'Monivalinta (valitse yksi)',
+      STATIC_TEXT_DISPLAY: 'Tekstikappale ilman kysymystä'
     },
     ...components.documentTemplates
   },

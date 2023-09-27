@@ -29,7 +29,8 @@ private val standardTsMapping: Map<String, String> =
         "kotlin.Boolean" to "boolean",
         "java.time.OffsetDateTime" to "Date",
         "java.net.URI" to "string",
-        "kotlin.Any" to "unknown"
+        "kotlin.Any" to "unknown",
+        "java.lang.Void" to "never"
     )
 
 private val customClassesMapping: Map<String, TSMapping> =

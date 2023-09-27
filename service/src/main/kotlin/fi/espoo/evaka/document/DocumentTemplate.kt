@@ -17,7 +17,8 @@ enum class QuestionType {
     TEXT,
     CHECKBOX,
     CHECKBOX_GROUP,
-    RADIO_BUTTON_GROUP
+    RADIO_BUTTON_GROUP,
+    STATIC_TEXT_DISPLAY
 }
 
 @JsonTypeInfo(
@@ -58,6 +59,14 @@ sealed class Question(val type: QuestionType) {
         val options: List<RadioButtonGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.RADIO_BUTTON_GROUP)
+
+    @JsonTypeName("STATIC_TEXT_DISPLAY")
+    data class StaticTextDisplayQuestion(
+        override val id: String,
+        val label: String = "",
+        val text: String,
+        val infoText: String = ""
+    ) : Question(QuestionType.STATIC_TEXT_DISPLAY)
 }
 
 data class CheckboxGroupQuestionOption(

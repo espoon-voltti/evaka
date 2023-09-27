@@ -36,7 +36,8 @@ const components: Translations = {
       options: 'Options',
       infoText: 'Info text',
       multiline: 'Allow multiline answer',
-      withText: 'With extra info'
+      withText: 'With extra info',
+      text: 'Text content'
     },
     noSelection: 'No selection',
     documentStates: {
