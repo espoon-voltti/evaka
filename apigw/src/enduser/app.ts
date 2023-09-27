@@ -22,7 +22,6 @@ import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml.js'
 import { RedisClient } from '../shared/redis-client.js'
-import { toMiddleware } from '../shared/express.js'
 
 export function enduserGwRouter(
   config: Config,
@@ -33,10 +32,8 @@ export function enduserGwRouter(
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
 
   router.use(sessions.middleware)
-  router.use(toMiddleware(sessions.touchMaxAge))
   router.use(passport.session())
   router.use(cookieParser())
-  router.use(toMiddleware(sessions.refreshLogoutToken))
 
   router.use(
     cacheControl((req) =>

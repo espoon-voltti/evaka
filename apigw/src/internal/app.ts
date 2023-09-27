@@ -33,7 +33,6 @@ import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
 import { RedisClient } from '../shared/redis-client.js'
-import { toMiddleware } from '../shared/express.js'
 
 export function internalGwRouter(
   config: Config,
@@ -44,10 +43,8 @@ export function internalGwRouter(
   const sessions = sessionSupport('employee', redisClient, config.employee)
 
   router.use(sessions.middleware)
-  router.use(toMiddleware(sessions.touchMaxAge))
   router.use(passport.session())
   router.use(cookieParser(config.employee.cookieSecret))
-  router.use(toMiddleware(sessions.refreshLogoutToken))
 
   router.use(
     cacheControl((req) =>

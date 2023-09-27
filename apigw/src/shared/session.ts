@@ -11,7 +11,7 @@ import {
 } from 'date-fns'
 import express from 'express'
 import session from 'express-session'
-import { LogoutToken } from './express.js'
+import { LogoutToken, toMiddleware } from './express.js'
 import { fromCallback } from './promise-utils.js'
 import { RedisClient } from './redis-client.js'
 import { SessionConfig } from './config.js'
@@ -39,13 +39,11 @@ export interface Sessions {
   middleware: express.RequestHandler
 
   save(req: express.Request): Promise<void>
-  touchMaxAge(req: express.Request): Promise<void>
 
   saveLogoutToken(
     req: express.Request,
     logoutToken?: LogoutToken['value']
   ): Promise<void>
-  refreshLogoutToken(req: express.Request): Promise<void>
   logoutWithToken(token: LogoutToken['value']): Promise<unknown | undefined>
   consumeLogoutToken(token: LogoutToken['value']): Promise<void>
 }
@@ -57,7 +55,8 @@ export function sessionSupport(
 ): Sessions {
   const cookieName = sessionCookie(sessionType)
 
-  const middleware = session({
+  // Base session support middleware from express-session
+  const baseMiddleware = session({
     cookie: {
       path: '/',
       httpOnly: true,
@@ -73,15 +72,25 @@ export function sessionSupport(
     store: new RedisStore({ client: redisClient })
   })
 
+  const extraMiddleware = toMiddleware(async (req) => {
+    // Touch maxAge to guarantee session is rolling (= doesn't expire as long as you are active)
+    req.session?.touch()
+
+    await refreshLogoutToken(req)
+  })
+
+  const middleware: express.RequestHandler = (req, res, next) => {
+    baseMiddleware(req, res, (errOrDefer) => {
+      if (errOrDefer) next(errOrDefer)
+      else extraMiddleware(req, res, next)
+    })
+  }
+
   async function save(req: express.Request) {
     if (req.session) {
       const session = req.session
       await fromCallback((cb) => session.save(cb))
     }
-  }
-
-  async function touchMaxAge(req: express.Request) {
-    req.session?.touch()
   }
 
   /**
@@ -164,9 +173,7 @@ export function sessionSupport(
     cookieName,
     middleware,
     save,
-    touchMaxAge,
     saveLogoutToken,
-    refreshLogoutToken,
     logoutWithToken,
     consumeLogoutToken
   }
