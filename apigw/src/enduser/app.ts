@@ -10,7 +10,7 @@ import { createSuomiFiStrategy } from './suomi-fi-saml.js'
 import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import createSamlRouter from '../shared/routes/saml.js'
-import { logoutTokenSupport, sessionSupport } from '../shared/session.js'
+import { sessionSupport } from '../shared/session.js'
 import publicRoutes from './publicRoutes.js'
 import routes from './routes.js'
 import mapRoutes from './mapRoutes.js'
@@ -30,16 +30,13 @@ export function enduserGwRouter(
 ): Router {
   const router = Router()
 
-  const logoutTokens = logoutTokenSupport(redisClient, {
-    sessionTimeoutMinutes: config.citizen.sessionTimeoutMinutes
-  })
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
 
   router.use(sessions.middleware)
   router.use(toMiddleware(sessions.touchMaxAge))
   router.use(passport.session())
   router.use(cookieParser())
-  router.use(toMiddleware(logoutTokens.refresh))
+  router.use(toMiddleware(sessions.refreshLogoutToken))
 
   router.use(
     cacheControl((req) =>
@@ -53,7 +50,7 @@ export function enduserGwRouter(
   router.use(mapRoutes)
 
   if (config.sfi.type === 'mock') {
-    router.use('/auth/saml', createDevSfiRouter(logoutTokens, sessions))
+    router.use('/auth/saml', createDevSfiRouter(sessions))
   } else if (config.sfi.type === 'saml') {
     const suomifiSamlConfig = createSamlConfig(
       config.sfi.saml,
@@ -62,10 +59,9 @@ export function enduserGwRouter(
     router.use(
       '/auth/saml',
       createSamlRouter({
-        logoutTokens,
         sessions,
         strategyName: 'suomifi',
-        strategy: createSuomiFiStrategy(logoutTokens, suomifiSamlConfig)
+        strategy: createSuomiFiStrategy(sessions, suomifiSamlConfig)
       })
     )
   }
@@ -79,11 +75,10 @@ export function enduserGwRouter(
   router.use(
     '/auth/evaka-customer',
     createSamlRouter({
-      logoutTokens,
       sessions,
       strategyName: 'evaka-customer',
       strategy: createKeycloakCitizenSamlStrategy(
-        logoutTokens,
+        sessions,
         keycloakCitizenConfig
       )
     })

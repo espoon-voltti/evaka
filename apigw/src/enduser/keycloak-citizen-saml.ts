@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import { citizenLogin } from '../shared/service-client.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
-import { LogoutTokens } from '../shared/session.js'
+import { Sessions } from '../shared/session.js'
 
 const Profile = z.object({
   socialSecurityNumber: z.string(),
@@ -15,10 +15,10 @@ const Profile = z.object({
 })
 
 export function createKeycloakCitizenSamlStrategy(
-  logoutTokens: LogoutTokens,
+  sessions: Sessions,
   config: SamlConfig
 ): SamlStrategy {
-  return createSamlStrategy(logoutTokens, config, Profile, async (profile) => {
+  return createSamlStrategy(sessions, config, Profile, async (profile) => {
     const asString = (value: unknown) =>
       value == null ? undefined : String(value)
 

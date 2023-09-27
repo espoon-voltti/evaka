@@ -11,7 +11,7 @@ import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client.js'
 import passport, { AuthenticateCallback } from 'passport'
 import { fromCallback } from '../promise-utils.js'
-import { LogoutTokens, Sessions } from '../session.js'
+import { Sessions } from '../session.js'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -130,7 +130,6 @@ export const login = async (
 }
 
 export const logout = async (
-  logoutTokens: LogoutTokens,
   sessions: Sessions,
   req: express.Request,
   res: express.Response
@@ -147,7 +146,7 @@ export const logout = async (
   // the old session data in Redis no longer includes the user
 
   if (logoutToken) {
-    await logoutTokens.consume(logoutToken)
+    await sessions.consumeLogoutToken(logoutToken)
   }
   await fromCallback((cb) =>
     req.session ? req.session.destroy(cb) : cb(undefined)

@@ -7,7 +7,7 @@ import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client.js'
 import { Config } from '../shared/config.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
-import { LogoutTokens } from '../shared/session.js'
+import { Sessions } from '../shared/session.js'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
@@ -19,7 +19,7 @@ const AD_EMPLOYEE_NUMBER_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/employeenumber'
 
 export function createAdSamlStrategy(
-  logoutTokens: LogoutTokens,
+  sessions: Sessions,
   config: Config['ad'],
   samlConfig: SamlConfig
 ): SamlStrategy {
@@ -30,29 +30,24 @@ export function createAdSamlStrategy(
     [AD_EMAIL_KEY]: z.string().optional(),
     [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
   })
-  return createSamlStrategy(
-    logoutTokens,
-    samlConfig,
-    Profile,
-    async (profile) => {
-      const asString = (value: unknown) =>
-        value == null ? undefined : String(value)
+  return createSamlStrategy(sessions, samlConfig, Profile, async (profile) => {
+    const asString = (value: unknown) =>
+      value == null ? undefined : String(value)
 
-      const aad = profile[config.userIdKey]
-      if (!aad) throw Error('No user ID in SAML data')
-      const person = await employeeLogin({
-        externalId: `${config.externalIdPrefix}:${aad}`,
-        firstName: asString(profile[AD_GIVEN_NAME_KEY]) ?? '',
-        lastName: asString(profile[AD_FAMILY_NAME_KEY]) ?? '',
-        email: asString(profile[AD_EMAIL_KEY]),
-        employeeNumber: asString(profile[AD_EMPLOYEE_NUMBER_KEY])
-      })
-      return {
-        id: person.id,
-        userType: 'EMPLOYEE',
-        globalRoles: person.globalRoles,
-        allScopedRoles: person.allScopedRoles
-      }
+    const aad = profile[config.userIdKey]
+    if (!aad) throw Error('No user ID in SAML data')
+    const person = await employeeLogin({
+      externalId: `${config.externalIdPrefix}:${aad}`,
+      firstName: asString(profile[AD_GIVEN_NAME_KEY]) ?? '',
+      lastName: asString(profile[AD_FAMILY_NAME_KEY]) ?? '',
+      email: asString(profile[AD_EMAIL_KEY]),
+      employeeNumber: asString(profile[AD_EMPLOYEE_NUMBER_KEY])
+    })
+    return {
+      id: person.id,
+      userType: 'EMPLOYEE',
+      globalRoles: person.globalRoles,
+      allScopedRoles: person.allScopedRoles
     }
-  )
+  })
 }

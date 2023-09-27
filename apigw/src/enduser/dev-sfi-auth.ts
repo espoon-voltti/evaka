@@ -8,14 +8,10 @@ import _ from 'lodash'
 import { getCitizens } from '../shared/dev-api.js'
 import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
 import { citizenLogin } from '../shared/service-client.js'
-import { LogoutTokens, Sessions } from '../shared/session.js'
+import { Sessions } from '../shared/session.js'
 
-export function createDevSfiRouter(
-  logoutTokens: LogoutTokens,
-  sessions: Sessions
-): Router {
+export function createDevSfiRouter(sessions: Sessions): Router {
   return createDevAuthRouter({
-    logoutTokens,
     sessions,
     root: '/',
     strategyName: 'dev-sfi',
