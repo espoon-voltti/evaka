@@ -43,7 +43,7 @@ dependencies {
         api("org.apache.commons:commons-text:1.10.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
         api("org.apache.tika:tika-core:2.9.0")
-        api("org.apache.wss4j:wss4j-ws-security-dom:3.0.0")
+        api("org.apache.wss4j:wss4j-ws-security-dom:3.0.1")
         api("org.bouncycastle:bcpkix-jdk18on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk18on:${Version.bouncyCastle}")
         api("org.flywaydb:flyway-core:${libs.versions.flyway.get()}")
