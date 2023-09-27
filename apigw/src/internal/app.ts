@@ -11,19 +11,14 @@ import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml.js'
 import {
   appCommit,
   Config,
-  cookieSecret,
   enableDevApi,
-  sessionTimeoutMinutes,
   titaniaConfig
 } from '../shared/config.js'
 import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
 import createSamlRouter from '../shared/routes/saml.js'
-import session, {
-  logoutTokenSupport,
-  touchSessionMaxAge
-} from '../shared/session.js'
+import { logoutTokenSupport, sessionSupport } from '../shared/session.js'
 import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -47,13 +42,14 @@ export function internalGwRouter(
   const router = Router()
 
   const logoutTokens = logoutTokenSupport(redisClient, {
-    sessionTimeoutMinutes
+    sessionTimeoutMinutes: config.employee.sessionTimeoutMinutes
   })
+  const sessions = sessionSupport('employee', redisClient, config.employee)
 
-  router.use(session('employee', redisClient))
-  router.use(touchSessionMaxAge)
+  router.use(sessions.middleware)
+  router.use(toMiddleware(sessions.touchMaxAge))
   router.use(passport.session())
-  router.use(cookieParser(cookieSecret))
+  router.use(cookieParser(config.employee.cookieSecret))
   router.use(toMiddleware(logoutTokens.refresh))
 
   router.use(
@@ -80,12 +76,13 @@ export function internalGwRouter(
   })
 
   if (config.ad.type === 'mock') {
-    router.use('/auth/saml', createDevAdRouter(logoutTokens))
+    router.use('/auth/saml', createDevAdRouter(logoutTokens, sessions))
   } else if (config.ad.type === 'saml') {
     router.use(
       '/auth/saml',
       createSamlRouter({
         logoutTokens,
+        sessions,
         strategyName: 'ead',
         strategy: createAdSamlStrategy(
           logoutTokens,
@@ -94,8 +91,7 @@ export function internalGwRouter(
             config.ad.saml,
             redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
           )
-        ),
-        sessionType: 'employee'
+        )
       })
     )
   }
@@ -110,12 +106,12 @@ export function internalGwRouter(
     '/auth/evaka',
     createSamlRouter({
       logoutTokens,
+      sessions,
       strategyName: 'evaka',
       strategy: createKeycloakEmployeeSamlStrategy(
         logoutTokens,
         keycloakEmployeeConfig
-      ),
-      sessionType: 'employee'
+      )
     })
   )
 
@@ -134,7 +130,7 @@ export function internalGwRouter(
     refreshMobileSession,
     csrf,
     csrfCookie('employee'),
-    authStatus(logoutTokens)
+    authStatus(logoutTokens, sessions)
   )
   router.all('/public/*', createProxy())
   router.get('/version', (_, res) => {

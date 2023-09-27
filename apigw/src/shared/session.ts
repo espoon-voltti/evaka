@@ -9,27 +9,14 @@ import {
   differenceInSeconds,
   isDate
 } from 'date-fns'
-import express, { CookieOptions } from 'express'
+import express from 'express'
 import session from 'express-session'
-import {
-  cookieSecret,
-  sessionTimeoutMinutes,
-  useSecureCookies
-} from './config.js'
-import { LogoutToken, toMiddleware } from './express.js'
+import { LogoutToken } from './express.js'
 import { fromCallback } from './promise-utils.js'
 import { RedisClient } from './redis-client.js'
+import { SessionConfig } from './config.js'
 
 export type SessionType = 'enduser' | 'employee'
-
-let redisClient: RedisClient | undefined
-
-const sessionCookieOptions: CookieOptions = {
-  path: '/',
-  httpOnly: true,
-  secure: useSecureCookies,
-  sameSite: 'lax'
-}
 
 function cookiePrefix(sessionType: SessionType) {
   return sessionType === 'enduser' ? 'evaka.eugw' : 'evaka.employee'
@@ -137,29 +124,46 @@ export function logoutTokenSupport(
   return { refresh, save, logout, consume }
 }
 
-export async function saveSession(req: express.Request) {
-  if (req.session) {
-    const session = req.session
-    await fromCallback((cb) => session.save(cb))
-  }
+export interface Sessions {
+  cookieName: string
+  middleware: express.RequestHandler
+  save(req: express.Request): Promise<void>
+  touchMaxAge(req: express.Request): Promise<void>
 }
 
-export const touchSessionMaxAge = toMiddleware(async (req) => {
-  req.session?.touch()
-})
+export function sessionSupport(
+  sessionType: SessionType,
+  redisClient: RedisClient,
+  config: SessionConfig
+): Sessions {
+  const cookieName = sessionCookie(sessionType)
 
-export default (sessionType: SessionType, redisClientImpl: RedisClient) => {
-  redisClient = redisClientImpl
-  return session({
+  const middleware = session({
     cookie: {
-      ...sessionCookieOptions,
-      maxAge: sessionTimeoutMinutes * 60000
+      path: '/',
+      httpOnly: true,
+      secure: config.useSecureCookies,
+      sameSite: 'lax',
+      maxAge: config.sessionTimeoutMinutes * 60000
     },
     resave: false,
     rolling: true,
     saveUninitialized: false,
-    secret: cookieSecret,
-    name: sessionCookie(sessionType),
+    secret: config.cookieSecret,
+    name: cookieName,
     store: new RedisStore({ client: redisClient })
   })
+
+  async function save(req: express.Request) {
+    if (req.session) {
+      const session = req.session
+      await fromCallback((cb) => session.save(cb))
+    }
+  }
+
+  async function touchMaxAge(req: express.Request) {
+    req.session?.touch()
+  }
+
+  return { cookieName, middleware, save, touchMaxAge }
 }

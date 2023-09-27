@@ -10,16 +10,13 @@ import { createSuomiFiStrategy } from './suomi-fi-saml.js'
 import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import createSamlRouter from '../shared/routes/saml.js'
-import session, {
-  logoutTokenSupport,
-  touchSessionMaxAge
-} from '../shared/session.js'
+import { logoutTokenSupport, sessionSupport } from '../shared/session.js'
 import publicRoutes from './publicRoutes.js'
 import routes from './routes.js'
 import mapRoutes from './mapRoutes.js'
 import authStatus from './routes/auth-status.js'
 import { cacheControl } from '../shared/middleware/cache-control.js'
-import { Config, sessionTimeoutMinutes } from '../shared/config.js'
+import { Config } from '../shared/config.js'
 import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevSfiRouter } from './dev-sfi-auth.js'
@@ -34,11 +31,12 @@ export function enduserGwRouter(
   const router = Router()
 
   const logoutTokens = logoutTokenSupport(redisClient, {
-    sessionTimeoutMinutes
+    sessionTimeoutMinutes: config.citizen.sessionTimeoutMinutes
   })
+  const sessions = sessionSupport('enduser', redisClient, config.citizen)
 
-  router.use(session('enduser', redisClient))
-  router.use(touchSessionMaxAge)
+  router.use(sessions.middleware)
+  router.use(toMiddleware(sessions.touchMaxAge))
   router.use(passport.session())
   router.use(cookieParser())
   router.use(toMiddleware(logoutTokens.refresh))
@@ -55,7 +53,7 @@ export function enduserGwRouter(
   router.use(mapRoutes)
 
   if (config.sfi.type === 'mock') {
-    router.use('/auth/saml', createDevSfiRouter(logoutTokens))
+    router.use('/auth/saml', createDevSfiRouter(logoutTokens, sessions))
   } else if (config.sfi.type === 'saml') {
     const suomifiSamlConfig = createSamlConfig(
       config.sfi.saml,
@@ -65,9 +63,9 @@ export function enduserGwRouter(
       '/auth/saml',
       createSamlRouter({
         logoutTokens,
+        sessions,
         strategyName: 'suomifi',
-        strategy: createSuomiFiStrategy(logoutTokens, suomifiSamlConfig),
-        sessionType: 'enduser'
+        strategy: createSuomiFiStrategy(logoutTokens, suomifiSamlConfig)
       })
     )
   }
@@ -82,12 +80,12 @@ export function enduserGwRouter(
     '/auth/evaka-customer',
     createSamlRouter({
       logoutTokens,
+      sessions,
       strategyName: 'evaka-customer',
       strategy: createKeycloakCitizenSamlStrategy(
         logoutTokens,
         keycloakCitizenConfig
-      ),
-      sessionType: 'enduser'
+      )
     })
   )
   router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)

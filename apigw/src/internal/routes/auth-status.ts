@@ -10,7 +10,7 @@ import {
   getEmployeeDetails,
   UUID
 } from '../../shared/service-client.js'
-import { LogoutTokens, saveSession } from '../../shared/session.js'
+import { LogoutTokens, Sessions } from '../../shared/session.js'
 import { fromCallback } from '../../shared/promise-utils.js'
 import { appCommit } from '../../shared/config.js'
 import { logout } from '../../shared/auth/index.js'
@@ -118,7 +118,7 @@ const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
   rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
   rolesChanged(sessionUser.globalRoles, user.globalRoles)
 
-export default (logoutTokens: LogoutTokens) =>
+export default (logoutTokens: LogoutTokens, sessions: Sessions) =>
   toRequestHandler(async (req, res) => {
     const sessionUser = req.user
     const validUser = sessionUser && (await validateUser(req))
@@ -141,7 +141,7 @@ export default (logoutTokens: LogoutTokens) =>
       } else {
         // Explicitly save the session, since we may have changed the CSRF secret
         // earlier in the request flow
-        await saveSession(req)
+        await sessions.save(req)
       }
       status = {
         loggedIn: true,
@@ -153,7 +153,7 @@ export default (logoutTokens: LogoutTokens) =>
       }
     } else {
       if (sessionUser) {
-        await logout(logoutTokens, 'employee', req, res)
+        await logout(logoutTokens, sessions, req, res)
       }
       status = {
         loggedIn: false,

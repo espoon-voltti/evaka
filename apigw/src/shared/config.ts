@@ -6,6 +6,8 @@ import { RedisClientOptions } from 'redis'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 
 export interface Config {
+  citizen: SessionConfig
+  employee: SessionConfig
   ad: {
     externalIdPrefix: string
     userIdKey: string
@@ -26,6 +28,12 @@ export interface Config {
     tlsServerName: string | undefined
     disableSecurity: boolean
   }
+}
+
+export interface SessionConfig {
+  useSecureCookies: boolean
+  cookieSecret: string
+  sessionTimeoutMinutes: number
 }
 
 export const toRedisClientOpts = (config: Config): RedisClientOptions => ({
@@ -272,7 +280,35 @@ export function configFromEnv(): Config {
         }
       : undefined
 
+  const legacyCookieSecret =
+    process.env.COOKIE_SECRET ??
+    ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')
+  const useSecureCookies =
+    env('USE_SECURE_COOKIES', parseBoolean) ??
+    ifNodeEnv(['local', 'test'], false) ??
+    true
+  const defaultSessionTimeoutMinutes =
+    env('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
+
   return {
+    citizen: {
+      useSecureCookies,
+      cookieSecret: required(
+        process.env.CITIZEN_COOKIE_SECRET ?? legacyCookieSecret
+      ),
+      sessionTimeoutMinutes:
+        env('CITIZEN_SESSION_TIMEOUT_MINUTES', parseInteger) ??
+        defaultSessionTimeoutMinutes
+    },
+    employee: {
+      useSecureCookies,
+      cookieSecret: required(
+        process.env.EMPLOYEE_COOKIE_SECRET ?? legacyCookieSecret
+      ),
+      sessionTimeoutMinutes:
+        env('EMPLOYEE_SESSION_TIMEOUT_MINUTES', parseInteger) ??
+        defaultSessionTimeoutMinutes
+    },
     ad,
     sfi,
     redis: {
@@ -318,10 +354,6 @@ export const evakaServiceUrl = required(
   process.env.EVAKA_SERVICE_URL ??
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
 )
-export const cookieSecret = required(
-  process.env.COOKIE_SECRET ??
-    ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')
-)
 export const useSecureCookies =
   env('USE_SECURE_COOKIES', parseBoolean) ??
   ifNodeEnv(['local', 'test'], false) ??
@@ -333,9 +365,6 @@ export const prettyLogs =
 export const volttiEnv = process.env.VOLTTI_ENV ?? ifNodeEnv(['local'], 'local')
 
 export const httpPort = env('HTTP_PORT', parseInteger) ?? 3000
-
-export const sessionTimeoutMinutes =
-  env('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
 
 export const pinSessionTimeoutSeconds =
   env('PIN_SESSION_TIMEOUT_SECONDS', parseInteger) ?? 10 * 60
