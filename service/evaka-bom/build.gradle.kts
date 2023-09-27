@@ -9,7 +9,7 @@ plugins {
 object Version {
     const val bouncyCastle = "1.76"
     const val cxf = "4.0.3"
-    const val flyingSaucer = "9.1.22"
+    const val flyingSaucer = "9.3.1"
     const val fuel = "2.3.1"
     const val mockito = "5.5.0"
     const val openTracing = "0.33.0"
