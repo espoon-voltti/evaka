@@ -7,7 +7,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState
 } from 'react'
@@ -21,6 +20,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   queryResult,
   useInfiniteQuery,
+  useMutation,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
@@ -30,8 +30,9 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { UserContext } from '../auth/state'
 import { UnitContext } from '../common/unit'
 
-import { markThreadRead, ReplyToThreadParams } from './api'
+import { ReplyToThreadParams } from './api'
 import {
+  markThreadReadMutation,
   messagingAccountsQuery,
   receivedMessagesQuery,
   replyToThreadMutation
@@ -83,7 +84,7 @@ const markMatchingThreadRead = (
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
-    const { unitInfoResponse, reloadUnreadCounts } = useContext(UnitContext)
+    const { unitInfoResponse } = useContext(UnitContext)
     const { user } = useContext(UserContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
@@ -148,11 +149,7 @@ export const MessageContextProvider = React.memo(
       .map((threads) => threads.find((t) => t.id === selectedThreadId))
       .getOrElse(undefined)
 
-    useEffect(() => {
-      if (selectedAccount && !selectedThread) {
-        reloadUnreadCounts()
-      }
-    }, [reloadUnreadCounts, selectedAccount, selectedThread])
+    const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
 
     const selectThread = useCallback(
       (thread: MessageThread | undefined) => {
@@ -167,14 +164,15 @@ export const MessageContextProvider = React.memo(
         )
 
         if (hasUnreadMessages) {
-          void markThreadRead(accountId, thread.id)
+          markThreadRead({ accountId, id: thread.id })
           transformPages((page) => ({
             ...page,
             data: markMatchingThreadRead(page.data, thread.id)
           }))
         }
       },
-      [selectedAccount, transformPages]
+
+      [markThreadRead, selectedAccount, transformPages]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})

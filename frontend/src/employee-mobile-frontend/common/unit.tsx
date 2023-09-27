@@ -7,25 +7,24 @@ import React, { createContext, useEffect, useMemo } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
 import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
+import { useQueryResult } from 'lib-common/query'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { client } from '../client'
-import { getUnreadCountsByUnit } from '../messages/api'
+import { unreadCountsQuery } from '../messages/queries'
 import { getMobileUnitInfo } from '../pairing/api'
 
 interface UnitState {
   unitInfoResponse: Result<UnitInfo>
   reloadUnitInfo: () => void
   unreadCounts: UnreadCountByAccountAndGroup[]
-  reloadUnreadCounts: () => void
 }
 
 const defaultState: UnitState = {
   unitInfoResponse: Loading.of(),
   reloadUnitInfo: () => undefined,
-  unreadCounts: [],
-  reloadUnreadCounts: () => undefined
+  unreadCounts: []
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
@@ -42,10 +41,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     [unitId]
   )
 
-  const [unreadCountsResponse, reloadUnreadCounts] = useApiState(
-    () => getUnreadCountsByUnit(unitId),
-    [unitId]
-  )
+  const unreadCountsResponse = useQueryResult(unreadCountsQuery(unitId))
 
   const unreadCounts = useMemo(
     () => unreadCountsResponse.getOrElse([]),
@@ -61,10 +57,9 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     () => ({
       unitInfoResponse,
       reloadUnitInfo,
-      unreadCounts,
-      reloadUnreadCounts
+      unreadCounts
     }),
-    [unitInfoResponse, reloadUnitInfo, unreadCounts, reloadUnreadCounts]
+    [unitInfoResponse, reloadUnitInfo, unreadCounts]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

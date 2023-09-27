@@ -6,11 +6,18 @@ import { infiniteQuery, mutation, query } from 'lib-common/query'
 
 import { createQueryKeys } from '../query'
 
-import { getMessagingAccounts, getReceivedMessages, replyToThread } from './api'
+import {
+  getMessagingAccounts,
+  getReceivedMessages,
+  getUnreadCountsByUnit,
+  markThreadRead,
+  replyToThread
+} from './api'
 
 const queryKeys = createQueryKeys('messages', {
   accounts: (unitId: string) => ['accounts', unitId],
-  receivedMessages: (accountId: string) => ['receivedMessages', accountId]
+  receivedMessages: (accountId: string) => ['receivedMessages', accountId],
+  unreadCounts: () => ['unreadCounts']
 })
 
 export const messagingAccountsQuery = query({
@@ -29,9 +36,19 @@ export const receivedMessagesQuery = infiniteQuery({
   }
 })
 
+export const unreadCountsQuery = query({
+  api: getUnreadCountsByUnit,
+  queryKey: queryKeys.unreadCounts
+})
+
 export const replyToThreadMutation = mutation({
   api: replyToThread,
   invalidateQueryKeys: ({ accountId }) => [
     queryKeys.receivedMessages(accountId)
   ]
+})
+
+export const markThreadReadMutation = mutation({
+  api: markThreadRead,
+  invalidateQueryKeys: () => [queryKeys.unreadCounts()]
 })

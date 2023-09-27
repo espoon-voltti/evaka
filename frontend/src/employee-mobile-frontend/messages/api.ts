@@ -34,11 +34,10 @@ export async function getMessagingAccounts(
 
 export async function getUnreadCountsByUnit(
   unitId: UUID
-): Promise<Result<UnreadCountByAccountAndGroup[]>> {
+): Promise<UnreadCountByAccountAndGroup[]> {
   return client
     .get<JsonOf<UnreadCountByAccountAndGroup[]>>(`/messages/unread/${unitId}`)
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function getReceivedMessages(
@@ -75,14 +74,16 @@ export async function replyToThread({
     .then(({ data }) => deserializeReplyResponse(data))
 }
 
-export async function markThreadRead(
-  accountId: UUID,
+export async function markThreadRead({
+  accountId,
+  id
+}: {
+  accountId: UUID
   id: UUID
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
     .put(`/messages/${accountId}/threads/${id}/read`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
 export async function deleteDraft(
