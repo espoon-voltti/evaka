@@ -6,11 +6,11 @@ import express from 'express'
 import _ from 'lodash'
 import { toRequestHandler } from '../../shared/express.js'
 import {
-  getEmployeeDetails,
   authenticateMobileDevice,
+  getEmployeeDetails,
   UUID
 } from '../../shared/service-client.js'
-import { saveLogoutToken, saveSession } from '../../shared/session.js'
+import { LogoutTokens, saveSession } from '../../shared/session.js'
 import { fromCallback } from '../../shared/promise-utils.js'
 import { appCommit } from '../../shared/config.js'
 import { logout } from '../../shared/auth/index.js'
@@ -118,46 +118,47 @@ const userChanged = (sessionUser: Express.User, user: ValidatedUser): boolean =>
   rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
   rolesChanged(sessionUser.globalRoles, user.globalRoles)
 
-export default toRequestHandler(async (req, res) => {
-  const sessionUser = req.user
-  const validUser = sessionUser && (await validateUser(req))
-  let status: AuthStatus
-  if (validUser) {
-    const { user, globalRoles, allScopedRoles } = validUser
-    // Refresh roles if necessary
-    if (userChanged(sessionUser, validUser)) {
-      await fromCallback((cb) =>
-        req.logIn(
-          { ...sessionUser, globalRoles, allScopedRoles },
-          { session: true, keepSessionInfo: true },
-          cb
+export default (logoutTokens: LogoutTokens) =>
+  toRequestHandler(async (req, res) => {
+    const sessionUser = req.user
+    const validUser = sessionUser && (await validateUser(req))
+    let status: AuthStatus
+    if (validUser) {
+      const { user, globalRoles, allScopedRoles } = validUser
+      // Refresh roles if necessary
+      if (userChanged(sessionUser, validUser)) {
+        await fromCallback((cb) =>
+          req.logIn(
+            { ...sessionUser, globalRoles, allScopedRoles },
+            { session: true, keepSessionInfo: true },
+            cb
+          )
         )
-      )
-      // Passport has unfortunately regenerated our session, so we need to
-      // update the logout token, which still points to the old session ID
-      await saveLogoutToken(req)
-      // No need to save session here, because passport has done that for us
+        // Passport has unfortunately regenerated our session, so we need to
+        // update the logout token, which still points to the old session ID
+        await logoutTokens.save(req)
+        // No need to save session here, because passport has done that for us
+      } else {
+        // Explicitly save the session, since we may have changed the CSRF secret
+        // earlier in the request flow
+        await saveSession(req)
+      }
+      status = {
+        loggedIn: true,
+        user,
+        globalRoles,
+        allScopedRoles,
+        roles: [...globalRoles, ...allScopedRoles],
+        apiVersion: appCommit
+      }
     } else {
-      // Explicitly save the session, since we may have changed the CSRF secret
-      // earlier in the request flow
-      await saveSession(req)
+      if (sessionUser) {
+        await logout(logoutTokens, 'employee', req, res)
+      }
+      status = {
+        loggedIn: false,
+        apiVersion: appCommit
+      }
     }
-    status = {
-      loggedIn: true,
-      user,
-      globalRoles,
-      allScopedRoles,
-      roles: [...globalRoles, ...allScopedRoles],
-      apiVersion: appCommit
-    }
-  } else {
-    if (sessionUser) {
-      await logout('employee', req, res)
-    }
-    status = {
-      loggedIn: false,
-      apiVersion: appCommit
-    }
-  }
-  res.status(200).json(status)
-})
+    res.status(200).json(status)
+  })

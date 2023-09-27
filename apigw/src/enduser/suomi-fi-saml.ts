@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { SamlConfig, Strategy } from '@node-saml/passport-saml'
 import { citizenLogin } from '../shared/service-client.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
+import { LogoutTokens } from '../shared/session.js'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -20,8 +21,11 @@ const Profile = z.object({
   [SUOMI_FI_SURNAME_KEY]: z.string()
 })
 
-export function createSuomiFiStrategy(config: SamlConfig): Strategy {
-  return createSamlStrategy(config, Profile, async (profile) => {
+export function createSuomiFiStrategy(
+  logoutTokens: LogoutTokens,
+  config: SamlConfig
+): Strategy {
+  return createSamlStrategy(logoutTokens, config, Profile, async (profile) => {
     const asString = (value: unknown) =>
       value == null ? undefined : String(value)
 

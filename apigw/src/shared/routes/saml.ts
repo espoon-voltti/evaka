@@ -10,7 +10,7 @@ import { gatewayRole, nodeEnv } from '../config.js'
 import { toMiddleware, toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
 import { fromCallback } from '../promise-utils.js'
-import { saveLogoutToken, SessionType } from '../session.js'
+import { LogoutTokens, SessionType } from '../session.js'
 import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
 import type {
   AuthenticateOptions,
@@ -43,12 +43,14 @@ function getRedirectUrl(req: express.Request): string {
 }
 
 export interface SamlEndpointConfig {
+  logoutTokens: LogoutTokens
   strategyName: string
   strategy: passportSaml.Strategy
   sessionType: SessionType
 }
 
 function createLoginHandler({
+  logoutTokens,
   strategyName
 }: SamlEndpointConfig): express.RequestHandler {
   return (req, res, next) => {
@@ -103,7 +105,7 @@ function createLoginHandler({
 
           // Persist in session to allow custom logic per strategy
           req.session.idpProvider = strategyName
-          await saveLogoutToken(
+          await logoutTokens.save(
             req,
             createLogoutToken(user.nameID, user.sessionIndex)
           )
@@ -129,6 +131,7 @@ function createLoginHandler({
 }
 
 function createLogoutHandler({
+  logoutTokens,
   strategy,
   strategyName,
   sessionType
@@ -144,7 +147,7 @@ function createLogoutHandler({
         req.user ? strategy.logout(req as RequestWithUser, cb) : cb(null, null)
       )
       logDebug('Logging user out from passport.', req)
-      await logout(sessionType, req, res)
+      await logout(logoutTokens, sessionType, req, res)
       res.redirect(redirectUrl ?? getDefaultPageUrl(req))
     } catch (err) {
       logAuditEvent(

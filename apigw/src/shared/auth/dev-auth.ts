@@ -6,10 +6,11 @@ import passport, { Strategy } from 'passport'
 import { Request, Router, urlencoded } from 'express'
 import { authenticate, EvakaSessionUser, login, logout } from './index.js'
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
-import { SessionType } from '../session.js'
+import { LogoutTokens, SessionType } from '../session.js'
 import { parseRelayState } from '../saml/index.js'
 
 export interface DevAuthRouterOptions {
+  logoutTokens: LogoutTokens
   root: string
   strategyName: string
   sessionType: SessionType
@@ -31,6 +32,7 @@ class DevStrategy extends Strategy {
 }
 
 export function createDevAuthRouter({
+  logoutTokens,
   root,
   strategyName,
   sessionType,
@@ -66,7 +68,7 @@ export function createDevAuthRouter({
   router.get(
     `/logout`,
     toRequestHandler(async (req, res) => {
-      await logout(sessionType, req, res)
+      await logout(logoutTokens, sessionType, req, res)
       res.redirect(root)
     })
   )
