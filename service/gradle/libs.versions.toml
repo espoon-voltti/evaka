@@ -3,19 +3,35 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [versions]
+bouncycastle = "1.76"
+flyingsaucer = "9.3.1"
 flyway = "9.22.1"
+fuel = "2.3.1"
 java = "17"
 kotlin = "1.9.10"
 kotlinter = "3.15.0"
 ktfmt = "0.12.0"
 ktlint = "0.50.0"
+mockito = "5.5.0"
+opentracing = "0.33.0"
 owasp = "8.4.0"
 spring-boot = "3.1.4"
 versions = "0.48.0"
 
 [libraries]
+bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+flyingsaucer-core = { module = "org.xhtmlrenderer:flying-saucer-core", version.ref = "flyingsaucer" }
+flyingsaucer-pdf-openpdf = { module = "org.xhtmlrenderer:flying-saucer-pdf-openpdf", version.ref = "flyingsaucer" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+fuel = { module = "com.github.kittinunf.fuel:fuel", version.ref = "fuel" }
+fuel-jackson = { module = "com.github.kittinunf.fuel:fuel-jackson", version.ref = "fuel" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+opentracing-api = { module = "io.opentracing:opentracing-api", version.ref = "opentracing" }
+opentracing-util = { module = "io.opentracing:opentracing-util", version.ref = "opentracing" }
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 
 [plugins]
