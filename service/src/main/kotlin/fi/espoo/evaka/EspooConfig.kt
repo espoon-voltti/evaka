@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.espoo.EspooAsyncJob
 import fi.espoo.evaka.espoo.EspooAsyncJobRegistration
 import fi.espoo.evaka.espoo.EspooScheduledJob
@@ -35,7 +36,6 @@ import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
-import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import io.opentracing.Tracer
@@ -193,7 +193,7 @@ class EspooConfig {
             it.setDisableMBeanRegistry(false)
         }
 
-    @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+    @Bean fun actionRuleMapping(): ActionRuleMapping = EspooActionRuleMapping()
 
     @Bean
     fun espooScheduledJobs(
