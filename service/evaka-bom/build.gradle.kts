@@ -16,7 +16,7 @@ dependencies {
         api("com.github.kagkarlsson:db-scheduler:12.5.0")
         api(libs.fuel)
         api(libs.fuel.jackson)
-        api("com.google.guava:guava:32.0.1-jre")
+        api("com.google.guava:guava:32.1.2-jre")
         api("com.zaxxer:HikariCP:5.0.1")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.6.2")
