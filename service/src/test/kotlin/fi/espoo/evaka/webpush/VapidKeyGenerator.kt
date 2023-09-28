@@ -6,7 +6,7 @@ package fi.espoo.evaka.webpush
 
 import java.security.SecureRandom
 
-@Suppress("ktlint:custom-ktlint-rules:no-println")
+@Suppress("ktlint:evaka:no-println")
 fun main() {
     val keyPair = WebPushCrypto.generateKeyPair(SecureRandom())
     println("Generated key pair: $keyPair")

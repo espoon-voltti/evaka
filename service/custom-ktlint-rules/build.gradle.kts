@@ -19,10 +19,10 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
 
-    implementation("com.pinterest.ktlint:ktlint-cli-ruleset-core:${libs.versions.ktlint.asProvider().get()}")
-    implementation("com.pinterest.ktlint:ktlint-rule-engine-core:${libs.versions.ktlint.asProvider().get()}")
+    implementation("com.pinterest.ktlint:ktlint-cli-ruleset-core")
+    implementation("com.pinterest.ktlint:ktlint-rule-engine-core")
     testImplementation("org.slf4j:slf4j-simple")
-    testImplementation("com.pinterest.ktlint:ktlint-test:${libs.versions.ktlint.asProvider().get()}")
+    testImplementation("com.pinterest.ktlint:ktlint-test")
 }
 
 ktfmt {

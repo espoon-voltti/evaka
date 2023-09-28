@@ -195,7 +195,7 @@ allprojects {
                 }
                 .groupBy({ (_, count) -> count }) { (name, _) -> name }
                 .forEach { (count, names) ->
-                    @Suppress("ktlint:custom-ktlint-rules:no-println")
+                    @Suppress("ktlint:evaka:no-println")
                     println(
                         "Resolved $count dependency files for configurations: ${names.joinToString(", ")}"
                     )

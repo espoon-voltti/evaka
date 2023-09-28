@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.ktlint
+package evaka.ktlint
 
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test
 class NoPrintTest {
     private val assertThatRule =
         com.pinterest.ktlint.test.KtLintAssertThat.assertThatRule { NoPrint() }
+
     private fun assertThatCode(@Language("kotlin") code: String) = assertThatRule(code)
+
     @Test
     fun `NoPrintln detects println call`() {
         assertThatCode("""

@@ -2,16 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.ktlint
+package evaka.ktlint
 
-import com.pinterest.ktlint.rule.engine.core.api.Rule
-import com.pinterest.ktlint.rule.engine.core.api.RuleId
-import org.jetbrains.kotlin.KtNodeTypes.CALL_EXPRESSION
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 
-class NoPrint : Rule(RuleId("custom-ktlint-rules:no-println"), About()) {
+class NoPrint : EvakaRule("no-println") {
     private val printFunctions = setOf("print", "println")
 
     override fun afterVisitChildNodes(
@@ -19,15 +16,13 @@ class NoPrint : Rule(RuleId("custom-ktlint-rules:no-println"), About()) {
         autoCorrect: Boolean,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> Unit
     ) {
-        if (node.elementType == CALL_EXPRESSION) {
-            val callExpression = node.psi as KtCallExpression
-            val isPrintCall =
-                callExpression.children.any { e ->
-                    e is KtReferenceExpression && printFunctions.contains(e.text)
-                }
-            if (isPrintCall) {
-                emit(node.startOffset, ERROR_MESSAGE, false)
+        val expression = node.psi as? KtCallExpression ?: return
+        val isPrintCall =
+            expression.children.any { e ->
+                e is KtReferenceExpression && printFunctions.contains(e.text)
             }
+        if (isPrintCall) {
+            emit(node.startOffset, ERROR_MESSAGE, false)
         }
     }
 
