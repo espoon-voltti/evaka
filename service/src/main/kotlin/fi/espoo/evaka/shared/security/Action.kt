@@ -287,7 +287,7 @@ sealed interface Action {
         CREATE_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
         DELETE_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
         UPDATE_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
-        SEND_PATU_REPORT(HasGlobalRole(ADMIN)),
+        SEND_PATU_REPORT,
         CREATE_EMPLOYEE(HasGlobalRole(ADMIN)),
         READ_EMPLOYEES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
@@ -299,7 +299,7 @@ sealed interface Action {
                 .inAnyUnit()
         ),
         SEARCH_EMPLOYEES(HasGlobalRole(ADMIN)),
-        SUBMIT_PATU_REPORT(HasGlobalRole(ADMIN)),
+        SUBMIT_PATU_REPORT,
         READ_FUTURE_PRESCHOOLERS(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
