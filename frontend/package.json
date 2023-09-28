@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
-    "@babel/preset-env": "^7.22.5",
+    "@babel/preset-env": "^7.22.20",
     "@playwright/test": "^1.38.0",
     "@sentry/webpack-plugin": "^2.7.0",
     "@testing-library/jest-dom": "^6.1.3",
