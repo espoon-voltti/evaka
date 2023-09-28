@@ -158,6 +158,8 @@ dependencies {
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
+
+    ktlint(project(":custom-ktlint-rules"))
 }
 
 allOpen {

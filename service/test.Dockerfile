@@ -10,5 +10,3 @@ RUN ./gradlew --no-daemon ktlintCheck
 RUN ./gradlew --no-daemon codegenCheck
 RUN ./circle-check-migrations.sh
 RUN ./gradlew --no-daemon test
-RUN cd custom-ktlint-rules \
- && ./gradlew --no-daemon test

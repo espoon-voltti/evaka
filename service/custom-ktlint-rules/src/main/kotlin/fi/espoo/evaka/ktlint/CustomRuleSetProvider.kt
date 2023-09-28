@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.ktlint
 
-import com.pinterest.ktlint.core.RuleSet
-import com.pinterest.ktlint.core.RuleSetProvider
+import com.pinterest.ktlint.cli.ruleset.core.api.RuleSetProviderV3
+import com.pinterest.ktlint.rule.engine.core.api.RuleProvider
+import com.pinterest.ktlint.rule.engine.core.api.RuleSetId
 
-class CustomRuleSetProvider : RuleSetProvider {
-    override fun get() = RuleSet("custom-ktlint-rules", NoJUnit4Imports(), NoPrint())
+class CustomRuleSetProvider : RuleSetProviderV3(RuleSetId("custom-ktlint-rules")) {
+    override fun getRuleProviders(): Set<RuleProvider> =
+        setOf(RuleProvider { NoJUnit4Imports() }, RuleProvider { NoPrint() })
 }

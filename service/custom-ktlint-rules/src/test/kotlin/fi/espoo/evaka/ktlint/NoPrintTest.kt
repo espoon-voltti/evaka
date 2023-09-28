@@ -4,26 +4,39 @@
 
 package fi.espoo.evaka.ktlint
 
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
-import com.pinterest.ktlint.test.lint
-import org.junit.jupiter.api.Assertions.assertTrue
 
 class NoPrintTest {
+    private val assertThatRule =
+        com.pinterest.ktlint.test.KtLintAssertThat.assertThatRule { NoPrint() }
+    private fun assertThatCode(@Language("kotlin") code: String) = assertThatRule(code)
     @Test
     fun `NoPrintln detects println call`() {
-        val lintErrors = NoPrint().lint("""fun testing() { println("test") }""")
-        assertTrue(lintErrors.isNotEmpty())
+        assertThatCode("""
+fun testing() {
+    println("test")
+}
+""")
+            .hasLintViolationWithoutAutoCorrect(line = 3, col = 5, detail = NoPrint.ERROR_MESSAGE)
     }
 
     @Test
     fun `NoPrintln detects print call`() {
-        val lintErrors = NoPrint().lint("""fun testing() { print("test") }""")
-        assertTrue(lintErrors.isNotEmpty())
+        assertThatCode("""
+fun testing() {
+    print("test")
+}
+""")
+            .hasLintViolationWithoutAutoCorrect(line = 3, col = 5, detail = NoPrint.ERROR_MESSAGE)
     }
 
     @Test
     fun `NoPrintln does not complain about a logger function`() {
-        val lintErrors = NoPrint().lint("""fun testing() { logger.info("test") }""")
-        assertTrue(lintErrors.isEmpty())
+        assertThatCode("""
+fun testing() {
+    logger.info("test")
+}
+""").hasNoLintViolations()
     }
 }

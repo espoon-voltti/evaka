@@ -8,6 +8,7 @@ include("vtjclient")
 include("sficlient")
 include("evaka-bom")
 include("codegen")
+include("custom-ktlint-rules")
 
 dependencyResolutionManagement {
     repositories {
