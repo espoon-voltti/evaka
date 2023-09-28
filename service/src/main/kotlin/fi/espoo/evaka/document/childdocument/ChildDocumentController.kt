@@ -78,7 +78,7 @@ class ChildDocumentController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam(required = true) childId: PersonId
-    ): List<ChildDocumentSummary> {
+    ): List<ChildDocumentSummaryWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -88,11 +88,29 @@ class ChildDocumentController(
                         Action.Child.READ_CHILD_DOCUMENT,
                         childId
                     )
-                    tx.getChildDocuments(childId)
+                    val documents = tx.getChildDocuments(childId)
+                    val permittedActions =
+                        accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
+                            tx,
+                            user,
+                            clock,
+                            documents.map { it.id }
+                        )
+                    documents.map {
+                        ChildDocumentSummaryWithPermittedActions(
+                            it,
+                            permittedActions[it.id] ?: emptySet()
+                        )
+                    }
                 }
             }
             .also { Audit.ChildDocumentRead.log(targetId = childId) }
     }
+
+    data class ChildDocumentSummaryWithPermittedActions(
+        val data: ChildDocumentSummary,
+        val permittedActions: Set<Action.ChildDocument>
+    )
 
     @GetMapping("/{documentId}")
     fun getDocument(

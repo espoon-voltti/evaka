@@ -135,6 +135,14 @@ export interface ChildDocumentSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.ChildDocumentSummaryWithPermittedActions
+*/
+export interface ChildDocumentSummaryWithPermittedActions {
+  data: ChildDocumentSummary
+  permittedActions: Action.ChildDocument[]
+}
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentWithPermittedActions
 */
 export interface ChildDocumentWithPermittedActions {

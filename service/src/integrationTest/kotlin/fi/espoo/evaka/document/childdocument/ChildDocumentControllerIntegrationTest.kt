@@ -199,7 +199,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     publishedAt = null
                 )
             ),
-            summaries
+            summaries.map { it.data }
         )
     }
 

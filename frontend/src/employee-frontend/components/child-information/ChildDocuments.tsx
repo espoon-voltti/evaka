@@ -11,6 +11,7 @@ import { oneOf, required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import {
   ChildDocumentSummary,
+  ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -42,7 +43,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
   documents
 }: {
   childId: UUID
-  documents: ChildDocumentSummary[]
+  documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
@@ -91,7 +92,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
           </Tr>
         </Thead>
         <Tbody>
-          {documents.map((document) => (
+          {documents.map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
               <Td>
                 <IconButton
@@ -109,7 +110,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
                 <ChildDocumentStateChip status={document.status} />
               </Td>
               <Td>
-                {!document.publishedAt && (
+                {permittedActions.includes('DELETE') && (
                   <IconButton
                     icon={faTrash}
                     aria-label={i18n.common.remove}
@@ -202,7 +203,8 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
         .filter(
           (template) =>
             !documents.some(
-              (doc) => doc.type === template.type && doc.status !== 'COMPLETED'
+              ({ data: doc }) =>
+                doc.type === template.type && doc.status !== 'COMPLETED'
             )
         )
         .filter((template) => featureFlags.hojks || template.type !== 'HOJKS')
