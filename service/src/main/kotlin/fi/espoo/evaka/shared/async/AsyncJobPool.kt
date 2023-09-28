@@ -41,6 +41,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     data class Id<T : Any>(val jobType: KClass<T>, val pool: String) {
         override fun toString(): String = "${jobType.simpleName}.$pool"
     }
+
     private data class Metrics(val executedJobs: Counter, val failedJobs: Counter)
 
     data class Config(val concurrency: Int = 1, val throttleInterval: Duration? = null)
@@ -54,6 +55,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
 
     interface Registration<T : AsyncJobPayload> {
         fun jobTypes(): Collection<AsyncJobType<out T>>
+
         fun handlerFor(jobType: AsyncJobType<out T>): Handler<*>
     }
 

@@ -155,7 +155,9 @@ abstract class RangeBasedMap<
     fun removeAll(ranges: Sequence<Range>): This = ranges.fold(this.entries, ::remove).toThis()
 
     operator fun minus(range: Range): This = remove(range)
+
     operator fun minus(ranges: Iterable<Range>): This = removeAll(ranges)
+
     operator fun minus(ranges: Sequence<Range>): This = removeAll(ranges)
 
     /**

@@ -569,6 +569,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
     }
+
     @Test
     fun `realizedOccupancyCoefficient used for realized occupancy of a child over 3 years`() {
         db.transaction { tx ->

@@ -65,10 +65,12 @@ class FuelManagerConfig {
                 arrayOf<TrustManager>(
                     object : X509TrustManager {
                         override fun getAcceptedIssuers(): Array<X509Certificate>? = null
+
                         override fun checkClientTrusted(
                             chain: Array<X509Certificate>,
                             authType: String
                         ) = Unit
+
                         override fun checkServerTrusted(
                             chain: Array<X509Certificate>,
                             authType: String

@@ -103,6 +103,7 @@ data class PlacementPlanTableRow(
     val deleted: Boolean
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
+
     fun preschoolDaycarePeriod() =
         if (preschoolDaycareStartDate != null && preschoolDaycareEndDate != null) {
             FiniteDateRange(preschoolDaycareStartDate, preschoolDaycareEndDate)

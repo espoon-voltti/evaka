@@ -27,13 +27,19 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
         val url = "$baseUrl$path"
         return """<a href="$url">$url</a>"""
     }
+
     private fun frontPageLink(language: Language) = link(language, "")
+
     private fun calendarLink(language: Language) = link(language, "/calendar")
+
     private fun messageLink(language: Language, threadId: MessageThreadId) =
         link(language, "/messages/$threadId")
+
     private fun childLink(language: Language, childId: ChildId) =
         link(language, "/children/$childId")
+
     private fun incomeLink(language: Language) = link(language, "/income")
+
     private fun unsubscribeLink(language: Language) =
         link(language, "/personal-details#notifications")
 

@@ -63,6 +63,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     inner class PoolRegistration(val id: AsyncJobPool.Id<T>) : AsyncJobPool.Registration<T> {
         override fun jobTypes() = jobsPerPool[id] ?: emptySet()
+
         override fun handlerFor(jobType: AsyncJobType<out T>) =
             stateLock.read { requireNotNull(handlers[jobType]) { "No handler found for $jobType" } }
     }
@@ -105,6 +106,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         retryInterval: Duration = defaultRetryInterval,
         runAt: HelsinkiDateTime
     ) = plan(tx, payloads.asSequence(), retryCount, retryInterval, runAt)
+
     fun plan(
         tx: Database.Transaction,
         payloads: Sequence<T>,
@@ -126,6 +128,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun plan(tx: Database.Transaction, jobs: Iterable<JobParams<out T>>) =
         plan(tx, jobs.asSequence())
+
     fun plan(tx: Database.Transaction, jobs: Sequence<JobParams<out T>>) =
         stateLock.read {
             jobs.forEach { job ->

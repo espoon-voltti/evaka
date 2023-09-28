@@ -18,6 +18,7 @@ data class EmailContent(
 ) {
     companion object {
         private val TOO_MANY_NEWLINES = Regex("\n{3,}")
+
         fun fromHtml(
             subject: String,
             @org.intellij.lang.annotations.Language("html") html: String
@@ -53,7 +54,9 @@ interface IEmailMessageProvider {
     fun pendingDecisionNotification(language: Language): EmailContent
 
     fun clubApplicationReceived(language: Language): EmailContent
+
     fun daycareApplicationReceived(language: Language): EmailContent
+
     fun preschoolApplicationReceived(
         language: Language,
         withinApplicationPeriod: Boolean

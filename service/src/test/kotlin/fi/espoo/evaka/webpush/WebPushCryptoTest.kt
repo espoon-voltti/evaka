@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 
 class WebPushCryptoTest {
     private val secureRandom = SecureRandom()
+
     @Test
     fun `a private key can be converted to base64 format and the entire key pair restored from it`() {
         val keyPair = WebPushCrypto.generateKeyPair(secureRandom)

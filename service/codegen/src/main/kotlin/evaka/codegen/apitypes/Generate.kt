@@ -204,13 +204,16 @@ private fun analyzeDiscriminatedUnionMember(discriminant: String, clazz: KClass<
 
 private sealed class AnalyzedClass(val fullName: String) {
     val name: String = fullName.substringAfterLast('.')
+
     abstract fun declarableTypes(): List<KClass<*>>
+
     abstract fun toTs(): String
 
     class DataClass(name: String, val properties: List<AnalyzedProperty>) : AnalyzedClass(name) {
         override fun declarableTypes(): List<KClass<*>> {
             return properties.flatMap { it.type.declarableTypes }
         }
+
         override fun toTs(): String {
             return """/**
 * Generated from $fullName
@@ -224,6 +227,7 @@ ${properties.joinToString("\n") { "  " + it.toTs() }}
     class EnumClass(name: String, val values: List<String>, val constList: String?) :
         AnalyzedClass(name) {
         override fun declarableTypes(): List<KClass<*>> = emptyList()
+
         override fun toTs(): String {
             val doc = """/**
 * Generated from $fullName
@@ -253,6 +257,7 @@ ${values.joinToString("\n") { "  | '$it'" }}"""
             return nestedClasses.flatMap { it.declarableTypes() } +
                 ownProperties.flatMap { it.type.declarableTypes }
         }
+
         override fun toTs(): String {
             return """export namespace $name {
 ${nestedClasses.joinToString("\n\n") { it.toTs() }.prependIndent("  ")}
@@ -280,22 +285,26 @@ fun analyzeType(type: KType): AnalyzedType =
 
 sealed interface AnalyzedType {
     val declarableTypes: List<KClass<*>>
+
     fun toTs(): String
 }
 
 data class TsPlain(val type: KType) : AnalyzedType {
     override val declarableTypes = listOf(type.jvmErasure)
+
     override fun toTs() = toTs(type)
 }
 
 data class TsStringLiteral(val value: String) : AnalyzedType {
     override val declarableTypes = emptyList<KClass<*>>()
+
     override fun toTs() = "'$value'"
 }
 
 data class TsArray(val type: KType) : AnalyzedType {
     private val typeParameter = unwrapCollection(type)
     override val declarableTypes = listOf(typeParameter.jvmErasure)
+
     override fun toTs() =
         toTs(typeParameter)
             .let { if (typeParameter.isMarkedNullable) "($it)" else it }
@@ -326,10 +335,10 @@ data class TsMap(val type: KType) : AnalyzedType {
     private val valueType = analyzeType(type.arguments[1].type!!)
 
     override val declarableTypes = valueType.declarableTypes + keyType.jvmErasure
+
     override fun toTs(): String =
-        "Record<${toTs(keyType)}, ${valueType.toTs()}>".let {
-            if (type.isMarkedNullable) "$it | null" else it
-        }
+        "Record<${toTs(keyType)}, ${valueType.toTs()}>"
+            .let { if (type.isMarkedNullable) "$it | null" else it }
 }
 
 private fun toTs(type: KType): String {

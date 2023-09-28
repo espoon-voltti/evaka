@@ -26,6 +26,7 @@ class EspooBiClient(
 
     fun sendBiTable(db: Database.Connection, clock: EvakaClock, msg: EspooAsyncJob.SendBiTable) =
         sendBiTable(db, clock, msg.table.fileName, msg.table.query)
+
     fun sendBiTable(
         db: Database.Connection,
         clock: EvakaClock,
@@ -62,11 +63,14 @@ class EspooBiClient(
             )
         }
     }
+
     class CsvInputStream(private val charset: Charset, records: Sequence<String>) : InputStream() {
         var totalBytes: Int = 0
             private set
+
         private val iterator = records.iterator()
         private var buffer: ByteBuffer? = null
+
         private fun acquireBuffer(): ByteBuffer? {
             if (buffer?.hasRemaining() != true) {
                 buffer = null
@@ -80,11 +84,13 @@ class EspooBiClient(
             }
             return buffer
         }
+
         override fun read(): Int =
             when (val buffer = acquireBuffer()) {
                 null -> -1 // end of stream
                 else -> buffer.get().toInt().also { totalBytes += 1 }
             }
+
         override fun available(): Int = acquireBuffer()?.remaining() ?: 0
     }
 }

@@ -231,6 +231,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
     abstract val info: String
     abstract val id: String?
     abstract val dependsOn: List<String>?
+
     abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
 
     open fun isValid(section: VasuSection): Boolean {

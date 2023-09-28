@@ -49,16 +49,20 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
 
                 val validationErrors =
                     listOfNotNull(
-                        "invalid preferredName".takeUnless {
-                            person.firstName.split(" ").contains(body.preferredName)
-                        },
+                        "invalid preferredName"
+                            .takeUnless {
+                                person.firstName.split(" ").contains(body.preferredName)
+                            },
                         "invalid phone".takeUnless { PHONE_PATTERN.matches(body.phone) },
-                        "invalid backup phone".takeUnless {
-                            body.backupPhone.isBlank() || PHONE_PATTERN.matches(body.backupPhone)
-                        },
-                        "invalid email".takeUnless {
-                            body.email.isBlank() || EMAIL_PATTERN.matches(body.email)
-                        }
+                        "invalid backup phone"
+                            .takeUnless {
+                                body.backupPhone.isBlank() ||
+                                    PHONE_PATTERN.matches(body.backupPhone)
+                            },
+                        "invalid email"
+                            .takeUnless {
+                                body.email.isBlank() || EMAIL_PATTERN.matches(body.email)
+                            }
                     )
 
                 if (validationErrors.isNotEmpty())

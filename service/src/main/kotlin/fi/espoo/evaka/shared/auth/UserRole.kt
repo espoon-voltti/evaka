@@ -36,6 +36,7 @@ enum class UserRole : DatabaseEnum {
             FINANCE_STAFF -> true
             else -> false
         }
+
     fun isUnitScopedRole(): Boolean =
         when (this) {
             UNIT_SUPERVISOR -> true
@@ -46,6 +47,7 @@ enum class UserRole : DatabaseEnum {
         }
 
     override val sqlType: String = "user_role"
+
     companion object {
         @Suppress("DEPRECATION")
         val SCOPED_ROLES =

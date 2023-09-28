@@ -49,6 +49,7 @@ class KoskiClient(
     data class Error(val key: String, val message: String) {
         fun isNotFound() = key == "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia"
     }
+
     fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) =
         try {
             db.transaction { tx -> uploadToKoski(tx, msg, today) }

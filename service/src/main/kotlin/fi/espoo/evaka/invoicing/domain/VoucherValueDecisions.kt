@@ -55,8 +55,10 @@ data class VoucherValueDecision(
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
+
     override fun withValidity(period: DateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
+
     override fun contentEquals(decision: VoucherValueDecision): Boolean =
         VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
 
@@ -67,7 +69,9 @@ data class VoucherValueDecision(
     }
 
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
+
     override fun isEmpty(): Boolean = this.voucherValue == 0
+
     override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
 
     companion object {

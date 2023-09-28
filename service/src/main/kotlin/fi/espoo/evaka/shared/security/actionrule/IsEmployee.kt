@@ -27,12 +27,16 @@ object IsEmployee : DatabaseActionRule.Params {
             is AuthenticatedUser.Employee -> true
             else -> false
         }
+
     override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+
     override fun hashCode(): Int = this.javaClass.hashCode()
+
     private fun <T : Id<*>> rule(
         filter: FilterByEmployee<T>
     ): DatabaseActionRule.Scoped<T, IsEmployee> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
+
     private data class Query<T : Id<*>>(private val filter: FilterByEmployee<T>) :
         DatabaseActionRule.Scoped.Query<T, IsEmployee> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
@@ -40,6 +44,7 @@ object IsEmployee : DatabaseActionRule.Params {
                 is AuthenticatedUser.Employee -> QuerySql.of { filter(user, now) }
                 else -> Pair(user, now)
             }
+
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -74,6 +79,7 @@ object IsEmployee : DatabaseActionRule.Params {
                 else -> null
             }
     }
+
     private object Permitted : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision =
             AccessControlDecision.Permitted(params)
@@ -95,6 +101,7 @@ object IsEmployee : DatabaseActionRule.Params {
                 object : DatabaseActionRule.Scoped.Query<EmployeeId, IsEmployee> {
                     override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
                         Pair(user, now)
+
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
                         targets: Set<EmployeeId>
@@ -123,6 +130,7 @@ object IsEmployee : DatabaseActionRule.Params {
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
                 override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
                     Pair(user, now)
+
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee>? =
@@ -269,6 +277,7 @@ AND sent_for_decision IS NOT NULL
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
                 override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
                     Pair(user, now)
+
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee>? =

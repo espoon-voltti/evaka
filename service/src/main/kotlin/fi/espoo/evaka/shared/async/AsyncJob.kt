@@ -41,6 +41,7 @@ import kotlin.reflect.KClass
 
 data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
     val name: String = payloadClass.simpleName!!
+
     override fun toString(): String = name
 
     companion object {
@@ -163,6 +164,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                 dateRange: DateRange,
                 skipPropagation: Boolean? = false
             ) = GenerateFinanceDecisions(Person.Adult(personId, skipPropagation), dateRange)
+
             fun forChild(personId: ChildId, dateRange: DateRange) =
                 GenerateFinanceDecisions(Person.Child(personId), dateRange)
         }
@@ -171,6 +173,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         sealed class Person {
             data class Adult(val adultId: PersonId, val skipPropagation: Boolean? = false) :
                 Person()
+
             data class Child(val childId: ChildId) : Person()
         }
     }

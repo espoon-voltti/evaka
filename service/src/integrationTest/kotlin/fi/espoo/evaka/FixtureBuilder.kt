@@ -53,6 +53,7 @@ class FixtureBuilder(
     private val today: LocalDate = LocalDate.now()
 ) {
     fun addChild() = ChildBuilder(tx, today, this)
+
     fun addEmployee() = EmployeeBuilder(tx, today, this)
 
     class ChildBuilder(
@@ -110,9 +111,13 @@ class FixtureBuilder(
         val childId: ChildId
     ) {
         fun addPlacementPlan() = PlacementPlanBuilder(tx, today, this)
+
         fun addBackupCare() = BackupCareBuilder(tx, today, this)
+
         fun addPlacement() = PlacementBuilder(tx, today, this)
+
         fun addAbsence() = AbsenceBuilder(tx, today, this)
+
         fun addAttendance() = ChildAttendanceBuilder(tx, today, this)
     }
 
@@ -126,9 +131,12 @@ class FixtureBuilder(
         private var categories: List<AbsenceCategory>? = null
 
         fun onDay(date: LocalDate) = this.apply { this.date = date }
+
         fun onDay(relativeDays: Int) =
             this.apply { this.date = today.plusDays(relativeDays.toLong()) }
+
         fun ofType(type: AbsenceType) = this.apply { this.type = type }
+
         fun forCategories(vararg categories: AbsenceCategory) =
             this.apply { this.categories = categories.toList() }
 
@@ -160,14 +168,21 @@ class FixtureBuilder(
         private var preschoolDaycareDates: FiniteDateRange? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
+
         fun fromDay(relativeDays: Int) =
             this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(relativeDays: Int) =
             this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(date: LocalDate) = this.apply { this.to = date }
+
         fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
+
         fun ofType(type: PlacementType) = this.apply { this.type = type }
+
         fun asDeleted() = this.apply { this.deleted = true }
+
         fun withPreschoolDaycareDates(range: FiniteDateRange) =
             this.apply { this.preschoolDaycareDates = range }
 
@@ -205,12 +220,17 @@ class FixtureBuilder(
         private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
+
         fun fromDay(relativeDays: Int) =
             this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(relativeDays: Int) =
             this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(date: LocalDate) = this.apply { this.to = date }
+
         fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
+
         fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): ChildFixture {
@@ -236,12 +256,17 @@ class FixtureBuilder(
         private var type: PlacementType = PlacementType.DAYCARE
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
+
         fun fromDay(relativeDays: Int) =
             this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(relativeDays: Int) =
             this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(date: LocalDate) = this.apply { this.to = date }
+
         fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
+
         fun ofType(type: PlacementType) = this.apply { this.type = type }
 
         fun save(): ChildFixture {
@@ -296,11 +321,15 @@ class FixtureBuilder(
         private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
+
         fun fromDay(relativeDays: Int) =
             this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(date: LocalDate) = this.apply { this.to = date }
+
         fun toDay(relativeDays: Int) =
             this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+
         fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): PlacementFixture {
@@ -328,16 +357,24 @@ class FixtureBuilder(
         private var id: ServiceNeedId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
+
         fun fromDay(relativeDays: Int) =
             this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+
         fun toDay(date: LocalDate) = this.apply { this.to = date }
+
         fun toDay(relativeDays: Int) =
             this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+
         fun withOption(id: ServiceNeedOptionId) = this.apply { this.optionId = id }
+
         fun withOption(serviceNeedOption: ServiceNeedOption) =
             this.apply { this.serviceNeedOption = serviceNeedOption }
+
         fun createdBy(employeeId: EvakaUserId) = this.apply { this.employeeId = employeeId }
+
         fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }
+
         fun withId(id: ServiceNeedId) = this.apply { this.id = id }
 
         fun save(): PlacementFixture {
@@ -370,13 +407,17 @@ class FixtureBuilder(
         private var unitId: DaycareId? = null
 
         fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
+
         fun arriving(date: LocalDate, time: LocalTime) =
             this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
+
         fun arriving(time: LocalTime) = arriving(today, time)
 
         fun departing(time: HelsinkiDateTime) = this.apply { this.to = time }
+
         fun departing(date: LocalDate, time: LocalTime) =
             this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
+
         fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
 
         fun inUnit(unitId: DaycareId) = this.apply { this.unitId = unitId }
@@ -463,7 +504,9 @@ class FixtureBuilder(
         val employeeId: EmployeeId
     ) {
         fun addRealtimeAttendance() = StaffAttendanceBuilder(tx, today, this)
+
         fun addStaffAttendancePlan() = StaffAttendancePlanBuilder(tx, today, this)
+
         fun addAttendancePlan() = StaffAttendancePlanBuilder(tx, today, this)
     }
 
@@ -479,13 +522,17 @@ class FixtureBuilder(
         private var type: StaffAttendanceType? = null
 
         fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
+
         fun arriving(date: LocalDate, time: LocalTime) =
             this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
+
         fun arriving(time: LocalTime) = arriving(today, time)
 
         fun departing(time: HelsinkiDateTime) = this.apply { this.to = time }
+
         fun departing(date: LocalDate, time: LocalTime) =
             this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
+
         fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
 
         fun withCoefficient(coefficient: BigDecimal) = this.apply { this.coefficient = coefficient }

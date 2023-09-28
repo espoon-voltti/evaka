@@ -145,8 +145,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
+
         fun <Tag> createQuery(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Query =
             createQuery(QuerySql.Builder<Tag>().run { f(this) })
+
         fun createQuery(fragment: QuerySql<*>): Query {
             val raw = handle.createQuery(fragment.sql.toString())
             for ((idx, binding) in fragment.bindings.withIndex()) {
@@ -157,6 +159,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun setLockTimeout(duration: Duration) =
             handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
+
         fun setStatementTimeout(duration: Duration) =
             handle.execute("SET LOCAL statement_timeout = '${duration.toMillis()}ms'")
     }
@@ -172,9 +175,12 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         private var savepointId: Long = 0
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
+
         fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
+
         fun <Tag> createUpdate(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Update =
             createUpdate(QuerySql.Builder<Tag>().run { f(this) })
+
         fun createUpdate(fragment: QuerySql<*>): Update {
             val raw = handle.createUpdate(fragment.sql.toString())
             for ((idx, binding) in fragment.bindings.withIndex()) {
@@ -182,8 +188,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             }
             return Update(raw)
         }
+
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch =
             PreparedBatch(handle.prepareBatch(sql))
+
         fun execute(@Language("sql") sql: String, vararg args: Any): Int =
             handle.execute(sql, *args)
 
@@ -232,6 +240,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
     abstract class SqlStatement<This : SqlStatement<This>> {
         protected abstract fun self(): This
+
         protected abstract val raw: org.jdbi.v3.core.statement.SqlStatement<*>
 
         inline fun <reified T> bind(
@@ -300,13 +309,16 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         ): ResultIterable<T> = mapTo(createQualifiedType(*qualifiers))
 
         override fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T> = raw.mapTo(type)
+
         override fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T> = raw.map(mapper)
+
         override fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T> = raw.map(mapper)
     }
 
     class Update internal constructor(override val raw: org.jdbi.v3.core.statement.Update) :
         SqlStatement<Update>() {
         override fun self(): Update = this
+
         fun execute() = raw.execute()
 
         fun executeAndReturnGeneratedKeys(): UpdateResult =
@@ -337,6 +349,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             raw.add()
             return this
         }
+
         fun execute(): IntArray = raw.execute()
 
         fun executeAndReturn(): UpdateResult = UpdateResult(raw.executePreparedBatch())
@@ -350,13 +363,17 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         ): ResultIterable<T> = mapTo(createQualifiedType(*qualifiers))
 
         override fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T> = raw.mapTo(type)
+
         override fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T> = raw.map(mapper)
+
         override fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T> = raw.map(mapper)
     }
 
     interface ResultBearing {
         fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T>
+
         fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T>
+
         fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T>
     }
 }
@@ -453,6 +470,7 @@ data class QuerySql<@Suppress("unused") in Tag>(
 
     class Builder<Tag> : SqlBuilder() {
         private var used: Boolean = false
+
         fun sql(@Language("sql") sql: String): QuerySql<Tag> {
             check(!used) { "builder has already been used" }
             this.used = true
@@ -468,16 +486,21 @@ class Predicate<Tag>(val f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> P
     fun and(other: Predicate<Tag>): Predicate<Tag> = Predicate {
         where("${predicate(forTable(it))} AND ${predicate(other.forTable(it))}")
     }
+
     fun or(other: Predicate<Tag>): Predicate<Tag> = Predicate {
         where("${predicate(forTable(it))} OR ${predicate(other.forTable(it))}")
     }
+
     companion object {
         fun <Tag> alwaysTrue(): Predicate<Tag> = Predicate { where("TRUE") }
+
         fun <Tag> alwaysFalse(): Predicate<Tag> = Predicate { where("FALSE") }
+
         fun <Tag> all(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> = Predicate { table ->
             val sqlPredicates = predicates.map { predicate(it.forTable(table)) }
             where(if (sqlPredicates.isEmpty()) "TRUE" else sqlPredicates.joinToString(" AND "))
         }
+
         fun <Tag> any(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> = Predicate { table ->
             val sqlPredicates = predicates.map { predicate(it.forTable(table)) }
             where(if (sqlPredicates.isEmpty()) "FALSE" else sqlPredicates.joinToString(" OR "))
@@ -491,6 +514,7 @@ class PredicateSql<@Suppress("unused") in Tag>(
 ) {
     class Builder<Tag> : SqlBuilder() {
         private var used: Boolean = false
+
         fun where(@Language("sql", prefix = "WHERE ") sql: String): PredicateSql<Tag> {
             check(!used) { "builder has already been used" }
             this.used = true

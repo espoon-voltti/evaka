@@ -57,6 +57,7 @@ val generatedFiles =
 
 class FileDefinition(val name: String, private val generators: Array<out Generator>) {
     fun generate(): String = generateFileContents(*generators)
+
     fun generateTo(path: Path) = path.writeText(generate())
 }
 

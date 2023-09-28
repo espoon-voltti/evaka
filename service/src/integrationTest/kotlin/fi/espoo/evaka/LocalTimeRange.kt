@@ -21,6 +21,7 @@ class LocalTimeIterator(
     private val step: Duration
 ) : Iterator<LocalTime> {
     private var current = start
+
     override fun hasNext(): Boolean = current <= endInclusive
 
     override fun next(): LocalTime {

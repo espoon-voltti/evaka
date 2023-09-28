@@ -205,7 +205,8 @@ private fun planPreschoolDecisionDrafts(
 fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {
     // language=sql
     val sql =
-        """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent()
+        """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL"""
+            .trimIndent()
 
     createUpdate(sql).bind("applicationIds", applicationIds).execute()
 }

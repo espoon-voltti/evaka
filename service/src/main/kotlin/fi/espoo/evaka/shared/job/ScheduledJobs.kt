@@ -166,6 +166,7 @@ class ScheduledJobs(
         env.jobs.map {
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }
+
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
             it.createUpdate(

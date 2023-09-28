@@ -164,26 +164,35 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
     sealed class SubtractResult<out This> : Iterable<This> {
         abstract val left: This?
         abstract val right: This?
+
         object None : SubtractResult<Nothing>() {
             override val left: Nothing? = null
             override val right: Nothing? = null
+
             override fun iterator(): Iterator<Nothing> = sequenceOf<Nothing>().iterator()
         }
+
         data class LeftRemainder<This>(override val left: This) : SubtractResult<This>() {
             override val right: Nothing? = null
+
             override fun iterator(): Iterator<This> = sequenceOf(left).iterator()
         }
+
         data class RightRemainder<This>(override val right: This) : SubtractResult<This>() {
             override val left: Nothing? = null
+
             override fun iterator(): Iterator<This> = sequenceOf(right).iterator()
         }
+
         data class Split<This>(override val left: This, override val right: This) :
             SubtractResult<This>() {
             override fun iterator(): Iterator<This> = sequenceOf(left, right).iterator()
         }
+
         data class Original<This>(val range: This) : SubtractResult<This>() {
             override val left: This? = null
             override val right: This? = null
+
             override fun iterator(): Iterator<This> = sequenceOf(range).iterator()
         }
     }

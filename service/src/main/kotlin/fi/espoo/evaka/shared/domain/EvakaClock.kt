@@ -11,6 +11,7 @@ import java.time.LocalTime
 
 interface EvakaClock {
     fun today(): LocalDate
+
     fun now(): HelsinkiDateTime
 }
 
@@ -27,6 +28,7 @@ class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
     )
 
     override fun today(): LocalDate = now.toLocalDate()
+
     override fun now(): HelsinkiDateTime = now
 
     fun tick(duration: Duration = Duration.ofSeconds(1)) {
@@ -36,5 +38,6 @@ class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
 
 class RealEvakaClock(private val clock: Clock = Clock.systemUTC()) : EvakaClock {
     override fun today(): LocalDate = LocalDate.now(europeHelsinki)
+
     override fun now(): HelsinkiDateTime = HelsinkiDateTime.now(clock)
 }

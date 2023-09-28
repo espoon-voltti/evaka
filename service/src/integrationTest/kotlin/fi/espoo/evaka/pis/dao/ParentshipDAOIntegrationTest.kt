@@ -135,8 +135,12 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .let { PersonJSON.from(it) }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
+
     private fun testPerson2() = createPerson("150786-1766", "Iines")
+
     private fun testPerson4() = createPerson("120915A931W", "Tupu")
+
     private fun testPerson5() = createPerson("120915A9074", "Hupu")
+
     private fun testPerson6() = createPerson("120915A983K", "Lupu")
 }

@@ -351,8 +351,10 @@ class MockViranomaisPalvelut : Viranomaispalvelut {
 
     override fun haeTilaTieto(viranomainen: Viranomainen, kysely: KyselyWS10): VastausWS10 =
         throw NotImplementedError()
+
     override fun haeAsiakkaita(viranomainen: Viranomainen, kysely: KyselyWS1): VastausWS1 =
         throw NotImplementedError()
+
     override fun lisaaKohteita(viranomainen: Viranomainen, kysely: KyselyWS2): VastausWS2 =
         throw NotImplementedError()
 }

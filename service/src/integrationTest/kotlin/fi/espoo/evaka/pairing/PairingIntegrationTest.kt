@@ -474,12 +474,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             clock,
             PairingsController.PostPairingReq.Unit(unitId = unitId)
         )
+
     private fun postPairingChallenge(challengeKey: String): Pairing =
         pairingsController.postPairingChallenge(
             dbInstance(),
             clock,
             PairingsController.PostPairingChallengeReq(challengeKey = challengeKey)
         )
+
     private fun postPairingResponse(
         id: PairingId,
         challengeKey: String,
@@ -495,6 +497,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 responseKey = responseKey
             )
         )
+
     private fun postPairingValidation(
         id: PairingId,
         challengeKey: String,
@@ -510,11 +513,13 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 responseKey = responseKey
             )
         )
+
     private fun getPairingStatus(id: PairingId): PairingStatus =
         pairingsController.getPairingStatus(dbInstance(), clock, id).status
 
     private fun getMobileDevices(): List<MobileDevice> =
         mobileDevicesController.getMobileDevices(dbInstance(), user, clock, testUnit)
+
     private fun putMobileDeviceName(id: MobileDeviceId, name: String) =
         mobileDevicesController.putMobileDeviceName(
             dbInstance(),
@@ -523,6 +528,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             id,
             MobileDevicesController.RenameRequest(name)
         )
+
     private fun deleteMobileDevice(id: MobileDeviceId) =
         mobileDevicesController.deleteMobileDevice(dbInstance(), user, clock, id)
 

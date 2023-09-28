@@ -8,12 +8,14 @@ import fi.espoo.evaka.shared.security.Action
 
 interface ActionRuleMapping {
     fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule>
+
     fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>>
 }
 
 class DefaultActionRuleMapping : ActionRuleMapping {
     override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
         action.defaultRules.asSequence()
+
     override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =
         action.defaultRules.asSequence()
 }

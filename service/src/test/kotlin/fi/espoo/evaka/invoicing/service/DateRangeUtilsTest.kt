@@ -83,6 +83,7 @@ class DateRangeUtilsTest {
     }
 
     private data class TestEntity(override val range: DateRange, val value: Int) : WithRange
+
     private data class TestEntityFinite(
         override val finiteRange: FiniteDateRange,
         val value: String

@@ -21,6 +21,7 @@ data class Paged<T>(val data: List<T>, val total: Int, val pages: Int) {
     }
 
     fun <U> map(mapper: (T) -> U): Paged<U> = Paged(data.map(mapper), total, pages)
+
     fun <U> flatMap(mapper: (T) -> List<U>): Paged<U> = Paged(data.flatMap(mapper), total, pages)
 }
 

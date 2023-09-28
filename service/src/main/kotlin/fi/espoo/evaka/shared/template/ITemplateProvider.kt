@@ -11,13 +11,22 @@ interface ITemplateProvider {
     fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String
 
     fun getFeeDecisionPath(): String
+
     fun getVoucherValueDecisionPath(): String
+
     fun getClubDecisionPath(): String
+
     fun getDaycareVoucherDecisionPath(): String
+
     fun getDaycareTransferDecisionPath(): String
+
     fun getDaycareDecisionPath(): String
+
     fun getPreschoolDecisionPath(): String
+
     fun getPreparatoryDecisionPath(): String
+
     fun getAssistanceNeedDecisionPath(): String
+
     fun getAssistanceNeedPreschoolDecisionPath(): String
 }

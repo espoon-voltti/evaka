@@ -63,6 +63,7 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
 
     override fun leftAdjacentTo(other: FiniteDateRange): Boolean =
         this.end.plusDays(1) == other.start
+
     override fun rightAdjacentTo(other: FiniteDateRange): Boolean =
         other.end.plusDays(1) == this.start
 
@@ -101,7 +102,9 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
                 }
             }
         } else BoundedRange.SubtractResult.Original(this)
+
     fun complement(other: FiniteDateRange): List<FiniteDateRange> = this.subtract(other).toList()
+
     fun complement(others: Collection<FiniteDateRange>): List<FiniteDateRange> {
         return others.fold(
             initial = listOf(this),
@@ -168,8 +171,10 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
     companion object {
         fun tryCreate(start: LocalDate, end: LocalDate): FiniteDateRange? =
             if (start <= end) FiniteDateRange(start, end) else null
+
         fun ofMonth(year: Int, month: Month): FiniteDateRange =
             ofMonth(LocalDate.of(year, month, 1))
+
         fun ofMonth(date: LocalDate): FiniteDateRange {
             val from = date.with(date.withDayOfMonth(1))
             val to = date.with(lastDayOfMonth())
@@ -187,17 +192,20 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     }
 
     fun asFiniteDateRange(): FiniteDateRange? = end?.let { FiniteDateRange(start, it) }
+
     fun asFiniteDateRange(defaultEnd: LocalDate): FiniteDateRange =
         FiniteDateRange(start, end ?: defaultEnd)
 
     fun contains(other: DateRange) =
         this.start <= other.start && orMax(other.end) <= orMax(this.end)
+
     fun contains(other: FiniteDateRange) = contains(other.asDateRange())
 
     fun includes(date: LocalDate) = this.start <= date && date <= orMax(this.end)
 
     fun overlaps(other: DateRange) =
         this.start <= orMax(other.end) && other.start <= orMax(this.end)
+
     fun overlaps(other: FiniteDateRange) = overlaps(other.asDateRange())
 
     fun intersection(other: DateRange): DateRange? {
@@ -218,6 +226,7 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
 
     companion object {
         fun ofMonth(year: Int, month: Month): DateRange = ofMonth(LocalDate.of(year, month, 1))
+
         fun ofMonth(date: LocalDate): DateRange {
             val from = date.with(date.withDayOfMonth(1))
             val to = date.with(lastDayOfMonth())

@@ -21,10 +21,14 @@ class DateMap<T> private constructor(entries: List<Pair<FiniteDateRange, T>>) :
     RangeBasedMap<T, LocalDate, FiniteDateRange, DateMap<T>>(entries) {
     override fun List<Pair<FiniteDateRange, T>>.toThis(): DateMap<T> =
         if (isEmpty()) empty() else DateMap(this)
+
     override fun range(start: LocalDate, end: LocalDate): FiniteDateRange =
         FiniteDateRange(start, end)
+
     override fun equals(other: Any?): Boolean = other is DateMap<*> && this.entries == other.entries
+
     override fun hashCode(): Int = Objects.hash(entries)
+
     override fun toString(): String =
         entries.joinToString(separator = ",", prefix = "{", postfix = "}") { (range, value) ->
             "[${range.start},${range.end}]: $value"

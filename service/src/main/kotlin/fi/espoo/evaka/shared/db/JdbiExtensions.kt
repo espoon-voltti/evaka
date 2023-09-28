@@ -152,10 +152,12 @@ val databaseEnumArgumentFactory =
 
 private class Parser(private var text: CharSequence) {
     fun peekChar(): Char? = this.text.firstOrNull()
+
     fun parseChar(): Char =
         (this.text.firstOrNull() ?: error("Unexpected end of text")).also {
             this.text = this.text.drop(1)
         }
+
     fun parseLiteral(literal: String): Boolean =
         this.text.startsWith(literal).also { found ->
             if (found) {
@@ -347,6 +349,7 @@ class PgObjectArgumentFactory<T>(
 class CustomObjectArgument(val value: Any) : Argument {
     override fun apply(position: Int, statement: PreparedStatement, ctx: StatementContext) =
         statement.setObject(position, value)
+
     override fun toString(): String = value.toString()
 }
 

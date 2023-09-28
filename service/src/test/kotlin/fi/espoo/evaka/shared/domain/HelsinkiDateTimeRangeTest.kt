@@ -421,6 +421,7 @@ class HelsinkiDateTimeRangeTest {
     }
 
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
+
     private fun testRange(from: Int, to: Int) =
         HelsinkiDateTimeRange(testDateTime(from), testDateTime(to))
 }

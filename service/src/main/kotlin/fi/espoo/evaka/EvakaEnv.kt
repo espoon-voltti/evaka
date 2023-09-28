@@ -172,6 +172,7 @@ data class EmailEnv(
             Language.sv -> "$senderNameSv <$senderAddress>"
             else -> "$senderNameFi <$senderAddress>"
         }
+
     fun applicationReceivedSender(language: Language): String =
         when (language) {
             Language.sv -> "$applicationReceivedSenderNameSv <$applicationReceivedSenderAddressSv>"

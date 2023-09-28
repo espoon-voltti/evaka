@@ -171,7 +171,9 @@ class DateMapTest {
     }
 
     private fun testDate(day: Int) = LocalDate.of(2019, 1, day)
+
     private fun testRange(range: IntRange) =
         FiniteDateRange(testDate(range.first), testDate(range.last))
+
     private fun <T> testEntry(range: IntRange, value: T) = testRange(range) to value
 }
