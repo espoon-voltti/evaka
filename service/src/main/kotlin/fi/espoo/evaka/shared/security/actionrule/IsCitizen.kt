@@ -44,6 +44,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
         filter: FilterByCitizen<T>
     ): DatabaseActionRule.Scoped<T, IsCitizen> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
+
     private data class Query<T : Id<*>>(private val filter: FilterByCitizen<T>) :
         DatabaseActionRule.Scoped.Query<T, IsCitizen> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
@@ -51,6 +52,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                 is AuthenticatedUser.Citizen -> QuerySql.of { filter(user.id, now) }
                 else -> Pair(user, now)
             }
+
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -92,6 +94,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                 else -> null
             }
     }
+
     private class Deferred(private val authLevel: CitizenAuthLevel) :
         DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =
@@ -119,6 +122,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                 object : DatabaseActionRule.Scoped.Query<PersonId, IsCitizen> {
                     override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
                         Pair(user, now)
+
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
                         targets: Set<PersonId>

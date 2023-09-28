@@ -62,9 +62,12 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun deserializeGetResult(json: String) =
         jsonMapper.readValue<List<PedagogicalDocument>>(json)
+
     private fun deserializeGetResultCitizen(json: String) =
         jsonMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
+
     private fun deserializePutResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
+
     private fun deserializePostResult(json: String) =
         jsonMapper.readValue<PedagogicalDocument>(json)
 

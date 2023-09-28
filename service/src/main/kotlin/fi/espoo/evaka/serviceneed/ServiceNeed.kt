@@ -33,7 +33,9 @@ enum class ShiftCareType : DatabaseEnum {
     NONE,
     INTERMITTENT,
     FULL;
+
     override val sqlType: String = "shift_care_type"
+
     companion object {
         fun fromBoolean(value: Boolean): ShiftCareType {
             return when (value) {

@@ -29,6 +29,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
     init {
         oneOf.forEach { check(it.isGlobalRole()) { "Expected a global role, got $it" } }
     }
+
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
     override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
@@ -45,6 +46,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
 
     private fun <T : Id<*>> rule(filter: Filter<T>): DatabaseActionRule.Scoped<T, HasGlobalRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
+
     data class Query<T : Id<*>>(private val filter: Filter<T>) :
         DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
@@ -52,6 +54,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                 is AuthenticatedUser.Employee -> QuerySql.of { filter(user, now) }
                 else -> Pair(user, now)
             }
+
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -93,6 +96,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                 else -> null
             }
     }
+
     private class Deferred(private val globalRoles: Set<UserRole>) :
         DatabaseActionRule.Deferred<HasGlobalRole> {
         override fun evaluate(params: HasGlobalRole): AccessControlDecision =

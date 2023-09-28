@@ -199,6 +199,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         assertTrue(getAclRows().isEmpty())
     }
+
     @Test
     fun `modify group acl and occupancy coefficient`() {
         assertTrue(getAclRows().isEmpty())
@@ -539,6 +540,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getTemporaryEmployees(clock: EvakaClock, unitId: DaycareId) =
         unitAclController.getTemporaryEmployees(dbInstance(), admin, clock, unitId)
+
     private fun getTemporaryEmployee(clock: EvakaClock, unitId: DaycareId, employeeId: EmployeeId) =
         unitAclController.getTemporaryEmployee(dbInstance(), admin, clock, unitId, employeeId)
 

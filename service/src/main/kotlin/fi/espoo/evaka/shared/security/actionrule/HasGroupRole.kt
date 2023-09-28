@@ -33,9 +33,11 @@ data class HasGroupRole(
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
+
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet(), null)
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
+
     fun withUnitProviderTypes(vararg allOf: ProviderType) =
         copy(unitProviderTypes = allOf.toEnumSet())
 
@@ -72,6 +74,7 @@ SELECT EXISTS (
         getGroupRoles: GetGroupRoles
     ): DatabaseActionRule.Scoped<T, HasGroupRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
+
     private class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) :
         DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
@@ -79,6 +82,7 @@ SELECT EXISTS (
                 is AuthenticatedUser.Employee -> QuerySql.of { getGroupRoles(user, now) }
                 else -> Pair(user, now)
             }
+
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -108,6 +112,7 @@ SELECT EXISTS (
                         .mapValues { (_, queryResult) -> Deferred(queryResult) }
                 else -> emptyMap()
             }
+
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
@@ -129,6 +134,7 @@ SELECT EXISTS (
                 else -> null
             }
     }
+
     private data class Deferred(private val queryResult: Set<RoleAndFeatures>) :
         DatabaseActionRule.Deferred<HasGroupRole> {
         override fun evaluate(params: HasGroupRole): AccessControlDecision =
@@ -179,6 +185,7 @@ ${if (publishable) "AND status <> 'COMPLETED'" else ""}
                     .trimIndent()
             )
         }
+
     fun inPlacementGroupOfChildOfVasuDocument() =
         rule<VasuDocumentId> { user, now ->
             sql(

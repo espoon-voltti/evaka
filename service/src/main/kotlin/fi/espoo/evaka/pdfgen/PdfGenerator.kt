@@ -292,6 +292,7 @@ class PdfGenerator(
             )
             .mapValues { it.value ?: "" }
     }
+
     private fun getResourceFile(fileName: String): File {
         val res = javaClass.classLoader.getResource(fileName)
         return Paths.get(res.toURI()).toFile()

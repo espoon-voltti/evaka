@@ -16,11 +16,17 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val headOfFamilyId: PersonId
 
     fun withRandomId(): Decision
+
     fun withValidity(period: DateRange): Decision
+
     fun contentEquals(decision: Decision): Boolean
+
     fun overlapsWith(other: Decision): Boolean
+
     fun isAnnulled(): Boolean
+
     fun isEmpty(): Boolean
+
     fun annul(): Decision
 }
 

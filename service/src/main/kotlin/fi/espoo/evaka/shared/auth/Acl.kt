@@ -11,10 +11,12 @@ import org.jdbi.v3.core.Jdbi
 
 sealed class AclAuthorization {
     abstract fun isAuthorized(id: DaycareId): Boolean
+
     abstract val ids: Set<DaycareId>?
 
     object All : AclAuthorization() {
         override fun isAuthorized(id: DaycareId): Boolean = true
+
         override val ids: Set<DaycareId>? = null
     }
 

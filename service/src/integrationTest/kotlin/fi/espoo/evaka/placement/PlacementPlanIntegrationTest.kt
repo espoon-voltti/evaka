@@ -407,6 +407,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             assertEquals(ApplicationStatus.WAITING_DECISION, r.getApplicationStatus(applicationId))
         }
     }
+
     private fun insertInitialData(
         status: ApplicationStatus,
         type: ApplicationType,

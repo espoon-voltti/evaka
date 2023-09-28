@@ -103,12 +103,14 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         action: A
     ): Boolean where A : Action.ScopedAction<*>, A : Enum<A> =
         getPermittedActionsForSomeTarget(tx, user, clock, A::class.java).contains(action)
+
     inline fun <reified A> getPermittedActionsForSomeTarget(
         tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock
     ): Set<A> where A : Action.ScopedAction<*>, A : Enum<A> =
         getPermittedActionsForSomeTarget(tx, user, clock, A::class.java)
+
     fun <A> getPermittedActionsForSomeTarget(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -152,6 +154,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         action: Action.ScopedAction<T>,
         target: T
     ) = requirePermissionFor(tx, user, clock, action, listOf(target))
+
     fun <T> requirePermissionFor(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -159,6 +162,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
     ) = checkPermissionFor(tx, user, clock, action, targets).values.forEach { it.assert() }
+
     fun <T> requirePermissionForSomeTarget(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -178,6 +182,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         action: Action.ScopedAction<T>,
         target: T
     ): Boolean = checkPermissionFor(tx, user, clock, action, target).isPermitted()
+
     fun <T> hasPermissionFor(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -195,6 +200,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         target: T
     ): AccessControlDecision =
         checkPermissionFor(tx, user, clock, action, listOf(target)).values.single()
+
     fun <T> checkPermissionFor(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -243,6 +249,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         clock: EvakaClock,
         action: Action.ScopedAction<T>
     ): AccessControlFilter<T> = getAuthorizationFilter(tx, user, clock, action) ?: throw Forbidden()
+
     fun <T> getAuthorizationFilter(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -291,6 +298,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         target: T
     ) where A : Action.ScopedAction<T>, A : Enum<A> =
         getPermittedActions(tx, user, clock, A::class.java, setOf(target)).values.first()
+
     inline fun <T, reified A> getPermittedActions(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -360,6 +368,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
             return deferred?.evaluate(rule.params) ?: AccessControlDecision.None
         }
     }
+
     private class ScopedEvaluator<T>(private val queryCtx: DatabaseActionRule.QueryContext) {
         private val cache =
             mutableMapOf<Pair<Class<*>, *>, Map<in T, DatabaseActionRule.Deferred<Any>>>()
@@ -377,12 +386,14 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                 target to (deferreds[target]?.evaluate(rule.params) ?: AccessControlDecision.None)
             }
         }
+
         fun queryWithParams(rule: DatabaseActionRule.Scoped<in T, *>): QuerySql<T>? {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
             return query.queryWithParams(queryCtx, rule.params)
         }
     }
+
     enum class PinError {
         PIN_LOCKED,
         WRONG_PIN

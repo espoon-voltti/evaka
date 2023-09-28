@@ -37,6 +37,7 @@ import org.springframework.mock.web.MockMultipartFile
 class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeAlterationController: FeeAlterationController
     @Autowired private lateinit var attachmentsController: AttachmentsController
+
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
@@ -226,6 +227,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun deleteFeeAlteration(id: FeeAlterationId) {
         feeAlterationController.deleteFeeAlteration(dbInstance(), user, RealEvakaClock(), id)
     }
+
     private fun uploadAttachment(id: FeeAlterationId): AttachmentId {
         return attachmentsController.uploadFeeAlterationAttachment(
             dbInstance(),

@@ -52,6 +52,7 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
 
     fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> =
         lock.withLock { HashMap(studyRights) }
+
     fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> =
         lock.withLock { personStudyRights.get(oid) }
 
@@ -180,6 +181,7 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
 
     companion object {
         const val UNIT_OID_THAT_TRIGGERS_400 = "SIMULATE_BAD_REQUEST"
+
         fun start(): MockKoskiServer {
             return MockKoskiServer(defaultJsonMapperBuilder().build(), port = 0)
         }

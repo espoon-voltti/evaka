@@ -554,6 +554,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val sn1FeeDiff = db.read { it.getServiceNeedFeeData(snId1) }
         assertEquals(0, sn1FeeDiff.size)
     }
+
     internal fun Database.Transaction.insertVardaChild(
         id: ChildId,
         organizerOid: String = defaultMunicipalOrganizerOid

@@ -42,6 +42,7 @@ class PairingsController(
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
     sealed class PostPairingReq(val id: Id<*>) {
         data class Unit(val unitId: DaycareId) : PostPairingReq(unitId)
+
         data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
     }
 

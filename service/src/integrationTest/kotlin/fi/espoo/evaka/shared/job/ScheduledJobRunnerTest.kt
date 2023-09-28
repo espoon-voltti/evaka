@@ -23,6 +23,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     enum class TestScheduledJob {
         TestJob,
     }
+
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val testTime = LocalTime.of(1, 0)
     private val testSchedule =

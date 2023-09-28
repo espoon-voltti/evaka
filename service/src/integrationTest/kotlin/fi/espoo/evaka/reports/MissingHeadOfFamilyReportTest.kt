@@ -296,6 +296,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             expected = listOf(),
         )
     }
+
     private fun test(
         headPeriods: List<Pair<Int, Int>> = listOf(),
         fosterPeriods: List<Pair<Int, Int>> = listOf(),

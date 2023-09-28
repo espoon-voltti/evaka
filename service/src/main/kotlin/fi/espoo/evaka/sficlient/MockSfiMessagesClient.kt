@@ -31,6 +31,7 @@ class MockSfiMessagesClient : SfiMessagesClient {
 
         fun getMessages() =
             lock.read { data.values.toList().map { Pair(it, dataBytes[it.messageId]) } }
+
         fun clearMessages() = lock.write { data.clear() }
     }
 }

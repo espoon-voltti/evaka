@@ -480,6 +480,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
         }
     }
+
     private val dummyMessage =
         NewMessageStub(
             title = "Juhannus",

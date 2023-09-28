@@ -117,6 +117,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     }
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
+
     private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
 
     private fun getAllFeeDecisions(): List<FeeDecision> {

@@ -21,11 +21,15 @@ class DateTimeMap<T> private constructor(entries: List<Pair<HelsinkiDateTimeRang
     RangeBasedMap<T, HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeMap<T>>(entries) {
     override fun List<Pair<HelsinkiDateTimeRange, T>>.toThis(): DateTimeMap<T> =
         if (isEmpty()) empty() else DateTimeMap(this)
+
     override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(start, end)
+
     override fun equals(other: Any?): Boolean =
         other is DateTimeMap<*> && this.entries == other.entries
+
     override fun hashCode(): Int = Objects.hash(entries)
+
     override fun toString(): String =
         entries.joinToString(separator = ",", prefix = "{", postfix = "}") { (range, value) ->
             "[${range.start},${range.end}): $value"
@@ -47,6 +51,7 @@ class DateTimeMap<T> private constructor(entries: List<Pair<HelsinkiDateTimeRang
 
     companion object {
         private val EMPTY: DateTimeMap<*> = DateTimeMap<Any>(emptyList())
+
         fun <T> empty(): DateTimeMap<T> {
             @Suppress("UNCHECKED_CAST") return EMPTY as DateTimeMap<T>
         }

@@ -82,6 +82,7 @@ sealed interface Action {
     sealed interface UnscopedAction : Action {
         val defaultRules: Array<out UnscopedActionRule>
     }
+
     sealed interface ScopedAction<T> : Action {
         val defaultRules: Array<out ScopedActionRule<in T>>
     }
@@ -320,6 +321,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class AssistanceNeedDecision(
             override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>
         ) : ScopedAction<AssistanceNeedDecisionId> {
@@ -338,6 +340,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class AssistanceNeedPreschoolDecision(
             override vararg val defaultRules: ScopedActionRule<in AssistanceNeedPreschoolDecisionId>
         ) : ScopedAction<AssistanceNeedPreschoolDecisionId> {
@@ -362,6 +365,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) :
             ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
@@ -426,6 +430,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class ChildDocument(
             override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>
         ) : ScopedAction<ChildDocumentId> {
@@ -436,15 +441,18 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class DailyServiceTimeNotification(
             override vararg val defaultRules: ScopedActionRule<in DailyServiceTimeNotificationId>
         ) : ScopedAction<DailyServiceTimeNotificationId> {
             DISMISS(IsCitizen(allowWeakLogin = true).recipientOfDailyServiceTimeNotification())
         }
+
         enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) :
             ScopedAction<DecisionId> {
             DOWNLOAD_PDF(IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision())
         }
+
         enum class IncomeStatement(
             override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>
         ) : ScopedAction<IncomeStatementId> {
@@ -467,6 +475,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class PedagogicalDocument(
             override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>
         ) : ScopedAction<PedagogicalDocumentId> {
@@ -477,6 +486,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) :
             ScopedAction<PersonId> {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
@@ -509,6 +519,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) :
             ScopedAction<PlacementId> {
             TERMINATE(
@@ -518,6 +529,7 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+
         enum class VasuDocument(
             override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>
         ) : ScopedAction<VasuDocumentId> {
@@ -605,6 +617,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class ApplicationNote(
         override vararg val defaultRules: ScopedActionRule<in ApplicationNoteId>
     ) : ScopedAction<ApplicationNoteId> {
@@ -613,6 +626,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class AssistanceAction(
         override vararg val defaultRules: ScopedActionRule<in AssistanceActionId>
     ) : ScopedAction<AssistanceActionId> {
@@ -633,6 +647,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class AssistanceFactor(
         override vararg val defaultRules: ScopedActionRule<in AssistanceFactorId>
     ) : ScopedAction<AssistanceFactorId> {
@@ -653,6 +668,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class AssistanceNeedDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>
     ) : ScopedAction<AssistanceNeedDecisionId> {
@@ -697,6 +713,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class AssistanceNeedPreschoolDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedPreschoolDecisionId>
     ) : ScopedAction<AssistanceNeedPreschoolDecisionId> {
@@ -745,6 +762,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class AssistanceNeedVoucherCoefficient(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedVoucherCoefficientId>
     ) : ScopedAction<AssistanceNeedVoucherCoefficientId> {
@@ -761,6 +779,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Attachment(override vararg val defaultRules: ScopedActionRule<in AttachmentId>) :
         ScopedAction<AttachmentId> {
         READ_APPLICATION_ATTACHMENT(
@@ -804,6 +823,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class BackupCare(override vararg val defaultRules: ScopedActionRule<in BackupCareId>) :
         ScopedAction<BackupCareId> {
         UPDATE(
@@ -819,6 +839,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class BackupPickup(override vararg val defaultRules: ScopedActionRule<in BackupPickupId>) :
         ScopedAction<BackupPickupId> {
         UPDATE(
@@ -832,6 +853,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class CalendarEvent(
         override vararg val defaultRules: ScopedActionRule<in CalendarEventId>
     ) : ScopedAction<CalendarEventId> {
@@ -846,6 +868,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) :
         ScopedAction<ChildId> {
         READ(
@@ -1192,6 +1215,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class ChildDailyNote(
         override vararg val defaultRules: ScopedActionRule<in ChildDailyNoteId>
     ) : ScopedAction<ChildDailyNoteId> {
@@ -1210,6 +1234,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class ChildImage(override vararg val defaultRules: ScopedActionRule<in ChildImageId>) :
         ScopedAction<ChildImageId> {
         DOWNLOAD(
@@ -1228,6 +1253,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class ChildStickyNote(
         override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>
     ) : ScopedAction<ChildStickyNoteId> {
@@ -1246,6 +1272,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class DailyServiceTime(
         override vararg val defaultRules: ScopedActionRule<in DailyServiceTimesId>
     ) : ScopedAction<DailyServiceTimesId> {
@@ -1262,6 +1289,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class DaycareAssistance(
         override vararg val defaultRules: ScopedActionRule<in DaycareAssistanceId>
     ) : ScopedAction<DaycareAssistanceId> {
@@ -1282,6 +1310,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) :
         ScopedAction<DecisionId> {
         READ(
@@ -1318,16 +1347,20 @@ sealed interface Action {
         READ_DETAILS(HasGlobalRole(ADMIN)),
         DELETE(HasGlobalRole(ADMIN)),
         UPDATE(HasGlobalRole(ADMIN));
+
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class FeeAlteration(
         override vararg val defaultRules: ScopedActionRule<in FeeAlterationId>
     ) : ScopedAction<FeeAlterationId> {
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN));
+
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class FeeDecision(override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>) :
         ScopedAction<FeeDecisionId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
@@ -1337,6 +1370,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class FeeThresholds(
         override vararg val defaultRules: ScopedActionRule<in FeeThresholdsId>
     ) : ScopedAction<FeeThresholdsId> {
@@ -1344,6 +1378,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class FosterParent(override vararg val defaultRules: ScopedActionRule<in FosterParentId>) :
         ScopedAction<FosterParentId> {
         DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER)),
@@ -1351,6 +1386,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Group(override vararg val defaultRules: ScopedActionRule<in GroupId>) :
         ScopedAction<GroupId> {
         UPDATE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
@@ -1432,6 +1468,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class GroupNote(override vararg val defaultRules: ScopedActionRule<in GroupNoteId>) :
         ScopedAction<GroupNoteId> {
         UPDATE(
@@ -1447,6 +1484,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class GroupPlacement(
         override vararg val defaultRules: ScopedActionRule<in GroupPlacementId>
     ) : ScopedAction<GroupPlacementId> {
@@ -1463,6 +1501,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Income(override vararg val defaultRules: ScopedActionRule<in IncomeId>) :
         ScopedAction<IncomeId> {
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1471,6 +1510,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class IncomeStatement(
         override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>
     ) : ScopedAction<IncomeStatementId> {
@@ -1479,6 +1519,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) :
         ScopedAction<InvoiceId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
@@ -1488,6 +1529,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class InvoiceCorrection(
         override vararg val defaultRules: ScopedActionRule<in InvoiceCorrectionId>
     ) : ScopedAction<InvoiceCorrectionId> {
@@ -1496,6 +1538,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class MessageAccount(
         override vararg val defaultRules: ScopedActionRule<in MessageAccountId>
     ) : ScopedAction<MessageAccountId> {
@@ -1513,6 +1556,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class MobileDevice(override vararg val defaultRules: ScopedActionRule<in MobileDeviceId>) :
         ScopedAction<MobileDeviceId> {
         UPDATE_NAME(
@@ -1530,6 +1574,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class OtherAssistanceMeasure(
         override vararg val defaultRules: ScopedActionRule<in OtherAssistanceMeasureId>
     ) : ScopedAction<OtherAssistanceMeasureId> {
@@ -1550,6 +1595,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Pairing(override vararg val defaultRules: ScopedActionRule<in PairingId>) :
         ScopedAction<PairingId> {
         POST_RESPONSE(
@@ -1560,6 +1606,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Parentship(override vararg val defaultRules: ScopedActionRule<in ParentshipId>) :
         ScopedAction<ParentshipId> {
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1583,6 +1630,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Partnership(override vararg val defaultRules: ScopedActionRule<in PartnershipId>) :
         ScopedAction<PartnershipId> {
         DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
@@ -1602,12 +1650,14 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Payment(override vararg val defaultRules: ScopedActionRule<in PaymentId>) :
         ScopedAction<PaymentId> {
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class PedagogicalDocument(
         override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>
     ) : ScopedAction<PedagogicalDocumentId> {
@@ -1632,6 +1682,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) :
         ScopedAction<PersonId> {
         ADD_SSN(HasGlobalRole(ADMIN, SERVICE_WORKER)),
@@ -1725,6 +1776,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) :
         ScopedAction<PlacementId> {
         UPDATE(
@@ -1747,6 +1799,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class PreschoolAssistance(
         override vararg val defaultRules: ScopedActionRule<in PreschoolAssistanceId>
     ) : ScopedAction<PreschoolAssistanceId> {
@@ -1763,6 +1816,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class ServiceNeed(override vararg val defaultRules: ScopedActionRule<in ServiceNeedId>) :
         ScopedAction<ServiceNeedId> {
         UPDATE(
@@ -1773,6 +1827,7 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+
     enum class Unit(override vararg val defaultRules: ScopedActionRule<in DaycareId>) :
         ScopedAction<DaycareId> {
         READ(

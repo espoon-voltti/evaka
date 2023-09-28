@@ -176,7 +176,9 @@ class DateTimeMapTest {
     }
 
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
+
     private fun testRange(range: Pair<Int, Int>) =
         HelsinkiDateTimeRange(testDateTime(range.first), testDateTime(range.second))
+
     private fun <T> testEntry(range: Pair<Int, Int>, value: T) = testRange(range) to value
 }

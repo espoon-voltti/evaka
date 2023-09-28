@@ -16,10 +16,14 @@ class DateTimeSet private constructor(ranges: List<HelsinkiDateTimeRange>) :
     RangeBasedSet<HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeSet>(ranges) {
     override fun List<HelsinkiDateTimeRange>.toThis(): DateTimeSet =
         if (isEmpty()) EMPTY else DateTimeSet(this)
+
     override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(start, end)
+
     override fun equals(other: Any?): Boolean = other is DateTimeSet && this.ranges == other.ranges
+
     override fun hashCode(): Int = Objects.hash(ranges)
+
     override fun toString(): String =
         ranges.joinToString(separator = ",", prefix = "{", postfix = "}")
 

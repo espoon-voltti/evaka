@@ -83,6 +83,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     @Autowired private lateinit var generator: FinanceDecisionGenerator
     @Autowired private lateinit var voucherValueDecisionController: VoucherValueDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }

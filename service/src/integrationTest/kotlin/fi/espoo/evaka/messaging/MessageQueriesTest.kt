@@ -76,6 +76,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employee1: MessageAccount,
         val employee2: MessageAccount
     )
+
     private lateinit var accounts: TestAccounts
 
     @BeforeEach
@@ -794,12 +795,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             name = "${person.lastName} ${person.firstName}",
             type = AccountType.CITIZEN
         )
+
     private fun Database.Transaction.createAccount(group: DevDaycareGroup) =
         MessageAccount(
             id = createDaycareGroupMessageAccount(group.id),
             name = group.name,
             type = AccountType.GROUP
         )
+
     private fun Database.Transaction.createAccount(employee: DevEmployee) =
         MessageAccount(
             id = upsertEmployeeMessageAccount(employee.id),

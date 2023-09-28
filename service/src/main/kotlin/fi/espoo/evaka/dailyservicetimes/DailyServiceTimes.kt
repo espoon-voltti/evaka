@@ -34,6 +34,7 @@ sealed class DailyServiceTimesValue(
     val type: DailyServiceTimesType
 ) {
     abstract fun asUpdateRow(): DailyServiceTimeUpdateRow
+
     abstract fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean
 
     abstract fun getTimesOnDate(date: LocalDate): TimeRange?

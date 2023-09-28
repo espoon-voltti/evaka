@@ -32,6 +32,7 @@ import org.bouncycastle.util.BigIntegers
 
 data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateKey) {
     fun privateKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(privateKey))
+
     fun publicKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(publicKey))
 
     init {
@@ -77,6 +78,7 @@ data class VapidJwt(
             val port = ":$port".takeIf { port != -1 } ?: ""
             return "$scheme://$host$port"
         }
+
         fun create(keyPair: WebPushKeyPair, expiresAt: HelsinkiDateTime, uri: URI) =
             VapidJwt(
                 origin = uri.origin(),
@@ -165,9 +167,12 @@ object WebPushCrypto {
     //   2. Application Server Self-Identification
     private val domainParams = ECDomainParameters(CustomNamedCurves.getByName("P-256"))
     private val parameterSpec: ECParameterSpec = EC5Util.convertToSpec(domainParams)
+
     private fun keyPairGenerator(secureRandom: SecureRandom): KeyPairGenerator =
         KeyPairGenerator.getInstance("EC").apply { initialize(parameterSpec, secureRandom) }
+
     private fun keyFactory(): KeyFactory = KeyFactory.getInstance("EC")
+
     private fun ecdhKeyAgreement(): KeyAgreement = KeyAgreement.getInstance("ECDH")
 
     fun generateKeyPair(secureRandom: SecureRandom): WebPushKeyPair {
@@ -194,10 +199,12 @@ object WebPushCrypto {
     fun encode(key: ECPrivateKey): ByteArray = domainParams.curve.fromBigInteger(key.s).encoded
 
     fun decodePublicKey(base64: String) = decodePublicKey(base64Decode(base64))
+
     fun decodePublicKey(bytes: ByteArray): ECPublicKey =
         domainParams.curve.decodePoint(bytes).toPublicKey()
 
     fun decodePrivateKey(base64: String) = decodePrivateKey(base64Decode(base64))
+
     fun decodePrivateKey(bytes: ByteArray): ECPrivateKey =
         BigIntegers.fromUnsignedByteArray(bytes).toPrivateKey()
 

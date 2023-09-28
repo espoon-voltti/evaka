@@ -409,7 +409,9 @@ data class KoskiActiveDataRaw(
 
 sealed class StudyRightTermination {
     abstract val date: LocalDate
+
     data class Resigned(override val date: LocalDate) : StudyRightTermination()
+
     data class Qualified(override val date: LocalDate) : StudyRightTermination()
 }
 

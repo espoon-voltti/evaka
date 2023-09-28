@@ -550,6 +550,7 @@ class DevApi(
         @RequestBody feeThresholds: FeeThresholds
     ): FeeThresholdsId =
         db.connect { dbc -> dbc.transaction { it.insertTestFeeThresholds(feeThresholds) } }
+
     data class DevCreateIncomeStatements(
         val personId: PersonId,
         val data: List<IncomeStatementBody>

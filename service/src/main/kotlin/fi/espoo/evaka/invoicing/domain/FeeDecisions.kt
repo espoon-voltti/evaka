@@ -51,8 +51,11 @@ data class FeeDecision(
 
     override val validFrom: LocalDate = validDuring.start
     override val validTo: LocalDate? = validDuring.end
+
     override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
+
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
+
     override fun contentEquals(decision: FeeDecision): Boolean =
         FeeDecisionDifference.getDifference(this, decision).isEmpty()
 
@@ -70,7 +73,9 @@ data class FeeDecision(
     }
 
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
+
     override fun isEmpty(): Boolean = this.children.isEmpty()
+
     override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
 }
 

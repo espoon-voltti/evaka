@@ -318,8 +318,11 @@ private fun stripFileExtension(fileName: String) = fileName.substringBefore(".")
 
 private sealed class SfiResponseCode {
     object Success : SfiResponseCode()
+
     object AccountNotFoundError : SfiResponseCode()
+
     object ValidationError : SfiResponseCode()
+
     data class Other(val code: Int) : SfiResponseCode()
 
     companion object {

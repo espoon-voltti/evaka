@@ -471,6 +471,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), employeeUser, now, id).data
+
     private fun nextState(id: ChildDocumentId, status: DocumentStatus) =
         controller.nextStatus(
             dbInstance(),
@@ -479,6 +480,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             id,
             ChildDocumentController.StatusChangeRequest(status)
         )
+
     private fun prevState(id: ChildDocumentId, status: DocumentStatus) =
         controller.prevStatus(
             dbInstance(),

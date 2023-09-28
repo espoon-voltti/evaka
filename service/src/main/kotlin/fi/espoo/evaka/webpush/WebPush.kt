@@ -55,6 +55,7 @@ class WebPushRequest(
             headers.copy(authorization = vapidJwt.toAuthorizationHeader()),
             body,
         )
+
     companion object {
         // Message Encryption for Web Push (MEWP)
         // Reference: https://datatracker.ietf.org/doc/html/rfc8291

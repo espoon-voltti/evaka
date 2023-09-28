@@ -8,14 +8,23 @@ import fi.espoo.evaka.decision.DecisionSendAddress
 
 interface IMessageProvider {
     fun getDecisionHeader(lang: MessageLanguage): String
+
     fun getDecisionContent(lang: MessageLanguage): String
+
     fun getFeeDecisionHeader(lang: MessageLanguage): String
+
     fun getFeeDecisionContent(lang: MessageLanguage): String
+
     fun getVoucherValueDecisionHeader(lang: MessageLanguage): String
+
     fun getVoucherValueDecisionContent(lang: MessageLanguage): String
+
     fun getAssistanceNeedDecisionHeader(lang: MessageLanguage): String
+
     fun getAssistanceNeedDecisionContent(lang: MessageLanguage): String
+
     fun getAssistanceNeedPreschoolDecisionHeader(lang: MessageLanguage): String
+
     fun getAssistanceNeedPreschoolDecisionContent(lang: MessageLanguage): String
 
     /**

@@ -330,6 +330,8 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
+
     private fun testPerson2() = createPerson("150786-1766", "Iines")
+
     private fun testPerson3() = createPerson("170679-601K", "Hannu")
 }

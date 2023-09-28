@@ -41,6 +41,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
         filter: FilterByMobile<T>
     ): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
+
     private data class Query<T : Id<*>>(private val filter: FilterByMobile<T>) :
         DatabaseActionRule.Scoped.Query<T, IsMobile> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
@@ -48,6 +49,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
                 is AuthenticatedUser.MobileDevice -> QuerySql.of { filter(user, now) }
                 else -> Pair(user, now)
             }
+
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -89,6 +91,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
                 else -> null
             }
     }
+
     private data class Deferred(private val authLevel: MobileAuthLevel) :
         DatabaseActionRule.Deferred<IsMobile> {
         override fun evaluate(params: IsMobile): AccessControlDecision =

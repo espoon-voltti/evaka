@@ -15,13 +15,20 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 
 sealed class AttachmentParent {
     data class Application(val applicationId: ApplicationId) : AttachmentParent()
+
     data class IncomeStatement(val incomeStatementId: IncomeStatementId) : AttachmentParent()
+
     data class Income(val incomeId: IncomeId) : AttachmentParent()
+
     data class MessageDraft(val draftId: MessageDraftId) : AttachmentParent()
+
     data class MessageContent(val messageContentId: MessageContentId) : AttachmentParent()
+
     data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) :
         AttachmentParent()
+
     data class FeeAlteration(val feeAlterationId: FeeAlterationId) : AttachmentParent()
+
     object None : AttachmentParent()
 }
 

@@ -66,9 +66,11 @@ data class HasUnitRole(
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
+
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet(), null)
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
+
     fun withUnitProviderTypes(vararg allOf: ProviderType) =
         copy(unitProviderTypes = allOf.toEnumSet())
 
@@ -109,6 +111,7 @@ SELECT EXISTS (
                 is AuthenticatedUser.Employee -> QuerySql.of { getUnitRoles(user, now) }
                 else -> Pair(user, now)
             }
+
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -184,6 +187,7 @@ SELECT EXISTS (
             object : DatabaseActionRule.Unscoped.Query<HasUnitRole> {
                 override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
                     Pair(user, now)
+
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<HasUnitRole>? =

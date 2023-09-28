@@ -82,6 +82,8 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
+
     private fun testPerson2() = createPerson("150786-1766", "Iines")
+
     private fun testPerson4() = createPerson("120915A931W", "Tupu")
 }

@@ -14,6 +14,7 @@ class MockDigitransit {
     private var mockAutocomplete: Autocomplete = Autocomplete(emptyList())
 
     fun autocomplete(): Autocomplete = lock.read { mockAutocomplete }
+
     fun setAutocomplete(mockResponse: Autocomplete) = lock.write { mockAutocomplete = mockResponse }
 
     data class Autocomplete(val features: List<Feature>)

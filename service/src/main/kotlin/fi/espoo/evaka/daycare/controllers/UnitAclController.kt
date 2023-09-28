@@ -328,7 +328,9 @@ class UnitAclController(private val accessControl: AccessControl) {
     }
 
     @ExcludeCodeGen data class FullAclInfo(val role: UserRole, val update: AclUpdate)
+
     data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
+
     data class DaycareAclResponse(val aclRows: List<DaycareAclRow>)
 
     fun getRoleAddAction(role: UserRole): Action.Unit =

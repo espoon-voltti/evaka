@@ -58,8 +58,11 @@ abstract class RangeBasedSet<
     fun addAll(ranges: Sequence<Range>): This = ranges.fold(this.ranges, ::add).toThis()
 
     operator fun plus(range: Range): This = add(range)
+
     operator fun plus(set: RangeBasedSet<Point, Range, This>): This = addAll(set)
+
     operator fun plus(ranges: Iterable<Range>): This = addAll(ranges)
+
     operator fun plus(ranges: Sequence<Range>): This = addAll(ranges)
 
     /** Returns a new set with the given range removed from the currently contained ranges. */
@@ -78,8 +81,11 @@ abstract class RangeBasedSet<
     fun removeAll(ranges: Sequence<Range>): This = ranges.fold(this.ranges, ::remove).toThis()
 
     operator fun minus(range: Range): This = remove(range)
+
     operator fun minus(set: RangeBasedSet<Point, Range, This>): This = removeAll(set)
+
     operator fun minus(ranges: Iterable<Range>): This = removeAll(ranges)
+
     operator fun minus(ranges: Sequence<Range>): This = removeAll(ranges)
 
     /** Returns true if the given range is fully contained by the set. */

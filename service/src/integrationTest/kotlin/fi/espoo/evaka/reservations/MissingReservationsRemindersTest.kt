@@ -104,6 +104,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             )
         }
     }
+
     @Test
     fun `reminder is sent when a placement exists but there are no reservations`() {
         assertEquals(listOf(guardianEmail), getReminderRecipients())
@@ -178,6 +179,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                 createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
             )
         )
+
     private fun getReminderRecipients(): List<String> {
         scheduledJobs.sendMissingReservationReminders(db, clock)
         asyncJobRunner.runPendingJobsSync(clock)

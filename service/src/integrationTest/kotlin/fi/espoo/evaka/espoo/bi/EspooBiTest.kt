@@ -446,12 +446,16 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun String.looksLikeHeaderRow() = trim().contains(',')
 
     private fun Database.Transaction.insertTestArea(): AreaId = insertTestCareArea(DevCareArea())
+
     private fun Database.Transaction.insertTestDaycare(): DaycareId =
         insertTestDaycare(DevDaycare(areaId = insertTestArea()))
+
     private fun Database.Transaction.insertTestGroup(daycare: DaycareId? = null): GroupId =
         insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare ?: insertTestDaycare()))
+
     private fun Database.Transaction.insertTestChild(): ChildId =
         insertTestPerson(DevPerson()).also { insertTestChild(DevChild(it)) }
+
     private fun Database.Transaction.insertTestPlacement(daycare: DaycareId? = null): PlacementId =
         insertTestPlacement(
             DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare())

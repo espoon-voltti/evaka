@@ -30,6 +30,7 @@ sealed interface AccessControlDecision {
             is Denied -> false
             is None -> false
         }
+
     fun assert() =
         when (this) {
             is Permitted -> {}

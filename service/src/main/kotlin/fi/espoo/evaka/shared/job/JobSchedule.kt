@@ -14,8 +14,10 @@ import java.time.LocalTime
 
 interface JobSchedule {
     val jobs: List<ScheduledJobDefinition>
+
     companion object {
         fun daily(at: LocalTime): Schedule = Daily(europeHelsinki, at)
+
         fun cron(expression: String): Schedule = CronSchedule(expression, europeHelsinki)
     }
 }

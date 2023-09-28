@@ -32,38 +32,59 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     Comparable<HelsinkiDateTime> {
     val year: Int
         get() = toZonedDateTime().year
+
     val month: Month
         get() = toZonedDateTime().month
+
     val dayOfMonth: Int
         get() = toZonedDateTime().dayOfMonth
+
     val dayOfWeek: DayOfWeek
         get() = toZonedDateTime().dayOfWeek
+
     val hour: Int
         get() = toZonedDateTime().hour
+
     val minute: Int
         get() = toZonedDateTime().minute
+
     val second: Int
         get() = toZonedDateTime().second
 
     fun minusYears(years: Long): HelsinkiDateTime = update { it.minusYears(years) }
+
     fun minusMonths(months: Long): HelsinkiDateTime = update { it.minusMonths(months) }
+
     fun minusWeeks(weeks: Long): HelsinkiDateTime = update { it.minusWeeks(weeks) }
+
     fun minusDays(days: Long): HelsinkiDateTime = update { it.minusDays(days) }
+
     fun minusHours(hours: Long): HelsinkiDateTime = update { it.minusHours(hours) }
+
     fun minusMinutes(minutes: Long): HelsinkiDateTime = update { it.minusMinutes(minutes) }
+
     fun minusSeconds(seconds: Long): HelsinkiDateTime = update { it.minusSeconds(seconds) }
+
     operator fun minus(duration: TemporalAmount): HelsinkiDateTime = update { it + duration }
 
     fun plusYears(years: Long): HelsinkiDateTime = update { it.plusYears(years) }
+
     fun plusMonths(months: Long): HelsinkiDateTime = update { it.plusMonths(months) }
+
     fun plusWeeks(weeks: Long): HelsinkiDateTime = update { it.plusWeeks(weeks) }
+
     fun plusDays(days: Long): HelsinkiDateTime = update { it.plusDays(days) }
+
     fun plusHours(hours: Long): HelsinkiDateTime = update { it.plusHours(hours) }
+
     fun plusMinutes(minutes: Long): HelsinkiDateTime = update { it.plusMinutes(minutes) }
+
     fun plusSeconds(seconds: Long): HelsinkiDateTime = update { it.plusSeconds(seconds) }
+
     operator fun plus(duration: TemporalAmount): HelsinkiDateTime = update { it + duration }
 
     fun isAfter(other: HelsinkiDateTime): Boolean = this.instant.isAfter(other.instant)
+
     fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
 
     fun withTime(time: LocalTime): HelsinkiDateTime = update {
@@ -71,6 +92,7 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     }
 
     fun atStartOfDay() = withTime(LocalTime.MIN)
+
     fun atEndOfDay() = withTime(LocalTime.MAX)
 
     /**
@@ -111,6 +133,7 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
         from(f(toZonedDateTime()).toInstant())
 
     override fun compareTo(other: HelsinkiDateTime): Int = this.instant.compareTo(other.instant)
+
     override fun toString(): String = toZonedDateTime().toString()
 
     companion object {
@@ -213,6 +236,7 @@ data class HelsinkiDateTimeRange(
                 }
             }
         } else BoundedRange.SubtractResult.Original(this)
+
     override fun merge(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
 
@@ -268,6 +292,7 @@ data class HelsinkiDateTimeRange(
     companion object {
         fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =
             if (start < end) HelsinkiDateTimeRange(start, end) else null
+
         fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
             HelsinkiDateTimeRange(
                 HelsinkiDateTime.of(date, startTime),

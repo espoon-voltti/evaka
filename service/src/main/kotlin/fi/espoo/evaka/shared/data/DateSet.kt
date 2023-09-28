@@ -20,10 +20,14 @@ import java.util.Objects
 class DateSet private constructor(ranges: List<FiniteDateRange>) :
     RangeBasedSet<LocalDate, FiniteDateRange, DateSet>(ranges) {
     override fun List<FiniteDateRange>.toThis(): DateSet = if (isEmpty()) EMPTY else DateSet(this)
+
     override fun range(start: LocalDate, end: LocalDate): FiniteDateRange =
         FiniteDateRange(start, end)
+
     override fun equals(other: Any?): Boolean = other is DateSet && this.ranges == other.ranges
+
     override fun hashCode(): Int = Objects.hash(ranges)
+
     override fun toString(): String =
         ranges.joinToString(separator = ",", prefix = "{", postfix = "}")
 

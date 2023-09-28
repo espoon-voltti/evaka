@@ -65,7 +65,8 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val closingDate = LocalDate.now()
         db.transaction {
             it.createUpdate(
-                    "UPDATE DAYCARE set closing_date = current_date, updated = :now WHERE id = :daycareId".trimIndent()
+                    "UPDATE DAYCARE set closing_date = current_date, updated = :now WHERE id = :daycareId"
+                        .trimIndent()
                 )
                 .bind("daycareId", testDaycare.id)
                 .bind("closingDate", closingDate)
@@ -83,7 +84,8 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         clock.tick()
         db.transaction {
             it.createUpdate(
-                    "UPDATE DAYCARE set closing_date = NULL, updated = :now WHERE id = :daycareId".trimIndent()
+                    "UPDATE DAYCARE set closing_date = NULL, updated = :now WHERE id = :daycareId"
+                        .trimIndent()
                 )
                 .bind("daycareId", testDaycare.id)
                 .bind("now", clock.now())

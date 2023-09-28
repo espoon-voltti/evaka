@@ -18,5 +18,6 @@ sealed class DatabaseForm {
     abstract class DaycareForm : DatabaseForm()
 
     abstract fun hideGuardianAddress(): DatabaseForm
+
     abstract fun hideChildAddress(): DatabaseForm
 }

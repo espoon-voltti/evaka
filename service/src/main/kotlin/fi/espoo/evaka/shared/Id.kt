@@ -13,82 +13,159 @@ import java.util.UUID
 
 sealed interface DatabaseTable {
     sealed class Absence : DatabaseTable
+
     sealed class Application : DatabaseTable
+
     sealed class ApplicationNote : DatabaseTable
+
     sealed class Area : DatabaseTable
+
     sealed class AssistanceAction : DatabaseTable
+
     sealed class AssistanceActionOption : DatabaseTable
+
     sealed class AssistanceFactor : DatabaseTable
+
     sealed class AssistanceNeedDecision : DatabaseTable
+
     sealed class AssistanceNeedDecisionGuardian : DatabaseTable
+
     sealed class AssistanceNeedPreschoolDecision : DatabaseTable
+
     sealed class AssistanceNeedPreschoolDecisionGuardian : DatabaseTable
+
     sealed class AssistanceNeedVoucherCoefficient : DatabaseTable
+
     sealed class Attachment : DatabaseTable
+
     sealed class Attendance : DatabaseTable
+
     sealed class AttendanceReservation : DatabaseTable
+
     sealed class BackupCare : DatabaseTable
+
     sealed class BackupPickup : DatabaseTable
+
     sealed class Daycare : DatabaseTable
+
     sealed class CalendarEvent : DatabaseTable
+
     sealed class CalendarEventAttendee : DatabaseTable
+
     sealed class ChildConsent : DatabaseTable
+
     sealed class ChildDailyNote : DatabaseTable
+
     sealed class ChildDiscussion : DatabaseTable
+
     sealed class ChildDocument : DatabaseTable
+
     sealed class ChildImage : DatabaseTable
+
     sealed class ChildStickyNote : DatabaseTable
+
     sealed class GroupNote : DatabaseTable
+
     sealed class DailyServicesTime : DatabaseTable
+
     sealed class DailyServicesTimeNotification : DatabaseTable
+
     sealed class DaycareAssistance : DatabaseTable
+
     sealed class DaycareCaretaker : DatabaseTable
+
     sealed class Decision : DatabaseTable
+
     sealed class DocumentTemplate : DatabaseTable
+
     sealed class Employee : DatabaseTable
+
     sealed class EvakaUser : DatabaseTable
+
     sealed class FeeAlteration : DatabaseTable
+
     sealed class FeeDecision : DatabaseTable
+
     sealed class FeeThresholds : DatabaseTable
+
     sealed class FosterParent : DatabaseTable
+
     sealed class Group : DatabaseTable
+
     sealed class GroupPlacement : DatabaseTable
+
     sealed class HolidayPeriod : DatabaseTable
+
     sealed class HolidayQuestionnaire : DatabaseTable
+
     sealed class Income : DatabaseTable
+
     sealed class IncomeNotification : DatabaseTable
+
     sealed class IncomeStatement : DatabaseTable
+
     sealed class Invoice : DatabaseTable
+
     sealed class InvoiceCorrection : DatabaseTable
+
     sealed class InvoiceRow : DatabaseTable
+
     sealed class KoskiStudyRight : DatabaseTable
+
     sealed class Message : DatabaseTable
+
     sealed class MessageAccount : DatabaseTable
+
     sealed class MessageContent : DatabaseTable
+
     sealed class MessageDraft : DatabaseTable
+
     sealed class MessageRecipients : DatabaseTable
+
     sealed class MessageThread : DatabaseTable
+
     sealed class MessageThreadFolder : DatabaseTable
+
     sealed class MobileDevice : DatabaseTable
+
     sealed class OtherAssistanceMeasure : DatabaseTable
+
     sealed class Pairing : DatabaseTable
+
     sealed class Parentship : DatabaseTable
+
     sealed class Partnership : DatabaseTable
+
     sealed class Payment : DatabaseTable
+
     sealed class PedagogicalDocument : DatabaseTable
+
     sealed class Person : DatabaseTable
+
     sealed class Placement : DatabaseTable
+
     sealed class PlacementPlan : DatabaseTable
+
     sealed class PreschoolAssistance : DatabaseTable
+
     sealed class ServiceNeed : DatabaseTable
+
     sealed class ServiceNeedOption : DatabaseTable
+
     sealed class ServiceNeedOptionVoucherValue : DatabaseTable
+
     sealed class StaffAttendance : DatabaseTable
+
     sealed class StaffAttendanceExternal : DatabaseTable
+
     sealed class StaffAttendancePlan : DatabaseTable
+
     sealed class StaffOccupancyCoefficient : DatabaseTable
+
     sealed class VasuDocument : DatabaseTable
+
     sealed class VasuTemplate : DatabaseTable
+
     sealed class VoucherValueDecision : DatabaseTable
 }
 
@@ -255,6 +332,7 @@ typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 @JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)
 data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
     override fun toString(): String = raw.toString()
+
     override fun compareTo(other: Id<*>): Int = this.raw.compareTo(other.raw)
 
     class FromJson<T> : StdConverter<UUID, Id<*>>() {

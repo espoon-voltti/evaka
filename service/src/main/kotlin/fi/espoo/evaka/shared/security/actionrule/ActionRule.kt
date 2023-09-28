@@ -82,13 +82,16 @@ object DatabaseActionRule {
         val user: AuthenticatedUser,
         val now: HelsinkiDateTime
     )
+
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
     }
 
     interface Params {
         fun isPermittedForSomeTarget(ctx: QueryContext): Boolean
+
         override fun hashCode(): Int
+
         override fun equals(other: Any?): Boolean
     }
 
@@ -105,9 +108,12 @@ object DatabaseActionRule {
              * skip execution of one if we already have cached results from the other one
              */
             fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
+
             fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
+
             fun queryWithParams(ctx: QueryContext, params: P): QuerySql<T>?
         }
+
         data class Simple<T, P : Params>(override val params: P, override val query: Query<T, P>) :
             Scoped<T, P>
     }
@@ -123,6 +129,7 @@ object DatabaseActionRule {
              * skip execution of one if we already have cached results from the other one
              */
             fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
+
             fun execute(ctx: QueryContext): Deferred<P>?
         }
     }
@@ -138,6 +145,7 @@ internal data class RoleAndFeatures(
 
 sealed interface AccessControlFilter<out T> {
     object PermitAll : AccessControlFilter<Nothing>
+
     data class Some<T>(val filter: QuerySql<T>) : AccessControlFilter<T>
 }
 
