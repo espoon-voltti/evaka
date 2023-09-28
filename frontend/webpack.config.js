@@ -169,7 +169,6 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
             {
               loader: 'ts-loader',
               options: {
-                onlyCompileBundledFiles: true,
                 projectReferences: true
               }
             }
