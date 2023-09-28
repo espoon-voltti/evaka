@@ -780,7 +780,7 @@ data class ScheduledJobsEnv<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>)
         ) =
             ScheduledJobsEnv(
                 defaults.mapValues { (job, default) ->
-                    val envPrefix = "${prefix}.${snakeCaseName(job)}"
+                    val envPrefix = "$prefix.${snakeCaseName(job)}"
                     ScheduledJobSettings(
                         enabled = env.lookup("$envPrefix.enabled") ?: default.enabled,
                         schedule = env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)

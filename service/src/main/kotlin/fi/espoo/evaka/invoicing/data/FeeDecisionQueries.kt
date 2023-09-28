@@ -85,7 +85,7 @@ SELECT
         FROM fee_decision_child as part
         WHERE part.fee_decision_id = decision.id
     ), '[]'::jsonb) AS children
-FROM fee_decision${if(v2) "_v2" else ""} as decision
+FROM fee_decision${if (v2) "_v2" else ""} as decision
 WHERE ${predicate(predicate.forTable("decision"))}
 """
         )
@@ -193,7 +193,7 @@ fun Database.Transaction.upsertFeeDecisions(decisions: List<FeeDecision>) {
 fun Database.Transaction.insertFeeDecisions(decisions: List<FeeDecision>, v2: Boolean = false) {
     val sql =
         """
-        INSERT INTO fee_decision${if(v2) "_v2" else ""} (
+        INSERT INTO fee_decision${if (v2) "_v2" else ""} (
             id,
             status,
             decision_number,
@@ -299,7 +299,7 @@ private fun Database.Transaction.insertChildren(
 ) {
     val sql =
         """
-        INSERT INTO fee_decision_child${if(v2) "_v2" else ""} (
+        INSERT INTO fee_decision_child${if (v2) "_v2" else ""} (
             id,
             fee_decision_id,
             child_id,
@@ -374,7 +374,7 @@ fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecision
 fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>, v2: Boolean = false) {
     if (ids.isEmpty()) return
 
-    createUpdate("DELETE FROM fee_decision${if(v2) "_v2" else ""} WHERE id = ANY(:ids)")
+    createUpdate("DELETE FROM fee_decision${if (v2) "_v2" else ""} WHERE id = ANY(:ids)")
         .bind("ids", ids)
         .execute()
 }
@@ -826,7 +826,7 @@ fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(
     v2: Boolean = false
 ) {
     createUpdate(
-            "SELECT id FROM fee_decision${if(v2) "_v2" else ""} WHERE head_of_family_id = :headOfFamily FOR UPDATE"
+            "SELECT id FROM fee_decision${if (v2) "_v2" else ""} WHERE head_of_family_id = :headOfFamily FOR UPDATE"
         )
         .bind("headOfFamily", headOfFamily)
         .execute()

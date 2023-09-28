@@ -14,9 +14,15 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.varda.*
+import fi.espoo.evaka.varda.deleteVardaOrganizerChildByVardaChildId
+import fi.espoo.evaka.varda.deleteVardaServiceNeedByVardaChildId
+import fi.espoo.evaka.varda.getServiceNeedsForVardaByChild
+import fi.espoo.evaka.varda.getVardaChildToEvakaChild
+import fi.espoo.evaka.varda.getVardaChildrenToReset
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
+import fi.espoo.evaka.varda.setToBeReset
+import fi.espoo.evaka.varda.setVardaResetChildResetTimestamp
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate

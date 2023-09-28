@@ -1,4 +1,4 @@
-// ktlint-disable filename
+@file:Suppress("ktlint:standard:filename")
 
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //

@@ -50,7 +50,7 @@ class VardaService(
     private val ophMunicipalityCode = ophEnv.municipalityCode
     private val municipalOrganizerOid = ophEnv.organizerOid
     private val ophMunicipalOrganizerIdUrl =
-        "${vardaEnv.url}/v1/vakajarjestajat/${municipalOrganizerOid}/"
+        "${vardaEnv.url}/v1/vakajarjestajat/$municipalOrganizerOid/"
 
     val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 

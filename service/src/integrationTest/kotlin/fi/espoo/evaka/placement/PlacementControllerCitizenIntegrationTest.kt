@@ -4,10 +4,12 @@
 
 package fi.espoo.evaka.placement
 
-import fi.espoo.evaka.*
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
+import fi.espoo.evaka.insertApplication
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -24,7 +26,13 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.snPreschoolDaycare45
+import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.test.getApplicationStatus
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -784,7 +792,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `should log a PlacementTerminate Audit event`(capturedOutput: CapturedOutput) {
-
         lateinit var terminatedPlacementId: PlacementId
 
         db.transaction { tx ->

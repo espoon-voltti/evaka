@@ -668,9 +668,9 @@ FROM child_document
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-${if(editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.editable })}::child_document_status[])" else ""}
-${if(deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
-${if(publishable) "AND status <> 'COMPLETED'" else ""}
+${if (editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.editable })}::child_document_status[])" else ""}
+${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
+${if (publishable) "AND status <> 'COMPLETED'" else ""}
             """
                     .trimIndent()
             )
