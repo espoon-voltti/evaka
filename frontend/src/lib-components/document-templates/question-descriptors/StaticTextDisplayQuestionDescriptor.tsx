@@ -34,7 +34,7 @@ type ApiQuestion = Question.StaticTextDisplayQuestion
 const templateForm = object({
   id: validated(string(), nonEmpty),
   label: string(),
-  text: validated(string(), nonEmpty),
+  text: string(),
   infoText: string()
 })
 
@@ -70,6 +70,7 @@ type QuestionForm = typeof questionForm
 const MoreVerticalMargin = styled.div`
   margin-top: ${defaultMargins.m};
   margin-bottom: ${defaultMargins.L};
+  width: 100%;
 `
 
 const View = React.memo(function View({
@@ -84,24 +85,35 @@ const View = React.memo(function View({
   const { label, text, infoText } = useFormFields(template)
   return (
     <MoreVerticalMargin>
-      <ExpandingInfo
-        info={readOnly ? undefined : infoText.value()}
-        width="full"
-        ariaLabel=""
-        closeLabel={i18n.common.close}
-      >
-        <FixedSpaceColumn fullWidth>
-          {label && <Label>{label.state}</Label>}
-          <div>
-            {text.state.split('\n').map((line, i) => (
-              <Fragment key={i}>
-                {line}
-                <br />
-              </Fragment>
-            ))}
-          </div>
-        </FixedSpaceColumn>
-      </ExpandingInfo>
+      <FixedSpaceColumn fullWidth>
+        {!!label.state && (
+          <ExpandingInfo
+            info={readOnly ? undefined : infoText.value()}
+            width="full"
+            ariaLabel=""
+            closeLabel={i18n.common.close}
+          >
+            <Label>{label.state}</Label>
+          </ExpandingInfo>
+        )}
+        {!!text.state && (
+          <ExpandingInfo
+            info={readOnly || label.state ? undefined : infoText.value()}
+            width="full"
+            ariaLabel=""
+            closeLabel={i18n.common.close}
+          >
+            <div>
+              {text.state.split('\n').map((line, i) => (
+                <Fragment key={i}>
+                  {line}
+                  <br />
+                </Fragment>
+              ))}
+            </div>
+          </ExpandingInfo>
+        )}
+      </FixedSpaceColumn>
     </MoreVerticalMargin>
   )
 })
