@@ -49,7 +49,7 @@ dependencies {
         api("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
         api(libs.flyingsaucer.core)
         api(libs.flyingsaucer.pdf.openpdf)
-        api("org.yaml:snakeyaml:1.33")
+        api("org.yaml:snakeyaml:2.2")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
