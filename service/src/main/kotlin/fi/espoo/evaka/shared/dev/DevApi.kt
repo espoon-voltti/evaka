@@ -1596,6 +1596,7 @@ RETURNING id
         db.connect { dbc -> dbc.transaction { tx -> tx.insertPreschoolTerm(body) } }
     }
 
+    @Suppress("EmailMessageType", "ktlint:standard:enum-entry-name-case")
     enum class EmailMessageType {
         pendingDecisionNotification,
         clubApplicationReceived,

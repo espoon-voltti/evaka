@@ -215,7 +215,7 @@ fun validateStatusTransition(
     }
     val newStatus =
         statusList.getOrNull(if (goingForward) currentIndex + 1 else currentIndex - 1)
-            ?: throw BadRequest("Already in the ${if(goingForward) "final" else "first"} status")
+            ?: throw BadRequest("Already in the ${if (goingForward) "final" else "first"} status")
     if (newStatus != requestedStatus) {
         throw Conflict("Idempotency issue: statuses do not match")
     }

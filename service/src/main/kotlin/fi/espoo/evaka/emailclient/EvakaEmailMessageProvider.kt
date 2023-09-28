@@ -30,7 +30,7 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
     private fun frontPageLink(language: Language) = link(language, "")
     private fun calendarLink(language: Language) = link(language, "/calendar")
     private fun messageLink(language: Language, threadId: MessageThreadId) =
-        link(language, "/messages/${threadId}")
+        link(language, "/messages/$threadId")
     private fun childLink(language: Language, childId: ChildId) =
         link(language, "/children/$childId")
     private fun incomeLink(language: Language) = link(language, "/income")
@@ -487,7 +487,7 @@ $unsubscribeEn
                     if (event.period.end != event.period.start) {
                         period += "-${event.period.end.format(format)}"
                     }
-                    "<li>${period}: ${event.title}</li>"
+                    "<li>$period: ${event.title}</li>"
                 } +
                 "</ul>"
         return EmailContent.fromHtml(

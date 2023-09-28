@@ -67,7 +67,6 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         endDate: LocalDate,
         mealTimes: MealReportConfig
     ): FamilyDaycareMealReportResult {
-
         val resultRows =
             createQuery<DatabaseTable> {
                     sql(
