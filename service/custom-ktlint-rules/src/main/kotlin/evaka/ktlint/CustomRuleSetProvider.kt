@@ -10,5 +10,9 @@ import com.pinterest.ktlint.rule.engine.core.api.RuleSetId
 
 class CustomRuleSetProvider : RuleSetProviderV3(RuleSetId("evaka")) {
     override fun getRuleProviders(): Set<RuleProvider> =
-        setOf(RuleProvider { NoJUnit4Imports() }, RuleProvider { NoPrint() })
+        setOf(
+            RuleProvider { NoJUnit4Imports() },
+            RuleProvider { NoPrint() },
+            RuleProvider { NoTripleEquals() }
+        )
 }
