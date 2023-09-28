@@ -29,6 +29,7 @@ import {
 
 import CreateApplicationModal from './applications/create-application-modal'
 import { IncomeSection } from './guardian-information'
+import { VasuPage } from './vasu/vasu'
 
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
@@ -57,6 +58,13 @@ export default class ChildInformationPage {
     await this.page
       .find('[data-qa="person-guardians-collapsible"][data-isloading="false"]')
       .waitUntilVisible()
+  }
+
+  async assertName(lastName: string, firstName: string) {
+    await this.page.findByDataQa('person-last-name').assertTextEquals(lastName)
+    await this.page
+      .findByDataQa('person-first-names')
+      .assertTextEquals(firstName)
   }
 
   async clickEdit() {
@@ -376,6 +384,24 @@ export class ChildDocumentsSection extends Section {
 
   async addNewVasu() {
     return this.#addNewVasu.click()
+  }
+
+  async assertCurriculumDocuments(expectedRows: { id: UUID }[]) {
+    const rows = this.page.findAllByDataQa('curriculum-document-row')
+    await rows.assertCount(expectedRows.length)
+    await Promise.all(
+      expectedRows.map(async (expected, index) => {
+        const row = rows.nth(index)
+        await row
+          .findByDataQa(`curriculum-document-${expected.id}`)
+          .waitUntilVisible()
+      })
+    )
+  }
+
+  async openCurriculumDocument(id: UUID) {
+    await this.page.findByDataQa(`curriculum-document-${id}`).click()
+    return new VasuPage(this.page)
   }
 
   readonly createDocumentButton = this.page.findByDataQa('create-document')

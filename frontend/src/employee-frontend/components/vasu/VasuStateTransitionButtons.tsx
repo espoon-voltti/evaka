@@ -36,11 +36,13 @@ const PublishingDisclaimer = styled(FixedSpaceRow)`
 
 export function VasuStateTransitionButtons({
   childId,
+  childIdFromUrl,
   documentId,
   permittedActions,
   state
 }: {
   childId: UUID
+  childIdFromUrl: UUID | undefined
   documentId: UUID
   permittedActions: Action.VasuDocument[]
   state: VasuDocumentState
@@ -131,12 +133,16 @@ export function VasuStateTransitionButtons({
                 data-qa="edit-button"
                 text={i18n.common.edit}
                 disabled={!permittedActions.includes('UPDATE')}
-                onClick={() => navigate(`/vasu/${documentId}/edit`)}
+                onClick={() =>
+                  navigate(
+                    `/child-information/${childIdFromUrl}/curriculum-document/${documentId}/edit`
+                  )
+                }
               />
             )}
           </>
         )}
-        <LeaveVasuPageButton childId={childId} />
+        <LeaveVasuPageButton childId={childIdFromUrl ?? childId} />
       </ButtonContainer>
       {(isMovedToReadyAllowed || isMovedToReviewedAllowed) && (
         <PublishingDisclaimer alignItems="center" spacing="xs">

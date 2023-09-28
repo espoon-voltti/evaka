@@ -37,6 +37,10 @@ class VasuPageCommon {
     await this.#documentSection.first().waitUntilVisible()
   }
 
+  async assertDocumentNotVisible() {
+    await this.#documentSection.first().waitUntilHidden()
+  }
+
   get basicInfoSection(): BasicInfoSection {
     return new BasicInfoSection(this.getDocumentSection(0))
   }
@@ -184,6 +188,7 @@ export class VasuPage extends VasuPageCommon {
   )
 
   readonly #templateName = this.page.find('[data-qa="template-name"]')
+  readonly #backButton = this.page.findByDataQa('back-button')
   readonly #editButton = this.page.find('[data-qa="edit-button"]')
 
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
@@ -208,6 +213,10 @@ export class VasuPage extends VasuPageCommon {
 
   async assertTemplateName(expected: string) {
     await this.#templateName.assertTextEquals(expected)
+  }
+
+  async back() {
+    await this.#backButton.click()
   }
 
   async edit() {

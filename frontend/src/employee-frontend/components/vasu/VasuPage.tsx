@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -27,6 +28,7 @@ const FooterContainer = styled.div`
 
 export default React.memo(function VasuPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
+  const { childId: childIdFromUrl } = useParams()
 
   const { vasu, content, permittedActions, translations } = useVasu(id)
 
@@ -69,6 +71,7 @@ export default React.memo(function VasuPage() {
           {vasu && (
             <VasuStateTransitionButtons
               childId={vasu.basics.child.id}
+              childIdFromUrl={childIdFromUrl}
               documentId={vasu.id}
               permittedActions={permittedActions}
               state={vasu.documentState}

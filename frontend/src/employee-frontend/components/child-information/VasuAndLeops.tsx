@@ -176,9 +176,10 @@ function VasuInitialization({
           setTemplates(undefined)
         },
         loading: () => setInitializing(true),
-        success: (id) => navigate(`/vasu/${id}`)
+        success: (id) =>
+          navigate(`/child-information/${childId}/curriculum-document/${id}`)
       }),
-    [navigate, i18n, setErrorMessage]
+    [childId, navigate, i18n, setErrorMessage]
   )
   const createVasu = useRestApi(createVasuDocument, handleVasuResult)
 
@@ -286,11 +287,16 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
         <Table>
           <Tbody>
             {vasus.map(({ data: vasu, permittedActions }) => (
-              <Tr key={vasu.id}>
+              <Tr key={vasu.id} data-qa="curriculum-document-row">
                 <Td>
                   <InlineButton
-                    onClick={() => navigate(`/vasu/${vasu.id}`)}
+                    onClick={() =>
+                      navigate(
+                        `/child-information/${childId}/curriculum-document/${vasu.id}`
+                      )
+                    }
                     text={vasu.name}
+                    data-qa={`curriculum-document-${vasu.id}`}
                   />
                 </Td>
                 <Td>{getDates(vasu)}</Td>
@@ -319,7 +325,11 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                     ) : null
                   ) : (
                     <InlineButton
-                      onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
+                      onClick={() =>
+                        navigate(
+                          `/child-information/${childId}/curriculum-document/${vasu.id}/edit`
+                        )
+                      }
                       text={i18n.common.edit}
                       disabled={!permittedActions.includes('UPDATE')}
                     />

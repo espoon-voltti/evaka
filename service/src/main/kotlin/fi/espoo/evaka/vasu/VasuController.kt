@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
+import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -101,19 +102,22 @@ class VasuController(
                         Action.Child.READ_VASU_DOCUMENT,
                         childId
                     )
-                    val summaries = tx.getVasuDocumentSummaries(childId)
+                    val documents =
+                        tx.getVasuDocumentSummaries(childId) +
+                            tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
+                                tx.getVasuDocumentSummaries(duplicate.id)
+                            }
                     val permittedActions =
                         accessControl.getPermittedActions<VasuDocumentId, Action.VasuDocument>(
                             tx,
                             user,
                             clock,
-                            summaries.map { it.id }
+                            documents.map { it.id }
                         )
-                    summaries.map {
-                        VasuDocumentSummaryWithPermittedActions(
-                            it,
-                            permittedActions[it.id] ?: emptySet()
-                        )
+                    documents.mapNotNull { document ->
+                        permittedActions[document.id]
+                            ?.takeIf { it.contains(Action.VasuDocument.READ) }
+                            ?.let { VasuDocumentSummaryWithPermittedActions(document, it) }
                     }
                 }
             }

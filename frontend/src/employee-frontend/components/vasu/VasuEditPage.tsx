@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -41,6 +41,7 @@ const StatusContainer = styled.div`
 
 export default React.memo(function VasuEditPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
+  const { childId: childIdFromUrl } = useParams()
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -103,7 +104,13 @@ export default React.memo(function VasuEditPage() {
               <Button
                 text={i18n.vasu.checkInPreview}
                 disabled={status.state != 'clean'}
-                onClick={() => navigate(`/vasu/${vasu.id}`)}
+                onClick={() =>
+                  navigate(
+                    `/child-information/${
+                      childIdFromUrl ?? vasu.basics.child.id
+                    }/curriculum-document/${vasu.id}`
+                  )
+                }
                 data-qa="vasu-preview-btn"
                 primary
               />

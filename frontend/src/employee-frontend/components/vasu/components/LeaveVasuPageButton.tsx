@@ -27,6 +27,7 @@ export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
         text={i18n.vasu.leavePage}
         onClick={() => navigate(`/child-information/${childId}`)}
         disabled={disabled}
+        data-qa="back-button"
       />
     </ExitButtonWrapper>
   )
