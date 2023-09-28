@@ -10,10 +10,18 @@ import {
   toRedisClientOpts
 } from './shared/config.js'
 import './tracer.js'
-import { logError, logInfo } from './shared/logging.js'
-import enduserGwApp from './enduser/app.js'
-import internalGwApp from './internal/app.js'
+import { logError, loggingMiddleware, logInfo } from './shared/logging.js'
+import { enduserGwRouter } from './enduser/app.js'
+import { internalGwRouter } from './internal/app.js'
 import * as redis from 'redis'
+import csp from './shared/routes/csp.js'
+import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
+import express from 'express'
+import { trustReverseProxy } from './shared/reverse-proxy.js'
+import helmet from 'helmet'
+import { assertRedisConnection } from './shared/redis-client.js'
+import tracing from './shared/middleware/tracing.js'
+import passport from 'passport'
 
 sourceMapSupport.install()
 const config = configFromEnv()
@@ -28,20 +36,44 @@ redisClient.connect().catch((err) => {
 // Don't prevent the app from exiting if a redis connection is alive.
 redisClient.unref()
 
+const app = express()
+trustReverseProxy(app)
+app.set('etag', false)
+
+app.use(
+  helmet({
+    // Content-Security-Policy is set by the nginx proxy
+    contentSecurityPolicy: false
+  })
+)
+app.get('/health', (_, res) => {
+  assertRedisConnection(redisClient)
+    .then(() => {
+      res.status(200).json({ status: 'UP' })
+    })
+    .catch(() => {
+      res.status(503).json({ status: 'DOWN' })
+    })
+})
+app.use(tracing)
+app.use(loggingMiddleware)
+
+passport.serializeUser<Express.User>((user, done) => done(null, user))
+passport.deserializeUser<Express.User>((user, done) => done(null, user))
+
 if (!gatewayRole || gatewayRole === 'enduser') {
-  const app = enduserGwApp(config, redisClient)
-  app.listen(httpPort.enduser, () =>
-    logInfo(
-      `Evaka Application API Gateway listening on port ${httpPort.enduser}`
-    )
-  )
+  app.use('/api/application', enduserGwRouter(config, redisClient))
 }
 if (!gatewayRole || gatewayRole === 'internal') {
-  const app = internalGwApp(config, redisClient)
-  const server = app.listen(httpPort.internal, () =>
-    logInfo(`Evaka Internal API Gateway listening on port ${httpPort.internal}`)
-  )
-
-  server.keepAliveTimeout = 70 * 1000
-  server.headersTimeout = 75 * 1000
+  app.use('/api/csp', csp)
+  app.use('/api/internal', internalGwRouter(config, redisClient))
 }
+app.use(fallbackErrorHandler)
+
+const server = app.listen(httpPort, () =>
+  logInfo(
+    `Evaka API Gateway (role ${gatewayRole}) listening on port ${httpPort}`
+  )
+)
+server.keepAliveTimeout = 70 * 1000
+server.headersTimeout = 75 * 1000

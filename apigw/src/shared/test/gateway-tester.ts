@@ -11,10 +11,14 @@ import http from 'http'
 import express from 'express'
 import { Cookie, CookieJar } from 'tough-cookie'
 import nock from 'nock'
-import { evakaServiceUrl } from '../config.js'
+import { Config, evakaServiceUrl } from '../config.js'
 import { sessionCookie, SessionType } from '../session.js'
 import { csrfCookieName } from '../middleware/csrf.js'
 import { CitizenUser, EmployeeUser } from '../service-client.js'
+import { MockRedisClient } from './mock-redis-client.js'
+import { enduserGwRouter } from '../../enduser/app.js'
+import { internalGwRouter } from '../../internal/app.js'
+import passport from 'passport'
 
 export class GatewayTester {
   public readonly client: AxiosInstance
@@ -128,9 +132,15 @@ export class GatewayTester {
   }
 
   public static async start(
-    app: express.Application,
+    config: Config,
     sessionType: SessionType
   ): Promise<GatewayTester> {
+    const app = express()
+    const redisClient = new MockRedisClient()
+    app.use('/api/application', enduserGwRouter(config, redisClient))
+    app.use('/api/internal', internalGwRouter(config, redisClient))
+    passport.serializeUser<Express.User>((user, done) => done(null, user))
+    passport.deserializeUser<Express.User>((user, done) => done(null, user))
     return new Promise((resolve) => {
       const server = app.listen(() => {
         resolve(new GatewayTester(server, sessionType))

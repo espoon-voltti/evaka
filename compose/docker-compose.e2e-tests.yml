@@ -22,6 +22,5 @@ services:
     depends_on:
       - keycloak
       - evaka-proxy
-      - enduser-gw
-      - internal-gw
+      - api-gw
       - evaka-srv

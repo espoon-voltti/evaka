@@ -10,6 +10,7 @@ import { assertStringProp } from '../shared/express.js'
 import { getEmployees } from '../shared/dev-api.js'
 import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
 import { employeeLogin } from '../shared/service-client.js'
+import { Sessions } from '../shared/session.js'
 
 const Employee = z.object({
   externalId: z.string(),
@@ -18,9 +19,9 @@ const Employee = z.object({
   email: z.string()
 })
 
-export function createDevAdRouter(): Router {
+export function createDevAdRouter(sessions: Sessions): Router {
   return createDevAuthRouter({
-    sessionType: 'employee',
+    sessions,
     root: '/employee',
     strategyName: 'dev-ad',
     loginFormHandler: async (req, res) => {

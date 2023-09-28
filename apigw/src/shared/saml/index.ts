@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs'
 import certificates, { TrustedCertificates } from '../certificates.js'
 import express from 'express'
 import path from 'node:path'
-import { logoutWithOnlyToken } from '../session.js'
+import { Sessions } from '../session.js'
 import { fromCallback } from '../promise-utils.js'
 
 export function createSamlConfig(
@@ -72,6 +72,7 @@ const SamlProfileId = z.object({
 })
 
 export function createSamlStrategy(
+  sessions: Sessions,
   config: SamlConfig,
   profileSchema: z.AnyZodObject,
   login: (profile: Profile) => Promise<EvakaSessionUser>
@@ -120,7 +121,7 @@ export function createSamlStrategy(
           profile.nameID,
           profile.sessionIndex
         )
-        const user = await logoutWithOnlyToken(logoutToken)
+        const user = await sessions.logoutWithToken(logoutToken)
         if (user) {
           // Set req.user for *this request only*
           await fromCallback((cb) =>

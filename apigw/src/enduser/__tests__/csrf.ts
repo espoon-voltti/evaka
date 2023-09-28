@@ -5,9 +5,7 @@
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
 import { csrfCookieName } from '../../shared/middleware/csrf.js'
 import { CitizenUser } from '../../shared/service-client.js'
-import enduserGwApp from '../app.js'
 import { configFromEnv } from '../../shared/config.js'
-import { MockRedisClient } from '../../shared/test/mock-redis-client.js'
 
 const mockUser: CitizenUser = {
   id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'
@@ -16,9 +14,7 @@ const mockUser: CitizenUser = {
 describe('CSRF middleware and cookie handling in enduser-gw', () => {
   let tester: GatewayTester
   beforeAll(async () => {
-    const config = configFromEnv()
-    const app = enduserGwApp(config, new MockRedisClient())
-    tester = await GatewayTester.start(app, 'enduser')
+    tester = await GatewayTester.start(configFromEnv(), 'enduser')
   })
   beforeEach(async () => tester.login(mockUser))
   afterEach(async () => tester.afterEach())

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Express, Request } from 'express'
+import { Request } from 'express'
 import _ from 'lodash'
 import { pino } from 'pino'
 import { pinoHttp } from 'pino-http'
@@ -29,7 +29,7 @@ import {
 
 const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   base: {
-    appName: `evaka-${gatewayRole || 'dev'}-gw`,
+    appName: `evaka-${gatewayRole || 'api'}-gw`,
     appBuild: appBuild,
     appCommit: appCommit,
     env: volttiEnv,
@@ -151,22 +151,6 @@ const ACCESS_LOGGER_OPTS: pino.LoggerOptions = {
 
 const middlewareLogger = pino(_.merge({}, BASE_LOGGER_OPTS, ACCESS_LOGGER_OPTS))
 
-export default function setupMiddleware(app: Express) {
-  app.use(
-    pinoHttp({
-      logger: middlewareLogger,
-      serializers: {
-        req: reqSerializer([
-          userIdHashReqSerializer,
-          queryStringReqSerializer,
-          tracingReqSerializer
-        ]),
-        res: resSerializer([contentLengthResSerializer])
-      }
-    })
-  )
-}
-
 function tracingReqSerializer(req: UserPinoRequest): UserPinoRequest {
   return {
     spanId: req.raw.spanId,
@@ -209,3 +193,15 @@ export function contentLengthResSerializer(res: PinoResponse): PinoResponse {
   res.contentLength = Number(res.headers['content-length']) || -1
   return res
 }
+
+export const loggingMiddleware = pinoHttp({
+  logger: middlewareLogger,
+  serializers: {
+    req: reqSerializer([
+      userIdHashReqSerializer,
+      queryStringReqSerializer,
+      tracingReqSerializer
+    ]),
+    res: resSerializer([contentLengthResSerializer])
+  }
+})

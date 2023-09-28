@@ -14,8 +14,7 @@ interface LogResponse {
 }
 
 export const errorHandler: (v: boolean) => ErrorRequestHandler =
-  (includeErrorMessage: boolean) =>
-  (error, req, res, _next): Express.Response => {
+  (includeErrorMessage: boolean) => (error, req, res, next) => {
     // https://github.com/expressjs/csurf#custom-error-handling
     if (error.code === 'EBADCSRFTOKEN') {
       logError(
@@ -28,15 +27,19 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
         },
         error
       )
-      return res
-        .status(403)
-        .send({ message: 'CSRF token error' } as LogResponse)
+      if (!res.headersSent) {
+        res.status(403).send({ message: 'CSRF token error' } as LogResponse)
+      }
+      return
     }
     if (error instanceof InvalidRequest) {
       const response: LogResponse = {
         message: includeErrorMessage || debug ? error.message : null
       }
-      return res.status(400).json(response)
+      if (!res.headersSent) {
+        res.status(400).json(response)
+      }
+      return
     }
     if (error.response) {
       const response: LogResponse = {
@@ -45,15 +48,29 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
           : null,
         errorCode: error.response.data?.errorCode
       }
-      return res.status(error.response.status).json(response)
+      if (!res.headersSent) {
+        res.status(error.response.status).json(response)
+      }
+      return
     }
-    logError(
-      `Internal server error: ${error.message || error || 'No error object'}`,
-      req,
-      undefined,
-      error
-    )
-    return res
-      .status(500)
-      .json({ message: 'Internal server error' } as LogResponse)
+    return fallbackErrorHandler(error, req, res, next)
   }
+
+export const fallbackErrorHandler: ErrorRequestHandler = (
+  error,
+  req,
+  res,
+  _next
+) => {
+  logError(
+    `Internal server error: ${error.message || error || 'No error object'}`,
+    req,
+    undefined,
+    error
+  )
+  if (!res.headersSent) {
+    res
+      .status(500)
+      .json({ message: 'Internal server error' } satisfies LogResponse)
+  }
+}

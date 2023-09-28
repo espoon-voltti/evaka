@@ -7,6 +7,7 @@ import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client.js'
 import { Config } from '../shared/config.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
+import { Sessions } from '../shared/session.js'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
@@ -18,6 +19,7 @@ const AD_EMPLOYEE_NUMBER_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/employeenumber'
 
 export function createAdSamlStrategy(
+  sessions: Sessions,
   config: Config['ad'],
   samlConfig: SamlConfig
 ): SamlStrategy {
@@ -28,7 +30,7 @@ export function createAdSamlStrategy(
     [AD_EMAIL_KEY]: z.string().optional(),
     [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
   })
-  return createSamlStrategy(samlConfig, Profile, async (profile) => {
+  return createSamlStrategy(sessions, samlConfig, Profile, async (profile) => {
     const asString = (value: unknown) =>
       value == null ? undefined : String(value)
 

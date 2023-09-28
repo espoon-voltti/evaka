@@ -13,8 +13,8 @@ services:
       - "9099:8080"
     environment:
       RESOLVER: "127.0.0.11 ipv6=off"
-      ENDUSER_GW_URL: "http://enduser-gw:3010"
-      INTERNAL_GW_URL: "http://internal-gw:3020"
+      ENDUSER_GW_URL: "http://api-gw:3000"
+      INTERNAL_GW_URL: "http://api-gw:3000"
       STATIC_FILES_ENDPOINT_URL: "http://s3.mock.evaka:9090/static/frontend"
       RATE_LIMIT_CIDR_WHITELIST: "0.0.0.0/0;::/0"
       HTTP_SCHEME: "http"
@@ -24,17 +24,16 @@ services:
     #volumes:
     #  - ../frontend/proxy/files/etc/nginx/conf.d/nginx.conf.template:/etc/nginx/conf.d/nginx.conf.template
     depends_on:
-      - enduser-gw
-      - internal-gw
+      - api-gw
       - evaka-srv
       - keycloak
       - s3.mock.evaka
 
-  enduser-gw:
+  api-gw:
     image: ${EVAKA_GW_IMAGE}
     ports:
-      - "3010"
-    hostname: enduser-gw
+      - "3000"
+    hostname: api-gw
     depends_on:
       - redis
       - evaka-srv
@@ -45,7 +44,6 @@ services:
     environment:
       VOLTTI_ENV: local
       NODE_ENV: local
-      GATEWAY_ROLE: enduser
       EVAKA_SERVICE_URL: ${EVAKA_SERVICE_URL}
       COOKIE_SECRET: cookie_secret
       REDIS_HOST: ${EVAKA_REDIS_HOST}
@@ -54,31 +52,6 @@ services:
       JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
       EVAKA_CUSTOMER_SAML_PUBLIC_CERT: /home/evaka/test-cert/keycloak-local.pem
       EVAKA_CUSTOMER_SAML_PRIVATE_CERT: /home/evaka/test-cert/saml-private.pem
-      ENABLE_DEV_API: "true"
-      PRETTY_LOGS: "false"
-
-  internal-gw:
-    image: ${EVAKA_GW_IMAGE}
-    ports:
-      - "3020:3020"
-    hostname: internal-gw
-    depends_on:
-      - redis
-      - evaka-srv
-    volumes:
-      - ../apigw/config/test-cert:/home/evaka/test-cert
-    environment:
-      VOLTTI_ENV: local
-      NODE_ENV: local
-      GATEWAY_ROLE: internal
-      EVAKA_SERVICE_URL: ${EVAKA_SERVICE_URL}
-      COOKIE_SECRET: cookie_secret
-      REDIS_HOST: ${EVAKA_REDIS_HOST}
-      REDIS_PORT: ${EVAKA_REDIS_PORT}
-      REDIS_DISABLE_SECURITY: "true"
-      JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
-      EVAKA_SAML_PUBLIC_CERT: /home/evaka/test-cert/keycloak-local.pem
-      EVAKA_SAML_PRIVATE_CERT: /home/evaka/test-cert/saml-private.pem
       ENABLE_DEV_API: "true"
       PRETTY_LOGS: "false"
 

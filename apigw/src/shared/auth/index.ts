@@ -11,12 +11,12 @@ import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client.js'
 import passport, { AuthenticateCallback } from 'passport'
 import { fromCallback } from '../promise-utils.js'
-import { consumeLogoutToken, sessionCookie, SessionType } from '../session.js'
+import { Sessions } from '../session.js'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
   (gatewayRole === 'internal' && 'ingw') ||
-  (gatewayRole === undefined && 'devgw')
+  (gatewayRole === undefined && 'apigw')
 
 export function requireAuthentication(
   req: Request,
@@ -130,13 +130,13 @@ export const login = async (
 }
 
 export const logout = async (
-  sessionType: SessionType,
+  sessions: Sessions,
   req: express.Request,
   res: express.Response
 ): Promise<void> => {
   // Pre-emptively clear the cookie, so even if something fails later, we
   // will end up clearing the cookie in the response
-  res.clearCookie(sessionCookie(sessionType))
+  res.clearCookie(sessions.cookieName)
 
   const logoutToken = req.session?.logoutToken?.value
 
@@ -146,7 +146,7 @@ export const logout = async (
   // the old session data in Redis no longer includes the user
 
   if (logoutToken) {
-    await consumeLogoutToken(logoutToken)
+    await sessions.consumeLogoutToken(logoutToken)
   }
   await fromCallback((cb) =>
     req.session ? req.session.destroy(cb) : cb(undefined)

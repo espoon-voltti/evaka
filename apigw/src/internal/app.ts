@@ -4,7 +4,6 @@
 
 import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
-import helmet from 'helmet'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth/index.js'
 import { createAdSamlStrategy } from './ad-saml.js'
@@ -12,22 +11,14 @@ import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml.js'
 import {
   appCommit,
   Config,
-  cookieSecret,
   enableDevApi,
   titaniaConfig
 } from '../shared/config.js'
-import setupLoggingMiddleware from '../shared/logging.js'
 import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
-import tracing from '../shared/middleware/tracing.js'
 import { createProxy } from '../shared/proxy-utils.js'
-import { trustReverseProxy } from '../shared/reverse-proxy.js'
 import createSamlRouter from '../shared/routes/saml.js'
-import csp from '../shared/routes/csp.js'
-import session, {
-  refreshLogoutToken,
-  touchSessionMaxAge
-} from '../shared/session.js'
+import { sessionSupport } from '../shared/session.js'
 import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -41,147 +32,116 @@ import { cacheControl } from '../shared/middleware/cache-control.js'
 import { createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { createDevAdRouter } from './dev-ad-auth.js'
-import { assertRedisConnection, RedisClient } from '../shared/redis-client.js'
+import { RedisClient } from '../shared/redis-client.js'
 
-export default function internalGwApp(
+export function internalGwRouter(
   config: Config,
   redisClient: RedisClient
-) {
-  const app = express()
-  trustReverseProxy(app)
-  app.set('etag', false)
+): Router {
+  const router = Router()
 
-  app.use(
+  const sessions = sessionSupport('employee', redisClient, config.employee)
+
+  router.use(sessions.middleware)
+  router.use(passport.session())
+  router.use(cookieParser(config.employee.cookieSecret))
+
+  router.use(
     cacheControl((req) =>
-      req.path.startsWith('/api/internal/child-images/')
-        ? 'allow-cache'
-        : 'forbid-cache'
+      req.path.startsWith('/child-images/') ? 'allow-cache' : 'forbid-cache'
     )
   )
 
-  app.use(
-    helmet({
-      // Content-Security-Policy is set by the nginx proxy
-      contentSecurityPolicy: false
+  router.all('/system/*', (_, res) => res.sendStatus(404))
+
+  const integrationUsers = {
+    ...(titaniaConfig && {
+      [titaniaConfig.username]: titaniaConfig.password
     })
-  )
-  app.get('/health', (_, res) => {
-    assertRedisConnection(redisClient)
-      .then(() => {
-        res.status(200).json({ status: 'UP' })
-      })
-      .catch(() => {
-        res.status(503).json({ status: 'DOWN' })
-      })
+  }
+  router.use('/integration', expressBasicAuth({ users: integrationUsers }))
+  router.all('/integration/*', createProxy())
+
+  router.all('/auth/*', (req: express.Request, res, next) => {
+    if (req.session?.idpProvider === 'evaka') {
+      req.url = req.url.replace('saml', 'evaka')
+    }
+    next()
   })
-  app.use(tracing)
-  app.use(session('employee', redisClient))
-  app.use(touchSessionMaxAge)
-  app.use(cookieParser(cookieSecret))
-  app.use(passport.initialize())
-  app.use(passport.session())
-  passport.serializeUser<Express.User>((user, done) => done(null, user))
-  passport.deserializeUser<Express.User>((user, done) => done(null, user))
-  app.use(refreshLogoutToken())
-  setupLoggingMiddleware(app)
 
-  app.use('/api/csp', csp)
-
-  function internalApiRouter() {
-    const router = Router()
-    router.all('/system/*', (_, res) => res.sendStatus(404))
-
-    const integrationUsers = {
-      ...(titaniaConfig && {
-        [titaniaConfig.username]: titaniaConfig.password
-      })
-    }
-    router.use('/integration', expressBasicAuth({ users: integrationUsers }))
-    router.all('/integration/*', createProxy())
-
-    router.all('/auth/*', (req: express.Request, res, next) => {
-      if (req.session?.idpProvider === 'evaka') {
-        req.url = req.url.replace('saml', 'evaka')
-      }
-      next()
-    })
-
-    if (config.ad.type === 'mock') {
-      router.use('/auth/saml', createDevAdRouter())
-    } else if (config.ad.type === 'saml') {
-      router.use(
-        '/auth/saml',
-        createSamlRouter({
-          strategyName: 'ead',
-          strategy: createAdSamlStrategy(
-            config.ad,
-            createSamlConfig(
-              config.ad.saml,
-              redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
-            )
-          ),
-          sessionType: 'employee'
-        })
-      )
-    }
-
-    if (!config.keycloakEmployee)
-      throw new Error('Missing Keycloak SAML configuration (employee)')
-    const keycloakEmployeeConfig = createSamlConfig(
-      config.keycloakEmployee,
-      redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
-    )
+  if (config.ad.type === 'mock') {
+    router.use('/auth/saml', createDevAdRouter(sessions))
+  } else if (config.ad.type === 'saml') {
     router.use(
-      '/auth/evaka',
+      '/auth/saml',
       createSamlRouter({
-        strategyName: 'evaka',
-        strategy: createKeycloakEmployeeSamlStrategy(keycloakEmployeeConfig),
-        sessionType: 'employee'
+        sessions,
+        strategyName: 'ead',
+        strategy: createAdSamlStrategy(
+          sessions,
+          config.ad,
+          createSamlConfig(
+            config.ad.saml,
+            redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+          )
+        )
       })
     )
-
-    if (enableDevApi) {
-      router.use(
-        '/dev-api',
-        createProxy({ path: ({ url }) => `/dev-api${url}` })
-      )
-
-      router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
-    }
-
-    router.post('/auth/mobile', express.json(), mobileDeviceSession)
-
-    router.use(checkMobileEmployeeIdToken(redisClient))
-
-    router.get(
-      '/auth/status',
-      refreshMobileSession,
-      csrf,
-      csrfCookie('employee'),
-      authStatus
-    )
-    router.all('/public/*', createProxy())
-    router.get('/version', (_, res) => {
-      res.send({ commitId: appCommit })
-    })
-    router.use(requireAuthentication)
-    router.use(csrf)
-    router.post(
-      '/auth/pin-login',
-      express.json(),
-      pinLoginRequestHandler(redisClient)
-    )
-    router.post(
-      '/auth/pin-logout',
-      express.json(),
-      pinLogoutRequestHandler(redisClient)
-    )
-
-    router.use(createProxy())
-    return router
   }
 
-  app.use('/api/internal', internalApiRouter())
-  app.use(errorHandler(true))
-  return app
+  if (!config.keycloakEmployee)
+    throw new Error('Missing Keycloak SAML configuration (employee)')
+  const keycloakEmployeeConfig = createSamlConfig(
+    config.keycloakEmployee,
+    redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+  )
+  router.use(
+    '/auth/evaka',
+    createSamlRouter({
+      sessions,
+      strategyName: 'evaka',
+      strategy: createKeycloakEmployeeSamlStrategy(
+        sessions,
+        keycloakEmployeeConfig
+      )
+    })
+  )
+
+  if (enableDevApi) {
+    router.use('/dev-api', createProxy({ path: ({ url }) => `/dev-api${url}` }))
+
+    router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
+  }
+
+  router.post('/auth/mobile', express.json(), mobileDeviceSession)
+
+  router.use(checkMobileEmployeeIdToken(redisClient))
+
+  router.get(
+    '/auth/status',
+    refreshMobileSession,
+    csrf,
+    csrfCookie('employee'),
+    authStatus(sessions)
+  )
+  router.all('/public/*', createProxy())
+  router.get('/version', (_, res) => {
+    res.send({ commitId: appCommit })
+  })
+  router.use(requireAuthentication)
+  router.use(csrf)
+  router.post(
+    '/auth/pin-login',
+    express.json(),
+    pinLoginRequestHandler(redisClient)
+  )
+  router.post(
+    '/auth/pin-logout',
+    express.json(),
+    pinLogoutRequestHandler(redisClient)
+  )
+
+  router.use(createProxy())
+  router.use(errorHandler(true))
+  return router
 }

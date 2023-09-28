@@ -1,7 +1,7 @@
 {
   "keys": [
     {
-      "kid": "evaka-dev-gw",
+      "kid": "evaka-api-gw",
       "use": "sig",
       "kty": "RSA",
       "alg": "RS256",

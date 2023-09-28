@@ -6,6 +6,7 @@ import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import { employeeLogin } from '../shared/service-client.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
 import { z } from 'zod'
+import { Sessions } from '../shared/session.js'
 
 const Profile = z.object({
   id: z.string(),
@@ -15,9 +16,10 @@ const Profile = z.object({
 })
 
 export function createKeycloakEmployeeSamlStrategy(
+  sessions: Sessions,
   config: SamlConfig
 ): SamlStrategy {
-  return createSamlStrategy(config, Profile, async (profile) => {
+  return createSamlStrategy(sessions, config, Profile, async (profile) => {
     const asString = (value: unknown) =>
       value == null ? undefined : String(value)
 
