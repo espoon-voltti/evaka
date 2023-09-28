@@ -46,7 +46,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
 
-        if (application.status !== ApplicationStatus.WAITING_PLACEMENT) {
+        if (application.status != ApplicationStatus.WAITING_PLACEMENT) {
             throw Conflict(
                 "Cannot get placement plan drafts for application with status ${application.status}"
             )

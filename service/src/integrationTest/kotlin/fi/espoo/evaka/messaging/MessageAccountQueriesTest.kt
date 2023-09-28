@@ -153,7 +153,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         assertEquals(3, accounts2.size)
         val personalAccount =
-            accounts2.find { it.account.type === AccountType.PERSONAL }
+            accounts2.find { it.account.type == AccountType.PERSONAL }
                 ?: throw Error("Personal account not found")
         assertEquals(personalAccountName, personalAccount.account.name)
         assertEquals(AccountType.PERSONAL, personalAccount.account.type)
@@ -205,7 +205,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
         assertEquals(1, accounts2.size)
-        assertNull(accounts2.find { it.account.type === AccountType.PERSONAL })
+        assertNull(accounts2.find { it.account.type == AccountType.PERSONAL })
 
         val groupAccount =
             accounts2.find { it.daycareGroup != null } ?: throw Error("Group account not found")

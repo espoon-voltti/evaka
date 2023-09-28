@@ -273,7 +273,7 @@ class ReservationControllerCitizen(
                                         date,
                                         if (
                                             reservableRange.includes(date) &&
-                                                body.absenceType === OTHER_ABSENCE
+                                                body.absenceType == OTHER_ABSENCE
                                         ) {
                                             val hasContractDays =
                                                 childContractDays[childId]?.includes(date) ?: false

@@ -155,7 +155,7 @@ fun Database.Transaction.upsertStaffAttendance(
     occupancyCoefficient: BigDecimal?,
     type: StaffAttendanceType
 ): StaffAttendanceId =
-    if (attendanceId === null) {
+    if (attendanceId == null) {
         createUpdate(
                 """
             INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type)
@@ -267,7 +267,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     departureTime: HelsinkiDateTime?,
     occupancyCoefficient: BigDecimal?
 ): StaffAttendanceExternalId {
-    if (attendanceId === null) {
+    if (attendanceId == null) {
         return createUpdate(
                 """
             INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient)

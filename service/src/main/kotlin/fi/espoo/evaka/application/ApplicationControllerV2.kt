@@ -510,7 +510,7 @@ class ApplicationControllerV2(
                         tx.fetchApplicationDetails(applicationId)
                             ?: throw NotFound("Application $applicationId not found")
 
-                    if (application.status !== ApplicationStatus.WAITING_DECISION) {
+                    if (application.status != ApplicationStatus.WAITING_DECISION) {
                         throw Conflict(
                             "Cannot get decision drafts for application with status ${application.status}"
                         )

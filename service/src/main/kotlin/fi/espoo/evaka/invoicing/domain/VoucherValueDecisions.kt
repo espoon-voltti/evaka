@@ -243,7 +243,7 @@ data class VoucherValueDecisionDetailed(
     val requiresManualSending
         get(): Boolean {
             if (
-                decisionType !== VoucherValueDecisionType.NORMAL ||
+                decisionType != VoucherValueDecisionType.NORMAL ||
                     headOfFamily.forceManualFeeDecisions
             ) {
                 return true

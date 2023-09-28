@@ -116,7 +116,7 @@ class PdfGenerator(
             DecisionSendAddress.fromPerson(decision.headOfFamily)
                 ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
-        val isReliefDecision = decision.decisionType !== VoucherValueDecisionType.NORMAL
+        val isReliefDecision = decision.decisionType != VoucherValueDecisionType.NORMAL
 
         val hasChildIncome = decision.childIncome != null && decision.childIncome.total > 0
 
@@ -215,7 +215,7 @@ class PdfGenerator(
                 (decision.partnerIncome != null &&
                     decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val isReliefDecision = decision.decisionType !== FeeDecisionType.NORMAL
+        val isReliefDecision = decision.decisionType != FeeDecisionType.NORMAL
 
         val hasChildIncome =
             decision.children.any { it.childIncome != null && it.childIncome.total > 0 }

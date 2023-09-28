@@ -3744,7 +3744,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(2, decisions.size)
             assertEquals(1, decisions.filter { it.status == FeeDecisionStatus.SENT }.size)
             decisions
-                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .let {
                     assertEquals(dateOfChange, it.validDuring.start)
                     assertEquals(0, it.totalFee)
@@ -3782,7 +3782,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(2, decisions.size)
             assertEquals(1, decisions.filter { it.status == FeeDecisionStatus.SENT }.size)
             decisions
-                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .let {
                     assertEquals(dateOfChange, it.validDuring.start)
                     assertEquals(0, it.totalFee)
@@ -3792,7 +3792,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         getFeeDecisions(testAdult_2.id).also { decisions ->
             assertEquals(1, decisions.size)
             decisions
-                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .let {
                     assertEquals(dateOfChange, it.validDuring.start)
                     assertNotEquals(0, it.totalFee)
