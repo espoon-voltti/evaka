@@ -8,7 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.spring")
 
     id("com.github.ben-manes.versions")
-    id("org.jmailen.kotlinter")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 dependencies {
@@ -35,4 +35,8 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.skyscreamer:jsonassert")
+}
+
+ktlint {
+    version.set(libs.versions.ktlint.asProvider().get())
 }

@@ -4,7 +4,7 @@
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
-    id("org.jmailen.kotlinter")
+    id("org.jlleitschuh.gradle.ktlint")
     id("com.ncorti.ktfmt.gradle")
 }
 
@@ -44,4 +44,8 @@ tasks {
 
 ktfmt {
     kotlinLangStyle()
+}
+
+ktlint {
+    version.set(libs.versions.ktlint.asProvider().get())
 }

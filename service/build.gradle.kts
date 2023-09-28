@@ -9,10 +9,6 @@ buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath(files("custom-ktlint-rules/custom-ktlint-rules.jar"))
-        classpath(libs.ktlint)
-    }
 }
 
 plugins {
@@ -23,8 +19,8 @@ plugins {
     alias(libs.plugins.flyway)
 
     alias(libs.plugins.versions)
-    alias(libs.plugins.kotlinter)
     alias(libs.plugins.ktfmt)
+    alias(libs.plugins.ktlint.gradle)
     alias(libs.plugins.owasp)
 
     idea
@@ -267,4 +263,8 @@ tasks {
 
 ktfmt {
     kotlinLangStyle()
+}
+
+ktlint {
+    version.set(libs.versions.ktlint.asProvider().get())
 }
