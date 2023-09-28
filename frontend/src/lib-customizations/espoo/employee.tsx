@@ -19,6 +19,12 @@ const customizations: EmployeeCustomizations = {
   appConfig: employeeConfig,
   translations: {
     fi: {
+      common: {
+        retroactiveConfirmation: {
+          checkboxLabel:
+            'Ymmärrän, olen asiasta yhteydessä laskutustiimiin vaka.maksut@espoo.fi *'
+        }
+      },
       childInformation: {
         pedagogicalDocument: {
           explanation:
