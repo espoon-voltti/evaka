@@ -4,10 +4,10 @@
 
 import DateRange from 'lib-common/date-range'
 import {
-  ChildDocumentSummary,
   ChildDocumentCreateRequest,
-  DocumentContent,
+  ChildDocumentSummaryWithPermittedActions,
   ChildDocumentWithPermittedActions,
+  DocumentContent,
   DocumentStatus
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -19,17 +19,23 @@ import { client } from '../client'
 
 export async function getChildDocuments(
   childId: UUID
-): Promise<ChildDocumentSummary[]> {
+): Promise<ChildDocumentSummaryWithPermittedActions[]> {
   return client
-    .get<JsonOf<ChildDocumentSummary[]>>('/child-documents', {
-      params: { childId }
-    })
+    .get<JsonOf<ChildDocumentSummaryWithPermittedActions[]>>(
+      '/child-documents',
+      {
+        params: { childId }
+      }
+    )
     .then((res) =>
-      res.data.map((doc) => ({
-        ...doc,
-        publishedAt: doc.publishedAt
-          ? HelsinkiDateTime.parseIso(doc.publishedAt)
-          : null
+      res.data.map(({ data: doc, permittedActions }) => ({
+        data: {
+          ...doc,
+          publishedAt: doc.publishedAt
+            ? HelsinkiDateTime.parseIso(doc.publishedAt)
+            : null
+        },
+        permittedActions
       }))
     )
 }
