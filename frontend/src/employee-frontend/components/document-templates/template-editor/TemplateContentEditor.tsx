@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { swapElements } from 'lib-common/array'
 import { useForm, useFormElems, useFormField } from 'lib-common/form/hooks'
 import { DocumentTemplate } from 'lib-common/generated/api-types/document'
+import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -18,7 +19,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1 } from 'lib-components/typography'
+import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
@@ -67,7 +68,6 @@ export default React.memo(function TemplateContentEditor({
   return (
     <div>
       <ContentArea opaque>
-        <H1>{template.name}</H1>
         <LabelValueList
           spacing="small"
           contents={[
@@ -85,7 +85,14 @@ export default React.memo(function TemplateContentEditor({
             }
           ]}
         />
-        <Gap />
+      </ContentArea>
+      <Gap />
+      <ContentArea opaque>
+        <H1>{template.name}</H1>
+        <H2>
+          Essi Esimerkkiläinen (
+          {LocalDate.todayInHelsinkiTz().subYears(5).format()})
+        </H2>
         <FixedSpaceColumn spacing="L">
           {sectionElems.map((section, index) => (
             <TemplateSectionView

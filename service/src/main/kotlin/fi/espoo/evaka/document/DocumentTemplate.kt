@@ -64,7 +64,7 @@ sealed class Question(val type: QuestionType) {
     data class StaticTextDisplayQuestion(
         override val id: String,
         val label: String = "",
-        val text: String,
+        val text: String = "",
         val infoText: String = ""
     ) : Question(QuestionType.STATIC_TEXT_DISPLAY)
 }

@@ -100,6 +100,9 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
             <H1 noMargin>{document.template.name}</H1>
             <H2 noMargin>
               {document.child.firstName} {document.child.lastName}
+              {document.child.dateOfBirth
+                ? ` (${document.child.dateOfBirth.format()})`
+                : ''}
             </H2>
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">

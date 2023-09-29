@@ -182,7 +182,7 @@ export default React.memo(function ExpandingInfo({
       />
     </div>
   ) : (
-    <FixedSpaceRow spacing="xs" alignItems="center">
+    <FixedSpaceRow spacing="xs" alignItems="baseline">
       <div>{children}</div>
       <InfoButton
         onClick={toggleExpanded}
