@@ -63,6 +63,11 @@ export const testTranslations: Translations = {
     title: '',
     buttonText: ''
   },
+  treeDropdown: {
+    expand: () => '',
+    collapse: () => '',
+    expandDropdown: ''
+  },
   validationErrors: {
     required: '',
     requiredSelection: '',

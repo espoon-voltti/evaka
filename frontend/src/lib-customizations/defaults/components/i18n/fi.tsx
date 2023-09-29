@@ -62,6 +62,11 @@ const components: Translations = {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
   },
+  treeDropdown: {
+    expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
+    collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
+    expandDropdown: 'Avaa'
+  },
   validationErrors: {
     required: 'Pakollinen tieto',
     requiredSelection: 'Valinta puuttuu',

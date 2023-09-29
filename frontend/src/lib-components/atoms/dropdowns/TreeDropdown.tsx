@@ -14,6 +14,7 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faCheck, faChevronDown, faDash } from 'lib-icons'
 
+import { useTranslations } from '../../i18n'
 import IconButton from '../buttons/IconButton'
 
 const DropdownContainer = styled.div`
@@ -153,11 +154,6 @@ interface TreeDropdownProps<N extends TreeNode> {
   onChange: (node: N[]) => void
   'data-qa'?: string
   placeholder: string
-  labels: {
-    expand: (opt: string) => string
-    collapse: (opt: string) => string
-    expandDropdown: string
-  }
 }
 
 const updateNodeCheckedRecursively = <N extends TreeNode>(
@@ -283,9 +279,9 @@ function TreeDropdown<N extends TreeNode>({
   tree,
   onChange,
   'data-qa': dataQa,
-  labels,
   placeholder
 }: TreeDropdownProps<N>) {
+  const i18n = useTranslations().treeDropdown
   const [active, setActive] = useState(false)
 
   const ref = useRef<HTMLDivElement>(null)
@@ -369,7 +365,7 @@ function TreeDropdown<N extends TreeNode>({
         <DropdownContainerContent>
           {treeValue.length === 0 ? placeholder : treeValue}
         </DropdownContainerContent>
-        <IconButton icon={faChevronDown} aria-label={labels.expandDropdown} />
+        <IconButton icon={faChevronDown} aria-label={i18n.expandDropdown} />
       </DropdownContainer>
       {active && (
         <DropdownTreeListContainer
@@ -387,7 +383,7 @@ function TreeDropdown<N extends TreeNode>({
                 )
               }
               defaultExpanded={tree.length === 1}
-              labels={labels}
+              labels={i18n}
             />
           ))}
         </DropdownTreeListContainer>

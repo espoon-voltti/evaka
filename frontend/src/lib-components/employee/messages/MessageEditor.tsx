@@ -108,6 +108,7 @@ export interface MessageEditorI18n {
   }
   sender: string
   receivers: string
+  recipientsPlaceholder: string
   title: string
   message: string
   deleteDraft: string
@@ -120,12 +121,6 @@ export interface MessageEditorI18n {
   addAttachmentInfo: string
   close: string
   open: string
-  treeDropdown: {
-    expandDropdown: string
-    expand: (opt: string) => string
-    collapse: (opt: string) => string
-    placeholder: string
-  }
 }
 
 interface Props {
@@ -451,8 +446,7 @@ export default React.memo(function MessageEditor({
                   <TreeDropdown
                     tree={receiverTree}
                     onChange={updateReceivers}
-                    labels={i18n.treeDropdown}
-                    placeholder={i18n.treeDropdown.placeholder}
+                    placeholder={i18n.recipientsPlaceholder}
                     data-qa="select-receiver"
                   />
                 </HorizontalField>
@@ -579,8 +573,7 @@ export default React.memo(function MessageEditor({
           tree={receiverTree}
           onChange={updateReceivers}
           data-qa="attendees"
-          labels={i18n.treeDropdown}
-          placeholder={i18n.treeDropdown.placeholder}
+          placeholder={i18n.recipientsPlaceholder}
         />
         <Gap size="s" />
         <Bold>{i18n.urgent.heading}</Bold>

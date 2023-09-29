@@ -56,6 +56,11 @@ export interface Translations {
     title: string
     buttonText: string
   }
+  treeDropdown: {
+    expand: (opt: string) => string
+    collapse: (opt: string) => string
+    expandDropdown: string
+  }
   validationErrors: {
     required: string
     requiredSelection: string

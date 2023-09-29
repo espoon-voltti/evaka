@@ -63,6 +63,12 @@ const components: Translations = {
     title: 'En ny version av eVaka är tillgänglig',
     buttonText: 'Ladda om sidan'
   },
+  treeDropdown: {
+    // Currently only used for Finnish frontends
+    expand: () => '',
+    collapse: () => '',
+    expandDropdown: ''
+  },
   validationErrors: {
     required: 'Värde saknas',
     requiredSelection: 'Val saknas',

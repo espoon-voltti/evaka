@@ -90,13 +90,7 @@ export const fi = {
     validity: 'Voimassaolo',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     lastName: 'Sukunimi',
-    firstName: 'Etunimi',
-    treeDropdown: {
-      expandDropdown: 'Avaa',
-      expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      placeholder: 'Valitse...'
-    }
+    firstName: 'Etunimi'
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
@@ -360,6 +354,7 @@ export const fi = {
       },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
+      recipientsPlaceholder: 'Valitse...',
       title: 'Otsikko',
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',

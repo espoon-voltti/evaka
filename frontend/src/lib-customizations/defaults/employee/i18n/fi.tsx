@@ -206,12 +206,6 @@ export const fi = {
     copy: 'Kopioi',
     startDate: 'Aloituspäivä',
     endDate: 'Lopetuspäivä',
-    treeDropdown: {
-      expandDropdown: 'Avaa',
-      expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      placeholder: 'Valitse...'
-    },
     retroactiveConfirmation: {
       title:
         'Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin.',
@@ -2298,6 +2292,7 @@ export const fi = {
           add: 'Lisää tapahtuma',
           period: 'Ajankohta',
           attendees: 'Tapahtuman osallistujat',
+          attendeesPlaceholder: 'Valitse...',
           eventTitle: 'Tapahtuman otsikko',
           eventTitlePlaceholder: 'Max. 30 merkkiä',
           description: 'Tapahtuman kuvaus',
@@ -4057,6 +4052,7 @@ export const fi = {
       },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
+      recipientsPlaceholder: 'Valitse...',
       title: 'Otsikko',
       message: 'Viesti',
       discard: 'Hylkää',
