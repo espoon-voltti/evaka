@@ -429,8 +429,6 @@ export default {
       message: 'Viesti'
     },
     thread: {
-      type: 'Tyyppi',
-      urgent: 'Kiireellinen',
       children: 'Koskee lapsia',
       title: 'Otsikko',
       reply: 'Vastaa viestiin',

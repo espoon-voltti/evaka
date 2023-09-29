@@ -31,6 +31,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Bold, H2, InformationText } from 'lib-components/typography'
@@ -43,7 +44,6 @@ import { faBoxArchive } from 'lib-icons'
 import { getAttachmentUrl } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 
-import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
 import { archiveThread } from './api'
 import { View } from './types-view'

@@ -82,7 +82,15 @@ const components: Translations = {
     message: 'Viesti',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
-    sending: 'Lähetetään'
+    sending: 'Lähetetään',
+    types: {
+      MESSAGE: 'Viesti',
+      BULLETIN: 'Tiedote'
+    },
+    thread: {
+      type: 'Tyyppi',
+      urgent: 'Kiireellinen'
+    }
   },
   messageEditor: {
     newMessage: 'Uusi viesti',

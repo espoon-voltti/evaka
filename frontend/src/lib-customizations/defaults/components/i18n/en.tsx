@@ -83,7 +83,15 @@ const components: Translations = {
     recipients: 'Recipients',
     message: 'Message',
     send: 'Send',
-    sending: 'Sending'
+    sending: 'Sending',
+    types: {
+      MESSAGE: 'Message',
+      BULLETIN: 'Bulletin'
+    },
+    thread: {
+      type: 'Type',
+      urgent: 'Urgent'
+    }
   },
   messageEditor: {
     // Currently only used for Finnish frontends

@@ -432,8 +432,6 @@ const en: Translations = {
       message: 'Message'
     },
     thread: {
-      type: 'Type',
-      urgent: 'Urgent',
       children: 'Regarding children',
       title: 'Subject',
       reply: 'Reply',

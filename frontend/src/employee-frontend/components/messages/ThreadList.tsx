@@ -10,12 +10,12 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import { faBoxArchive } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { MessageCharacteristics } from './MessageCharacteristics'
 import {
   Hyphen,
   MessageRow,

@@ -74,6 +74,14 @@ export interface Translations {
     recipients: string
     send: string
     sending: string
+    types: {
+      MESSAGE: string
+      BULLETIN: string
+    }
+    thread: {
+      type: string
+      urgent: string
+    }
   }
   messageEditor: {
     newMessage: string

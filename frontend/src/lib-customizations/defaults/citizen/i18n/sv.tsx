@@ -428,8 +428,6 @@ const sv: Translations = {
       message: 'Meddelande'
     },
     thread: {
-      type: 'Meddelandetyp',
-      urgent: 'Akut',
       children: 'Angår barn',
       title: 'Ämne',
       reply: 'Svar',

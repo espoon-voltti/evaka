@@ -80,7 +80,15 @@ export const testTranslations: Translations = {
     recipients: '',
     message: '',
     send: '',
-    sending: ''
+    sending: '',
+    types: {
+      MESSAGE: '',
+      BULLETIN: ''
+    },
+    thread: {
+      type: '',
+      urgent: ''
+    }
   },
   messageEditor: {
     newMessage: '',

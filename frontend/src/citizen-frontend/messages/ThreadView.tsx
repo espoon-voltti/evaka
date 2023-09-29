@@ -31,6 +31,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
@@ -44,7 +45,6 @@ import { faTrash } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments'
 import { Translations, useTranslation } from '../localization'
 
-import { MessageCharacteristics } from './MessageCharacteristics'
 import {
   ConfirmDeleteThread,
   MessageContainer,
@@ -243,11 +243,7 @@ export default React.memo(function ThreadView({
     <ThreadContainer data-qa="thread-reader">
       <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
         <FixedSpaceFlexWrap>
-          <MessageCharacteristics
-            type={type}
-            urgent={urgent}
-            labels={i18n.messages.types}
-          />
+          <MessageCharacteristics type={type} urgent={urgent} />
           {children.length > 0 ? (
             <>
               <ScreenReaderOnly>

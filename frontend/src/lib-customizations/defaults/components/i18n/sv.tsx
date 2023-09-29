@@ -83,7 +83,15 @@ const components: Translations = {
     message: 'Meddelande',
     recipients: 'Mottagare',
     send: 'Skicka',
-    sending: 'Skickar'
+    sending: 'Skickar',
+    types: {
+      MESSAGE: 'Meddelande',
+      BULLETIN: 'Anslag'
+    },
+    thread: {
+      type: 'Meddelandetyp',
+      urgent: 'Akut'
+    }
   },
   messageEditor: {
     // Currently only used for Finnish frontends
